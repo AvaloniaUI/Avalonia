@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>SharpDX.DXGI</id>
+    <version>2.5.0</version>
+    <title>SharpDX.DXGI</title>
+    <authors>Alexandre Mutel</authors>
+    <owners>Alexandre Mutel</owners>
+    <licenseUrl>http://sharpdx.org/License.txt</licenseUrl>
+    <projectUrl>http://sharpdx.org/</projectUrl>
+    <iconUrl>http://sharpdx.org/logo_100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Assembly providing DirectX - DXGI 1.0, 1.1 and 1.2 managed API.</description>
+    <releaseNotes />
+    <copyright>Copyright (c) 2010-2013 Alexandre Mutel</copyright>
+    <tags>SharpDX DirectX Direct3D MDX 3D DXGI</tags>
+    <dependencies>
+      <dependency id="SharpDX" version="2.5.0" />
+    </dependencies>
+  </metadata>
+</package>

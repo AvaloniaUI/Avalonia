@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>SharpDX.Direct2D1</id>
+    <version>2.5.0</version>
+    <title>SharpDX.Direct2D1</title>
+    <authors>Alexandre Mutel</authors>
+    <owners>Alexandre Mutel</owners>
+    <licenseUrl>http://sharpdx.org/License.txt</licenseUrl>
+    <projectUrl>http://sharpdx.org/</projectUrl>
+    <iconUrl>http://sharpdx.org/logo_100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Assembly providing DirectX - Direct2D, DirectWrite and WIC managed API.</description>
+    <releaseNotes />
+    <copyright>Copyright (c) 2010-2013 Alexandre Mutel</copyright>
+    <language />
+    <tags>SharpDX DirectX Direct3D MDX 3D Direct2D D2D DirectWrite DWrite WIC</tags>
+    <dependencies>
+      <dependency id="SharpDX" version="2.5.0" />
+      <dependency id="SharpDX.DXGI" version="2.5.0" />
+    </dependencies>
+  </metadata>
+</package>
