@@ -8,7 +8,7 @@
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.Register<Border, Brush>(
+            PerspexProperty.Register<TextBlock, Brush>(
                 "Foreground",
                 defaultValue: new SolidColorBrush(0xff000000),
                 inherits: true);

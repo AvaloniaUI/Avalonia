@@ -23,6 +23,7 @@
             this.LayoutManager = new LayoutManager();
             this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
 
+            // TODO: Do this by pushing to Dispatcher rather than right away!
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
                 this.LayoutManager.ExecuteLayoutPass();
