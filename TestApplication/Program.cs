@@ -9,6 +9,7 @@ using Perspex.Media;
 using Perspex.Windows;
 using Perspex.Windows.Media;
 using Perspex.Windows.Threading;
+
 namespace TestApplication
 {
     class Program

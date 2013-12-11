@@ -1,6 +1,8 @@
 ﻿namespace Perspex.Controls
 {
+    using System;
     using System.Diagnostics.Contracts;
+    using Perspex.Layout;
 
     public enum HorizontalAlignment
     {
@@ -18,7 +20,7 @@
         Bottom,
     }
 
-    public abstract class Control : Visual
+    public abstract class Control : Visual, ILayoutable
     {
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
@@ -53,6 +55,24 @@
             set { this.SetValue(MarginProperty, value); }
         }
 
+        public Control Parent
+        {
+            get;
+            internal set;
+        }
+
+        public ILayoutRoot GetLayoutRoot()
+        {
+            Control c = this;
+
+            while (c != null && !(c is ILayoutRoot))
+            {
+                c = c.Parent;
+            }
+
+            return (ILayoutRoot)c;
+        }
+
         public void Arrange(Rect rect)
         {
             this.Bounds = new Rect(
@@ -64,6 +84,16 @@
         {
             availableSize = availableSize.Deflate(this.Margin);
             this.DesiredSize = this.MeasureContent(availableSize).Constrain(availableSize);
+        }
+
+        public void InvalidateArrange()
+        {
+            this.GetLayoutRoot().LayoutManager.InvalidateArrange(this);
+        }
+
+        public void InvalidateMeasure()
+        {
+            this.GetLayoutRoot().LayoutManager.InvalidateMeasure(this);
         }
 
         protected virtual Size ArrangeContent(Size finalSize)

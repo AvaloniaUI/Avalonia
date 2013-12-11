@@ -74,6 +74,10 @@
     <Compile Include="Controls\ContentControl.cs" />
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\TextBlock.cs" />
+    <Compile Include="Layout\ILayoutable.cs" />
+    <Compile Include="Layout\ILayoutManager.cs" />
+    <Compile Include="Layout\ILayoutRoot.cs" />
+    <Compile Include="Layout\LayoutManager.cs" />
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
     <Compile Include="Media\Brush.cs" />

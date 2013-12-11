@@ -5,11 +5,10 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
+    using Perspex.Layout;
     using Perspex.Windows.Interop;
-    using SharpDX.Direct2D1;
-    using SharpDX.DXGI;
 
-    public class Window : ContentControl
+    public class Window : ContentControl, ILayoutRoot
     {
         private UnmanagedMethods.WndProc wndProcDelegate;
 
@@ -20,9 +19,15 @@
         public Window()
         {
             this.CreateWindow();
-
             Size clientSize = this.ClientSize;
+            this.LayoutManager = new LayoutManager();
             this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
+
+            this.LayoutManager.LayoutNeeded.Subscribe(x => 
+            {
+                this.LayoutManager.ExecuteLayoutPass();
+                this.renderer.Render(this);
+            });
         }
 
         public Size ClientSize
@@ -41,12 +46,15 @@
             private set;
         }
 
+        public ILayoutManager LayoutManager
+        {
+            get;
+            private set;
+        }
+
         public void Show()
         {
             UnmanagedMethods.ShowWindow(this.Handle, 4);
-            this.Measure(this.ClientSize);
-            this.Arrange(new Rect(this.ClientSize));
-            this.renderer.Render(this);
         }
 
         protected override Visual DefaultTemplate()
@@ -133,14 +141,10 @@
                 ////    InputManager.Current.ProcessInput(new RawMouseEventArgs(mouse, RawMouseEventType.Move));
                 ////    break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                ////    if (this.renderTarget != null)
-                ////    {
-                ////        this.renderTarget.Resize(new SharpDX.DrawingSize((int)lParam & 0xffff, (int)lParam >> 16));
-                ////    }
-
-                ////    this.OnResized();
-                ////    return IntPtr.Zero;
+                case UnmanagedMethods.WindowsMessage.WM_SIZE:
+                    this.renderer.Resize((int)lParam & 0xffff, (int)lParam >> 16);
+                    this.InvalidateMeasure();
+                    return IntPtr.Zero;
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
