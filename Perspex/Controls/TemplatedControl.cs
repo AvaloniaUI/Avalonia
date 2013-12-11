@@ -32,6 +32,7 @@
                 if (this.visualChild == null && template != null)
                 {
                     this.visualChild = template(this);
+                    this.visualChild.VisualParent = this;
                 }
 
                 return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0);

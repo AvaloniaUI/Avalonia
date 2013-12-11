@@ -7,6 +7,11 @@
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
+        public static readonly PerspexProperty<double> FontSizeProperty =
+            PerspexProperty.Register<TextBlock, double>(
+                "FontSize",
+                inherits: true);
+
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<TextBlock, Brush>(
                 "Foreground",
@@ -20,6 +25,12 @@
         {
             get { return this.GetValue(BackgroundProperty); }
             set { this.SetValue(BackgroundProperty, value); }
+        }
+
+        public double FontSize
+        {
+            get { return this.GetValue(FontSizeProperty); }
+            set { this.SetValue(FontSizeProperty, value); }
         }
 
         public Brush Foreground
@@ -41,7 +52,7 @@
                 return new FormattedText
                 {
                     FontFamilyName = "Segoe UI",
-                    FontSize = 18,
+                    FontSize = this.FontSize,
                     Text = this.Text,
                 };
             }

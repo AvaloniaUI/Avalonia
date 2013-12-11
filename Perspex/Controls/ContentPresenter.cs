@@ -50,6 +50,11 @@
                             Text = content.ToString(),
                         };
                     }
+
+                    if (this.visualChild != null)
+                    {
+                        this.visualChild.VisualParent = this;
+                    }
                 }
 
                 return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0);

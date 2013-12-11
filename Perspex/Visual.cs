@@ -14,6 +14,8 @@
         private static readonly PerspexProperty<Rect> BoundsPropertyW =
             PerspexProperty.Register<Visual, Rect>("Bounds", new Rect());
 
+        private Visual visualParent;
+
         public Rect Bounds
         {
             get { return this.GetValue(BoundsPropertyW); }
@@ -23,6 +25,23 @@
         public virtual IEnumerable<Visual> VisualChildren
         {
             get { return Enumerable.Empty<Visual>(); }
+        }
+
+        public Visual VisualParent
+        {
+            get 
+            { 
+                return this.visualParent; 
+            }
+
+            set
+            {
+                if (this.visualParent != value)
+                {
+                    this.visualParent = value;
+                    this.InheritanceParent = value;
+                }
+            }
         }
 
         public virtual void Render(IDrawingContext context)

@@ -9,6 +9,18 @@
         public static readonly PerspexProperty<Control> ContentProperty =
             PerspexProperty.Register<ContentControl, Control>("Content");
 
+        public Decorator()
+        {
+            // TODO: Unset old content's visual parent.
+            this.GetObservable(ContentProperty).Subscribe(x =>
+            {
+                if (x != null)
+                {
+                    x.VisualParent = this;
+                }
+            });
+        }
+
         public Control Content
         {
             get { return this.GetValue(ContentProperty); }

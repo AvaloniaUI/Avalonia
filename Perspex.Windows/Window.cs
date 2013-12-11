@@ -10,11 +10,19 @@
 
     public class Window : ContentControl, ILayoutRoot
     {
+        public static PerspexProperty<double> FontSizeProperty =
+            TextBlock.FontSizeProperty.AddOwner<Window>();
+
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
 
         private Renderer renderer;
+
+        static Window()
+        {
+            FontSizeProperty.OverrideDefaultValue(typeof(Window), 18.0);
+        }
 
         public Window()
         {
