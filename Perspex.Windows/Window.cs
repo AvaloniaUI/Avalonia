@@ -69,7 +69,7 @@
         protected override Visual DefaultTemplate()
         {
             Border border = new Border();
-            border.Background = new Perspex.Media.SolidColorBrush(0xff808080);
+            border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
             ContentPresenter contentPresenter = new ContentPresenter();
             contentPresenter.Bind(ContentPresenter.ContentProperty, this.GetObservable(ContentProperty));
             border.Content = contentPresenter;

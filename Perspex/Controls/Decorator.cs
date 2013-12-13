@@ -9,6 +9,9 @@
         public static readonly PerspexProperty<Control> ContentProperty =
             PerspexProperty.Register<ContentControl, Control>("Content");
 
+        public static readonly PerspexProperty<Thickness> PaddingProperty =
+            PerspexProperty.Register<ContentControl, Thickness>("Padding");
+
         public Decorator()
         {
             // TODO: Unset old content's visual parent.
@@ -27,6 +30,12 @@
             set { this.SetValue(ContentProperty, value); }
         }
 
+        public Thickness Padding
+        {
+            get { return this.GetValue(PaddingProperty); }
+            set { this.SetValue(PaddingProperty, value); }
+        }
+
         public override IEnumerable<Visual> VisualChildren
         {
             get 
@@ -42,7 +51,7 @@
 
             if (content != null)
             {
-                content.Arrange(new Rect(finalSize));
+                content.Arrange(new Rect(finalSize).Deflate(this.Padding));
             }
 
             return finalSize;
@@ -55,7 +64,7 @@
             if (content != null)
             {
                 content.Measure(availableSize);
-                return content.DesiredSize.Value;
+                return content.DesiredSize.Value.Inflate(this.Padding);
             }
             else
             {
