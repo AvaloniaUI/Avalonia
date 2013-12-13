@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 namespace Perspex.Media
 {
     /// <summary>
@@ -32,5 +33,12 @@ namespace Perspex.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         void FillRectange(Brush brush, Rect rect);
+
+        /// <summary>
+        /// Pushes a matrix transformation.
+        /// </summary>
+        /// <param name="matrix">The matrix</param>
+        /// <returns>A disposable used to undo the transformation.</returns>
+        IDisposable PushTransform(Matrix matrix);
     }
 }

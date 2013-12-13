@@ -10,6 +10,7 @@ namespace Perspex.Windows
     using SharpDX;
     using SharpDX.Direct2D1;
     using DwFactory = SharpDX.DirectWrite.Factory;
+    using Matrix = Perspex.Media.Matrix;
 
     /// <summary>
     /// Renders a <see cref="Canvas"/>.
@@ -99,7 +100,12 @@ namespace Perspex.Windows
 
             foreach (Visual child in visual.VisualChildren)
             {
-                this.Render(child, context);
+                Matrix translate = Matrix.Translation(child.Bounds.X, child.Bounds.Y);
+
+                using (context.PushTransform(translate))
+                {
+                    this.Render(child, context);
+                }
             }
         }
     }

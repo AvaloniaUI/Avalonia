@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex;
@@ -20,14 +21,13 @@ namespace TestApplication
 
             Window window = new Window();
 
-            window.Content = new TextBlock
+            window.Content = new Button
             {
-                Text = "Hello World",
-                Background = new SolidColorBrush(0xffffffff),
+                Content = "Hello World",
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            
+
             window.Show();
             Dispatcher.Run();
         }

@@ -67,7 +67,7 @@
                 context.FillRectange(background, this.Bounds);
             }
 
-            context.DrawText(this.Foreground, this.Bounds, this.FormattedText);
+            context.DrawText(this.Foreground, new Rect(this.Bounds.Size), this.FormattedText);
         }
 
         protected override Size MeasureContent(Size availableSize)

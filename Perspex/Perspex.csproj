@@ -69,6 +69,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controls\Border.cs" />
+    <Compile Include="Controls\Button.cs" />
     <Compile Include="Controls\ContentPresenter.cs" />
     <Compile Include="Controls\Decorator.cs" />
     <Compile Include="Controls\ContentControl.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\ITextService.cs" />
+    <Compile Include="Media\Matrix.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\SolidColorBrush.cs" />
     <Compile Include="PerspexObject.cs" />

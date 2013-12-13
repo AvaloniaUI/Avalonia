@@ -7,10 +7,12 @@
 namespace Perspex.Windows
 {
     using System;
+    using System.Reactive.Disposables;
     using Perspex.Media;
     using Perspex.Windows.Media;
     using SharpDX;
     using SharpDX.Direct2D1;
+    using Matrix = Perspex.Media.Matrix;
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -103,6 +105,24 @@ namespace Perspex.Windows
         }
 
         /// <summary>
+        /// Pushes a matrix transformation.
+        /// </summary>
+        /// <param name="matrix">The matrix</param>
+        /// <returns>A disposable used to undo the transformation.</returns>
+        public IDisposable PushTransform(Matrix matrix)
+        {
+            Matrix3x2 m3x2 = this.Convert(matrix);
+            Matrix3x2 transform = this.renderTarget.Transform * m3x2;
+            this.renderTarget.Transform = transform;
+
+            return Disposable.Create(() =>
+            {
+                m3x2.Invert();
+                this.renderTarget.Transform = transform * m3x2;
+            });
+        }
+
+        /// <summary>
         /// Converts a brush to Direct2D.
         /// </summary>
         /// <param name="brush">The brush to convert.</param>
@@ -137,6 +157,22 @@ namespace Perspex.Windows
                 (float)(color.G / 255.0),
                 (float)(color.B / 255.0),
                 (float)(color.A / 255.0));
+        }
+
+        /// <summary>
+        /// Converts a <see cref="Matrix"/> to a Direct2D <see cref="Matrix3x2"/>
+        /// </summary>
+        /// <param name="matrix">The <see cref="Matrix"/>.</param>
+        /// <returns>The <see cref="Matrix3x2"/>.</returns>
+        private Matrix3x2 Convert(Matrix matrix)
+        {
+            return new Matrix3x2(
+                (float)matrix.M11,
+                (float)matrix.M12,
+                (float)matrix.M21,
+                (float)matrix.M22,
+                (float)matrix.OffsetX,
+                (float)matrix.OffsetY);
         }
 
         /// <summary>
