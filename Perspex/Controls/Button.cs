@@ -11,9 +11,9 @@ namespace Perspex.Controls
         protected override Visual DefaultTemplate()
         {
             Border border = new Border();
-            border.Background = new Perspex.Media.SolidColorBrush(0xff808080);
-            border.BorderBrush = new Perspex.Media.SolidColorBrush(0xff000000);
-            border.BorderThickness = 2;
+            border.Bind(Border.BackgroundProperty, this.GetObservable(BackgroundProperty));
+            border.Bind(Border.BorderBrushProperty, this.GetObservable(BorderBrushProperty));
+            border.Bind(Border.BorderThicknessProperty, this.GetObservable(BorderThicknessProperty));
             border.Padding = new Thickness(3);
             ContentPresenter contentPresenter = new ContentPresenter();
             contentPresenter.Bind(ContentPresenter.ContentProperty, this.GetObservable(ContentProperty));

@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics.Contracts;
     using Perspex.Layout;
+    using Perspex.Media;
 
     public enum HorizontalAlignment
     {
@@ -22,6 +23,15 @@
 
     public abstract class Control : Visual, ILayoutable
     {
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            PerspexProperty.Register<Border, Brush>("Background");
+
+        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+            PerspexProperty.Register<Border, Brush>("BorderBrush");
+
+        public static readonly PerspexProperty<double> BorderThicknessProperty =
+            PerspexProperty.Register<Border, double>("BorderThickness");
+
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
 
@@ -30,6 +40,24 @@
 
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
+
+        public Brush Background
+        {
+            get { return this.GetValue(BackgroundProperty); }
+            set { this.SetValue(BackgroundProperty, value); }
+        }
+
+        public Brush BorderBrush
+        {
+            get { return this.GetValue(BorderBrushProperty); }
+            set { this.SetValue(BorderBrushProperty, value); }
+        }
+
+        public double BorderThickness
+        {
+            get { return this.GetValue(BorderThicknessProperty); }
+            set { this.SetValue(BorderThicknessProperty, value); }
+        }
 
         public Size? DesiredSize
         {
