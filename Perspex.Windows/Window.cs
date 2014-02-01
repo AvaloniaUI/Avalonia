@@ -134,7 +134,12 @@ namespace Perspex.Windows
 
         private void MouseMove(Visual visual, Point p)
         {
-            visual.IsMouseOver = visual.Bounds.Contains(p);
+            Control control = visual as Control;
+
+            if (control != null)
+            {
+                control.IsMouseOver = visual.Bounds.Contains(p);
+            }
 
             foreach (Visual child in visual.VisualChildren)
             {

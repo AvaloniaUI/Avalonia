@@ -22,11 +22,11 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Styles = new ObservableCollection<Style>
+                Styles = new[]
                 {
                     new Style
                     {
-                        Selector = x => x.Select<Button>().PropertyEquals(Visual.IsMouseOverProperty, true),
+                        Selector = x => x.Select<Button>().Class(":mouseover"),
                         Setters = new[]
                         {
                             new Setter 

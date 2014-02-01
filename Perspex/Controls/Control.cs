@@ -44,6 +44,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Control, double>("BorderThickness");
 
+        public static readonly PerspexProperty<bool> IsMouseOverProperty =
+            PerspexProperty.Register<Visual, bool>("IsMouseOver");
+
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
 
@@ -58,9 +61,20 @@ namespace Perspex.Controls
 
         public Control()
         {
-            this.Classes = new ObservableCollection<string>();
-            this.Styles = new ObservableCollection<Style>();
+            this.Classes = new PerspexList<string>();
             this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
+
+            this.GetObservable(IsMouseOverProperty).Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.Classes.Add(":mouseover");
+                }
+                else
+                {
+                    this.Classes.Remove(":mouseover");
+                }
+            });
 
             // Hacky hack hack!
             this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
@@ -84,7 +98,7 @@ namespace Perspex.Controls
             set { this.SetValue(BorderThicknessProperty, value); }
         }
 
-        public ObservableCollection<string> Classes
+        public PerspexList<string> Classes
         {
             get;
             private set;
@@ -100,6 +114,12 @@ namespace Perspex.Controls
         {
             get;
             set;
+        }
+
+        public bool IsMouseOver
+        {
+            get { return this.GetValue(IsMouseOverProperty); }
+            set { this.SetValue(IsMouseOverProperty, value); }
         }
 
         public HorizontalAlignment HorizontalAlignment

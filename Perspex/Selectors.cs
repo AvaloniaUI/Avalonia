@@ -8,6 +8,7 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Reactive.Linq;
@@ -26,6 +27,29 @@ namespace Perspex
                 return new Match
                 {
                     Control = control,
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static Match Class(this Match selector, string name)
+        {
+            Contract.Requires<ArgumentNullException>(name != null);
+
+            if (selector != null)
+            {
+                IObservable<bool> match = Observable
+                    .Return(selector.Control.Classes.Contains(name))
+                    .Concat(selector.Control.Classes.Changed.Select(e => selector.Control.Classes.Contains(name)));
+
+                return new Match
+                {
+                    Control = selector.Control,
+                    Observable = match,
+                    Previous = selector,
                 };
             }
             else
