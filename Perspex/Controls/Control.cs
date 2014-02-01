@@ -216,16 +216,16 @@ namespace Perspex.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            foreach (Style style in control.Styles)
-            {
-                style.Attach(this);
-            }
-
             Control parent = control.Parent;
-            
+
             if (parent != null)
             {
                 this.AttachStyles(parent);
+            }
+
+            foreach (Style style in control.Styles)
+            {
+                style.Attach(this);
             }
         }
 
