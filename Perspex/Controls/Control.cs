@@ -1,9 +1,11 @@
 ﻿namespace Perspex.Controls
 {
     using System;
-    using System.Diagnostics.Contracts;
-    using Perspex.Layout;
-    using Perspex.Media;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
+using Perspex.Layout;
+using Perspex.Media;
 
     public enum HorizontalAlignment
     {
@@ -23,14 +25,20 @@
 
     public abstract class Control : Visual, ILayoutable
     {
+        internal static readonly PerspexProperty<Control> ParentPropertyRW =
+            PerspexProperty.Register<Control, Control>("Parent");
+
+        public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
+            new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
+
         public static readonly PerspexProperty<Brush> BackgroundProperty =
-            PerspexProperty.Register<Border, Brush>("Background");
+            PerspexProperty.Register<Control, Brush>("Background");
 
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
-            PerspexProperty.Register<Border, Brush>("BorderBrush");
+            PerspexProperty.Register<Control, Brush>("BorderBrush");
 
         public static readonly PerspexProperty<double> BorderThicknessProperty =
-            PerspexProperty.Register<Border, double>("BorderThickness");
+            PerspexProperty.Register<Control, double>("BorderThickness");
 
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
@@ -40,6 +48,13 @@
 
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
+
+        public Control()
+        {
+            this.Classes = new ObservableCollection<string>();
+            this.Styles = new ObservableCollection<Style>();
+            this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
+        }
 
         public Brush Background
         {
@@ -57,6 +72,18 @@
         {
             get { return this.GetValue(BorderThicknessProperty); }
             set { this.SetValue(BorderThicknessProperty, value); }
+        }
+
+        public ObservableCollection<string> Classes
+        {
+            get;
+            private set;
+        }
+
+        public IEnumerable<Style> Styles
+        {
+            get;
+            set;
         }
 
         public Size? DesiredSize
@@ -85,8 +112,8 @@
 
         public Control Parent
         {
-            get;
-            internal set;
+            get { return this.GetValue(ParentPropertyRW); }
+            internal set { this.SetValue(ParentPropertyRW, value); }
         }
 
         public ILayoutRoot GetLayoutRoot()
@@ -130,5 +157,36 @@
         }
 
         protected abstract Size MeasureContent(Size availableSize);
+
+        private void AttachStyles(Control control)
+        {
+            if (control.Styles != null)
+            {
+                foreach (Style style in control.Styles)
+                {
+                    style.Attach(this);
+                }
+            }
+
+            Control parent = control.Parent;
+            
+            if (parent != null)
+            {
+                this.AttachStyles(parent);
+            }
+        }
+
+        private void ParentChanged(Tuple<Control, Control> values)
+        {
+            if (values.Item1 != null)
+            {
+                //this.DetatchStyles(values.Item1);
+            }
+
+            if (values.Item2 != null)
+            {
+                this.AttachStyles(this);
+            }
+        }
     }
 }

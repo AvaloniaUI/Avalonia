@@ -1,11 +1,25 @@
 ﻿namespace Perspex.Controls
 {
+    using System;
     using System.Linq;
 
     public abstract class ContentControl : TemplatedControl
     {
         public static readonly PerspexProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>("Content");
+
+        public ContentControl()
+        {
+            this.GetObservable(ContentProperty).Subscribe(x =>
+            {
+                Control control = x as Control;
+
+                if (control != null)
+                {
+                    control.SetValue(ParentPropertyRW, this);
+                }
+            });
+        }
 
         public object Content
         {

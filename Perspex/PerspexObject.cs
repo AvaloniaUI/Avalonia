@@ -206,6 +206,33 @@ namespace Perspex
         /// <summary>
         /// Gets an observable for a <see cref="PerspexProperty"/>.
         /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public IObservable<object> GetObservable(PerspexProperty property)
+        {
+            return Observable.Create<object>(observer =>
+            {
+                EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
+                {
+                    if (e.Property == property)
+                    {
+                        observer.OnNext(e.NewValue);
+                    }
+                };
+
+                this.PropertyChanged += handler;
+                observer.OnNext(this.GetValue(property));
+
+                return () =>
+                {
+                    this.PropertyChanged -= handler;
+                };
+            });
+        }
+
+        /// <summary>
+        /// Gets an observable for a <see cref="PerspexProperty"/>.
+        /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="property"></param>
         /// <returns></returns>
@@ -223,6 +250,44 @@ namespace Perspex
 
                 this.PropertyChanged += handler;
                 observer.OnNext(this.GetValue(property));
+
+                return () =>
+                {
+                    this.PropertyChanged -= handler;
+                };
+            });
+        }
+
+        /// <summary>
+        /// Gets an observable for a <see cref="ReadOnlyPerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public IObservable<T> GetObservable<T>(ReadOnlyPerspexProperty<T> property)
+        {
+            return this.GetObservable((PerspexProperty<T>)property.Property);
+        }
+
+        /// <summary>
+        /// Gets an observable for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
+        {
+            return Observable.Create<Tuple<T, T>>(observer =>
+            {
+                EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
+                {
+                    if (e.Property == property)
+                    {
+                        observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
+                    }
+                };
+
+                this.PropertyChanged += handler;
 
                 return () =>
                 {
@@ -297,6 +362,26 @@ namespace Perspex
         /// <summary>
         /// Sets a <see cref="PerspexProperty"/> value.
         /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        public void SetValue(PerspexProperty property, object value)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+
+            this.ClearBinding(property);
+
+            object oldValue = this.GetValue(property);
+
+            if (!object.Equals(oldValue, value))
+            {
+                this.values[property] = value;
+                this.RaisePropertyChanged(property, oldValue, value);
+            }
+        }
+
+        /// <summary>
+        /// Sets a <see cref="PerspexProperty"/> value.
+        /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
@@ -304,15 +389,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.ClearBinding(property);
-
-            T oldValue = this.GetValue(property);
-
-            if (!object.Equals(oldValue, value))
-            {
-                this.values[property] = value;
-                this.RaisePropertyChanged(property, oldValue, value);
-            }
+            this.SetValue((PerspexProperty)property, value);
         }
 
         /// <summary>

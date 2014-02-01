@@ -92,10 +92,13 @@
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="ReadOnlyPerspexProperty.cs" />
+    <Compile Include="Selectors.cs" />
     <Compile Include="ServiceLocator.cs" />
+    <Compile Include="Setter.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Controls\TemplatedControl.cs" />
+    <Compile Include="Style.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
