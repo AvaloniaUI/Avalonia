@@ -1,11 +1,12 @@
 ﻿namespace Perspex.Controls
 {
     using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
-using Perspex.Layout;
-using Perspex.Media;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics.Contracts;
+    using System.Reactive.Linq;
+    using Perspex.Layout;
+    using Perspex.Media;
 
     public enum HorizontalAlignment
     {
@@ -54,6 +55,9 @@ using Perspex.Media;
             this.Classes = new ObservableCollection<string>();
             this.Styles = new ObservableCollection<Style>();
             this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
+
+            // Hacky hack hack!
+            this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
         }
 
         public Brush Background
@@ -143,12 +147,22 @@ using Perspex.Media;
 
         public void InvalidateArrange()
         {
-            this.GetLayoutRoot().LayoutManager.InvalidateArrange(this);
+            ILayoutRoot root = this.GetLayoutRoot();
+
+            if (root != null)
+            {
+                root.LayoutManager.InvalidateArrange(this);
+            }
         }
 
         public void InvalidateMeasure()
         {
-            this.GetLayoutRoot().LayoutManager.InvalidateMeasure(this);
+            ILayoutRoot root = this.GetLayoutRoot();
+
+            if (root != null)
+            {
+                root.LayoutManager.InvalidateMeasure(this);
+            }
         }
 
         protected virtual Size ArrangeContent(Size finalSize)

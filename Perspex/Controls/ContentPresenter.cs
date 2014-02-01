@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Media;
 
     public class ContentPresenter : Control
     {

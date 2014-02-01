@@ -167,10 +167,10 @@ namespace Perspex
 
             this.ClearBinding(target);
 
-            IDisposable binding = source.Subscribe(Observer.Create<T>(value =>
+            IDisposable binding = source.Subscribe(value =>
             {
-                this.SetValue(target, value);
-            }));
+                this.SetValueImpl(target, value);
+            });
 
             this.bindings.Add(target, binding);
         }
@@ -210,6 +210,8 @@ namespace Perspex
         /// <returns></returns>
         public IObservable<object> GetObservable(PerspexProperty property)
         {
+            Contract.Requires<NullReferenceException>(property != null);
+
             return Observable.Create<object>(observer =>
             {
                 EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
@@ -238,24 +240,9 @@ namespace Perspex
         /// <returns></returns>
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
         {
-            return Observable.Create<T>(observer =>
-            {
-                EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
-                {
-                    if (e.Property == property)
-                    {
-                        observer.OnNext((T)e.NewValue);
-                    }
-                };
+            Contract.Requires<NullReferenceException>(property != null);
 
-                this.PropertyChanged += handler;
-                observer.OnNext(this.GetValue(property));
-
-                return () =>
-                {
-                    this.PropertyChanged -= handler;
-                };
-            });
+            return this.GetObservable((PerspexProperty)property).Cast<T>();
         }
 
         /// <summary>
@@ -266,6 +253,8 @@ namespace Perspex
         /// <returns></returns>
         public IObservable<T> GetObservable<T>(ReadOnlyPerspexProperty<T> property)
         {
+            Contract.Requires<NullReferenceException>(property != null);
+
             return this.GetObservable((PerspexProperty<T>)property.Property);
         }
 
@@ -369,14 +358,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             this.ClearBinding(property);
-
-            object oldValue = this.GetValue(property);
-
-            if (!object.Equals(oldValue, value))
-            {
-                this.values[property] = value;
-                this.RaisePropertyChanged(property, oldValue, value);
-            }
+            this.SetValueImpl(property, value);
         }
 
         /// <summary>
@@ -423,6 +405,19 @@ namespace Perspex
                 this.PropertyChanged(
                     this,
                     new PerspexPropertyChangedEventArgs(property, oldValue, newValue));
+            }
+        }
+
+        public void SetValueImpl(PerspexProperty property, object value)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+
+            object oldValue = this.GetValue(property);
+
+            if (!object.Equals(oldValue, value))
+            {
+                this.values[property] = value;
+                this.RaisePropertyChanged(property, oldValue, value);
             }
         }
     }

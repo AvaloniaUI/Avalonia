@@ -11,11 +11,42 @@
 
     public static class Selectors
     {
-        public static IObservable<bool> OfType<T>(this Control control)
+        public static Match Select<T>(this Control control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
-            
-            return Observable.Return(control is T);
+
+            if (control is T)
+            {
+                return new Match
+                {
+                    Control = control,
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static Match PropertyEquals<T>(this Match selector, PerspexProperty<T> property, T value)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            if (selector != null)
+            {
+                IObservable<bool> match = selector.Control.GetObservable(property).Select(x => object.Equals(x, value));
+
+                return new Match
+                {
+                    Control = selector.Control,
+                    Observable = match,
+                    Previous = selector,
+                };
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

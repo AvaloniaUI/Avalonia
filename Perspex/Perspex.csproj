@@ -92,6 +92,7 @@
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="ReadOnlyPerspexProperty.cs" />
+    <Compile Include="Match.cs" />
     <Compile Include="Selectors.cs" />
     <Compile Include="ServiceLocator.cs" />
     <Compile Include="Setter.cs" />

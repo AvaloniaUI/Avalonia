@@ -220,7 +220,7 @@ namespace Perspex.Windows.Threading
 
         [Browsable(false)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public DispatcherOperation BeginInvoke(DispatcherPriority priority, Delegate method)
+        public DispatcherOperation BeginInvoke(DispatcherPriority priority, Action method)
         {
             if (priority < 0 || priority > DispatcherPriority.Send)
             {

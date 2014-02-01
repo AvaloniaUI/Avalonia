@@ -1,6 +1,7 @@
 ﻿namespace Perspex.Controls
 {
-    using System.Diagnostics.Contracts;
+    using System;
+    using System.Reactive.Linq;
     using Perspex.Media;
 
     public class Border : Decorator
@@ -13,6 +14,10 @@
 
             if (background != null)
             {
+                System.Diagnostics.Debug.WriteLine(
+                    string.Format("{0} Draw Background={1}",
+                        this.GetHashCode(),
+                        background));
                 context.FillRectange(background, new Rect(this.Bounds.Size));
             }
 

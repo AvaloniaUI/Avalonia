@@ -1,6 +1,7 @@
 ﻿namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     public abstract class ContentControl : TemplatedControl
@@ -12,10 +13,12 @@
         {
             this.GetObservable(ContentProperty).Subscribe(x =>
             {
+                Visual visual = x as Visual;
                 Control control = x as Control;
 
                 if (control != null)
                 {
+                    control.VisualParent = this;
                     control.SetValue(ParentPropertyRW, this);
                 }
             });

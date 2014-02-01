@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Controls;
@@ -10,12 +11,14 @@ namespace Perspex
 {
     public class Style
     {
+        private bool applied;
+
         public Style()
         {
             this.Setters = new List<Setter>();
         }
 
-        public Func<Control, IObservable<bool>> Selector
+        public Func<Control, Match> Selector
         {
             get;
             set;
@@ -29,19 +32,36 @@ namespace Perspex
 
         public void Attach(Control control)
         {
-            this.Selector(control).Subscribe(x => 
-            {
-                if (x)
-                {
-                    this.Apply(control);
-                }
-                else
-                {
-                    this.Unapply(control);
-                }
-            });
-        }
+            Match match = this.Selector(control);
 
+            if (match != null)
+            {
+                List<IObservable<bool>> o = new List<IObservable<bool>>();
+                
+                while (match != null)
+                {
+                    if (match.Observable != null)
+                    {
+                        o.Add(match.Observable);
+                    }
+
+                    match = match.Previous;
+                }
+
+                Observable.CombineLatest(o).Subscribe(x =>
+                {
+                    if (x.All(y => y))
+                    {
+                        this.Apply(control);
+                    }
+                    else if (this.applied)
+                    {
+                        this.Unapply(control);
+                    }
+                });
+            }
+        }
+        
         private void Apply(Control control)
         {
             if (this.Setters != null)
@@ -51,6 +71,8 @@ namespace Perspex
                     setter.Apply(control);
                 }
             }
+
+            this.applied = true;
         }
 
         private void Unapply(Control control)
@@ -59,8 +81,10 @@ namespace Perspex
             {
                 foreach (Setter setter in this.Setters)
                 {
-                    setter.Detach(control);
+                    setter.Unapply(control);
                 }
+
+                this.applied = false;
             }
         }
     }

@@ -9,17 +9,26 @@
     public abstract class Visual : PerspexObject
     {
         public static readonly ReadOnlyPerspexProperty<Rect> BoundsProperty =
-            new ReadOnlyPerspexProperty<Rect>(BoundsPropertyW);
+            new ReadOnlyPerspexProperty<Rect>(BoundsPropertyRW);
 
-        private static readonly PerspexProperty<Rect> BoundsPropertyW =
-            PerspexProperty.Register<Visual, Rect>("Bounds", new Rect());
+        private static readonly PerspexProperty<Rect> BoundsPropertyRW =
+            PerspexProperty.Register<Visual, Rect>("Bounds");
+
+        public static readonly PerspexProperty<bool> IsMouseOverProperty =
+            PerspexProperty.Register<Visual, bool>("IsMouseOver");
 
         private Visual visualParent;
 
         public Rect Bounds
         {
-            get { return this.GetValue(BoundsPropertyW); }
-            protected set { this.SetValue(BoundsPropertyW, value); }
+            get { return this.GetValue(BoundsPropertyRW); }
+            protected set { this.SetValue(BoundsPropertyRW, value); }
+        }
+
+        public bool IsMouseOver
+        {
+            get { return this.GetValue(IsMouseOverProperty); }
+            set { this.SetValue(IsMouseOverProperty, value); }
         }
 
         public virtual IEnumerable<Visual> VisualChildren

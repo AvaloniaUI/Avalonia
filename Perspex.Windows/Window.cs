@@ -7,6 +7,7 @@
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Windows.Interop;
+    using Perspex.Windows.Threading;
 
     public class Window : ContentControl, ILayoutRoot
     {
@@ -31,11 +32,13 @@
             this.LayoutManager = new LayoutManager();
             this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
 
-            // TODO: Do this by pushing to Dispatcher rather than right away!
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
-                this.LayoutManager.ExecuteLayoutPass();
-                this.renderer.Render(this);
+                Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Render, () =>
+                {
+                    this.LayoutManager.ExecuteLayoutPass();
+                    this.renderer.Render(this);
+                });
             });
         }
 
@@ -121,6 +124,16 @@
             }
         }
 
+        private void MouseMove(Visual visual, Point p)
+        {
+            visual.IsMouseOver = visual.Bounds.Contains(p);
+
+            foreach (Visual child in visual.VisualChildren)
+            {
+                this.MouseMove(child, p - visual.Bounds.Position);
+            }
+        }
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -146,9 +159,9 @@
                 ////    InputManager.Current.ProcessInput(new RawMouseEventArgs(mouse, RawMouseEventType.LeftButtonUp));
                 ////    break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
-                ////    InputManager.Current.ProcessInput(new RawMouseEventArgs(mouse, RawMouseEventType.Move));
-                ////    break;
+                case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
+                    this.MouseMove(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     this.renderer.Resize((int)lParam & 0xffff, (int)lParam >> 16);

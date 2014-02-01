@@ -117,6 +117,17 @@
         }
 
         /// <summary>
+        /// Determines whether a points in in the bounds of the rectangle.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
+        public bool Contains(Point p)
+        {
+            return p.X >= this.x && p.Y < this.x + this.width &&
+                   p.Y >= this.y && p.Y < this.y + this.height;
+        }
+
+        /// <summary>
         /// Deflates the rectangle by a <see cref="Thickness"/>.
         /// </summary>
         /// <param name="thickness">The thickness.</param>

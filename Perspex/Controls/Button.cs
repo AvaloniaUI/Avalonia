@@ -6,6 +6,8 @@
 
 namespace Perspex.Controls
 {
+    using System;
+
     public class Button : ContentControl
     {
         protected override Visual DefaultTemplate()

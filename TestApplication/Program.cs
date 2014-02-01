@@ -26,7 +26,7 @@ namespace TestApplication
                 {
                     new Style
                     {
-                        Selector = x => x.OfType<Button>(),
+                        Selector = x => x.Select<Button>().PropertyEquals(Visual.IsMouseOverProperty, true),
                         Setters = new[]
                         {
                             new Setter 

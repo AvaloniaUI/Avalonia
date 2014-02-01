@@ -37,5 +37,10 @@ namespace Perspex.Media
             get; 
             private set; 
         }
+
+        public override string ToString()
+        {
+            return this.Color.ToString();
+        }
     }
 }

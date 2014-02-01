@@ -52,5 +52,10 @@
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
         }
+
+        public static Point operator-(Point a, Point b)
+        {
+            return new Point(a.x - b.x, a.y - b.y);
+        }
     }
 }
