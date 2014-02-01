@@ -59,6 +59,8 @@ namespace Perspex.Controls
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
 
+        private Styles styles;
+
         public Control()
         {
             this.Classes = new PerspexList<string>();
@@ -104,10 +106,22 @@ namespace Perspex.Controls
             private set;
         }
 
-        public IEnumerable<Style> Styles
+        public Styles Styles
         {
-            get;
-            set;
+            get 
+            { 
+                if (this.styles == null)
+                {
+                    this.styles = new Styles();
+                }
+
+                return this.styles; 
+            }
+            
+            set
+            {
+                this.styles = value;
+            }
         }
 
         public Size? DesiredSize
@@ -202,12 +216,9 @@ namespace Perspex.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            if (control.Styles != null)
+            foreach (Style style in control.Styles)
             {
-                foreach (Style style in control.Styles)
-                {
-                    style.Attach(this);
-                }
+                style.Attach(this);
             }
 
             Control parent = control.Parent;

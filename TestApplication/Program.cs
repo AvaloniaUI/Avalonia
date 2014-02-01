@@ -22,7 +22,7 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Styles = new[]
+                Styles = new Styles
                 {
                     new Style
                     {

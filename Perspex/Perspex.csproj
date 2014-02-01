@@ -101,6 +101,7 @@
     <Compile Include="Rect.cs" />
     <Compile Include="Controls\TemplatedControl.cs" />
     <Compile Include="Style.cs" />
+    <Compile Include="Styles.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
