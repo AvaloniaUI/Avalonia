@@ -1,4 +1,10 @@
-﻿namespace Perspex.Windows
+﻿// -----------------------------------------------------------------------
+// <copyright file="Window.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Windows
 {
     using System;
     using System.ComponentModel;
@@ -11,7 +17,7 @@
 
     public class Window : ContentControl, ILayoutRoot
     {
-        public static PerspexProperty<double> FontSizeProperty =
+        public static readonly PerspexProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<Window>();
 
         private UnmanagedMethods.WndProc wndProcDelegate;
@@ -34,11 +40,13 @@
 
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
-                Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Render, () =>
-                {
-                    this.LayoutManager.ExecuteLayoutPass();
-                    this.renderer.Render(this);
-                });
+                Dispatcher.CurrentDispatcher.BeginInvoke(
+                    DispatcherPriority.Render, 
+                    () =>
+                    {
+                        this.LayoutManager.ExecuteLayoutPass();
+                        this.renderer.Render(this);
+                    });
             });
         }
 
@@ -74,7 +82,7 @@
             Border border = new Border();
             border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
             ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.Bind(ContentPresenter.ContentProperty, this.GetObservable(ContentProperty));
+            contentPresenter.Bind(ContentPresenter.ContentProperty, this.GetObservable(Window.ContentProperty));
             border.Content = contentPresenter;
             return border;
         }

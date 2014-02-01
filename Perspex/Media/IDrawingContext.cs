@@ -4,9 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
 namespace Perspex.Media
 {
+    using System;
+
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>

@@ -1,4 +1,10 @@
-﻿namespace Perspex
+﻿// -----------------------------------------------------------------------
+// <copyright file="Point.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex
 {
     using System.Globalization;
 
@@ -44,6 +50,11 @@
             get { return this.y; }
         }
 
+        public static Point operator -(Point a, Point b)
+        {
+            return new Point(a.x - b.x, a.y - b.y);
+        }
+
         /// <summary>
         /// Returns the string representation of the point.
         /// </summary>
@@ -51,11 +62,6 @@
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
-        }
-
-        public static Point operator-(Point a, Point b)
-        {
-            return new Point(a.x - b.x, a.y - b.y);
         }
     }
 }

@@ -159,7 +159,6 @@ namespace Perspex
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="target">The target property.</param>
         /// <param name="source">The observable.</param>
-        /// <returns>A disposable binding.</returns>
         public void Bind<T>(PerspexProperty<T> target, IObservable<T> source)
         {
             Contract.Requires<NullReferenceException>(target != null);
@@ -384,6 +383,8 @@ namespace Perspex
         /// </remarks>
         private void ParentPropertyChanged(object sender, PerspexPropertyChangedEventArgs e)
         {
+            Contract.Requires<ArgumentNullException>(e != null);
+
             if (e.Property.Inherits && !this.IsSet(e.Property))
             {
                 this.RaisePropertyChanged(e.Property, e.OldValue, e.NewValue);
@@ -408,7 +409,7 @@ namespace Perspex
             }
         }
 
-        public void SetValueImpl(PerspexProperty property, object value)
+        private void SetValueImpl(PerspexProperty property, object value)
         {
             Contract.Requires<NullReferenceException>(property != null);
 

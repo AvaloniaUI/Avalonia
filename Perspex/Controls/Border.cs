@@ -1,4 +1,10 @@
-﻿namespace Perspex.Controls
+﻿// -----------------------------------------------------------------------
+// <copyright file="Border.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Controls
 {
     using System;
     using System.Reactive.Linq;
@@ -14,10 +20,6 @@
 
             if (background != null)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    string.Format("{0} Draw Background={1}",
-                        this.GetHashCode(),
-                        background));
                 context.FillRectange(background, new Rect(this.Bounds.Size));
             }
 

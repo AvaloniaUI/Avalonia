@@ -1,4 +1,10 @@
-﻿namespace Perspex
+﻿// -----------------------------------------------------------------------
+// <copyright file="PerspexProperty.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex
 {
     using System;
     using System.Collections.Generic;
@@ -48,22 +54,22 @@
         }
 
         /// <summary>
-        /// The name of the property.
+        /// Gets the name of the property.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// The type of the property's value.
+        /// Gets the type of the property's value.
         /// </summary>
         public Type ValueType { get; private set; }
 
         /// <summary>
-        /// The type of the class that registers the property.
+        /// Gets the type of the class that registers the property.
         /// </summary>
         public Type OwnerType { get; private set; }
 
         /// <summary>
-        /// Whether the property inherits its value.
+        /// Gets a value indicating whether the property inherits its value.
         /// </summary>
         public bool Inherits { get; private set; }
 

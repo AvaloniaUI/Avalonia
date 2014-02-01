@@ -1,4 +1,10 @@
-﻿namespace Perspex.Layout
+﻿// -----------------------------------------------------------------------
+// <copyright file="LayoutManager.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Layout
 {
     using System;
     using System.Collections.Generic;
@@ -24,13 +30,13 @@
 
         public void ExecuteLayoutPass()
         {
-            if (root != null)
+            if (this.root != null)
             {
-                root.Measure(root.ClientSize);
-                root.Arrange(new Rect(root.ClientSize));
+                this.root.Measure(this.root.ClientSize);
+                this.root.Arrange(new Rect(this.root.ClientSize));
             }
 
-            root = null;
+            this.root = null;
         }
 
         public void InvalidateMeasure(ILayoutable item)

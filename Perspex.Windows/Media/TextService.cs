@@ -1,4 +1,10 @@
-﻿namespace Perspex.Windows.Media
+﻿// -----------------------------------------------------------------------
+// <copyright file="TextService.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Windows.Media
 {
     using Perspex.Media;
     using SharpDX.DirectWrite;

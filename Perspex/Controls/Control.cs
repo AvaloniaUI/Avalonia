@@ -1,4 +1,10 @@
-﻿namespace Perspex.Controls
+﻿// -----------------------------------------------------------------------
+// <copyright file="Control.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Controls
 {
     using System;
     using System.Collections.Generic;
@@ -26,9 +32,6 @@
 
     public abstract class Control : Visual, ILayoutable
     {
-        internal static readonly PerspexProperty<Control> ParentPropertyRW =
-            PerspexProperty.Register<Control, Control>("Parent");
-
         public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
 
@@ -49,6 +52,9 @@
 
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
+
+        internal static readonly PerspexProperty<Control> ParentPropertyRW =
+            PerspexProperty.Register<Control, Control>("Parent");
 
         public Control()
         {
@@ -174,6 +180,8 @@
 
         private void AttachStyles(Control control)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
             if (control.Styles != null)
             {
                 foreach (Style style in control.Styles)
@@ -192,9 +200,11 @@
 
         private void ParentChanged(Tuple<Control, Control> values)
         {
+            Contract.Requires<ArgumentNullException>(values != null);
+
             if (values.Item1 != null)
             {
-                //this.DetatchStyles(values.Item1);
+                ////this.DetatchStyles(values.Item1);
             }
 
             if (values.Item2 != null)

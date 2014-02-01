@@ -1,4 +1,10 @@
-﻿namespace Perspex
+﻿// -----------------------------------------------------------------------
+// <copyright file="Visual.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex
 {
     using System;
     using System.Collections.Generic;
@@ -11,11 +17,11 @@
         public static readonly ReadOnlyPerspexProperty<Rect> BoundsProperty =
             new ReadOnlyPerspexProperty<Rect>(BoundsPropertyRW);
 
-        private static readonly PerspexProperty<Rect> BoundsPropertyRW =
-            PerspexProperty.Register<Visual, Rect>("Bounds");
-
         public static readonly PerspexProperty<bool> IsMouseOverProperty =
             PerspexProperty.Register<Visual, bool>("IsMouseOver");
+
+        private static readonly PerspexProperty<Rect> BoundsPropertyRW =
+            PerspexProperty.Register<Visual, Rect>("Bounds");
 
         private Visual visualParent;
 

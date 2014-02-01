@@ -1,12 +1,15 @@
-﻿namespace Perspex.Controls
+﻿// -----------------------------------------------------------------------
+// <copyright file="TextBlock.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Controls
 {
     using Perspex.Media;
 
     public class TextBlock : Control
     {
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
-            Border.BackgroundProperty.AddOwner<TextBlock>();
-
         public static readonly PerspexProperty<double> FontSizeProperty =
             PerspexProperty.Register<TextBlock, double>(
                 "FontSize",
@@ -20,12 +23,6 @@
 
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<Border, string>("Text");
-
-        public Brush Background
-        {
-            get { return this.GetValue(BackgroundProperty); }
-            set { this.SetValue(BackgroundProperty, value); }
-        }
 
         public double FontSize
         {
