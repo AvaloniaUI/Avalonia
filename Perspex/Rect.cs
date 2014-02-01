@@ -123,7 +123,7 @@
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
         public bool Contains(Point p)
         {
-            return p.X >= this.x && p.Y < this.x + this.width &&
+            return p.X >= this.x && p.X < this.x + this.width &&
                    p.Y >= this.y && p.Y < this.y + this.height;
         }
 
