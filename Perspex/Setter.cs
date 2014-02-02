@@ -63,7 +63,7 @@ namespace Perspex
 
         internal SetterSubject CreateSubject(Control control)
         {
-            object oldValue = control.ExtractBinding(this.Property) ?? control.GetValue(this.Property);
+            object oldValue = control.GetValue(this.Property);
             return new SetterSubject(control, this.Value, oldValue);
         }
     }
