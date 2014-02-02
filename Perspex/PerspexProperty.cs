@@ -47,7 +47,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(ownerType != null);
 
             this.Name = name;
-            this.ValueType = valueType;
+            this.PropertyType = valueType;
             this.OwnerType = ownerType;
             this.Inherits = inherits;
             this.defaultValues.Add(ownerType, defaultValue);
@@ -61,7 +61,7 @@ namespace Perspex
         /// <summary>
         /// Gets the type of the property's value.
         /// </summary>
-        public Type ValueType { get; private set; }
+        public Type PropertyType { get; private set; }
 
         /// <summary>
         /// Gets the type of the class that registers the property.
@@ -123,6 +123,17 @@ namespace Perspex
             }
 
             return this.defaultValues[this.OwnerType];
+        }
+
+        public bool IsValidType(object value)
+        {
+            if (value == null)
+            {
+                return !this.PropertyType.GetTypeInfo().IsValueType ||
+                    Nullable.GetUnderlyingType(this.PropertyType) != null;
+            }
+
+            return this.PropertyType.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
         }
 
         /// <summary>

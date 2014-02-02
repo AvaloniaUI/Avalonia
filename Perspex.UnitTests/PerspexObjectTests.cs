@@ -244,6 +244,18 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
+        public void Binding_NonGeneric_Sets_Current_Value()
+        {
+            Class1 target = new Class1();
+            Class1 source = new Class1();
+
+            source.SetValue(Class1.FooProperty, "initial");
+            target.SetValue((PerspexProperty)Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+
+            Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
         public void Binding_Sets_Subsequent_Value()
         {
             Class1 target = new Class1();

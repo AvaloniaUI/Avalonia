@@ -10,6 +10,7 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reactive;
     using System.Reactive.Linq;
     using System.Reflection;
@@ -42,8 +43,8 @@ namespace Perspex
         /// <summary>
         /// The current bindings on this object.
         /// </summary>
-        private Dictionary<PerspexProperty, IDisposable> bindings =
-            new Dictionary<PerspexProperty, IDisposable>();
+        private Dictionary<PerspexProperty, Binding> bindings =
+            new Dictionary<PerspexProperty, Binding>();
 
         /// <summary>
         /// Raised when a <see cref="PerspexProperty"/> value changes on this object/
@@ -161,17 +162,17 @@ namespace Perspex
         public void ClearBinding(PerspexProperty property)
         {
             Contract.Requires<NullReferenceException>(property != null);
-            IDisposable binding;
+            Binding binding;
 
             if (this.bindings.TryGetValue(property, out binding))
             {
-                binding.Dispose();
+                binding.Dispose.Dispose();
                 this.bindings.Remove(property);
             }
         }
 
         /// <summary>
-        /// Clears a <see cref="PerspexProperty"/> value, including its bindings.
+        /// Clears a <see cref="PerspexProperty"/> value, including its binding.
         /// </summary>
         /// <param name="property">The property.</param>
         public void ClearValue(PerspexProperty property)
@@ -179,6 +180,46 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
             this.ClearBinding(property);
             this.values.Remove(property);
+        }
+
+        /// <summary>
+        /// Clears a binding on a <see cref="PerspexProperty"/>, returning the bound observable and
+        /// leaving the last bound value in place.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public IObservable<object> ExtractBinding(PerspexProperty property)
+        {
+            Binding binding;
+
+            if (this.bindings.TryGetValue(property, out binding))
+            {
+                this.bindings.Remove(property);
+                return (IObservable<object>)binding.Observable;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Clears a binding on a <see cref="PerspexProperty"/>, returning the bound observable and
+        /// leaving the last bound value in place.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public IObservable<T> ExtractBinding<T>(PerspexProperty<T> property)
+        {
+            Binding binding;
+
+            if (this.bindings.TryGetValue(property, out binding))
+            {
+                this.bindings.Remove(property);
+                return (IObservable<T>)binding.Observable;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -335,8 +376,40 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
+            TypeInfo typeInfo = value.GetType().GetTypeInfo();
+            Type observableType = typeInfo.ImplementedInterfaces.FirstOrDefault(x =>
+              x.IsConstructedGenericType &&
+              x.GetGenericTypeDefinition() == typeof(IObservable<>));
+
             this.ClearBinding(property);
-            this.SetValueImpl(property, value);
+
+            if (observableType == null)
+            {
+                this.SetValueImpl(property, value);
+            }
+            else
+            {
+                IObservable<object> observable = value as IObservable<object>;
+
+                if (observable == null)
+                {
+                    MethodInfo cast = typeof(PerspexObject).GetTypeInfo()
+                        .DeclaredMethods
+                        .FirstOrDefault(x => x.Name == "CastToObject")
+                        .MakeGenericMethod(observableType.GenericTypeArguments[0]);
+
+                    observable = (IObservable<object>)cast.Invoke(null, new[] { value });
+                }
+
+                this.bindings.Add(property, new Binding
+                {
+                    Observable = value,
+                    Dispose = observable.Subscribe(x =>
+                    {
+                        this.SetValueImpl(property, x);
+                    }),
+                });
+            }
         }
 
         /// <summary>
@@ -362,14 +435,18 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.ClearBinding(property);
+            this.SetValue((PerspexProperty)property, source);
+        }
 
-            IDisposable binding = source.Subscribe(value =>
+        private static IObservable<object> CastToObject<T>(IObservable<T> observable)
+        {
+            return Observable.Create<object>(observer =>
             {
-                this.SetValueImpl(property, value);
+                return observable.Subscribe(value =>
+                {
+                    observer.OnNext(value);
+                });
             });
-
-            this.bindings.Add(property, binding);
         }
 
         /// <summary>
@@ -412,6 +489,11 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
+            if (!property.IsValidType(value))
+            {
+                throw new InvalidOperationException("Invalid value for " + property.Name);
+            }
+
             object oldValue = this.GetValue(property);
 
             if (!object.Equals(oldValue, value))
@@ -419,6 +501,13 @@ namespace Perspex
                 this.values[property] = value;
                 this.RaisePropertyChanged(property, oldValue, value);
             }
+        }
+
+        private class Binding
+        {
+            public object Observable { get; set; }
+
+            public IDisposable Dispose { get; set; }
         }
     }
 }

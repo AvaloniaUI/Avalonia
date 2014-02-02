@@ -10,6 +10,7 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Reactive.Subjects;
     using Perspex.Controls;
 
     public class Style
@@ -51,43 +52,24 @@ namespace Perspex
                     match = match.Previous;
                 }
 
+                List<SetterSubject> subjects = new List<SetterSubject>();
+
+                foreach (Setter setter in this.Setters)
+                {
+                    SetterSubject subject = setter.CreateSubject(control);
+                    subjects.Add(subject);
+                    control.SetValue(setter.Property, subject);
+                }
+
                 Observable.CombineLatest(o).Subscribe(x =>
                 {
-                    if (x.All(y => y))
+                    bool on = x.All(y => y);
+
+                    foreach (SetterSubject subject in subjects)
                     {
-                        this.Apply(control);
-                    }
-                    else if (this.applied)
-                    {
-                        this.Unapply(control);
+                        subject.Push(on);
                     }
                 });
-            }
-        }
-        
-        private void Apply(Control control)
-        {
-            if (this.Setters != null)
-            {
-                foreach (Setter setter in this.Setters)
-                {
-                    setter.Apply(control);
-                }
-            }
-
-            this.applied = true;
-        }
-
-        private void Unapply(Control control)
-        {
-            if (this.Setters != null)
-            {
-                foreach (Setter setter in this.Setters)
-                {
-                    setter.Unapply(control);
-                }
-
-                this.applied = false;
             }
         }
     }

@@ -22,7 +22,7 @@ namespace Perspex.UnitTests
                 false);
 
             Assert.AreEqual("test", target.Name);
-            Assert.AreEqual(typeof(string), target.ValueType);
+            Assert.AreEqual(typeof(string), target.PropertyType);
             Assert.AreEqual(typeof(Class1), target.OwnerType);
             Assert.AreEqual(false, target.Inherits);
         }
