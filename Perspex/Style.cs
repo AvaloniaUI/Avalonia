@@ -13,7 +13,7 @@ namespace Perspex
     using System.Reactive.Subjects;
     using Perspex.Controls;
 
-    public class Style
+    public class Style : IStyle
     {
         public Style()
         {

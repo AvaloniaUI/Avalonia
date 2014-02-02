@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Media;
+using Perspex.Themes.Default;
 using Perspex.Windows;
 using Perspex.Windows.Media;
 using Perspex.Windows.Threading;
@@ -42,24 +43,7 @@ namespace TestApplication
             {
                 Styles = new Styles 
                 {
-                    new Style(x => x.Select<Button>())
-                    {
-                        Setters = new[]
-                        {
-                            new Setter(Button.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
-                            new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xff707070)),
-                            new Setter(Button.BorderThicknessProperty, 2.0),
-                            new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
-                        },
-                    },
-                    new Style(x => x.Select<Button>().Class(":mouseover"))
-                    {
-                        Setters = new[]
-                        {
-                            new Setter (Button.BackgroundProperty, new SolidColorBrush(0xffbee6fd)),
-                            new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
-                        },
-                    }
+                    new DefaultTheme(),
                 }
             };
 

@@ -14,18 +14,12 @@ namespace Perspex
 
     public abstract class Visual : PerspexObject
     {
-        public static readonly ReadOnlyPerspexProperty<Rect> BoundsProperty =
-            new ReadOnlyPerspexProperty<Rect>(BoundsPropertyRW);
-
-        private static readonly PerspexProperty<Rect> BoundsPropertyRW =
-            PerspexProperty.Register<Visual, Rect>("Bounds");
-
         private Visual visualParent;
 
         public Rect Bounds
         {
-            get { return this.GetValue(BoundsPropertyRW); }
-            protected set { this.SetValue(BoundsPropertyRW, value); }
+            get;
+            protected set;
         }
 
         public virtual IEnumerable<Visual> VisualChildren

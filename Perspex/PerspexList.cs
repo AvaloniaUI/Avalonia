@@ -26,5 +26,13 @@
             get;
             private set;
         }
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            foreach (T item in items)
+            {
+                this.Add(item);
+            }
+        }
     }
 }

@@ -77,6 +77,7 @@
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\TextBlock.cs" />
     <Compile Include="IBindingDescription.cs" />
+    <Compile Include="IStyle.cs" />
     <Compile Include="Layout\ILayoutable.cs" />
     <Compile Include="Layout\ILayoutManager.cs" />
     <Compile Include="Layout\ILayoutRoot.cs" />
@@ -104,6 +105,8 @@
     <Compile Include="Controls\TemplatedControl.cs" />
     <Compile Include="Style.cs" />
     <Compile Include="Styles.cs" />
+    <Compile Include="Themes\Default\ButtonStyle.cs" />
+    <Compile Include="Themes\Default\DefaultTheme.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
