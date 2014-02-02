@@ -184,10 +184,9 @@ namespace Perspex
         /// <param name="property">The property.</param>
         public void ClearValue(PerspexProperty property)
         {
-            // TODO: Implement this by using SetValue(UnsetValue).
             Contract.Requires<NullReferenceException>(property != null);
-            this.ClearBinding(property);
-            this.values.Remove(property);
+            
+            this.SetValue(property, PerspexProperty.UnsetValue);
         }
 
         /// <summary>
@@ -520,7 +519,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            if (!property.IsValidType(value))
+            if (!property.IsValidValue(value))
             {
                 throw new InvalidOperationException("Invalid value for " + property.Name);
             }
@@ -529,7 +528,18 @@ namespace Perspex
 
             if (!object.Equals(oldValue, value))
             {
-                this.values[property] = value;
+                string valueString = value.ToString();
+
+                if (value == PerspexProperty.UnsetValue)
+                {
+                    valueString = "[Unset]";
+                    this.values.Remove(property);
+                }
+                else
+                {
+                    this.values[property] = value;
+                }
+
                 this.RaisePropertyChanged(property, oldValue, value);
 
                 this.Log().Debug(string.Format(
@@ -537,7 +547,7 @@ namespace Perspex
                     this.GetType().Name,
                     property.Name,
                     this.GetHashCode(),
-                    value));
+                    valueString));
             }
         }
 

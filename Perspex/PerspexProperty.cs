@@ -23,6 +23,11 @@ namespace Perspex
     public class PerspexProperty
     {
         /// <summary>
+        /// Represents an unset property value.
+        /// </summary>
+        public static readonly object UnsetValue = new object();
+
+        /// <summary>
         /// The default values for the property, by type.
         /// </summary>
         private Dictionary<Type, object> defaultValues = new Dictionary<Type, object>();
@@ -125,9 +130,13 @@ namespace Perspex
             return this.defaultValues[this.OwnerType];
         }
 
-        public bool IsValidType(object value)
+        public bool IsValidValue(object value)
         {
-            if (value == null)
+            if (value == UnsetValue)
+            {
+                return true;
+            }
+            else if (value == null)
             {
                 return !this.PropertyType.GetTypeInfo().IsValueType ||
                     Nullable.GetUnderlyingType(this.PropertyType) != null;
