@@ -9,8 +9,10 @@ namespace Perspex.Windows
     using System;
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
+    using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
@@ -132,6 +134,26 @@ namespace Perspex.Windows
             }
         }
 
+        private void MouseDown(Visual visual, Point p)
+        {
+            Visual hit = visual.GetVisualAt(p);
+
+            if (hit != null)
+            {
+                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+
+                if (source != null)
+                {
+                    source.RaiseEvent(new MouseEventArgs
+                    {
+                        RoutedEvent = Control.MouseLeftButtonDownEvent,
+                        OriginalSource = source,
+                        Source = source,
+                    });
+                }
+            }
+        }
+
         private void MouseMove(Visual visual, Point p)
         {
             Control control = visual as Control;
@@ -144,6 +166,26 @@ namespace Perspex.Windows
             foreach (Visual child in visual.VisualChildren)
             {
                 this.MouseMove(child, p - visual.Bounds.Position);
+            }
+        }
+
+        private void MouseUp(Visual visual, Point p)
+        {
+            Visual hit = visual.GetVisualAt(p);
+
+            if (hit != null)
+            {
+                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+
+                if (source != null)
+                {
+                    source.RaiseEvent(new MouseEventArgs
+                    {
+                        RoutedEvent = Control.MouseLeftButtonUpEvent,
+                        OriginalSource = source,
+                        Source = source,
+                    });
+                }
             }
         }
 
@@ -164,13 +206,13 @@ namespace Perspex.Windows
                 ////            KeyInterop.KeyFromVirtualKey((int)wParam)));
                 ////    break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
-                ////    InputManager.Current.ProcessInput(new RawMouseEventArgs(mouse, RawMouseEventType.LeftButtonDown));
-                ////    break;
+                case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
+                    this.MouseDown(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
-                ////    InputManager.Current.ProcessInput(new RawMouseEventArgs(mouse, RawMouseEventType.LeftButtonUp));
-                ////    break;
+                case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
+                    this.MouseUp(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     this.MouseMove(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));

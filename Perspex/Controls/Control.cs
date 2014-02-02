@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.Collections.ObjectModel;
     using System.Diagnostics.Contracts;
     using System.Reactive.Linq;
+    using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Media;
 
@@ -30,7 +31,7 @@ namespace Perspex.Controls
         Bottom,
     }
 
-    public abstract class Control : Visual, ILayoutable
+    public abstract class Control : Interactive, ILayoutable
     {
         public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
@@ -59,6 +60,12 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
 
+        public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonDownEvent =
+            RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonDown", RoutingStrategy.Bubble);
+
+        public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonUpEvent =
+            RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonUp", RoutingStrategy.Bubble);
+
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
 
@@ -83,6 +90,35 @@ namespace Perspex.Controls
 
             // Hacky hack hack!
             this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
+        }
+
+        public event EventHandler<MouseEventArgs> MouseLeftButtonDown
+        {
+            add
+            {
+                Contract.Requires<NullReferenceException>(value != null);
+                this.AddHandler(MouseLeftButtonDownEvent, value); 
+            }
+
+            remove 
+            {
+                Contract.Requires<NullReferenceException>(value != null);
+                this.RemoveHandler(MouseLeftButtonDownEvent, value); 
+            }
+        }
+
+        public event EventHandler<MouseEventArgs> MouseLeftButtonUp
+        {
+            add 
+            {
+                Contract.Requires<NullReferenceException>(value != null);
+                this.AddHandler(MouseLeftButtonUpEvent, value); 
+            }
+            remove 
+            {
+                Contract.Requires<NullReferenceException>(value != null);
+                this.RemoveHandler(MouseLeftButtonUpEvent, value); 
+            }
         }
 
         public Brush Background

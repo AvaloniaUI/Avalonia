@@ -76,6 +76,8 @@
     <Compile Include="Controls\ContentControl.cs" />
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\TextBlock.cs" />
+    <Compile Include="Input\MouseEventArgs.cs" />
+    <Compile Include="Interactive.cs" />
     <Compile Include="IBindingDescription.cs" />
     <Compile Include="IStyle.cs" />
     <Compile Include="Layout\ILayoutable.cs" />
@@ -90,6 +92,7 @@
     <Compile Include="Media\Matrix.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\SolidColorBrush.cs" />
+    <Compile Include="RoutedEvent.cs" />
     <Compile Include="PerspexList.cs" />
     <Compile Include="PerspexObject.cs" />
     <Compile Include="PerspexProperty.cs" />
@@ -97,6 +100,7 @@
     <Compile Include="Point.cs" />
     <Compile Include="ReadOnlyPerspexProperty.cs" />
     <Compile Include="Match.cs" />
+    <Compile Include="RoutedEventArgs.cs" />
     <Compile Include="Selectors.cs" />
     <Compile Include="ServiceLocator.cs" />
     <Compile Include="Setter.cs" />
@@ -110,6 +114,7 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">

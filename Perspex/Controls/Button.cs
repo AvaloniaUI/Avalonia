@@ -10,6 +10,19 @@ namespace Perspex.Controls
 
     public class Button : ContentControl
     {
+        public Button()
+        {
+            this.GetObservable(MouseLeftButtonDownEvent).Subscribe(e =>
+            {
+                this.Classes.Add(":pressed");
+            });
+
+            this.GetObservable(MouseLeftButtonUpEvent).Subscribe(e =>
+            {
+                this.Classes.Remove(":pressed");
+            });
+        }
+
         protected override Visual DefaultTemplate()
         {
             Border border = new Border();

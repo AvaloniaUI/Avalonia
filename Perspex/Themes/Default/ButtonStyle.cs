@@ -31,7 +31,15 @@ namespace Perspex.Themes.Default
                         new Setter (Button.BackgroundProperty, new SolidColorBrush(0xffbee6fd)),
                         new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                     },
-                }
+                },
+                new Style(x => x.Select<Button>().Class(":pressed"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter (Button.BackgroundProperty, new SolidColorBrush(0xffc4e5f6)),
+                        new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff2c628b)),
+                    },
+                },
             });
         }
     }
