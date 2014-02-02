@@ -20,29 +20,38 @@ namespace TestApplication
         {
             ServiceLocator.Register<ITextService>(() => new TextService(new SharpDX.DirectWrite.Factory()));
 
-            Window window = new Window
+            Application application = new Application
             {
-                Styles = new Styles
+                Styles = new Styles 
                 {
-                    new Style
+                    new Style(x => x.Select<Button>())
                     {
-                        Selector = x => x.Select<Button>().Class(":mouseover"),
                         Setters = new[]
                         {
-                            new Setter 
-                            { 
-                                Property = Button.BackgroundProperty, 
-                                Value = new SolidColorBrush(0xffff8080),
-                            }
+                            new Setter(Button.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
+                            new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xff707070)),
+                            new Setter(Button.BorderThicknessProperty, 1),
+                            new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
+                        },
+                    },
+                    new Style(x => x.Select<Button>().Class(":mouseover"))
+                    {
+                        Setters = new[]
+                        {
+                            new Setter (Button.BackgroundProperty, new SolidColorBrush(0xffbee6fd)),
+                            new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                         },
                     }
-                },
+                }
+            };
+
+            Window window = new Window
+            {
                 Content = new Button
                 {
                     Content = "Hello World",
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Background = new SolidColorBrush(0xff808080),
                     BorderThickness = 2,
                     BorderBrush = new SolidColorBrush(0xff000000),
                 },

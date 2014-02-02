@@ -16,6 +16,16 @@ namespace Perspex
     {
         private object oldValue;
 
+        public Setter()
+        {
+        }
+
+        public Setter(PerspexProperty property, object value)
+        {
+            this.Property = property;
+            this.Value = value;
+        }
+
         public PerspexProperty Property
         {
             get;

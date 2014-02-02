@@ -15,12 +15,6 @@ namespace Perspex.Controls
                 "FontSize",
                 inherits: true);
 
-        public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.Register<TextBlock, Brush>(
-                "Foreground",
-                defaultValue: new SolidColorBrush(0xff000000),
-                inherits: true);
-
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<Border, string>("Text");
 
@@ -28,12 +22,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(FontSizeProperty); }
             set { this.SetValue(FontSizeProperty, value); }
-        }
-
-        public Brush Foreground
-        {
-            get { return this.GetValue(ForegroundProperty); }
-            set { this.SetValue(ForegroundProperty, value); }
         }
 
         public string Text

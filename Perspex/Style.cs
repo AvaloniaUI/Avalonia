@@ -15,11 +15,15 @@ namespace Perspex
 
     public class Style
     {
-        private bool applied;
-
         public Style()
         {
             this.Setters = new List<Setter>();
+        }
+
+        public Style(Func<Control, Match> selector)
+            : this()
+        {
+            this.Selector = selector;
         }
 
         public Func<Control, Match> Selector

@@ -36,7 +36,7 @@ namespace Perspex.Controls
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
 
         public static readonly PerspexProperty<Brush> BackgroundProperty =
-            PerspexProperty.Register<Control, Brush>("Background");
+            PerspexProperty.Register<Control, Brush>("Background", inherits: true);
 
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
             PerspexProperty.Register<Control, Brush>("BorderBrush");
@@ -44,17 +44,20 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Control, double>("BorderThickness");
 
+        public static readonly PerspexProperty<Brush> ForegroundProperty =
+            PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
+
         public static readonly PerspexProperty<bool> IsMouseOverProperty =
             PerspexProperty.Register<Visual, bool>("IsMouseOver");
 
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
 
-        public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
-            PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
-
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
+
+        public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
+            PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
 
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
@@ -106,22 +109,10 @@ namespace Perspex.Controls
             private set;
         }
 
-        public Styles Styles
+        public Brush Foreground
         {
-            get 
-            { 
-                if (this.styles == null)
-                {
-                    this.styles = new Styles();
-                }
-
-                return this.styles; 
-            }
-            
-            set
-            {
-                this.styles = value;
-            }
+            get { return this.GetValue(ForegroundProperty); }
+            set { this.SetValue(ForegroundProperty, value); }
         }
 
         public Size? DesiredSize
@@ -142,12 +133,6 @@ namespace Perspex.Controls
             set { this.SetValue(HorizontalAlignmentProperty, value); }
         }
 
-        public VerticalAlignment VerticalAlignment
-        {
-            get { return this.GetValue(VerticalAlignmentProperty); }
-            set { this.SetValue(VerticalAlignmentProperty, value); }
-        }
-
         public Thickness Margin
         {
             get { return this.GetValue(MarginProperty); }
@@ -158,6 +143,30 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ParentPropertyRW); }
             internal set { this.SetValue(ParentPropertyRW, value); }
+        }
+
+        public Styles Styles
+        {
+            get
+            {
+                if (this.styles == null)
+                {
+                    this.styles = new Styles();
+                }
+
+                return this.styles;
+            }
+
+            set
+            {
+                this.styles = value;
+            }
+        }
+
+        public VerticalAlignment VerticalAlignment
+        {
+            get { return this.GetValue(VerticalAlignmentProperty); }
+            set { this.SetValue(VerticalAlignmentProperty, value); }
         }
 
         public ILayoutRoot GetLayoutRoot()
@@ -214,18 +223,15 @@ namespace Perspex.Controls
 
         private void AttachStyles(Control control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-
-            Control parent = control.Parent;
-
-            if (parent != null)
+            if (control != null)
             {
+                Control parent = control.Parent;
                 this.AttachStyles(parent);
+                control.Styles.Attach(this);
             }
-
-            foreach (Style style in control.Styles)
+            else
             {
-                style.Attach(this);
+                Application.Current.Styles.Attach(this);
             }
         }
 
