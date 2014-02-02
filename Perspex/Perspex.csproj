@@ -76,6 +76,7 @@
     <Compile Include="Controls\ContentControl.cs" />
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\TextBlock.cs" />
+    <Compile Include="IBindingDescription.cs" />
     <Compile Include="Layout\ILayoutable.cs" />
     <Compile Include="Layout\ILayoutManager.cs" />
     <Compile Include="Layout\ILayoutRoot.cs" />
@@ -108,6 +109,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Splat">
+      <HintPath>..\packages\Splat.1.1.1\lib\Portable-Net45+WinRT45+WP8\Splat.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Portable-Net45+WinRT45+WP8\System.Reactive.Core.dll</HintPath>
     </Reference>

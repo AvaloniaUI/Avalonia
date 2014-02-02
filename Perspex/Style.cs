@@ -44,6 +44,7 @@ namespace Perspex
 
             if (match != null)
             {
+                string description = "Style " + match.ToString();
                 List<IObservable<bool>> o = new List<IObservable<bool>>();
                 
                 while (match != null)
@@ -60,20 +61,30 @@ namespace Perspex
 
                 foreach (Setter setter in this.Setters)
                 {
-                    Setter.Subject subject = setter.CreateSubject(control);
+                    Setter.Subject subject = setter.CreateSubject(control, description);
                     subjects.Add(subject);
                     control.SetValue(setter.Property, subject);
                 }
 
-                Observable.CombineLatest(o).Subscribe(x =>
+                if (o.Count == 0)
                 {
-                    bool on = x.All(y => y);
-
                     foreach (Setter.Subject subject in subjects)
                     {
-                        subject.Push(on);
+                        subject.Push(true);
                     }
-                });
+                }
+                else
+                {
+                    Observable.CombineLatest(o).Subscribe(x =>
+                    {
+                        bool on = x.All(y => y);
+
+                        foreach (Setter.Subject subject in subjects)
+                        {
+                            subject.Push(on);
+                        }
+                    });
+                }
             }
         }
     }

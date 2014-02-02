@@ -38,13 +38,13 @@ namespace Perspex
             set;
         }
 
-        internal Subject CreateSubject(Control control)
+        internal Subject CreateSubject(Control control, string description)
         {
             object oldValue = control.GetValue(this.Property);
-            return new Subject(control, this.Value, oldValue);
+            return new Subject(control, this.Value, oldValue, description);
         }
 
-        internal class Subject : IObservable<object>
+        internal class Subject : IObservable<object>, IBindingDescription
         {
             private Control control;
 
@@ -54,12 +54,19 @@ namespace Perspex
 
             private List<IObserver<object>> observers;
 
-            public Subject(Control control, object onValue, object offValue)
+            public Subject(Control control, object onValue, object offValue, string description)
             {
                 this.control = control;
                 this.onValue = onValue;
                 this.offValue = offValue;
                 this.observers = new List<IObserver<object>>();
+                this.Description = description;
+            }
+
+            public string Description
+            {
+                get;
+                private set;
             }
 
             public IDisposable Subscribe(IObserver<object> observer)

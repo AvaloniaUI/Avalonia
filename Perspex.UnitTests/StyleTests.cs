@@ -15,18 +15,33 @@ namespace Perspex.UnitTests
     public class StyleTests
     {
         [TestMethod]
-        public void Style_Should_Update_And_Restore_Value()
+        public void Style_With_Only_Type_Selector_Should_Update_Value()
         {
-            Style style = new Style
+            Style style = new Style(x => x.Select<TextBlock>())
             {
-                Selector = x => x.Select<TextBlock>().Class("foo"),
                 Setters = new[]
                 {
-                    new Setter
-                    {
-                        Property = TextBlock.TextProperty,
-                        Value = "Foo",
-                    }
+                    new Setter(TextBlock.TextProperty, "Foo"),
+                },
+            };
+
+            TextBlock textBlock = new TextBlock
+            {
+                Text = "Original",
+            };
+
+            style.Attach(textBlock);
+            Assert.AreEqual("Foo", textBlock.Text);
+        }
+
+        [TestMethod]
+        public void Style_With_Class_Selector_Should_Update_And_Restore_Value()
+        {
+            Style style = new Style(x => x.Select<TextBlock>().Class("foo"))
+            {
+                Setters = new[]
+                {
+                    new Setter(TextBlock.TextProperty, "Foo"),
                 },
             };
 
@@ -46,29 +61,19 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Later_Styles_Should_Override_Earlier()
         {
-            Style style1 = new Style
+            Style style1 = new Style(x => x.Select<TextBlock>().Class("foo"))
             {
-                Selector = x => x.Select<TextBlock>().Class("foo"),
                 Setters = new[]
                 {
-                    new Setter
-                    {
-                        Property = TextBlock.TextProperty,
-                        Value = "Foo",
-                    }
+                    new Setter(TextBlock.TextProperty, "Foo"),
                 },
             };
 
-            Style style2 = new Style
+            Style style2 = new Style(x => x.Select<TextBlock>().Class("foo"))
             {
-                Selector = x => x.Select<TextBlock>().Class("foo"),
                 Setters = new[]
                 {
-                    new Setter
-                    {
-                        Property = TextBlock.TextProperty,
-                        Value = "Bar",
-                    }
+                    new Setter(TextBlock.TextProperty, "Bar"),
                 },
             };
 

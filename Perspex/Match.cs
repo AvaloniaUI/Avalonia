@@ -28,5 +28,18 @@ namespace Perspex
             get;
             set;
         }
+
+        public string Token
+        {
+            get;
+            set;
+        }
+
+        public override string ToString()
+        {
+            string result = (this.Previous != null) ? this.Previous.ToString() : string.Empty;
+            result += this.Token;
+            return result;
+        }
     }
 }

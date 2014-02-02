@@ -27,6 +27,7 @@ namespace Perspex
                 return new Match
                 {
                     Control = control,
+                    Token = typeof(T).Name,
                 };
             }
             else
@@ -50,27 +51,7 @@ namespace Perspex
                     Control = selector.Control,
                     Observable = match,
                     Previous = selector,
-                };
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static Match PropertyEquals<T>(this Match selector, PerspexProperty<T> property, T value)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            if (selector != null)
-            {
-                IObservable<bool> match = selector.Control.GetObservable(property).Select(x => object.Equals(x, value));
-
-                return new Match
-                {
-                    Control = selector.Control,
-                    Observable = match,
-                    Previous = selector,
+                    Token = (name[0] == ':') ? name : '.' + name,
                 };
             }
             else

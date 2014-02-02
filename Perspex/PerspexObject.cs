@@ -14,6 +14,7 @@ namespace Perspex
     using System.Reactive;
     using System.Reactive.Linq;
     using System.Reflection;
+    using Splat;
 
     /// <summary>
     /// An object with <see cref="PerspexProperty"/> support.
@@ -21,7 +22,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject
+    public class PerspexObject : IEnableLogger
     {
         /// <summary>
         /// The registered properties by type.
@@ -168,6 +169,12 @@ namespace Perspex
             {
                 binding.Dispose.Dispose();
                 this.bindings.Remove(property);
+
+                this.Log().Debug(string.Format(
+                    "Cleared binding on {0}.{1} (#{2:x8})",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode()));
             }
         }
 
@@ -177,6 +184,7 @@ namespace Perspex
         /// <param name="property">The property.</param>
         public void ClearValue(PerspexProperty property)
         {
+            // TODO: Implement this by using SetValue(UnsetValue).
             Contract.Requires<NullReferenceException>(property != null);
             this.ClearBinding(property);
             this.values.Remove(property);
@@ -194,6 +202,13 @@ namespace Perspex
             if (this.bindings.TryGetValue(property, out binding))
             {
                 this.bindings.Remove(property);
+                
+                this.Log().Debug(string.Format(
+                    "Extracted binding on {0}.{1} (#{2:x8})",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode()));
+
                 return (IObservable<object>)binding.Observable;
             }
             else
@@ -214,6 +229,13 @@ namespace Perspex
             if (this.bindings.TryGetValue(property, out binding))
             {
                 this.bindings.Remove(property);
+
+                this.Log().Debug(string.Format(
+                    "Extracted binding on {0}.{1} (#{2:x8})",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode()));
+                
                 return (IObservable<T>)binding.Observable;
             }
             else
@@ -390,6 +412,8 @@ namespace Perspex
             else
             {
                 IObservable<object> observable = value as IObservable<object>;
+                IBindingDescription bindingDescription = value as IBindingDescription;
+                string description = (bindingDescription != null) ? bindingDescription.Description : value.GetType().Name;
 
                 if (observable == null)
                 {
@@ -409,6 +433,13 @@ namespace Perspex
                         this.SetValueImpl(property, x);
                     }),
                 });
+
+                this.Log().Debug(string.Format(
+                    "Bound {0}.{1} (#{2:x8}) to {3}",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode(),
+                    description));
             }
         }
 
@@ -500,6 +531,13 @@ namespace Perspex
             {
                 this.values[property] = value;
                 this.RaisePropertyChanged(property, oldValue, value);
+
+                this.Log().Debug(string.Format(
+                    "Set value of {0}.{1} (#{2:x8}) to '{3}'",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode(),
+                    value));
             }
         }
 

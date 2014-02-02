@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpDX.DXGI.2.5.0\lib\net40\SharpDX.DXGI.dll</HintPath>
     </Reference>
+    <Reference Include="Splat">
+      <HintPath>..\packages\Splat.1.1.1\lib\Net45\Splat.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
