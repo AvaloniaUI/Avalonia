@@ -13,12 +13,12 @@ namespace Perspex.Controls
         protected override Visual DefaultTemplate()
         {
             Border border = new Border();
-            border.Bind(Border.BackgroundProperty, this.GetObservable(Button.BackgroundProperty));
-            border.Bind(Border.BorderBrushProperty, this.GetObservable(Button.BorderBrushProperty));
-            border.Bind(Border.BorderThicknessProperty, this.GetObservable(Button.BorderThicknessProperty));
+            border.SetValue(Border.BackgroundProperty, this.GetObservable(Button.BackgroundProperty));
+            border.SetValue(Border.BorderBrushProperty, this.GetObservable(Button.BorderBrushProperty));
+            border.SetValue(Border.BorderThicknessProperty, this.GetObservable(Button.BorderThicknessProperty));
             border.Padding = new Thickness(3);
             ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.Bind(ContentPresenter.ContentProperty, this.GetObservable(Button.ContentProperty));
+            contentPresenter.SetValue(ContentPresenter.ContentProperty, this.GetObservable(Button.ContentProperty));
             border.Content = contentPresenter;
             return border;
         }

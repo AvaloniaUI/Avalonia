@@ -232,38 +232,38 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Bind_Sets_Current_Value()
+        public void Binding_Sets_Current_Value()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
 
             Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
-        public void Bind_Sets_Subsequent_Value()
+        public void Binding_Sets_Subsequent_Value()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             source.SetValue(Class1.FooProperty, "subsequent");
 
             Assert.AreEqual("subsequent", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
-        public void Bind_Doesnt_Set_Value_After_Clear()
+        public void Binding_Doesnt_Set_Value_After_Clear()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             target.ClearValue(Class1.FooProperty);
             source.SetValue(Class1.FooProperty, "newvalue");
 
@@ -271,13 +271,13 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Bind_Doesnt_Set_Value_After_Reset()
+        public void Binding_Doesnt_Set_Value_After_Reset()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "reset");
             source.SetValue(Class1.FooProperty, "newvalue");
 

@@ -154,27 +154,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Binds a property on this object to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="target">The target property.</param>
-        /// <param name="source">The observable.</param>
-        public void Bind<T>(PerspexProperty<T> target, IObservable<T> source)
-        {
-            Contract.Requires<NullReferenceException>(target != null);
-            Contract.Requires<NullReferenceException>(source != null);
-
-            this.ClearBinding(target);
-
-            IDisposable binding = source.Subscribe(value =>
-            {
-                this.SetValueImpl(target, value);
-            });
-
-            this.bindings.Add(target, binding);
-        }
-
-        /// <summary>
         /// Clears a binding on a <see cref="PerspexProperty"/>, leaving the last bound value in
         /// place.
         /// </summary>
@@ -371,6 +350,26 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             this.SetValue((PerspexProperty)property, value);
+        }
+
+        /// <summary>
+        /// Binds a <see cref="PerspexProperty"/> to an observable.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="source">The observable.</param>
+        public void SetValue<T>(PerspexProperty<T> property, IObservable<T> source)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+
+            this.ClearBinding(property);
+
+            IDisposable binding = source.Subscribe(value =>
+            {
+                this.SetValueImpl(property, value);
+            });
+
+            this.bindings.Add(property, binding);
         }
 
         /// <summary>
