@@ -52,11 +52,11 @@ namespace Perspex
                     match = match.Previous;
                 }
 
-                List<SetterSubject> subjects = new List<SetterSubject>();
+                List<Setter.Subject> subjects = new List<Setter.Subject>();
 
                 foreach (Setter setter in this.Setters)
                 {
-                    SetterSubject subject = setter.CreateSubject(control);
+                    Setter.Subject subject = setter.CreateSubject(control);
                     subjects.Add(subject);
                     control.SetValue(setter.Property, subject);
                 }
@@ -65,7 +65,7 @@ namespace Perspex
                 {
                     bool on = x.All(y => y);
 
-                    foreach (SetterSubject subject in subjects)
+                    foreach (Setter.Subject subject in subjects)
                     {
                         subject.Push(on);
                     }
