@@ -78,7 +78,6 @@
     <Compile Include="Controls\TextBlock.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
-    <Compile Include="IBindingDescription.cs" />
     <Compile Include="IStyle.cs" />
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Layout\ILayoutable.cs" />

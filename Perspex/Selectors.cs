@@ -27,6 +27,7 @@ namespace Perspex
                 return new Match
                 {
                     Control = control,
+                    Observable = Observable.Return(true),
                     Token = typeof(T).Name,
                 };
             }

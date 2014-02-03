@@ -45,45 +45,11 @@ namespace Perspex
             if (match != null)
             {
                 string description = "Style " + match.ToString();
-                List<IObservable<bool>> o = new List<IObservable<bool>>();
-                
-                while (match != null)
-                {
-                    if (match.Observable != null)
-                    {
-                        o.Add(match.Observable);
-                    }
-
-                    match = match.Previous;
-                }
-
-                List<Setter.Subject> subjects = new List<Setter.Subject>();
+                IObservable<bool> activator = match.GetActivator();
 
                 foreach (Setter setter in this.Setters)
                 {
-                    Setter.Subject subject = setter.CreateSubject(control, description);
-                    subjects.Add(subject);
-                    control.SetValue(setter.Property, subject);
-                }
-
-                if (o.Count == 0)
-                {
-                    foreach (Setter.Subject subject in subjects)
-                    {
-                        subject.Push(true);
-                    }
-                }
-                else
-                {
-                    Observable.CombineLatest(o).Subscribe(x =>
-                    {
-                        bool on = x.All(y => y);
-
-                        foreach (Setter.Subject subject in subjects)
-                        {
-                            subject.Push(on);
-                        }
-                    });
+                    control.SetValue(setter.Property, setter.Value, activator);
                 }
             }
         }

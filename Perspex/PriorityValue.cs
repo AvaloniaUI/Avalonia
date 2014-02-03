@@ -70,18 +70,6 @@ namespace Perspex
             this.localBinding = binding.Subscribe(value => this.LocalValue = value);
         }
 
-        public void AddStyle(object value)
-        {
-            StyleEntry entry = new StyleEntry(value);
-
-            this.styles.Add(entry);
-
-            if (this.localValue == PerspexProperty.UnsetValue)
-            {
-                this.Push();
-            }
-        }
-
         public void AddStyle(IObservable<bool> activator, object value)
         {
             Contract.Requires<NullReferenceException>(activator != null);
@@ -144,12 +132,6 @@ namespace Perspex
         {
             private IObservable<bool> activator;
 
-            public StyleEntry(object value)
-            {
-                this.Active = true;
-                this.Value = value;
-            }
-
             public StyleEntry(
                 IObservable<bool> activator, 
                 object value, 
@@ -162,7 +144,12 @@ namespace Perspex
                 this.activator = activator;
                 this.Value = value;
 
-                this.activator.Subscribe(x => this.Active = x, () => completed(this));
+                this.activator.Subscribe(x =>
+                {
+                    this.Active = x;
+                    activeChanged();
+                },
+                () => completed(this));
             }
 
             public bool Active 

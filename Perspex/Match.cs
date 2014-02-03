@@ -7,6 +7,9 @@
 namespace Perspex
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reactive.Linq;
     using Perspex.Controls;
 
     public class Match
@@ -33,6 +36,25 @@ namespace Perspex
         {
             get;
             set;
+        }
+
+        public IObservable<bool> GetActivator()
+        {
+            List<IObservable<bool>> observables = new List<IObservable<bool>>();
+            Match match = this;
+
+            do
+            {
+                if (match.Observable != null)
+                {
+                    observables.Add(match.Observable);
+                }
+
+                match = match.Previous;
+            }
+            while (match != null);
+
+            return System.Reactive.Linq.Observable.CombineLatest(observables).Select(x => x.All(b => b));
         }
 
         public override string ToString()

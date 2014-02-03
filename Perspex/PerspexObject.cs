@@ -334,55 +334,6 @@ namespace Perspex
         /// <summary>
         /// Sets a <see cref="PerspexProperty"/> value.
         /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        public void SetValue(PerspexProperty property, object value)
-        {
-            Contract.Requires<NullReferenceException>(property != null);
-
-            IObservable<object> binding = TryCastToObservable(value);
-
-            PriorityValue v;
-
-            if (!this.values.TryGetValue(property, out v))
-            {
-                if (value == PerspexProperty.UnsetValue)
-                {
-                    return;
-                }
-
-                v = new PriorityValue();
-                this.values.Add(property, v);
-
-                v.Subscribe(x =>
-                {
-                    object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ? 
-                        this.GetDefaultValue(property) : 
-                        x.Item1;
-                    object newValue = (x.Item2 == PerspexProperty.UnsetValue) ? 
-                        this.GetDefaultValue(property) : 
-                        x.Item2;
-
-                    if (!object.Equals(oldValue, newValue))
-                    {
-                        this.RaisePropertyChanged(property, oldValue, newValue);
-                    }
-                });
-            }
-
-            if (binding == null)
-            {
-                v.SetLocalValue(value);
-            }
-            else
-            {
-                v.SetLocalBinding(binding);
-            }
-        }
-
-        /// <summary>
-        /// Sets a <see cref="PerspexProperty"/> value.
-        /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
@@ -404,6 +355,79 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             this.SetValue((PerspexProperty)property, source);
+        }
+
+        /// <summary>
+        /// Sets a <see cref="PerspexProperty"/> value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        public void SetValue(PerspexProperty property, object value)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+
+            IObservable<object> binding = TryCastToObservable(value);
+
+            PriorityValue v;
+
+            if (!this.values.TryGetValue(property, out v))
+            {
+                if (value == PerspexProperty.UnsetValue)
+                {
+                    return;
+                }
+
+                v = this.CreatePriorityValue(property);
+                this.values.Add(property, v);
+            }
+
+            if (binding == null)
+            {
+                v.SetLocalValue(value);
+            }
+            else
+            {
+                v.SetLocalBinding(binding);
+
+                this.Log().Debug(string.Format(
+                    "Bound value of {0}.{1} (#{2:x8})",
+                    this.GetType().Name,
+                    property.Name,
+                    this.GetHashCode()));
+            }
+        }
+
+        /// <summary>
+        /// Binds a <see cref="PerspexProperty"/> to an style.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The activated value.</param>
+        /// <param name="activator">An observable which activates the value.</param>
+        /// <remarks>
+        /// Style bindings have a lower precedence than local value bindings. They are toggled
+        /// on or off by <paramref name="activator"/> and can be unbound by the activator 
+        /// completing.
+        /// </remarks>
+        public void SetValue(PerspexProperty property, object value, IObservable<bool> activator)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<NullReferenceException>(activator != null);
+
+            PriorityValue v;
+
+            if (!this.values.TryGetValue(property, out v))
+            {
+                v = this.CreatePriorityValue(property);
+                this.values.Add(property, v);
+            }
+
+            v.AddStyle(activator, value);
+            
+            this.Log().Debug(string.Format(
+                "Bound value of {0}.{1} (#{2:x8}) to style",
+                this.GetType().Name,
+                property.Name,
+                this.GetHashCode()));
         }
 
         private static IObservable<object> BoxObservable<T>(IObservable<T> observable)
@@ -441,6 +465,35 @@ namespace Perspex
                     result = (IObservable<object>)cast.Invoke(null, new[] { value });
                 }
             }
+
+            return result;
+        }
+
+        private PriorityValue CreatePriorityValue(PerspexProperty property)
+        {
+            PriorityValue result = new PriorityValue();
+
+            result.Subscribe(x =>
+            {
+                object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ?
+                    this.GetDefaultValue(property) :
+                    x.Item1;
+                object newValue = (x.Item2 == PerspexProperty.UnsetValue) ?
+                    this.GetDefaultValue(property) :
+                    x.Item2;
+
+                if (!object.Equals(oldValue, newValue))
+                {
+                    this.RaisePropertyChanged(property, oldValue, newValue);
+
+                    this.Log().Debug(string.Format(
+                        "Set value of {0}.{1} (#{2:x8}) to {3}",
+                        this.GetType().Name,
+                        property.Name,
+                        this.GetHashCode(),
+                        newValue));
+                }
+            });
 
             return result;
         }
@@ -492,42 +545,6 @@ namespace Perspex
                     new PerspexPropertyChangedEventArgs(property, oldValue, newValue));
             }
         }
-
-        //private void SetValueImpl(PerspexProperty property, object value)
-        //{
-        //    Contract.Requires<NullReferenceException>(property != null);
-
-        //    if (!property.IsValidValue(value))
-        //    {
-        //        throw new InvalidOperationException("Invalid value for " + property.Name);
-        //    }
-
-        //    object oldValue = this.GetValue(property);
-
-        //    if (!object.Equals(oldValue, value))
-        //    {
-        //        string valueString = value.ToString();
-
-        //        if (value == PerspexProperty.UnsetValue)
-        //        {
-        //            valueString = "[Unset]";
-        //            this.values.Remove(property);
-        //        }
-        //        else
-        //        {
-        //            this.values[property] = value;
-        //        }
-
-        //        this.RaisePropertyChanged(property, oldValue, value);
-
-        //        this.Log().Debug(string.Format(
-        //            "Set value of {0}.{1} (#{2:x8}) to '{3}'",
-        //            this.GetType().Name,
-        //            property.Name,
-        //            this.GetHashCode(),
-        //            valueString));
-        //    }
-        //}
 
         private class Binding
         {
