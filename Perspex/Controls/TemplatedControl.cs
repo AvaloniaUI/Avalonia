@@ -13,17 +13,12 @@ namespace Perspex.Controls
 
     public abstract class TemplatedControl : Control
     {
-        public static readonly PerspexProperty<Func<TemplatedControl, Visual>> TemplateProperty =
-            PerspexProperty.Register<TemplatedControl, Func<TemplatedControl, Visual>>("Template");
+        public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
+            PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
         private Visual visualChild;
 
-        public TemplatedControl()
-        {
-            this.Template = owner => this.DefaultTemplate();
-        }
-
-        public Func<TemplatedControl, Visual> Template
+        public ControlTemplate Template
         {
             get { return this.GetValue(TemplateProperty); }
             set { this.SetValue(TemplateProperty, value); }
@@ -37,7 +32,7 @@ namespace Perspex.Controls
 
                 if (this.visualChild == null && template != null)
                 {
-                    this.visualChild = template(this);
+                    this.visualChild = template.Build(this);
                     this.visualChild.VisualParent = this;
                 }
 
@@ -48,7 +43,5 @@ namespace Perspex.Controls
         public sealed override void Render(IDrawingContext context)
         {
         }
-
-        protected abstract Visual DefaultTemplate();
     }
 }

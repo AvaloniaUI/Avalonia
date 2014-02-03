@@ -39,6 +39,7 @@ namespace Perspex.Windows
             Size clientSize = this.ClientSize;
             this.LayoutManager = new LayoutManager();
             this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
+            this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
@@ -79,7 +80,7 @@ namespace Perspex.Windows
             UnmanagedMethods.ShowWindow(this.Handle, 4);
         }
 
-        protected override Visual DefaultTemplate()
+        private Visual DefaultTemplate(Window c)
         {
             Border border = new Border();
             border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);

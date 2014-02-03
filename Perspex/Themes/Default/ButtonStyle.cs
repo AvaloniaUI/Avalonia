@@ -22,6 +22,7 @@ namespace Perspex.Themes.Default
                         new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(Button.BorderThicknessProperty, 2.0),
                         new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
+                        new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
                     },
                 },
                 new Style(x => x.Select<Button>().Class(":mouseover"))
@@ -41,6 +42,19 @@ namespace Perspex.Themes.Default
                     },
                 },
             });
+        }
+
+        private Visual Template(Button control)
+        {
+            Border border = new Border();
+            border.SetValue(Border.BackgroundProperty, control.GetObservable(Button.BackgroundProperty));
+            border.SetValue(Border.BorderBrushProperty, control.GetObservable(Button.BorderBrushProperty));
+            border.SetValue(Border.BorderThicknessProperty, control.GetObservable(Button.BorderThicknessProperty));
+            border.Padding = new Thickness(3);
+            ContentPresenter contentPresenter = new ContentPresenter();
+            contentPresenter.SetValue(ContentPresenter.ContentProperty, control.GetObservable(Button.ContentProperty));
+            border.Content = contentPresenter;
+            return border;
         }
     }
 }

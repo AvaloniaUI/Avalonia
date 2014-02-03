@@ -22,18 +22,5 @@ namespace Perspex.Controls
                 this.Classes.Remove(":pressed");
             });
         }
-
-        protected override Visual DefaultTemplate()
-        {
-            Border border = new Border();
-            border.SetValue(Border.BackgroundProperty, this.GetObservable(Button.BackgroundProperty));
-            border.SetValue(Border.BorderBrushProperty, this.GetObservable(Button.BorderBrushProperty));
-            border.SetValue(Border.BorderThicknessProperty, this.GetObservable(Button.BorderThicknessProperty));
-            border.Padding = new Thickness(3);
-            ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.SetValue(ContentPresenter.ContentProperty, this.GetObservable(Button.ContentProperty));
-            border.Content = contentPresenter;
-            return border;
-        }
     }
 }

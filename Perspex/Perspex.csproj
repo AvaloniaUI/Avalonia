@@ -76,6 +76,7 @@
     <Compile Include="Controls\ContentControl.cs" />
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\TextBlock.cs" />
+    <Compile Include="ControlTemplate.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
     <Compile Include="IStyle.cs" />
