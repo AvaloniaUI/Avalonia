@@ -4,12 +4,12 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Styling
 {
     using Perspex.Controls;
 
     public interface IStyle
     {
-        void Attach(Control control);
+        void Attach(IStyleable control);
     }
 }

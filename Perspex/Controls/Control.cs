@@ -14,6 +14,7 @@ namespace Perspex.Controls
     using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Media;
+    using Perspex.Styling;
 
     public enum HorizontalAlignment
     {
@@ -31,7 +32,7 @@ namespace Perspex.Controls
         Bottom,
     }
 
-    public abstract class Control : Interactive, ILayoutable
+    public abstract class Control : Interactive, ILayoutable, IStyleable
     {
         public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);

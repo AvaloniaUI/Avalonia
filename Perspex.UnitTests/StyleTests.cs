@@ -10,6 +10,7 @@ namespace Perspex.UnitTests
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
+    using Perspex.Styling;
 
     [TestClass]
     public class StyleTests

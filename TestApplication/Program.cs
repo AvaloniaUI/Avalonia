@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Media;
+using Perspex.Styling;
 using Perspex.Themes.Default;
 using Perspex.Windows;
 using Perspex.Windows.Media;
@@ -41,7 +42,7 @@ namespace TestApplication
 
             Application application = new Application
             {
-                Styles = new Styles 
+                Styles = new Styles
                 {
                     new DefaultTheme(),
                 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Controls;
 using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {

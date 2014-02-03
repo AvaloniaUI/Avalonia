@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Styling
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Perspex
 
     public static class Selectors
     {
-        public static Match Select<T>(this Control control)
+        public static Match Select<T>(this IStyleable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
 

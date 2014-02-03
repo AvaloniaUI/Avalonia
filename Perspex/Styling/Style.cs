@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Styling
 {
     using System;
     using System.Collections.Generic;
@@ -20,13 +20,13 @@ namespace Perspex
             this.Setters = new List<Setter>();
         }
 
-        public Style(Func<Control, Match> selector)
+        public Style(Func<IStyleable, Match> selector)
             : this()
         {
             this.Selector = selector;
         }
 
-        public Func<Control, Match> Selector
+        public Func<IStyleable, Match> Selector
         {
             get;
             set;
@@ -38,7 +38,7 @@ namespace Perspex
             set;
         }
 
-        public void Attach(Control control)
+        public void Attach(IStyleable control)
         {
             Match match = this.Selector(control);
 

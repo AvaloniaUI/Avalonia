@@ -79,7 +79,8 @@
     <Compile Include="ControlTemplate.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
-    <Compile Include="IStyle.cs" />
+    <Compile Include="Styling\IStyleable.cs" />
+    <Compile Include="Styling\IStyle.cs" />
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Layout\ILayoutable.cs" />
     <Compile Include="Layout\ILayoutManager.cs" />
@@ -100,16 +101,16 @@
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="ReadOnlyPerspexProperty.cs" />
-    <Compile Include="Match.cs" />
+    <Compile Include="Styling\Match.cs" />
     <Compile Include="RoutedEventArgs.cs" />
-    <Compile Include="Selectors.cs" />
+    <Compile Include="Styling\Selectors.cs" />
     <Compile Include="ServiceLocator.cs" />
     <Compile Include="Setter.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Controls\TemplatedControl.cs" />
-    <Compile Include="Style.cs" />
-    <Compile Include="Styles.cs" />
+    <Compile Include="Styling\Style.cs" />
+    <Compile Include="Styling\Styles.cs" />
     <Compile Include="Themes\Default\ButtonStyle.cs" />
     <Compile Include="Themes\Default\DefaultTheme.cs" />
     <Compile Include="Thickness.cs" />
@@ -134,6 +135,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

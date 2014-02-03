@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Styling
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Perspex
 
     public class Match
     {
-        public Control Control
+        public IStyleable Control
         {
             get;
             set;

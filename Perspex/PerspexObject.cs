@@ -398,7 +398,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Binds a <see cref="PerspexProperty"/> to an style.
+        /// Binds a <see cref="PerspexProperty"/> to a style.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="value">The activated value.</param>

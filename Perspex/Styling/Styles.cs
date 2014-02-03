@@ -4,13 +4,13 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Styling
 {
     using Perspex.Controls;
 
     public class Styles : PerspexList<IStyle>, IStyle
     {
-        public void Attach(Control control)
+        public void Attach(IStyleable control)
         {
             foreach (IStyle style in this)
             {
