@@ -88,6 +88,16 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
+        public void SetValue_Sets_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
         public void SetValue_Raises_PropertyChanged()
         {
             Class1 target = new Class1();
@@ -294,6 +304,17 @@ namespace Perspex.UnitTests
             source.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.AreEqual("reset", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        public void Setting_UnsetValue_Reverts_To_Default_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+            target.SetValue(Class1.FooProperty, PerspexProperty.UnsetValue);
+
+            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : PerspexObject

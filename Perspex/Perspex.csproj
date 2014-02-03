@@ -80,6 +80,7 @@
     <Compile Include="Interactive.cs" />
     <Compile Include="IBindingDescription.cs" />
     <Compile Include="IStyle.cs" />
+    <Compile Include="PriorityValue.cs" />
     <Compile Include="Layout\ILayoutable.cs" />
     <Compile Include="Layout\ILayoutManager.cs" />
     <Compile Include="Layout\ILayoutRoot.cs" />

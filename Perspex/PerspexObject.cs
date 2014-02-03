@@ -36,16 +36,10 @@ namespace Perspex
         private PerspexObject inheritanceParent;
 
         /// <summary>
-        /// The set values on this object.
+        /// The set values/bindings on this object.
         /// </summary>
-        private Dictionary<PerspexProperty, object> values =
-            new Dictionary<PerspexProperty, object>();
-
-        /// <summary>
-        /// The current bindings on this object.
-        /// </summary>
-        private Dictionary<PerspexProperty, Binding> bindings =
-            new Dictionary<PerspexProperty, Binding>();
+        private Dictionary<PerspexProperty, PriorityValue> values =
+            new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
         /// Raised when a <see cref="PerspexProperty"/> value changes on this object/
@@ -163,12 +157,11 @@ namespace Perspex
         public void ClearBinding(PerspexProperty property)
         {
             Contract.Requires<NullReferenceException>(property != null);
-            Binding binding;
+            PriorityValue value;
 
-            if (this.bindings.TryGetValue(property, out binding))
+            if (this.values.TryGetValue(property, out value))
             {
-                binding.Dispose.Dispose();
-                this.bindings.Remove(property);
+                value.ClearLocalBinding();
 
                 this.Log().Debug(string.Format(
                     "Cleared binding on {0}.{1} (#{2:x8})",
@@ -187,60 +180,6 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
             
             this.SetValue(property, PerspexProperty.UnsetValue);
-        }
-
-        /// <summary>
-        /// Clears a binding on a <see cref="PerspexProperty"/>, returning the bound observable and
-        /// leaving the last bound value in place.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        public IObservable<object> ExtractBinding(PerspexProperty property)
-        {
-            Binding binding;
-
-            if (this.bindings.TryGetValue(property, out binding))
-            {
-                this.bindings.Remove(property);
-                
-                this.Log().Debug(string.Format(
-                    "Extracted binding on {0}.{1} (#{2:x8})",
-                    this.GetType().Name,
-                    property.Name,
-                    this.GetHashCode()));
-
-                return (IObservable<object>)binding.Observable;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Clears a binding on a <see cref="PerspexProperty"/>, returning the bound observable and
-        /// leaving the last bound value in place.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        public IObservable<T> ExtractBinding<T>(PerspexProperty<T> property)
-        {
-            Binding binding;
-
-            if (this.bindings.TryGetValue(property, out binding))
-            {
-                this.bindings.Remove(property);
-
-                this.Log().Debug(string.Format(
-                    "Extracted binding on {0}.{1} (#{2:x8})",
-                    this.GetType().Name,
-                    property.Name,
-                    this.GetHashCode()));
-                
-                return (IObservable<T>)binding.Observable;
-            }
-            else
-            {
-                return null;
-            }
         }
 
         /// <summary>
@@ -334,21 +273,25 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            object value;
+            object result;
 
-            if (!this.values.TryGetValue(property, out value))
+            PriorityValue value;
+
+            if (this.values.TryGetValue(property, out value))
             {
-                if (property.Inherits && this.inheritanceParent != null)
-                {
-                    value = this.inheritanceParent.GetValue(property);
-                }
-                else
-                {
-                    value = property.GetDefaultValue(this.GetType());
-                }
+                result = value.GetEffectiveValue();
+            }
+            else
+            {
+                result = PerspexProperty.UnsetValue;
             }
 
-            return value;
+            if (result == PerspexProperty.UnsetValue)
+            {
+                result = this.GetDefaultValue(property);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -397,48 +340,43 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            TypeInfo typeInfo = value.GetType().GetTypeInfo();
-            Type observableType = typeInfo.ImplementedInterfaces.FirstOrDefault(x =>
-              x.IsConstructedGenericType &&
-              x.GetGenericTypeDefinition() == typeof(IObservable<>));
+            IObservable<object> binding = TryCastToObservable(value);
 
-            this.ClearBinding(property);
+            PriorityValue v;
 
-            if (observableType == null)
+            if (!this.values.TryGetValue(property, out v))
             {
-                this.SetValueImpl(property, value);
+                if (value == PerspexProperty.UnsetValue)
+                {
+                    return;
+                }
+
+                v = new PriorityValue();
+                this.values.Add(property, v);
+
+                v.Subscribe(x =>
+                {
+                    object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ? 
+                        this.GetDefaultValue(property) : 
+                        x.Item1;
+                    object newValue = (x.Item2 == PerspexProperty.UnsetValue) ? 
+                        this.GetDefaultValue(property) : 
+                        x.Item2;
+
+                    if (!object.Equals(oldValue, newValue))
+                    {
+                        this.RaisePropertyChanged(property, oldValue, newValue);
+                    }
+                });
+            }
+
+            if (binding == null)
+            {
+                v.SetLocalValue(value);
             }
             else
             {
-                IObservable<object> observable = value as IObservable<object>;
-                IBindingDescription bindingDescription = value as IBindingDescription;
-                string description = (bindingDescription != null) ? bindingDescription.Description : value.GetType().Name;
-
-                if (observable == null)
-                {
-                    MethodInfo cast = typeof(PerspexObject).GetTypeInfo()
-                        .DeclaredMethods
-                        .FirstOrDefault(x => x.Name == "CastToObject")
-                        .MakeGenericMethod(observableType.GenericTypeArguments[0]);
-
-                    observable = (IObservable<object>)cast.Invoke(null, new[] { value });
-                }
-
-                this.bindings.Add(property, new Binding
-                {
-                    Observable = value,
-                    Dispose = observable.Subscribe(x =>
-                    {
-                        this.SetValueImpl(property, x);
-                    }),
-                });
-
-                this.Log().Debug(string.Format(
-                    "Bound {0}.{1} (#{2:x8}) to {3}",
-                    this.GetType().Name,
-                    property.Name,
-                    this.GetHashCode(),
-                    description));
+                v.SetLocalBinding(binding);
             }
         }
 
@@ -468,7 +406,7 @@ namespace Perspex
             this.SetValue((PerspexProperty)property, source);
         }
 
-        private static IObservable<object> CastToObject<T>(IObservable<T> observable)
+        private static IObservable<object> BoxObservable<T>(IObservable<T> observable)
         {
             return Observable.Create<object>(observer =>
             {
@@ -477,6 +415,46 @@ namespace Perspex
                     observer.OnNext(value);
                 });
             });
+        }
+
+        private static IObservable<object> TryCastToObservable(object value)
+        {
+            Type observableType = value.GetType().GetTypeInfo()
+                .ImplementedInterfaces
+                .FirstOrDefault(x =>
+                    x.IsConstructedGenericType &&
+                    x.GetGenericTypeDefinition() == typeof(IObservable<>));
+
+            IObservable<object> result = null;
+
+            if (observableType != null)
+            {
+                result = value as IObservable<object>;
+
+                if (result == null)
+                {
+                    MethodInfo cast = typeof(PerspexObject).GetTypeInfo()
+                        .DeclaredMethods
+                        .FirstOrDefault(x => x.Name == "BoxObservable")
+                        .MakeGenericMethod(observableType.GenericTypeArguments[0]);
+
+                    result = (IObservable<object>)cast.Invoke(null, new[] { value });
+                }
+            }
+
+            return result;
+        }
+
+        private object GetDefaultValue(PerspexProperty property)
+        {
+            if (property.Inherits && this.inheritanceParent != null)
+            {
+                return this.inheritanceParent.GetValue(property);
+            }
+            else
+            {
+                return property.GetDefaultValue(this.GetType());
+            }
         }
 
         /// <summary>
@@ -515,41 +493,41 @@ namespace Perspex
             }
         }
 
-        private void SetValueImpl(PerspexProperty property, object value)
-        {
-            Contract.Requires<NullReferenceException>(property != null);
+        //private void SetValueImpl(PerspexProperty property, object value)
+        //{
+        //    Contract.Requires<NullReferenceException>(property != null);
 
-            if (!property.IsValidValue(value))
-            {
-                throw new InvalidOperationException("Invalid value for " + property.Name);
-            }
+        //    if (!property.IsValidValue(value))
+        //    {
+        //        throw new InvalidOperationException("Invalid value for " + property.Name);
+        //    }
 
-            object oldValue = this.GetValue(property);
+        //    object oldValue = this.GetValue(property);
 
-            if (!object.Equals(oldValue, value))
-            {
-                string valueString = value.ToString();
+        //    if (!object.Equals(oldValue, value))
+        //    {
+        //        string valueString = value.ToString();
 
-                if (value == PerspexProperty.UnsetValue)
-                {
-                    valueString = "[Unset]";
-                    this.values.Remove(property);
-                }
-                else
-                {
-                    this.values[property] = value;
-                }
+        //        if (value == PerspexProperty.UnsetValue)
+        //        {
+        //            valueString = "[Unset]";
+        //            this.values.Remove(property);
+        //        }
+        //        else
+        //        {
+        //            this.values[property] = value;
+        //        }
 
-                this.RaisePropertyChanged(property, oldValue, value);
+        //        this.RaisePropertyChanged(property, oldValue, value);
 
-                this.Log().Debug(string.Format(
-                    "Set value of {0}.{1} (#{2:x8}) to '{3}'",
-                    this.GetType().Name,
-                    property.Name,
-                    this.GetHashCode(),
-                    valueString));
-            }
-        }
+        //        this.Log().Debug(string.Format(
+        //            "Set value of {0}.{1} (#{2:x8}) to '{3}'",
+        //            this.GetType().Name,
+        //            property.Name,
+        //            this.GetHashCode(),
+        //            valueString));
+        //    }
+        //}
 
         private class Binding
         {
