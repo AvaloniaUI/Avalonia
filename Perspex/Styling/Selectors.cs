@@ -64,9 +64,12 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(match != null);
 
             match.Observables.Add(Observable.Return(match.Control.TemplatedParent is T));
-            match.InTemplate = true;
             match.SelectorString += '%' + typeof(T).Name;
-            return match;
+
+            return new Match(match)
+            {
+                InTemplate = true,
+            };
         }
 
         public static Match OfType<T>(this Match match) where T : IStyleable

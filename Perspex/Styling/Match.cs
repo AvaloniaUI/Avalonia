@@ -20,6 +20,14 @@ namespace Perspex.Styling
             this.Observables = new List<IObservable<bool>>();
         }
 
+        public Match(Match source)
+        {
+            this.Control = source.Control;
+            this.InTemplate = source.InTemplate;
+            this.Observables = source.Observables;
+            this.SelectorString = SelectorString;
+        }
+
         public IStyleable Control
         {
             get;
