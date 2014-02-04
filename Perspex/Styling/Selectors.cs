@@ -59,7 +59,7 @@ namespace Perspex.Styling
             return match;
         }
 
-        public static Match InTemplateOf<T>(this Match match)
+        public static Match InTemplateOf<T>(this Match match) where T : TemplatedControl
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
@@ -69,7 +69,7 @@ namespace Perspex.Styling
             return match;
         }
 
-        public static Match OfType<T>(this Match match)
+        public static Match OfType<T>(this Match match) where T : IStyleable
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
