@@ -54,7 +54,7 @@ namespace Perspex.Styling
             return match;
         }
 
-        public static Match InTemplateOf<T>(this Match match) where T : TemplatedControl
+        public static Match InTemplateOf<T>(this Match match) where T : ITemplatedControl
         {
             Contract.Requires<ArgumentNullException>(match != null);
 

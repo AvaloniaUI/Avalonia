@@ -60,20 +60,12 @@ namespace Perspex.UnitTests.Styling
         {
         }
 
-        public class TemplatedControl1 : TemplatedControl
+        public class TemplatedControl1 : ITemplatedControl
         {
-            protected override Size MeasureContent(Size availableSize)
-            {
-                throw new NotImplementedException();
-            }
         }
 
-        public class TemplatedControl2 : TemplatedControl
+        public class TemplatedControl2 : ITemplatedControl
         {
-            protected override Size MeasureContent(Size availableSize)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

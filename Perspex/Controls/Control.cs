@@ -218,7 +218,7 @@ namespace Perspex.Controls
             }
         }
 
-        public TemplatedControl TemplatedParent
+        public ITemplatedControl TemplatedParent
         {
             get;
             internal set;

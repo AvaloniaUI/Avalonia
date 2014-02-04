@@ -13,16 +13,16 @@ namespace Perspex
 
     public class ControlTemplate
     {
-        private Func<TemplatedControl, Control> build;
+        private Func<ITemplatedControl, Control> build;
 
-        public ControlTemplate(Func<TemplatedControl, Control> build)
+        public ControlTemplate(Func<ITemplatedControl, Control> build)
         {
             Contract.Requires<NullReferenceException>(build != null);
 
             this.build = build;
         }
 
-        public Control Build(TemplatedControl templatedParent)
+        public Control Build(ITemplatedControl templatedParent)
         {
             Contract.Requires<NullReferenceException>(templatedParent != null);
 
@@ -32,14 +32,14 @@ namespace Perspex
         }
 
         public static ControlTemplate Create<TControl>(Func<TControl, Control> build)
-            where TControl : TemplatedControl
+            where TControl : ITemplatedControl
         {
             Contract.Requires<NullReferenceException>(build != null);
 
             return new ControlTemplate(c => build((TControl)c));
         }
 
-        private void SetTemplatedParent(Control control, TemplatedControl templatedParent)
+        private void SetTemplatedParent(Control control, ITemplatedControl templatedParent)
         {
             Contract.Requires<NullReferenceException>(control != null);
             Contract.Requires<NullReferenceException>(templatedParent != null);

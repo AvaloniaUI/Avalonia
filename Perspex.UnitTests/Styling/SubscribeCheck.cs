@@ -38,7 +38,7 @@ namespace Perspex.UnitTests.Styling
 
         public TestObservable SubscribeCheckObservable { get; private set; }
 
-        public TemplatedControl TemplatedParent
+        public ITemplatedControl TemplatedParent
         {
             get;
             set;
