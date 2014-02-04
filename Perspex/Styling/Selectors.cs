@@ -7,13 +7,8 @@
 namespace Perspex.Styling
 {
     using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Diagnostics.Contracts;
-    using System.Linq;
     using System.Reactive.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Perspex.Controls;
 
     public static class Selectors
