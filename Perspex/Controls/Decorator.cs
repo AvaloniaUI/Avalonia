@@ -42,7 +42,7 @@ namespace Perspex.Controls
             set { this.SetValue(PaddingProperty, value); }
         }
 
-        public override IEnumerable<Visual> VisualChildren
+        public override IEnumerable<IVisual> VisualChildren
         {
             get 
             {

@@ -137,7 +137,7 @@ namespace Perspex.Windows
 
         private void MouseDown(Visual visual, Point p)
         {
-            Visual hit = visual.GetVisualAt(p);
+            IVisual hit = visual.GetVisualAt(p);
 
             if (hit != null)
             {
@@ -172,7 +172,7 @@ namespace Perspex.Windows
 
         private void MouseUp(Visual visual, Point p)
         {
-            Visual hit = visual.GetVisualAt(p);
+            IVisual hit = visual.GetVisualAt(p);
 
             if (hit != null)
             {

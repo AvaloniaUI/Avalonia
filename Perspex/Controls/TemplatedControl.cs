@@ -24,7 +24,7 @@ namespace Perspex.Controls
             set { this.SetValue(TemplateProperty, value); }
         }
 
-        public override IEnumerable<Visual> VisualChildren
+        public override IEnumerable<IVisual> VisualChildren
         {
             get 
             {

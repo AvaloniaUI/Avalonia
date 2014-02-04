@@ -17,55 +17,61 @@ namespace Perspex.UnitTests.Styling
     public class SelectorTests_InTemplateOf
     {
         [TestMethod]
-        public void InTemplateOf_Matches_Control_Of_Correct_Type()
+        public void Remove_These()
         {
-            var control = new Control1 { TemplatedParent = new TemplatedControl1() };
-            var target = control.Select().InTemplateOf<TemplatedControl1>();
-
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            Assert.Fail();
         }
 
-        [TestMethod]
-        public void InTemplateOf_Doesnt_Match_Control_Of_Wrong_Type()
-        {
-            var control = new Control1 { TemplatedParent = new TemplatedControl1() };
-            var target = control.Select().InTemplateOf<TemplatedControl2>();
+        //[TestMethod]
+        //public void InTemplateOf_Matches_Control_Of_Correct_Type()
+        //{
+        //    var control = new Control1 { TemplatedParent = new TemplatedControl1() };
+        //    var target = control.Select().InTemplateOf<TemplatedControl1>();
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
-        }
+        //    CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+        //}
 
-        [TestMethod]
-        public void When_InTemplateOf_Matches_Control_Other_Selectors_Are_Subscribed()
-        {
-            var control = new Control1 { TemplatedParent = new TemplatedControl1() };
-            var target = control.Select().InTemplateOf<TemplatedControl1>().SubscribeCheck();
+        //[TestMethod]
+        //public void InTemplateOf_Doesnt_Match_Control_Of_Wrong_Type()
+        //{
+        //    var control = new Control1 { TemplatedParent = new TemplatedControl1() };
+        //    var target = control.Select().InTemplateOf<TemplatedControl2>();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+        //    CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+        //}
 
-            Assert.AreEqual(1, control.SubscribeCheckObservable.SubscribedCount);
-        }
+        //[TestMethod]
+        //public void When_InTemplateOf_Matches_Control_Other_Selectors_Are_Subscribed()
+        //{
+        //    var control = new Control1 { TemplatedParent = new TemplatedControl1() };
+        //    var target = control.Select().InTemplateOf<TemplatedControl1>().SubscribeCheck();
 
-        [TestMethod]
-        public void When_InTemplateOf_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
-        {
-            var control = new Control1 { TemplatedParent = new TemplatedControl1() };
-            var target = control.Select().InTemplateOf<TemplatedControl2>().SubscribeCheck();
+        //    var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+        //    Assert.AreEqual(1, control.SubscribeCheckObservable.SubscribedCount);
+        //}
 
-            Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
-        }
+        //[TestMethod]
+        //public void When_InTemplateOf_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
+        //{
+        //    var control = new Control1 { TemplatedParent = new TemplatedControl1() };
+        //    var target = control.Select().InTemplateOf<TemplatedControl2>().SubscribeCheck();
 
-        public class Control1 : SubscribeCheck
-        {
-        }
+        //    var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
 
-        public class TemplatedControl1 : ITemplatedControl
-        {
-        }
+        //    Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
+        //}
 
-        public class TemplatedControl2 : ITemplatedControl
-        {
-        }
+        //public class Control1 : TestControlBase
+        //{
+        //}
+
+        //public class TemplatedControl1 : ITemplatedControl
+        //{
+        //}
+
+        //public class TemplatedControl2 : ITemplatedControl
+        //{
+        //}
     }
 }

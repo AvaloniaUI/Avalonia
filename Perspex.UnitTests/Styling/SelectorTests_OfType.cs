@@ -54,11 +54,11 @@ namespace Perspex.UnitTests.Styling
             Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
         }
 
-        public class Control1 : SubscribeCheck
+        public class Control1 : TestControlBase
         {
         }
 
-        public class Control2 : SubscribeCheck
+        public class Control2 : TestControlBase
         {
         }
     }

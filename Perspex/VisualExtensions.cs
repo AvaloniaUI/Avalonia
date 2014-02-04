@@ -12,7 +12,7 @@ namespace Perspex
 
     public static class VisualExtensions
     {
-        public static T GetVisualAncestor<T>(this Visual visual) where T : Visual
+        public static T GetVisualAncestor<T>(this IVisual visual) where T : Visual
         {
             Contract.Requires<NullReferenceException>(visual != null);
 
@@ -33,7 +33,7 @@ namespace Perspex
             return null;
         }
 
-        public static Visual GetVisualAt(this Visual visual, Point p)
+        public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
             Contract.Requires<NullReferenceException>(visual != null);
 
@@ -43,9 +43,9 @@ namespace Perspex
 
                 if (visual.VisualChildren.Any())
                 {
-                    foreach (Visual child in visual.VisualChildren)
+                    foreach (IVisual child in visual.VisualChildren)
                     {
-                        Visual hit = child.GetVisualAt(p);
+                        IVisual hit = child.GetVisualAt(p);
 
                         if (hit != null)
                         {

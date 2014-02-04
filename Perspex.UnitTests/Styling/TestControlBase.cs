@@ -24,9 +24,9 @@ namespace Perspex.UnitTests.Styling
         }
     }
 
-    public class SubscribeCheck : IStyleable
+    public class TestControlBase : IStyleable
     {
-        public SubscribeCheck()
+        public TestControlBase()
         {
             this.Classes = new Classes();
             this.SubscribeCheckObservable = new TestObservable();
@@ -53,7 +53,7 @@ namespace Perspex.UnitTests.Styling
     {
         public static Match SubscribeCheck(this Match match)
         {
-            match.Observables.Add(((SubscribeCheck)match.Control).SubscribeCheckObservable);
+            match.Observables.Add(((TestControlBase)match.Control).SubscribeCheckObservable);
             return match;
         }
     }

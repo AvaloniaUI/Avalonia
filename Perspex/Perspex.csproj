@@ -81,6 +81,7 @@
     <Compile Include="ControlTemplate.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
+    <Compile Include="IVisual.cs" />
     <Compile Include="Styling\Activator.cs" />
     <Compile Include="Styling\IStyleable.cs" />
     <Compile Include="Styling\IStyle.cs" />

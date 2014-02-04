@@ -7,6 +7,7 @@
 namespace Perspex.UnitTests.Styling
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -74,12 +75,16 @@ namespace Perspex.UnitTests.Styling
             Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
         }
 
-        public class Control1 : SubscribeCheck
+        public class Control1 : TestControlBase
         {
         }
 
         public class TemplatedControl1 : ITemplatedControl
         {
+            public IEnumerable<IVisual> VisualChildren
+            {
+                get { throw new NotImplementedException(); }
+            }
         }
     }
 }

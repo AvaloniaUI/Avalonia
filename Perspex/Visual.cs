@@ -12,11 +12,9 @@ namespace Perspex
     using System.Linq;
     using Perspex.Media;
 
-    public abstract class Visual : PerspexObject
+    public abstract class Visual : PerspexObject, IVisual
     {
-        private string id;
-
-        private Visual visualParent;
+        private IVisual visualParent;
 
         public Rect Bounds
         {
@@ -24,47 +22,24 @@ namespace Perspex
             protected set;
         }
 
-        public string Id
-        {
-            get
-            {
-                return this.id;
-            }
-
-            set
-            {
-                if (this.id != null)
-                {
-                    throw new InvalidOperationException("ID already set.");
-                }
-
-                if (this.visualParent != null)
-                {
-                    throw new InvalidOperationException("Cannot set ID : control already added to tree.");
-                }
-
-                this.id = value;
-            }
-        }
-
-        public virtual IEnumerable<Visual> VisualChildren
+        public virtual IEnumerable<IVisual> VisualChildren
         {
             get { return Enumerable.Empty<Visual>(); }
         }
 
-        public Visual VisualParent
+        public IVisual VisualParent
         {
             get 
             { 
                 return this.visualParent; 
             }
 
-            set
+            internal set
             {
                 if (this.visualParent != value)
                 {
                     this.visualParent = value;
-                    this.InheritanceParent = value;
+                    this.InheritanceParent = (PerspexObject)value;
                 }
             }
         }

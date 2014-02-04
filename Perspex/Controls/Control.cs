@@ -72,6 +72,8 @@ namespace Perspex.Controls
 
         private Classes classes;
 
+        private string id;
+
         private Styles styles;
 
         public Control()
@@ -164,16 +166,39 @@ namespace Perspex.Controls
             }
         }
 
+        public Size? DesiredSize
+        {
+            get;
+            set;
+        }
+
         public Brush Foreground
         {
             get { return this.GetValue(ForegroundProperty); }
             set { this.SetValue(ForegroundProperty, value); }
         }
 
-        public Size? DesiredSize
+        public string Id
         {
-            get;
-            set;
+            get
+            {
+                return this.id;
+            }
+
+            set
+            {
+                if (this.id != null)
+                {
+                    throw new InvalidOperationException("ID already set.");
+                }
+
+                if (this.VisualParent != null)
+                {
+                    throw new InvalidOperationException("Cannot set ID : control already added to tree.");
+                }
+
+                this.id = value;
+            }
         }
 
         public bool IsMouseOver

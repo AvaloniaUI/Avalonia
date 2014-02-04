@@ -69,7 +69,7 @@ namespace Perspex.UnitTests.Styling
             CollectionAssert.AreEqual(new[] { false }, activator.Take(1).ToEnumerable().ToArray());
         }
 
-        public class Control1 : SubscribeCheck
+        public class Control1 : TestControlBase
         {
         }
     }
