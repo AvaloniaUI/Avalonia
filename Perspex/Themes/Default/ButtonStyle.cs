@@ -45,7 +45,7 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Visual Template(Button control)
+        private Control Template(Button control)
         {
             Border border = new Border();
             border.SetValue(Border.BackgroundProperty, control.GetObservable(Button.BackgroundProperty));

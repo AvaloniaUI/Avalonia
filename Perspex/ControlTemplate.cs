@@ -5,18 +5,18 @@
 
     public class ControlTemplate
     {
-        public ControlTemplate(Func<TemplatedControl, Visual> build)
+        public ControlTemplate(Func<TemplatedControl, Control> build)
         {
             this.Build = build;
         }
 
-        public Func<TemplatedControl, Visual> Build
+        public Func<TemplatedControl, Control> Build
         {
             get;
             private set;
         }
 
-        public static ControlTemplate Create<TControl>(Func<TControl, Visual> build)
+        public static ControlTemplate Create<TControl>(Func<TControl, Control> build)
             where TControl : TemplatedControl
         {
             return new ControlTemplate(c => build((TControl)c));

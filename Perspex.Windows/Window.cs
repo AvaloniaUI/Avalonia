@@ -80,7 +80,7 @@ namespace Perspex.Windows
             UnmanagedMethods.ShowWindow(this.Handle, 4);
         }
 
-        private Visual DefaultTemplate(Window c)
+        private Control DefaultTemplate(Window c)
         {
             Border border = new Border();
             border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
