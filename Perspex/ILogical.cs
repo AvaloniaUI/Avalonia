@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="IVisual.cs" company="Steven Kirk">
+// <copyright file="ILogical.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -8,16 +8,14 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
-    using Perspex.Media;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
 
-    public interface IVisual
+    public interface ILogical
     {
-        Rect Bounds { get; }
-        
-        IEnumerable<IVisual> VisualChildren { get; }
+        ILogical LogicalParent { get; set; }
 
-        IVisual VisualParent { get; set; }
-
-        void Render(IDrawingContext context);
+        IEnumerable<ILogical> LogicalChildren { get; }
     }
 }

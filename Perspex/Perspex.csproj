@@ -79,6 +79,7 @@
     <Compile Include="Controls\ITemplatedControl.cs" />
     <Compile Include="Controls\TextBlock.cs" />
     <Compile Include="ControlTemplate.cs" />
+    <Compile Include="ILogical.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
     <Compile Include="IVisual.cs" />

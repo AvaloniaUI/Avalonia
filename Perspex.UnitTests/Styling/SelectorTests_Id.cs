@@ -45,15 +45,6 @@ namespace Perspex.UnitTests.Styling
         }
 
         [TestMethod]
-        public void Id_Matches_Control_With_TemplatedParent_After_InTemplateOf()
-        {
-            var control = new Control1 { Id = "foo", TemplatedParent = new TemplatedControl1() };
-            var target = control.Select().InTemplateOf<TemplatedControl1>().Id("foo");
-
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
-        }
-
-        [TestMethod]
         public void When_Id_Matches_Control_Other_Selectors_Are_Subscribed()
         {
             var control = new Control1 { Id = "foo" };

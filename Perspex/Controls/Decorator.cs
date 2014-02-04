@@ -9,8 +9,9 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive.Linq;
 
-    public abstract class Decorator : Control
+    public abstract class Decorator : Control, IVisual
     {
         public static readonly PerspexProperty<Control> ContentProperty =
             PerspexProperty.Register<ContentControl, Control>("Content");
@@ -21,7 +22,7 @@ namespace Perspex.Controls
         public Decorator()
         {
             // TODO: Unset old content's visual parent.
-            this.GetObservable(ContentProperty).Subscribe(x =>
+            this.GetObservable(ContentProperty).OfType<IVisual>().Subscribe(x =>
             {
                 if (x != null)
                 {
@@ -42,7 +43,7 @@ namespace Perspex.Controls
             set { this.SetValue(PaddingProperty, value); }
         }
 
-        public override IEnumerable<IVisual> VisualChildren
+        IEnumerable<IVisual> IVisual.VisualChildren
         {
             get 
             {

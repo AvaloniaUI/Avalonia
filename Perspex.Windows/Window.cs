@@ -164,7 +164,7 @@ namespace Perspex.Windows
                 control.IsMouseOver = visual.Bounds.Contains(p);
             }
 
-            foreach (Visual child in visual.VisualChildren)
+            foreach (Visual child in ((IVisual)visual).VisualChildren)
             {
                 this.MouseMove(child, p - visual.Bounds.Position);
             }

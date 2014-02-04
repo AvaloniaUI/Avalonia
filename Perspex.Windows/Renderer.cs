@@ -71,7 +71,7 @@ namespace Perspex.Windows
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(Visual visual)
+        public void Render(IVisual visual)
         {
             using (DrawingContext context = new DrawingContext(this.renderTarget, this.DirectWriteFactory))
             {
@@ -94,7 +94,7 @@ namespace Perspex.Windows
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="context">The drawing context.</param>
-        private void Render(Visual visual, DrawingContext context)
+        private void Render(IVisual visual, DrawingContext context)
         {
             visual.Render(context);
 

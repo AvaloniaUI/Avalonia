@@ -11,12 +11,12 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Media;
 
-    public abstract class TemplatedControl : Control, ITemplatedControl
+    public abstract class TemplatedControl : Control, IVisual, ITemplatedControl
     {
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
-        private Visual visualChild;
+        private IVisual visualChild;
 
         public ControlTemplate Template
         {
@@ -24,7 +24,7 @@ namespace Perspex.Controls
             set { this.SetValue(TemplateProperty, value); }
         }
 
-        public override IEnumerable<IVisual> VisualChildren
+        IEnumerable<IVisual> ITemplatedControl.VisualChildren
         {
             get 
             {
@@ -38,6 +38,11 @@ namespace Perspex.Controls
 
                 return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0);
             }
+        }
+
+        IEnumerable<IVisual> IVisual.VisualChildren
+        {
+            get { return ((ITemplatedControl)this).VisualChildren; }
         }
 
         public sealed override void Render(IDrawingContext context)

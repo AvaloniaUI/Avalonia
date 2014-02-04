@@ -24,7 +24,7 @@ namespace Perspex.Controls
 
                 if (control != null)
                 {
-                    control.VisualParent = this;
+                    ((IVisual)control).VisualParent = this;
                     control.SetValue(ParentPropertyRW, this);
                 }
             });
@@ -38,7 +38,7 @@ namespace Perspex.Controls
 
         protected override Size ArrangeContent(Size finalSize)
         {
-            Control child = this.VisualChildren.SingleOrDefault() as Control;
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
             {
@@ -53,7 +53,7 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
-            Control child = this.VisualChildren.SingleOrDefault() as Control;
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
             {

@@ -12,8 +12,10 @@ namespace Perspex
     using System.Linq;
     using Perspex.Media;
 
-    public abstract class Visual : PerspexObject, IVisual
+    public abstract class Visual : PerspexObject, IVisual, ILogical
     {
+        private ILogical logicalParent;
+
         private IVisual visualParent;
 
         public Rect Bounds
@@ -22,19 +24,30 @@ namespace Perspex
             protected set;
         }
 
-        public virtual IEnumerable<IVisual> VisualChildren
+        ILogical ILogical.LogicalParent
+        {
+            get { return this.logicalParent; }
+            set { this.logicalParent = value; }
+        }
+
+        IEnumerable<ILogical> ILogical.LogicalChildren
+        {
+            get { return new ILogical[0]; }
+        }
+
+        IEnumerable<IVisual> IVisual.VisualChildren
         {
             get { return Enumerable.Empty<Visual>(); }
         }
 
-        public IVisual VisualParent
+        IVisual IVisual.VisualParent
         {
             get 
             { 
-                return this.visualParent; 
+                return this.visualParent;
             }
 
-            internal set
+            set
             {
                 if (this.visualParent != value)
                 {

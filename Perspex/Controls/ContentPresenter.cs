@@ -11,7 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Media;
 
-    public class ContentPresenter : Control
+    public class ContentPresenter : Control, IVisual
     {
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<Control>();
@@ -33,7 +33,7 @@ namespace Perspex.Controls
             set { this.SetValue(DataTemplateProperty, value); }
         }
 
-        public override IEnumerable<IVisual> VisualChildren
+        IEnumerable<IVisual> IVisual.VisualChildren
         {
             get
             {
@@ -60,7 +60,7 @@ namespace Perspex.Controls
 
                     if (this.visualChild != null)
                     {
-                        this.visualChild.VisualParent = this;
+                        ((IVisual)this.visualChild).VisualParent = this;
                     }
                 }
 
@@ -70,7 +70,7 @@ namespace Perspex.Controls
 
         protected override Size ArrangeContent(Size finalSize)
         {
-            Control child = this.VisualChildren.SingleOrDefault() as Control;
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
             {
@@ -127,7 +127,7 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
-            Control child = this.VisualChildren.SingleOrDefault() as Control;
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
             {

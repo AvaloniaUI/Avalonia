@@ -192,7 +192,7 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("ID already set.");
                 }
 
-                if (this.VisualParent != null)
+                if (((IVisual)this).VisualParent != null)
                 {
                     throw new InvalidOperationException("Cannot set ID : control already added to tree.");
                 }
