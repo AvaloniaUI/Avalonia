@@ -70,13 +70,15 @@ namespace Perspex.Controls
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
 
+        private Classes classes;
+
         private Styles styles;
 
         public Control()
         {
-            this.Classes = new Classes();
-            this.Classes.BeforeChanged.Subscribe(x => this.BeginDeferStyleChanges());
-            this.Classes.AfterChanged.Subscribe(x => this.EndDeferStyleChanges());
+            this.classes = new Classes();
+            this.classes.BeforeChanged.Subscribe(x => this.BeginDeferStyleChanges());
+            this.classes.AfterChanged.Subscribe(x => this.EndDeferStyleChanges());
 
             this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
 
@@ -145,8 +147,21 @@ namespace Perspex.Controls
 
         public Classes Classes
         {
-            get;
-            private set;
+            get 
+            { 
+                return this.classes; 
+            }
+            
+            set
+            {
+                if (this.classes != value)
+                {
+                    this.BeginDeferStyleChanges();
+                    this.classes.Clear();
+                    this.classes.Add(value);
+                    this.EndDeferStyleChanges();
+                }
+            }
         }
 
         public Brush Foreground
@@ -201,6 +216,12 @@ namespace Perspex.Controls
             {
                 this.styles = value;
             }
+        }
+
+        public TemplatedControl TemplatedParent
+        {
+            get;
+            internal set;
         }
 
         public VerticalAlignment VerticalAlignment

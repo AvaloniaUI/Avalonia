@@ -26,6 +26,12 @@ namespace Perspex.Styling
             private set;
         }
 
+        public bool InTemplate
+        {
+            get;
+            set;
+        }
+
         public List<IObservable<bool>> Observables
         {
             get;

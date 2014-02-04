@@ -14,12 +14,37 @@ namespace Perspex
 
     public abstract class Visual : PerspexObject
     {
+        private string id;
+
         private Visual visualParent;
 
         public Rect Bounds
         {
             get;
             protected set;
+        }
+
+        public string Id
+        {
+            get
+            {
+                return this.id;
+            }
+
+            set
+            {
+                if (this.id != null)
+                {
+                    throw new InvalidOperationException("ID already set.");
+                }
+
+                if (this.visualParent != null)
+                {
+                    throw new InvalidOperationException("Cannot set ID : control already added to tree.");
+                }
+
+                this.id = value;
+            }
         }
 
         public virtual IEnumerable<Visual> VisualChildren

@@ -20,6 +20,16 @@ namespace Perspex.Styling
         Classes Classes { get; }
 
         /// <summary>
+        /// Gets the ID of the control.
+        /// </summary>
+        string Id { get; }
+
+        /// <summary>
+        /// Gets the template parent of this element if the control comes from a template.
+        /// </summary>
+        TemplatedControl TemplatedParent { get; }
+
+        /// <summary>
         /// Binds a <see cref="PerspexProperty"/> to a style.
         /// </summary>
         /// <param name="property">The property.</param>

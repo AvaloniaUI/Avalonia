@@ -38,6 +38,37 @@ namespace Perspex.Styling
             return match;
         }
 
+        public static Match Id(this Match match, string id)
+        {
+            Contract.Requires<ArgumentNullException>(match != null);
+
+            if (!match.InTemplate)
+            {
+                match.Observables.Add(Observable.Return(
+                    match.Control.TemplatedParent == null &&
+                    match.Control.Id == id));
+            }
+            else
+            {
+                match.Observables.Add(Observable.Return(
+                    match.Control.TemplatedParent != null &&
+                    match.Control.Id == id));
+            }
+
+            match.SelectorString += '#' + id;
+            return match;
+        }
+
+        public static Match InTemplateOf<T>(this Match match)
+        {
+            Contract.Requires<ArgumentNullException>(match != null);
+
+            match.Observables.Add(Observable.Return(match.Control.TemplatedParent is T));
+            match.InTemplate = true;
+            match.SelectorString += '%' + typeof(T).Name;
+            return match;
+        }
+
         public static Match OfType<T>(this Match match)
         {
             Contract.Requires<ArgumentNullException>(match != null);

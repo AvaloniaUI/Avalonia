@@ -8,6 +8,7 @@ namespace Perspex.UnitTests.Styling
 {
     using System;
     using System.Reactive.Disposables;
+    using Perspex.Controls;
     using Perspex.Styling;
     using Match = Perspex.Styling.Match;
 
@@ -27,20 +28,20 @@ namespace Perspex.UnitTests.Styling
     {
         public SubscribeCheck()
         {
-            this.Classes = Classes;
+            this.Classes = new Classes();
             this.SubscribeCheckObservable = new TestObservable();
         }
 
-        public Classes Classes
-        {
-            get;
-            private set;
-        }
+        public string Id { get; set; }
 
-        public TestObservable SubscribeCheckObservable
+        public Classes Classes { get; set; }
+
+        public TestObservable SubscribeCheckObservable { get; private set; }
+
+        public TemplatedControl TemplatedParent
         {
             get;
-            private set;
+            set;
         }
 
         public virtual void SetValue(PerspexProperty property, object value, IObservable<bool> activator)
