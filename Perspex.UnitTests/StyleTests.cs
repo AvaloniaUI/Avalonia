@@ -18,80 +18,111 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Style_With_Only_Type_Selector_Should_Update_Value()
         {
-            Style style = new Style(x => x.Select().OfType<TextBlock>())
+            Style style = new Style(x => x.Select().OfType<Class1>())
             {
                 Setters = new[]
                 {
-                    new Setter(TextBlock.TextProperty, "Foo"),
+                    new Setter(Class1.FooProperty, "Foo"),
                 },
             };
 
-            TextBlock textBlock = new TextBlock
-            {
-                Text = "Original",
-            };
+            var target = new Class1();
 
-            style.Attach(textBlock);
-            Assert.AreEqual("Foo", textBlock.Text);
+            style.Attach(target);
+
+            Assert.AreEqual("Foo", target.Foo);
         }
 
         [TestMethod]
         public void Style_With_Class_Selector_Should_Update_And_Restore_Value()
         {
-            Style style = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
+            Style style = new Style(x => x.Select().OfType<Class1>().Class("foo"))
             {
                 Setters = new[]
                 {
-                    new Setter(TextBlock.TextProperty, "Foo"),
+                    new Setter(Class1.FooProperty, "Foo"),
                 },
             };
 
-            TextBlock textBlock = new TextBlock
+            var target = new Class1();
+
+            style.Attach(target);
+            Assert.AreEqual("foodefault", target.Foo);
+            target.Classes.Add("foo");
+            Assert.AreEqual("Foo", target.Foo);
+            target.Classes.Remove("foo");
+            Assert.AreEqual("foodefault", target.Foo);
+        }
+
+        [TestMethod]
+        public void LocalValue_Should_Override_Style()
+        {
+            Style style = new Style(x => x.Select().OfType<Class1>())
             {
-                Text = "Original",
+                Setters = new[]
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
             };
 
-            style.Attach(textBlock);
-            Assert.AreEqual("Original", textBlock.Text);
-            textBlock.Classes.Add("foo");
-            Assert.AreEqual("Foo", textBlock.Text);
-            textBlock.Classes.Remove("foo");
-            Assert.AreEqual("Original", textBlock.Text);
+            var target = new Class1
+            {
+                Foo = "Original",
+            };
+
+            style.Attach(target);
+            Assert.AreEqual("Original", target.Foo);
         }
 
         [TestMethod]
         public void Later_Styles_Should_Override_Earlier()
         {
-            Style style1 = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
+            Styles styles = new Styles
             {
-                Setters = new[]
+                new Style(x => x.Select().OfType<Class1>().Class("foo"))
                 {
-                    new Setter(TextBlock.TextProperty, "Foo"),
+                    Setters = new[]
+                    {
+                        new Setter(Class1.FooProperty, "Foo"),
+                    },
                 },
+
+                new Style(x => x.Select().OfType<Class1>().Class("foo"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Class1.FooProperty, "Bar"),
+                    },
+                }
             };
 
-            Style style2 = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
-            {
-                Setters = new[]
-                {
-                    new Setter(TextBlock.TextProperty, "Bar"),
-                },
-            };
-
-            TextBlock textBlock = new TextBlock
-            {
-                Text = "Original",
-            };
+            var target = new Class1();
 
             List<string> values = new List<string>();
-            textBlock.GetObservable(TextBlock.TextProperty).Subscribe(x => values.Add(x));
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
 
-            style1.Attach(textBlock);
-            style2.Attach(textBlock);
-            textBlock.Classes.Add("foo");
-            textBlock.Classes.Remove("foo");
+            styles.Attach(target);
+            target.Classes.Add("foo");
+            target.Classes.Remove("foo");
 
-            CollectionAssert.AreEqual(new[] { "Original", "Bar", "Original" }, values);
+            CollectionAssert.AreEqual(new[] { "foodefault", "Bar", "foodefault" }, values);
+        }
+
+        private class Class1 : Control
+        {
+            public static readonly PerspexProperty<string> FooProperty =
+                PerspexProperty.Register<Class1, string>("Foo", "foodefault");
+
+            public string Foo
+            {
+                get { return this.GetValue(FooProperty); }
+                set { this.SetValue(FooProperty, value); }
+            }
+
+            protected override Size MeasureContent(Size availableSize)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
