@@ -17,7 +17,7 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets the list of classes for the control.
         /// </summary>
-        PerspexList<string> Classes { get; }
+        Classes Classes { get; }
 
         /// <summary>
         /// Binds a <see cref="PerspexProperty"/> to a style.

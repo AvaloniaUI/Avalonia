@@ -27,11 +27,11 @@ namespace Perspex.UnitTests.Styling
     {
         public SubscribeCheck()
         {
-            this.Classes = new PerspexList<string>();
+            this.Classes = Classes;
             this.SubscribeCheckObservable = new TestObservable();
         }
 
-        public PerspexList<string> Classes
+        public Classes Classes
         {
             get;
             private set;

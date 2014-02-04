@@ -12,6 +12,7 @@ namespace Perspex
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reactive;
+    using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Reflection;
     using Splat;
@@ -92,6 +93,40 @@ namespace Perspex
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Defers property updates due to style changes until <see cref="EndDeferStyleChanges"/>
+        /// is called.
+        /// </summary>
+        public void BeginDeferStyleChanges()
+        {
+            foreach (PriorityValue v in this.values.Values)
+            {
+                v.BeginDeferStyleChanges();
+            }
+
+            this.Log().Debug(string.Format(
+                "Defer style changes on {0} (#{1:x8})",
+                this.GetType().Name,
+                this.GetHashCode()));
+        }
+
+        /// <summary>
+        /// Ends the defer of property updates due to style changes initiated by a previous call 
+        /// to <see cref="BeginDeferStyleChanges"/>.
+        /// </summary>
+        public void EndDeferStyleChanges()
+        {
+            foreach (PriorityValue v in this.values.Values)
+            {
+                v.EndDeferStyleChanges();
+            }
+
+            this.Log().Debug(string.Format(
+                "End defer style changes on {0} (#{1:x8})",
+                this.GetType().Name,
+                this.GetHashCode()));
         }
 
         /// <summary>

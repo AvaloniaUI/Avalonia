@@ -25,6 +25,10 @@ namespace Perspex
         private List<IObserver<Tuple<object, object>>> observers = 
             new List<IObserver<Tuple<object, object>>>();
 
+        private int defer;
+
+        private bool dirty;
+
         public object LocalValue
         {
             get
@@ -113,18 +117,41 @@ namespace Perspex
             return Disposable.Create(() => this.observers.Remove(observer));
         }
 
+        public void BeginDeferStyleChanges()
+        {
+            if (this.defer++ == 0)
+            {
+                this.dirty = false;
+            }
+        }
+
+        public void EndDeferStyleChanges()
+        {
+            if (this.defer > 0 && --this.defer == 0 && dirty)
+            {
+                this.Push();
+            }        
+        }
+
         private void Push()
         {
-            object value = this.GetEffectiveValue();
-
-            if (!object.Equals(this.lastValue, value))
+            if (defer == 0)
             {
-                foreach (IObserver<Tuple<object, object>> observer in this.observers)
-                {
-                    observer.OnNext(Tuple.Create(this.lastValue, value));
-                }
+                object value = this.GetEffectiveValue();
 
-                this.lastValue = value;
+                if (!object.Equals(this.lastValue, value))
+                {
+                    foreach (IObserver<Tuple<object, object>> observer in this.observers)
+                    {
+                        observer.OnNext(Tuple.Create(this.lastValue, value));
+                    }
+
+                    this.lastValue = value;
+                }
+            }
+            else
+            {
+                dirty = true;
             }
         }
 

@@ -74,7 +74,10 @@ namespace Perspex.Controls
 
         public Control()
         {
-            this.Classes = new PerspexList<string>();
+            this.Classes = new Classes();
+            this.Classes.BeforeChanged.Subscribe(x => this.BeginDeferStyleChanges());
+            this.Classes.AfterChanged.Subscribe(x => this.EndDeferStyleChanges());
+
             this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
 
             this.GetObservable(IsMouseOverProperty).Subscribe(x =>
@@ -140,7 +143,7 @@ namespace Perspex.Controls
             set { this.SetValue(BorderThicknessProperty, value); }
         }
 
-        public PerspexList<string> Classes
+        public Classes Classes
         {
             get;
             private set;
