@@ -14,54 +14,38 @@ namespace Perspex.Styling
 
     public class Match
     {
+        public Match(IStyleable control)
+        {
+            this.Control = control;
+            this.Observables = new List<IObservable<bool>>();
+        }
+
         public IStyleable Control
         {
             get;
-            set;
+            private set;
         }
 
-        public IObservable<bool> Observable
+        public List<IObservable<bool>> Observables
         {
             get;
             set;
         }
 
-        public Match Previous
+        public string SelectorString
         {
             get;
             set;
         }
 
-        public string Token
+        public Activator GetActivator()
         {
-            get;
-            set;
-        }
-
-        public IObservable<bool> GetActivator()
-        {
-            List<IObservable<bool>> observables = new List<IObservable<bool>>();
-            Match match = this;
-
-            do
-            {
-                if (match.Observable != null)
-                {
-                    observables.Add(match.Observable);
-                }
-
-                match = match.Previous;
-            }
-            while (match != null);
-
-            return System.Reactive.Linq.Observable.CombineLatest(observables).Select(x => x.All(b => b));
+            return new Activator(this.Observables);
         }
 
         public override string ToString()
         {
-            string result = (this.Previous != null) ? this.Previous.ToString() : string.Empty;
-            result += this.Token;
-            return result;
+            return this.SelectorString;
         }
     }
 }

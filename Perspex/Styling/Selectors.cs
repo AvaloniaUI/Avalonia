@@ -18,47 +18,33 @@ namespace Perspex.Styling
 
     public static class Selectors
     {
-        public static Match Select<T>(this IStyleable control)
+        public static Match Select(this IStyleable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            if (control is T)
-            {
-                return new Match
-                {
-                    Control = control,
-                    Observable = Observable.Return(true),
-                    Token = typeof(T).Name,
-                };
-            }
-            else
-            {
-                return null;
-            }
+            return new Match(control);
         }
 
-        public static Match Class(this Match selector, string name)
+        public static Match Class(this Match match, string name)
         {
+            Contract.Requires<ArgumentNullException>(match != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            if (selector != null)
-            {
-                IObservable<bool> match = Observable
-                    .Return(selector.Control.Classes.Contains(name))
-                    .Concat(selector.Control.Classes.Changed.Select(e => selector.Control.Classes.Contains(name)));
+            match.Observables.Add(Observable
+                .Return(match.Control.Classes.Contains(name))
+                .Concat(match.Control.Classes.Changed.Select(e => match.Control.Classes.Contains(name))));
+            match.SelectorString += (name[0] == ':') ? name : '.' + name;
 
-                return new Match
-                {
-                    Control = selector.Control,
-                    Observable = match,
-                    Previous = selector,
-                    Token = (name[0] == ':') ? name : '.' + name,
-                };
-            }
-            else
-            {
-                return null;
-            }
+            return match;
+        }
+
+        public static Match OfType<T>(this Match match)
+        {
+            Contract.Requires<ArgumentNullException>(match != null);
+
+            match.Observables.Add(Observable.Return(match.Control is T));
+            match.SelectorString += typeof(T).Name;
+            return match;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Style_With_Only_Type_Selector_Should_Update_Value()
         {
-            Style style = new Style(x => x.Select<TextBlock>())
+            Style style = new Style(x => x.Select().OfType<TextBlock>())
             {
                 Setters = new[]
                 {
@@ -38,7 +38,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Style_With_Class_Selector_Should_Update_And_Restore_Value()
         {
-            Style style = new Style(x => x.Select<TextBlock>().Class("foo"))
+            Style style = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
             {
                 Setters = new[]
                 {
@@ -62,7 +62,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Later_Styles_Should_Override_Earlier()
         {
-            Style style1 = new Style(x => x.Select<TextBlock>().Class("foo"))
+            Style style1 = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
             {
                 Setters = new[]
                 {
@@ -70,7 +70,7 @@ namespace Perspex.UnitTests
                 },
             };
 
-            Style style2 = new Style(x => x.Select<TextBlock>().Class("foo"))
+            Style style2 = new Style(x => x.Select().OfType<TextBlock>().Class("foo"))
             {
                 Setters = new[]
                 {

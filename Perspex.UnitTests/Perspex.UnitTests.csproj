@@ -69,6 +69,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
     <Compile Include="StyleTests.cs" />
+    <Compile Include="Styling\SelectorTests.cs" />
+    <Compile Include="Styling\SubscribeCheck.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Perspex\Perspex.csproj">

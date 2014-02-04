@@ -15,7 +15,7 @@ namespace Perspex.Themes.Default
         {
             this.AddRange(new[]
             {
-                new Style(x => x.Select<Button>())
+                new Style(x => x.Select().OfType<Button>())
                 {
                     Setters = new[]
                     {
@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
                     },
                 },
-                new Style(x => x.Select<Button>().Class(":mouseover"))
+                new Style(x => x.Select().OfType<Button>().Class(":mouseover"))
                 {
                     Setters = new[]
                     {
@@ -34,7 +34,7 @@ namespace Perspex.Themes.Default
                         new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                     },
                 },
-                new Style(x => x.Select<Button>().Class(":pressed"))
+                new Style(x => x.Select().OfType<Button>().Class(":pressed"))
                 {
                     Setters = new[]
                     {
