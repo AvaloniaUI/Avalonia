@@ -7,7 +7,6 @@
 namespace Perspex.Styling
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Reactive.Linq;
     using Perspex.Controls;
 

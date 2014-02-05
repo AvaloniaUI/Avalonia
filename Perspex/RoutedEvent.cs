@@ -7,7 +7,6 @@
 namespace Perspex
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Reflection;
 
     public enum RoutingStrategy

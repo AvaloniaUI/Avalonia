@@ -7,7 +7,6 @@
 namespace Perspex
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using Perspex.Controls;
 

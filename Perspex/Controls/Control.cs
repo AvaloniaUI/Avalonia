@@ -9,7 +9,6 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Diagnostics.Contracts;
     using System.Reactive.Linq;
     using Perspex.Input;
     using Perspex.Layout;
