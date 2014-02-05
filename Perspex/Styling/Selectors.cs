@@ -54,5 +54,16 @@ namespace Perspex.Styling
                 SelectorString = typeof(T).Name,
             };
         }
+
+        public static Match Template(this Match match)
+        {
+            Contract.Requires<ArgumentNullException>(match != null);
+
+            return new Match(match)
+            {
+                InTemplate = true,
+                SelectorString = " $ ",
+            };
+        }
     }
 }

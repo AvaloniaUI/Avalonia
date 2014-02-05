@@ -15,6 +15,8 @@ namespace Perspex.Styling
 
     public class Match
     {
+        private IObservable<bool> observable;
+
         public Match(IStyleable control)
         {
             this.Control = control;
@@ -41,8 +43,23 @@ namespace Perspex.Styling
 
         public IObservable<bool> Observable
         {
-            get;
-            set;
+            get
+            {
+                return this.observable;
+            }
+            
+            set
+            {
+                if ((!InTemplate && Control.TemplatedParent == null) ||
+                    (InTemplate && Control.TemplatedParent != null))
+                {
+                    this.observable = value;
+                }
+                else
+                {
+                    this.observable = System.Reactive.Linq.Observable.Return(false);
+                }
+            }
         }
 
         public Match Previous

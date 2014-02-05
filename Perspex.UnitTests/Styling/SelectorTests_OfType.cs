@@ -9,6 +9,8 @@ namespace Perspex.UnitTests.Styling
     using System.Linq;
     using System.Reactive.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
+    using Perspex.Controls;
     using Perspex.Styling;
 
     [TestClass]
@@ -27,6 +29,15 @@ namespace Perspex.UnitTests.Styling
         public void OfType_Doesnt_Match_Control_Of_Wrong_Type()
         {
             var control = new Control2();
+            var target = control.Select().OfType<Control1>();
+
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+        }
+
+        [TestMethod]
+        public void OfType_Doesnt_Match_Control_With_TemplatedParent()
+        {
+            var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = control.Select().OfType<Control1>();
 
             CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());

@@ -11,6 +11,7 @@ namespace Perspex.UnitTests.Styling
     using System.Linq;
     using System.Reactive.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
     using Perspex.Controls;
     using Perspex.Styling;
 
@@ -38,7 +39,7 @@ namespace Perspex.UnitTests.Styling
         [TestMethod]
         public void Id_Doesnt_Match_Control_With_TemplatedParent()
         {
-            var control = new Control1 { Id = "foo", TemplatedParent = new TemplatedControl1() };
+            var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = control.Select().Id("foo");
 
             CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
@@ -68,14 +69,6 @@ namespace Perspex.UnitTests.Styling
 
         public class Control1 : TestControlBase
         {
-        }
-
-        public class TemplatedControl1 : ITemplatedControl
-        {
-            public IEnumerable<IVisual> VisualChildren
-            {
-                get { throw new NotImplementedException(); }
-            }
         }
     }
 }
