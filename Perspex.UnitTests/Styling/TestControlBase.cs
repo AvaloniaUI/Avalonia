@@ -53,8 +53,10 @@ namespace Perspex.UnitTests.Styling
     {
         public static Match SubscribeCheck(this Match match)
         {
-            match.Observables.Add(((TestControlBase)match.Control).SubscribeCheckObservable);
-            return match;
+            return new Match(match)
+            {
+                Observable = ((TestControlBase)match.Control).SubscribeCheckObservable,
+            };
         }
     }
 }

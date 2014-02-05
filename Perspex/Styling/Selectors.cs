@@ -24,45 +24,23 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(match != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            match.Observables.Add(Observable
-                .Return(match.Control.Classes.Contains(name))
-                .Concat(match.Control.Classes.Changed.Select(e => match.Control.Classes.Contains(name))));
-            match.SelectorString += (name[0] == ':') ? name : '.' + name;
-
-            return match;
+            return new Match(match)
+            {
+                Observable = Observable
+                    .Return(match.Control.Classes.Contains(name))
+                    .Concat(match.Control.Classes.Changed.Select(e => match.Control.Classes.Contains(name))),
+                SelectorString = (name[0] == ':') ? name : '.' + name,
+            };
         }
 
         public static Match Id(this Match match, string id)
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            if (!match.InTemplate)
-            {
-                match.Observables.Add(Observable.Return(
-                    match.Control.TemplatedParent == null &&
-                    match.Control.Id == id));
-            }
-            else
-            {
-                match.Observables.Add(Observable.Return(
-                    match.Control.TemplatedParent != null &&
-                    match.Control.Id == id));
-            }
-
-            match.SelectorString += '#' + id;
-            return match;
-        }
-
-        public static Match InTemplateOf<T>(this Match match) where T : ITemplatedControl
-        {
-            Contract.Requires<ArgumentNullException>(match != null);
-
-            match.Observables.Add(Observable.Return(match.Control.TemplatedParent is T));
-            match.SelectorString += '%' + typeof(T).Name;
-
             return new Match(match)
             {
-                InTemplate = true,
+                Observable = Observable.Return(match.Control.TemplatedParent == null && match.Control.Id == id),
+                SelectorString = '#' + id,
             };
         }
 
@@ -70,9 +48,11 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            match.Observables.Add(Observable.Return(match.Control is T));
-            match.SelectorString += typeof(T).Name;
-            return match;
+            return new Match(match)
+            {
+                Observable = Observable.Return(match.Control is T),
+                SelectorString = typeof(T).Name,
+            };
         }
     }
 }

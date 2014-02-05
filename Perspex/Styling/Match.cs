@@ -10,6 +10,7 @@ namespace Perspex.Styling
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Text;
     using Perspex.Controls;
 
     public class Match
@@ -17,15 +18,13 @@ namespace Perspex.Styling
         public Match(IStyleable control)
         {
             this.Control = control;
-            this.Observables = new List<IObservable<bool>>();
         }
 
-        public Match(Match source)
+        public Match(Match previous)
         {
-            this.Control = source.Control;
-            this.InTemplate = source.InTemplate;
-            this.Observables = source.Observables;
-            this.SelectorString = SelectorString;
+            this.Control = previous.Control;
+            this.InTemplate = previous.InTemplate;
+            this.Previous = previous;
         }
 
         public IStyleable Control
@@ -40,7 +39,13 @@ namespace Perspex.Styling
             set;
         }
 
-        public List<IObservable<bool>> Observables
+        public IObservable<bool> Observable
+        {
+            get;
+            set;
+        }
+
+        public Match Previous
         {
             get;
             set;
@@ -54,12 +59,21 @@ namespace Perspex.Styling
 
         public Activator GetActivator()
         {
-            return new Activator(this.Observables);
+            return new Activator(this);
         }
 
         public override string ToString()
         {
-            return this.SelectorString;
+            Match match = this;
+            StringBuilder b = new StringBuilder();
+
+            while (match != null)
+            {
+                b.Append(match.SelectorString);
+                match = match.Previous;
+            }
+
+            return b.ToString();
         }
     }
 }
