@@ -34,9 +34,6 @@ namespace Perspex.Controls
 
     public abstract class Control : Interactive, ILayoutable, IStyleable
     {
-        public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
-            new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
-
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
 
@@ -66,9 +63,6 @@ namespace Perspex.Controls
 
         public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonUpEvent =
             RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonUp", RoutingStrategy.Bubble);
-
-        internal static readonly PerspexProperty<Control> ParentPropertyRW =
-            PerspexProperty.Register<Control, Control>("Parent");
 
         private Classes classes;
 
@@ -217,12 +211,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(MarginProperty); }
             set { this.SetValue(MarginProperty, value); }
-        }
-
-        public Control Parent
-        {
-            get { return this.GetValue(ParentPropertyRW); }
-            internal set { this.SetValue(ParentPropertyRW, value); }
         }
 
         public Styles Styles

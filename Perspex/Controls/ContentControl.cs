@@ -19,13 +19,17 @@ namespace Perspex.Controls
         {
             this.GetObservable(ContentProperty).Subscribe(x =>
             {
-                Visual visual = x as Visual;
-                Control control = x as Control;
+                IVisual visual = x as IVisual;
+                ILogical logical = x as ILogical;
 
-                if (control != null)
+                if (visual != null)
                 {
-                    ((IVisual)control).VisualParent = this;
-                    control.SetValue(ParentPropertyRW, this);
+                    visual.VisualParent = this;
+                }
+
+                if (logical != null)
+                {
+                    logical.LogicalParent = this;
                 }
             });
         }
