@@ -75,7 +75,12 @@
     <Compile Include="Styling\SelectorTests_Class.cs" />
     <Compile Include="Styling\SelectorTests_Id.cs" />
     <Compile Include="Styling\SelectorTests_OfType.cs" />
+    <Compile Include="Styling\SelectorTests_Descendent.cs" />
     <Compile Include="Styling\SelectorTests_Template.cs" />
+    <Compile Include="Styling\TestLogical.cs" />
+    <Compile Include="Styling\TestTemplatedControl.cs" />
+    <Compile Include="Styling\TestSelectors.cs" />
+    <Compile Include="Styling\TestObservable.cs" />
     <Compile Include="Styling\TestControlBase.cs" />
   </ItemGroup>
   <ItemGroup>

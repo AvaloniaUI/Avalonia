@@ -7,31 +7,25 @@
 namespace Perspex.UnitTests.Styling
 {
     using System;
+    using System.Collections.Generic;
     using Perspex.Controls;
     using Perspex.Styling;
 
-    public class TestControlBase : IStyleable
+    public abstract class TestLogical : TestControlBase, ILogical
     {
-        public TestControlBase()
+        public TestLogical()
         {
-            this.Classes = new Classes();
-            this.SubscribeCheckObservable = new TestObservable();
         }
 
-        public string Id { get; set; }
-
-        public Classes Classes { get; set; }
-
-        public TestObservable SubscribeCheckObservable { get; private set; }
-
-        public ITemplatedControl TemplatedParent
+        public abstract ILogical LogicalParent
         {
             get;
             set;
         }
 
-        public virtual void SetValue(PerspexProperty property, object value, IObservable<bool> activator)
+        public abstract IEnumerable<ILogical> LogicalChildren
         {
+            get;
         }
     }
 }

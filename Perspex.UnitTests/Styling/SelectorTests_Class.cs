@@ -24,9 +24,9 @@ namespace Perspex.UnitTests.Styling
                 Classes = new Classes { "foo" },
             };
 
-            var target = control.Select().Class("foo");
+            var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { true }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
@@ -37,9 +37,9 @@ namespace Perspex.UnitTests.Styling
                 Classes = new Classes { "bar" },
             };
 
-            var target = control.Select().Class("foo");
+            var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
@@ -51,9 +51,9 @@ namespace Perspex.UnitTests.Styling
                 TemplatedParent = new Mock<ITemplatedControl>().Object,
             };
 
-            var target = control.Select().Class("foo");
+            var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
@@ -61,8 +61,8 @@ namespace Perspex.UnitTests.Styling
         {
             var control = new Control1();
 
-            var target = control.Select().Class("foo");
-            var activator = target.GetActivator();
+            var target = new Selector().Class("foo");
+            var activator = target.GetActivator(control);
 
             CollectionAssert.AreEqual(new[] { false }, activator.Take(1).ToEnumerable().ToArray());
             control.Classes.Add("foo");
@@ -77,8 +77,8 @@ namespace Perspex.UnitTests.Styling
                 Classes = new Classes { "foo" },
             };
 
-            var target = control.Select().Class("foo");
-            var activator = target.GetActivator();
+            var target = new Selector().Class("foo");
+            var activator = target.GetActivator(control);
 
             CollectionAssert.AreEqual(new[] { true }, activator.Take(1).ToEnumerable().ToArray());
             control.Classes.Remove("foo");

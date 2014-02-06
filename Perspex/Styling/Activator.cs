@@ -21,7 +21,7 @@ namespace Perspex.Styling
 
         bool last = false;
 
-        public Activator(Match match)
+        public Activator(Selector match, IStyleable control)
         {
             int i = 0;
 
@@ -33,7 +33,7 @@ namespace Perspex.Styling
                 {
                     this.values.Add(false);
 
-                    IDisposable subscription = match.Observable.Subscribe(
+                    IDisposable subscription = match.Observable(control).Subscribe(
                         x => this.Update(iCaptured, x),
                         x => this.Finish(iCaptured),
                         () => this.Finish(iCaptured));

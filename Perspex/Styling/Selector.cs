@@ -13,35 +13,20 @@ namespace Perspex.Styling
     using System.Text;
     using Perspex.Controls;
 
-    public class Match
+    public class Selector
     {
-        private IObservable<bool> observable;
+        private Func<IStyleable, IObservable<bool>> observable;
 
-        public Match(IStyleable control)
+        public Selector()
         {
-            this.Control = control;
         }
 
-        public Match(Match previous)
+        public Selector(Selector previous)
         {
-            this.Control = previous.Control;
-            this.InTemplate = previous.InTemplate;
             this.Previous = previous;
         }
 
-        public IStyleable Control
-        {
-            get;
-            private set;
-        }
-
-        public bool InTemplate
-        {
-            get;
-            set;
-        }
-
-        public IObservable<bool> Observable
+        public Func<IStyleable, IObservable<bool>> Observable
         {
             get
             {
@@ -50,19 +35,11 @@ namespace Perspex.Styling
             
             set
             {
-                if ((!InTemplate && Control.TemplatedParent == null) ||
-                    (InTemplate && Control.TemplatedParent != null))
-                {
-                    this.observable = value;
-                }
-                else
-                {
-                    this.observable = System.Reactive.Linq.Observable.Return(false);
-                }
+                this.observable = value;
             }
         }
 
-        public Match Previous
+        public Selector Previous
         {
             get;
             set;
@@ -74,14 +51,14 @@ namespace Perspex.Styling
             set;
         }
 
-        public Activator GetActivator()
+        public Activator GetActivator(IStyleable control)
         {
-            return new Activator(this);
+            return new Activator(this, control);
         }
 
         public override string ToString()
         {
-            Match match = this;
+            Selector match = this;
             StringBuilder b = new StringBuilder();
 
             while (match != null)

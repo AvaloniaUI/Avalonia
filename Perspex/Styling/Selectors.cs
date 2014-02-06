@@ -12,56 +12,53 @@ namespace Perspex.Styling
 
     public static class Selectors
     {
-        public static Match Select(this IStyleable control)
-        {
-            Contract.Requires<ArgumentNullException>(control != null);
-
-            return new Match(control);
-        }
-
-        public static Match Class(this Match match, string name)
+        public static Selector Class(this Selector match, string name)
         {
             Contract.Requires<ArgumentNullException>(match != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            return new Match(match)
+            return new Selector(match)
             {
-                Observable = Observable
-                    .Return(match.Control.Classes.Contains(name))
-                    .Concat(match.Control.Classes.Changed.Select(e => match.Control.Classes.Contains(name))),
+                Observable = control => Observable
+                    .Return(control.Classes.Contains(name))
+                    .Concat(control.Classes.Changed.Select(e => control.Classes.Contains(name))),
                 SelectorString = (name[0] == ':') ? name : '.' + name,
             };
         }
 
-        public static Match Id(this Match match, string id)
+        public static Selector Descendent(this Selector match)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Selector Id(this Selector match, string id)
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            return new Match(match)
+            return new Selector(match)
             {
-                Observable = Observable.Return(match.Control.TemplatedParent == null && match.Control.Id == id),
+                Observable = control => Observable.Return(control.Id == id),
                 SelectorString = '#' + id,
             };
         }
 
-        public static Match OfType<T>(this Match match) where T : IStyleable
+        public static Selector OfType<T>(this Selector match) where T : IStyleable
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            return new Match(match)
+            return new Selector(match)
             {
-                Observable = Observable.Return(match.Control is T),
+                Observable = control => Observable.Return(control is T),
                 SelectorString = typeof(T).Name,
             };
         }
 
-        public static Match Template(this Match match)
+        public static Selector Template(this Selector match)
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            return new Match(match)
+            return new Selector(match)
             {
-                InTemplate = true,
                 SelectorString = " $ ",
             };
         }

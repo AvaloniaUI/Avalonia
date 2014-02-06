@@ -20,13 +20,13 @@ namespace Perspex.Styling
             this.Setters = new List<Setter>();
         }
 
-        public Style(Func<IStyleable, Match> selector)
+        public Style(Selector selector)
             : this()
         {
             this.Selector = selector;
         }
 
-        public Func<IStyleable, Match> Selector
+        public Selector Selector
         {
             get;
             set;
@@ -40,17 +40,12 @@ namespace Perspex.Styling
 
         public void Attach(IStyleable control)
         {
-            Match match = this.Selector(control);
+            string description = "Style " + this.Selector.ToString();
+            IObservable<bool> activator = this.Selector.GetActivator(control);
 
-            if (match != null)
+            foreach (Setter setter in this.Setters)
             {
-                string description = "Style " + match.ToString();
-                IObservable<bool> activator = match.GetActivator();
-
-                foreach (Setter setter in this.Setters)
-                {
-                    control.SetValue(setter.Property, setter.Value, activator);
-                }
+                control.SetValue(setter.Property, setter.Value, activator);
             }
         }
     }

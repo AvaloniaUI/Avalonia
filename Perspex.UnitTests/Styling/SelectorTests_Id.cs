@@ -22,36 +22,36 @@ namespace Perspex.UnitTests.Styling
         public void Id_Matches_Control_With_Correct_Id()
         {
             var control = new Control1 { Id = "foo" };
-            var target = control.Select().Id("foo");
+            var target = new Selector().Id("foo");
 
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { true }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void Id_Doesnt_Match_Control_Of_Wrong_Id()
         {
             var control = new Control1 { Id = "foo" };
-            var target = control.Select().Id("bar");
+            var target = new Selector().Id("bar");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void Id_Doesnt_Match_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
-            var target = control.Select().Id("foo");
+            var target = new Selector().Id("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void When_Id_Matches_Control_Other_Selectors_Are_Subscribed()
         {
             var control = new Control1 { Id = "foo" };
-            var target = control.Select().Id("foo").SubscribeCheck();
+            var target = new Selector().Id("foo").SubscribeCheck();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+            var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
             Assert.AreEqual(1, control.SubscribeCheckObservable.SubscribedCount);
         }
@@ -60,9 +60,9 @@ namespace Perspex.UnitTests.Styling
         public void When_Id_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
         {
             var control = new Control1 { Id = "foo" };
-            var target = control.Select().Id("bar").SubscribeCheck();
+            var target = new Selector().Id("bar").SubscribeCheck();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+            var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
             Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
         }

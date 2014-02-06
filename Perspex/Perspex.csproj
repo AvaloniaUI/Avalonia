@@ -107,7 +107,7 @@
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="ReadOnlyPerspexProperty.cs" />
-    <Compile Include="Styling\Match.cs" />
+    <Compile Include="Styling\Selector.cs" />
     <Compile Include="RoutedEventArgs.cs" />
     <Compile Include="Styling\Selectors.cs" />
     <Compile Include="ServiceLocator.cs" />

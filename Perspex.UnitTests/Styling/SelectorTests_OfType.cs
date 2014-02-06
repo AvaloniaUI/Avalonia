@@ -20,36 +20,36 @@ namespace Perspex.UnitTests.Styling
         public void OfType_Matches_Control_Of_Correct_Type()
         {
             var control = new Control1();
-            var target = control.Select().OfType<Control1>();
+            var target = new Selector().OfType<Control1>();
 
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { true }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void OfType_Doesnt_Match_Control_Of_Wrong_Type()
         {
             var control = new Control2();
-            var target = control.Select().OfType<Control1>();
+            var target = new Selector().OfType<Control1>();
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void OfType_Doesnt_Match_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
-            var target = control.Select().OfType<Control1>();
+            var target = new Selector().OfType<Control1>();
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator().Take(1).ToEnumerable().ToArray());
+            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
         }
 
         [TestMethod]
         public void When_OfType_Matches_Control_Other_Selectors_Are_Subscribed()
         {
             var control = new Control1();
-            var target = control.Select().OfType<Control1>().SubscribeCheck();
+            var target = new Selector().OfType<Control1>().SubscribeCheck();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+            var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
             Assert.AreEqual(1, control.SubscribeCheckObservable.SubscribedCount);
         }
@@ -58,9 +58,9 @@ namespace Perspex.UnitTests.Styling
         public void When_OfType_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
         {
             var control = new Control1();
-            var target = control.Select().OfType<Control2>().SubscribeCheck();
+            var target = new Selector().OfType<Control2>().SubscribeCheck();
 
-            var result = target.GetActivator().ToEnumerable().Take(1).ToArray();
+            var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
             Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
         }
