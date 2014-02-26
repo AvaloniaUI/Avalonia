@@ -76,7 +76,20 @@ namespace Perspex.Styling
 
         public Activator GetActivator()
         {
-            return new Activator(this);
+            List<IObservable<bool>> inputs = new List<IObservable<bool>>();
+            Match match = this;
+            
+            while (match != null)
+            {
+                if (match.Observable != null)
+                {
+                    inputs.Add(match.Observable);
+                }
+
+                match = match.Previous;
+            }
+
+            return new Activator(inputs);
         }
 
         public override string ToString()

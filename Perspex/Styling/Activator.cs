@@ -21,27 +21,22 @@ namespace Perspex.Styling
 
         bool last = false;
 
-        public Activator(Match match)
+        public Activator(IEnumerable<IObservable<bool>> inputs)
         {
             int i = 0;
 
-            while (match != null)
+            foreach (IObservable<bool> input in inputs)
             {
                 int iCaptured = i;
 
-                if (match.Observable != null)
-                {
-                    this.values.Add(false);
+                this.values.Add(false);
 
-                    IDisposable subscription = match.Observable.Subscribe(
-                        x => this.Update(iCaptured, x),
-                        x => this.Finish(iCaptured),
-                        () => this.Finish(iCaptured));
-                    this.subscriptions.Add(subscription);
-                    ++i;
-                }
-
-                match = match.Previous;
+                IDisposable subscription = input.Subscribe(
+                    x => this.Update(iCaptured, x),
+                    x => this.Finish(iCaptured),
+                    () => this.Finish(iCaptured));
+                this.subscriptions.Add(subscription);
+                ++i;
             }
         }
 
