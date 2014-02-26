@@ -11,8 +11,16 @@ namespace Perspex.Styling
     using System.Linq;
     using System.Reactive.Disposables;
 
+    public enum ActivatorMode
+    {
+        And,
+        Or,
+    }
+
     public class Activator : IObservable<bool>
     {
+        ActivatorMode mode;
+
         List<bool> values = new List<bool>();
 
         List<IDisposable> subscriptions = new List<IDisposable>();
@@ -21,9 +29,11 @@ namespace Perspex.Styling
 
         bool last = false;
 
-        public Activator(IEnumerable<IObservable<bool>> inputs)
+        public Activator(IEnumerable<IObservable<bool>> inputs, ActivatorMode mode = ActivatorMode.And)
         {
             int i = 0;
+
+            this.mode = mode;
 
             foreach (IObservable<bool> input in inputs)
             {
@@ -53,7 +63,19 @@ namespace Perspex.Styling
         {
             this.values[index] = value;
 
-            bool current = this.values.All(x => x);
+            bool current;
+            
+            switch (this.mode)
+            {
+                case ActivatorMode.And:
+                    current = this.values.All(x => x);
+                    break;
+                case ActivatorMode.Or:
+                    current = this.values.Any(x => x);
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid Activator mode.");
+            }
 
             if (current != last)
             {
@@ -64,10 +86,13 @@ namespace Perspex.Styling
 
         private void Finish(int i)
         {
-            if (!this.values[i])
+            // If the observable has finished on 'false' and we're in And mode then it will never 
+            // go back to true so we can unsubscribe from all the other subscriptions now. 
+            // Similarly in Or mode; if the completed value is true then we're done.
+            bool unsubscribe = this.mode == ActivatorMode.And ? !this.values[i] : this.values[i];
+
+            if (unsubscribe)
             {
-                // If the observable has finished on 'false' then it will never go back to true
-                // so we can unsubscribe from all the other subscriptions now.
                 foreach (IDisposable subscription in this.subscriptions)
                 {
                     subscription.Dispose();
