@@ -14,7 +14,7 @@ namespace Perspex.UnitTests.Styling
         {
             return new Selector(selector)
             {
-                Observable = control => ((TestControlBase)control).SubscribeCheckObservable,
+                GetObservable = control => ((TestControlBase)control).SubscribeCheckObservable,
             };
         }
     }

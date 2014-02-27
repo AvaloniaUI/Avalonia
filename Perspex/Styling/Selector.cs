@@ -17,29 +17,29 @@ namespace Perspex.Styling
     {
         private bool stopTraversal;
 
-        private Func<IStyleable, IObservable<bool>> observable;
-
         public Selector()
         {
+            this.GetObservable = _ => Observable.Return(true);
         }
 
         public Selector(Selector previous, bool stopTraversal = false)
+            : this()
         {
             this.Previous = previous;
+            this.InTemplate = previous != null ? previous.InTemplate : false;
             this.stopTraversal = stopTraversal;
         }
 
-        public Func<IStyleable, IObservable<bool>> Observable
+        public bool InTemplate
         {
-            get
-            {
-                return this.observable;
-            }
-            
-            set
-            {
-                this.observable = value;
-            }
+            get;
+            set;
+        }
+
+        public Func<IStyleable, IObservable<bool>> GetObservable
+        {
+            get;
+            set;
         }
 
         public Selector Previous
@@ -66,9 +66,14 @@ namespace Perspex.Styling
             
             while (selector != null)
             {
-                if (selector.Observable != null)
+                if ((selector.InTemplate && control.TemplatedParent == null) ||
+                    (!selector.InTemplate && control.TemplatedParent != null))
                 {
-                    inputs.Add(selector.Observable(control));
+                    inputs.Add(Observable.Return(false));
+                }
+                else
+                {
+                    inputs.Add(selector.GetObservable(control));
                 }
 
                 selector = selector.MovePrevious();

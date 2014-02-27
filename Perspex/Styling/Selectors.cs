@@ -20,7 +20,7 @@ namespace Perspex.Styling
 
             return new Selector(previous)
             {
-                Observable = control => Observable
+                GetObservable = control => Observable
                     .Return(control.Classes.Contains(name))
                     .Concat(control.Classes.Changed.Select(e => control.Classes.Contains(name))),
                 SelectorString = (name[0] == ':') ? name : '.' + name,
@@ -32,7 +32,7 @@ namespace Perspex.Styling
             return new Selector(previous, stopTraversal: true)
             {
                 SelectorString = " ",
-                Observable = control =>
+                GetObservable = control =>
                 {
                     ILogical c = (ILogical)control;
                     List<IObservable<bool>> descendentMatches = new List<IObservable<bool>>();
@@ -43,7 +43,7 @@ namespace Perspex.Styling
 
                         if (c is IStyleable)
                         {
-                            descendentMatches.Add(previous.Observable((IStyleable)c));
+                            descendentMatches.Add(previous.GetObservable((IStyleable)c));
                         }
                     }
 
@@ -58,7 +58,7 @@ namespace Perspex.Styling
 
             return new Selector(previous)
             {
-                Observable = control => Observable.Return(control.Id == id),
+                GetObservable = control => Observable.Return(control.Id == id),
                 SelectorString = '#' + id,
             };
         }
@@ -69,7 +69,7 @@ namespace Perspex.Styling
 
             return new Selector(previous)
             {
-                Observable = control => Observable.Return(control is T),
+                GetObservable = control => Observable.Return(control is T),
                 SelectorString = typeof(T).Name,
             };
         }
@@ -78,9 +78,16 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(previous != null);
 
-            return new Selector(previous)
+            return new Selector(previous, stopTraversal: true)
             {
-                Observable = control => Observable.Return(control.TemplatedParent != null),
+                GetObservable = control => 
+                {
+                    IStyleable templatedParent = control.TemplatedParent as IStyleable;
+                    return templatedParent != null ?
+                        previous.GetObservable(templatedParent) :
+                        Observable.Return(true);
+                },
+                InTemplate = true,
                 SelectorString = " $ ",
             };
         }
