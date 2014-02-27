@@ -26,7 +26,7 @@ namespace Perspex.UnitTests.Styling
 
             var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsTrue(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Perspex.UnitTests.Styling
 
             var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace Perspex.UnitTests.Styling
 
             var target = new Selector().Class("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -64,9 +64,9 @@ namespace Perspex.UnitTests.Styling
             var target = new Selector().Class("foo");
             var activator = target.GetActivator(control);
 
-            CollectionAssert.AreEqual(new[] { false }, activator.Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
             control.Classes.Add("foo");
-            CollectionAssert.AreEqual(new[] { true }, activator.Take(1).ToEnumerable().ToArray());
+            Assert.IsTrue(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -80,9 +80,14 @@ namespace Perspex.UnitTests.Styling
             var target = new Selector().Class("foo");
             var activator = target.GetActivator(control);
 
-            CollectionAssert.AreEqual(new[] { true }, activator.Take(1).ToEnumerable().ToArray());
+            Assert.IsTrue(ActivatorValue(target, control));
             control.Classes.Remove("foo");
-            CollectionAssert.AreEqual(new[] { false }, activator.Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
+        }
+
+        private static bool ActivatorValue(Selector selector, IStyleable control)
+        {
+            return selector.GetActivator(control).Take(1).ToEnumerable().Single();
         }
 
         public class Control1 : TestControlBase

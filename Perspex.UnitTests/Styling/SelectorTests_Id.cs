@@ -24,7 +24,7 @@ namespace Perspex.UnitTests.Styling
             var control = new Control1 { Id = "foo" };
             var target = new Selector().Id("foo");
 
-            CollectionAssert.AreEqual(new[] { true }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsTrue(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace Perspex.UnitTests.Styling
             var control = new Control1 { Id = "foo" };
             var target = new Selector().Id("bar");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace Perspex.UnitTests.Styling
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = new Selector().Id("foo");
 
-            CollectionAssert.AreEqual(new[] { false }, target.GetActivator(control).Take(1).ToEnumerable().ToArray());
+            Assert.IsFalse(ActivatorValue(target, control));
         }
 
         [TestMethod]
@@ -65,6 +65,11 @@ namespace Perspex.UnitTests.Styling
             var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
             Assert.AreEqual(0, control.SubscribeCheckObservable.SubscribedCount);
+        }
+
+        private static bool ActivatorValue(Selector selector, IStyleable control)
+        {
+            return selector.GetActivator(control).Take(1).ToEnumerable().Single();
         }
 
         public class Control1 : TestControlBase

@@ -12,7 +12,6 @@ namespace Perspex.UnitTests.Styling
     using Moq;
     using Perspex.Controls;
     using Perspex.Styling;
-    using Match = Perspex.Styling.Selector;
 
     [TestClass]
     public class SelectorTests_Descendent
@@ -79,7 +78,7 @@ namespace Perspex.UnitTests.Styling
             Assert.IsFalse(ActivatorValue(selector, child.Object));
         }
 
-        private static bool ActivatorValue(Match selector, IStyleable control)
+        private static bool ActivatorValue(Selector selector, IStyleable control)
         {
             return selector.GetActivator(control).Take(1).ToEnumerable().Single();
         }
