@@ -53,7 +53,20 @@ namespace Perspex.Styling
 
         public Activator GetActivator(IStyleable control)
         {
-            return new Activator(this, control);
+            List<IObservable<bool>> inputs = new List<IObservable<bool>>();
+            Selector selector = this;
+            
+            while (selector != null)
+            {
+                if (selector.Observable != null)
+                {
+                    inputs.Add(selector.Observable(control));
+                }
+
+                selector = selector.Previous;
+            }
+
+            return new Activator(inputs);
         }
 
         public override string ToString()

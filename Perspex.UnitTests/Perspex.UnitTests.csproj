@@ -72,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
     <Compile Include="StyleTests.cs" />
+    <Compile Include="Styling\ActivatorTests.cs" />
     <Compile Include="Styling\SelectorTests_Class.cs" />
     <Compile Include="Styling\SelectorTests_Id.cs" />
     <Compile Include="Styling\SelectorTests_OfType.cs" />
@@ -82,6 +83,8 @@
     <Compile Include="Styling\TestSelectors.cs" />
     <Compile Include="Styling\TestObservable.cs" />
     <Compile Include="Styling\TestControlBase.cs" />
+    <Compile Include="TestSubject.cs" />
+    <Compile Include="TestObserver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Perspex\Perspex.csproj">
