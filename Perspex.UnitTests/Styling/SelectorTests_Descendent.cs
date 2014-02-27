@@ -23,10 +23,7 @@ namespace Perspex.UnitTests.Styling
             var parent = new Mock<TestLogical1>();
             var child = new Mock<TestLogical2>();
  
-            parent.Setup(x => x.LogicalChildren).Returns(new[]
-            {
-                child.Object,
-            });
+            child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
             var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical2>();
 
@@ -36,7 +33,16 @@ namespace Perspex.UnitTests.Styling
         [TestMethod]
         public void Descendent_Matches_Control_When_It_Is_Descendent_OfType()
         {
-            Assert.Fail();
+            var grandparent = new Mock<TestLogical1>();
+            var parent = new Mock<TestLogical2>();
+            var child = new Mock<TestLogical3>();
+
+            parent.Setup(x => x.LogicalParent).Returns(grandparent.Object);
+            child.Setup(x => x.LogicalParent).Returns(parent.Object);
+
+            var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical3>();
+
+            Assert.AreEqual(true, ActivatorValue(selector, child.Object));
         }
 
         private static bool ActivatorValue(Match selector, IStyleable control)
@@ -49,6 +55,10 @@ namespace Perspex.UnitTests.Styling
         }
 
         public abstract class TestLogical2 : TestLogical
+        {
+        }
+
+        public abstract class TestLogical3 : TestLogical
         {
         }
     }

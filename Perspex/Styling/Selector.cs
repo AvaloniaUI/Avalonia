@@ -15,15 +15,18 @@ namespace Perspex.Styling
 
     public class Selector
     {
+        private bool stopTraversal;
+
         private Func<IStyleable, IObservable<bool>> observable;
 
         public Selector()
         {
         }
 
-        public Selector(Selector previous)
+        public Selector(Selector previous, bool stopTraversal = false)
         {
             this.Previous = previous;
+            this.stopTraversal = stopTraversal;
         }
 
         public Func<IStyleable, IObservable<bool>> Observable
@@ -42,13 +45,18 @@ namespace Perspex.Styling
         public Selector Previous
         {
             get;
-            set;
+            private set;
         }
 
         public string SelectorString
         {
             get;
             set;
+        }
+
+        public Selector MovePrevious()
+        {
+            return this.stopTraversal ? null : this.Previous;
         }
 
         public Activator GetActivator(IStyleable control)
@@ -63,7 +71,7 @@ namespace Perspex.Styling
                     inputs.Add(selector.Observable(control));
                 }
 
-                selector = selector.Previous;
+                selector = selector.MovePrevious();
             }
 
             return new Activator(inputs);
@@ -71,16 +79,14 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            Selector match = this;
-            StringBuilder b = new StringBuilder();
+            string result = string.Empty;
 
-            while (match != null)
+            if (this.Previous != null)
             {
-                b.Append(match.SelectorString);
-                match = match.Previous;
+                result = this.Previous.ToString();
             }
 
-            return b.ToString();
+            return result + this.SelectorString;
         }
     }
 }
