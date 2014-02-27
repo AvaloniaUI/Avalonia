@@ -20,7 +20,7 @@ namespace Perspex.UnitTests.Styling
 
         public string Id { get; set; }
 
-        public Classes Classes { get; set; }
+        public virtual Classes Classes { get; set; }
 
         public TestObservable SubscribeCheckObservable { get; private set; }
 

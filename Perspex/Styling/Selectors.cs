@@ -43,7 +43,7 @@ namespace Perspex.Styling
 
                         if (c is IStyleable)
                         {
-                            descendentMatches.Add(previous.GetObservable((IStyleable)c));
+                            descendentMatches.Add(previous.GetActivator((IStyleable)c));
                         }
                     }
 
@@ -84,7 +84,7 @@ namespace Perspex.Styling
                 {
                     IStyleable templatedParent = control.TemplatedParent as IStyleable;
                     return templatedParent != null ?
-                        previous.GetObservable(templatedParent) :
+                        previous.GetActivator(templatedParent) :
                         Observable.Return(true);
                 },
                 InTemplate = true,

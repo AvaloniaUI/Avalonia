@@ -28,7 +28,7 @@ namespace Perspex.UnitTests.Styling
 
             var selector = new Selector().OfType<Border>();
 
-            Assert.AreEqual(false, ActivatorValue(selector, border));
+            Assert.IsFalse(ActivatorValue(selector, border));
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace Perspex.UnitTests.Styling
 
             var selector = new Selector().Template().OfType<Border>();
 
-            Assert.AreEqual(true, ActivatorValue(selector, border));
+            Assert.IsTrue(ActivatorValue(selector, border));
         }
 
         [TestMethod]
@@ -56,7 +56,7 @@ namespace Perspex.UnitTests.Styling
 
             var selector = new Selector().Template().OfType<TextBlock>();
 
-            Assert.AreEqual(true, ActivatorValue(selector, textBlock));
+            Assert.IsTrue(ActivatorValue(selector, textBlock));
         }
 
         [TestMethod]
@@ -69,7 +69,35 @@ namespace Perspex.UnitTests.Styling
 
             var selector = new Selector().OfType<TestTemplatedControl>().Template().OfType<Border>();
 
-            Assert.AreEqual(true, ActivatorValue(selector,border));
+            Assert.IsTrue(ActivatorValue(selector,border));
+        }
+
+        [TestMethod]
+        public void Control_In_Template_Is_Matched_With_Correct_TypeOf_And_Class_Of_TemplatedControl()
+        {
+            var templatedControl = new Mock<TestTemplatedControl>();
+            this.BuildVisualTree(templatedControl);
+
+            templatedControl.Setup(x => x.Classes).Returns(new Classes("foo"));
+            var border = (Border)templatedControl.Object.VisualChildren.Single();
+
+            var selector = new Selector().OfType<TestTemplatedControl>().Class("foo").Template().OfType<Border>();
+
+            Assert.IsTrue(ActivatorValue(selector, border));
+        }
+
+        [TestMethod]
+        public void Control_In_Template_Is_Not_Matched_With_Correct_TypeOf_And_Wrong_Class_Of_TemplatedControl()
+        {
+            var templatedControl = new Mock<TestTemplatedControl>();
+            this.BuildVisualTree(templatedControl);
+
+            templatedControl.Setup(x => x.Classes).Returns(new Classes("bar"));
+            var border = (Border)templatedControl.Object.VisualChildren.Single();
+
+            var selector = new Selector().OfType<TestTemplatedControl>().Class("foo").Template().OfType<Border>();
+
+            Assert.IsFalse(ActivatorValue(selector, border));
         }
 
         private static bool ActivatorValue(Match selector, IStyleable control)
