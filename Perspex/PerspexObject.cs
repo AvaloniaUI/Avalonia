@@ -456,12 +456,16 @@ namespace Perspex
             }
 
             v.AddStyle(activator, value);
-            
+
+            IObservableDescription description = activator as IObservableDescription;
+            string bindingDescription = description != null ? description.Description : "[unnamed]";
+
             this.Log().Debug(string.Format(
-                "Bound value of {0}.{1} (#{2:x8}) to style",
+                "Bound value of {0}.{1} (#{2:x8}) to style '{3}'",
                 this.GetType().Name,
                 property.Name,
-                this.GetHashCode()));
+                this.GetHashCode(),
+                bindingDescription));
         }
 
         private static IObservable<object> BoxObservable<T>(IObservable<T> observable)

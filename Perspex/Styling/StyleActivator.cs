@@ -17,7 +17,7 @@ namespace Perspex.Styling
         Or,
     }
 
-    public class Activator : IObservable<bool>
+    public class StyleActivator : IObservable<bool>, IObservableDescription
     {
         ActivatorMode mode;
 
@@ -29,10 +29,14 @@ namespace Perspex.Styling
 
         bool last = false;
 
-        public Activator(IEnumerable<IObservable<bool>> inputs, ActivatorMode mode = ActivatorMode.And)
+        public StyleActivator(
+            IEnumerable<IObservable<bool>> inputs, 
+            string description,
+            ActivatorMode mode = ActivatorMode.And)
         {
             int i = 0;
 
+            this.Description = description;
             this.mode = mode;
 
             foreach (IObservable<bool> input in inputs)
@@ -48,6 +52,12 @@ namespace Perspex.Styling
                 this.subscriptions.Add(subscription);
                 ++i;
             }
+        }
+
+        public string Description
+        {
+            get;
+            private set;
         }
 
         public IDisposable Subscribe(IObserver<bool> observer)

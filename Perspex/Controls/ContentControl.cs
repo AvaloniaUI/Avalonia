@@ -17,21 +17,6 @@ namespace Perspex.Controls
 
         public ContentControl()
         {
-            this.GetObservable(ContentProperty).Subscribe(x =>
-            {
-                IVisual visual = x as IVisual;
-                ILogical logical = x as ILogical;
-
-                if (visual != null)
-                {
-                    visual.VisualParent = this;
-                }
-
-                if (logical != null)
-                {
-                    logical.LogicalParent = this;
-                }
-            });
         }
 
         public object Content

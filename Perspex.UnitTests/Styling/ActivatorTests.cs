@@ -9,7 +9,7 @@
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Styling;
-    using Activator = Perspex.Styling.Activator;
+    using Activator = Perspex.Styling.StyleActivator;
 
     [TestClass]
     public class ActivatorTests
@@ -18,7 +18,7 @@
         public void Activator_And_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new Activator(inputs, "", ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -42,7 +42,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new Activator(inputs, "", ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -67,7 +67,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new Activator(inputs, "", ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -93,7 +93,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new Activator(inputs, "", ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -110,7 +110,7 @@
         public void Activator_Or_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new Activator(inputs, "", ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -134,7 +134,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new Activator(inputs, "", ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -158,7 +158,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new Activator(inputs, "", ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -183,7 +183,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new Activator(inputs, "", ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);

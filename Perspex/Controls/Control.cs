@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Input;
     using Perspex.Layout;
@@ -74,8 +75,6 @@ namespace Perspex.Controls
             this.classes = new Classes();
             this.classes.BeforeChanged.Subscribe(x => this.BeginDeferStyleChanges());
             this.classes.AfterChanged.Subscribe(x => this.EndDeferStyleChanges());
-
-            this.GetObservableWithHistory(ParentPropertyRW).Subscribe(this.ParentChanged);
 
             this.GetObservable(IsMouseOverProperty).Subscribe(x =>
             {
@@ -294,32 +293,23 @@ namespace Perspex.Controls
 
         protected abstract Size MeasureContent(Size availableSize);
 
-        private void AttachStyles(Control control)
+        protected override void AttachedToVisualTree()
         {
-            if (control != null)
+            this.AttachStyles(this);
+            base.AttachedToVisualTree();
+        }
+
+        private void AttachStyles(Control styleContainer)
+        {
+            if (styleContainer != null)
             {
-                Control parent = control.Parent;
+                Control parent = styleContainer.Parent;
                 this.AttachStyles(parent);
-                control.Styles.Attach(this);
+                styleContainer.Styles.Attach(this);
             }
             else
             {
                 Application.Current.Styles.Attach(this);
-            }
-        }
-
-        private void ParentChanged(Tuple<Control, Control> values)
-        {
-            Contract.Requires<ArgumentNullException>(values != null);
-
-            if (values.Item1 != null)
-            {
-                ////this.DetatchStyles(values.Item1);
-            }
-
-            if (values.Item2 != null)
-            {
-                this.AttachStyles(this);
             }
         }
     }

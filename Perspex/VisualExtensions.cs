@@ -11,7 +11,7 @@ namespace Perspex
 
     public static class VisualExtensions
     {
-        public static T GetVisualAncestor<T>(this IVisual visual) where T : Visual
+        public static T GetVisualAncestor<T>(this IVisual visual) where T : class
         {
             Contract.Requires<NullReferenceException>(visual != null);
 

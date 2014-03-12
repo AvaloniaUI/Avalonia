@@ -71,6 +71,7 @@
     <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />
+    <Compile Include="Controls\TestBorder.cs" />
     <Compile Include="Controls\Border.cs" />
     <Compile Include="Controls\Button.cs" />
     <Compile Include="Controls\ContentPresenter.cs" />
@@ -83,8 +84,9 @@
     <Compile Include="ILogical.cs" />
     <Compile Include="Input\MouseEventArgs.cs" />
     <Compile Include="Interactive.cs" />
+    <Compile Include="IObservableDescription.cs" />
     <Compile Include="IVisual.cs" />
-    <Compile Include="Styling\Activator.cs" />
+    <Compile Include="Styling\StyleActivator.cs" />
     <Compile Include="Styling\IStyleable.cs" />
     <Compile Include="Styling\IStyle.cs" />
     <Compile Include="PriorityValue.cs" />

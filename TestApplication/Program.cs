@@ -50,12 +50,33 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Content = new Button
-                {
-                    Content = "Hello World",
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
+                Content = new TestBorder 
+                { 
+                    Styles = new Styles 
+                    { 
+                        new Style(new Selector().OfType<TestBorder>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(TestBorder.BackgroundProperty, new SolidColorBrush(0xff0000ff)),
+                            }
+                        },
+                        //new Style(new Selector().OfType<TestBorder>().Class(":mouseover"))
+                        //{
+                        //    Setters = new[]
+                        //    {
+                        //        new Setter(TestBorder.BackgroundProperty, new SolidColorBrush(0xffff0000)),
+                        //    }
+                        //},
+                    }
                 },
+
+                //Content = new Button
+                //{
+                //    Content = "Hello World",
+                //    HorizontalAlignment = HorizontalAlignment.Center,
+                //    VerticalAlignment = VerticalAlignment.Center,
+                //},
             };
 
             window.Show();

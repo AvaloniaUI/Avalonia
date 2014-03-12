@@ -47,7 +47,10 @@ namespace Perspex.Styling
                         }
                     }
 
-                    return new Activator(descendentMatches, ActivatorMode.Or);
+                    return new StyleActivator(
+                        descendentMatches, 
+                        "Descendent",
+                        ActivatorMode.Or);
                 },
             };
         }

@@ -59,7 +59,7 @@ namespace Perspex.Styling
             return this.stopTraversal ? null : this.Previous;
         }
 
-        public Activator GetActivator(IStyleable control)
+        public StyleActivator GetActivator(IStyleable control)
         {
             List<IObservable<bool>> inputs = new List<IObservable<bool>>();
             Selector selector = this;
@@ -79,7 +79,7 @@ namespace Perspex.Styling
                 selector = selector.MovePrevious();
             }
 
-            return new Activator(inputs);
+            return new StyleActivator(inputs, this.ToString());
         }
 
         public override string ToString()

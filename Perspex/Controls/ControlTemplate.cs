@@ -45,9 +45,12 @@ namespace Perspex.Controls
 
             control.TemplatedParent = templatedParent;
 
-            foreach (Control child in ((IVisual)control).VisualChildren.OfType<Control>())
+            if (!(control is ContentPresenter))
             {
-                this.SetTemplatedParent(child, templatedParent);
+                foreach (Control child in ((IVisual)control).VisualChildren.OfType<Control>())
+                {
+                    this.SetTemplatedParent(child, templatedParent);
+                }
             }
         }
     }
