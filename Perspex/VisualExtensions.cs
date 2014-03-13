@@ -32,6 +32,13 @@ namespace Perspex
             return null;
         }
 
+        public static T GetVisualAncestorOrSelf<T>(this IVisual visual) where T : class
+        {
+            Contract.Requires<NullReferenceException>(visual != null);
+
+            return (visual as T) ?? visual.GetVisualAncestor<T>();
+        }
+
         public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
             Contract.Requires<NullReferenceException>(visual != null);

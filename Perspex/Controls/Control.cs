@@ -15,6 +15,7 @@ namespace Perspex.Controls
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
+    using Splat;
 
     public enum HorizontalAlignment
     {
@@ -32,7 +33,7 @@ namespace Perspex.Controls
         Bottom,
     }
 
-    public abstract class Control : Interactive, ILayoutable, IStyleable
+    public class Control : Interactive, ILayoutable, IStyleable, IStyled
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -291,26 +292,16 @@ namespace Perspex.Controls
             return finalSize;
         }
 
-        protected abstract Size MeasureContent(Size availableSize);
+        protected virtual Size MeasureContent(Size availableSize)
+        {
+            return new Size();
+        }
 
         protected override void AttachedToVisualTree()
         {
-            this.AttachStyles(this);
+            IStyler styler = Locator.Current.GetService<IStyler>();
+            styler.ApplyStyles(this);
             base.AttachedToVisualTree();
-        }
-
-        private void AttachStyles(Control styleContainer)
-        {
-            if (styleContainer != null)
-            {
-                Control parent = styleContainer.Parent;
-                this.AttachStyles(parent);
-                styleContainer.Styles.Attach(this);
-            }
-            else
-            {
-                Application.Current.Styles.Attach(this);
-            }
         }
     }
 }

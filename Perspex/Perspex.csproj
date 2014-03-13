@@ -86,6 +86,9 @@
     <Compile Include="Interactive.cs" />
     <Compile Include="IObservableDescription.cs" />
     <Compile Include="IVisual.cs" />
+    <Compile Include="Styling\IStyler.cs" />
+    <Compile Include="Styling\Styler.cs" />
+    <Compile Include="Styling\IStyled.cs" />
     <Compile Include="Styling\StyleActivator.cs" />
     <Compile Include="Styling\IStyleable.cs" />
     <Compile Include="Styling\IStyle.cs" />
