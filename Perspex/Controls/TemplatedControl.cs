@@ -11,7 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Media;
 
-    public abstract class TemplatedControl : Control, IVisual, ITemplatedControl
+    public class TemplatedControl : Control, IVisual, ITemplatedControl
     {
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
