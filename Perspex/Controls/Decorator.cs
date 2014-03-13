@@ -11,7 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Linq;
 
-    public abstract class Decorator : Control, IVisual
+    public class Decorator : Control, IVisual
     {
         public static readonly PerspexProperty<Control> ContentProperty =
             PerspexProperty.Register<ContentControl, Control>("Content");
