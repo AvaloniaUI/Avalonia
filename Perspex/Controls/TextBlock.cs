@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using Perspex.Media;
+    using Splat;
 
     public class TextBlock : Control
     {
@@ -57,7 +58,7 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
-            ITextService service = ServiceLocator.Get<ITextService>();
+            ITextService service = Locator.Current.GetService<ITextService>();
             return service.Measure(this.FormattedText);
         }
     }

@@ -37,7 +37,8 @@ namespace TestApplication
     {
         static void Main(string[] args)
         {
-            ServiceLocator.Register<ITextService>(() => new TextService(new SharpDX.DirectWrite.Factory()));
+            Locator.CurrentMutable.Register(() => new TextService(new SharpDX.DirectWrite.Factory()), typeof(ITextService));
+            Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
             Locator.CurrentMutable.Register(() => new TestLogger(), typeof(ILogger));
 
             Application application = new Application

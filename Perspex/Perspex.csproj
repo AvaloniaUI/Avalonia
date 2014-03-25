@@ -115,7 +115,6 @@
     <Compile Include="Styling\Selector.cs" />
     <Compile Include="RoutedEventArgs.cs" />
     <Compile Include="Styling\Selectors.cs" />
-    <Compile Include="ServiceLocator.cs" />
     <Compile Include="Setter.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Rect.cs" />
