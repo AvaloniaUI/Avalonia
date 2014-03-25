@@ -244,14 +244,7 @@ namespace Perspex.Controls
 
         public ILayoutRoot GetLayoutRoot()
         {
-            Control c = this;
-
-            while (c != null && !(c is ILayoutRoot))
-            {
-                c = c.Parent;
-            }
-
-            return (ILayoutRoot)c;
+            return this.GetVisualAncestorOrSelf<ILayoutRoot>();
         }
 
         public void Arrange(Rect rect)

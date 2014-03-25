@@ -13,7 +13,9 @@ namespace Perspex
     public interface IVisual
     {
         Rect Bounds { get; }
-        
+
+        IEnumerable<IVisual> ExistingVisualChildren { get; }
+
         IEnumerable<IVisual> VisualChildren { get; }
 
         IVisual VisualParent { get; set; }

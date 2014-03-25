@@ -51,6 +51,11 @@ namespace Perspex
             }
         }
 
+        IEnumerable<IVisual> IVisual.ExistingVisualChildren
+        {
+            get { return Enumerable.Empty<Visual>(); }
+        }
+
         IEnumerable<ILogical> ILogical.LogicalChildren
         {
             get { return new ILogical[0]; }
@@ -92,7 +97,7 @@ namespace Perspex
 
         protected virtual void AttachedToVisualTree()
         {
-            foreach (Visual child in ((IVisual)this).VisualChildren.OfType<Visual>())
+            foreach (Visual child in ((IVisual)this).ExistingVisualChildren.OfType<Visual>())
             {
                 child.AttachedToVisualTree();
             }

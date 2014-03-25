@@ -43,6 +43,11 @@ namespace Perspex.Controls
             set { this.SetValue(PaddingProperty, value); }
         }
 
+        IEnumerable<IVisual> IVisual.ExistingVisualChildren
+        {
+            get { return ((IVisual)this).VisualChildren; }
+        }
+
         IEnumerable<IVisual> IVisual.VisualChildren
         {
             get 

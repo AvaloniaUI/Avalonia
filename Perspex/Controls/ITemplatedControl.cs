@@ -6,10 +6,19 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using System.Collections.Generic;
 
     public interface ITemplatedControl
     {
+        /// <summary>
+        /// Gets an observable for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="property">The property to get the observable for.</param>
+        /// <returns>The observable.</returns>
+        IObservable<T> GetObservable<T>(PerspexProperty<T> property);
+
         IEnumerable<IVisual> VisualChildren { get; }
     }
 }

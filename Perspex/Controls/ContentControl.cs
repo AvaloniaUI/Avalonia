@@ -10,7 +10,7 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
 
-    public abstract class ContentControl : TemplatedControl
+    public class ContentControl : TemplatedControl
     {
         public static readonly PerspexProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>("Content");

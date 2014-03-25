@@ -24,6 +24,11 @@ namespace Perspex.Controls
             set { this.SetValue(TemplateProperty, value); }
         }
 
+        IEnumerable<IVisual> IVisual.ExistingVisualChildren
+        {
+            get { return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0); }
+        }
+
         IEnumerable<IVisual> ITemplatedControl.VisualChildren
         {
             get 

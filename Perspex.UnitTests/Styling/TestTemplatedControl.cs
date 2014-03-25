@@ -6,6 +6,7 @@
 
 namespace Perspex.UnitTests.Styling
 {
+    using System;
     using System.Collections.Generic;
     using Perspex.Controls;
     using Perspex.Styling;
@@ -30,6 +31,11 @@ namespace Perspex.UnitTests.Styling
         public abstract IEnumerable<IVisual> VisualChildren
         {
             get;
+        }
+
+        public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
+        {
+            throw new NotImplementedException();
         }
 
         public abstract void SetValue(PerspexProperty property, object value, System.IObservable<bool> activator);
