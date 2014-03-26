@@ -71,7 +71,6 @@
     <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />
-    <Compile Include="Controls\TestBorder.cs" />
     <Compile Include="Controls\Border.cs" />
     <Compile Include="Controls\Button.cs" />
     <Compile Include="Controls\ContentPresenter.cs" />

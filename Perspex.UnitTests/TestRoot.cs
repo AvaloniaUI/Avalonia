@@ -9,6 +9,7 @@ namespace Perspex.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Reactive.Disposables;
+    using Moq;
     using Perspex.Controls;
     using Perspex.Layout;
 
@@ -16,12 +17,12 @@ namespace Perspex.UnitTests
     {
         public Size ClientSize
         {
-            get { throw new NotImplementedException(); }
+            get { return new Size(100, 100); }
         }
 
         public ILayoutManager LayoutManager
         {
-            get { throw new NotImplementedException(); }
+            get { return new Mock<ILayoutManager>().Object; }
         }
     }
 }

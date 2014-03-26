@@ -162,6 +162,11 @@ namespace Perspex
 
             this.defaultValues.Add(type, defaultValue);
         }
+
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>

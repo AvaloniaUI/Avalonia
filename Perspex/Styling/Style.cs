@@ -41,11 +41,14 @@ namespace Perspex.Styling
         public void Attach(IStyleable control)
         {
             string description = "Style " + this.Selector.ToString();
-            IObservable<bool> activator = this.Selector.GetActivator(control);
+            StyleActivator activator = this.Selector.GetActivator(control);
 
-            foreach (Setter setter in this.Setters)
+            if (!(activator.CurrentValue == false && activator.HasCompleted))
             {
-                control.SetValue(setter.Property, setter.Value, activator);
+                foreach (Setter setter in this.Setters)
+                {
+                    control.SetValue(setter.Property, setter.Value, activator);
+                }
             }
         }
     }

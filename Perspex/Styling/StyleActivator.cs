@@ -27,8 +27,6 @@ namespace Perspex.Styling
 
         List<IObserver<bool>> observers = new List<IObserver<bool>>();
 
-        bool last = false;
-
         public StyleActivator(
             IEnumerable<IObservable<bool>> inputs, 
             string description,
@@ -54,7 +52,19 @@ namespace Perspex.Styling
             }
         }
 
+        public bool CurrentValue
+        {
+            get;
+            private set;
+        }
+
         public string Description
+        {
+            get;
+            private set;
+        }
+
+        public bool HasCompleted
         {
             get;
             private set;
@@ -65,7 +75,7 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(observer != null);
 
             this.observers.Add(observer);
-            observer.OnNext(last);
+            observer.OnNext(CurrentValue);
             return Disposable.Create(() => this.observers.Remove(observer));
         }
 
@@ -87,10 +97,10 @@ namespace Perspex.Styling
                     throw new InvalidOperationException("Invalid Activator mode.");
             }
 
-            if (current != last)
+            if (current != CurrentValue)
             {
                 this.Push(current);
-                last = current;
+                CurrentValue = current;
             }
         }
 
@@ -107,6 +117,8 @@ namespace Perspex.Styling
                 {
                     subscription.Dispose();
                 }
+
+                this.HasCompleted = true;
             }
         }
 
