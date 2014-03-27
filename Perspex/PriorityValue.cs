@@ -116,7 +116,7 @@ namespace Perspex
             return Disposable.Create(() => this.observers.Remove(observer));
         }
 
-        public void BeginDeferStyleChanges()
+        public void BeginDeferChanges()
         {
             if (this.defer++ == 0)
             {
@@ -124,7 +124,7 @@ namespace Perspex
             }
         }
 
-        public void EndDeferStyleChanges()
+        public void EndDeferChanges()
         {
             if (this.defer > 0 && --this.defer == 0 && dirty)
             {

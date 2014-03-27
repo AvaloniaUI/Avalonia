@@ -95,14 +95,13 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Defers property updates due to style changes until <see cref="EndDeferStyleChanges"/>
-        /// is called.
+        /// Defers property change notifications until <see cref="EndDeferChanges"/> is called.
         /// </summary>
-        public void BeginDeferStyleChanges()
+        public void BeginDeferChanges()
         {
             foreach (PriorityValue v in this.values.Values)
             {
-                v.BeginDeferStyleChanges();
+                v.BeginDeferChanges();
             }
 
             this.Log().Debug(string.Format(
@@ -112,14 +111,14 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Ends the defer of property updates due to style changes initiated by a previous call 
-        /// to <see cref="BeginDeferStyleChanges"/>.
+        /// Ends the defer of property change notifications initiated by a previous call 
+        /// to <see cref="BeginDeferChanges"/>.
         /// </summary>
-        public void EndDeferStyleChanges()
+        public void EndDeferChanges()
         {
             foreach (PriorityValue v in this.values.Values)
             {
-                v.EndDeferStyleChanges();
+                v.EndDeferChanges();
             }
 
             this.Log().Debug(string.Format(
