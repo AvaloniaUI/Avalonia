@@ -582,12 +582,5 @@ namespace Perspex
                     new PerspexPropertyChangedEventArgs(property, oldValue, newValue));
             }
         }
-
-        private class Binding
-        {
-            public object Observable { get; set; }
-
-            public IDisposable Dispose { get; set; }
-        }
     }
 }
