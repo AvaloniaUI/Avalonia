@@ -74,7 +74,7 @@ namespace Perspex.UnitTests.Controls
                 contentPresenter.Bind(
                     ContentPresenter.ContentProperty, 
                     parent.GetObservable(ContentControl.ContentProperty),
-                    BindingPriority.Template);
+                    BindingPriority.TemplatedParent);
                 border.Content = contentPresenter;
                 return border;
             });

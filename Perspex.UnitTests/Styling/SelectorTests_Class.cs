@@ -17,6 +17,15 @@ namespace Perspex.UnitTests.Styling
     public class SelectorTests_Class
     {
         [TestMethod]
+        public void Class_Priority_Is_StyleTrigger()
+        {
+            var control = new Control1();
+            var target = new Selector().Class("foo");
+
+            Assert.AreEqual(BindingPriority.StyleTrigger, target.Priority);
+        }
+
+        [TestMethod]
         public void Class_Matches_Control_With_Class()
         {
             var control = new Control1

@@ -48,7 +48,7 @@ namespace Perspex.Styling
                 foreach (Setter setter in this.Setters)
                 {
                     StyleBinding binding = new StyleBinding(activator, setter.Value, description);
-                    control.Bind(setter.Property, binding, BindingPriority.Style);
+                    control.Bind(setter.Property, binding, this.Selector.Priority);
                 }
             }
         }

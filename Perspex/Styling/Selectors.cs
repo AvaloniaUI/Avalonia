@@ -18,7 +18,7 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(previous != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            return new Selector(previous)
+            return new Selector(previous, BindingPriority.StyleTrigger)
             {
                 GetObservable = control => Observable
                     .Return(control.Classes.Contains(name))

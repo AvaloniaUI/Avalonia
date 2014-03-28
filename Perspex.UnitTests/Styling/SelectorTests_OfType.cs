@@ -17,6 +17,15 @@ namespace Perspex.UnitTests.Styling
     public class SelectorTests_OfType
     {
         [TestMethod]
+        public void OfType_Priority_Is_Style()
+        {
+            var control = new Control1();
+            var target = new Selector().OfType<Control1>();
+
+            Assert.AreEqual(BindingPriority.Style, target.Priority);
+        }
+
+        [TestMethod]
         public void OfType_Matches_Control_Of_Correct_Type()
         {
             var control = new Control1();

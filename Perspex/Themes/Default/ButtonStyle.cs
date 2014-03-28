@@ -59,13 +59,13 @@ namespace Perspex.Themes.Default
             border.Bind(
                 Border.BackgroundProperty,
                 control.GetObservable(Button.BackgroundProperty),
-                BindingPriority.Template);
+                BindingPriority.TemplatedParent);
 
             ContentPresenter contentPresenter = new ContentPresenter();
             contentPresenter.Bind(
                 ContentPresenter.ContentProperty, 
                 control.GetObservable(Button.ContentProperty),
-                BindingPriority.Template);
+                BindingPriority.TemplatedParent);
 
             border.Content = contentPresenter;
             return border;

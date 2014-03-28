@@ -24,14 +24,25 @@ namespace Perspex
         LocalValue,
 
         /// <summary>
+        /// A triggered style binding.
+        /// </summary>
+        /// <remarks>
+        /// A style trigger is a selector such as .class which overrides a 
+        /// <see cref="TemplatedParent"/> binding. In this way, a basic control can have
+        /// for example a Background from the templated parent which changes when the 
+        /// control has the :mouseover class.
+        /// </remarks>
+        StyleTrigger,
+
+        /// <summary>
+        /// A binding to a property on the templated parent.
+        /// </summary>
+        TemplatedParent,
+
+        /// <summary>
         /// A style binding.
         /// </summary>
         Style,
-
-        /// <summary>
-        /// A template binding.
-        /// </summary>
-        Template,
     }
 
     /// <summary>

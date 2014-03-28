@@ -20,14 +20,24 @@ namespace Perspex.Styling
         public Selector()
         {
             this.GetObservable = _ => Observable.Return(true);
+            this.Priority = BindingPriority.Style;
         }
 
         public Selector(Selector previous, bool stopTraversal = false)
             : this()
         {
             this.Previous = previous;
+            this.Priority = previous.Priority;
             this.InTemplate = previous != null ? previous.InTemplate : false;
             this.stopTraversal = stopTraversal;
+        }
+
+        public Selector(Selector previous, BindingPriority priority)
+            : this()
+        {
+            this.Previous = previous;
+            this.Priority = priority;
+            this.InTemplate = previous != null ? previous.InTemplate : false;
         }
 
         public bool InTemplate
@@ -43,6 +53,12 @@ namespace Perspex.Styling
         }
 
         public Selector Previous
+        {
+            get;
+            private set;
+        }
+
+        public BindingPriority Priority
         {
             get;
             private set;

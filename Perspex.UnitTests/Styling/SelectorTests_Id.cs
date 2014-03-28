@@ -19,6 +19,15 @@ namespace Perspex.UnitTests.Styling
     public class SelectorTests_Id
     {
         [TestMethod]
+        public void Id_Priority_Is_Style()
+        {
+            var control = new Control1();
+            var target = new Selector().Id("foo");
+
+            Assert.AreEqual(BindingPriority.Style, target.Priority);
+        }
+
+        [TestMethod]
         public void Id_Matches_Control_With_Correct_Id()
         {
             var control = new Control1 { Id = "foo" };
