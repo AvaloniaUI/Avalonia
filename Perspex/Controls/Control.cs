@@ -33,7 +33,7 @@ namespace Perspex.Controls
         Bottom,
     }
 
-    public class Control : Interactive, ILayoutable, IStyleable, IStyled
+    public class Control : Interactive, ILayoutable, ILogical, IStyleable, IStyled
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -56,6 +56,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
 
+        public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
+            new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
+
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
 
@@ -64,6 +67,9 @@ namespace Perspex.Controls
 
         public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonUpEvent =
             RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonUp", RoutingStrategy.Bubble);
+
+        internal static readonly PerspexProperty<Control> ParentPropertyRW =
+            PerspexProperty.Register<Control, Control>("Parent");
 
         private Classes classes;
 
@@ -208,6 +214,12 @@ namespace Perspex.Controls
             set { this.SetValue(MarginProperty, value); }
         }
 
+        public Control Parent
+        {
+            get { return this.GetValue(ParentPropertyRW); }
+            protected set { this.SetValue(ParentPropertyRW, value); }
+        }
+
         public Styles Styles
         {
             get
@@ -236,6 +248,17 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalAlignmentProperty); }
             set { this.SetValue(VerticalAlignmentProperty, value); }
+        }
+
+        ILogical ILogical.LogicalParent
+        {
+            get { return this.Parent; }
+            set { this.Parent = (Control)value; }
+        }
+
+        IEnumerable<ILogical> ILogical.LogicalChildren
+        {
+            get { return Enumerable.Empty<ILogical>(); }
         }
 
         public ILayoutRoot GetLayoutRoot()

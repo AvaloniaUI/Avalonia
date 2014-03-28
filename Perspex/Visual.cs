@@ -15,24 +15,12 @@ namespace Perspex
 
     public abstract class Visual : PerspexObject, IVisual
     {
-        public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
-            new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
-
-        internal static readonly PerspexProperty<Control> ParentPropertyRW =
-            PerspexProperty.Register<Control, Control>("Parent");
-
         private IVisual visualParent;
 
         public Rect Bounds
         {
             get;
             protected set;
-        }
-
-        public Control Parent
-        {
-            get { return this.GetValue(ParentPropertyRW); }
-            protected set { this.SetValue(ParentPropertyRW, value); }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren

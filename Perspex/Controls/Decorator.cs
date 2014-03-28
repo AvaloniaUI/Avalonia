@@ -21,12 +21,18 @@ namespace Perspex.Controls
 
         public Decorator()
         {
-            // TODO: Unset old content's visual parent.
-            this.GetObservable(ContentProperty).OfType<IVisual>().Subscribe(x =>
+            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
             {
-                if (x != null)
+                if (x.Item1 != null)
                 {
-                    x.VisualParent = this;
+                    ((IVisual)x.Item1).VisualParent = null;
+                    ((ILogical)x.Item1).LogicalParent = null;
+                }
+
+                if (x.Item2 != null)
+                {
+                    ((IVisual)x.Item2).VisualParent = this;
+                    ((ILogical)x.Item2).LogicalParent = this;
                 }
             });
         }
