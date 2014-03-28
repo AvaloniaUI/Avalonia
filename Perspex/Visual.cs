@@ -13,15 +13,13 @@ namespace Perspex
     using Perspex.Layout;
     using Perspex.Media;
 
-    public abstract class Visual : PerspexObject, IVisual, ILogical
+    public abstract class Visual : PerspexObject, IVisual
     {
         public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
 
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
-
-        private ILogical logicalParent;
 
         private IVisual visualParent;
 
@@ -37,28 +35,9 @@ namespace Perspex
             protected set { this.SetValue(ParentPropertyRW, value); }
         }
 
-        ILogical ILogical.LogicalParent
-        {
-            get 
-            { 
-                return this.logicalParent; 
-            }
-            
-            set 
-            { 
-                this.logicalParent = value;
-                this.Parent = value as Control;
-            }
-        }
-
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
         {
             get { return Enumerable.Empty<Visual>(); }
-        }
-
-        IEnumerable<ILogical> ILogical.LogicalChildren
-        {
-            get { return new ILogical[0]; }
         }
 
         IEnumerable<IVisual> IVisual.VisualChildren
