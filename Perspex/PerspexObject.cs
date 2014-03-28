@@ -480,7 +480,7 @@ namespace Perspex
         {
             PriorityValue result = new PriorityValue();
 
-            result.Subscribe(x =>
+            result.Changed.Subscribe(x =>
             {
                 object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ?
                     this.GetDefaultValue(property) :

@@ -10,11 +10,21 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Disposables;
+    using System.Reactive.Subjects;
 
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.
     /// </summary>
-    public class PriorityValue : IObservable<Tuple<object, object>>
+    /// <remarks>
+    /// Bindings, in the form of <see cref="IObservable<object>"/>s are added to the object using
+    /// the <see cref="Add"/> method. With the observable is passed a priority, where lower values
+    /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
+    /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there
+    /// are multiple bindings registered with the same priority, the most recently added binding
+    /// has a higher priority. Each time the value changes to a distinct new value, the
+    /// <see cref="Changed"/> observable is fired with the old and new values.
+    /// </remarks>
+    public class PriorityValue
     {
         /// <summary>
         /// The currently registered binding entries.
@@ -22,10 +32,9 @@ namespace Perspex
         private LinkedList<BindingEntry> bindings = new LinkedList<BindingEntry>();
 
         /// <summary>
-        /// The current observers.
+        /// The changed observable.
         /// </summary>
-        private List<IObserver<Tuple<object, object>>> observers = 
-            new List<IObserver<Tuple<object, object>>>();
+        private Subject<Tuple<object, object>> changed = new Subject<Tuple<object, object>>();
 
         /// <summary>
         /// The current value.
@@ -46,12 +55,11 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets the currently active bindings on this object.
+        /// Fired whenever the current <see cref="Value"/> changes to a new distinct value.
         /// </summary>
-        /// <returns>An enumerable collection of bindings.</returns>
-        public IEnumerable<BindingEntry> GetBindings()
+        public IObservable<Tuple<object, object>> Changed
         {
-            return this.bindings;
+            get { return this.changed; }
         }
 
         /// <summary>
@@ -100,17 +108,12 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Notifies the provider that an observer is to receive notifications.
+        /// Gets the currently active bindings on this object.
         /// </summary>
-        /// <param name="observer">The object that is to receive notifications.</param>
-        /// <returns>
-        /// A reference to an interface that allows observers to stop receiving notifications 
-        /// before the provider has finished sending them.
-        /// </returns>
-        public IDisposable Subscribe(IObserver<Tuple<object, object>> observer)
+        /// <returns>An enumerable collection of bindings.</returns>
+        public IEnumerable<BindingEntry> GetBindings()
         {
-            this.observers.Add(observer);
-            return Disposable.Create(() => this.observers.Remove(observer));
+            return this.bindings;
         }
 
         /// <summary>
@@ -137,18 +140,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Notifies all observers of a change in value.
-        /// </summary>
-        /// <param name="value">The old and new values.</param>
-        private void OnNext(Tuple<object, object> value)
-        {
-            foreach (var observer in this.observers)
-            {
-                observer.OnNext(value);
-            }
-        }
-
-        /// <summary>
         /// Sets the current value and notifies all observers.
         /// </summary>
         /// <param name="value">The new value.</param>
@@ -162,7 +153,7 @@ namespace Perspex
             if (!EqualityComparer<object>.Default.Equals(old, value))
             {
                 this.value = value;
-                this.OnNext(Tuple.Create(old, value));
+                this.changed.OnNext(Tuple.Create(old, value));
             }
         }
 

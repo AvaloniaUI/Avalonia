@@ -106,7 +106,7 @@ namespace Perspex.UnitTests
             var target = new PriorityValue();
             bool called = false;
 
-            target.Subscribe(value => called = (value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo"));
+            target.Changed.Subscribe(value => called = (value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo"));
             target.Add(this.Single("foo"), 0);
 
             Assert.IsTrue(called);
@@ -120,7 +120,7 @@ namespace Perspex.UnitTests
             bool called = false;
 
             target.Add(subject, 0);
-            target.Subscribe(value => called = ((string)value.Item1 == "foo" && (string)value.Item2 == "bar"));
+            target.Changed.Subscribe(value => called = ((string)value.Item1 == "foo" && (string)value.Item2 == "bar"));
             subject.OnNext("bar");
 
             Assert.IsTrue(called);
@@ -186,16 +186,9 @@ namespace Perspex.UnitTests
         /// <typeparam name="T">The type of the observable.</typeparam>
         /// <param name="value">The value.</param>
         /// <returns>The observable.</returns>
-        /// <remarks>
-        /// Seems like there should be something that does this in Rx but I couldn't find it.
-        /// </remarks>
         private IObservable<T> Single<T>(T value)
         {
-            return Observable.Create<T>(observer => 
-            {
-                observer.OnNext(value);
-                return Disposable.Create(() => { });
-            });
+            return Observable.Never<T>().StartWith(value);
         }
     }
 }
