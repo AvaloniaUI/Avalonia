@@ -8,7 +8,6 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reactive.Disposables;
     using System.Reactive.Subjects;
 
@@ -101,10 +100,37 @@ namespace Perspex
 
             return Disposable.Create(() =>
             {
-                entry.Dispose();
-                this.bindings.Remove(entry);
-                this.UpdateValue();
+                this.Remove(entry);
             });
+        }
+
+        /// <summary>
+        /// Removes all bindings with the specified priority.
+        /// </summary>
+        /// <param name="priority">The priority.</param>
+        public void Clear(int priority)
+        {
+            LinkedListNode<BindingEntry> item = this.bindings.First;
+            bool removed = false;
+
+            while (item != null && item.Value.Priority <= priority)
+            {
+                LinkedListNode<BindingEntry> next = item.Next;
+
+                if (item.Value.Priority == priority)
+                {
+                    item.Value.Dispose();
+                    this.bindings.Remove(item);
+                    removed = true;
+                }
+
+                item = next;
+            }
+
+            if (removed && priority <= this.valuePriority)
+            {
+                this.UpdateValue();
+            }
         }
 
         /// <summary>
@@ -134,9 +160,7 @@ namespace Perspex
         /// <param name="changed">The completed entry.</param>
         private void EntryCompleted(BindingEntry entry)
         {
-            entry.Dispose();
-            this.bindings.Remove(entry);
-            this.UpdateValue();
+            this.Remove(entry);
         }
 
         /// <summary>
@@ -158,6 +182,17 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Removes the specified binding entry and updates the current value.
+        /// </summary>
+        /// <param name="entry">The binding entry to remove.</param>
+        private void Remove(BindingEntry entry)
+        {
+            entry.Dispose();
+            this.bindings.Remove(entry);
+            this.UpdateValue();
+        }
+
+        /// <summary>
         /// Updates the current value.
         /// </summary>
         private void UpdateValue()
@@ -170,6 +205,8 @@ namespace Perspex
                     return;
                 }
             }
+
+            this.SetValue(PerspexProperty.UnsetValue, int.MaxValue);
         }
 
         /// <summary>

@@ -120,7 +120,6 @@ namespace Perspex
         /// </summary>
         public void BeginDeferChanges()
         {
-            throw new NotImplementedException();
             //foreach (PriorityValue v in this.values.Values)
             //{
             //    v.BeginDeferChanges();
@@ -138,7 +137,6 @@ namespace Perspex
         /// </summary>
         public void EndDeferChanges()
         {
-            throw new NotImplementedException();
             //foreach (PriorityValue v in this.values.Values)
             //{
             //    v.EndDeferChanges();
@@ -397,6 +395,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
+            const int priority = (int)BindingPriority.LocalValue;
             PriorityValue v;
 
             if (!this.values.TryGetValue(property, out v))
@@ -410,8 +409,8 @@ namespace Perspex
                 this.values.Add(property, v);
             }
 
-            throw new NotImplementedException();
-            //v.SetLocalValue(value);
+            v.Clear(priority);
+            v.Add(Observable.Never<object>().StartWith(value), priority);
         }
 
         /// <summary>
@@ -439,7 +438,22 @@ namespace Perspex
             IObservable<object> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            throw new NotImplementedException();
+            Contract.Requires<NullReferenceException>(property != null);
+
+            PriorityValue v;
+
+            if (!this.values.TryGetValue(property, out v))
+            {
+                v = this.CreatePriorityValue(property);
+                this.values.Add(property, v);
+            }
+
+            if (priority == BindingPriority.LocalValue)
+            {
+                v.Clear((int)priority);
+            }
+
+            v.Add(source, (int)priority);
 
             this.Log().Debug(string.Format(
                 "Bound value of {0}.{1} (#{2:x8})",
@@ -463,17 +477,6 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             this.Bind((PerspexProperty)property, (IObservable<object>)source, priority);
-        }
-
-        private static IObservable<object> BoxObservable<T>(IObservable<T> observable)
-        {
-            return Observable.Create<object>(observer =>
-            {
-                return observable.Subscribe(value =>
-                {
-                    observer.OnNext(value);
-                });
-            });
         }
 
         private PriorityValue CreatePriorityValue(PerspexProperty property)

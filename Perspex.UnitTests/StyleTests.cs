@@ -105,7 +105,7 @@ namespace Perspex.UnitTests
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
 
-            CollectionAssert.AreEqual(new[] { "foodefault", "Bar", "foodefault" }, values);
+            CollectionAssert.AreEqual(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
         }
 
         private class Class1 : Control
