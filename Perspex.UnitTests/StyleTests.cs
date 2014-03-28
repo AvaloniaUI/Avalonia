@@ -18,7 +18,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Style_With_Only_Type_Selector_Should_Update_Value()
         {
-            Style style = new Style(new Selector().OfType<Class1>())
+            Style style = new Style(x => x.OfType<Class1>())
             {
                 Setters = new[]
                 {
@@ -36,7 +36,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void Style_With_Class_Selector_Should_Update_And_Restore_Value()
         {
-            Style style = new Style(new Selector().OfType<Class1>().Class("foo"))
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
             {
                 Setters = new[]
                 {
@@ -57,7 +57,7 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void LocalValue_Should_Override_Style()
         {
-            Style style = new Style(new Selector().OfType<Class1>())
+            Style style = new Style(x => x.OfType<Class1>())
             {
                 Setters = new[]
                 {
@@ -79,7 +79,7 @@ namespace Perspex.UnitTests
         {
             Styles styles = new Styles
             {
-                new Style(new Selector().OfType<Class1>().Class("foo"))
+                new Style(x => x.OfType<Class1>().Class("foo"))
                 {
                     Setters = new[]
                     {
@@ -87,7 +87,7 @@ namespace Perspex.UnitTests
                     },
                 },
 
-                new Style(new Selector().OfType<Class1>().Class("foo"))
+                new Style(x => x.OfType<Class1>().Class("foo"))
                 {
                     Setters = new[]
                     {

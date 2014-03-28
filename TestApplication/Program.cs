@@ -52,6 +52,7 @@ namespace TestApplication
             {
                 Content = new Button
                 {
+                    Background = new SolidColorBrush(0xff0000ff),
                     Content = "Hello World",
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,

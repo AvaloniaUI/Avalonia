@@ -15,14 +15,14 @@ namespace Perspex.Themes.Default
         {
             this.AddRange(new[]
             {
-                new Style(new Selector().OfType<Button>())
+                new Style(x => x.OfType<Button>())
                 {
                     Setters = new[]
                     {
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
                     },
                 },
-                new Style(new Selector().OfType<Button>().Template().Id("border"))
+                new Style(x => x.OfType<Button>().Template().Id("border"))
                 {
                     Setters = new[]
                     {
@@ -32,7 +32,7 @@ namespace Perspex.Themes.Default
                         new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
                     },
                 },
-                new Style(new Selector().OfType<Button>().Class(":mouseover").Template().Id("border"))
+                new Style(x => x.OfType<Button>().Class(":mouseover").Template().Id("border"))
                 {
                     Setters = new[]
                     {
@@ -40,7 +40,7 @@ namespace Perspex.Themes.Default
                         new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                     },
                 },
-                new Style(new Selector().OfType<Button>().Class(":pressed").Template().Id("border"))
+                new Style(x => x.OfType<Button>().Class(":pressed").Template().Id("border"))
                 {
                     Setters = new[]
                     {
@@ -56,11 +56,17 @@ namespace Perspex.Themes.Default
             Border border = new Border();
             border.Id = "border";
             border.Padding = new Thickness(3);
+            border.Bind(
+                Border.BackgroundProperty,
+                control.GetObservable(Button.BackgroundProperty),
+                BindingPriority.Template);
+
             ContentPresenter contentPresenter = new ContentPresenter();
             contentPresenter.Bind(
                 ContentPresenter.ContentProperty, 
                 control.GetObservable(Button.ContentProperty),
                 BindingPriority.Template);
+
             border.Content = contentPresenter;
             return border;
         }

@@ -20,10 +20,10 @@ namespace Perspex.Styling
             this.Setters = new List<Setter>();
         }
 
-        public Style(Selector selector)
+        public Style(Func<Selector, Selector> selector)
             : this()
         {
-            this.Selector = selector;
+            this.Selector = selector(new Selector());
         }
 
         public Selector Selector
