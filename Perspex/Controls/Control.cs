@@ -74,8 +74,6 @@ namespace Perspex.Controls
         public Control()
         {
             this.classes = new Classes();
-            this.classes.BeforeChanged.Subscribe(x => this.BeginDeferChanges());
-            this.classes.AfterChanged.Subscribe(x => this.EndDeferChanges());
 
             this.GetObservable(IsMouseOverProperty).Subscribe(x =>
             {
@@ -143,7 +141,7 @@ namespace Perspex.Controls
         public Classes Classes
         {
             get 
-            { 
+            {
                 return this.classes; 
             }
             
@@ -151,10 +149,8 @@ namespace Perspex.Controls
             {
                 if (this.classes != value)
                 {
-                    this.BeginDeferChanges();
                     this.classes.Clear();
                     this.classes.Add(value);
-                    this.EndDeferChanges();
                 }
             }
         }

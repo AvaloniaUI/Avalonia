@@ -124,39 +124,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Defers property change notifications until <see cref="EndDeferChanges"/> is called.
-        /// </summary>
-        public void BeginDeferChanges()
-        {
-            //foreach (PriorityValue v in this.values.Values)
-            //{
-            //    v.BeginDeferChanges();
-            //}
-
-            //this.Log().Debug(string.Format(
-            //    "Defer style changes on {0} (#{1:x8})",
-            //    this.GetType().Name,
-            //    this.GetHashCode()));
-        }
-
-        /// <summary>
-        /// Ends the defer of property change notifications initiated by a previous call 
-        /// to <see cref="BeginDeferChanges"/>.
-        /// </summary>
-        public void EndDeferChanges()
-        {
-            //foreach (PriorityValue v in this.values.Values)
-            //{
-            //    v.EndDeferChanges();
-            //}
-
-            //this.Log().Debug(string.Format(
-            //    "End defer style changes on {0} (#{1:x8})",
-            //    this.GetType().Name,
-            //    this.GetHashCode()));
-        }
-
-        /// <summary>
         /// Gets all <see cref="PerspexProperty"/>s registered on a type.
         /// </summary>
         /// <param name="type">The type.</param>
