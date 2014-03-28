@@ -138,7 +138,6 @@ namespace Perspex
         /// </summary>
         public void EndDeferChanges()
         {
-            throw new NotImplementedException();
             //foreach (PriorityValue v in this.values.Values)
             //{
             //    v.EndDeferChanges();

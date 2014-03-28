@@ -85,7 +85,10 @@ namespace Perspex.Windows
             Border border = new Border();
             border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
             ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.SetValue(ContentPresenter.ContentProperty, this.GetObservable(Window.ContentProperty));
+            contentPresenter.Bind(
+                ContentPresenter.ContentProperty, 
+                this.GetObservable(Window.ContentProperty),
+                BindingPriority.Style);
             border.Content = contentPresenter;
             return border;
         }

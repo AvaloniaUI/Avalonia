@@ -71,7 +71,10 @@ namespace Perspex.UnitTests.Controls
                 Border border = new Border();
                 border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
                 ContentPresenter contentPresenter = new ContentPresenter();
-                contentPresenter.SetValue(ContentPresenter.ContentProperty, parent.GetObservable(ContentControl.ContentProperty));
+                contentPresenter.Bind(
+                    ContentPresenter.ContentProperty, 
+                    parent.GetObservable(ContentControl.ContentProperty),
+                    BindingPriority.Template);
                 border.Content = contentPresenter;
                 return border;
             });

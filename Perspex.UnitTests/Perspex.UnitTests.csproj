@@ -71,6 +71,7 @@
     <Compile Include="Controls\ContentControlTests.cs" />
     <Compile Include="Controls\ControlTests.cs" />
     <Compile Include="Controls\TemplatedControlTests.cs" />
+    <Compile Include="PriorityValueTests.cs" />
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />

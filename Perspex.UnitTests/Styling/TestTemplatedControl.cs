@@ -38,6 +38,9 @@ namespace Perspex.UnitTests.Styling
             throw new NotImplementedException();
         }
 
-        public abstract void SetValue(PerspexProperty property, object value, System.IObservable<bool> activator);
+        public void Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

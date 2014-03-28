@@ -17,7 +17,7 @@ namespace Perspex.Styling
         Or,
     }
 
-    public class StyleActivator : IObservable<bool>, IObservableDescription
+    public class StyleActivator : IObservable<bool>
     {
         ActivatorMode mode;
 
@@ -29,12 +29,10 @@ namespace Perspex.Styling
 
         public StyleActivator(
             IEnumerable<IObservable<bool>> inputs, 
-            string description,
             ActivatorMode mode = ActivatorMode.And)
         {
             int i = 0;
 
-            this.Description = description;
             this.mode = mode;
 
             foreach (IObservable<bool> input in inputs)
@@ -53,12 +51,6 @@ namespace Perspex.Styling
         }
 
         public bool CurrentValue
-        {
-            get;
-            private set;
-        }
-
-        public string Description
         {
             get;
             private set;

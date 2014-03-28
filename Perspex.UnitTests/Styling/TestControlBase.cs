@@ -30,8 +30,9 @@ namespace Perspex.UnitTests.Styling
             set;
         }
 
-        public virtual void SetValue(PerspexProperty property, object value, IObservable<bool> activator)
+        public void Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
         {
+            throw new NotImplementedException();
         }
     }
 }

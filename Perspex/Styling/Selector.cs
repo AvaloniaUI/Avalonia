@@ -79,7 +79,7 @@ namespace Perspex.Styling
                 selector = selector.MovePrevious();
             }
 
-            return new StyleActivator(inputs, this.ToString());
+            return new StyleActivator(inputs);
         }
 
         public override string ToString()

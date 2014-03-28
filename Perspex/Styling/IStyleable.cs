@@ -30,16 +30,15 @@ namespace Perspex.Styling
         ITemplatedControl TemplatedParent { get; }
 
         /// <summary>
-        /// Binds a <see cref="PerspexProperty"/> to a style.
+        /// Binds a <see cref="PerspexProperty"/> to an observable.
         /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
-        /// <param name="value">The activated value.</param>
-        /// <param name="activator">An observable which activates the value.</param>
-        /// <remarks>
-        /// Style bindings have a lower precedence than local value bindings. They are toggled
-        /// on or off by <paramref name="activator"/> and can be unbound by the activator 
-        /// completing.
-        /// </remarks>
-        void SetValue(PerspexProperty property, object value, IObservable<bool> activator);
+        /// <param name="source">The observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        void Bind(
+            PerspexProperty property, 
+            IObservable<object> source, 
+            BindingPriority priority = BindingPriority.LocalValue);
     }
 }

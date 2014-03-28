@@ -57,7 +57,10 @@ namespace Perspex.Themes.Default
             border.Id = "border";
             border.Padding = new Thickness(3);
             ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.SetValue(ContentPresenter.ContentProperty, control.GetObservable(Button.ContentProperty));
+            contentPresenter.Bind(
+                ContentPresenter.ContentProperty, 
+                control.GetObservable(Button.ContentProperty),
+                BindingPriority.Template);
             border.Content = contentPresenter;
             return border;
         }

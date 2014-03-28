@@ -249,7 +249,7 @@ namespace Perspex.UnitTests
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
 
             Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
         }
@@ -273,7 +273,7 @@ namespace Perspex.UnitTests
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             source.SetValue(Class1.FooProperty, "subsequent");
 
             Assert.AreEqual("subsequent", target.GetValue(Class1.FooProperty));
@@ -286,7 +286,7 @@ namespace Perspex.UnitTests
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             target.ClearValue(Class1.FooProperty);
             source.SetValue(Class1.FooProperty, "newvalue");
 
@@ -300,7 +300,7 @@ namespace Perspex.UnitTests
             Class1 source = new Class1();
 
             source.SetValue(Class1.FooProperty, "initial");
-            target.SetValue(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
+            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "reset");
             source.SetValue(Class1.FooProperty, "newvalue");
 
@@ -321,87 +321,93 @@ namespace Perspex.UnitTests
         [TestMethod]
         public void StyleBinding_Overrides_Default_Value()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "stylevalue", Observable.Return(true));
+            //target.Bind(Class1.FooProperty, "stylevalue", Observable.Return(true));
 
-            Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
         public void StyleBinding_Doesnt_Override_Local_Value()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "newvalue");
-            target.SetValue(Class1.FooProperty, "stylevalue", Observable.Return(true));
+            //target.SetValue(Class1.FooProperty, "newvalue");
+            //target.SetValue(Class1.FooProperty, "stylevalue", Observable.Return(true));
 
-            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
         public void StyleBinding_Deactivated_Doesnt_Override_Default_Value()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "stylevalue", Observable.Return(false));
+            //target.SetValue(Class1.FooProperty, "stylevalue", Observable.Return(false));
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
         public void StyleBinding_Toggles_On_Activation()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            Subject<bool> source = new Subject<bool>();
-            target.SetValue(Class1.FooProperty, "stylevalue", source);
+            //Subject<bool> source = new Subject<bool>();
+            //target.SetValue(Class1.FooProperty, "stylevalue", source);
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
-            source.OnNext(true);
-            Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
-            source.OnNext(false);
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //source.OnNext(true);
+            //Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
+            //source.OnNext(false);
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
         public void StyleBinding_Detaches_OnCompleted()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            Subject<bool> source = new Subject<bool>();
-            target.SetValue(Class1.FooProperty, "stylevalue", source);
+            //Subject<bool> source = new Subject<bool>();
+            //target.SetValue(Class1.FooProperty, "stylevalue", source);
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
-            source.OnNext(true);
-            Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
-            source.OnCompleted();
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //source.OnNext(true);
+            //Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
+            //source.OnCompleted();
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         [TestMethod]
         public void Later_StyleBindings_Have_Precedence()
         {
-            Class1 target = new Class1();
+            throw new NotImplementedException();
+            //Class1 target = new Class1();
 
-            Subject<bool> source1 = new Subject<bool>();
-            Subject<bool> source2 = new Subject<bool>();
-            target.SetValue(Class1.FooProperty, "style1", source1);
-            target.SetValue(Class1.FooProperty, "style2", source2);
+            //Subject<bool> source1 = new Subject<bool>();
+            //Subject<bool> source2 = new Subject<bool>();
+            //target.SetValue(Class1.FooProperty, "style1", source1);
+            //target.SetValue(Class1.FooProperty, "style2", source2);
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
-            source1.OnNext(true);
-            Assert.AreEqual("style1", target.GetValue(Class1.FooProperty));
-            source2.OnNext(true);
-            Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
-            source1.OnNext(false);
-            Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
-            source2.OnNext(false);
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
-            source2.OnNext(true);
-            Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
-            source1.OnNext(true);
-            Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //source1.OnNext(true);
+            //Assert.AreEqual("style1", target.GetValue(Class1.FooProperty));
+            //source2.OnNext(true);
+            //Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
+            //source1.OnNext(false);
+            //Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
+            //source2.OnNext(false);
+            //Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            //source2.OnNext(true);
+            //Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
+            //source1.OnNext(true);
+            //Assert.AreEqual("style2", target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : PerspexObject

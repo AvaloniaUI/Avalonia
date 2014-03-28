@@ -11,183 +11,261 @@ namespace Perspex
     using System.Linq;
     using System.Reactive.Disposables;
 
-    internal class PriorityValue : IObservable<Tuple<object, object>>
+    /// <summary>
+    /// Maintains a list of prioritised bindings together with a current value.
+    /// </summary>
+    public class PriorityValue : IObservable<Tuple<object, object>>
     {
-        private object localValue = PerspexProperty.UnsetValue;
+        /// <summary>
+        /// The currently registered binding entries.
+        /// </summary>
+        private LinkedList<BindingEntry> bindings = new LinkedList<BindingEntry>();
 
-        private IDisposable localBinding;
-
-        private object lastValue = PerspexProperty.UnsetValue;
-
-        private List<StyleEntry> styles = new List<StyleEntry>();
-
+        /// <summary>
+        /// The current observers.
+        /// </summary>
         private List<IObserver<Tuple<object, object>>> observers = 
             new List<IObserver<Tuple<object, object>>>();
 
-        private int defer;
+        /// <summary>
+        /// The current value.
+        /// </summary>
+        private object value;
 
-        private bool dirty;
+        /// <summary>
+        /// The priority of the binding that is currently active.
+        /// </summary>
+        private int valuePriority = int.MaxValue;
 
-        public object LocalValue
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityValue"/> class.
+        /// </summary>
+        public PriorityValue()
         {
-            get
-            {
-                return this.localValue;
-            }
-
-            set
-            {
-                if (!object.Equals(this.localValue, value))
-                {
-                    this.localValue = value;
-                    this.Push();
-                }
-            }
+            this.value = PerspexProperty.UnsetValue;
         }
 
-        public void ClearLocalBinding()
+        /// <summary>
+        /// Gets the currently active bindings on this object.
+        /// </summary>
+        /// <returns>An enumerable collection of bindings.</returns>
+        public IEnumerable<BindingEntry> GetBindings()
         {
-            if (this.localBinding != null)
-            {
-                this.localBinding.Dispose();
-            }
+            return this.bindings;
         }
 
-        public void SetLocalValue(object value)
+        /// <summary>
+        /// Gets the current value.
+        /// </summary>
+        public object Value
         {
-            if (this.localBinding != null)
-            {
-                this.localBinding.Dispose();
-            }
-
-            this.LocalValue = value;
+            get { return this.value; }
         }
 
-        public void SetLocalBinding(IObservable<object> binding)
+        /// <summary>
+        /// Adds a new binding.
+        /// </summary>
+        /// <param name="binding">The binding.</param>
+        /// <param name="priority">The binding priority.</param>
+        /// <returns>
+        /// A disposable that will remove the binding.
+        /// </returns>
+        public IDisposable Add(IObservable<object> binding, int priority)
         {
-            if (this.localBinding != null)
+            BindingEntry entry = new BindingEntry();
+            LinkedListNode<BindingEntry> insert = this.bindings.First;
+
+            while (insert != null && insert.Value.Priority < priority)
             {
-                this.localBinding.Dispose();
+                insert = insert.Next;
             }
 
-            this.localBinding = binding.Subscribe(value => this.LocalValue = value);
-        }
-
-        public void AddStyle(IObservable<bool> activator, object value)
-        {
-            Contract.Requires<NullReferenceException>(activator != null);
-
-            StyleEntry entry = new StyleEntry(activator, value, this.Push, e => this.styles.Remove(e));
-
-            this.styles.Add(entry);
-
-            if (this.localValue == PerspexProperty.UnsetValue)
+            if (insert == null)
             {
-                this.Push();
-            }
-        }
-
-        public object GetEffectiveValue()
-        {
-            if (this.localValue != PerspexProperty.UnsetValue)
-            {
-                return this.localValue;
+                this.bindings.AddLast(entry);
             }
             else
             {
-                foreach (StyleEntry style in Enumerable.Reverse(this.styles))
-                {
-                    if (style.Active)
-                    {
-                        return style.Value;
-                    }
-                }
+                this.bindings.AddBefore(insert, entry);
             }
 
-            return PerspexProperty.UnsetValue;
+            entry.Start(binding, priority, this.EntryChanged, this.EntryCompleted);
+
+            return Disposable.Create(() =>
+            {
+                entry.Dispose();
+                this.bindings.Remove(entry);
+                this.UpdateValue();
+            });
         }
 
+        /// <summary>
+        /// Notifies the provider that an observer is to receive notifications.
+        /// </summary>
+        /// <param name="observer">The object that is to receive notifications.</param>
+        /// <returns>
+        /// A reference to an interface that allows observers to stop receiving notifications 
+        /// before the provider has finished sending them.
+        /// </returns>
         public IDisposable Subscribe(IObserver<Tuple<object, object>> observer)
         {
-            Contract.Requires<NullReferenceException>(observer != null);
-
             this.observers.Add(observer);
-
             return Disposable.Create(() => this.observers.Remove(observer));
         }
 
-        public void BeginDeferChanges()
+        /// <summary>
+        /// Called when an binding's value changes.
+        /// </summary>
+        /// <param name="changed">The changed entry.</param>
+        private void EntryChanged(BindingEntry changed)
         {
-            if (this.defer++ == 0)
+            if (changed.Priority <= this.valuePriority)
             {
-                this.dirty = false;
+                this.UpdateValue();
             }
         }
 
-        public void EndDeferChanges()
+        /// <summary>
+        /// Called when an binding completes.
+        /// </summary>
+        /// <param name="changed">The completed entry.</param>
+        private void EntryCompleted(BindingEntry entry)
         {
-            if (this.defer > 0 && --this.defer == 0 && dirty)
-            {
-                this.Push();
-            }        
+            entry.Dispose();
+            this.bindings.Remove(entry);
+            this.UpdateValue();
         }
 
-        private void Push()
+        /// <summary>
+        /// Notifies all observers of a change in value.
+        /// </summary>
+        /// <param name="value">The old and new values.</param>
+        private void OnNext(Tuple<object, object> value)
         {
-            if (defer == 0)
+            foreach (var observer in this.observers)
             {
-                object value = this.GetEffectiveValue();
+                observer.OnNext(value);
+            }
+        }
 
-                if (!object.Equals(this.lastValue, value))
+        /// <summary>
+        /// Sets the current value and notifies all observers.
+        /// </summary>
+        /// <param name="value">The new value.</param>
+        /// <param name="priority">The priority of the binding which produced the value.</param>
+        private void SetValue(object value, int priority)
+        {
+            object old = this.value;
+
+            this.valuePriority = priority;
+
+            if (!EqualityComparer<object>.Default.Equals(old, value))
+            {
+                this.value = value;
+                this.OnNext(Tuple.Create(old, value));
+            }
+        }
+
+        /// <summary>
+        /// Updates the current value.
+        /// </summary>
+        private void UpdateValue()
+        {
+            foreach (BindingEntry entry in this.bindings)
+            {
+                if (entry.Value != PerspexProperty.UnsetValue)
                 {
-                    foreach (IObserver<Tuple<object, object>> observer in this.observers)
-                    {
-                        observer.OnNext(Tuple.Create(this.lastValue, value));
-                    }
-
-                    this.lastValue = value;
+                    this.SetValue(entry.Value, entry.Priority);
+                    return;
                 }
             }
-            else
-            {
-                dirty = true;
-            }
         }
 
-        private class StyleEntry
+        /// <summary>
+        /// A registered binding.
+        /// </summary>
+        public class BindingEntry : IDisposable
         {
-            private IObservable<bool> activator;
+            /// <summary>
+            /// The binding subscription.
+            /// </summary>
+            private IDisposable subscription;
 
-            public StyleEntry(
-                IObservable<bool> activator, 
-                object value, 
-                Action activeChanged,
-                Action<StyleEntry> completed)
+            /// <summary>
+            /// The priority of the binding.
+            /// </summary>
+            public int Priority
             {
-                Contract.Requires<NullReferenceException>(activator != null);
-                Contract.Requires<NullReferenceException>(activeChanged != null);
-
-                this.activator = activator;
-                this.Value = value;
-
-                this.activator.Subscribe(x =>
-                {
-                    this.Active = x;
-                    activeChanged();
-                },
-                () => completed(this));
+                get;
+                private set;
             }
 
-            public bool Active 
-            { 
-                get; 
-                private set; 
-            }
-
+            /// <summary>
+            /// The current value of the binding.
+            /// </summary>
             public object Value
             {
                 get;
                 private set;
+            }
+
+            /// <summary>
+            /// Starts listening to the specified binding.
+            /// </summary>
+            /// <param name="binding">The binding.</param>
+            /// <param name="priority">The binding priority.</param>
+            /// <param name="changed">Called when the binding changes.</param>
+            /// <param name="completed">Called when the binding completes.</param>
+            public void Start(
+                IObservable<object> binding,
+                int priority,
+                Action<BindingEntry> changed,
+                Action<BindingEntry> completed)
+            {
+                Contract.Requires<ArgumentNullException>(binding != null);
+                Contract.Requires<ArgumentNullException>(changed != null);
+                Contract.Requires<ArgumentNullException>(completed != null);
+
+                if (this.subscription != null)
+                {
+                    throw new Exception("PriorityValue.Entry.Start() called more than once.");
+                }
+
+                this.Priority = priority;
+                this.Value = PerspexProperty.UnsetValue;
+
+                if (binding is IObservableDescription)
+                {
+                    this.Description = ((IObservableDescription)binding).Description;
+                }
+
+                this.subscription = binding.Subscribe(
+                    value =>
+                    {
+                        this.Value = value;
+                        changed(this);
+                    },
+                    () => completed(this));
+            }
+
+            /// <summary>
+            /// Gets a description of the binding.
+            /// </summary>
+            public string Description
+            {
+                get;
+                private set;
+            }
+
+            /// <summary>
+            /// Ends the binding subscription.
+            /// </summary>
+            public void Dispose()
+            {
+                if (this.subscription != null)
+                {
+                    this.subscription.Dispose();
+                }
             }
         }
     }
