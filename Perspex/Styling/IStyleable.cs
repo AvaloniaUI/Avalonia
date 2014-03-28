@@ -36,7 +36,10 @@ namespace Perspex.Styling
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        void Bind(
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        IDisposable Bind(
             PerspexProperty property, 
             IObservable<object> source, 
             BindingPriority priority = BindingPriority.LocalValue);

@@ -417,6 +417,13 @@ namespace Perspex
                 this.values.Add(property, v);
             }
 
+            this.Log().Debug(string.Format(
+                "Set local value of {0}.{1} (#{2:x8}) to {3}",
+                this.GetType().Name,
+                property.Name,
+                this.GetHashCode(),
+                value));
+
             v.Clear(priority);
             v.Add(Observable.Never<object>().StartWith(value), priority);
         }
@@ -441,7 +448,10 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        public void Bind(
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        public IDisposable Bind(
             PerspexProperty property,
             IObservable<object> source,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -449,6 +459,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             PriorityValue v;
+            IObservableDescription description = source as IObservableDescription;
 
             if (!this.values.TryGetValue(property, out v))
             {
@@ -461,13 +472,14 @@ namespace Perspex
                 v.Clear((int)priority);
             }
 
-            v.Add(source, (int)priority);
-
             this.Log().Debug(string.Format(
-                "Bound value of {0}.{1} (#{2:x8})",
+                "Bound value of {0}.{1} (#{2:x8}) to {3}",
                 this.GetType().Name,
                 property.Name,
-                this.GetHashCode()));
+                this.GetHashCode(),
+                description != null ? description.Description : "[Anonymous]"));
+
+            return v.Add(source, (int)priority);
         }
 
         /// <summary>
@@ -477,14 +489,17 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        public void Bind<T>(
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        public IDisposable Bind<T>(
             PerspexProperty<T> property, 
             IObservable<T> source, 
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.Bind((PerspexProperty)property, (IObservable<object>)source, priority);
+            return this.Bind((PerspexProperty)property, (IObservable<object>)source, priority);
         }
 
         private PriorityValue CreatePriorityValue(PerspexProperty property)
@@ -505,10 +520,11 @@ namespace Perspex
                     this.RaisePropertyChanged(property, oldValue, newValue);
 
                     this.Log().Debug(string.Format(
-                        "Set value of {0}.{1} (#{2:x8}) to {3}",
+                        "Value of {0}.{1} (#{2:x8}) changed from {3} to {4}",
                         this.GetType().Name,
                         property.Name,
                         this.GetHashCode(),
+                        oldValue,
                         newValue));
                 }
             });

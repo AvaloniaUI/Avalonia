@@ -56,16 +56,10 @@ namespace Perspex.Themes.Default
             Border border = new Border();
             border.Id = "border";
             border.Padding = new Thickness(3);
-            border.Bind(
-                Border.BackgroundProperty,
-                control.GetObservable(Button.BackgroundProperty),
-                BindingPriority.TemplatedParent);
+            border.TemplateBinding(control, Border.BackgroundProperty);
 
             ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.Bind(
-                ContentPresenter.ContentProperty, 
-                control.GetObservable(Button.ContentProperty),
-                BindingPriority.TemplatedParent);
+            contentPresenter.TemplateBinding(control, ContentPresenter.ContentProperty);
 
             border.Content = contentPresenter;
             return border;
