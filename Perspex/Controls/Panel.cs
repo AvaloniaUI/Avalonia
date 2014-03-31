@@ -17,20 +17,43 @@ namespace Perspex.Controls
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
-    public class Panel : Control
+    public class Panel : Control, IVisual
     {
+        private PerspexList<Control> children;
+
         private LogicalChildren<Control> logicalChildren;
 
-        public Panel()
+        public PerspexList<Control> Children
         {
-            this.Children = new ObservableCollection<Control>();
-            this.logicalChildren = new LogicalChildren<Control>(this, this.Children);
+            get
+            {
+                if (this.children == null)
+                {
+                    this.children = new PerspexList<Control>();
+                    this.logicalChildren = new LogicalChildren<Control>(this, this.children);
+                }
+
+                return this.children;
+            }
+            
+            set
+            {
+                this.children = value;
+
+                if (this.logicalChildren != null)
+                {
+                    this.logicalChildren.Change(this.children);
+                }
+                else
+                {
+                    this.logicalChildren = new LogicalChildren<Control>(this, this.children);
+                }
+            }
         }
 
-        public ObservableCollection<Control> Children
+        IEnumerable<IVisual> IVisual.VisualChildren
         {
-            get;
-            private set;
+            get { return this.children; }
         }
     }
 }

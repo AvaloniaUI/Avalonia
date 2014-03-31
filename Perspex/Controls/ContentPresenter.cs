@@ -21,6 +21,24 @@ namespace Perspex.Controls
 
         private Visual visualChild;
 
+        public ContentPresenter()
+        {
+            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
+            {
+                if (x.Item1 is Control)
+                {
+                    ((IVisual)x.Item1).VisualParent = null;
+                    ((ILogical)x.Item1).LogicalParent = null;
+                }
+
+                if (x.Item2 is Control)
+                {
+                    ((IVisual)x.Item2).VisualParent = this;
+                    ((ILogical)x.Item2).LogicalParent = this;
+                }
+            });
+        }
+
         public object Content
         {
             get { return this.GetValue(ContentProperty); }

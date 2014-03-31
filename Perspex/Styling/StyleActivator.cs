@@ -17,7 +17,7 @@ namespace Perspex.Styling
         Or,
     }
 
-    public class StyleActivator : IObservable<bool>
+    public class StyleActivator : IObservable<bool>, IDisposable
     {
         ActivatorMode mode;
 
@@ -60,6 +60,19 @@ namespace Perspex.Styling
         {
             get;
             private set;
+        }
+
+        public void Dispose()
+        {
+            foreach (IObserver<bool> observer in this.observers)
+            {
+                observer.OnCompleted();
+            }
+
+            foreach (IDisposable subscription in this.subscriptions)
+            {
+                subscription.Dispose();
+            }
         }
 
         public IDisposable Subscribe(IObserver<bool> observer)

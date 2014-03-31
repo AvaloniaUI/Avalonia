@@ -47,8 +47,11 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
 
+        public static readonly PerspexProperty<double> HeightProperty =
+            PerspexProperty.Register<Control, double>("Height", double.NaN);
+
         public static readonly PerspexProperty<bool> IsMouseOverProperty =
-            PerspexProperty.Register<Visual, bool>("IsMouseOver");
+            PerspexProperty.Register<Control, bool>("IsMouseOver");
 
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
@@ -56,11 +59,26 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Control, Thickness>("Margin");
 
+        public static readonly PerspexProperty<double> MaxHeightProperty =
+            PerspexProperty.Register<Control, double>("MaxHeight", double.PositiveInfinity);
+
+        public static readonly PerspexProperty<double> MaxWidthProperty =
+            PerspexProperty.Register<Control, double>("MaxWidth", double.PositiveInfinity);
+
+        public static readonly PerspexProperty<double> MinHeightProperty =
+            PerspexProperty.Register<Control, double>("MinHeight");
+
+        public static readonly PerspexProperty<double> MinWidthProperty =
+            PerspexProperty.Register<Control, double>("MinWidth");
+
         public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
             new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
 
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
+
+        public static readonly PerspexProperty<double> WidthProperty =
+            PerspexProperty.Register<Control, double>("Width", double.NaN);
 
         public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonDownEvent =
             RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonDown", RoutingStrategy.Bubble);
@@ -196,6 +214,12 @@ namespace Perspex.Controls
             }
         }
 
+        public double Height
+        {
+            get { return this.GetValue(HeightProperty); }
+            set { this.SetValue(HeightProperty, value); }
+        }
+
         public bool IsMouseOver
         {
             get { return this.GetValue(IsMouseOverProperty); }
@@ -212,6 +236,30 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(MarginProperty); }
             set { this.SetValue(MarginProperty, value); }
+        }
+
+        public double MaxHeight
+        {
+            get { return this.GetValue(MaxHeightProperty); }
+            set { this.SetValue(MaxHeightProperty, value); }
+        }
+
+        public double MaxWidth
+        {
+            get { return this.GetValue(MaxWidthProperty); }
+            set { this.SetValue(MaxWidthProperty, value); }
+        }
+
+        public double MinHeight
+        {
+            get { return this.GetValue(MinHeightProperty); }
+            set { this.SetValue(MinHeightProperty, value); }
+        }
+
+        public double MinWidth
+        {
+            get { return this.GetValue(MinWidthProperty); }
+            set { this.SetValue(MinWidthProperty, value); }
         }
 
         public Control Parent
@@ -248,6 +296,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalAlignmentProperty); }
             set { this.SetValue(VerticalAlignmentProperty, value); }
+        }
+
+        public double Width
+        {
+            get { return this.GetValue(WidthProperty); }
+            set { this.SetValue(WidthProperty, value); }
         }
 
         ILogical ILogical.LogicalParent

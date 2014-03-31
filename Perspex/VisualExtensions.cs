@@ -7,10 +7,29 @@
 namespace Perspex
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Styling;
 
     public static class VisualExtensions
     {
+        public static IEnumerable<IVisual> GetVisual(this IVisual visual, Func<Selector, Selector> selector)
+        {
+            Selector sel = selector(new Selector());
+            IEnumerable<IVisual> visuals = Enumerable.Repeat(visual, 1).Concat(visual.GetVisualDescendents());
+
+            foreach (IStyleable v in visuals.OfType<IStyleable>())
+            {
+                using (StyleActivator activator = sel.GetActivator(v))
+                {
+                    if (activator.CurrentValue)
+                    {
+                        yield return (IVisual)v;
+                    }
+                }
+            }
+        }
+
         public static T GetVisualAncestor<T>(this IVisual visual) where T : class
         {
             Contract.Requires<NullReferenceException>(visual != null);
@@ -66,6 +85,19 @@ namespace Perspex
             }
 
             return null;
+        }
+
+        public static IEnumerable<IVisual> GetVisualDescendents(this IVisual visual)
+        {
+            foreach (IVisual child in visual.VisualChildren)
+            {
+                yield return child;
+
+                foreach (IVisual descendent in child.GetVisualDescendents())
+                {
+                    yield return descendent;
+                }
+            }
         }
     }
 }

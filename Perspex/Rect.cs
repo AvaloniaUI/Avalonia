@@ -123,6 +123,14 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets a value that indicates whether the rectangle is empty.
+        /// </summary>
+        public bool IsEmpty
+        {
+            get { return this.width == 0 && this.height == 0; }
+        }
+
+        /// <summary>
         /// Determines whether a points in in the bounds of the rectangle.
         /// </summary>
         /// <param name="p">The point.</param>

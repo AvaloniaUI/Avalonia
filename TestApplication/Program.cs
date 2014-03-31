@@ -36,7 +36,9 @@ namespace TestApplication
     {
         static void Main(string[] args)
         {
-            Locator.CurrentMutable.Register(() => new TextService(new SharpDX.DirectWrite.Factory()), typeof(ITextService));
+            TextService textService = new TextService(new SharpDX.DirectWrite.Factory());
+
+            Locator.CurrentMutable.Register(() => textService, typeof(ITextService));
             Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
             Locator.CurrentMutable.Register(() => new TestLogger(), typeof(ILogger));
 
@@ -50,14 +52,27 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Content = new Button
-                {
-                    Background = new SolidColorBrush(0xff0000ff),
-                    Content = "Hello World",
+                Content = new StackPanel 
+                { 
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                },
+                    Orientation = Orientation.Vertical,
+                    Children = new PerspexList<Control> 
+                    { 
+                        new Button
+                        {
+                            Margin = new Thickness(2),
+                        },
+                        new Button
+                        {
+                            Content = "Explict Background",
+                            Background = new SolidColorBrush(0xffa0a0ff),
+                        }
+                    }
+                }
             };
+
+            var m = window.GetVisual(x => x.OfType<Button>().Template().Id("border"));
 
             window.Show();
             Dispatcher.Run();

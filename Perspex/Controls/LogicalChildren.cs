@@ -26,12 +26,25 @@ namespace Perspex.Controls
     {
         private T parent;
 
+        private PerspexList<T> childrenCollection;
+
         private List<T> inner = new List<T>();
 
-        public LogicalChildren(T parent, INotifyCollectionChanged childrenCollection)
+        public LogicalChildren(T parent, PerspexList<T> childrenCollection)
         {
             this.parent = parent;
-            childrenCollection.CollectionChanged += CollectionChanged;
+            this.childrenCollection = childrenCollection;
+            this.Add(childrenCollection);
+            childrenCollection.CollectionChanged += this.CollectionChanged;
+        }
+
+        public void Change(PerspexList<T> childrenCollection)
+        {
+            this.childrenCollection.CollectionChanged -= this.CollectionChanged;
+            this.Remove(inner.ToList());
+            this.childrenCollection = childrenCollection;
+            this.Add(childrenCollection);
+            childrenCollection.CollectionChanged += this.CollectionChanged;
         }
 
         private void Add(IEnumerable<T> items)

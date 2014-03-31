@@ -14,6 +14,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> FontSizeProperty =
             PerspexProperty.Register<TextBlock, double>(
                 "FontSize",
+                defaultValue: 12.0,
                 inherits: true);
 
         public static readonly PerspexProperty<string> TextProperty =

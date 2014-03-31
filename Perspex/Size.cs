@@ -89,6 +89,26 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Returns a new <see cref="Size"/> with the same height and the specified width.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <returns>The new <see cref="Size"/>.</returns>
+        public Size WithWidth(double width)
+        {
+            return new Size(width, this.height);
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Size"/> with the same width and the specified height.
+        /// </summary>
+        /// <param name="height">The height.</param>
+        /// <returns>The new <see cref="Size"/>.</returns>
+        public Size WithHeight(double height)
+        {
+            return new Size(this.width, height);
+        }
+
+        /// <summary>
         /// Returns the string representation of the size.
         /// </summary>
         /// <returns>The string representation of the size</returns>

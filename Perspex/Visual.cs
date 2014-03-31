@@ -12,6 +12,7 @@ namespace Perspex
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
+    using Splat;
 
     public abstract class Visual : PerspexObject, IVisual
     {
@@ -25,7 +26,7 @@ namespace Perspex
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
         {
-            get { return Enumerable.Empty<Visual>(); }
+            get { return ((IVisual)this).VisualChildren; }
         }
 
         IEnumerable<IVisual> IVisual.VisualChildren
@@ -51,6 +52,11 @@ namespace Perspex
 
                     if (this.GetVisualAncestor<ILayoutRoot>() != null)
                     {
+                        this.Log().Debug(string.Format(
+                            "Attached {0} (#{1:x8}) to visual tree",
+                            this.GetType().Name,
+                            this.GetHashCode()));
+
                         this.AttachedToVisualTree();
                     }
                 }

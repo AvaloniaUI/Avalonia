@@ -70,6 +70,9 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
+    <Compile Include="Controls\LogicalChildren.cs" />
+    <Compile Include="Controls\Panel.cs" />
+    <Compile Include="Controls\StackPanel.cs" />
     <Compile Include="Styling\StyleBinding.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />

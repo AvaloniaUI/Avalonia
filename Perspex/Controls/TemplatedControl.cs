@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Media;
+    using Splat;
 
     public class TemplatedControl : Control, IVisual, ITemplatedControl
     {
@@ -37,6 +38,11 @@ namespace Perspex.Controls
 
                 if (this.visualChild == null && template != null)
                 {
+                    this.Log().Debug(string.Format(
+                        "Creating template for {0} (#{1:x8})",
+                        this.GetType().Name,
+                        this.GetHashCode()));
+
                     this.visualChild = template.Build(this);
                     this.visualChild.VisualParent = this;
                 }
