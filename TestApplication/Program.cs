@@ -61,7 +61,7 @@ namespace TestApplication
                     { 
                         new Button
                         {
-                            Margin = new Thickness(2),
+                            Content = "Button",
                         },
                         new Button
                         {
