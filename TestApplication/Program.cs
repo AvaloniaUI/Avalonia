@@ -57,6 +57,7 @@ namespace TestApplication
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Orientation = Orientation.Vertical,
+                    Gap = 6,
                     Children = new PerspexList<Control> 
                     { 
                         new Button

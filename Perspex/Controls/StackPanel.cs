@@ -20,8 +20,17 @@ namespace Perspex.Controls
 
     public class StackPanel : Panel
     {
+        public static readonly PerspexProperty<double> GapProperty =
+            PerspexProperty.Register<StackPanel, double>("Gap");
+
         public static readonly PerspexProperty<Orientation> OrientationProperty =
             PerspexProperty.Register<StackPanel, Orientation>("Orientation");
+
+        public double Gap
+        {
+            get { return this.GetValue(GapProperty); }
+            set { this.SetValue(GapProperty, value); }
+        }
 
         public Orientation Orientation
         {
@@ -61,6 +70,7 @@ namespace Perspex.Controls
 
             double measuredWidth = 0;
             double measuredHeight = 0;
+            double gap = this.Gap;
 
             foreach (Control child in this.Children)
             {
@@ -69,12 +79,12 @@ namespace Perspex.Controls
 
                 if (Orientation == Orientation.Vertical)
                 {
-                    measuredHeight += size.Height;
+                    measuredHeight += size.Height + gap;
                     measuredWidth = Math.Max(measuredWidth, size.Width);
                 }
                 else
                 {
-                    measuredWidth += size.Width;
+                    measuredWidth += size.Width + gap;
                     measuredHeight = Math.Max(measuredHeight, size.Height);
                 }
             }
@@ -86,6 +96,7 @@ namespace Perspex.Controls
         {
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
+            double gap = this.Gap;
 
             if (Orientation == Orientation.Vertical)
             {
@@ -117,7 +128,7 @@ namespace Perspex.Controls
                     }
 
                     arrangedWidth = Math.Max(arrangedWidth, childWidth);
-                    arrangedHeight += childHeight;
+                    arrangedHeight += childHeight + gap;
                 }
                 else
                 {
@@ -134,18 +145,18 @@ namespace Perspex.Controls
                         child.Arrange(childFinal);
                     }
 
-                    arrangedWidth += childWidth;
+                    arrangedWidth += childWidth + gap;
                     arrangedHeight = Math.Max(arrangedHeight, childHeight);
                 }
             }
 
             if (Orientation == Orientation.Vertical)
             {
-                arrangedHeight = Math.Max(arrangedHeight, finalSize.Height);
+                arrangedHeight = Math.Max(arrangedHeight - gap, finalSize.Height);
             }
             else
             {
-                arrangedWidth = Math.Max(arrangedWidth, finalSize.Width);
+                arrangedWidth = Math.Max(arrangedWidth - gap, finalSize.Width);
             }
 
             return new Size(arrangedWidth, arrangedHeight);
