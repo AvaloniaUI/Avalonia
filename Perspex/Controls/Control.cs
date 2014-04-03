@@ -71,8 +71,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> MinWidthProperty =
             PerspexProperty.Register<Control, double>("MinWidth");
 
-        public static readonly ReadOnlyPerspexProperty<Control> ParentProperty =
-            new ReadOnlyPerspexProperty<Control>(ParentPropertyRW);
+        public static readonly PerspexProperty<Control> ParentProperty =
+            PerspexProperty.Register<Control, Control>("Parent");
 
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
@@ -85,9 +85,6 @@ namespace Perspex.Controls
 
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
             RoutedEvent.Register<Control, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
-
-        internal static readonly PerspexProperty<Control> ParentPropertyRW =
-            PerspexProperty.Register<Control, Control>("Parent");
 
         private Classes classes;
 
@@ -264,8 +261,8 @@ namespace Perspex.Controls
 
         public Control Parent
         {
-            get { return this.GetValue(ParentPropertyRW); }
-            protected set { this.SetValue(ParentPropertyRW, value); }
+            get { return this.GetValue(ParentProperty); }
+            protected set { this.SetValue(ParentProperty, value); }
         }
 
         public Styles Styles

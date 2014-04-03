@@ -115,7 +115,6 @@
     <Compile Include="PerspexProperty.cs" />
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
     <Compile Include="Point.cs" />
-    <Compile Include="ReadOnlyPerspexProperty.cs" />
     <Compile Include="Styling\Selector.cs" />
     <Compile Include="RoutedEventArgs.cs" />
     <Compile Include="Styling\Selectors.cs" />

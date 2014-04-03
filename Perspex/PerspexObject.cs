@@ -255,19 +255,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="ReadOnlyPerspexProperty"/>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        public IObservable<T> GetObservable<T>(ReadOnlyPerspexProperty<T> property)
-        {
-            Contract.Requires<NullReferenceException>(property != null);
-
-            return this.GetObservable((PerspexProperty<T>)property.Property);
-        }
-
-        /// <summary>
         /// Gets an observable for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -334,19 +321,6 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             return (T)this.GetValue((PerspexProperty)property);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="ReadOnlyPerspexProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        public T GetValue<T>(ReadOnlyPerspexProperty<T> property)
-        {
-            Contract.Requires<NullReferenceException>(property != null);
-
-            return (T)this.GetValue(property.Property);
         }
 
         /// <summary>
