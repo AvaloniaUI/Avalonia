@@ -148,9 +148,9 @@ namespace Perspex.Windows
 
                 if (source != null)
                 {
-                    source.RaiseEvent(new MouseEventArgs
+                    source.RaiseEvent(new PointerEventArgs
                     {
-                        RoutedEvent = Control.MouseLeftButtonDownEvent,
+                        RoutedEvent = Control.PointerPressedEvent,
                         OriginalSource = source,
                         Source = source,
                     });
@@ -164,7 +164,7 @@ namespace Perspex.Windows
 
             if (control != null)
             {
-                control.IsMouseOver = visual.Bounds.Contains(p);
+                control.IsPointerOver = visual.Bounds.Contains(p);
             }
 
             foreach (Visual child in ((IVisual)visual).VisualChildren)
@@ -183,9 +183,9 @@ namespace Perspex.Windows
 
                 if (source != null)
                 {
-                    source.RaiseEvent(new MouseEventArgs
+                    source.RaiseEvent(new PointerEventArgs
                     {
-                        RoutedEvent = Control.MouseLeftButtonUpEvent,
+                        RoutedEvent = Control.PointerReleasedEvent,
                         OriginalSource = source,
                         Source = source,
                     });

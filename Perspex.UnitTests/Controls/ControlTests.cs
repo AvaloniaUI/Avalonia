@@ -26,22 +26,22 @@ namespace Perspex.UnitTests.Controls
         }
 
         [TestMethod]
-        public void Setting_IsMouseOver_Should_Add_Mouseover_Class()
+        public void Setting_IsPointerOver_Should_Add_PointerOver_Class()
         {
             var target = new Control();
 
-            target.IsMouseOver = true;
+            target.IsPointerOver = true;
 
-            CollectionAssert.AreEqual(new[] { ":mouseover" }, target.Classes.ToArray());
+            CollectionAssert.AreEqual(new[] { ":pointerover" }, target.Classes.ToArray());
         }
 
         [TestMethod]
-        public void Clearing_IsMouseOver_Should_Remove_Mouseover_Class()
+        public void Clearing_IsPointerOver_Should_Remove_PointerOver_Class()
         {
             var target = new Control();
 
-            target.IsMouseOver = true;
-            target.IsMouseOver = false;
+            target.IsPointerOver = true;
+            target.IsPointerOver = false;
 
             Assert.AreEqual(0, target.Classes.Count);
         }

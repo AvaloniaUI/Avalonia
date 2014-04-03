@@ -32,7 +32,7 @@ namespace Perspex.Themes.Default
                         new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
                     },
                 },
-                new Style(x => x.OfType<Button>().Class(":mouseover").Template().Id("border"))
+                new Style(x => x.OfType<Button>().Class(":pointerover").Template().Id("border"))
                 {
                     Setters = new[]
                     {

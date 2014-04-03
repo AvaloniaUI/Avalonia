@@ -50,8 +50,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> HeightProperty =
             PerspexProperty.Register<Control, double>("Height", double.NaN);
 
-        public static readonly PerspexProperty<bool> IsMouseOverProperty =
-            PerspexProperty.Register<Control, bool>("IsMouseOver");
+        public static readonly PerspexProperty<bool> IsPointerOverProperty =
+            PerspexProperty.Register<Control, bool>("IsPointerOver");
 
         public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
@@ -80,11 +80,11 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Control, double>("Width", double.NaN);
 
-        public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonDownEvent =
-            RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonDown", RoutingStrategy.Bubble);
+        public static readonly RoutedEvent<PointerEventArgs> PointerPressedEvent =
+            RoutedEvent.Register<Control, PointerEventArgs>("PointerPressed", RoutingStrategy.Bubble);
 
-        public static readonly RoutedEvent<MouseEventArgs> MouseLeftButtonUpEvent =
-            RoutedEvent.Register<Control, MouseEventArgs>("MouseLeftButtonUp", RoutingStrategy.Bubble);
+        public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
+            RoutedEvent.Register<Control, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
 
         internal static readonly PerspexProperty<Control> ParentPropertyRW =
             PerspexProperty.Register<Control, Control>("Parent");
@@ -99,15 +99,15 @@ namespace Perspex.Controls
         {
             this.classes = new Classes();
 
-            this.GetObservable(IsMouseOverProperty).Subscribe(x =>
+            this.GetObservable(IsPointerOverProperty).Subscribe(x =>
             {
                 if (x)
                 {
-                    this.Classes.Add(":mouseover");
+                    this.Classes.Add(":pointerover");
                 }
                 else
                 {
-                    this.Classes.Remove(":mouseover");
+                    this.Classes.Remove(":pointerover");
                 }
             });
 
@@ -115,32 +115,32 @@ namespace Perspex.Controls
             this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
         }
 
-        public event EventHandler<MouseEventArgs> MouseLeftButtonDown
+        public event EventHandler<PointerEventArgs> PointerPressed
         {
             add
             {
                 Contract.Requires<NullReferenceException>(value != null);
-                this.AddHandler(MouseLeftButtonDownEvent, value); 
+                this.AddHandler(PointerPressedEvent, value); 
             }
 
             remove 
             {
                 Contract.Requires<NullReferenceException>(value != null);
-                this.RemoveHandler(MouseLeftButtonDownEvent, value); 
+                this.RemoveHandler(PointerPressedEvent, value); 
             }
         }
 
-        public event EventHandler<MouseEventArgs> MouseLeftButtonUp
+        public event EventHandler<PointerEventArgs> PointerReleased
         {
             add 
             {
                 Contract.Requires<NullReferenceException>(value != null);
-                this.AddHandler(MouseLeftButtonUpEvent, value); 
+                this.AddHandler(PointerReleasedEvent, value); 
             }
             remove 
             {
                 Contract.Requires<NullReferenceException>(value != null);
-                this.RemoveHandler(MouseLeftButtonUpEvent, value); 
+                this.RemoveHandler(PointerReleasedEvent, value); 
             }
         }
 
@@ -220,10 +220,10 @@ namespace Perspex.Controls
             set { this.SetValue(HeightProperty, value); }
         }
 
-        public bool IsMouseOver
+        public bool IsPointerOver
         {
-            get { return this.GetValue(IsMouseOverProperty); }
-            set { this.SetValue(IsMouseOverProperty, value); }
+            get { return this.GetValue(IsPointerOverProperty); }
+            set { this.SetValue(IsPointerOverProperty, value); }
         }
 
         public HorizontalAlignment HorizontalAlignment

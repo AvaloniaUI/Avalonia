@@ -30,7 +30,7 @@ namespace Perspex
         /// A style trigger is a selector such as .class which overrides a 
         /// <see cref="TemplatedParent"/> binding. In this way, a basic control can have
         /// for example a Background from the templated parent which changes when the 
-        /// control has the :mouseover class.
+        /// control has the :pointerover class.
         /// </remarks>
         StyleTrigger,
 

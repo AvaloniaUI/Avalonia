@@ -73,8 +73,6 @@ namespace TestApplication
                 }
             };
 
-            var m = window.GetVisual(x => x.OfType<Button>().Template().Id("border"));
-
             window.Show();
             Dispatcher.Run();
         }

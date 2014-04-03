@@ -12,12 +12,12 @@ namespace Perspex.Controls
     {
         public Button()
         {
-            this.GetObservable(MouseLeftButtonDownEvent).Subscribe(e =>
+            this.GetObservable(PointerPressedEvent).Subscribe(e =>
             {
                 this.Classes.Add(":pressed");
             });
 
-            this.GetObservable(MouseLeftButtonUpEvent).Subscribe(e =>
+            this.GetObservable(PointerReleasedEvent).Subscribe(e =>
             {
                 this.Classes.Remove(":pressed");
             });
