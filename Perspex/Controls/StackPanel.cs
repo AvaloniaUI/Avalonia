@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="StackPanel.cs" company="Tricycle">
-// Copyright 2014 Tricycle. All rights reserved.
+// <copyright file="StackPanel.cs" company="Steven Kirk">
+// Copyright 2013 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
