@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex;
 using Perspex.Controls;
+using Perspex.Input;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.Themes.Default;
@@ -37,7 +38,9 @@ namespace TestApplication
         static void Main(string[] args)
         {
             TextService textService = new TextService(new SharpDX.DirectWrite.Factory());
+            InputManager inputManager = new InputManager();
 
+            Locator.CurrentMutable.Register(() => inputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => textService, typeof(ITextService));
             Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
             Locator.CurrentMutable.Register(() => new TestLogger(), typeof(ILogger));

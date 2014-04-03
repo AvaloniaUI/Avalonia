@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DrawingContext.cs" />
+    <Compile Include="Input\MouseDevice.cs" />
     <Compile Include="Media\TextService.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Threading\Dispatcher.cs" />

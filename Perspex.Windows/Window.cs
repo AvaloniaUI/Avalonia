@@ -13,20 +13,27 @@ namespace Perspex.Windows
     using System.Runtime.InteropServices;
     using Perspex.Controls;
     using Perspex.Input;
+    using Perspex.Input.Raw;
     using Perspex.Layout;
+    using Perspex.Windows.Input;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
+    using Splat;
 
     public class Window : ContentControl, ILayoutRoot
     {
         public static readonly PerspexProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<Window>();
 
+        private static readonly IInputDevice MouseDevice = new MouseDevice();
+
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
 
         private Renderer renderer;
+
+        private IInputManager inputManager;
 
         static Window()
         {
@@ -39,6 +46,7 @@ namespace Perspex.Windows
             Size clientSize = this.ClientSize;
             this.LayoutManager = new LayoutManager();
             this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
+            this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
@@ -138,64 +146,11 @@ namespace Perspex.Windows
             }
         }
 
-        private void MouseDown(Visual visual, Point p)
-        {
-            IVisual hit = visual.GetVisualAt(p);
-
-            if (hit != null)
-            {
-                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
-
-                if (source != null)
-                {
-                    source.RaiseEvent(new PointerEventArgs
-                    {
-                        RoutedEvent = Control.PointerPressedEvent,
-                        OriginalSource = source,
-                        Source = source,
-                    });
-                }
-            }
-        }
-
-        private void MouseMove(Visual visual, Point p)
-        {
-            Control control = visual as Control;
-
-            if (control != null)
-            {
-                control.IsPointerOver = visual.Bounds.Contains(p);
-            }
-
-            foreach (Visual child in ((IVisual)visual).VisualChildren)
-            {
-                this.MouseMove(child, p - visual.Bounds.Position);
-            }
-        }
-
-        private void MouseUp(Visual visual, Point p)
-        {
-            IVisual hit = visual.GetVisualAt(p);
-
-            if (hit != null)
-            {
-                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
-
-                if (source != null)
-                {
-                    source.RaiseEvent(new PointerEventArgs
-                    {
-                        RoutedEvent = Control.PointerReleasedEvent,
-                        OriginalSource = source,
-                        Source = source,
-                    });
-                }
-            }
-        }
-
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            RawInputEventArgs e = null;
+
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 ////case UnmanagedMethods.WindowsMessage.WM_DESTROY:
@@ -211,21 +166,38 @@ namespace Perspex.Windows
                 ////    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
-                    this.MouseDown(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    e = new RawMouseEventArgs(
+                        MouseDevice, 
+                        this, 
+                        RawMouseEventType.LeftButtonDown,
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
-                    this.MouseUp(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    e = new RawMouseEventArgs(
+                        MouseDevice, 
+                        this, 
+                        RawMouseEventType.LeftButtonUp,
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
-                    this.MouseMove(this, new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    e = new RawMouseEventArgs(
+                        MouseDevice, 
+                        this, 
+                        RawMouseEventType.Move,
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     this.renderer.Resize((int)lParam & 0xffff, (int)lParam >> 16);
                     this.InvalidateMeasure();
                     return IntPtr.Zero;
+            }
+
+            if (e != null)
+            {
+                this.inputManager.Process(e);
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);

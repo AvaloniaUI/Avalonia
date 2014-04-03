@@ -73,6 +73,11 @@
     <Compile Include="Controls\LogicalChildren.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\StackPanel.cs" />
+    <Compile Include="Input\IInputDevice.cs" />
+    <Compile Include="Input\IInputManager.cs" />
+    <Compile Include="Input\InputManager.cs" />
+    <Compile Include="Input\Raw\RawInputEventArgs.cs" />
+    <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
     <Compile Include="Styling\StyleBinding.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />
