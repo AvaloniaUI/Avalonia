@@ -1,12 +1,17 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="IInputDevice.cs" company="Steven Kirk">
+// <copyright file="IPointerDevice.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Input
 {
-    public interface IInputDevice
+    using System;
+
+    public interface IPointerDevice : IInputDevice
     {
+        IVisual Captured { get; }
+
+        IDisposable Capture(IVisual visual);
     }
 }

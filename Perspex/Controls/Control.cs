@@ -220,7 +220,7 @@ namespace Perspex.Controls
         public bool IsPointerOver
         {
             get { return this.GetValue(IsPointerOverProperty); }
-            set { this.SetValue(IsPointerOverProperty, value); }
+            internal set { this.SetValue(IsPointerOverProperty, value); }
         }
 
         public HorizontalAlignment HorizontalAlignment

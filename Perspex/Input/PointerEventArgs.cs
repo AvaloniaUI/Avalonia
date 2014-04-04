@@ -10,5 +10,6 @@ namespace Perspex.Input
 
     public class PointerEventArgs : RoutedEventArgs
     {
+        public IPointerDevice Device { get; set; }
     }
 }

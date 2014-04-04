@@ -29,10 +29,10 @@ namespace Perspex.Input
                     this.MouseMove((IVisual)e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonDown:
-                    this.MouseDown((IVisual)e.Root, e.Position);
+                    this.MouseDown((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonUp:
-                    this.MouseUp((IVisual)e.Root, e.Position);
+                    this.MouseUp((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
                     break;
             }
         }
@@ -52,7 +52,7 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseDown(IVisual visual, Point p)
+        private void MouseDown(IMouseDevice device, IVisual visual, Point p)
         {
             IVisual hit = visual.GetVisualAt(p);
 
@@ -64,6 +64,7 @@ namespace Perspex.Input
                 {
                     source.RaiseEvent(new PointerEventArgs
                     {
+                        Device = device,
                         RoutedEvent = Control.PointerPressedEvent,
                         OriginalSource = source,
                         Source = source,
@@ -72,7 +73,7 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseUp(IVisual visual, Point p)
+        private void MouseUp(IMouseDevice device, IVisual visual, Point p)
         {
             IVisual hit = visual.GetVisualAt(p);
 
@@ -84,6 +85,7 @@ namespace Perspex.Input
                 {
                     source.RaiseEvent(new PointerEventArgs
                     {
+                        Device = device,
                         RoutedEvent = Control.PointerReleasedEvent,
                         OriginalSource = source,
                         Source = source,
