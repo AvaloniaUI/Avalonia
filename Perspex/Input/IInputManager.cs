@@ -7,6 +7,7 @@
 namespace Perspex.Input
 {
     using Perspex.Input.Raw;
+    using Perspex.Layout;
 
     public interface IInputManager
     {

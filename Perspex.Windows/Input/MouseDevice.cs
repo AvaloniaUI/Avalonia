@@ -12,16 +12,15 @@ namespace Perspex.Windows.Input
 
     public class MouseDevice : IMouseDevice
     {
-        public IVisual Captured
+        public Interactive Captured
         {
             get;
             private set;
         }
 
-        public IDisposable Capture(IVisual visual)
+        public void Capture(Interactive visual)
         {
             this.Captured = visual;
-            return Disposable.Create(() => this.Captured = null);
         }
     }
 }

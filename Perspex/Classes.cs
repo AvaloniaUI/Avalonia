@@ -128,6 +128,11 @@ namespace Perspex
             return inner.GetEnumerator();
         }
 
+        public override string ToString()
+        {
+            return string.Join(" ", this);
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return inner.GetEnumerator();

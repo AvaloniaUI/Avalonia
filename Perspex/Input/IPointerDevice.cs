@@ -10,8 +10,8 @@ namespace Perspex.Input
 
     public interface IPointerDevice : IInputDevice
     {
-        IVisual Captured { get; }
+        Interactive Captured { get; }
 
-        IDisposable Capture(IVisual visual);
+        void Capture(Interactive visual);
     }
 }

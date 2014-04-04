@@ -43,34 +43,37 @@ namespace Perspex.Input
 
         private void MouseMove(IMouseDevice device, IVisual visual, Point p)
         {
-            IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
-
-            foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
+            if (device.Captured == null)
             {
-                PointerEventArgs e = new PointerEventArgs
+                IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
+
+                foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
                 {
-                    RoutedEvent = Control.PointerLeaveEvent,
-                    Device = device,
-                    OriginalSource = control,
-                    Source = control,
-                };
+                    PointerEventArgs e = new PointerEventArgs
+                    {
+                        RoutedEvent = Control.PointerLeaveEvent,
+                        Device = device,
+                        OriginalSource = control,
+                        Source = control,
+                    };
 
-                this.pointerOvers.Remove(control);
-                control.RaiseEvent(e);
-            }
+                    this.pointerOvers.Remove(control);
+                    control.RaiseEvent(e);
+                }
 
-            foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
-            {
-                PointerEventArgs e = new PointerEventArgs
+                foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
                 {
-                    RoutedEvent = Control.PointerEnterEvent,
-                    Device = device,
-                    OriginalSource = control,
-                    Source = control,
-                };
+                    PointerEventArgs e = new PointerEventArgs
+                    {
+                        RoutedEvent = Control.PointerEnterEvent,
+                        Device = device,
+                        OriginalSource = control,
+                        Source = control,
+                    };
 
-                this.pointerOvers.Add(control);
-                control.RaiseEvent(e);
+                    this.pointerOvers.Add(control);
+                    control.RaiseEvent(e);
+                }
             }
         }
 
@@ -80,7 +83,7 @@ namespace Perspex.Input
 
             if (hit != null)
             {
-                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+                Interactive source = device.Captured ?? (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
 
                 if (source != null)
                 {
@@ -101,7 +104,7 @@ namespace Perspex.Input
 
             if (hit != null)
             {
-                Interactive source = (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+                Interactive source = device.Captured ?? (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
 
                 if (source != null)
                 {
