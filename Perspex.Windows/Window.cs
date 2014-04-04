@@ -25,8 +25,6 @@ namespace Perspex.Windows
         public static readonly PerspexProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<Window>();
 
-        private static readonly IInputDevice MouseDevice = new MouseDevice();
-
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
@@ -149,7 +147,9 @@ namespace Perspex.Windows
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            RawInputEventArgs e = null;
+            RawMouseEventArgs e = null;
+
+            MouseDevice.Instance.CurrentWindow = this;
 
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
@@ -167,7 +167,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
-                        MouseDevice, 
+                        MouseDevice.Instance, 
                         this, 
                         RawMouseEventType.LeftButtonDown,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -175,7 +175,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                     e = new RawMouseEventArgs(
-                        MouseDevice, 
+                        MouseDevice.Instance, 
                         this, 
                         RawMouseEventType.LeftButtonUp,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -183,7 +183,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     e = new RawMouseEventArgs(
-                        MouseDevice, 
+                        MouseDevice.Instance, 
                         this, 
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -197,6 +197,7 @@ namespace Perspex.Windows
 
             if (e != null)
             {
+                MouseDevice.Instance.Position = e.Position;
                 this.inputManager.Process(e);
             }
 
