@@ -80,6 +80,12 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Control, double>("Width", double.NaN);
 
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
+            RoutedEvent.Register<Control, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
+
+        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
+            RoutedEvent.Register<Control, PointerEventArgs>("PointerLeave", RoutingStrategy.Direct);
+
         public static readonly RoutedEvent<PointerEventArgs> PointerPressedEvent =
             RoutedEvent.Register<Control, PointerEventArgs>("PointerPressed", RoutingStrategy.Bubble);
 
@@ -95,6 +101,16 @@ namespace Perspex.Controls
         public Control()
         {
             this.classes = new Classes();
+
+            this.PointerEnter += (s, e) =>
+            {
+                this.IsPointerOver = true;
+            };
+
+            this.PointerLeave += (s, e) =>
+            {
+                this.IsPointerOver = false;
+            };
 
             this.GetObservable(IsPointerOverProperty).Subscribe(x =>
             {
@@ -112,33 +128,28 @@ namespace Perspex.Controls
             this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
         }
 
+        public event EventHandler<PointerEventArgs> PointerEnter
+        {
+            add { this.AddHandler(PointerEnterEvent, value); }
+            remove { this.RemoveHandler(PointerEnterEvent, value); }
+        }
+
+        public event EventHandler<PointerEventArgs> PointerLeave
+        {
+            add { this.AddHandler(PointerLeaveEvent, value); }
+            remove { this.RemoveHandler(PointerLeaveEvent, value); }
+        }
+
         public event EventHandler<PointerEventArgs> PointerPressed
         {
-            add
-            {
-                Contract.Requires<NullReferenceException>(value != null);
-                this.AddHandler(PointerPressedEvent, value); 
-            }
-
-            remove 
-            {
-                Contract.Requires<NullReferenceException>(value != null);
-                this.RemoveHandler(PointerPressedEvent, value); 
-            }
+            add { this.AddHandler(PointerPressedEvent, value); }
+            remove { this.RemoveHandler(PointerPressedEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerReleased
         {
-            add 
-            {
-                Contract.Requires<NullReferenceException>(value != null);
-                this.AddHandler(PointerReleasedEvent, value); 
-            }
-            remove 
-            {
-                Contract.Requires<NullReferenceException>(value != null);
-                this.RemoveHandler(PointerReleasedEvent, value); 
-            }
+            add { this.AddHandler(PointerReleasedEvent, value); }
+            remove { this.RemoveHandler(PointerReleasedEvent, value); }
         }
 
         public Brush Background

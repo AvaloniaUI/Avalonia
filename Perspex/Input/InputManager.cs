@@ -30,7 +30,7 @@ namespace Perspex.Input
             switch (e.Type)
             {
                 case RawMouseEventType.Move:
-                    this.MouseMove((IVisual)e.Root, e.Position);
+                    this.MouseMove((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonDown:
                     this.MouseDown((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
@@ -41,20 +41,36 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseMove(IVisual visual, Point p)
+        private void MouseMove(IMouseDevice device, IVisual visual, Point p)
         {
             IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
 
             foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
             {
+                PointerEventArgs e = new PointerEventArgs
+                {
+                    RoutedEvent = Control.PointerLeaveEvent,
+                    Device = device,
+                    OriginalSource = control,
+                    Source = control,
+                };
+
                 this.pointerOvers.Remove(control);
-                control.IsPointerOver = false;
+                control.RaiseEvent(e);
             }
 
             foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
             {
+                PointerEventArgs e = new PointerEventArgs
+                {
+                    RoutedEvent = Control.PointerEnterEvent,
+                    Device = device,
+                    OriginalSource = control,
+                    Source = control,
+                };
+
                 this.pointerOvers.Add(control);
-                control.IsPointerOver = true;
+                control.RaiseEvent(e);
             }
         }
 
