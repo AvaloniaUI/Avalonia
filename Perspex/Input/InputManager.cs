@@ -6,11 +6,15 @@
 
 namespace Perspex.Input
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Input.Raw;
 
     public class InputManager : IInputManager
     {
+        List<Control> pointerOvers = new List<Control>();
+
         public void Process(RawInputEventArgs e)
         {
             RawMouseEventArgs mouse = e as RawMouseEventArgs;
@@ -39,16 +43,18 @@ namespace Perspex.Input
 
         private void MouseMove(IVisual visual, Point p)
         {
-            Control control = visual as Control;
+            IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
 
-            if (control != null)
+            foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
             {
-                control.IsPointerOver = visual.Bounds.Contains(p);
+                this.pointerOvers.Remove(control);
+                control.IsPointerOver = false;
             }
 
-            foreach (IVisual child in visual.VisualChildren)
+            foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
             {
-                this.MouseMove(child, p - visual.Bounds.Position);
+                this.pointerOvers.Add(control);
+                control.IsPointerOver = true;
             }
         }
 

@@ -62,29 +62,30 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(visual != null);
 
+            return visual.GetVisualsAt(p).LastOrDefault();
+        }
+
+        public static IEnumerable<IVisual> GetVisualsAt(this IVisual visual, Point p)
+        {
+            Contract.Requires<NullReferenceException>(visual != null);
+
             if (visual.Bounds.Contains(p))
             {
+                yield return visual;
+
                 p -= visual.Bounds.Position;
 
                 if (visual.VisualChildren.Any())
                 {
                     foreach (IVisual child in visual.VisualChildren)
                     {
-                        IVisual hit = child.GetVisualAt(p);
-
-                        if (hit != null)
+                        foreach (IVisual v in child.GetVisualsAt(p))
                         {
-                            return hit;
+                            yield return v;
                         }
                     }
                 }
-                else
-                {
-                    return visual;
-                }
             }
-
-            return null;
         }
 
         public static IEnumerable<IVisual> GetVisualDescendents(this IVisual visual)
