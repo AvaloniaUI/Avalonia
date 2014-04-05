@@ -12,6 +12,7 @@
 
 # Build results
 
+*.sln.ide/
 [Dd]ebug/
 [Rr]elease/
 x64/
