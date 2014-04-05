@@ -10,6 +10,9 @@ namespace Perspex.Controls
 
     public class Button : ContentControl
     {
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+            RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategy.Bubble);
+
         public Button()
         {
             this.PointerPressed += (s, e) =>
@@ -22,7 +25,19 @@ namespace Perspex.Controls
             {
                 e.Device.Capture(null);
                 this.Classes.Remove(":pressed");
+
+                if (this.Classes.Contains(":pointerover"))
+                {
+                    RoutedEventArgs click = new RoutedEventArgs(ClickEvent, this);
+                    this.RaiseEvent(click);
+                }
             };
+        }
+
+        public event EventHandler<RoutedEventArgs> Click
+        {
+            add { this.AddHandler(ClickEvent, value); }
+            remove { this.RemoveHandler(ClickEvent, value); }
         }
     }
 }
