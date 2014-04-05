@@ -92,17 +92,6 @@ namespace Perspex
             this.RaiseChanged(e);
         }
 
-        private void RaiseChanged(NotifyCollectionChangedEventArgs e)
-        {
-            if (this.CollectionChanged != null)
-            {
-                this.CollectionChanged(this, e);
-            }
-
-            this.changed.OnNext(e);
-            this.afterChanged.OnNext(e);
-        }
-
         public void Clear()
         {
             NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(
@@ -125,7 +114,7 @@ namespace Perspex
 
         public IEnumerator<string> GetEnumerator()
         {
-            return inner.GetEnumerator();
+            return this.inner.GetEnumerator();
         }
 
         public override string ToString()
@@ -135,7 +124,7 @@ namespace Perspex
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return inner.GetEnumerator();
+            return this.inner.GetEnumerator();
         }
 
         public bool Remove(string item)
@@ -172,6 +161,17 @@ namespace Perspex
             {
                 return false;
             }
+        }
+
+        private void RaiseChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (this.CollectionChanged != null)
+            {
+                this.CollectionChanged(this, e);
+            }
+
+            this.changed.OnNext(e);
+            this.afterChanged.OnNext(e);
         }
     }
 }

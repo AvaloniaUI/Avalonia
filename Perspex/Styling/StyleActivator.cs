@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Activator.cs" company="Steven Kirk">
+// <copyright file="StyleActivator.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -19,13 +19,13 @@ namespace Perspex.Styling
 
     public class StyleActivator : IObservable<bool>, IDisposable
     {
-        ActivatorMode mode;
+        private ActivatorMode mode;
 
-        List<bool> values = new List<bool>();
+        private List<bool> values = new List<bool>();
 
-        List<IDisposable> subscriptions = new List<IDisposable>();
+        private List<IDisposable> subscriptions = new List<IDisposable>();
 
-        List<IObserver<bool>> observers = new List<IObserver<bool>>();
+        private List<IObserver<bool>> observers = new List<IObserver<bool>>();
 
         public StyleActivator(
             IEnumerable<IObservable<bool>> inputs, 
@@ -37,14 +37,14 @@ namespace Perspex.Styling
 
             foreach (IObservable<bool> input in inputs)
             {
-                int iCaptured = i;
+                int capturedIndex = i;
 
                 this.values.Add(false);
 
                 IDisposable subscription = input.Subscribe(
-                    x => this.Update(iCaptured, x),
-                    x => this.Finish(iCaptured),
-                    () => this.Finish(iCaptured));
+                    x => this.Update(capturedIndex, x),
+                    x => this.Finish(capturedIndex),
+                    () => this.Finish(capturedIndex));
                 this.subscriptions.Add(subscription);
                 ++i;
             }
@@ -80,7 +80,7 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(observer != null);
 
             this.observers.Add(observer);
-            observer.OnNext(CurrentValue);
+            observer.OnNext(this.CurrentValue);
             return Disposable.Create(() => this.observers.Remove(observer));
         }
 
@@ -102,10 +102,10 @@ namespace Perspex.Styling
                     throw new InvalidOperationException("Invalid Activator mode.");
             }
 
-            if (current != CurrentValue)
+            if (current != this.CurrentValue)
             {
                 this.Push(current);
-                CurrentValue = current;
+                this.CurrentValue = current;
             }
         }
 

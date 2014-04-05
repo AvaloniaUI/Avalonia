@@ -21,6 +21,14 @@ namespace Perspex.Controls
             this.build = build;
         }
 
+        public static ControlTemplate Create<TControl>(Func<TControl, Control> build)
+            where TControl : ITemplatedControl
+        {
+            Contract.Requires<NullReferenceException>(build != null);
+
+            return new ControlTemplate(c => build((TControl)c));
+        }
+
         public Control Build(ITemplatedControl templatedParent)
         {
             Contract.Requires<NullReferenceException>(templatedParent != null);
@@ -28,14 +36,6 @@ namespace Perspex.Controls
             Control root = this.build(templatedParent);
             this.SetTemplatedParent(root, templatedParent);
             return root;
-        }
-
-        public static ControlTemplate Create<TControl>(Func<TControl, Control> build)
-            where TControl : ITemplatedControl
-        {
-            Contract.Requires<NullReferenceException>(build != null);
-
-            return new ControlTemplate(c => build((TControl)c));
         }
 
         private void SetTemplatedParent(Control control, ITemplatedControl templatedParent)

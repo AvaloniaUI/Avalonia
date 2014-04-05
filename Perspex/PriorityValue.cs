@@ -220,6 +220,15 @@ namespace Perspex
             private IDisposable subscription;
 
             /// <summary>
+            /// Gets a description of the binding.
+            /// </summary>
+            public string Description
+            {
+                get;
+                private set;
+            }
+
+            /// <summary>
             /// The priority of the binding.
             /// </summary>
             public int Priority
@@ -274,15 +283,6 @@ namespace Perspex
                         changed(this);
                     },
                     () => completed(this));
-            }
-
-            /// <summary>
-            /// Gets a description of the binding.
-            /// </summary>
-            public string Description
-            {
-                get;
-                private set;
             }
 
             /// <summary>

@@ -11,7 +11,7 @@ namespace Perspex
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-using Perspex.Controls;
+    using Perspex.Controls;
 
     /// <summary>
     /// Provides binding utility extension methods.

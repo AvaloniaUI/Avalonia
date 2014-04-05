@@ -186,19 +186,19 @@ namespace Perspex
         public void ClearBinding(PerspexProperty property)
         {
             throw new NotImplementedException();
-            //Contract.Requires<NullReferenceException>(property != null);
-            //PriorityValue value;
+            ////Contract.Requires<NullReferenceException>(property != null);
+            ////PriorityValue value;
 
-            //if (this.values.TryGetValue(property, out value))
-            //{
-            //    value.ClearLocalBinding();
+            ////if (this.values.TryGetValue(property, out value))
+            ////{
+            ////    value.ClearLocalBinding();
 
-            //    this.Log().Debug(string.Format(
-            //        "Cleared binding on {0}.{1} (#{2:x8})",
-            //        this.GetType().Name,
-            //        property.Name,
-            //        this.GetHashCode()));
-            //}
+            ////    this.Log().Debug(string.Format(
+            ////        "Cleared binding on {0}.{1} (#{2:x8})",
+            ////        this.GetType().Name,
+            ////        property.Name,
+            ////        this.GetHashCode()));
+            ////}
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            const int priority = (int)BindingPriority.LocalValue;
+            const int Priority = (int)BindingPriority.LocalValue;
             PriorityValue v;
 
             if (!this.values.TryGetValue(property, out v))
@@ -365,8 +365,8 @@ namespace Perspex
                 this.GetHashCode(),
                 value));
 
-            v.Clear(priority);
-            v.Add(Observable.Never<object>().StartWith(value), priority);
+            v.Clear(Priority);
+            v.Add(Observable.Never<object>().StartWith(value), Priority);
         }
 
         /// <summary>

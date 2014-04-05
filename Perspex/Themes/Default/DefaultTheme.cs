@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Perspex.Styling;
+﻿// -----------------------------------------------------------------------
+// <copyright file="DefaultTheme.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace Perspex.Themes.Default
 {
+    using Perspex.Styling;
+
     public class DefaultTheme : Styles
     {
         public DefaultTheme()

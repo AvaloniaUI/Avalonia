@@ -13,7 +13,7 @@ namespace Perspex.Input
 
     public class InputManager : IInputManager
     {
-        List<Control> pointerOvers = new List<Control>();
+        private List<Control> pointerOvers = new List<Control>();
 
         public void Process(RawInputEventArgs e)
         {

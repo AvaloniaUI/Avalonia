@@ -1,15 +1,16 @@
-﻿namespace Perspex
+﻿// -----------------------------------------------------------------------
+// <copyright file="PerspexList.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Collections.Specialized;
-    using System.Linq;
     using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public class PerspexList<T> : ObservableCollection<T>
     {

@@ -71,6 +71,7 @@ namespace Perspex.Windows
         /// Draws text.
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
+        /// <param name="rect">The output rectangle.</param>
         /// <param name="text">The text.</param>
         public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
         {

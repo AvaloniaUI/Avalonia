@@ -41,7 +41,7 @@ namespace Perspex.Controls
         public void Change(PerspexList<T> childrenCollection)
         {
             this.childrenCollection.CollectionChanged -= this.CollectionChanged;
-            this.Remove(inner.ToList());
+            this.Remove(this.inner.ToList());
             this.childrenCollection = childrenCollection;
             this.Add(childrenCollection);
             childrenCollection.CollectionChanged += this.CollectionChanged;
