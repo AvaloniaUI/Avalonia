@@ -77,17 +77,18 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
-            Control content = this.Content;
+            if (this.Visibility != Visibility.Collapsed)
+            {
+                Control content = this.Content;
 
-            if (content != null)
-            {
-                content.Measure(availableSize);
-                return content.DesiredSize.Value.Inflate(this.Padding);
+                if (content != null)
+                {
+                    content.Measure(availableSize);
+                    return content.DesiredSize.Value.Inflate(this.Padding);
+                }
             }
-            else
-            {
-                return new Size();
-            }
+
+            return new Size();
         }
     }
 }

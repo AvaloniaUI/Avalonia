@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using Perspex.Media;
     using Splat;
 
@@ -19,6 +20,11 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<Border, string>("Text");
+
+        public TextBlock()
+        {
+            this.GetObservable(TextProperty).Subscribe(_ => this.InvalidateVisual());
+        }
 
         public double FontSize
         {
@@ -47,20 +53,32 @@ namespace Perspex.Controls
 
         public override void Render(IDrawingContext context)
         {
-            Brush background = this.Background;
-
-            if (background != null)
+            if (this.Visibility == Visibility.Visible)
             {
-                context.FillRectange(background, this.Bounds);
-            }
+                Brush background = this.Background;
 
-            context.DrawText(this.Foreground, new Rect(this.Bounds.Size), this.FormattedText);
+                if (background != null)
+                {
+                    context.FillRectange(background, this.Bounds);
+                }
+
+                context.DrawText(this.Foreground, new Rect(this.Bounds.Size), this.FormattedText);
+            }
         }
 
         protected override Size MeasureContent(Size availableSize)
         {
-            ITextService service = Locator.Current.GetService<ITextService>();
-            return service.Measure(this.FormattedText);
+            if (this.Visibility != Visibility.Collapsed)
+            {
+                ITextService service = Locator.Current.GetService<ITextService>();
+
+                if (!string.IsNullOrEmpty(this.Text))
+                {
+                    return service.Measure(this.FormattedText);
+                }
+            }
+
+            return new Size();
         }
     }
 }

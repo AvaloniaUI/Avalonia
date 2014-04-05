@@ -13,6 +13,7 @@ namespace Perspex.Themes.Default
         public DefaultTheme()
         {
             this.Add(new ButtonStyle());
+            this.Add(new CheckBoxStyle());
         }
     }
 }

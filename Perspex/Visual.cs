@@ -14,14 +14,35 @@ namespace Perspex
     using Perspex.Media;
     using Splat;
 
+    public enum Visibility
+    {
+        Visible,
+        Hidden,
+        Collapsed,
+    }
+
     public abstract class Visual : PerspexObject, IVisual
     {
+        public static readonly PerspexProperty<Visibility> VisibilityProperty =
+            PerspexProperty.Register<Visual, Visibility>("Visibility");
+
         private IVisual visualParent;
+
+        public Visual()
+        {
+            this.GetObservable(VisibilityProperty).Subscribe(_ => this.InvalidateVisual());
+        }
 
         public Rect Bounds
         {
             get;
             protected set;
+        }
+
+        public Visibility Visibility
+        {
+            get { return this.GetValue(VisibilityProperty); }
+            set { this.SetValue(VisibilityProperty, value); }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
@@ -52,14 +73,20 @@ namespace Perspex
 
                     if (this.GetVisualAncestor<ILayoutRoot>() != null)
                     {
-                        this.Log().Debug(string.Format(
-                            "Attached {0} (#{1:x8}) to visual tree",
-                            this.GetType().Name,
-                            this.GetHashCode()));
-
                         this.AttachedToVisualTree();
                     }
                 }
+            }
+        }
+
+        public void InvalidateVisual()
+        {
+            ILayoutRoot root = this.GetVisualAncestorOrSelf<ILayoutRoot>();
+
+            if (root != null && root.LayoutManager != null)
+            {
+                // HACK HACK HACK!
+                root.LayoutManager.InvalidateArrange((ILayoutable)this);
             }
         }
 
@@ -70,6 +97,11 @@ namespace Perspex
 
         protected virtual void AttachedToVisualTree()
         {
+            this.Log().Debug(string.Format(
+                "Attached {0} (#{1:x8}) to visual tree",
+                this.GetType().Name,
+                this.GetHashCode()));
+
             foreach (Visual child in ((IVisual)this).ExistingVisualChildren.OfType<Visual>())
             {
                 child.AttachedToVisualTree();

@@ -145,17 +145,18 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
+            if (this.Visibility != Visibility.Collapsed)
+            {
+                Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
-            if (child != null)
-            {
-                child.Measure(availableSize);
-                return child.DesiredSize.Value;
+                if (child != null)
+                {
+                    child.Measure(availableSize);
+                    return child.DesiredSize.Value;
+                }
             }
-            else
-            {
-                return new Size();
-            }
+
+            return new Size();
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Perspex.Styling
 
             return new Selector(previous)
             {
-                GetObservable = control => Observable.Return(control is T),
+                GetObservable = control => Observable.Return(control.GetType() == typeof(T)),
                 SelectorString = typeof(T).Name,
             };
         }

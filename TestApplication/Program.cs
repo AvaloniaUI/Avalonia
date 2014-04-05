@@ -71,7 +71,11 @@ namespace TestApplication
                         {
                             Content = "Explict Background",
                             Background = new SolidColorBrush(0xffa0a0ff),
-                        }
+                        },
+                        new CheckBox
+                        {
+                            Content = "Checkbox",
+                        },
                     }
                 }
             };

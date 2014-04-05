@@ -61,15 +61,15 @@ namespace Perspex.Themes.Default
 
         private Control Template(Button control)
         {
-            Border border = new Border();
-            border.Id = "border";
-            border.Padding = new Thickness(3);
+            Border border = new Border
+            {
+                Id = "border",
+                Padding = new Thickness(3),
+                Content = new ContentPresenter(),
+            };
+
             border.TemplateBinding(control, Border.BackgroundProperty);
-
-            ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.TemplateBinding(control, ContentPresenter.ContentProperty);
-
-            border.Content = contentPresenter;
+            border.Content.TemplateBinding(control, ContentPresenter.ContentProperty);
             return border;
         }
     }

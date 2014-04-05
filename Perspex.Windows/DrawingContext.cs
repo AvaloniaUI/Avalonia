@@ -75,14 +75,17 @@ namespace Perspex.Windows
         /// <param name="text">The text.</param>
         public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
         {
-            using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
-            using (SharpDX.DirectWrite.TextFormat format = TextService.Convert(this.directWriteFactory, text))
+            if (!string.IsNullOrEmpty(text.Text))
             {
-                this.renderTarget.DrawText(
-                    text.Text,
-                    format,
-                    this.Convert(rect),
-                    brush);
+                using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
+                using (SharpDX.DirectWrite.TextFormat format = TextService.Convert(this.directWriteFactory, text))
+                {
+                    this.renderTarget.DrawText(
+                        text.Text,
+                        format,
+                        this.Convert(rect),
+                        brush);
+                }
             }
         }
 
