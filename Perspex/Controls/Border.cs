@@ -12,6 +12,15 @@ namespace Perspex.Controls
 
     public class Border : Decorator
     {
+        public Border()
+        {
+            // Hacky hack hack!
+            Observable.Merge(
+                this.GetObservable(BackgroundProperty),
+                this.GetObservable(BorderBrushProperty))
+                .Subscribe(_ => this.InvalidateArrange());
+        }
+
         public override void Render(IDrawingContext context)
         {
             Brush background = this.Background;

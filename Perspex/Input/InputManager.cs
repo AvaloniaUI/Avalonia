@@ -45,35 +45,18 @@ namespace Perspex.Input
         {
             if (device.Captured == null)
             {
-                IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
+                this.UpdatePointerOver(device, visual, p);
+            }
+            else
+            {
+                Point offset = new Point();
 
-                foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
+                foreach (IVisual ancestor in device.Captured.GetVisualAncestors())
                 {
-                    PointerEventArgs e = new PointerEventArgs
-                    {
-                        RoutedEvent = Control.PointerLeaveEvent,
-                        Device = device,
-                        OriginalSource = control,
-                        Source = control,
-                    };
-
-                    this.pointerOvers.Remove(control);
-                    control.RaiseEvent(e);
+                    offset += ancestor.Bounds.Position;
                 }
 
-                foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
-                {
-                    PointerEventArgs e = new PointerEventArgs
-                    {
-                        RoutedEvent = Control.PointerEnterEvent,
-                        Device = device,
-                        OriginalSource = control,
-                        Source = control,
-                    };
-
-                    this.pointerOvers.Add(control);
-                    control.RaiseEvent(e);
-                }
+                this.UpdatePointerOver(device, device.Captured, p - offset);
             }
         }
 
@@ -116,6 +99,39 @@ namespace Perspex.Input
                         Source = source,
                     });
                 }
+            }
+        }
+
+        private void UpdatePointerOver(IPointerDevice device, IVisual visual, Point p)
+        {
+            IEnumerable<IVisual> hits = visual.GetVisualsAt(p);
+
+            foreach (var control in this.pointerOvers.ToList().Except(hits).Cast<Control>())
+            {
+                PointerEventArgs e = new PointerEventArgs
+                {
+                    RoutedEvent = Control.PointerLeaveEvent,
+                    Device = device,
+                    OriginalSource = control,
+                    Source = control,
+                };
+
+                this.pointerOvers.Remove(control);
+                control.RaiseEvent(e);
+            }
+
+            foreach (var control in hits.Except(this.pointerOvers).Cast<Control>())
+            {
+                PointerEventArgs e = new PointerEventArgs
+                {
+                    RoutedEvent = Control.PointerEnterEvent,
+                    Device = device,
+                    OriginalSource = control,
+                    Source = control,
+                };
+
+                this.pointerOvers.Add(control);
+                control.RaiseEvent(e);
             }
         }
     }

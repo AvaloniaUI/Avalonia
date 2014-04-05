@@ -123,9 +123,6 @@ namespace Perspex.Controls
                     this.Classes.Remove(":pointerover");
                 }
             });
-
-            // Hacky hack hack!
-            this.GetObservable(BackgroundProperty).Skip(1).Subscribe(_ => this.InvalidateMeasure());
         }
 
         public event EventHandler<PointerEventArgs> PointerEnter

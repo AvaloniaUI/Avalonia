@@ -94,6 +94,22 @@ namespace Perspex.UnitTests.Styling
             Assert.IsFalse(ActivatorValue(target, control));
         }
 
+        [TestMethod]
+        public void Multiple_Classes()
+        {
+            var control = new Control1();
+            var target = new Selector().Class("foo").Class("bar");
+            var activator = target.GetActivator(control);
+
+            Assert.IsFalse(ActivatorValue(target, control));
+            control.Classes.Add("foo");
+            Assert.IsFalse(ActivatorValue(target, control));
+            control.Classes.Add("bar");
+            Assert.IsTrue(ActivatorValue(target, control));
+            control.Classes.Remove("bar");
+            Assert.IsFalse(ActivatorValue(target, control));
+        }
+
         private static bool ActivatorValue(Selector selector, IStyleable control)
         {
             return selector.GetActivator(control).Take(1).ToEnumerable().Single();

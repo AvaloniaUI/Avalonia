@@ -40,12 +40,18 @@ namespace Perspex.Themes.Default
                         new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                     },
                 },
-                new Style(x => x.OfType<Button>().Class(":pressed").Template().Id("border"))
+                new Style(x => x.OfType<Button>().Class(":pointerover").Class(":pressed").Template().Id("border"))
                 {
                     Setters = new[]
                     {
                         new Setter (Button.BackgroundProperty, new SolidColorBrush(0xffc4e5f6)),
-                        new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xff2c628b)),
+                    },
+                },
+                new Style(x => x.OfType<Button>().Class(":pressed").Template().Id("border"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter (Button.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
                     },
                 },
             });

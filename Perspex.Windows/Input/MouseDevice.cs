@@ -43,14 +43,17 @@ namespace Perspex.Windows.Input
         {
             this.Captured = visual;
 
-            RawMouseEventArgs e = new RawMouseEventArgs(
-                this,
-                this.CurrentWindow,
-                RawMouseEventType.Move,
-                this.Position);
+            if (visual == null)
+            {
+                RawMouseEventArgs e = new RawMouseEventArgs(
+                    this,
+                    this.CurrentWindow,
+                    RawMouseEventType.Move,
+                    this.Position);
 
-            IInputManager inputManager = Locator.Current.GetService<IInputManager>();
-            inputManager.Process(e);
+                IInputManager inputManager = Locator.Current.GetService<IInputManager>();
+                inputManager.Process(e);
+            }
         }
     }
 }
