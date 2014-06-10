@@ -30,15 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SharpDX">
-      <HintPath>..\packages\SharpDX.2.5.0\lib\net40\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct2D1">
-      <HintPath>..\packages\SharpDX.Direct2D1.2.5.0\lib\net40\SharpDX.Direct2D1.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>..\packages\SharpDX.DXGI.2.5.0\lib\net40\SharpDX.DXGI.dll</HintPath>
-    </Reference>
     <Reference Include="Splat">
       <HintPath>..\packages\Splat.1.1.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
@@ -65,10 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DrawingContext.cs" />
     <Compile Include="Input\MouseDevice.cs" />
-    <Compile Include="Media\TextService.cs" />
-    <Compile Include="Renderer.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherFrame.cs" />
     <Compile Include="Threading\DispatcherOperation.cs" />

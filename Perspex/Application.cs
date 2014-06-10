@@ -6,7 +6,11 @@
 
 namespace Perspex
 {
+    using System.Reflection;
+    using Perspex.Input;
+    using Perspex.Platform;
     using Perspex.Styling;
+    using Splat;
 
     public class Application
     {
@@ -39,6 +43,12 @@ namespace Perspex
             {
                 this.styles = value;
             }
+        }
+
+        public static void RegisterPortableServices()
+        {
+            InputManager inputManager = new InputManager();
+            Locator.CurrentMutable.Register(() => inputManager, typeof(IInputManager));
         }
     }
 }

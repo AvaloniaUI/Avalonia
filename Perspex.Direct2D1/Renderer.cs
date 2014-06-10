@@ -4,9 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows
+namespace Perspex.Direct2D1
 {
     using System;
+    using Perspex.Platform;
     using SharpDX;
     using SharpDX.Direct2D1;
     using DwFactory = SharpDX.DirectWrite.Factory;
@@ -15,7 +16,7 @@ namespace Perspex.Windows
     /// <summary>
     /// Renders a <see cref="Canvas"/>.
     /// </summary>
-    public class Renderer
+    public class Renderer : IRenderer
     {
         /// <summary>
         /// The render target.
@@ -28,8 +29,13 @@ namespace Perspex.Windows
         /// <param name="hwnd">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public Renderer(IntPtr hwnd, int width, int height)
+        public void Initialize(IntPtr hwnd, double width, double height)
         {
+            if (this.renderTarget != null)
+            {
+                throw new InvalidOperationException("Cannot initialize Renderer more than once.");
+            }
+
             this.Direct2DFactory = new Factory();
             this.DirectWriteFactory = new DwFactory();
 
@@ -40,7 +46,7 @@ namespace Perspex.Windows
             HwndRenderTargetProperties hwndProperties = new HwndRenderTargetProperties
             {
                 Hwnd = hwnd,
-                PixelSize = new Size2(width, height),
+                PixelSize = new Size2((int)width, (int)height),
             };
 
             this.renderTarget = new WindowRenderTarget(

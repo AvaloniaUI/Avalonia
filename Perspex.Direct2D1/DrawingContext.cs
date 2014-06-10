@@ -4,12 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows
+namespace Perspex.Direct2D1
 {
     using System;
     using System.Reactive.Disposables;
     using Perspex.Media;
-    using Perspex.Windows.Media;
     using SharpDX;
     using SharpDX.Direct2D1;
     using Matrix = Perspex.Media.Matrix;

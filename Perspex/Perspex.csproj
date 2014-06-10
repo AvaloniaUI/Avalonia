@@ -82,6 +82,7 @@
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
+    <Compile Include="Platform\IRenderer.cs" />
     <Compile Include="Styling\StyleBinding.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />
