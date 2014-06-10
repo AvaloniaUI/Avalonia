@@ -12,7 +12,6 @@ using Perspex.Media;
 using Perspex.Styling;
 using Perspex.Themes.Default;
 using Perspex.Windows;
-using Perspex.Windows.Media;
 using Perspex.Windows.Threading;
 using Splat;
 
@@ -37,21 +36,10 @@ namespace TestApplication
     {
         static void Main(string[] args)
         {
-            TextService textService = new TextService(new SharpDX.DirectWrite.Factory());
-            InputManager inputManager = new InputManager();
-
-            Locator.CurrentMutable.Register(() => inputManager, typeof(IInputManager));
-            Locator.CurrentMutable.Register(() => textService, typeof(ITextService));
             Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
             Locator.CurrentMutable.Register(() => new TestLogger(), typeof(ILogger));
 
-            Application application = new Application
-            {
-                Styles = new Styles
-                {
-                    new DefaultTheme(),
-                }
-            };
+            App application = new App();
 
             Window window = new Window
             {

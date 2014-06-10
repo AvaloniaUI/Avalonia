@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Media
+namespace Perspex.Direct2D1
 {
     using Perspex.Media;
     using SharpDX.DirectWrite;

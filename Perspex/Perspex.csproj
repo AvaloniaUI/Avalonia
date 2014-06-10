@@ -89,6 +89,7 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Shapes\Path.cs" />
     <Compile Include="Shapes\Shape.cs" />
+    <Compile Include="Platform\IRenderer.cs" />
     <Compile Include="Styling\StyleBinding.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Contract.cs" />

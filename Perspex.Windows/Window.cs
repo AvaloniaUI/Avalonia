@@ -15,6 +15,7 @@ namespace Perspex.Windows
     using Perspex.Input;
     using Perspex.Input.Raw;
     using Perspex.Layout;
+    using Perspex.Platform;
     using Perspex.Windows.Input;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
@@ -29,7 +30,7 @@ namespace Perspex.Windows
 
         private string className;
 
-        private Renderer renderer;
+        private IRenderer renderer;
 
         private IInputManager inputManager;
 
@@ -43,7 +44,8 @@ namespace Perspex.Windows
             this.CreateWindow();
             Size clientSize = this.ClientSize;
             this.LayoutManager = new LayoutManager();
-            this.renderer = new Renderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
+            this.renderer = Locator.Current.GetService<IRenderer>();
+            this.renderer.Initialize(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 
