@@ -52,6 +52,17 @@ namespace Perspex.Windows
         }
 
         /// <summary>
+        /// Draws a geometry.
+        /// </summary>
+        /// <param name="brush">The fill brush.</param>
+        /// <param name="pen">The stroke pen.</param>
+        /// <param name="geometry">The geometry.</param>
+        public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
+        {
+            // TODO
+        }
+
+        /// <summary>
         /// Draws the outline of a rectangle.
         /// </summary>
         /// <param name="pen">The pen.</param>

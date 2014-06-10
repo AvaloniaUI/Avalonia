@@ -14,6 +14,14 @@ namespace Perspex.Media
     public interface IDrawingContext
     {
         /// <summary>
+        /// Draws a geometry.
+        /// </summary>
+        /// <param name="brush">The fill brush.</param>
+        /// <param name="pen">The stroke pen.</param>
+        /// <param name="geometry">The geometry.</param>
+        void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
+
+        /// <summary>
         /// Draws the outline of a rectangle.
         /// </summary>
         /// <param name="pen">The pen.</param>
