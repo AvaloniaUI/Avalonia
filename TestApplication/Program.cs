@@ -51,15 +51,15 @@ namespace TestApplication
                     Gap = 6,
                     Children = new PerspexList<Control> 
                     { 
-                        new Button
-                        {
-                            Content = "Button",
-                        },
-                        new Button
-                        {
-                            Content = "Explict Background",
-                            Background = new SolidColorBrush(0xffa0a0ff),
-                        },
+                        //new Button
+                        //{
+                        //    Content = "Button",
+                        //},
+                        //new Button
+                        //{
+                        //    Content = "Explict Background",
+                        //    Background = new SolidColorBrush(0xffa0a0ff),
+                        //},
                         new CheckBox
                         {
                             Content = "Checkbox",

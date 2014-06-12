@@ -13,18 +13,29 @@ namespace Perspex.Media
     {
         public StreamGeometry()
         {
-            this.Impl = Locator.Current.GetService<IStreamGeometryImpl>();
+            this.PlatformImpl = Locator.Current.GetService<IStreamGeometryImpl>();
+        }
+
+        public static StreamGeometry Parse(string s)
+        {
+            StreamGeometry result = new StreamGeometry();
+
+            using (StreamGeometryContext ctx = result.Open())
+            {
+                PathMarkupParser parser = new PathMarkupParser(result, ctx);
+                parser.Parse(s);
+                return result;
+            }
+        }
+
+        public override Rect Bounds
+        {
+            get { return this.PlatformImpl.Bounds; }
         }
 
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(this);
-        }
-
-        internal IStreamGeometryImpl Impl
-        {
-            get;
-            private set;
+            return new StreamGeometryContext(((IStreamGeometryImpl)this.PlatformImpl).Open());
         }
     }
 }

@@ -4,10 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Direct2D1
+namespace Perspex.Direct2D1.Media
 {
     using System;
     using System.Reactive.Disposables;
+    using Perspex.Direct2D1.Media;
     using Perspex.Media;
     using SharpDX;
     using SharpDX.Direct2D1;
@@ -58,7 +59,23 @@ namespace Perspex.Direct2D1
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
-            // TODO
+            if (brush != null)
+            {
+                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(brush))
+                {
+                    GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
+                    this.renderTarget.FillGeometry(impl.Geometry, d2dBrush);
+                }
+            }
+
+            if (pen != null)
+            {
+                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(pen.Brush))
+                {
+                    GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
+                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush, (float)pen.Thickness);
+                }
+            }
         }
 
         /// <summary>

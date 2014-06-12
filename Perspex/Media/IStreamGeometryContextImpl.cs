@@ -6,8 +6,14 @@
 
 namespace Perspex.Media
 {
-    public interface IStreamGeometryContextImpl
+    using System;
+
+    public interface IStreamGeometryContextImpl : IDisposable
     {
-        void Initialize(IStreamGeometryImpl streamGeometry);
+        void BeginFigure(Point startPoint, bool isFilled);
+
+        void LineTo(Point point);
+
+        void EndFigure(bool isClosed);
     }
 }

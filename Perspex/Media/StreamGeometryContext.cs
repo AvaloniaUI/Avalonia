@@ -9,22 +9,33 @@ namespace Perspex.Media
     using System;
     using Splat;
 
-    public class StreamGeometryContext : Geometry
+    public class StreamGeometryContext : IDisposable
     {
         private IStreamGeometryContextImpl impl;
 
-        public StreamGeometryContext(StreamGeometry geometry)
+        public StreamGeometryContext(IStreamGeometryContextImpl impl)
         {
-            this.impl = Locator.Current.GetService<IStreamGeometryContextImpl>();
-            this.impl.Initialize(geometry.Impl);
+            this.impl = impl;
         }
 
-        public void BeginFigure(Point startPoint, bool isFilled, bool isClosed)
+        public void BeginFigure(Point startPoint, bool isFilled)
         {
+            this.impl.BeginFigure(startPoint, isFilled);
         }
 
-        public void LineTo(Point point, bool isStroked, bool isSmoothJoin)
+        public void LineTo(Point point)
         {
+            this.impl.LineTo(point);
+        }
+
+        public void EndFigure(bool isClosed)
+        {
+            this.impl.EndFigure(isClosed);
+        }
+
+        public void Dispose()
+        {
+            this.impl.Dispose();
         }
     }
 }

@@ -57,9 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Input\MouseDevice.cs" />
-    <Compile Include="Media\Direct2DStreamGeometry.cs" />
-    <Compile Include="Media\TextService.cs" />
-    <Compile Include="Renderer.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherFrame.cs" />
     <Compile Include="Threading\DispatcherOperation.cs" />

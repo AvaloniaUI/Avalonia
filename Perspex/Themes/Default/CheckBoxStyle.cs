@@ -6,9 +6,11 @@
 
 namespace Perspex.Themes.Default
 {
+    using System;
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Media;
+    using Perspex.Shapes;
     using Perspex.Styling;
 
     public class CheckBoxStyle : Styles
@@ -53,14 +55,16 @@ namespace Perspex.Themes.Default
                     {
                         new Border
                         {
-                            BorderThickness = 2.0,
-                            BorderBrush = new SolidColorBrush(0xff000000),
-                            Padding = new Thickness(2),
-                            Content = new TextBlock
+                            BorderThickness = 2,
+                            BorderBrush = new SolidColorBrush(Color.FromUInt32(0xff000000)),
+                            Padding = new Thickness(8),
+                            Content = new Path
                             {
                                 Id = "checkMark",
-                                Text = "Y",
-                                Background = null,
+                                Data = StreamGeometry.Parse("M0,0 L10,10 Z M10,0 L0,10"),
+                                Stroke = new SolidColorBrush(Color.FromUInt32(0xff000000)),
+                                StrokeThickness = 2,
+                                VerticalAlignment = VerticalAlignment.Center,
                             },
                         },
                         new ContentPresenter

@@ -83,10 +83,13 @@
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
     <Compile Include="Media\IStreamGeometryContextImpl.cs" />
+    <Compile Include="Media\IGeometryImpl.cs" />
     <Compile Include="Media\IStreamGeometryImpl.cs" />
+    <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\StreamGeometryContext.cs" />
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\Geometry.cs" />
+    <Compile Include="Media\Stretch.cs" />
     <Compile Include="Shapes\Path.cs" />
     <Compile Include="Shapes\Shape.cs" />
     <Compile Include="Platform\IRenderer.cs" />

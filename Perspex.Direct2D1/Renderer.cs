@@ -7,9 +7,11 @@
 namespace Perspex.Direct2D1
 {
     using System;
+    using Perspex.Direct2D1.Media;
     using Perspex.Platform;
     using SharpDX;
     using SharpDX.Direct2D1;
+    using Splat;
     using DwFactory = SharpDX.DirectWrite.Factory;
     using Matrix = Perspex.Media.Matrix;
 
@@ -36,8 +38,8 @@ namespace Perspex.Direct2D1
                 throw new InvalidOperationException("Cannot initialize Renderer more than once.");
             }
 
-            this.Direct2DFactory = new Factory();
-            this.DirectWriteFactory = new DwFactory();
+            this.Direct2DFactory = Locator.Current.GetService<Factory>();
+            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
 
             RenderTargetProperties renderTargetProperties = new RenderTargetProperties
             {

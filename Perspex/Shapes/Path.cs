@@ -6,6 +6,7 @@
 
 namespace Perspex.Shapes
 {
+    using System;
     using Perspex.Media;
 
     public class Path : Shape
@@ -19,9 +20,17 @@ namespace Perspex.Shapes
             set { this.SetValue(DataProperty, value); }
         }
 
+        public override Geometry DefiningGeometry
+        {
+            get { return this.Data; }
+        }
+
         public override void Render(IDrawingContext context)
         {
-            context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.Data);
+            if (this.Data != null && this.Visibility == Visibility.Visible)
+            {
+                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.Data);
+            }
         }
     }
 }

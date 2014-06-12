@@ -6,13 +6,17 @@
 
 namespace Perspex.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
-    public class Geometry
+    public abstract class Geometry
     {
+        public abstract Rect Bounds
+        {
+            get;
+        }
+
+        public IGeometryImpl PlatformImpl
+        {
+            get;
+            protected set;
+        }
     }
 }
