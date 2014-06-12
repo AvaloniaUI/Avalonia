@@ -67,7 +67,6 @@ namespace Perspex.Media
             {
                 Command lastCommand = Command.None;
                 Command command;
-                Point startPoint = new Point();
                 Point point = new Point();
 
                 while ((command = ReadCommand(reader, lastCommand)) != Command.Eof)
@@ -81,7 +80,12 @@ namespace Perspex.Media
 
                         case Command.Move:
                         case Command.MoveRelative:
-                            point = startPoint = ReadPoint(reader);
+                            if (openFigure)
+                            {
+                                this.context.EndFigure(false);
+                            }
+
+                            point = ReadPoint(reader);
                             this.context.BeginFigure(point, true);
                             openFigure = true;
                             break;
@@ -139,7 +143,7 @@ namespace Perspex.Media
 
                 if (openFigure)
                 {
-                    this.context.EndFigure(true);
+                    this.context.EndFigure(false);
                 }
             }
         }
@@ -158,7 +162,6 @@ namespace Perspex.Media
             {
                 char c = (char)i;
                 Command command = Command.None;
-                bool canMove = lastCommand == Command.None || lastCommand == Command.FillRule || lastCommand == Command.Close;
 
                 if (!Commands.TryGetValue(c, out command))
                 {
@@ -171,11 +174,6 @@ namespace Perspex.Media
                     {
                         throw new InvalidDataException("Unexpected path command '" + c + "'.");
                     }
-                }
-
-                if (!canMove && command <= Command.MoveRelative)
-                {
-                    command += 2;
                 }
 
                 reader.Read();

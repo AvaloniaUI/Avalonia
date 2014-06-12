@@ -77,6 +77,9 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
+            double width = 0;
+            double height = 0;
+
             if (this.Visibility != Visibility.Collapsed)
             {
                 Control content = this.Content;
@@ -84,11 +87,23 @@ namespace Perspex.Controls
                 if (content != null)
                 {
                     content.Measure(availableSize);
-                    return content.DesiredSize.Value.Inflate(this.Padding);
+                    Size s = content.DesiredSize.Value.Inflate(this.Padding);
+                    width = s.Width;
+                    height = s.Height;
+                }
+
+                if (this.Width > 0)
+                {
+                    width = this.Width;
+                }
+
+                if (this.Height > 0)
+                {
+                    height = this.Height;
                 }
             }
 
-            return new Size();
+            return new Size(width, height);
         }
     }
 }

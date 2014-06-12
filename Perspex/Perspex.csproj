@@ -82,6 +82,7 @@
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
+    <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\IStreamGeometryContextImpl.cs" />
     <Compile Include="Media\IGeometryImpl.cs" />
     <Compile Include="Media\IStreamGeometryImpl.cs" />

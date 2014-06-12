@@ -56,13 +56,13 @@ namespace Perspex.Themes.Default
                         new Border
                         {
                             BorderThickness = 2,
-                            BorderBrush = new SolidColorBrush(Color.FromUInt32(0xff000000)),
+                            BorderBrush = Brushes.Black,
                             Padding = new Thickness(8),
                             Content = new Path
                             {
                                 Id = "checkMark",
-                                Data = StreamGeometry.Parse("M0,0 L10,10 Z M10,0 L0,10"),
-                                Stroke = new SolidColorBrush(Color.FromUInt32(0xff000000)),
+                                Data = StreamGeometry.Parse("M0,0 L10,10 M10,0 L0,10"),
+                                Stroke = Brushes.Black,
                                 StrokeThickness = 2,
                                 VerticalAlignment = VerticalAlignment.Center,
                             },

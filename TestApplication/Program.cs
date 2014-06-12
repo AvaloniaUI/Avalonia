@@ -9,6 +9,7 @@ using Perspex;
 using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Media;
+using Perspex.Shapes;
 using Perspex.Styling;
 using Perspex.Themes.Default;
 using Perspex.Windows;
@@ -43,23 +44,36 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Content = new StackPanel 
-                { 
+                Content = new StackPanel
+                {
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Orientation = Orientation.Vertical,
                     Gap = 6,
-                    Children = new PerspexList<Control> 
-                    { 
-                        //new Button
-                        //{
-                        //    Content = "Button",
-                        //},
-                        //new Button
-                        //{
-                        //    Content = "Explict Background",
-                        //    Background = new SolidColorBrush(0xffa0a0ff),
-                        //},
+                    Children = new PerspexList<Control>
+                    {
+                        new Border
+                        {
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 1,
+                            Width = 10,
+                            Height = 10,
+                        },
+                        new Path
+                        {
+                            Data = StreamGeometry.Parse("M0,0 L10,0"),
+                            Stroke = Brushes.Black,
+                            StrokeThickness = 1,
+                        },
+                        new Button
+                        {
+                            Content = "Button",
+                        },
+                        new Button
+                        {
+                            Content = "Explict Background",
+                            Background = new SolidColorBrush(0xffa0a0ff),
+                        },
                         new CheckBox
                         {
                             Content = "Checkbox",
