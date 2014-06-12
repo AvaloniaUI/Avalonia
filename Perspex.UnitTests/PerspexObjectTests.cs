@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.UnitTests
 {
     using System;
@@ -131,6 +132,15 @@ namespace Perspex.UnitTests
             target.SetValue(Class1.FooProperty, "foodefault");
 
             Assert.IsFalse(raised);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void SetValue_Throws_Exception_For_Unregistered_Property()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class2.BarProperty, "invalid");
         }
 
         [TestMethod]

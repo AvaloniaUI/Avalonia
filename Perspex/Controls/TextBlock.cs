@@ -19,7 +19,7 @@ namespace Perspex.Controls
                 inherits: true);
 
         public static readonly PerspexProperty<string> TextProperty =
-            PerspexProperty.Register<Border, string>("Text");
+            PerspexProperty.Register<TextBlock, string>("Text");
 
         public TextBlock()
         {

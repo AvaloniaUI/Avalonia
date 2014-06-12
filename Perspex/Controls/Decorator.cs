@@ -14,10 +14,10 @@ namespace Perspex.Controls
     public class Decorator : Control, IVisual
     {
         public static readonly PerspexProperty<Control> ContentProperty =
-            PerspexProperty.Register<ContentControl, Control>("Content");
+            PerspexProperty.Register<Decorator, Control>("Content");
 
         public static readonly PerspexProperty<Thickness> PaddingProperty =
-            PerspexProperty.Register<ContentControl, Thickness>("Padding");
+            PerspexProperty.Register<Decorator, Thickness>("Padding");
 
         public Decorator()
         {

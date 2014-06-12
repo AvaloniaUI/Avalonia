@@ -326,13 +326,40 @@ namespace Perspex
         /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is set on this object.
         /// </summary>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is set, otherwise false.</returns>
         public bool IsSet(PerspexProperty property)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
             return this.values.ContainsKey(property);
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="PerspexProperty"/> is registered on this class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is registered, otherwise false.</returns>
+        private bool IsRegistered(PerspexProperty property)
+        {
+            Type type = this.GetType();
+
+            while (type != null)
+            {
+                List<PerspexProperty> list;
+
+                if (registered.TryGetValue(type, out list))
+                {
+                    if (list.Contains(property))
+                    {
+                        return true;
+                    }
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -346,6 +373,14 @@ namespace Perspex
 
             const int Priority = (int)BindingPriority.LocalValue;
             PriorityValue v;
+
+            if (!this.IsRegistered(property))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Property '{0}' not registered on '{1}'",
+                    property.Name,
+                    this.GetType()));
+            }
 
             if (!this.values.TryGetValue(property, out v))
             {
