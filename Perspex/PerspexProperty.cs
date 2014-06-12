@@ -106,6 +106,35 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Registers an attached <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
+        /// <typeparam name="THost">The type of the class that the property is to be registered on.</typeparam>
+        /// <typeparam name="TValue">The type of the property's value.</typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="defaultValue">The default value of the property.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <returns></returns>
+        public static PerspexProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
+            string name,
+            TValue defaultValue = default(TValue),
+            bool inherits = false)
+            where TOwner : PerspexObject
+        {
+            Contract.Requires<NullReferenceException>(name != null);
+
+            PerspexProperty<TValue> result = new PerspexProperty<TValue>(
+                name,
+                typeof(TOwner),
+                defaultValue,
+                inherits);
+
+            PerspexObject.Register(typeof(THost), result);
+
+            return result;
+        }
+
+        /// <summary>
         /// Provides access to a property's binding via the <see cref="PerspexObject"/> 
         /// indexer.
         /// </summary>

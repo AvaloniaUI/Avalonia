@@ -71,6 +71,13 @@
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
     <Compile Include="Controls\CheckBox.cs" />
+    <Compile Include="Controls\ColumnDefinition.cs" />
+    <Compile Include="Controls\ColumnDefinitions.cs" />
+    <Compile Include="Controls\DefinitionBase.cs" />
+    <Compile Include="Controls\Grid.cs" />
+    <Compile Include="Controls\GridLength.cs" />
+    <Compile Include="Controls\RowDefinition.cs" />
+    <Compile Include="Controls\RowDefinitions.cs" />
     <Compile Include="Controls\ToggleButton.cs" />
     <Compile Include="Controls\LogicalChildren.cs" />
     <Compile Include="Controls\Panel.cs" />

@@ -48,10 +48,13 @@ namespace Perspex.Themes.Default
             Border result = new Border
             {
                 [~Border.BackgroundProperty] = control[~CheckBox.BackgroundProperty],
-                Content = new StackPanel
+                Content = new Grid
                 {
-                    Orientation = Orientation.Horizontal,
-                    Gap = 8,
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition(GridLength.Auto),
+                        new ColumnDefinition(new GridLength(1, GridUnitType.Star)),
+                    },
                     Children = new PerspexList<Control>
                     {
                         new Border
@@ -67,10 +70,12 @@ namespace Perspex.Themes.Default
                                 StrokeThickness = 2,
                                 VerticalAlignment = VerticalAlignment.Center,
                             },
+                            [Grid.ColumnProperty] = 0,
                         },
                         new ContentPresenter
                         {
                             [~ContentPresenter.ContentProperty] = control[~CheckBox.ContentProperty],
+                            [Grid.ColumnProperty] = 1,
                         },
                     },
                 },
