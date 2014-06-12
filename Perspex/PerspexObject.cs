@@ -138,10 +138,10 @@ namespace Perspex
         /// Gets or sets the binding for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
-        public object this[PerspexProperty.BindingAccessor property]
+        public IObservable<object> this[PerspexProperty.BindingAccessor property]
         {
             get { return this.GetObservable(property.Property); }
-            set { this.Bind(property.Property, (IObservable<object>)value, property.Priority); }
+            set { this.Bind(property.Property, value, property.Priority); }
         }
 
         /// <summary>
