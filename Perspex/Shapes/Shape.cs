@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Application.cs" company="Steven Kirk">
+// <copyright file="Shape.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -12,16 +12,16 @@ namespace Perspex.Shapes
 
     public abstract class Shape : Control
     {
-        public PerspexProperty<Brush> FillProperty =
+        public static readonly PerspexProperty<Brush> FillProperty =
             PerspexProperty.Register<Shape, Brush>("Fill");
 
-        public PerspexProperty<Stretch> StretchProperty =
+        public static readonly PerspexProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Shape, Stretch>("Stretch");
 
-        public PerspexProperty<Brush> StrokeProperty =
+        public static readonly PerspexProperty<Brush> StrokeProperty =
             PerspexProperty.Register<Shape, Brush>("Stroke");
 
-        public PerspexProperty<double> StrokeThicknessProperty =
+        public static readonly PerspexProperty<double> StrokeThicknessProperty =
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
         public abstract Geometry DefiningGeometry

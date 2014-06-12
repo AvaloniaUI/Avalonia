@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Direct2DStreamGeometry.cs" company="Tricycle">
-// Copyright 2014 Tricycle. All rights reserved.
+// <copyright file="Direct2DStreamGeometry.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 

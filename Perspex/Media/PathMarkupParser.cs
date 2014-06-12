@@ -96,34 +96,34 @@ namespace Perspex.Media
                             this.context.LineTo(point);
                             break;
 
-                        //case Command.HorizontalLine:
-                        //    point.X = ReadDouble(reader);
-                        //    this.context.LineTo(point, true, false);
-                        //    break;
+                        ////case Command.HorizontalLine:
+                        ////    point.X = ReadDouble(reader);
+                        ////    this.context.LineTo(point, true, false);
+                        ////    break;
 
-                        //case Command.HorizontalLineRelative:
-                        //    point.X += ReadDouble(reader);
-                        //    this.context.LineTo(point, true, false);
-                        //    break;
+                        ////case Command.HorizontalLineRelative:
+                        ////    point.X += ReadDouble(reader);
+                        ////    this.context.LineTo(point, true, false);
+                        ////    break;
 
-                        //case Command.VerticalLine:
-                        //    point.Y = ReadDouble(reader);
-                        //    this.context.LineTo(point, true, false);
-                        //    break;
+                        ////case Command.VerticalLine:
+                        ////    point.Y = ReadDouble(reader);
+                        ////    this.context.LineTo(point, true, false);
+                        ////    break;
 
-                        //case Command.VerticalLineRelative:
-                        //    point.Y += ReadDouble(reader);
-                        //    this.context.LineTo(point, true, false);
-                        //    break;
+                        ////case Command.VerticalLineRelative:
+                        ////    point.Y += ReadDouble(reader);
+                        ////    this.context.LineTo(point, true, false);
+                        ////    break;
 
-                        //case Command.CubicBezierCurve:
-                        //{
-                        //    Point point1 = ReadPoint(reader);
-                        //    Point point2 = ReadPoint(reader);
-                        //    point = ReadPoint(reader);
-                        //    this.context.BezierTo(point1, point2, point, true, false);
-                        //    break;
-                        //}
+                        ////case Command.CubicBezierCurve:
+                        ////{
+                        ////    Point point1 = ReadPoint(reader);
+                        ////    Point point2 = ReadPoint(reader);
+                        ////    point = ReadPoint(reader);
+                        ////    this.context.BezierTo(point1, point2, point, true, false);
+                        ////    break;
+                        ////}
 
                         case Command.Close:
                             this.context.EndFigure(true);

@@ -16,6 +16,11 @@ namespace Perspex.Media
             this.PlatformImpl = Locator.Current.GetService<IStreamGeometryImpl>();
         }
 
+        public override Rect Bounds
+        {
+            get { return this.PlatformImpl.Bounds; }
+        }
+
         public static StreamGeometry Parse(string s)
         {
             StreamGeometry result = new StreamGeometry();
@@ -26,11 +31,6 @@ namespace Perspex.Media
                 parser.Parse(s);
                 return result;
             }
-        }
-
-        public override Rect Bounds
-        {
-            get { return this.PlatformImpl.Bounds; }
         }
 
         public StreamGeometryContext Open()

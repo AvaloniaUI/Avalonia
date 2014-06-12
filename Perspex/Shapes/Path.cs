@@ -11,7 +11,7 @@ namespace Perspex.Shapes
 
     public class Path : Shape
     {
-        public PerspexProperty<Geometry> DataProperty =
+        public static readonly PerspexProperty<Geometry> DataProperty =
             PerspexProperty.Register<Path, Geometry>("Data");
 
         public Geometry Data
