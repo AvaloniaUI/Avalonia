@@ -179,29 +179,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Clears a binding on a <see cref="PerspexProperty"/>, leaving the last bound value in
-        /// place.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        public void ClearBinding(PerspexProperty property)
-        {
-            throw new NotImplementedException();
-            ////Contract.Requires<NullReferenceException>(property != null);
-            ////PriorityValue value;
-
-            ////if (this.values.TryGetValue(property, out value))
-            ////{
-            ////    value.ClearLocalBinding();
-
-            ////    this.Log().Debug(string.Format(
-            ////        "Cleared binding on {0}.{1} (#{2:x8})",
-            ////        this.GetType().Name,
-            ////        property.Name,
-            ////        this.GetHashCode()));
-            ////}
-        }
-
-        /// <summary>
         /// Clears a <see cref="PerspexProperty"/> value, including its binding.
         /// </summary>
         /// <param name="property">The property.</param>
