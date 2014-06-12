@@ -65,11 +65,13 @@ namespace Perspex.Themes.Default
             {
                 Id = "border",
                 Padding = new Thickness(3),
-                Content = new ContentPresenter(),
+                Content = new ContentPresenter
+                {
+                    [~ContentPresenter.ContentProperty] = control[~Button.ContentProperty],
+                },
+                [~Border.BackgroundProperty] = control[~Button.BackgroundProperty],
             };
 
-            border.TemplateBinding(control, Border.BackgroundProperty);
-            border.Content.TemplateBinding(control, ContentPresenter.ContentProperty);
             return border;
         }
     }

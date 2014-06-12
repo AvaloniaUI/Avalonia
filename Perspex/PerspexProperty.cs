@@ -106,6 +106,28 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Provides access to a property's binding via the <see cref="PerspexObject"/> 
+        /// indexer.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>A <see cref="BindingAccessor"/> describing the binding.</returns>
+        public static BindingAccessor operator!(PerspexProperty property)
+        {
+            return new BindingAccessor(property, BindingPriority.LocalValue);
+        }
+
+        /// <summary>
+        /// Provides access to a property's template binding via the <see cref="PerspexObject"/>
+        /// indexer.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>A <see cref="BindingAccessor"/> describing the binding.</returns>
+        public static BindingAccessor operator ~(PerspexProperty property)
+        {
+            return new BindingAccessor(property, BindingPriority.TemplatedParent);
+        }
+
+        /// <summary>
         /// Gets the default value for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -166,6 +188,27 @@ namespace Perspex
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public class BindingAccessor
+        {
+            public BindingAccessor(PerspexProperty property, BindingPriority priority)
+            {
+                this.Property = property;
+                this.Priority = priority;
+            }
+
+            public PerspexProperty Property
+            {
+                get;
+                private set;
+            }
+
+            public BindingPriority Priority
+            {
+                get;
+                private set;
+            }
         }
     }
 

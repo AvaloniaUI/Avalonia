@@ -123,6 +123,27 @@ namespace Perspex
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets the value of a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public object this[PerspexProperty property]
+        {
+            get { return this.GetValue(property); }
+            set { this.SetValue(property, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the binding for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public object this[PerspexProperty.BindingAccessor property]
+        {
+            get { return this.GetObservable(property.Property); }
+            set { this.Bind(property.Property, (IObservable<object>)value, property.Priority); }
+        }
+
         /// <summary>
         /// Gets all <see cref="PerspexProperty"/>s registered on a type.
         /// </summary>

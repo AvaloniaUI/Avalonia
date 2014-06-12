@@ -52,19 +52,6 @@ namespace TestApplication
                     Gap = 6,
                     Children = new PerspexList<Control>
                     {
-                        new Border
-                        {
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 1,
-                            Width = 10,
-                            Height = 10,
-                        },
-                        new Path
-                        {
-                            Data = StreamGeometry.Parse("M0,0 L10,0"),
-                            Stroke = Brushes.Black,
-                            StrokeThickness = 1,
-                        },
                         new Button
                         {
                             Content = "Button",

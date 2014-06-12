@@ -47,6 +47,7 @@ namespace Perspex.Themes.Default
         {
             Border result = new Border
             {
+                [~Border.BackgroundProperty] = control[~CheckBox.BackgroundProperty],
                 Content = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -69,15 +70,12 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
+                            [~ContentPresenter.ContentProperty] = control[~CheckBox.ContentProperty],
                         },
                     },
                 },
             };
 
-            result.TemplateBinding(control, Border.BackgroundProperty);
-            StackPanel stack = (StackPanel)result.Content;
-            ContentPresenter cp = (ContentPresenter)stack.Children[1];
-            cp.TemplateBinding(control, ContentPresenter.ContentProperty);
             return result;
         }
     }
