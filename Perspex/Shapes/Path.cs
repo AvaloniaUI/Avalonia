@@ -24,13 +24,5 @@ namespace Perspex.Shapes
         {
             get { return this.Data; }
         }
-
-        public override void Render(IDrawingContext context)
-        {
-            if (this.Data != null && this.Visibility == Visibility.Visible)
-            {
-                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.Data);
-            }
-        }
     }
 }

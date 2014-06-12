@@ -53,19 +53,22 @@ namespace Perspex.Themes.Default
                     Gap = 8,
                     Children = new PerspexList<Control>
                     {
-                        new Border
+                        new Rectangle
                         {
-                            BorderThickness = 2,
-                            BorderBrush = Brushes.Black,
-                            Padding = new Thickness(8),
-                            Content = new Path
-                            {
-                                Id = "checkMark",
-                                Data = StreamGeometry.Parse("M0,0 L10,10 M10,0 L0,10"),
-                                Stroke = Brushes.Black,
-                                StrokeThickness = 2,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            },
+                            Id = "checkBorder",
+                            Stroke = Brushes.Black,
+                            StrokeThickness = 2,
+                            Width = 16,
+                            Height = 16,
+                            VerticalAlignment = VerticalAlignment.Center,
+                        },
+                        new Path
+                        {
+                            Id = "checkMark",
+                            Data = StreamGeometry.Parse("M0,0 L10,10 M10,0 L0,10"),
+                            Stroke = Brushes.Black,
+                            StrokeThickness = 2,
+                            VerticalAlignment = VerticalAlignment.Center,
                         },
                         new ContentPresenter
                         {
@@ -76,7 +79,7 @@ namespace Perspex.Themes.Default
 
             result.TemplateBinding(control, Border.BackgroundProperty);
             StackPanel stack = (StackPanel)result.Content;
-            ContentPresenter cp = (ContentPresenter)stack.Children[1];
+            ContentPresenter cp = (ContentPresenter)stack.Children[2];
             cp.TemplateBinding(control, ContentPresenter.ContentProperty);
             return result;
         }
