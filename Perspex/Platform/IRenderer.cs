@@ -11,17 +11,6 @@ namespace Perspex.Platform
     public interface IRenderer
     {
         /// <summary>
-        /// Initializes the renderer to draw to the specified handle.
-        /// </summary>
-        /// <param name="handle">The window etc handle</param>
-        /// <param name="width">The initial viewport width.</param>
-        /// <param name="height">The initial viewport height.</param>
-        /// <remarks>
-        /// TODO: This probably should be somewhere else...
-        /// </remarks>
-        void Initialize(IntPtr handle, double width, double height);
-
-        /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>

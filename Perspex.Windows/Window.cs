@@ -41,11 +41,12 @@ namespace Perspex.Windows
 
         public Window()
         {
+            IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+
             this.CreateWindow();
             Size clientSize = this.ClientSize;
             this.LayoutManager = new LayoutManager();
-            this.renderer = Locator.Current.GetService<IRenderer>();
-            this.renderer.Initialize(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
+            this.renderer = factory.CreateRenderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 

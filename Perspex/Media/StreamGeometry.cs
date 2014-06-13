@@ -13,7 +13,8 @@ namespace Perspex.Media
     {
         public StreamGeometry()
         {
-            this.PlatformImpl = Locator.Current.GetService<IStreamGeometryImpl>();
+            IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+            this.PlatformImpl = factory.CreateStreamGeometry();
         }
 
         public override Rect Bounds

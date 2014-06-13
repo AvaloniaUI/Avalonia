@@ -71,7 +71,8 @@ namespace Perspex.Controls
         {
             if (this.Visibility != Visibility.Collapsed)
             {
-                ITextService service = Locator.Current.GetService<ITextService>();
+                IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+                ITextService service = factory.GetTextService();
 
                 if (!string.IsNullOrEmpty(this.Text))
                 {

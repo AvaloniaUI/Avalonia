@@ -8,7 +8,7 @@
     {
         public App()
         {
-            RegisterPortableServices();
+            this.RegisterServices();
             Direct2D1Platform.Initialize();
             this.Styles = new DefaultTheme();
         }

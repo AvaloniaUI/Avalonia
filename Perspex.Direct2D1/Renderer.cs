@@ -31,13 +31,8 @@ namespace Perspex.Direct2D1
         /// <param name="hwnd">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public void Initialize(IntPtr hwnd, double width, double height)
+        public Renderer(IntPtr hwnd, double width, double height)
         {
-            if (this.renderTarget != null)
-            {
-                throw new InvalidOperationException("Cannot initialize Renderer more than once.");
-            }
-
             this.Direct2DFactory = Locator.Current.GetService<Factory>();
             this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
 

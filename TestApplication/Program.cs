@@ -18,28 +18,10 @@ using Splat;
 
 namespace TestApplication
 {
-    class TestLogger : ILogger
-    {
-        public LogLevel Level
-        {
-            get;
-            set;
-        }
-
-        public void Write(string message, LogLevel logLevel)
-        {
-            if ((int)logLevel < (int)Level) return;
-            System.Diagnostics.Debug.WriteLine(message);
-        }
-    }
-
     class Program
     {
         static void Main(string[] args)
         {
-            Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
-            Locator.CurrentMutable.Register(() => new TestLogger(), typeof(ILogger));
-
             App application = new App();
 
             Window window = new Window

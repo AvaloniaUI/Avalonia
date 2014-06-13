@@ -6,9 +6,7 @@
 
 namespace Perspex
 {
-    using System.Reflection;
     using Perspex.Input;
-    using Perspex.Platform;
     using Perspex.Styling;
     using Splat;
 
@@ -19,9 +17,16 @@ namespace Perspex
         public Application()
         {
             Current = this;
+            this.InputManager = new InputManager();
         }
 
         public static Application Current
+        {
+            get;
+            private set;
+        }
+
+        public InputManager InputManager
         {
             get;
             private set;
@@ -45,10 +50,11 @@ namespace Perspex
             }
         }
 
-        public static void RegisterPortableServices()
+        public void RegisterServices()
         {
-            InputManager inputManager = new InputManager();
-            Locator.CurrentMutable.Register(() => inputManager, typeof(IInputManager));
+            Styler styler = new Styler();
+            Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
+            Locator.CurrentMutable.Register(() => styler, typeof(IStyler));
         }
     }
 }
