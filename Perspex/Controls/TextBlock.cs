@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using Perspex.Media;
+    using Perspex.Platform;
     using Splat;
 
     public class TextBlock : Control

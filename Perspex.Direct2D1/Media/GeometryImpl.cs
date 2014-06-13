@@ -6,10 +6,7 @@
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using Perspex.Media;
-    using SharpDX.Direct2D1;
-    using Splat;
+    using Perspex.Platform;
 
     public abstract class GeometryImpl : IGeometryImpl
     {

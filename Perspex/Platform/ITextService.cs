@@ -1,13 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="IGeometryImpl.cs" company="Steven Kirk">
+// <copyright file="ITextService.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Media
+namespace Perspex.Platform
 {
-    public interface IGeometryImpl
+    using Perspex.Media;
+
+    public interface ITextService
     {
-        Rect Bounds { get; }
+        Size Measure(FormattedText text);
     }
 }

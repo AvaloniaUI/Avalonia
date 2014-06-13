@@ -7,6 +7,7 @@
 namespace Perspex.Direct2D1
 {
     using Perspex.Media;
+    using Perspex.Platform;
     using SharpDX.DirectWrite;
 
     public class TextService : ITextService

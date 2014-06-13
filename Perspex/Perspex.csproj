@@ -90,9 +90,9 @@
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
     <Compile Include="Media\Brushes.cs" />
-    <Compile Include="Media\IStreamGeometryContextImpl.cs" />
-    <Compile Include="Media\IGeometryImpl.cs" />
-    <Compile Include="Media\IStreamGeometryImpl.cs" />
+    <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
+    <Compile Include="Platform\IGeometryImpl.cs" />
+    <Compile Include="Platform\IStreamGeometryImpl.cs" />
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\RectangleGeometry.cs" />
     <Compile Include="Media\StreamGeometryContext.cs" />
@@ -135,7 +135,7 @@
     <Compile Include="Media\IDrawingContext.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Color.cs" />
-    <Compile Include="Media\ITextService.cs" />
+    <Compile Include="Platform\ITextService.cs" />
     <Compile Include="Media\Matrix.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\SolidColorBrush.cs" />

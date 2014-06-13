@@ -6,7 +6,7 @@
 
 namespace Perspex.Media
 {
-    using System;
+    using Perspex.Platform;
     using Splat;
 
     public class RectangleGeometry : Geometry

@@ -6,6 +6,8 @@
 
 namespace Perspex.Media
 {
+    using Perspex.Platform;
+
     public abstract class Geometry
     {
         public abstract Rect Bounds

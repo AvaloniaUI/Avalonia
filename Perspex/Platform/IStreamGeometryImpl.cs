@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Media
+namespace Perspex.Platform
 {
     public interface IStreamGeometryImpl : IGeometryImpl
     {

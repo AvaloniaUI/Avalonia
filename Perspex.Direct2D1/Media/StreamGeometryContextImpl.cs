@@ -6,7 +6,7 @@
 
 namespace Perspex.Direct2D1.Media
 {
-    using Perspex.Media;
+    using Perspex.Platform;
     using SharpDX.Direct2D1;
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl

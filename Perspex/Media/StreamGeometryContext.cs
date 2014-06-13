@@ -7,7 +7,7 @@
 namespace Perspex.Media
 {
     using System;
-    using Splat;
+    using Perspex.Platform;
 
     public class StreamGeometryContext : IDisposable
     {
