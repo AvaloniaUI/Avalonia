@@ -138,18 +138,8 @@ namespace Perspex.Controls
                 else
                 {
                     childHeight = finalSize.Height;
-
                     Rect childFinal = new Rect(arrangedWidth, 0, childWidth, childHeight);
-
-                    if (childFinal.IsEmpty)
-                    {
-                        child.Arrange(new Rect());
-                    }
-                    else
-                    {
-                        child.Arrange(childFinal);
-                    }
-
+                    child.Arrange(childFinal);
                     arrangedWidth += childWidth + gap;
                     arrangedHeight = Math.Max(arrangedHeight, childHeight);
                 }

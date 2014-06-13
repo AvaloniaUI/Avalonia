@@ -123,6 +123,54 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the right position of the rectangle.
+        /// </summary>
+        public double Right
+        {
+            get { return this.x + this.width; }
+        }
+
+        /// <summary>
+        /// Gets the bottom position of the rectangle.
+        /// </summary>
+        public double Bottom
+        {
+            get { return this.y + this.height; }
+        }
+
+        /// <summary>
+        /// Gets the top left point of the rectangle.
+        /// </summary>
+        public Point TopLeft
+        {
+            get { return new Point(this.x, this.y); }
+        }
+
+        /// <summary>
+        /// Gets the top right point of the rectangle.
+        /// </summary>
+        public Point TopRight
+        {
+            get { return new Point(this.Right, this.y); }
+        }
+
+        /// <summary>
+        /// Gets the bottom left point of the rectangle.
+        /// </summary>
+        public Point BottomLeft
+        {
+            get { return new Point(this.x, this.Bottom); }
+        }
+
+        /// <summary>
+        /// Gets the bottom right point of the rectangle.
+        /// </summary>
+        public Point BottomRight
+        {
+            get { return new Point(this.Right, this.Bottom); }
+        }
+
+        /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
         public bool IsEmpty

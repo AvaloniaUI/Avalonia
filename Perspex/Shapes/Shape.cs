@@ -60,19 +60,13 @@ namespace Perspex.Shapes
 
         protected override Size MeasureContent(Size availableSize)
         {
-            Pen pen = (this.Stroke != null) ? new Pen(this.Stroke, this.StrokeThickness) : null;
             Rect shapeBounds = this.RenderedGeometry.Bounds;
+            double width = this.Width;
+            double height = this.Height;
             double desiredX = availableSize.Width;
             double desiredY = availableSize.Height;
             double sx = 0.0;
             double sy = 0.0;
-
-            if (this.Stretch == Stretch.None)
-            {
-                return new Size(
-                    shapeBounds.X + shapeBounds.Width,
-                    shapeBounds.Y + shapeBounds.Height);
-            }
 
             if (double.IsInfinity(availableSize.Width))
             {
@@ -125,10 +119,21 @@ namespace Perspex.Shapes
 
                     break;
                 default:
+                    sx = sy = 1;
                     break;
             }
 
-            return new Size(shapeBounds.Width * sx, shapeBounds.Height * sy);
+            double finalX = (width > 0) ? width : shapeBounds.Width * sx;
+            double finalY = (height > 0) ? height : shapeBounds.Height * sy;
+            return new Size(finalX, finalY);
+        }
+
+        public override void Render(IDrawingContext context)
+        {
+            if (this.RenderedGeometry != null && this.Visibility == Visibility.Visible)
+            {
+                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.RenderedGeometry);
+            }
         }
     }
 }
