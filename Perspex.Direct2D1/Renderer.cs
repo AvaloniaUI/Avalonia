@@ -23,7 +23,7 @@ namespace Perspex.Direct2D1
         /// <summary>
         /// The render target.
         /// </summary>
-        private WindowRenderTarget renderTarget;
+        private RenderTarget renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -50,6 +50,17 @@ namespace Perspex.Direct2D1
                 this.Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Renderer"/> class.
+        /// </summary>
+        /// <param name="renderTarget">The render target.</param>
+        public Renderer(RenderTarget renderTarget)
+        {
+            this.Direct2DFactory = Locator.Current.GetService<Factory>();
+            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            this.renderTarget = renderTarget;
         }
 
         /// <summary>
@@ -89,7 +100,16 @@ namespace Perspex.Direct2D1
         /// <param name="height">The new height.</param>
         public void Resize(int width, int height)
         {
-            this.renderTarget.Resize(new Size2(width, height));
+            WindowRenderTarget window = this.renderTarget as WindowRenderTarget;
+
+            if (window == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "A renderer with a target of type '{0}' cannot be resized.",
+                    this.renderTarget.GetType().Name));
+            }
+
+            window.Resize(new Size2(width, height));
         }
 
         /// <summary>

@@ -19,19 +19,32 @@ namespace Perspex.Direct2D1
 
         private static SharpDX.DirectWrite.Factory dwFactory = new SharpDX.DirectWrite.Factory();
 
+        private static SharpDX.WIC.ImagingFactory imagingFactory = new SharpDX.WIC.ImagingFactory();
+
         private static TextService textService = new TextService(dwFactory);
 
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => instance, typeof(IPlatformFactory));
             locator.Register(() => d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
             locator.Register(() => dwFactory, typeof(SharpDX.DirectWrite.Factory));
-            locator.Register(() => instance, typeof(IPlatformFactory));
+            locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
+        }
+
+        public IBitmapImpl CreateBitmap(int width, int height)
+        {
+            return new BitmapImpl(imagingFactory, width, height);
         }
 
         public IRenderer CreateRenderer(IntPtr handle, double width, double height)
         {
             return new Renderer(handle, width, height);
+        }
+
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        {
+            return new RenderTargetBitmapImpl(imagingFactory, d2d1Factory, width, height);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

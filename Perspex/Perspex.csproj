@@ -90,6 +90,10 @@
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
     <Compile Include="Media\Brushes.cs" />
+    <Compile Include="Media\Imaging\Bitmap.cs" />
+    <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
+    <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IPlatformFactory.cs" />
     <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />

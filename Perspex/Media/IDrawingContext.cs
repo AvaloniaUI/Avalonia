@@ -11,7 +11,7 @@ namespace Perspex.Media
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>
-    public interface IDrawingContext
+    public interface IDrawingContext : IDisposable
     {
         /// <summary>
         /// Draws a geometry.
