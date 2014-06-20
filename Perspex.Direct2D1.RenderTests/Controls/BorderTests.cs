@@ -34,6 +34,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             };
 
             this.RenderToFile(target);
+            this.CompareImages();
         }
     }
 }
