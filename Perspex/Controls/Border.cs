@@ -40,5 +40,23 @@ namespace Perspex.Controls
                 }
             }
         }
+
+        protected override Size ArrangeContent(Size finalSize)
+        {
+            Control content = this.Content;
+
+            if (content != null)
+            {
+                Thickness padding = this.Padding + new Thickness(this.BorderThickness);
+                content.Arrange(new Rect(finalSize).Deflate(padding));
+            }
+
+            return finalSize;
+        }
+
+        protected override Size MeasureContent(Size availableSize)
+        {
+            return this.DefaultMeasure(availableSize, this.Padding + new Thickness(this.BorderThickness));
+        }
     }
 }

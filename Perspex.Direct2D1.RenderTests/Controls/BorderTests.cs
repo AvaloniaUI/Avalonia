@@ -73,5 +73,28 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [TestMethod]
+        public void Border_Brush_Offsets_Content()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new Border
+                    {
+                        Background = Brushes.Red,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }

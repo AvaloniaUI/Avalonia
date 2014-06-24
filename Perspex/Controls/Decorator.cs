@@ -77,6 +77,11 @@ namespace Perspex.Controls
 
         protected override Size MeasureContent(Size availableSize)
         {
+            return this.DefaultMeasure(availableSize, this.Padding);
+        }
+
+        protected Size DefaultMeasure(Size availableSize, Thickness padding)
+        {
             double width = 0;
             double height = 0;
 
