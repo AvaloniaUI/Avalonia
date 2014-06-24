@@ -20,5 +20,10 @@ namespace Perspex.Media
             get;
             protected set;
         }
+
+        public Rect GetRenderBounds(double strokeThickness)
+        {
+            return this.PlatformImpl.GetRenderBounds(strokeThickness);
+        }
     }
 }

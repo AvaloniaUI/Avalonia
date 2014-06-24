@@ -28,6 +28,11 @@ namespace Perspex.Direct2D1.Media
             get { return geometry.GetBounds().ToPerspex(); }
         }
 
+        public override Rect GetRenderBounds(double strokeThickness)
+        {
+            return geometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
+        }
+
         public IStreamGeometryContextImpl Open()
         {
             return new StreamGeometryContextImpl(geometry.Open());

@@ -6,6 +6,8 @@
 
 namespace Perspex.Direct2D1.Media
 {
+    using System;
+    using Perspex.Media;
     using Perspex.Platform;
 
     public abstract class GeometryImpl : IGeometryImpl
@@ -20,5 +22,7 @@ namespace Perspex.Direct2D1.Media
             get;
             protected set;
         }
+
+        public abstract Rect GetRenderBounds(double strokeThickness);
     }
 }

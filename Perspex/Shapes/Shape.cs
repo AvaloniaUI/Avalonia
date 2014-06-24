@@ -60,7 +60,7 @@ namespace Perspex.Shapes
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            Rect shapeBounds = this.RenderedGeometry.Bounds;
+            Rect shapeBounds = this.RenderedGeometry.GetRenderBounds(this.StrokeThickness);
             double width = this.Width;
             double height = this.Height;
             double desiredX = availableSize.Width;

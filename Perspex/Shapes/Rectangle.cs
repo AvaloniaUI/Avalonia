@@ -16,12 +16,12 @@ namespace Perspex.Shapes
 
         public override Geometry DefiningGeometry
         {
-            get { return new RectangleGeometry(new Rect(size)); }
+            get { return new RectangleGeometry(new Rect(0, 0, this.Width, this.Height)); }
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            return new Size(this.Width, this.Height);
+            return this.DefiningGeometry.GetRenderBounds(this.StrokeThickness).Size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)

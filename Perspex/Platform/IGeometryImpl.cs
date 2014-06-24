@@ -6,8 +6,12 @@
 
 namespace Perspex.Platform
 {
+    using Perspex.Media;
+
     public interface IGeometryImpl
     {
         Rect Bounds { get; }
+
+        Rect GetRenderBounds(double strokeThickness);
     }
 }
