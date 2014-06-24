@@ -58,7 +58,7 @@ namespace Perspex.Shapes
             set { this.SetValue(StrokeThicknessProperty, value); }
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             Rect shapeBounds = this.RenderedGeometry.Bounds;
             double width = this.Width;

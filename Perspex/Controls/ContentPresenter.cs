@@ -86,7 +86,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected override Size ArrangeContent(Size finalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
             Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
@@ -143,7 +143,7 @@ namespace Perspex.Controls
             return finalSize;
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             if (this.Visibility != Visibility.Collapsed)
             {

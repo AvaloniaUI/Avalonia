@@ -332,17 +332,13 @@ namespace Perspex.Controls
 
         public void Arrange(Rect rect)
         {
-            Thickness margin = this.Margin;
-
-            ((IVisual)this).Bounds = new Rect(
-                new Point(rect.Position.X + margin.Left, rect.Position.Y + margin.Top),
-                this.ArrangeContent(rect.Size.Deflate(margin).Constrain(rect.Size)));
+            this.ArrangeCore(rect);
         }
 
         public void Measure(Size availableSize)
         {
             availableSize = availableSize.Deflate(this.Margin);
-            this.DesiredSize = this.MeasureContent(availableSize).Constrain(availableSize);
+            this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
         }
 
         public void InvalidateArrange()
@@ -365,12 +361,63 @@ namespace Perspex.Controls
             }
         }
 
-        protected virtual Size ArrangeContent(Size finalSize)
+        protected virtual void ArrangeCore(Rect finalRect)
+        {
+            double originX = finalRect.X + this.Margin.Left;
+            double originY = finalRect.Y + this.Margin.Top;
+            double sizeX = Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right);
+            double sizeY = Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom);
+
+            if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
+            {
+                sizeX = Math.Min(sizeX, this.DesiredSize.Value.Width);
+            }
+
+            if (this.VerticalAlignment != VerticalAlignment.Stretch)
+            {
+                sizeY = Math.Min(sizeY, this.DesiredSize.Value.Height);
+            }
+
+            Size taken = this.ArrangeOverride(new Size(sizeX, sizeY));
+
+            sizeX = Math.Min(taken.Width, sizeX);
+            sizeY = Math.Min(taken.Height, sizeY);
+
+            switch (this.HorizontalAlignment)
+            {
+                case HorizontalAlignment.Center:
+                    originX += (finalRect.Width - sizeX) / 2;
+                    break;
+                case HorizontalAlignment.Right:
+                    originX += finalRect.Width - sizeX;
+                    break;
+            }
+
+            switch (this.VerticalAlignment)
+            {
+                case VerticalAlignment.Center:
+                    originY += (finalRect.Height - sizeY) / 2;
+                    break;
+                case VerticalAlignment.Bottom:
+                    originY += finalRect.Height - sizeY;
+                    break;
+            }
+
+            ((IVisual)this).Bounds = new Rect(originX, originY, sizeX, sizeY);
+        }
+
+        protected virtual Size ArrangeOverride(Size finalSize)
         {
             return finalSize;
         }
 
-        protected virtual Size MeasureContent(Size availableSize)
+        protected virtual Size MeasureCore(Size availableSize)
+        {
+            availableSize = availableSize.Deflate(this.Margin);
+            return this.MeasureOverride(availableSize);
+        }
+
+        protected virtual Size MeasureOverride(Size availableSize)
         {
             return new Size();
         }

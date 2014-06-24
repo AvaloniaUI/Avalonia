@@ -64,12 +64,19 @@ namespace Perspex.Controls
             }
         }
 
-        protected override Size ArrangeContent(Size finalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            return LayoutHelper.ArrangeDecorator(this, this.Content, finalSize, this.Padding);
+            Control content = this.Content;
+
+            if (content != null)
+            {
+                content.Arrange(new Rect(finalSize).Deflate(this.Padding));
+            }
+
+            return finalSize;
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             return LayoutHelper.MeasureDecorator(this, this.Content, availableSize, this.Padding);
         }

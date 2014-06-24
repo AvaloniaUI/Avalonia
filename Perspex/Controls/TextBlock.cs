@@ -67,7 +67,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             if (this.Visibility != Visibility.Collapsed)
             {

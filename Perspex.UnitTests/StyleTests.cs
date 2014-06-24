@@ -119,7 +119,7 @@ namespace Perspex.UnitTests
                 set { this.SetValue(FooProperty, value); }
             }
 
-            protected override Size MeasureContent(Size availableSize)
+            protected override Size MeasureOverride(Size availableSize)
             {
                 throw new NotImplementedException();
             }

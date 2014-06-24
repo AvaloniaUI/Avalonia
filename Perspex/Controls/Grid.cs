@@ -88,7 +88,7 @@ namespace Perspex.Controls
             element.SetValue(RowSpanProperty, value);
         }
 
-        protected override Size MeasureContent(Size constraint)
+        protected override Size MeasureOverride(Size constraint)
         {
             Size totalSize = constraint;
             int colCount = this.ColumnDefinitions.Count;
@@ -379,7 +379,7 @@ namespace Perspex.Controls
             return new Size(gridSizeX, gridSizeY);
         }
 
-        protected override Size ArrangeContent(Size finalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
             int colCount = this.ColumnDefinitions.Count;
             int rowCount = this.RowDefinitions.Count;

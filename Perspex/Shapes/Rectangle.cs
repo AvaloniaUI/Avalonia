@@ -19,15 +19,15 @@ namespace Perspex.Shapes
             get { return new RectangleGeometry(new Rect(size)); }
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(this.Width, this.Height);
         }
 
-        protected override Size ArrangeContent(Size finalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
             this.size = finalSize;
-            return base.ArrangeContent(finalSize);
+            return base.ArrangeOverride(finalSize);
         }
     }
 }

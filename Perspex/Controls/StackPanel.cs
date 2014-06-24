@@ -38,7 +38,7 @@ namespace Perspex.Controls
             set { this.SetValue(OrientationProperty, value); }
         }
 
-        protected override Size MeasureContent(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             if (this.Visibility != Visibility.Collapsed)
             {
@@ -97,7 +97,7 @@ namespace Perspex.Controls
             return new Size();
         }
 
-        protected override Size ArrangeContent(Size finalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
