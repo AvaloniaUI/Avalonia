@@ -149,6 +149,11 @@ namespace Perspex.Controls
             remove { this.RemoveHandler(PointerReleasedEvent, value); }
         }
 
+        public Size ActualSize
+        {
+            get { return ((IVisual)this).Bounds.Size; }
+        }
+
         public Brush Background
         {
             get { return this.GetValue(BackgroundProperty); }
@@ -329,7 +334,7 @@ namespace Perspex.Controls
         {
             Thickness margin = this.Margin;
 
-            this.Bounds = new Rect(
+            ((IVisual)this).Bounds = new Rect(
                 new Point(rect.Position.X + margin.Left, rect.Position.Y + margin.Top),
                 this.ArrangeContent(rect.Size.Deflate(margin).Constrain(rect.Size)));
         }

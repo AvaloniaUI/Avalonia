@@ -60,10 +60,10 @@ namespace Perspex.Controls
 
                 if (background != null)
                 {
-                    context.FillRectange(background, this.Bounds);
+                    context.FillRectange(background, new Rect(this.ActualSize));
                 }
 
-                context.DrawText(this.Foreground, new Rect(this.Bounds.Size), this.FormattedText);
+                context.DrawText(this.Foreground, new Rect(this.ActualSize), this.FormattedText);
             }
         }
 

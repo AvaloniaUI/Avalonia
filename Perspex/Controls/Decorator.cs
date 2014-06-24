@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Layout;
 
     public class Decorator : Control, IVisual
     {
@@ -65,50 +66,12 @@ namespace Perspex.Controls
 
         protected override Size ArrangeContent(Size finalSize)
         {
-            Control content = this.Content;
-
-            if (content != null)
-            {
-                content.Arrange(new Rect(finalSize).Deflate(this.Padding));
-            }
-
-            return finalSize;
+            return LayoutHelper.ArrangeDecorator(this, this.Content, finalSize, this.Padding);
         }
 
         protected override Size MeasureContent(Size availableSize)
         {
-            return this.DefaultMeasure(availableSize, this.Padding);
-        }
-
-        protected Size DefaultMeasure(Size availableSize, Thickness padding)
-        {
-            double width = 0;
-            double height = 0;
-
-            if (this.Visibility != Visibility.Collapsed)
-            {
-                Control content = this.Content;
-
-                if (content != null)
-                {
-                    content.Measure(availableSize);
-                    Size s = content.DesiredSize.Value.Inflate(this.Padding);
-                    width = s.Width;
-                    height = s.Height;
-                }
-
-                if (this.Width > 0)
-                {
-                    width = this.Width;
-                }
-
-                if (this.Height > 0)
-                {
-                    height = this.Height;
-                }
-            }
-
-            return new Size(width, height);
+            return LayoutHelper.MeasureDecorator(this, this.Content, availableSize, this.Padding);
         }
     }
 }

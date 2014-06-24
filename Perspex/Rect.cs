@@ -75,6 +75,19 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Rect"/> structure.
+        /// </summary>
+        /// <param name="position">The top left position of the rectangle.</param>
+        /// <param name="buttonRight">The bottom right position of the rectangle.</param>
+        public Rect(Point topLeft, Point bottomRight)
+        {
+            this.x = topLeft.X;
+            this.y = topLeft.Y;
+            this.width = bottomRight.X - topLeft.X;
+            this.height = bottomRight.Y - topLeft.Y;
+        }
+
+        /// <summary>
         /// Gets the X position.
         /// </summary>
         public double X

@@ -144,5 +144,205 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [TestMethod]
+        public void Border_Centers_Content_Horizontally()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Centers_Content_Vertically()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Stretches_Content_Horizontally()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Stretches_Content_Vertically()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Left_Aligns_Content()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Right_Aligns_Content()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Top_Aligns_Content()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        VerticalAlignment = VerticalAlignment.Top,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [TestMethod]
+        public void Border_Bottom_Aligns_Content()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = 2,
+                    Content = new TextBlock
+                    {
+                        Text = "Foo",
+                        Background = Brushes.Red,
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }

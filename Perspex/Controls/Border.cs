@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Reactive.Linq;
+    using Perspex.Layout;
     using Perspex.Media;
 
     public class Border : Decorator
@@ -27,7 +28,7 @@ namespace Perspex.Controls
                 Brush background = this.Background;
                 Brush borderBrush = this.BorderBrush;
                 double borderThickness = this.BorderThickness;
-                Rect rect = new Rect(this.Bounds.Size).Deflate(BorderThickness / 2);
+                Rect rect = new Rect(this.ActualSize).Deflate(BorderThickness / 2);
 
                 if (background != null)
                 {
@@ -43,20 +44,20 @@ namespace Perspex.Controls
 
         protected override Size ArrangeContent(Size finalSize)
         {
-            Control content = this.Content;
-
-            if (content != null)
-            {
-                Thickness padding = this.Padding + new Thickness(this.BorderThickness);
-                content.Arrange(new Rect(finalSize).Deflate(padding));
-            }
-
-            return finalSize;
+            return LayoutHelper.ArrangeDecorator(
+                this,
+                this.Content,
+                finalSize,
+                this.Padding + new Thickness(this.BorderThickness));
         }
 
         protected override Size MeasureContent(Size availableSize)
         {
-            return this.DefaultMeasure(availableSize, this.Padding + new Thickness(this.BorderThickness));
+            return LayoutHelper.MeasureDecorator(
+                this, 
+                this.Content, 
+                availableSize, 
+                this.Padding + new Thickness(this.BorderThickness));
         }
     }
 }

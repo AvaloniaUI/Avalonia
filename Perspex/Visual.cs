@@ -28,21 +28,23 @@ namespace Perspex
 
         private IVisual visualParent;
 
+        private Rect bounds;
+
         public Visual()
         {
             this.GetObservable(VisibilityProperty).Subscribe(_ => this.InvalidateVisual());
-        }
-
-        public Rect Bounds
-        {
-            get;
-            protected set;
         }
 
         public Visibility Visibility
         {
             get { return this.GetValue(VisibilityProperty); }
             set { this.SetValue(VisibilityProperty, value); }
+        }
+
+        Rect IVisual.Bounds
+        {
+            get { return this.bounds; }
+            set { this.bounds = value; }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren

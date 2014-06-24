@@ -121,7 +121,7 @@ namespace Perspex.Direct2D1
         {
             visual.Render(context);
 
-            foreach (Visual child in visual.VisualChildren)
+            foreach (IVisual child in visual.VisualChildren)
             {
                 Matrix translate = Matrix.Translation(child.Bounds.X, child.Bounds.Y);
 

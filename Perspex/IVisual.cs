@@ -12,7 +12,7 @@ namespace Perspex
 
     public interface IVisual
     {
-        Rect Bounds { get; }
+        Rect Bounds { get; set; }
 
         IEnumerable<IVisual> ExistingVisualChildren { get; }
 

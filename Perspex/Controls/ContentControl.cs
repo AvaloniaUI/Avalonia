@@ -55,7 +55,7 @@ namespace Perspex.Controls
             if (child != null)
             {
                 child.Arrange(new Rect(finalSize));
-                return child.Bounds.Size;
+                return child.ActualSize;
             }
             else
             {
