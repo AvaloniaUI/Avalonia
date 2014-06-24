@@ -13,24 +13,12 @@ namespace Perspex.Controls
 
     public class TextBlock : Control
     {
-        public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.Register<TextBlock, double>(
-                "FontSize",
-                defaultValue: 12.0,
-                inherits: true);
-
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
         public TextBlock()
         {
             this.GetObservable(TextProperty).Subscribe(_ => this.InvalidateVisual());
-        }
-
-        public double FontSize
-        {
-            get { return this.GetValue(FontSizeProperty); }
-            set { this.SetValue(FontSizeProperty, value); }
         }
 
         public string Text
