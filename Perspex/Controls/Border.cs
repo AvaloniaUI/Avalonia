@@ -27,15 +27,16 @@ namespace Perspex.Controls
                 Brush background = this.Background;
                 Brush borderBrush = this.BorderBrush;
                 double borderThickness = this.BorderThickness;
+                Rect rect = new Rect(this.Bounds.Size).Deflate(BorderThickness / 2);
 
                 if (background != null)
                 {
-                    context.FillRectange(background, new Rect(this.Bounds.Size));
+                    context.FillRectange(background, rect);
                 }
 
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    context.DrawRectange(new Pen(borderBrush, borderThickness), new Rect(this.Bounds.Size));
+                    context.DrawRectange(new Pen(borderBrush, borderThickness), rect);
                 }
             }
         }

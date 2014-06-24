@@ -190,6 +190,17 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Deflates the rectangle.
+        /// </summary>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The deflated rectangle.</returns>
+        /// <remarks>The deflated rectangle size cannot be less than 0.</remarks>
+        public Rect Deflate(double thickness)
+        {
+            return this.Deflate(new Thickness(thickness));
+        }
+
+        /// <summary>
         /// Deflates the rectangle by a <see cref="Thickness"/>.
         /// </summary>
         /// <param name="thickness">The thickness.</param>
