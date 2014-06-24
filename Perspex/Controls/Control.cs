@@ -327,9 +327,11 @@ namespace Perspex.Controls
 
         public void Arrange(Rect rect)
         {
+            Thickness margin = this.Margin;
+
             this.Bounds = new Rect(
-                rect.Position,
-                this.ArrangeContent(rect.Size.Deflate(this.Margin).Constrain(rect.Size)));
+                new Point(rect.Position.X + margin.Left, rect.Position.Y + margin.Top),
+                this.ArrangeContent(rect.Size.Deflate(margin).Constrain(rect.Size)));
         }
 
         public void Measure(Size availableSize)
