@@ -57,22 +57,22 @@ namespace Perspex.Themes.Default
                     },
                     Children = new PerspexList<Control>
                     {
-                        new Rectangle
+                        new Border
                         {
                             Id = "checkBorder",
-                            Stroke = Brushes.Black,
-                            StrokeThickness = 2,
-                            Width = 16,
-                            Height = 16,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Width = 18,
+                            Height = 18,
                             VerticalAlignment = VerticalAlignment.Center,
                             [Grid.ColumnProperty] = 0,
                         },
-                        new Path
+                        new Rectangle
                         {
                             Id = "checkMark",
-                            Data = StreamGeometry.Parse("M0,0 L10,10 M10,0 L0,10"),
-                            Stroke = Brushes.Black,
-                            StrokeThickness = 2,
+                            Fill = Brushes.Black,
+                            Width = 10,
+                            Height = 10,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             [Grid.ColumnProperty] = 0,
