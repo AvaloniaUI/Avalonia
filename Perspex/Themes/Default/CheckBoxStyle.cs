@@ -73,6 +73,7 @@ namespace Perspex.Themes.Default
                             Data = StreamGeometry.Parse("M0,0 L10,10 M10,0 L0,10"),
                             Stroke = Brushes.Black,
                             StrokeThickness = 2,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             [Grid.ColumnProperty] = 0,
                         },
