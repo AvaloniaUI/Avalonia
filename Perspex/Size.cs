@@ -52,6 +52,28 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Checks for equality between two <see cref="Size"/>s.
+        /// </summary>
+        /// <param name="left">The first size.</param>
+        /// <param name="right">The second size.</param>
+        /// <returns>True if the sizes are equal; otherwise false.</returns>
+        public static bool operator ==(Size left, Size right)
+        {
+            return left.width == right.width && left.height == right.height;
+        }
+
+        /// <summary>
+        /// Checks for unequality between two <see cref="Size"/>s.
+        /// </summary>
+        /// <param name="left">The first size.</param>
+        /// <param name="right">The second size.</param>
+        /// <returns>True if the sizes are unequal; otherwise false.</returns>
+        public static bool operator !=(Size left, Size right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
         /// Constrains the size.
         /// </summary>
         /// <param name="constraint">The size to constrain to.</param>

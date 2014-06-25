@@ -59,6 +59,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Controls\BorderTests.cs" />
+    <Compile Include="Shapes\RectangleTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
