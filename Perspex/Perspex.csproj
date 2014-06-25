@@ -105,6 +105,9 @@
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Rendering\RenderManager.cs" />
+    <Compile Include="Rendering\IRenderManager.cs" />
+    <Compile Include="Rendering\IRendered.cs" />
     <Compile Include="Shapes\Rectangle.cs" />
     <Compile Include="Shapes\Path.cs" />
     <Compile Include="Shapes\Shape.cs" />

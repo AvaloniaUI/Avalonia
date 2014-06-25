@@ -12,6 +12,7 @@ namespace Perspex
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
+    using Perspex.Rendering;
     using Splat;
 
     public enum Visibility
@@ -83,12 +84,11 @@ namespace Perspex
 
         public void InvalidateVisual()
         {
-            ILayoutRoot root = this.GetVisualAncestorOrSelf<ILayoutRoot>();
+            IRendered root = this.GetVisualAncestorOrSelf<IRendered>();
 
-            if (root != null && root.LayoutManager != null)
+            if (root != null && root.RenderManager != null)
             {
-                // HACK HACK HACK!
-                root.LayoutManager.InvalidateArrange((ILayoutable)this);
+                root.RenderManager.InvalidateRender(this);
             }
         }
 

@@ -16,16 +16,14 @@ namespace Perspex.Windows
     using Perspex.Input.Raw;
     using Perspex.Layout;
     using Perspex.Platform;
+    using Perspex.Rendering;
     using Perspex.Windows.Input;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
     using Splat;
 
-    public class Window : ContentControl, ILayoutRoot
+    public class Window : ContentControl, ILayoutRoot, IRendered
     {
-        public static readonly PerspexProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<Window>();
-
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
@@ -46,6 +44,7 @@ namespace Perspex.Windows
             this.CreateWindow();
             Size clientSize = this.ClientSize;
             this.LayoutManager = new LayoutManager();
+            this.RenderManager = new RenderManager();
             this.renderer = factory.CreateRenderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
@@ -57,6 +56,16 @@ namespace Perspex.Windows
                     () =>
                     {
                         this.LayoutManager.ExecuteLayoutPass();
+                        this.renderer.Render(this);
+                    });
+            });
+
+            this.RenderManager.RenderNeeded.Subscribe(x =>
+            {
+                Dispatcher.CurrentDispatcher.BeginInvoke(
+                    DispatcherPriority.Render,
+                    () =>
+                    {
                         this.renderer.Render(this);
                     });
             });
@@ -79,6 +88,12 @@ namespace Perspex.Windows
         }
 
         public ILayoutManager LayoutManager
+        {
+            get;
+            private set;
+        }
+
+        public IRenderManager RenderManager
         {
             get;
             private set;
