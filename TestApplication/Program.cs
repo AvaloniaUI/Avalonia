@@ -18,11 +18,28 @@ using Splat;
 
 namespace TestApplication
 {
+    class TestLogger : ILogger
+    {
+        public LogLevel Level
+        {
+            get;
+            set;
+        }
+
+        public void Write(string message, LogLevel logLevel)
+        {
+            if ((int)logLevel < (int)Level) return;
+            System.Diagnostics.Debug.WriteLine(message);
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
             App application = new App();
+
+            Locator.CurrentMutable.Register(() => new TestLogger { Level = LogLevel.Debug } , typeof(ILogger));
 
             Window window = new Window
             {
@@ -47,6 +64,10 @@ namespace TestApplication
                         {
                             Content = "Checkbox",
                         },
+                        new TextBox
+                        {
+                            Text = "Hello World!",
+                        }
                     }
                 }
             };

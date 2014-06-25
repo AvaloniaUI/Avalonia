@@ -6,6 +6,9 @@
 
 namespace Perspex.Media
 {
+    using Perspex.Platform;
+    using Splat;
+
     public class FormattedText
     {
         public string FontFamilyName { get; set; }
@@ -13,5 +16,15 @@ namespace Perspex.Media
         public double FontSize { get; set; }
 
         public string Text { get; set; }
+
+        public Size Size
+        {
+            get
+            {
+                IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+                ITextService service = factory.GetTextService();
+                return service.Measure(this);
+            }
+        }
     }
 }

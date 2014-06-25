@@ -47,36 +47,5 @@ namespace Perspex.Controls
                 return Enumerable.Repeat(logicalChild, logicalChild != null ? 1 : 0);
             }
         }
-
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-            if (child != null)
-            {
-                child.Arrange(new Rect(finalSize));
-                return child.ActualSize;
-            }
-            else
-            {
-                return new Size();
-            }
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            if (this.Visibility != Visibility.Collapsed)
-            {
-                Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-                if (child != null)
-                {
-                    child.Measure(availableSize);
-                    return child.DesiredSize.Value;
-                }
-            }
-
-            return new Size();
-        }
     }
 }

@@ -9,7 +9,6 @@ namespace Perspex
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Rendering;

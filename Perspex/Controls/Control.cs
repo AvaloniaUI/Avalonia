@@ -33,7 +33,7 @@ namespace Perspex.Controls
         Bottom,
     }
 
-    public class Control : Interactive, ILayoutable, ILogical, IStyleable, IStyled
+    public class Control : Interactive, ILayoutable, IFocusable, ILogical, IStyleable, IStyled
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -43,6 +43,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Control, double>("BorderThickness");
+
+        public static readonly PerspexProperty<bool> FocusableProperty =
+            PerspexProperty.Register<Control, bool>("Focusable");
 
         public static readonly PerspexProperty<double> FontSizeProperty =
             PerspexProperty.Register<Control, double>(
@@ -55,6 +58,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<double> HeightProperty =
             PerspexProperty.Register<Control, double>("Height", double.NaN);
+
+        public static readonly PerspexProperty<bool> IsFocusedProperty =
+            PerspexProperty.Register<Control, bool>("IsFocused", false);
 
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
             PerspexProperty.Register<Control, bool>("IsPointerOver");
@@ -127,6 +133,18 @@ namespace Perspex.Controls
                 else
                 {
                     this.Classes.Remove(":pointerover");
+                }
+            });
+
+            this.GetObservable(IsFocusedProperty).Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.Classes.Add(":focus");
+                }
+                else
+                {
+                    this.Classes.Remove(":focus");
                 }
             });
         }
@@ -207,10 +225,28 @@ namespace Perspex.Controls
             set { this.SetValue(FontSizeProperty, value); }
         }
 
+        public bool Focusable
+        {
+            get { return this.GetValue(FocusableProperty); }
+            set { this.SetValue(FocusableProperty, value); }
+        }
+
         public Brush Foreground
         {
             get { return this.GetValue(ForegroundProperty); }
             set { this.SetValue(ForegroundProperty, value); }
+        }
+
+        public double Height
+        {
+            get { return this.GetValue(HeightProperty); }
+            set { this.SetValue(HeightProperty, value); }
+        }
+
+        public bool IsFocused
+        {
+            get { return this.GetValue(IsFocusedProperty); }
+            set { this.SetValue(IsFocusedProperty, value); }
         }
 
         public string Id
@@ -234,12 +270,6 @@ namespace Perspex.Controls
 
                 this.id = value;
             }
-        }
-
-        public double Height
-        {
-            get { return this.GetValue(HeightProperty); }
-            set { this.SetValue(HeightProperty, value); }
         }
 
         public bool IsPointerOver
@@ -351,6 +381,11 @@ namespace Perspex.Controls
         {
             availableSize = availableSize.Deflate(this.Margin);
             this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+        }
+
+        public void Focus()
+        {
+            this.IsFocused = true;
         }
 
         public void InvalidateArrange()

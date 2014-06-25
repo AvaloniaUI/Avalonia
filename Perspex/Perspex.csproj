@@ -78,15 +78,19 @@
     <Compile Include="Controls\GridLength.cs" />
     <Compile Include="Controls\RowDefinition.cs" />
     <Compile Include="Controls\RowDefinitions.cs" />
+    <Compile Include="Controls\TextBox.cs" />
+    <Compile Include="Controls\TextBoxView.cs" />
     <Compile Include="Controls\ToggleButton.cs" />
     <Compile Include="Controls\LogicalChildren.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\StackPanel.cs" />
+    <Compile Include="Input\IFocusable.cs" />
     <Compile Include="Input\IMouseDevice.cs" />
     <Compile Include="Input\IPointerDevice.cs" />
     <Compile Include="Input\IInputDevice.cs" />
     <Compile Include="Input\IInputManager.cs" />
     <Compile Include="Input\InputManager.cs" />
+    <Compile Include="Input\FocusEventArgs.cs" />
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
     <Compile Include="Layout\LayoutHelper.cs" />
@@ -163,6 +167,7 @@
     <Compile Include="Controls\TemplatedControl.cs" />
     <Compile Include="Styling\Style.cs" />
     <Compile Include="Styling\Styles.cs" />
+    <Compile Include="Themes\Default\TextBoxStyle.cs" />
     <Compile Include="Themes\Default\CheckBoxStyle.cs" />
     <Compile Include="Themes\Default\ButtonStyle.cs" />
     <Compile Include="Themes\Default\DefaultTheme.cs" />
@@ -173,7 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">
-      <HintPath>..\packages\Splat.1.1.1\lib\Portable-Net45+WinRT45+WP8\Splat.dll</HintPath>
+      <HintPath>..\packages\Splat.1.3.3\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Portable-Net45+WinRT45+WP8\System.Reactive.Core.dll</HintPath>

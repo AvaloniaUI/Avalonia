@@ -45,6 +45,7 @@ namespace Perspex.Controls
 
                     this.visualChild = template.Build(this);
                     this.visualChild.VisualParent = this;
+                    this.OnTemplateApplied();
                 }
 
                 return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0);
@@ -57,6 +58,41 @@ namespace Perspex.Controls
         }
 
         public sealed override void Render(IDrawingContext context)
+        {
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
+
+            if (child != null)
+            {
+                child.Arrange(new Rect(finalSize));
+                return child.ActualSize;
+            }
+            else
+            {
+                return new Size();
+            }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (this.Visibility != Visibility.Collapsed)
+            {
+                Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
+
+                if (child != null)
+                {
+                    child.Measure(availableSize);
+                    return child.DesiredSize.Value;
+                }
+            }
+
+            return new Size();
+        }
+
+        protected virtual void OnTemplateApplied()
         {
         }
     }

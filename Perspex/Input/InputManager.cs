@@ -66,17 +66,25 @@ namespace Perspex.Input
 
             if (hit != null)
             {
-                Interactive source = device.Captured ?? (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+                Interactive interactive = device.Captured ?? (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
+                IFocusable focusable =
+                    device.Captured as IFocusable ??
+                    hit.GetVisualAncestorsAndSelf().OfType<IFocusable>().FirstOrDefault(x => x.Focusable);
 
-                if (source != null)
+                if (interactive != null)
                 {
-                    source.RaiseEvent(new PointerEventArgs
+                    interactive.RaiseEvent(new PointerEventArgs
                     {
                         Device = device,
                         RoutedEvent = Control.PointerPressedEvent,
-                        OriginalSource = source,
-                        Source = source,
+                        OriginalSource = interactive,
+                        Source = interactive,
                     });
+                }
+
+                if (focusable != null && focusable.Focusable)
+                {
+                    focusable.Focus();
                 }
             }
         }

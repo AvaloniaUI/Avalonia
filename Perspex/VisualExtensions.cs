@@ -69,6 +69,19 @@ namespace Perspex
             }
         }
 
+        public static IEnumerable<IVisual> GetVisualAncestorsAndSelf(this IVisual visual)
+        {
+            yield return visual;
+
+            visual = visual.VisualParent;
+
+            while (visual != null)
+            {
+                yield return visual;
+                visual = visual.VisualParent;
+            }
+        }
+
         public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
             Contract.Requires<NullReferenceException>(visual != null);
