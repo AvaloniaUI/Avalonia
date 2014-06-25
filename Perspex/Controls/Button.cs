@@ -13,6 +13,11 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategy.Bubble);
 
+        static Button()
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(Button), true);
+        }
+
         public Button()
         {
             this.PointerPressed += (s, e) =>

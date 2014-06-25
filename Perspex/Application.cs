@@ -17,10 +17,17 @@ namespace Perspex
         public Application()
         {
             Current = this;
+            this.FocusManager = new FocusManager();
             this.InputManager = new InputManager();
         }
 
         public static Application Current
+        {
+            get;
+            private set;
+        }
+
+        public IFocusManager FocusManager
         {
             get;
             private set;
@@ -53,6 +60,7 @@ namespace Perspex
         public void RegisterServices()
         {
             Styler styler = new Styler();
+            Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => styler, typeof(IStyler));
         }

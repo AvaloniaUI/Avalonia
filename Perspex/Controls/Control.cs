@@ -246,7 +246,7 @@ namespace Perspex.Controls
         public bool IsFocused
         {
             get { return this.GetValue(IsFocusedProperty); }
-            set { this.SetValue(IsFocusedProperty, value); }
+            internal set { this.SetValue(IsFocusedProperty, value); }
         }
 
         public string Id
@@ -356,6 +356,12 @@ namespace Perspex.Controls
             set { this.SetValue(WidthProperty, value); }
         }
 
+        bool IFocusable.IsFocused
+        {
+            get { return this.GetValue(IsFocusedProperty); }
+            set { this.SetValue(IsFocusedProperty, value); }
+        }
+
         ILogical ILogical.LogicalParent
         {
             get { return this.Parent; }
@@ -385,7 +391,7 @@ namespace Perspex.Controls
 
         public void Focus()
         {
-            this.IsFocused = true;
+            Locator.Current.GetService<IFocusManager>().Focus(this);
         }
 
         public void InvalidateArrange()

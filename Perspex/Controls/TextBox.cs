@@ -19,10 +19,14 @@ namespace Perspex.Controls
 
         private TextBoxView textBoxView;
 
+        static TextBox()
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+        }
+
         public TextBox()
         {
             this.GetObservable(TextProperty).Subscribe(_ => this.InvalidateVisual());
-            FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
         }
 
         public int CaretIndex
