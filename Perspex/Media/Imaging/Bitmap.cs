@@ -13,7 +13,7 @@ namespace Perspex.Media
     {
         public Bitmap(int width, int height)
         {
-            IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
             this.PlatformImpl = factory.CreateBitmap(width, height);
         }
 

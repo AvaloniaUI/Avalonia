@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Controls;
+
 namespace Perspex.Input
 {
     public class FocusManager : IFocusManager
@@ -16,15 +18,29 @@ namespace Perspex.Input
 
         public void Focus(IFocusable control)
         {
-            if (this.Current != null)
+            Interactive current = this.Current as Interactive;
+            Interactive next = control as Interactive;
+
+            if (current != null)
             {
-                this.Current.IsFocused = false;
+                current.RaiseEvent(new RoutedEventArgs
+                {
+                    RoutedEvent = Control.GotFocusEvent,
+                    Source = current,
+                    OriginalSource = current,
+                });
             }
 
-            if (control != null)
+            this.Current = control;
+
+            if (next != null)
             {
-                control.IsFocused = true;
-                this.Current = control;
+                next.RaiseEvent(new RoutedEventArgs
+                {
+                    RoutedEvent = Control.GotFocusEvent,
+                    Source = next,
+                    OriginalSource = next,
+                });
             }
         }
     }

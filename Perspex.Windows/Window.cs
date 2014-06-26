@@ -39,7 +39,7 @@ namespace Perspex.Windows
 
         public Window()
         {
-            IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
 
             this.CreateWindow();
             Size clientSize = this.ClientSize;
@@ -165,7 +165,7 @@ namespace Perspex.Windows
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            RawMouseEventArgs e = null;
+            RawInputEventArgs e = null;
 
             WindowsMouseDevice.Instance.CurrentWindow = this;
 
@@ -175,13 +175,14 @@ namespace Perspex.Windows
                 ////    this.OnClosed();
                 ////    break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
-                ////    InputManager.Current.ProcessInput(
-                ////        new RawKeyEventArgs(
-                ////            keyboard,
-                ////            RawKeyEventType.KeyDown,
-                ////            KeyInterop.KeyFromVirtualKey((int)wParam)));
-                ////    break;
+                case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
+                    WindowsKeyboardDevice.Instance.UpdateKeyStates();
+                    e = new RawKeyEventArgs(
+                            WindowsKeyboardDevice.Instance,
+                            RawKeyEventType.KeyDown,
+                            KeyInterop.KeyFromVirtualKey((int)wParam),
+                            WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
@@ -215,7 +216,6 @@ namespace Perspex.Windows
 
             if (e != null)
             {
-                WindowsMouseDevice.Instance.Position = e.Position;
                 this.inputManager.Process(e);
             }
 

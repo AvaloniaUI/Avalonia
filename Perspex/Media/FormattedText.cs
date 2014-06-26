@@ -21,7 +21,7 @@ namespace Perspex.Media
         {
             get
             {
-                IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+                IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
                 ITextService service = factory.GetTextService();
                 return service.Measure(this);
             }

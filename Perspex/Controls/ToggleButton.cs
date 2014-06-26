@@ -16,18 +16,7 @@ namespace Perspex.Controls
         public ToggleButton()
         {
             this.Click += (s, e) => this.IsChecked = !this.IsChecked;
-
-            this.GetObservable(IsCheckedProperty).Subscribe(x =>
-            {
-                if (x)
-                {
-                    this.Classes.Add(":checked");
-                }
-                else
-                {
-                    this.Classes.Remove(":checked");
-                }
-            });
+            this.AddPseudoClass(IsCheckedProperty, ":checked");
         }
 
         public bool IsChecked

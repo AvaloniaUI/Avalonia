@@ -20,7 +20,7 @@ namespace Perspex.Input
             this.InputManager.RawEventReceived
                 .OfType<RawMouseEventArgs>()
                 .Where(x => x.Device == this)
-                .Subscribe(this.ProcessMouse);
+                .Subscribe(this.ProcessRawEvent);
         }
 
         public Interactive Captured
@@ -45,8 +45,10 @@ namespace Perspex.Input
             this.Captured = visual;
         }
 
-        private void ProcessMouse(RawMouseEventArgs e)
+        private void ProcessRawEvent(RawMouseEventArgs e)
         {
+            this.Position = e.Position;
+
             switch (e.Type)
             {
                 case RawMouseEventType.Move:

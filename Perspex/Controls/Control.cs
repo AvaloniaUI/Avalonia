@@ -92,6 +92,15 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Control, double>("Width", double.NaN);
 
+        public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
+            RoutedEvent.Register<Control, RoutedEventArgs>("GotFocus", RoutingStrategy.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
+            RoutedEvent.Register<Control, RoutedEventArgs>("LostFocus", RoutingStrategy.Bubble);
+
+        public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
+            RoutedEvent.Register<Control, KeyEventArgs>("KeyDown", RoutingStrategy.Bubble);
+
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
             RoutedEvent.Register<Control, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
 
@@ -113,40 +122,30 @@ namespace Perspex.Controls
         public Control()
         {
             this.classes = new Classes();
+            this.GotFocus += (s, e) => this.IsFocused = true;
+            this.LostFocus += (s, e) => this.IsFocused = false;
+            this.PointerEnter += (s, e) => this.IsPointerOver = true;
+            this.PointerLeave += (s, e) => this.IsPointerOver = false;
+            this.AddPseudoClass(IsPointerOverProperty, ":pointerover");
+            this.AddPseudoClass(IsFocusedProperty, ":focus");
+        }
 
-            this.PointerEnter += (s, e) =>
-            {
-                this.IsPointerOver = true;
-            };
+        public event EventHandler<RoutedEventArgs> GotFocus
+        {
+            add { this.AddHandler(GotFocusEvent, value); }
+            remove { this.RemoveHandler(GotFocusEvent, value); }
+        }
 
-            this.PointerLeave += (s, e) =>
-            {
-                this.IsPointerOver = false;
-            };
+        public event EventHandler<RoutedEventArgs> LostFocus
+        {
+            add { this.AddHandler(LostFocusEvent, value); }
+            remove { this.RemoveHandler(LostFocusEvent, value); }
+        }
 
-            this.GetObservable(IsPointerOverProperty).Subscribe(x =>
-            {
-                if (x)
-                {
-                    this.Classes.Add(":pointerover");
-                }
-                else
-                {
-                    this.Classes.Remove(":pointerover");
-                }
-            });
-
-            this.GetObservable(IsFocusedProperty).Subscribe(x =>
-            {
-                if (x)
-                {
-                    this.Classes.Add(":focus");
-                }
-                else
-                {
-                    this.Classes.Remove(":focus");
-                }
-            });
+        public event EventHandler<KeyEventArgs> KeyDown
+        {
+            add { this.AddHandler(KeyDownEvent, value); }
+            remove { this.RemoveHandler(KeyDownEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerEnter
@@ -246,7 +245,7 @@ namespace Perspex.Controls
         public bool IsFocused
         {
             get { return this.GetValue(IsFocusedProperty); }
-            internal set { this.SetValue(IsFocusedProperty, value); }
+            private set { this.SetValue(IsFocusedProperty, value); }
         }
 
         public string Id
@@ -356,12 +355,6 @@ namespace Perspex.Controls
             set { this.SetValue(WidthProperty, value); }
         }
 
-        bool IFocusable.IsFocused
-        {
-            get { return this.GetValue(IsFocusedProperty); }
-            set { this.SetValue(IsFocusedProperty, value); }
-        }
-
         ILogical ILogical.LogicalParent
         {
             get { return this.Parent; }
@@ -412,6 +405,21 @@ namespace Perspex.Controls
             {
                 root.LayoutManager.InvalidateMeasure(this);
             }
+        }
+
+        protected void AddPseudoClass(PerspexProperty<bool> property, string className)
+        {
+            this.GetObservable(property).Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.classes.Add(className);
+                }
+                else
+                {
+                    this.classes.Remove(className);
+                }
+            });
         }
 
         protected virtual void ArrangeCore(Rect finalRect)

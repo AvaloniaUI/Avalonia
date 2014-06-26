@@ -56,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Input\KeyInterop.cs" />
+    <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherFrame.cs" />

@@ -8,7 +8,10 @@ namespace Perspex.Controls
 {
     using System;
     using System.Linq;
+    using Perspex.Input;
+    using Perspex.Platform;
     using Perspex.Styling;
+    using Splat;
 
     public class TextBox : TemplatedControl
     {
@@ -26,7 +29,10 @@ namespace Perspex.Controls
 
         public TextBox()
         {
-            this.GetObservable(TextProperty).Subscribe(_ => this.InvalidateVisual());
+            this.GotFocus += (s, e) => this.textBoxView.GotFocus();
+            this.LostFocus += (s, e) => this.textBoxView.LostFocus();
+            this.KeyDown += this.OnKeyDown;
+            this.PointerPressed += this.OnPointerPressed;
         }
 
         public int CaretIndex
@@ -68,6 +74,59 @@ namespace Perspex.Controls
             }
 
             textContainer.Content = this.textBoxView = new TextBoxView(this);
+            this.GetObservable(TextProperty).Subscribe(_ => this.textBoxView.InvalidateText());
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            string text = this.Text;
+
+            switch (e.Key)
+            {
+                case Key.Left:
+                    --this.CaretIndex;
+                    break;
+
+                case Key.Right:
+                    ++this.CaretIndex;
+                    break;
+
+                case Key.Back:
+                    if (this.caretIndex > 0)
+                    {
+                        this.Text = text.Substring(0, this.caretIndex - 1) + text.Substring(this.caretIndex);
+                        --this.CaretIndex;
+                    }
+
+                    break;
+
+                case Key.Delete:
+                    if (this.caretIndex < text.Length)
+                    {
+                        this.Text = text.Substring(0, this.caretIndex) + text.Substring(this.caretIndex + 1);
+                    }
+
+                    break;
+
+                default:
+                    if (!string.IsNullOrEmpty(e.Text))
+                    {
+                        this.Text = text.Substring(0, this.caretIndex) + e.Text + text.Substring(this.caretIndex);
+                        ++this.CaretIndex;
+                    }
+
+                    break;
+            }
+
+            e.Handled = true;
+        }
+
+        private void OnPointerPressed(object sender, PointerEventArgs e)
+        {
+            //IPlatformInterface platform = Locator.Current.GetService<IPlatformInterface>();
+            //this.CaretIndex = platform.GetTextService().GetCaretIndex(
+            //    this.textBoxView.FormattedText, 
+            //    e.GetPosition(this.textBoxView));
         }
     }
 }

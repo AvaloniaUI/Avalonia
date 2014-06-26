@@ -8,7 +8,7 @@ namespace Perspex.Platform
 {
     using System;
 
-    public interface IPlatformFactory
+    public interface IPlatformInterface
     {
         IBitmapImpl CreateBitmap(int width, int height);
 

@@ -13,7 +13,7 @@ namespace Perspex.Media
     {
         public RectangleGeometry(Rect rect)
         {
-            IPlatformFactory factory = Locator.Current.GetService<IPlatformFactory>();
+            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
             IStreamGeometryImpl impl = factory.CreateStreamGeometry();
 
             using (IStreamGeometryContextImpl context = impl.Open())

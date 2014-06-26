@@ -10,7 +10,7 @@ namespace Perspex.Input
     {
         bool Focusable { get; }
 
-        bool IsFocused { get; set; }
+        bool IsFocused { get; }
 
         void Focus();
     }

@@ -7,8 +7,6 @@
 namespace Perspex.Windows.Input
 {
     using Perspex.Input;
-    using Perspex.Input.Raw;
-    using Splat;
 
     public class WindowsMouseDevice : MouseDevice
     {
@@ -32,3 +30,4 @@ namespace Perspex.Windows.Input
         }
     }
 }
+
