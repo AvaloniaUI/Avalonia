@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Threading
+namespace Perspex.Threading
 {
     using System;
     using System.Security;
@@ -26,7 +26,7 @@ namespace Perspex.Windows.Threading
         private Delegate delegateMethod;
         private object[] delegateArgs;
 
-        internal DispatcherOperation(Dispatcher dis, DispatcherPriority prio)
+        public DispatcherOperation(Dispatcher dis, DispatcherPriority prio)
         {
             this.dispatcher = dis;
             this.priority = prio;
@@ -40,22 +40,22 @@ namespace Perspex.Windows.Threading
             }
         }
 
-        internal DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d)
-                    : this(dis, prio)
+        public DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d)
+            : this(dis, prio)
         {
             this.delegateMethod = d;
         }
 
-        internal DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d, object arg)
-                    : this(dis, prio)
+        public DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d, object arg)
+            : this(dis, prio)
         {
             this.delegateMethod = d;
             this.delegateArgs = new object[1];
             this.delegateArgs[0] = arg;
         }
 
-        internal DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d, object arg, object[] args)
-                    : this(dis, prio)
+        public DispatcherOperation(Dispatcher dis, DispatcherPriority prio, Delegate d, object arg, object[] args)
+            : this(dis, prio)
         {
             this.delegateMethod = d;
             this.delegateArgs = new object[args.Length + 1];
@@ -139,7 +139,7 @@ namespace Perspex.Windows.Threading
             throw new NotImplementedException();
         }
 
-        internal void Invoke()
+        public void Invoke()
         {
             this.status = DispatcherOperationStatus.Executing;
 

@@ -13,7 +13,7 @@ namespace Perspex.Media
     {
         public StreamGeometry()
         {
-            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
             this.PlatformImpl = factory.CreateStreamGeometry();
         }
 

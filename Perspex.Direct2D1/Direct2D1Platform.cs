@@ -9,9 +9,10 @@ namespace Perspex.Direct2D1
     using System;
     using Perspex.Direct2D1.Media;
     using Perspex.Platform;
+    using Perspex.Threading;
     using Splat;
 
-    public class Direct2D1Platform : IPlatformInterface
+    public class Direct2D1Platform : IPlatformRenderInterface
     {
         private static Direct2D1Platform instance = new Direct2D1Platform();
 
@@ -26,7 +27,7 @@ namespace Perspex.Direct2D1
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => instance, typeof(IPlatformInterface));
+            locator.Register(() => instance, typeof(IPlatformRenderInterface));
             locator.Register(() => d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
             locator.Register(() => dwFactory, typeof(SharpDX.DirectWrite.Factory));
             locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));

@@ -104,9 +104,10 @@
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Platform\IPlatformThreadingInterface.cs" />
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
-    <Compile Include="Platform\IPlatformInterface.cs" />
+    <Compile Include="Platform\IPlatformRenderInterface.cs" />
     <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
     <Compile Include="Platform\IStreamGeometryImpl.cs" />
@@ -179,6 +180,10 @@
     <Compile Include="Themes\Default\ButtonStyle.cs" />
     <Compile Include="Themes\Default\DefaultTheme.cs" />
     <Compile Include="Thickness.cs" />
+    <Compile Include="Threading\Dispatcher.cs" />
+    <Compile Include="Threading\DispatcherFrame.cs" />
+    <Compile Include="Threading\DispatcherOperation.cs" />
+    <Compile Include="Threading\DispatcherTimer.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisualExtensions.cs" />

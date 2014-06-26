@@ -59,12 +59,11 @@
     <Compile Include="Input\KeyInterop.cs" />
     <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />
-    <Compile Include="Threading\Dispatcher.cs" />
-    <Compile Include="Threading\DispatcherFrame.cs" />
-    <Compile Include="Threading\DispatcherOperation.cs" />
+    <Compile Include="Threading\WindowsDispatcher.cs" />
     <Compile Include="Interop\UnmanagedMethods.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowsPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Perspex\Perspex.csproj">

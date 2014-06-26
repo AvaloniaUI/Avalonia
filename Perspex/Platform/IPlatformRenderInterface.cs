@@ -7,8 +7,9 @@
 namespace Perspex.Platform
 {
     using System;
+    using Perspex.Threading;
 
-    public interface IPlatformInterface
+    public interface IPlatformRenderInterface
     {
         ITextService TextService { get; }
 

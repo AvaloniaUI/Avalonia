@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Threading
+namespace Perspex.Threading
 {
     public class DispatcherFrame
     {
@@ -16,10 +16,10 @@ namespace Perspex.Windows.Threading
 
         public bool Continue { get; set; }
 
-        internal bool ExitOnRequest { get; set; }
+        public bool ExitOnRequest { get; set; }
 
-        internal Dispatcher Running { get; set; }
+        public Dispatcher Running { get; set; }
 
-        internal DispatcherFrame ParentFrame { get; set; }
+        public DispatcherFrame ParentFrame { get; set; }
     }
 }

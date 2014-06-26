@@ -28,7 +28,7 @@ namespace Perspex.Media
 
         private static IBitmapImpl CreateImpl(int width, int height)
         {
-            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(width, height);
         }
     }

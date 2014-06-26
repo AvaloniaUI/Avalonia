@@ -12,6 +12,7 @@ using Perspex.Media;
 using Perspex.Shapes;
 using Perspex.Styling;
 using Perspex.Themes.Default;
+using Perspex.Threading;
 using Perspex.Windows;
 using Perspex.Windows.Threading;
 using Splat;

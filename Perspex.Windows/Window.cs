@@ -18,6 +18,7 @@ namespace Perspex.Windows
     using Perspex.Layout;
     using Perspex.Platform;
     using Perspex.Rendering;
+    using Perspex.Threading;
     using Perspex.Windows.Input;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
@@ -42,7 +43,7 @@ namespace Perspex.Windows
 
         public Window()
         {
-            IPlatformInterface factory = Locator.Current.GetService<IPlatformInterface>();
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
 
             this.CreateWindow();
             Size clientSize = this.ClientSize;
@@ -55,7 +56,7 @@ namespace Perspex.Windows
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
                 this.layoutPending = true;
-                Dispatcher.CurrentDispatcher.BeginInvoke(
+                WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render, 
                     () =>
                     {
@@ -68,7 +69,7 @@ namespace Perspex.Windows
             this.RenderManager.RenderNeeded
                 .Subscribe(x =>
             {
-                Dispatcher.CurrentDispatcher.BeginInvoke(
+                WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
