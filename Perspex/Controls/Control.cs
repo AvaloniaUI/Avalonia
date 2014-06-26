@@ -17,23 +17,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public enum HorizontalAlignment
-    {
-        Stretch,
-        Left,
-        Center,
-        Right,
-    }
-
-    public enum VerticalAlignment
-    {
-        Stretch,
-        Top,
-        Center,
-        Bottom,
-    }
-
-    public class Control : Interactive, ILayoutable, IFocusable, ILogical, IStyleable, IStyled
+    public class Control : Interactive, IFocusable, ILogical, IStyleable, IStyled
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -56,41 +40,14 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
 
-        public static readonly PerspexProperty<double> HeightProperty =
-            PerspexProperty.Register<Control, double>("Height", double.NaN);
-
         public static readonly PerspexProperty<bool> IsFocusedProperty =
             PerspexProperty.Register<Control, bool>("IsFocused", false);
 
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
             PerspexProperty.Register<Control, bool>("IsPointerOver");
 
-        public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
-            PerspexProperty.Register<Control, HorizontalAlignment>("HorizontalAlignment");
-
-        public static readonly PerspexProperty<Thickness> MarginProperty =
-            PerspexProperty.Register<Control, Thickness>("Margin");
-
-        public static readonly PerspexProperty<double> MaxHeightProperty =
-            PerspexProperty.Register<Control, double>("MaxHeight", double.PositiveInfinity);
-
-        public static readonly PerspexProperty<double> MaxWidthProperty =
-            PerspexProperty.Register<Control, double>("MaxWidth", double.PositiveInfinity);
-
-        public static readonly PerspexProperty<double> MinHeightProperty =
-            PerspexProperty.Register<Control, double>("MinHeight");
-
-        public static readonly PerspexProperty<double> MinWidthProperty =
-            PerspexProperty.Register<Control, double>("MinWidth");
-
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
-
-        public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
-            PerspexProperty.Register<Control, VerticalAlignment>("VerticalAlignment");
-
-        public static readonly PerspexProperty<double> WidthProperty =
-            PerspexProperty.Register<Control, double>("Width", double.NaN);
 
         public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
             RoutedEvent.Register<Control, RoutedEventArgs>("GotFocus", RoutingStrategy.Bubble);
@@ -177,11 +134,6 @@ namespace Perspex.Controls
             remove { this.RemoveHandler(PointerReleasedEvent, value); }
         }
 
-        public Size ActualSize
-        {
-            get { return ((IVisual)this).Bounds.Size; }
-        }
-
         public Brush Background
         {
             get { return this.GetValue(BackgroundProperty); }
@@ -217,12 +169,6 @@ namespace Perspex.Controls
             }
         }
 
-        public Size? DesiredSize
-        {
-            get;
-            set;
-        }
-
         public double FontSize
         {
             get { return this.GetValue(FontSizeProperty); }
@@ -239,12 +185,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ForegroundProperty); }
             set { this.SetValue(ForegroundProperty, value); }
-        }
-
-        public double Height
-        {
-            get { return this.GetValue(HeightProperty); }
-            set { this.SetValue(HeightProperty, value); }
         }
 
         public bool IsFocused
@@ -282,42 +222,6 @@ namespace Perspex.Controls
             internal set { this.SetValue(IsPointerOverProperty, value); }
         }
 
-        public HorizontalAlignment HorizontalAlignment
-        {
-            get { return this.GetValue(HorizontalAlignmentProperty); }
-            set { this.SetValue(HorizontalAlignmentProperty, value); }
-        }
-
-        public Thickness Margin
-        {
-            get { return this.GetValue(MarginProperty); }
-            set { this.SetValue(MarginProperty, value); }
-        }
-
-        public double MaxHeight
-        {
-            get { return this.GetValue(MaxHeightProperty); }
-            set { this.SetValue(MaxHeightProperty, value); }
-        }
-
-        public double MaxWidth
-        {
-            get { return this.GetValue(MaxWidthProperty); }
-            set { this.SetValue(MaxWidthProperty, value); }
-        }
-
-        public double MinHeight
-        {
-            get { return this.GetValue(MinHeightProperty); }
-            set { this.SetValue(MinHeightProperty, value); }
-        }
-
-        public double MinWidth
-        {
-            get { return this.GetValue(MinWidthProperty); }
-            set { this.SetValue(MinWidthProperty, value); }
-        }
-
         public Control Parent
         {
             get { return this.GetValue(ParentProperty); }
@@ -348,18 +252,6 @@ namespace Perspex.Controls
             internal set;
         }
 
-        public VerticalAlignment VerticalAlignment
-        {
-            get { return this.GetValue(VerticalAlignmentProperty); }
-            set { this.SetValue(VerticalAlignmentProperty, value); }
-        }
-
-        public double Width
-        {
-            get { return this.GetValue(WidthProperty); }
-            set { this.SetValue(WidthProperty, value); }
-        }
-
         ILogical ILogical.LogicalParent
         {
             get { return this.Parent; }
@@ -371,75 +263,9 @@ namespace Perspex.Controls
             get { return Enumerable.Empty<ILogical>(); }
         }
 
-        protected static void AffectsArrange(PerspexProperty property)
-        {
-            property.Changed.Subscribe(AffectsArrangeInvalidate);
-        }
-
-        protected static void AffectsMeasure(PerspexProperty property)
-        {
-            property.Changed.Subscribe(AffectsMeasureInvalidate);
-        }
-
-        private static void AffectsArrangeInvalidate(PerspexPropertyChangedEventArgs e)
-        {
-            Control control = e.Sender as Control;
-
-            if (control != null)
-            {
-                control.InvalidateArrange();
-            }
-        }
-
-        private static void AffectsMeasureInvalidate(PerspexPropertyChangedEventArgs e)
-        {
-            Control control = e.Sender as Control;
-
-            if (control != null)
-            {
-                control.InvalidateMeasure();
-            }
-        }
-
-        public ILayoutRoot GetLayoutRoot()
-        {
-            return this.GetVisualAncestorOrSelf<ILayoutRoot>();
-        }
-
-        public void Arrange(Rect rect)
-        {
-            this.ArrangeCore(rect);
-        }
-
-        public void Measure(Size availableSize)
-        {
-            availableSize = availableSize.Deflate(this.Margin);
-            this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
-        }
-
         public void Focus()
         {
             Locator.Current.GetService<IFocusManager>().Focus(this);
-        }
-
-        public void InvalidateArrange()
-        {
-            ILayoutRoot root = this.GetLayoutRoot();
-
-            if (root != null)
-            {
-                root.LayoutManager.InvalidateArrange(this);
-            }
-        }
-
-        public void InvalidateMeasure()
-        {
-            ILayoutRoot root = this.GetLayoutRoot();
-
-            if (root != null && root.LayoutManager != null)
-            {
-                root.LayoutManager.InvalidateMeasure(this);
-            }
         }
 
         protected void AddPseudoClass(PerspexProperty<bool> property, string className)
@@ -455,82 +281,6 @@ namespace Perspex.Controls
                     this.classes.Remove(className);
                 }
             });
-        }
-
-        protected virtual void ArrangeCore(Rect finalRect)
-        {
-            double originX = finalRect.X + this.Margin.Left;
-            double originY = finalRect.Y + this.Margin.Top;
-            double sizeX = Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right);
-            double sizeY = Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom);
-
-            if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
-            {
-                sizeX = Math.Min(sizeX, this.DesiredSize.Value.Width);
-            }
-
-            if (this.VerticalAlignment != VerticalAlignment.Stretch)
-            {
-                sizeY = Math.Min(sizeY, this.DesiredSize.Value.Height);
-            }
-
-            Size taken = this.ArrangeOverride(new Size(sizeX, sizeY));
-
-            sizeX = Math.Min(taken.Width, sizeX);
-            sizeY = Math.Min(taken.Height, sizeY);
-
-            switch (this.HorizontalAlignment)
-            {
-                case HorizontalAlignment.Center:
-                    originX += (finalRect.Width - sizeX) / 2;
-                    break;
-                case HorizontalAlignment.Right:
-                    originX += finalRect.Width - sizeX;
-                    break;
-            }
-
-            switch (this.VerticalAlignment)
-            {
-                case VerticalAlignment.Center:
-                    originY += (finalRect.Height - sizeY) / 2;
-                    break;
-                case VerticalAlignment.Bottom:
-                    originY += finalRect.Height - sizeY;
-                    break;
-            }
-
-            ((IVisual)this).Bounds = new Rect(originX, originY, sizeX, sizeY);
-        }
-
-        protected virtual Size ArrangeOverride(Size finalSize)
-        {
-            return finalSize;
-        }
-
-        protected virtual Size MeasureCore(Size availableSize)
-        {
-            if (this.IsVisible)
-            {
-                Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin));
-                double width = (this.Width > 0) ? this.Width : measuredSize.Width;
-                double height = (this.Height > 0) ? this.Height : measuredSize.Height;
-
-                width = Math.Min(width, this.MaxWidth);
-                width = Math.Max(width, this.MinWidth);
-                height = Math.Min(height, this.MaxHeight);
-                height = Math.Max(height, this.MinHeight);
-
-                return new Size(width, height);
-            }
-            else
-            {
-                return new Size();
-            }
-        }
-
-        protected virtual Size MeasureOverride(Size availableSize)
-        {
-            return new Size();
         }
 
         protected override void AttachedToVisualTree()

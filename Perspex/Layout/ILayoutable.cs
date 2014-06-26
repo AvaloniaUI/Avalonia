@@ -10,8 +10,6 @@ namespace Perspex.Layout
     {
         Size? DesiredSize { get; }
 
-        ILayoutRoot GetLayoutRoot();
-
         void Arrange(Rect rect);
 
         void Measure(Size availableSize);

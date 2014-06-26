@@ -41,13 +41,15 @@ namespace Perspex.Layout
 
         public void InvalidateMeasure(ILayoutable item)
         {
-            this.root = item.GetLayoutRoot();
+            IVisual visual = item as IVisual;
+            this.root = visual.GetVisualAncestorOrSelf<ILayoutRoot>();
             this.layoutNeeded.OnNext(Unit.Default);
         }
 
         public void InvalidateArrange(ILayoutable item)
         {
-            this.root = item.GetLayoutRoot();
+            IVisual visual = item as IVisual;
+            this.root = visual.GetVisualAncestorOrSelf<ILayoutRoot>();
             this.layoutNeeded.OnNext(Unit.Default);
         }
     }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Input;
+using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Shapes;
 using Perspex.Styling;

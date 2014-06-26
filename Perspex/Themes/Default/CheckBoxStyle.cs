@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System;
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Shapes;
     using Perspex.Styling;

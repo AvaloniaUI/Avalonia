@@ -9,7 +9,6 @@ namespace Perspex.Windows
     using System;
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
     using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
@@ -35,11 +34,6 @@ namespace Perspex.Windows
         private IInputManager inputManager;
 
         private bool layoutPending;
-
-        static Window()
-        {
-            FontSizeProperty.OverrideDefaultValue(typeof(Window), 18.0);
-        }
 
         public Window()
         {

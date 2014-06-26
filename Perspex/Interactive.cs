@@ -10,8 +10,9 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Reactive;
     using System.Reactive.Linq;
+    using Perspex.Layout;
 
-    public class Interactive : Visual
+    public class Interactive : Layoutable
     {
         private Dictionary<RoutedEvent, List<Delegate>> eventHandlers = new Dictionary<RoutedEvent, List<Delegate>>();
 

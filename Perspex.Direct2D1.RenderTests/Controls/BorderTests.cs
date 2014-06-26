@@ -8,6 +8,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
+    using Perspex.Layout;
     using Perspex.Media;
 
     [TestClass]

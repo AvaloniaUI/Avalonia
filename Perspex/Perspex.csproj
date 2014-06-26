@@ -100,6 +100,7 @@
     <Compile Include="Input\Raw\RawInputEventArgs.cs" />
     <Compile Include="Input\Raw\RawKeyEventArgs.cs" />
     <Compile Include="Input\Raw\RawMouseEventArgs.cs" />
+    <Compile Include="Layout\Layoutable.cs" />
     <Compile Include="Layout\LayoutHelper.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />

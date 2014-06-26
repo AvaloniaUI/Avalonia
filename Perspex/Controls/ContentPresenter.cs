@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Layout;
     using Perspex.Media;
 
     public class ContentPresenter : Control, IVisual
