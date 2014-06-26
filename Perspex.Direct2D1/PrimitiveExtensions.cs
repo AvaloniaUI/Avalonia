@@ -6,11 +6,6 @@
 
 namespace Perspex.Direct2D1
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using SharpDX;
 
     public static class PrimitiveExtensions

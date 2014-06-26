@@ -32,6 +32,11 @@ namespace Perspex.Direct2D1
             locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
         }
 
+        public ITextService TextService
+        {
+            get { return textService; }
+        }
+
         public IBitmapImpl CreateBitmap(int width, int height)
         {
             return new BitmapImpl(imagingFactory, width, height);
@@ -50,11 +55,6 @@ namespace Perspex.Direct2D1
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new StreamGeometryImpl();
-        }
-
-        public ITextService GetTextService()
-        {
-            return textService;
         }
     }
 }

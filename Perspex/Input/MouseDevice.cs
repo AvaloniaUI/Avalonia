@@ -45,6 +45,22 @@ namespace Perspex.Input
             this.Captured = visual;
         }
 
+        public Point GetPosition(IVisual relativeTo)
+        {
+            Point p = this.GetClientPosition();
+            IVisual v = relativeTo;
+
+            while (v != null)
+            {
+                p -= v.Bounds.Position;
+                v = v.VisualParent;
+            }
+
+            return p;
+        }
+
+        protected abstract Point GetClientPosition();
+
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
             this.Position = e.Position;

@@ -6,7 +6,9 @@
 
 namespace Perspex.Windows.Input
 {
+    using System;
     using Perspex.Input;
+    using Perspex.Windows.Interop;
 
     public class WindowsMouseDevice : MouseDevice
     {
@@ -27,6 +29,14 @@ namespace Perspex.Windows.Input
         {
             get { return base.Position; }
             internal set { base.Position = value; }
+        }
+
+        protected override Point GetClientPosition()
+        {
+            UnmanagedMethods.POINT p;
+            UnmanagedMethods.GetCursorPos(out p);
+            UnmanagedMethods.ScreenToClient(this.CurrentWindow.Handle, ref p);
+            return new Point(p.X, p.Y);
         }
     }
 }

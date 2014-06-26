@@ -10,6 +10,8 @@ namespace Perspex.Platform
 
     public interface IPlatformInterface
     {
+        ITextService TextService { get; }
+
         IBitmapImpl CreateBitmap(int width, int height);
 
         IStreamGeometryImpl CreateStreamGeometry();
@@ -17,7 +19,5 @@ namespace Perspex.Platform
         IRenderer CreateRenderer(IntPtr handle, double width, double height);
 
         IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height);
-
-        ITextService GetTextService();
     }
 }

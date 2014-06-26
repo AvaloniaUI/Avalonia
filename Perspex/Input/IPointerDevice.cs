@@ -13,5 +13,7 @@ namespace Perspex.Input
         Interactive Captured { get; }
 
         void Capture(Interactive visual);
+
+        Point GetPosition(IVisual relativeTo);
     }
 }

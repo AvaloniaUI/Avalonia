@@ -9,6 +9,8 @@ namespace Perspex.Controls
     using System;
     using System.Globalization;
     using Perspex.Media;
+    using Perspex.Platform;
+    using Splat;
 
     internal class TextBoxView : Control
     {
@@ -73,32 +75,20 @@ namespace Perspex.Controls
 
             context.DrawText(Brushes.Black, rect, this.FormattedText);
 
-            //if (this.parent.IsKeyboardFocused)
-            //{
-            //    Point caretPos = this.FormattedText.GetCaretPosition(this.parent.CaretIndex);
-            //    Brush caretBrush = this.parent.CaretBrush;
+            if (this.parent.IsFocused)
+            {
+                IPlatformInterface platform = Locator.Current.GetService<IPlatformInterface>();
+                Point caretPos = platform.TextService.GetCaretPosition(this.formattedText, this.parent.CaretIndex);
+                Brush caretBrush = Brushes.Black;
 
-            //    if (caretBrush == null)
-            //    {
-            //        Color color = Colors.Black;
-            //        SolidColorBrush background = this.parent.Background as SolidColorBrush;
-
-            //        if (background != null)
-            //        {
-            //            color = Color.FromUInt32(0x00ffffffu ^ background.Color.ToUint32());
-            //        }
-
-            //        caretBrush = new SolidColorBrush(color);
-            //    }
-
-            //    if (this.caretBlink)
-            //    {
-            //        drawingContext.DrawLine(
-            //            new Pen(caretBrush, 1),
-            //            caretPos,
-            //            caretPos + new Vector(0, this.FormattedText.Height));
-            //    }
-            //}
+                //if (!this.caretBlink)
+                {
+                    context.DrawLine(
+                        new Pen(caretBrush, 1),
+                        caretPos,
+                        new Point(caretPos.X, caretPos.Y + this.FormattedText.Size.Height));
+                }
+            }
         }
 
         protected override Size MeasureOverride(Size constraint)

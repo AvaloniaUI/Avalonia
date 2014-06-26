@@ -52,6 +52,23 @@ namespace Perspex.Direct2D1.Media
         }
 
         /// <summary>
+        /// Draws a line.
+        /// </summary>
+        /// <param name="pen">The stroke pen.</param>
+        /// <param name="p1">The first point of the line.</param>
+        /// <param name="p1">The second point of the line.</param>
+        public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
+        {
+            if (pen != null)
+            {
+                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(pen.Brush))
+                {
+                    this.renderTarget.DrawLine(p1.ToSharpDX(), p2.ToSharpDX(), d2dBrush);
+                }
+            }
+        }
+
+        /// <summary>
         /// Draws a geometry.
         /// </summary>
         /// <param name="brush">The fill brush.</param>
@@ -105,7 +122,7 @@ namespace Perspex.Direct2D1.Media
             if (!string.IsNullOrEmpty(text.Text))
             {
                 using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
-                using (SharpDX.DirectWrite.TextFormat format = TextService.Convert(this.directWriteFactory, text))
+                using (SharpDX.DirectWrite.TextFormat format = TextService.GetTextFormat(this.directWriteFactory, text))
                 {
                     this.renderTarget.DrawText(
                         text.Text,

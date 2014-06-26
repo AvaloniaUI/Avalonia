@@ -43,6 +43,7 @@ namespace Perspex.Themes.Default
             Border result = new Border
             {
                 Id = "border",
+                Padding = new Thickness(2),
                 [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],

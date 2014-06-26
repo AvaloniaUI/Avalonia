@@ -123,10 +123,10 @@ namespace Perspex.Controls
 
         private void OnPointerPressed(object sender, PointerEventArgs e)
         {
-            //IPlatformInterface platform = Locator.Current.GetService<IPlatformInterface>();
-            //this.CaretIndex = platform.GetTextService().GetCaretIndex(
-            //    this.textBoxView.FormattedText, 
-            //    e.GetPosition(this.textBoxView));
+            IPlatformInterface platform = Locator.Current.GetService<IPlatformInterface>();
+            this.CaretIndex = platform.TextService.GetCaretIndex(
+                this.textBoxView.FormattedText,
+                e.GetPosition(this.textBoxView));
         }
     }
 }

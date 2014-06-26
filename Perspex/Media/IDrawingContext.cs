@@ -14,6 +14,14 @@ namespace Perspex.Media
     public interface IDrawingContext : IDisposable
     {
         /// <summary>
+        /// Draws a line.
+        /// </summary>
+        /// <param name="pen">The stroke pen.</param>
+        /// <param name="p1">The first point of the line.</param>
+        /// <param name="p1">The second point of the line.</param>
+        void DrawLine(Pen pen, Point p1, Point p2);
+
+        /// <summary>
         /// Draws a geometry.
         /// </summary>
         /// <param name="brush">The fill brush.</param>

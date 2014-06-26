@@ -11,5 +11,9 @@ namespace Perspex.Platform
     public interface ITextService
     {
         Size Measure(FormattedText text);
+
+        int GetCaretIndex(FormattedText text, Point point);
+
+        Point GetCaretPosition(FormattedText text, int caretIndex);
     }
 }

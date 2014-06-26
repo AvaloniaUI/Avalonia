@@ -6,6 +6,7 @@
 
 namespace Perspex.Direct2D1
 {
+    using System;
     using Perspex.Media;
     using Perspex.Platform;
     using SharpDX.DirectWrite;
@@ -19,7 +20,7 @@ namespace Perspex.Direct2D1
             this.factory = factory;
         }
 
-        public static TextFormat Convert(Factory factory, FormattedText text)
+        public static TextFormat GetTextFormat(Factory factory, FormattedText text)
         {
             return new TextFormat(
                 factory,
@@ -27,10 +28,43 @@ namespace Perspex.Direct2D1
                 (float)text.FontSize);
         }
 
+        public TextLayout GetTextLayout(Factory factory, FormattedText text)
+        {
+            return new TextLayout(
+                factory,
+                text.Text,
+                GetTextFormat(factory, text),
+                float.MaxValue,
+                float.MaxValue);
+        }
+
+        public int GetCaretIndex(FormattedText text, Point point)
+        {
+            TextLayout layout = GetTextLayout(this.factory, text);
+            SharpDX.Bool isTrailingHit;
+            SharpDX.Bool isInside;
+
+            HitTestMetrics result = layout.HitTestPoint(
+                (float)point.X,
+                (float)point.Y,
+                out isTrailingHit,
+                out isInside);
+
+            return result.TextPosition + (isTrailingHit ? 1 : 0);
+        }
+
+        public Point GetCaretPosition(FormattedText text, int caretIndex)
+        {
+            TextLayout layout = GetTextLayout(this.factory, text);
+            float x;
+            float y;
+            layout.HitTestTextPosition(caretIndex, false, out x, out y);
+            return new Point(x, y);
+        }
+
         public Size Measure(FormattedText text)
         {
-            TextFormat f = Convert(this.factory, text);
-            TextLayout layout = new TextLayout(this.factory, text.Text, f, float.MaxValue, float.MaxValue);
+            TextLayout layout = GetTextLayout(this.factory, text);
             return new Size(
                 layout.Metrics.WidthIncludingTrailingWhitespace,
                 layout.Metrics.Height);
