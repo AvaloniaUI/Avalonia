@@ -40,61 +40,56 @@ namespace Perspex.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (this.Visibility != Visibility.Collapsed)
+            double childAvailableWidth = double.PositiveInfinity;
+            double childAvailableHeight = double.PositiveInfinity;
+
+            if (this.Orientation == Orientation.Vertical)
             {
-                double childAvailableWidth = double.PositiveInfinity;
-                double childAvailableHeight = double.PositiveInfinity;
+                childAvailableWidth = availableSize.Width;
 
-                if (this.Orientation == Orientation.Vertical)
+                if (!double.IsNaN(this.Width))
                 {
-                    childAvailableWidth = availableSize.Width;
+                    childAvailableWidth = this.Width;
+                }
 
-                    if (!double.IsNaN(this.Width))
-                    {
-                        childAvailableWidth = this.Width;
-                    }
+                childAvailableWidth = Math.Min(childAvailableWidth, this.MaxWidth);
+                childAvailableWidth = Math.Max(childAvailableWidth, this.MinWidth);
+            }
+            else
+            {
+                childAvailableHeight = availableSize.Height;
 
-                    childAvailableWidth = Math.Min(childAvailableWidth, this.MaxWidth);
-                    childAvailableWidth = Math.Max(childAvailableWidth, this.MinWidth);
+                if (!double.IsNaN(this.Height))
+                {
+                    childAvailableHeight = this.Height;
+                }
+
+                childAvailableHeight = Math.Min(childAvailableHeight, this.MaxHeight);
+                childAvailableHeight = Math.Max(childAvailableHeight, this.MinHeight);
+            }
+
+            double measuredWidth = 0;
+            double measuredHeight = 0;
+            double gap = this.Gap;
+
+            foreach (Control child in this.Children)
+            {
+                child.Measure(new Size(childAvailableWidth, childAvailableHeight));
+                Size size = child.DesiredSize.Value;
+
+                if (Orientation == Orientation.Vertical)
+                {
+                    measuredHeight += size.Height + gap;
+                    measuredWidth = Math.Max(measuredWidth, size.Width);
                 }
                 else
                 {
-                    childAvailableHeight = availableSize.Height;
-
-                    if (!double.IsNaN(this.Height))
-                    {
-                        childAvailableHeight = this.Height;
-                    }
-
-                    childAvailableHeight = Math.Min(childAvailableHeight, this.MaxHeight);
-                    childAvailableHeight = Math.Max(childAvailableHeight, this.MinHeight);
+                    measuredWidth += size.Width + gap;
+                    measuredHeight = Math.Max(measuredHeight, size.Height);
                 }
-
-                double measuredWidth = 0;
-                double measuredHeight = 0;
-                double gap = this.Gap;
-
-                foreach (Control child in this.Children)
-                {
-                    child.Measure(new Size(childAvailableWidth, childAvailableHeight));
-                    Size size = child.DesiredSize.Value;
-
-                    if (Orientation == Orientation.Vertical)
-                    {
-                        measuredHeight += size.Height + gap;
-                        measuredWidth = Math.Max(measuredWidth, size.Width);
-                    }
-                    else
-                    {
-                        measuredWidth += size.Width + gap;
-                        measuredHeight = Math.Max(measuredHeight, size.Height);
-                    }
-                }
-
-                return new Size(measuredWidth, measuredHeight);
             }
 
-            return new Size();
+            return new Size(measuredWidth, measuredHeight);
         }
 
         protected override Size ArrangeOverride(Size finalSize)

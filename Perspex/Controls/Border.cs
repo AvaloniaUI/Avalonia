@@ -23,22 +23,19 @@ namespace Perspex.Controls
 
         public override void Render(IDrawingContext context)
         {
-            if (this.Visibility == Visibility.Visible)
+            Brush background = this.Background;
+            Brush borderBrush = this.BorderBrush;
+            double borderThickness = this.BorderThickness;
+            Rect rect = new Rect(this.ActualSize).Deflate(BorderThickness / 2);
+
+            if (background != null)
             {
-                Brush background = this.Background;
-                Brush borderBrush = this.BorderBrush;
-                double borderThickness = this.BorderThickness;
-                Rect rect = new Rect(this.ActualSize).Deflate(BorderThickness / 2);
+                context.FillRectange(background, rect);
+            }
 
-                if (background != null)
-                {
-                    context.FillRectange(background, rect);
-                }
-
-                if (borderBrush != null && borderThickness > 0)
-                {
-                    context.DrawRectange(new Pen(borderBrush, borderThickness), rect);
-                }
+            if (borderBrush != null && borderThickness > 0)
+            {
+                context.DrawRectange(new Pen(borderBrush, borderThickness), rect);
             }
         }
 

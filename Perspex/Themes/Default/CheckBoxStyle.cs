@@ -30,14 +30,14 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBlock.VisibilityProperty, Visibility.Hidden),
+                        new Setter(Shape.IsVisibleProperty, false),
                     },
                 },
                 new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBlock.VisibilityProperty, Visibility.Visible),
+                        new Setter(Shape.IsVisibleProperty, true),
                     },
                 },
             });

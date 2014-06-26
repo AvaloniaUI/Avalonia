@@ -42,27 +42,21 @@ namespace Perspex.Controls
 
         public override void Render(IDrawingContext context)
         {
-            if (this.Visibility == Visibility.Visible)
+            Brush background = this.Background;
+
+            if (background != null)
             {
-                Brush background = this.Background;
-
-                if (background != null)
-                {
-                    context.FillRectange(background, new Rect(this.ActualSize));
-                }
-
-                context.DrawText(this.Foreground, new Rect(this.ActualSize), this.FormattedText);
+                context.FillRectange(background, new Rect(this.ActualSize));
             }
+
+            context.DrawText(this.Foreground, new Rect(this.ActualSize), this.FormattedText);
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (this.Visibility != Visibility.Collapsed)
+            if (!string.IsNullOrEmpty(this.Text))
             {
-                if (!string.IsNullOrEmpty(this.Text))
-                {
-                    return this.FormattedText.Size;
-                }
+                return this.FormattedText.Size;
             }
 
             return new Size();

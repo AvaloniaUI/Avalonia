@@ -14,17 +14,10 @@ namespace Perspex
     using Perspex.Rendering;
     using Splat;
 
-    public enum Visibility
-    {
-        Visible,
-        Hidden,
-        Collapsed,
-    }
-
     public abstract class Visual : PerspexObject, IVisual
     {
-        public static readonly PerspexProperty<Visibility> VisibilityProperty =
-            PerspexProperty.Register<Visual, Visibility>("Visibility");
+        public static readonly PerspexProperty<bool> IsVisibleProperty =
+            PerspexProperty.Register<Visual, bool>("IsVisible", true);
 
         private IVisual visualParent;
 
@@ -32,13 +25,13 @@ namespace Perspex
 
         public Visual()
         {
-            this.GetObservable(VisibilityProperty).Subscribe(_ => this.InvalidateVisual());
+            this.GetObservable(IsVisibleProperty).Subscribe(_ => this.InvalidateVisual());
         }
 
-        public Visibility Visibility
+        public bool IsVisible
         {
-            get { return this.GetValue(VisibilityProperty); }
-            set { this.SetValue(VisibilityProperty, value); }
+            get { return this.GetValue(IsVisibleProperty); }
+            set { this.SetValue(IsVisibleProperty, value); }
         }
 
         Rect IVisual.Bounds

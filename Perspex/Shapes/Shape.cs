@@ -130,7 +130,7 @@ namespace Perspex.Shapes
 
         public override void Render(IDrawingContext context)
         {
-            if (this.RenderedGeometry != null && this.Visibility == Visibility.Visible)
+            if (this.RenderedGeometry != null)
             {
                 context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.RenderedGeometry);
             }

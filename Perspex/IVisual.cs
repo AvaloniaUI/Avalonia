@@ -16,6 +16,8 @@ namespace Perspex
 
         IEnumerable<IVisual> ExistingVisualChildren { get; }
 
+        bool IsVisible { get; }
+
         IEnumerable<IVisual> VisualChildren { get; }
 
         IVisual VisualParent { get; set; }

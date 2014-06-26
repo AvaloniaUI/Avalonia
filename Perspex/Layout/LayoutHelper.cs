@@ -24,25 +24,22 @@ namespace Perspex.Layout
             double width = 0;
             double height = 0;
 
-            if (decorator.Visibility != Visibility.Collapsed)
+            if (content != null)
             {
-                if (content != null)
-                {
-                    content.Measure(availableSize);
-                    Size s = content.DesiredSize.Value.Inflate(padding);
-                    width = s.Width;
-                    height = s.Height;
-                }
+                content.Measure(availableSize);
+                Size s = content.DesiredSize.Value.Inflate(padding);
+                width = s.Width;
+                height = s.Height;
+            }
 
-                if (decorator.Width > 0)
-                {
-                    width = decorator.Width;
-                }
+            if (decorator.Width > 0)
+            {
+                width = decorator.Width;
+            }
 
-                if (decorator.Height > 0)
-                {
-                    height = decorator.Height;
-                }
+            if (decorator.Height > 0)
+            {
+                height = decorator.Height;
             }
 
             return new Size(width, height);

@@ -128,6 +128,8 @@ namespace Perspex.Controls
             this.PointerLeave += (s, e) => this.IsPointerOver = false;
             this.AddPseudoClass(IsPointerOverProperty, ":pointerover");
             this.AddPseudoClass(IsFocusedProperty, ":focus");
+
+            this.GetObservable(IsVisibleProperty).Subscribe(_ => this.InvalidateMeasure());
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus
@@ -401,7 +403,7 @@ namespace Perspex.Controls
         {
             ILayoutRoot root = this.GetLayoutRoot();
 
-            if (root != null)
+            if (root != null && root.LayoutManager != null)
             {
                 root.LayoutManager.InvalidateMeasure(this);
             }
@@ -474,16 +476,23 @@ namespace Perspex.Controls
 
         protected virtual Size MeasureCore(Size availableSize)
         {
-            Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin));
-            double width = (this.Width > 0) ? this.Width : measuredSize.Width;
-            double height = (this.Height > 0) ? this.Height : measuredSize.Height;
+            if (this.IsVisible)
+            {
+                Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin));
+                double width = (this.Width > 0) ? this.Width : measuredSize.Width;
+                double height = (this.Height > 0) ? this.Height : measuredSize.Height;
 
-            width = Math.Min(width, this.MaxWidth);
-            width = Math.Max(width, this.MinWidth);
-            height = Math.Min(height, this.MaxHeight);
-            height = Math.Max(height, this.MinHeight);
+                width = Math.Min(width, this.MaxWidth);
+                width = Math.Max(width, this.MinWidth);
+                height = Math.Min(height, this.MaxHeight);
+                height = Math.Max(height, this.MinHeight);
 
-            return new Size(width, height);
+                return new Size(width, height);
+            }
+            else
+            {
+                return new Size();
+            }
         }
 
         protected virtual Size MeasureOverride(Size availableSize)

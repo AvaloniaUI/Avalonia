@@ -7,6 +7,7 @@
 namespace Perspex.Direct2D1
 {
     using System;
+    using System.Linq;
     using Perspex.Direct2D1.Media;
     using Perspex.Platform;
     using SharpDX;
@@ -119,15 +120,18 @@ namespace Perspex.Direct2D1
         /// <param name="context">The drawing context.</param>
         private void Render(IVisual visual, DrawingContext context)
         {
-            visual.Render(context);
-
-            foreach (IVisual child in visual.VisualChildren)
+            if (visual.IsVisible)
             {
-                Matrix translate = Matrix.Translation(child.Bounds.X, child.Bounds.Y);
+                visual.Render(context);
 
-                using (context.PushTransform(translate))
+                foreach (IVisual child in visual.VisualChildren)
                 {
-                    this.Render(child, context);
+                    Matrix translate = Matrix.Translation(child.Bounds.X, child.Bounds.Y);
+
+                    using (context.PushTransform(translate))
+                    {
+                        this.Render(child, context);
+                    }
                 }
             }
         }
