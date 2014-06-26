@@ -25,7 +25,7 @@ namespace Perspex.Input
             {
                 current.RaiseEvent(new RoutedEventArgs
                 {
-                    RoutedEvent = Control.GotFocusEvent,
+                    RoutedEvent = Control.LostFocusEvent,
                     Source = current,
                     OriginalSource = current,
                 });
