@@ -167,7 +167,7 @@ namespace Perspex.Windows
         {
             RawMouseEventArgs e = null;
 
-            MouseDevice.Instance.CurrentWindow = this;
+            WindowsMouseDevice.Instance.CurrentWindow = this;
 
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
@@ -185,7 +185,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
-                        MouseDevice.Instance, 
+                        WindowsMouseDevice.Instance, 
                         this, 
                         RawMouseEventType.LeftButtonDown,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -193,7 +193,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                     e = new RawMouseEventArgs(
-                        MouseDevice.Instance, 
+                        WindowsMouseDevice.Instance, 
                         this, 
                         RawMouseEventType.LeftButtonUp,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -201,7 +201,7 @@ namespace Perspex.Windows
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     e = new RawMouseEventArgs(
-                        MouseDevice.Instance, 
+                        WindowsMouseDevice.Instance, 
                         this, 
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -215,7 +215,7 @@ namespace Perspex.Windows
 
             if (e != null)
             {
-                MouseDevice.Instance.Position = e.Position;
+                WindowsMouseDevice.Instance.Position = e.Position;
                 this.inputManager.Process(e);
             }
 

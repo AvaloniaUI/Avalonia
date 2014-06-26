@@ -6,9 +6,8 @@
 
 namespace Perspex.Input
 {
-    using System;
-
     public interface IMouseDevice : IPointerDevice
     {
+        Point Position { get; }
     }
 }

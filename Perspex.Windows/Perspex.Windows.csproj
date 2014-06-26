@@ -56,7 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Input\MouseDevice.cs" />
+    <Compile Include="Input\WindowsMouseDevice.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherFrame.cs" />
     <Compile Include="Threading\DispatcherOperation.cs" />
