@@ -17,7 +17,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : Interactive, IFocusable, ILogical, IStyleable, IStyled
+    public class Control : InputElement, ILogical, IStyleable, IStyled
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -28,9 +28,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Control, double>("BorderThickness");
 
-        public static readonly PerspexProperty<bool> FocusableProperty =
-            PerspexProperty.Register<Control, bool>("Focusable");
-
         public static readonly PerspexProperty<double> FontSizeProperty =
             PerspexProperty.Register<Control, double>(
                 "FontSize",
@@ -40,35 +37,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
 
-        public static readonly PerspexProperty<bool> IsFocusedProperty =
-            PerspexProperty.Register<Control, bool>("IsFocused", false);
-
-        public static readonly PerspexProperty<bool> IsPointerOverProperty =
-            PerspexProperty.Register<Control, bool>("IsPointerOver");
-
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
-
-        public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
-            RoutedEvent.Register<Control, RoutedEventArgs>("GotFocus", RoutingStrategy.Bubble);
-
-        public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
-            RoutedEvent.Register<Control, RoutedEventArgs>("LostFocus", RoutingStrategy.Bubble);
-
-        public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
-            RoutedEvent.Register<Control, KeyEventArgs>("KeyDown", RoutingStrategy.Bubble);
-
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
-            RoutedEvent.Register<Control, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
-
-        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
-            RoutedEvent.Register<Control, PointerEventArgs>("PointerLeave", RoutingStrategy.Direct);
-
-        public static readonly RoutedEvent<PointerEventArgs> PointerPressedEvent =
-            RoutedEvent.Register<Control, PointerEventArgs>("PointerPressed", RoutingStrategy.Bubble);
-
-        public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
-            RoutedEvent.Register<Control, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
 
         private Classes classes;
 
@@ -84,54 +54,8 @@ namespace Perspex.Controls
         public Control()
         {
             this.classes = new Classes();
-            this.GotFocus += (s, e) => this.IsFocused = true;
-            this.LostFocus += (s, e) => this.IsFocused = false;
-            this.PointerEnter += (s, e) => this.IsPointerOver = true;
-            this.PointerLeave += (s, e) => this.IsPointerOver = false;
             this.AddPseudoClass(IsPointerOverProperty, ":pointerover");
             this.AddPseudoClass(IsFocusedProperty, ":focus");
-        }
-
-        public event EventHandler<RoutedEventArgs> GotFocus
-        {
-            add { this.AddHandler(GotFocusEvent, value); }
-            remove { this.RemoveHandler(GotFocusEvent, value); }
-        }
-
-        public event EventHandler<RoutedEventArgs> LostFocus
-        {
-            add { this.AddHandler(LostFocusEvent, value); }
-            remove { this.RemoveHandler(LostFocusEvent, value); }
-        }
-
-        public event EventHandler<KeyEventArgs> KeyDown
-        {
-            add { this.AddHandler(KeyDownEvent, value); }
-            remove { this.RemoveHandler(KeyDownEvent, value); }
-        }
-
-        public event EventHandler<PointerEventArgs> PointerEnter
-        {
-            add { this.AddHandler(PointerEnterEvent, value); }
-            remove { this.RemoveHandler(PointerEnterEvent, value); }
-        }
-
-        public event EventHandler<PointerEventArgs> PointerLeave
-        {
-            add { this.AddHandler(PointerLeaveEvent, value); }
-            remove { this.RemoveHandler(PointerLeaveEvent, value); }
-        }
-
-        public event EventHandler<PointerEventArgs> PointerPressed
-        {
-            add { this.AddHandler(PointerPressedEvent, value); }
-            remove { this.RemoveHandler(PointerPressedEvent, value); }
-        }
-
-        public event EventHandler<PointerEventArgs> PointerReleased
-        {
-            add { this.AddHandler(PointerReleasedEvent, value); }
-            remove { this.RemoveHandler(PointerReleasedEvent, value); }
         }
 
         public Brush Background
@@ -175,22 +99,10 @@ namespace Perspex.Controls
             set { this.SetValue(FontSizeProperty, value); }
         }
 
-        public bool Focusable
-        {
-            get { return this.GetValue(FocusableProperty); }
-            set { this.SetValue(FocusableProperty, value); }
-        }
-
         public Brush Foreground
         {
             get { return this.GetValue(ForegroundProperty); }
             set { this.SetValue(ForegroundProperty, value); }
-        }
-
-        public bool IsFocused
-        {
-            get { return this.GetValue(IsFocusedProperty); }
-            private set { this.SetValue(IsFocusedProperty, value); }
         }
 
         public string Id
@@ -214,12 +126,6 @@ namespace Perspex.Controls
 
                 this.id = value;
             }
-        }
-
-        public bool IsPointerOver
-        {
-            get { return this.GetValue(IsPointerOverProperty); }
-            internal set { this.SetValue(IsPointerOverProperty, value); }
         }
 
         public Control Parent
@@ -263,9 +169,11 @@ namespace Perspex.Controls
             get { return Enumerable.Empty<ILogical>(); }
         }
 
-        public void Focus()
+        protected override void AttachedToVisualTree()
         {
-            Locator.Current.GetService<IFocusManager>().Focus(this);
+            IStyler styler = Locator.Current.GetService<IStyler>();
+            styler.ApplyStyles(this);
+            base.AttachedToVisualTree();
         }
 
         protected void AddPseudoClass(PerspexProperty<bool> property, string className)
@@ -281,13 +189,6 @@ namespace Perspex.Controls
                     this.classes.Remove(className);
                 }
             });
-        }
-
-        protected override void AttachedToVisualTree()
-        {
-            IStyler styler = Locator.Current.GetService<IStyler>();
-            styler.ApplyStyles(this);
-            base.AttachedToVisualTree();
         }
     }
 }

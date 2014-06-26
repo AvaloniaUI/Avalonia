@@ -84,9 +84,10 @@
     <Compile Include="Controls\LogicalChildren.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\StackPanel.cs" />
+    <Compile Include="Input\InputElement.cs" />
     <Compile Include="Input\IFocusManager.cs" />
     <Compile Include="Input\FocusManager.cs" />
-    <Compile Include="Input\IFocusable.cs" />
+    <Compile Include="Input\IInputElement.cs" />
     <Compile Include="Input\Key.cs" />
     <Compile Include="Input\KeyboardDevice.cs" />
     <Compile Include="Input\IKeyboardDevice.cs" />

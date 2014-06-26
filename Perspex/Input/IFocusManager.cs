@@ -14,8 +14,8 @@ namespace Perspex.Input
 
     public interface IFocusManager
     {
-        IFocusable Current { get; }
+        IInputElement Current { get; }
 
-        void Focus(IFocusable focusable);
+        void Focus(IInputElement focusable);
     }
 }

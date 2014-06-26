@@ -37,7 +37,7 @@ namespace Perspex.Input
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
-                    RoutedEvent = Control.PointerLeaveEvent,
+                    RoutedEvent = InputElement.PointerLeaveEvent,
                     Device = device,
                     OriginalSource = control,
                     Source = control,
@@ -51,7 +51,7 @@ namespace Perspex.Input
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
-                    RoutedEvent = Control.PointerEnterEvent,
+                    RoutedEvent = InputElement.PointerEnterEvent,
                     Device = device,
                     OriginalSource = control,
                     Source = control,

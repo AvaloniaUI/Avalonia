@@ -10,13 +10,13 @@ namespace Perspex.Input
 {
     public class FocusManager : IFocusManager
     {
-        public IFocusable Current
+        public IInputElement Current
         {
             get;
             private set;
         }
 
-        public void Focus(IFocusable control)
+        public void Focus(IInputElement control)
         {
             Interactive current = this.Current as Interactive;
             Interactive next = control as Interactive;

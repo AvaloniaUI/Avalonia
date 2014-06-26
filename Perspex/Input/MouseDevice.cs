@@ -105,10 +105,10 @@ namespace Perspex.Input
             if (hit != null)
             {
                 Interactive interactive = this.Captured ?? (hit as Interactive) ?? hit.GetVisualAncestor<Interactive>();
-                IFocusable focusable =
-                    this.Captured as IFocusable ??
+                IInputElement focusable =
+                    this.Captured as IInputElement ??
                     hit.GetVisualAncestorsAndSelf()
-                       .OfType<IFocusable>()
+                       .OfType<IInputElement>()
                        .FirstOrDefault(x => x.Focusable);
 
                 if (interactive != null)
