@@ -10,6 +10,7 @@ namespace Perspex.Windows
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
     using Perspex.Input;
@@ -32,6 +33,8 @@ namespace Perspex.Windows
 
         private IInputManager inputManager;
 
+        private bool layoutPending;
+
         static Window()
         {
             FontSizeProperty.OverrideDefaultValue(typeof(Window), 18.0);
@@ -51,22 +54,28 @@ namespace Perspex.Windows
 
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
+                this.layoutPending = true;
                 Dispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render, 
                     () =>
                     {
                         this.LayoutManager.ExecuteLayoutPass();
                         this.renderer.Render(this);
+                        this.layoutPending = false;
                     });
             });
 
-            this.RenderManager.RenderNeeded.Subscribe(x =>
+            this.RenderManager.RenderNeeded
+                .Subscribe(x =>
             {
                 Dispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
-                        this.renderer.Render(this);
+                        if (!this.layoutPending)
+                        {
+                            this.renderer.Render(this);
+                        }
                     });
             });
         }

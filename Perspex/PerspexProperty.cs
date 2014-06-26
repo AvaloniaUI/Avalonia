@@ -9,6 +9,7 @@ namespace Perspex
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive.Subjects;
     using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
@@ -30,6 +31,11 @@ namespace Perspex
         /// The default values for the property, by type.
         /// </summary>
         private Dictionary<Type, object> defaultValues = new Dictionary<Type, object>();
+
+        /// <summary>
+        /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
+        /// </summary>
+        private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
@@ -76,6 +82,15 @@ namespace Perspex
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
         public bool Inherits { get; private set; }
+
+        /// <summary>
+        /// Gets an observable that is fired when this property changes on any 
+        /// <see cref="PerspexObject"/> instance.
+        /// </summary>
+        public IObservable<PerspexPropertyChangedEventArgs> Changed
+        {
+            get { return this.changed; }
+        }
 
         /// <summary>
         /// Registers a <see cref="PerspexProperty"/>.
@@ -217,6 +232,11 @@ namespace Perspex
         public override string ToString()
         {
             return this.Name;
+        }
+
+        internal void NotifyChanged(PerspexPropertyChangedEventArgs e)
+        {
+            this.changed.OnNext(e);
         }
 
         public class BindingAccessor

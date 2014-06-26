@@ -23,9 +23,9 @@ namespace Perspex
 
         private Rect bounds;
 
-        public Visual()
+        static Visual()
         {
-            this.GetObservable(IsVisibleProperty).Subscribe(_ => this.InvalidateVisual());
+            AffectsRender(IsVisibleProperty);
         }
 
         public bool IsVisible
@@ -71,6 +71,21 @@ namespace Perspex
                         this.AttachedToVisualTree();
                     }
                 }
+            }
+        }
+
+        protected static void AffectsRender(PerspexProperty property)
+        {
+            property.Changed.Subscribe(AffectsRenderInvalidate);
+        }
+
+        private static void AffectsRenderInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            Visual visual = e.Sender as Visual;
+
+            if (visual != null)
+            {
+                visual.InvalidateVisual();
             }
         }
 

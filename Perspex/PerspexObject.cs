@@ -548,9 +548,9 @@ namespace Perspex
 
             if (this.PropertyChanged != null)
             {
-                this.PropertyChanged(
-                    this,
-                    new PerspexPropertyChangedEventArgs(property, oldValue, newValue));
+                PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(this, property, oldValue, newValue);
+                property.NotifyChanged(e);
+                this.PropertyChanged(this, e);
             }
         }
     }

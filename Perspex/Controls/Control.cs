@@ -119,6 +119,11 @@ namespace Perspex.Controls
 
         private Styles styles;
 
+        static Control()
+        {
+            AffectsMeasure(IsVisibleProperty);
+        }
+
         public Control()
         {
             this.classes = new Classes();
@@ -128,8 +133,6 @@ namespace Perspex.Controls
             this.PointerLeave += (s, e) => this.IsPointerOver = false;
             this.AddPseudoClass(IsPointerOverProperty, ":pointerover");
             this.AddPseudoClass(IsFocusedProperty, ":focus");
-
-            this.GetObservable(IsVisibleProperty).Subscribe(_ => this.InvalidateMeasure());
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus
@@ -366,6 +369,36 @@ namespace Perspex.Controls
         IEnumerable<ILogical> ILogical.LogicalChildren
         {
             get { return Enumerable.Empty<ILogical>(); }
+        }
+
+        protected static void AffectsArrange(PerspexProperty property)
+        {
+            property.Changed.Subscribe(AffectsArrangeInvalidate);
+        }
+
+        protected static void AffectsMeasure(PerspexProperty property)
+        {
+            property.Changed.Subscribe(AffectsMeasureInvalidate);
+        }
+
+        private static void AffectsArrangeInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            Control control = e.Sender as Control;
+
+            if (control != null)
+            {
+                control.InvalidateArrange();
+            }
+        }
+
+        private static void AffectsMeasureInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            Control control = e.Sender as Control;
+
+            if (control != null)
+            {
+                control.InvalidateMeasure();
+            }
         }
 
         public ILayoutRoot GetLayoutRoot()

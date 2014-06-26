@@ -16,9 +16,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
-        public TextBlock()
+        static TextBlock()
         {
-            this.GetObservable(TextProperty).Subscribe(_ => this.InvalidateVisual());
+            AffectsRender(TextProperty);
         }
 
         public string Text

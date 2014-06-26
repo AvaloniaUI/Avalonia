@@ -18,14 +18,22 @@ namespace Perspex
     public class PerspexPropertyChangedEventArgs
     {
         public PerspexPropertyChangedEventArgs(
+            PerspexObject sender,
             PerspexProperty property,
             object oldValue,
             object newValue)
         {
+            this.Sender = sender;
             this.Property = property;
             this.OldValue = oldValue;
             this.NewValue = newValue;
         }
+
+        /// <summary>
+        /// Gets the <see cref="PerspexObject"/> that the property changed on.
+        /// </summary>
+        /// <returns></returns>
+        public PerspexObject Sender { get; private set; }
 
         /// <summary>
         /// Gets the property that changed.
