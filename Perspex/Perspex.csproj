@@ -76,6 +76,7 @@
     <Compile Include="Controls\DefinitionBase.cs" />
     <Compile Include="Controls\Grid.cs" />
     <Compile Include="Controls\GridLength.cs" />
+    <Compile Include="Controls\Image.cs" />
     <Compile Include="Controls\RowDefinition.cs" />
     <Compile Include="Controls\RowDefinitions.cs" />
     <Compile Include="Controls\TextBox.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Layout\LayoutHelper.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
+    <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
     <Compile Include="Platform\IPlatformThreadingInterface.cs" />
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
@@ -119,6 +121,7 @@
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Vector.cs" />
     <Compile Include="Rendering\RenderManager.cs" />
     <Compile Include="Rendering\IRenderManager.cs" />
     <Compile Include="Rendering\IRendered.cs" />

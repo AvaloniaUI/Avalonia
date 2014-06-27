@@ -20,5 +20,7 @@ namespace Perspex.Platform
         IRenderer CreateRenderer(IntPtr handle, double width, double height);
 
         IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height);
+
+        IBitmapImpl LoadBitmap(string fileName);
     }
 }

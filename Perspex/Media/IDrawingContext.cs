@@ -7,12 +7,16 @@
 namespace Perspex.Media
 {
     using System;
+    using Perspex.Media.Imaging;
+
 
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>
     public interface IDrawingContext : IDisposable
     {
+        void DrawImage(Bitmap source, double opacity, Rect sourceRect, Rect destRect);
+
         /// <summary>
         /// Draws a line.
         /// </summary>

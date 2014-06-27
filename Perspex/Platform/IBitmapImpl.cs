@@ -8,6 +8,10 @@ namespace Perspex.Platform
 {
     public interface IBitmapImpl
     {
+        int PixelWidth { get; }
+
+        int PixelHeight { get; }
+
         void Save(string fileName);
     }
 }

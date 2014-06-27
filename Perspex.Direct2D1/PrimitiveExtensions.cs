@@ -15,6 +15,11 @@ namespace Perspex.Direct2D1
             return new Rect(r.X, r.Y, r.Width, r.Height);
         }
 
+        public static RectangleF ToSharpDX(this Rect r)
+        {
+            return new RectangleF((float)r.X, (float)r.Y, (float)r.Width, (float)r.Height);
+        }
+
         public static Vector2 ToSharpDX(this Perspex.Point p)
         {
             return new Vector2((float)p.X, (float)p.Y);

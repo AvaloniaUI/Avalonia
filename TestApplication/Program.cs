@@ -10,6 +10,7 @@ using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Media;
+using Perspex.Media.Imaging;
 using Perspex.Shapes;
 using Perspex.Styling;
 using Perspex.Themes.Default;
@@ -69,6 +70,11 @@ namespace TestApplication
                         new TextBox
                         {
                             Text = "Hello World!",
+                        },
+                        new Image
+                        {
+                            Source = new Bitmap("github_icon.png"),
+                            Width = 200,
                         }
                     }
                 }

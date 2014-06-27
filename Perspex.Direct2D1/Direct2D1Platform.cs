@@ -57,5 +57,10 @@ namespace Perspex.Direct2D1
         {
             return new StreamGeometryImpl();
         }
+
+        public IBitmapImpl LoadBitmap(string fileName)
+        {
+            return new BitmapImpl(imagingFactory, fileName);
+        }
     }
 }

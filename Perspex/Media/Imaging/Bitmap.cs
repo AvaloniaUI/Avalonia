@@ -4,13 +4,19 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Media
+namespace Perspex.Media.Imaging
 {
     using Perspex.Platform;
     using Splat;
 
-    public class Bitmap
+    public class Bitmap : IBitmap
     {
+        public Bitmap(string fileName)
+        {
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            this.PlatformImpl = factory.LoadBitmap(fileName);
+        }
+
         public Bitmap(int width, int height)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
@@ -20,6 +26,16 @@ namespace Perspex.Media
         protected Bitmap(IBitmapImpl impl)
         {
             this.PlatformImpl = impl;
+        }
+
+        public int PixelWidth
+        {
+            get { return this.PlatformImpl.PixelWidth; }
+        }
+
+        public int PixelHeight
+        {
+            get { return this.PlatformImpl.PixelHeight; }
         }
 
         public IBitmapImpl PlatformImpl

@@ -8,11 +8,9 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Input;
-    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
     using Splat;

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Media
+namespace Perspex.Media.Imaging
 {
     using Perspex.Platform;
     using Splat;

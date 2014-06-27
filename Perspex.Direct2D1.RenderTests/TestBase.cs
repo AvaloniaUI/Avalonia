@@ -11,7 +11,7 @@ namespace Perspex.Direct2D1.RenderTests
     using ImageMagick;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
-    using Perspex.Media;
+    using Perspex.Media.Imaging;
 
     public class TestBase
     {

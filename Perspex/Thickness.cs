@@ -44,6 +44,20 @@ namespace Perspex
         /// <summary>
         /// Initializes a new instance of the <see cref="Thickness"/> structure.
         /// </summary>
+        /// <param name="horizontal">The thickness on the left and right.</param>
+        /// <param name="top">The thickness on the top and bottom.</param>
+        public Thickness(double horizontal, double vertical)
+        {
+            Contract.Requires<ArgumentException>(horizontal >= 0);
+            Contract.Requires<ArgumentException>(vertical >= 0);
+
+            this.left = this.right = horizontal;
+            this.top = this.bottom = vertical;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Thickness"/> structure.
+        /// </summary>
         /// <param name="left">The thickness on the left.</param>
         /// <param name="top">The thickness on the top.</param>
         /// <param name="right">The thickness on the right.</param>

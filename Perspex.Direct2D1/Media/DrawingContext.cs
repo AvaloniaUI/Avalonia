@@ -51,6 +51,18 @@ namespace Perspex.Direct2D1.Media
             this.renderTarget.EndDraw();
         }
 
+        public void DrawImage(Perspex.Media.Imaging.Bitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
+        {
+            BitmapImpl impl = (BitmapImpl)bitmap.PlatformImpl;
+            Bitmap d2d = impl.GetDirect2DBitmap(this.renderTarget);
+            this.renderTarget.DrawBitmap(
+                d2d,
+                destRect.ToSharpDX(),
+                (float)opacity,
+                BitmapInterpolationMode.Linear,
+                sourceRect.ToSharpDX());
+        }
+
         /// <summary>
         /// Draws a line.
         /// </summary>

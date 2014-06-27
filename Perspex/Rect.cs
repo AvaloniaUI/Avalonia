@@ -191,6 +191,32 @@ namespace Perspex
             get { return this.width == 0 && this.height == 0; }
         }
 
+        public static Rect operator *(Rect rect, Vector scale)
+        {
+            double centerX = rect.x + rect.width / 2;
+            double centerY = rect.y + rect.height / 2;
+            double width = rect.width * scale.X;
+            double height = rect.height * scale.Y;
+            return new Rect(
+                centerX - (width / 2),
+                centerY - (height / 2),
+                width,
+                height);
+        }
+
+        public static Rect operator /(Rect rect, Vector scale)
+        {
+            double centerX = rect.x + rect.width / 2;
+            double centerY = rect.y + rect.height / 2;
+            double width = rect.width / scale.X;
+            double height = rect.height / scale.Y;
+            return new Rect(
+                centerX - (width / 2),
+                centerY - (height / 2),
+                width,
+                height);
+        }
+
         /// <summary>
         /// Determines whether a points in in the bounds of the rectangle.
         /// </summary>
@@ -200,6 +226,15 @@ namespace Perspex
         {
             return p.X >= this.x && p.X < this.x + this.width &&
                    p.Y >= this.y && p.Y < this.y + this.height;
+        }
+
+        public Rect Center(Rect rect)
+        {
+            return new Rect(
+                this.x + ((this.width - rect.width) / 2),
+                this.y + ((this.height - rect.height) / 2),
+                rect.width,
+                rect.height);
         }
 
         /// <summary>
@@ -224,6 +259,27 @@ namespace Perspex
             return new Rect(
                 new Point(this.x + thickness.Left, this.y + thickness.Top),
                 this.Size.Deflate(thickness));
+        }
+
+        public Rect Intersect(Rect rect)
+        {
+            double x = Math.Max(this.x, rect.x);
+            double y = Math.Max(this.y, rect.y);
+            double width = Math.Min(this.Right, rect.Right) - x;
+            double height = Math.Min(this.Bottom, rect.Bottom) - y;
+
+            if (width < 0 || height < 0)
+            {
+                return new Rect(
+                    double.PositiveInfinity,
+                    double.PositiveInfinity,
+                    double.NegativeInfinity,
+                    double.NegativeInfinity);
+            }
+            else
+            {
+                return new Rect(x, y, width, height);
+            }
         }
 
         /// <summary>
