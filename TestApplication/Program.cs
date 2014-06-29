@@ -75,7 +75,24 @@ namespace TestApplication
                         {
                             Source = new Bitmap("github_icon.png"),
                             Width = 200,
-                        }
+                        },
+                        new ContentControl
+                        {
+                            DataTemplates = new DataTemplates
+                            {
+                                new DataTemplate<string>(o => new Border
+                                {
+                                    Background = Brushes.Red,
+                                    BorderBrush = Brushes.Black,
+                                    BorderThickness = 2,
+                                    Content = new TextBlock
+                                    {
+                                        Text = o,
+                                    }
+                                }),
+                            },
+                            Content = "Data Template",
+                        },
                     }
                 }
             };

@@ -20,7 +20,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Func<object, Visual>> DataTemplateProperty =
             PerspexProperty.Register<ContentPresenter, Func<object, Visual>>("DataTemplate");
 
-        private Visual visualChild;
+        private IVisual visualChild;
 
         public ContentPresenter()
         {
@@ -46,18 +46,11 @@ namespace Perspex.Controls
             set { this.SetValue(ContentProperty, value); }
         }
 
-        public Func<object, Visual> DataTemplate
-        {
-            get { return this.GetValue(DataTemplateProperty); }
-            set { this.SetValue(DataTemplateProperty, value); }
-        }
-
         IEnumerable<IVisual> IVisual.VisualChildren
         {
             get
             {
                 object content = this.Content;
-                var dataTemplate = this.DataTemplate;
 
                 if (this.visualChild == null && content != null)
                 {
@@ -65,16 +58,21 @@ namespace Perspex.Controls
                     {
                         this.visualChild = (Visual)content;
                     }
-                    else if (dataTemplate != null)
-                    {
-                        this.visualChild = dataTemplate(this);
-                    }
                     else
                     {
-                        this.visualChild = new TextBlock
+                        DataTemplate dataTemplate = this.FindDataTemplate(content);
+
+                        if (dataTemplate != null)
                         {
-                            Text = content.ToString(),
-                        };
+                            this.visualChild = dataTemplate.Build(content);
+                        }
+                        else
+                        {
+                            this.visualChild = new TextBlock
+                            {
+                                Text = content.ToString(),
+                            };
+                        }
                     }
 
                     if (this.visualChild != null)
@@ -155,6 +153,36 @@ namespace Perspex.Controls
             }
 
             return new Size();
+        }
+
+        private DataTemplate FindDataTemplate(object content)
+        {
+            ILogical node = this;
+
+            while (node != null)
+            {
+                Control control = node as Control;
+
+                if (control != null)
+                {
+                    foreach (DataTemplate dt in control.DataTemplates.Reverse())
+                    {
+                        if (dt.Match(content))
+                        {
+                            return dt;
+                        }
+                    }
+                }
+
+                node = node.LogicalParent;
+
+                if (node == null && control != null)
+                {
+                    node = control.TemplatedParent as ILogical;
+                }
+            }
+
+            return null;
         }
     }
 }

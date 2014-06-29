@@ -40,6 +40,8 @@ namespace Perspex.Controls
 
         private Classes classes;
 
+        private DataTemplates dataTemplates;
+
         private string id;
 
         private Styles styles;
@@ -88,6 +90,24 @@ namespace Perspex.Controls
                     this.classes.Clear();
                     this.classes.Add(value);
                 }
+            }
+        }
+
+        public DataTemplates DataTemplates
+        {
+            get
+            {
+                if (this.dataTemplates == null)
+                {
+                    this.dataTemplates = new DataTemplates();
+                }
+
+                return this.dataTemplates;
+            }
+
+            set
+            {
+                this.dataTemplates = value;
             }
         }
 
