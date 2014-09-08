@@ -22,3 +22,5 @@ binding throughout a framework. *I'm writing this only to see if the idea of exp
 appeals to anyone else.*
 
 [Take a look at the introduction document here.](Docs/intro.md)
+
+**NOTE**: This uses proposed C#6 features so you'll have to install a Roslyn preview. [If you're using VS2013, try here.]( https://connect.microsoft.com/VisualStudio/Downloads/DownloadDetails.aspx?DownloadID=52793)
