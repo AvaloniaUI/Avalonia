@@ -108,7 +108,7 @@ Nice... Lets take this further:
 		[!Property2] = something.SomeObservable,
 	}
 
-Yep, by putting a bang in front of the property name you can bind to a property (attached or 
+Yep, by putting a bang in front of the property name you can **bind** to a property (attached or 
 otherwise) from the object initializer.
 
 ## Visual and Logical trees
@@ -119,6 +119,9 @@ different however. Rather than using Visual/LogicalTreeHelper you can cast any c
 IVisual or ILogical to reveal the tree operations. There's also the VisualExtensions class which
 provides some useful extension methods such as `GetVisualAncestor<T>(this IVisual visual)` or 
 `GetVisualAt(this IVisual visual, Point p)`.
+
+Again like WPF, Controls are lookless with the visual appearance being defined by the Template 
+property, which is determined by...
 
 ## Styles
 
@@ -151,13 +154,13 @@ Let's see what's happening here:
 
     new Style(x => x.OfType<CheckBox>())
 
-The constructor for the Style class defines the selector. Here we're saying "this style applies to 
-all controls in the the visual tree of type CheckBox". A more complex selector:
+The constructor for the Style class defines the selector. Here we're saying "*this style applies to 
+all controls in the the visual tree of type CheckBox*". A more complex selector:
 
     new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
 
-This selector matches "all controls with Id == "checkMark" in the template of a CheckBox with the
-class ":checked". Each control has an Id property, and Ids in templates are considered to be in a
+This selector matches "*all controls with Id == "checkMark" in the template of a CheckBox with the
+class ':checked'"*. Each control has an Id property, and Ids in templates are considered to be in a
 separate namespace.
 
 Inside the Style class we then have a collection of setters similar to WPF. 
@@ -179,6 +182,7 @@ maps to .NET objects there should be no reason a XAML parser couldn't be written
 
 ## That's all for now
 
-If you want to have a play you can get the code here: [https://github.com/grokys/Perspex](https://github.com/grokys/Perspex)
+There's a lot more to see, and even more to do, so if you want to have a play you can get the code 
+here: [https://github.com/grokys/Perspex](https://github.com/grokys/Perspex)
 
 Feedback welcome!
