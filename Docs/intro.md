@@ -1,5 +1,7 @@
 # Perspex #
 
+...a next generation WPF?
+
 ## Background ##
 
 As everyone who's involved in client-side .NET development knows, the past half decade have been a 
@@ -8,19 +10,19 @@ WinRT came along and took many of the lessons of WPF but it's currently not usab
 
 After a few months of trying to reverse-engineer WPF with the [Avalonia Project](https://github.com/grokys/Avalonia) I began to come to the same conclusion that I imagine Microsoft
 came to internally: for all its groundbreaking-ness at the time, WPF at its core is a dated mess,
-started on with .NET 1 and barely updated to even bring it up-to-date with .NET 2 features such as
+written for .NET 1 and barely updated to even bring it up-to-date with .NET 2 features such as
 generics.
 
-So I began to think: what if we were to start anew with modern C# features such as (gasp) Generics,
-Observables, async, etc etc. The result of that thought is Perspex 
+So I began to think: what if we were to start anew with modern C# features such as *(gasp)* 
+Generics, Observables, async, etc etc. The result of that thought is Perspex 
 (https://github.com/grokys/Perspex).
 
 **DISCLAIMER**: This is really early development pre-alpha-alpha stuff. Everything is subject to 
 change, I'm not even sure if the performance characteristics of Rx make Observables suitable for 
-binding through a framework. *I'm writing this only to see if the idea of exploring these ideas 
+binding throughout a framework. *I'm writing this only to see if the idea of exploring these ideas 
 appeals to anyone else.*
 
-So what can it do so far? Not a whole lot right now. Something like this:
+So what can it do so far? Not a whole lot right now. Here's the demo application:
 
 ![](screen.png)
 
@@ -51,8 +53,8 @@ Delaring a DP in WPF looks something like this:
 	    set { this.SetValue(PropertyDeclaration, value); }
 	}
 
-Eww all that just to declare a single property. **A LOT** of boilerplate there. With generics and 
-default parameters we can at least make it look a bit nicer:
+Eww! All that just to declare a single property. There's **A LOT** of boilerplate there. With 
+generics and default parameters we can at least make it look a bit nicer:
 
     public static readonly PerspexProperty<PropertyType> PropertyDeclaration =
         PerspexProperty.Register<OwnerClass, PropertyType>("PropertyName", inherits: true);
@@ -108,6 +110,72 @@ Nice... Lets take this further:
 
 Yep, by putting a bang in front of the property name you can bind to a property (attached or 
 otherwise) from the object initializer.
+
+## Visual and Logical trees
+
+Perspex uses the same visual/logical tree separation that is used by WPF (and to some extent HTML 
+is moving in this direction with the Shadow DOM). The manner of accessing the two trees is slightly
+different however. Rather than using Visual/LogicalTreeHelper you can cast any control to an 
+IVisual or ILogical to reveal the tree operations. There's also the VisualExtensions class which
+provides some useful extension methods such as `GetVisualAncestor<T>(this IVisual visual)` or 
+`GetVisualAt(this IVisual visual, Point p)`.
+
+## Styles
+
+Styles in Perspex diverge from styles in WPF quite a lot, and move towards a more CSS-like system.
+It's probably easiest to show in an example. Here is the default style for the CheckBox control:
+
+    new Style(x => x.OfType<CheckBox>())
+    {
+        Setters = new[]
+        {
+            new Setter(Button.TemplateProperty, ControlTemplate.Create<CheckBox>(this.Template)),
+        },
+    },
+    new Style(x => x.OfType<CheckBox>().Template().Id("checkMark"))
+    {
+        Setters = new[]
+        {
+            new Setter(Shape.IsVisibleProperty, false),
+        },
+    },
+    new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
+    {
+        Setters = new[]
+        {
+            new Setter(Shape.IsVisibleProperty, true),
+        },
+    },
+
+Let's see what's happening here:
+
+    new Style(x => x.OfType<CheckBox>())
+
+The constructor for the Style class defines the selector. Here we're saying "this style applies to 
+all controls in the the visual tree of type CheckBox". A more complex selector:
+
+    new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
+
+This selector matches "all controls with Id == "checkMark" in the template of a CheckBox with the
+class ":checked". Each control has an Id property, and Ids in templates are considered to be in a
+separate namespace.
+
+Inside the Style class we then have a collection of setters similar to WPF. 
+
+This system means that there's no more need for WPF's Triggers - the styling works with classes 
+(which are arbitrary strings) similar to CSS. Similar to CSS, classes with a leading ":" are set
+by the control itself in response to events like mouseover and click.
+
+Similar to WPF, styles can be defined on each control, with a global application style collection
+at the root. This means that different subsections of the visual tree can have a completely 
+different look-and-feel.
+
+## XAML
+
+As you can see, all of the examples here are defined in code, and as yet there is no current 
+support for any type of markup such as XAML. That's not to rule out such a thing, but I don't think
+there's anyone out there who loves XAML and I'm sure a better markup is possible. However as XAML
+maps to .NET objects there should be no reason a XAML parser couldn't be written.
 
 ## That's all for now
 
