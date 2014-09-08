@@ -21,4 +21,4 @@ change, I'm not even sure if the performance characteristics of Rx make Observab
 binding throughout a framework. *I'm writing this only to see if the idea of exploring these ideas 
 appeals to anyone else.*
 
-[Take a look at the introduction document here.](docs/intro.md)
+[Take a look at the introduction document here.](Docs/intro.md)
