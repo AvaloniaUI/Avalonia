@@ -38,6 +38,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
 
+        public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
+            PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
+
         private Classes classes;
 
         private DataTemplates dataTemplates;
@@ -172,8 +175,13 @@ namespace Perspex.Controls
 
         public ITemplatedControl TemplatedParent
         {
-            get;
-            internal set;
+            get
+            {
+                var val =  this.GetValue(TemplatedParentProperty);
+                System.Diagnostics.Debug.WriteLine(val);
+                return val;
+            }
+            internal set { this.SetValue(TemplatedParentProperty, value); }
         }
 
         ILogical ILogical.LogicalParent

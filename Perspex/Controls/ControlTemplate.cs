@@ -34,24 +34,8 @@ namespace Perspex.Controls
             Contract.Requires<NullReferenceException>(templatedParent != null);
 
             Control root = this.build(templatedParent);
-            this.SetTemplatedParent(root, templatedParent);
+            root.TemplatedParent = templatedParent;
             return root;
-        }
-
-        private void SetTemplatedParent(Control control, ITemplatedControl templatedParent)
-        {
-            Contract.Requires<NullReferenceException>(control != null);
-            Contract.Requires<NullReferenceException>(templatedParent != null);
-
-            control.TemplatedParent = templatedParent;
-
-            if (!(control is ContentPresenter))
-            {
-                foreach (Control child in ((IVisual)control).VisualChildren.OfType<Control>())
-                {
-                    this.SetTemplatedParent(child, templatedParent);
-                }
-            }
         }
     }
 }

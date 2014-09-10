@@ -1,22 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Perspex;
+﻿using Perspex;
 using Perspex.Controls;
-using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Perspex.Shapes;
-using Perspex.Styling;
-using Perspex.Themes.Default;
 using Perspex.Threading;
 using Perspex.Windows;
-using Perspex.Windows.Threading;
 using Splat;
 
 namespace TestApplication
