@@ -175,12 +175,7 @@ namespace Perspex.Controls
 
         public ITemplatedControl TemplatedParent
         {
-            get
-            {
-                var val =  this.GetValue(TemplatedParentProperty);
-                System.Diagnostics.Debug.WriteLine(val);
-                return val;
-            }
+            get { return this.GetValue(TemplatedParentProperty); }
             internal set { this.SetValue(TemplatedParentProperty, value); }
         }
 
