@@ -12,7 +12,7 @@ namespace Perspex.Controls
     public class DataTemplate
     {
         public static readonly DataTemplate Default =
-            new DataTemplate(typeof(object), o => new TextBox { Text = o.ToString() });
+            new DataTemplate(typeof(object), o => new TextBlock { Text = o.ToString() });
 
         public DataTemplate(Type type, Func<object, IVisual> build)
             : this(o => type.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()), build)

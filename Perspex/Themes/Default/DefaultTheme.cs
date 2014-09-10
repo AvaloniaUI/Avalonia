@@ -15,7 +15,9 @@ namespace Perspex.Themes.Default
             this.Add(new ButtonStyle());
             this.Add(new CheckBoxStyle());
             this.Add(new ContentControlStyle());
+            this.Add(new ItemsControlStyle());
             this.Add(new TextBoxStyle());
+            this.Add(new ItemsControlStyle());
         }
     }
 }

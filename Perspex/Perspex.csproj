@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
+    <Compile Include="Controls\ItemsPresenter.cs" />
     <Compile Include="Controls\ItemsPanelTemplate.cs" />
     <Compile Include="Controls\ItemsControl.cs" />
     <Compile Include="Controls\DataTemplate.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\Stretch.cs" />
     <Compile Include="Themes\Default\ContentControlStyle.cs" />
+    <Compile Include="Themes\Default\ItemsControlStyle.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Rendering\RenderManager.cs" />
     <Compile Include="Rendering\IRenderManager.cs" />
