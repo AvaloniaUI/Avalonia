@@ -36,6 +36,12 @@ namespace TestApplication
         }
     }
 
+    class Item
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -76,23 +82,38 @@ namespace TestApplication
                             Source = new Bitmap("github_icon.png"),
                             Width = 200,
                         },
-                        new ContentControl
+                        new ItemsControl
                         {
                             DataTemplates = new DataTemplates
                             {
-                                new DataTemplate<string>(o => new Border
+                                new DataTemplate<Item>(o => new Border
                                 {
                                     Background = Brushes.Red,
                                     BorderBrush = Brushes.Black,
-                                    BorderThickness = 2,
-                                    Content = new TextBlock
+                                    BorderThickness = 1,
+                                    Content = new StackPanel
                                     {
-                                        Text = o,
+                                        Orientation = Orientation.Vertical,
+                                        Children = new PerspexList<Control>
+                                        {
+                                            new TextBlock
+                                            {
+                                                Text = o.Name,
+                                            },
+                                            new TextBlock
+                                            {
+                                                Text = o.Value,
+                                            }
+                                        },
                                     }
                                 }),
                             },
-                            Content = "Data Template",
-                        },
+                            Items = new[]
+                            {
+                                new Item { Name = "Foo", Value = "Bar" },
+                                new Item { Name = "Buzz", Value = "Aldrin" },
+                            },
+                        }
                     }
                 }
             };

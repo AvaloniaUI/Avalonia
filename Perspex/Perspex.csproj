@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
+    <Compile Include="Controls\ItemsPanelTemplate.cs" />
+    <Compile Include="Controls\ItemsControl.cs" />
     <Compile Include="Controls\DataTemplate.cs" />
     <Compile Include="Controls\DataTemplates.cs" />
     <Compile Include="Controls\CheckBox.cs" />

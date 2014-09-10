@@ -6,12 +6,15 @@
 
 namespace Perspex
 {
+    using Perspex.Controls;
     using Perspex.Input;
     using Perspex.Styling;
     using Splat;
 
     public class Application
     {
+        private DataTemplates dataTemplates;
+
         private Styles styles;
 
         public Application()
@@ -25,6 +28,24 @@ namespace Perspex
         {
             get;
             private set;
+        }
+
+        public DataTemplates DataTemplates
+        {
+            get
+            {
+                if (this.dataTemplates == null)
+                {
+                    this.dataTemplates = new DataTemplates();
+                }
+
+                return this.dataTemplates;
+            }
+
+            set
+            {
+                this.dataTemplates = value;
+            }
         }
 
         public IFocusManager FocusManager

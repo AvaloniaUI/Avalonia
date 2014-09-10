@@ -53,7 +53,7 @@ namespace Perspex.Controls
 
         IEnumerable<IVisual> IVisual.VisualChildren
         {
-            get { return this.children; }
+            get { return this.children ?? Enumerable.Empty<IVisual>(); }
         }
     }
 }

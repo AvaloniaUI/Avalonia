@@ -11,6 +11,9 @@ namespace Perspex.Controls
 
     public class DataTemplate
     {
+        public static readonly DataTemplate Default =
+            new DataTemplate(typeof(object), o => new TextBox { Text = o.ToString() });
+
         public DataTemplate(Type type, Func<object, IVisual> build)
             : this(o => type.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()), build)
         {
@@ -18,6 +21,9 @@ namespace Perspex.Controls
 
         public DataTemplate(Func<object, bool> match, Func<object, IVisual> build)
         {
+            Contract.Requires<ArgumentNullException>(match != null);
+            Contract.Requires<ArgumentNullException>(build != null);
+
             this.Match = match;
             this.Build = build;
         }

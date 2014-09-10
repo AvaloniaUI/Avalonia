@@ -16,10 +16,13 @@ namespace Perspex
     {
         public PerspexList()
         {
-            this.Changed = Observable.FromEvent<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
-                handler => (sender, e) => handler(e),
-                handler => this.CollectionChanged += handler,
-                handler => this.CollectionChanged -= handler);
+            this.Initialize();
+        }
+
+        public PerspexList(IEnumerable<T> items)
+            : base(items)
+        {
+            this.Initialize();
         }
 
         public IObservable<NotifyCollectionChangedEventArgs> Changed
@@ -34,6 +37,14 @@ namespace Perspex
             {
                 this.Add(item);
             }
+        }
+
+        private void Initialize()
+        {
+            this.Changed = Observable.FromEvent<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                handler => (sender, e) => handler(e),
+                handler => this.CollectionChanged += handler,
+                handler => this.CollectionChanged -= handler);
         }
     }
 }

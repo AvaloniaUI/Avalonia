@@ -208,5 +208,48 @@ namespace Perspex.Controls
                 }
             });
         }
+
+        protected DataTemplate FindDataTemplate(object content)
+        {
+            ILogical node = this;
+
+            while (node != null)
+            {
+                Control control = node as Control;
+
+                if (control != null)
+                {
+                    foreach (DataTemplate dt in control.DataTemplates.Reverse())
+                    {
+                        if (dt.Match(content))
+                        {
+                            return dt;
+                        }
+                    }
+                }
+
+                node = node.LogicalParent;
+
+                if (node == null && control != null)
+                {
+                    node = control.TemplatedParent as ILogical;
+                }
+            }
+
+            foreach (DataTemplate dt in Application.Current.DataTemplates.Reverse())
+            {
+                if (dt.Match(content))
+                {
+                    return dt;
+                }
+            }
+
+            return null;
+        }
+
+        protected DataTemplate GetDataTemplate(object content)
+        {
+            return this.FindDataTemplate(content) ?? DataTemplate.Default;
+        }
     }
 }

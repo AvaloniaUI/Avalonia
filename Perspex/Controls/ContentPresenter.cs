@@ -46,6 +46,11 @@ namespace Perspex.Controls
             set { this.SetValue(ContentProperty, value); }
         }
 
+        IEnumerable<IVisual> IVisual.ExistingVisualChildren
+        {
+            get { return Enumerable.Repeat(this.visualChild, this.visualChild != null ? 1 : 0); }
+        }
+
         IEnumerable<IVisual> IVisual.VisualChildren
         {
             get
@@ -153,36 +158,6 @@ namespace Perspex.Controls
             }
 
             return new Size();
-        }
-
-        private DataTemplate FindDataTemplate(object content)
-        {
-            ILogical node = this;
-
-            while (node != null)
-            {
-                Control control = node as Control;
-
-                if (control != null)
-                {
-                    foreach (DataTemplate dt in control.DataTemplates.Reverse())
-                    {
-                        if (dt.Match(content))
-                        {
-                            return dt;
-                        }
-                    }
-                }
-
-                node = node.LogicalParent;
-
-                if (node == null && control != null)
-                {
-                    node = control.TemplatedParent as ILogical;
-                }
-            }
-
-            return null;
         }
     }
 }
