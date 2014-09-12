@@ -124,5 +124,21 @@ namespace Perspex
                 }
             }
         }
+
+        public static IEnumerable<T> GetVisualSiblings<T>(this IVisual visual)
+        {
+            IVisual parent = visual.VisualParent;
+
+            if (parent != null)
+            {
+                foreach (T sibling in parent.VisualChildren.OfType<T>())
+                {
+                    if ((IVisual)sibling != visual)
+                    {
+                        yield return sibling;
+                    }
+                }
+            }
+        }
     }
 }

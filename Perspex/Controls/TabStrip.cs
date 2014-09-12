@@ -4,12 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Input;
+
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public class TabStrip : ItemsControl
     {
         private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
@@ -22,6 +20,32 @@ namespace Perspex.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
             ItemTemplateProperty.OverrideDefaultValue(typeof(TabStrip), TabTemplate);
+        }
+
+        public TabStrip()
+        {
+            this.PointerPressed += this.OnPointerPressed;
+        }
+
+        private void OnPointerPressed(object sender, PointerEventArgs e)
+        {
+            IVisual source = (IVisual)e.Source;
+            ContentPresenter presenter = source.GetVisualAncestor<ContentPresenter>();
+
+            if (presenter !=  null)
+            {
+                TabItem item = presenter.TemplatedParent as TabItem;
+
+                if (item != null && item.TemplatedParent == this)
+                {
+                    item.IsSelected = true;
+
+                    foreach (var i in item.GetVisualSiblings<TabItem>())
+                    {
+                        i.IsSelected = false;
+                    }
+                }
+            }
         }
     }
 }

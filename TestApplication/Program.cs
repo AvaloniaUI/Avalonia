@@ -77,6 +77,7 @@ namespace TestApplication
                                 new TabItem
                                 {
                                     Header = "Tab 1",
+                                    IsSelected = true,
                                 },
                                 new TabItem
                                 {
