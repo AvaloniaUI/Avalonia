@@ -94,6 +94,7 @@
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\StackPanel.cs" />
     <Compile Include="IHeadered.cs" />
+    <Compile Include="Diagnostics\Debug.cs" />
     <Compile Include="Input\InputElement.cs" />
     <Compile Include="Input\IFocusManager.cs" />
     <Compile Include="Input\FocusManager.cs" />

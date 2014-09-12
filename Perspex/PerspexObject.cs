@@ -322,6 +322,20 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets all of the <see cref="PerspexProperty"/> values explicitly set on this object.
+        /// </summary>
+        public IEnumerable<Tuple<PerspexProperty, object, BindingPriority>> GetSetValues()
+        {
+            foreach (var value in this.values)
+            {
+                yield return Tuple.Create(
+                    value.Key,
+                    value.Value.Value,
+                    (BindingPriority)value.Value.ValuePriority);
+            }
+        }
+
+        /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>

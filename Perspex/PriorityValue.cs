@@ -41,16 +41,12 @@ namespace Perspex
         private object value;
 
         /// <summary>
-        /// The priority of the binding that is currently active.
-        /// </summary>
-        private int valuePriority = int.MaxValue;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
         public PriorityValue()
         {
             this.value = PerspexProperty.UnsetValue;
+            this.ValuePriority = int.MaxValue;
         }
 
         /// <summary>
@@ -67,6 +63,15 @@ namespace Perspex
         public object Value
         {
             get { return this.value; }
+        }
+
+        /// <summary>
+        /// Gets the priority of the binding that is currently active.
+        /// </summary>
+        public int ValuePriority
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -127,7 +132,7 @@ namespace Perspex
                 item = next;
             }
 
-            if (removed && priority <= this.valuePriority)
+            if (removed && priority <= this.ValuePriority)
             {
                 this.UpdateValue();
             }
@@ -148,7 +153,7 @@ namespace Perspex
         /// <param name="changed">The changed entry.</param>
         private void EntryChanged(BindingEntry changed)
         {
-            if (changed.Priority <= this.valuePriority)
+            if (changed.Priority <= this.ValuePriority)
             {
                 this.UpdateValue();
             }
@@ -172,7 +177,7 @@ namespace Perspex
         {
             object old = this.value;
 
-            this.valuePriority = priority;
+            this.ValuePriority = priority;
 
             if (!EqualityComparer<object>.Default.Equals(old, value))
             {
