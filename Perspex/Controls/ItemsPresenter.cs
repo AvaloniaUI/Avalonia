@@ -117,11 +117,6 @@ namespace Perspex.Controls
             if (this.panel != null)
             {
                 this.panel.Children = new PerspexList<Control>(this.CreateItems(items));
-
-                if (this.panel.Children.Count > 0)
-                {
-                    ((TabItem)this.panel.Children[0]).Classes.Add(":selected");
-                }
             }
         }
     }
