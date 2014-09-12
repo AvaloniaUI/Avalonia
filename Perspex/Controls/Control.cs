@@ -218,7 +218,7 @@ namespace Perspex.Controls
 
             if (visual != null)
             {
-                return new DataTemplate(_ => true, x => visual);
+                return new DataTemplate(x => visual);
             }
 
             ILogical node = this;

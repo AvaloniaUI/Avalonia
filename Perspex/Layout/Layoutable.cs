@@ -217,7 +217,7 @@ namespace Perspex.Layout
         {
             if (this.IsVisible)
             {
-                Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin));
+                Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin)).Inflate(this.Margin);
                 double width = (this.Width > 0) ? this.Width : measuredSize.Width;
                 double height = (this.Height > 0) ? this.Height : measuredSize.Height;
 

@@ -17,7 +17,7 @@ namespace Perspex.Themes.Default
             this.Add(new ContentControlStyle());
             this.Add(new ItemsControlStyle());
             this.Add(new TextBoxStyle());
-            this.Add(new TabStyle());
+            this.Add(new TabItemStyle());
             this.Add(new TabStripStyle());
         }
     }

@@ -21,7 +21,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<ContentControl>(this.Template)),
+                        new Setter(ContentControl.TemplateProperty, ControlTemplate.Create<ContentControl>(this.Template)),
                     },
                 },
             });

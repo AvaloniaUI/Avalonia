@@ -82,7 +82,7 @@ namespace Perspex.Controls
 
                     if (this.visualChild != null)
                     {
-                        ((IVisual)this.visualChild).VisualParent = this;
+                        this.visualChild.VisualParent = this;
                         ((Control)this.visualChild).TemplatedParent = null;
                     }
                 }

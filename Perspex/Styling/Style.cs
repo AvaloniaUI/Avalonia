@@ -52,5 +52,10 @@ namespace Perspex.Styling
                 }
             }
         }
+
+        public override string ToString()
+        {
+            return "Style: " + this.Selector.ToString();
+        }
     }
 }

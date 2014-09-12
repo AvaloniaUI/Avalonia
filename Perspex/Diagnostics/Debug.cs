@@ -36,10 +36,10 @@ namespace Perspex.Diagnostics
                     builder.Append(" |  ");
                     builder.Append(value.Item1.Name);
                     builder.Append(" = ");
-                    builder.Append(value.Item2);
-                    builder.Append(" (");
+                    builder.Append(value.Item2 ?? "(null)");
+                    builder.Append(" [");
                     builder.Append(value.Item3);
-                    builder.AppendLine(")");
+                    builder.AppendLine("]");
                 }
             }
 

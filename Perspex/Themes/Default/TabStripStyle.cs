@@ -8,7 +8,6 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
-    using Perspex.Media;
     using Perspex.Styling;
 
     public class TabStripStyle : Styles
@@ -21,7 +20,14 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<TabStrip>(this.Template)),
+                        new Setter(TabStrip.TemplateProperty, ControlTemplate.Create<TabStrip>(this.Template)),
+                    },
+                },
+                new Style(x => x.OfType<TabStrip>().Template().OfType<StackPanel>())
+                {
+                    Setters = new[]
+                    {
+                        new Setter(StackPanel.OrientationProperty, Orientation.Horizontal),
                     },
                 },
             });
@@ -31,8 +37,9 @@ namespace Perspex.Themes.Default
         {
             return new ItemsPresenter
             {
-                ItemsPanel = new ItemsPanelTemplate(() => new StackPanel()),
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                [~ItemsPresenter.ItemTemplateProperty] = control[~ItemsControl.ItemTemplateProperty],
             };
         }
     }

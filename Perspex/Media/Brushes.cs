@@ -14,10 +14,17 @@ namespace Perspex.Media
         static Brushes()
         {
             Black = new SolidColorBrush(0xff000000);
+            Gray = new SolidColorBrush(0xff808080);
             Red = new SolidColorBrush(0xffff0000);
         }
 
         public static SolidColorBrush Black
+        {
+            get;
+            private set;
+        }
+
+        public static SolidColorBrush Gray
         {
             get;
             private set;

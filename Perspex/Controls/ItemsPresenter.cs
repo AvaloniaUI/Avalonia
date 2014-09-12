@@ -15,10 +15,13 @@ namespace Perspex.Controls
     public class ItemsPresenter : Control, IVisual
     {
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsPresenter, IEnumerable>("Items");
+            ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
 
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
-            PerspexProperty.Register<ItemsPresenter, ItemsPanelTemplate>("ItemsPanel");
+            ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
+
+        public static readonly PerspexProperty<DataTemplate> ItemTemplateProperty =
+            ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenter>();
 
         private Panel panel;
 
@@ -37,6 +40,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
+        }
+
+        public DataTemplate ItemTemplate
+        {
+            get { return this.GetValue(ItemTemplateProperty); }
+            set { this.SetValue(ItemTemplateProperty, value); }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
@@ -62,6 +71,20 @@ namespace Perspex.Controls
             return finalSize;
         }
 
+        protected override DataTemplate FindDataTemplate(object content)
+        {
+            TabItem tabItem = content as TabItem;
+
+            if (tabItem != null)
+            {
+                return new DataTemplate(_ => tabItem);
+            }
+            else
+            {
+                return this.ItemTemplate ?? base.FindDataTemplate(content);
+            }
+        }
+
         private IEnumerable<Control> CreateItems(IEnumerable items)
         {
             if (items != null)
@@ -82,6 +105,7 @@ namespace Perspex.Controls
             if (this.panel == null && this.ItemsPanel != null)
             {
                 this.panel = this.ItemsPanel.Build();
+                ((IVisual)this.panel).VisualParent = this;
                 this.ItemsChanged(this.Items);
             }
 
@@ -93,6 +117,11 @@ namespace Perspex.Controls
             if (this.panel != null)
             {
                 this.panel.Children = new PerspexList<Control>(this.CreateItems(items));
+
+                if (this.panel.Children.Count > 0)
+                {
+                    ((TabItem)this.panel.Children[0]).Classes.Add(":selected");
+                }
             }
         }
     }

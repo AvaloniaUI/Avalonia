@@ -74,8 +74,14 @@ namespace TestApplication
                         {
                             Items = new[]
                             {
-                                "Foo",
-                                "Bar",
+                                new TabItem
+                                {
+                                    Header = "Tab 1",
+                                },
+                                new TabItem
+                                {
+                                    Header = "Tab 2",
+                                },
                             }
                         }
                     }

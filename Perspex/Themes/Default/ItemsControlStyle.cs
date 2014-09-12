@@ -32,6 +32,7 @@ namespace Perspex.Themes.Default
             {
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                [~ItemsPresenter.ItemTemplateProperty] = control[~ItemsControl.ItemTemplateProperty],
             };
         }
     }

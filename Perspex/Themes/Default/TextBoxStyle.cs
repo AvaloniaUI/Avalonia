@@ -23,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<TextBox>(this.Template)),
+                        new Setter(TextBox.TemplateProperty, ControlTemplate.Create<TextBox>(this.Template)),
                         new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(TextBox.BorderThicknessProperty, 2.0),
                     },

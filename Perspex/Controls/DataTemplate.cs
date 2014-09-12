@@ -14,6 +14,11 @@ namespace Perspex.Controls
         public static readonly DataTemplate Default =
             new DataTemplate(typeof(object), o => new TextBlock { Text = o.ToString() });
 
+        public DataTemplate(Func<object, IVisual> build)
+            : this(o => true, build)
+        {
+        }
+
         public DataTemplate(Type type, Func<object, IVisual> build)
             : this(o => type.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()), build)
         {

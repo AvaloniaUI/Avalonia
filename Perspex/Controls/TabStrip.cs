@@ -12,16 +12,16 @@ namespace Perspex.Controls
 
     public class TabStrip : ItemsControl
     {
-        private static readonly DataTemplate TabTemplate = new DataTemplate(_ => true, CreateTab);
+        private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
+            () => new StackPanel());
 
-        protected override DataTemplate FindDataTemplate(object content)
-        {
-            return TabTemplate;
-        }
+        private static readonly DataTemplate TabTemplate = new DataTemplate(
+            o => new TabItem { Content = o });
 
-        private static IVisual CreateTab(object o)
+        static TabStrip()
         {
-            return new Tab { Content = o };
+            ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
+            ItemTemplateProperty.OverrideDefaultValue(typeof(TabStrip), TabTemplate);
         }
     }
 }

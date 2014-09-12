@@ -82,8 +82,7 @@ namespace Perspex.Styling
             
             while (selector != null)
             {
-                if ((selector.InTemplate && control.TemplatedParent == null) ||
-                    (!selector.InTemplate && control.TemplatedParent != null))
+                if (selector.InTemplate && control.TemplatedParent == null)
                 {
                     inputs.Add(Observable.Return(false));
                 }
