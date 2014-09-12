@@ -212,8 +212,15 @@ namespace Perspex.Controls
             });
         }
 
-        protected DataTemplate FindDataTemplate(object content)
+        protected virtual DataTemplate FindDataTemplate(object content)
         {
+            IVisual visual = content as IVisual;
+
+            if (visual != null)
+            {
+                return new DataTemplate(_ => true, x => visual);
+            }
+
             ILogical node = this;
 
             while (node != null)

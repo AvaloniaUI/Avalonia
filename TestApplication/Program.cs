@@ -70,37 +70,13 @@ namespace TestApplication
                             Source = new Bitmap("github_icon.png"),
                             Width = 200,
                         },
-                        new ItemsControl
+                        new TabStrip
                         {
-                            DataTemplates = new DataTemplates
-                            {
-                                new DataTemplate<Item>(o => new Border
-                                {
-                                    Background = Brushes.Red,
-                                    BorderBrush = Brushes.Black,
-                                    BorderThickness = 1,
-                                    Content = new StackPanel
-                                    {
-                                        Orientation = Orientation.Vertical,
-                                        Children = new PerspexList<Control>
-                                        {
-                                            new TextBlock
-                                            {
-                                                Text = o.Name,
-                                            },
-                                            new TextBlock
-                                            {
-                                                Text = o.Value,
-                                            }
-                                        },
-                                    }
-                                }),
-                            },
                             Items = new[]
                             {
-                                new Item { Name = "Foo", Value = "Bar" },
-                                new Item { Name = "Buzz", Value = "Aldrin" },
-                            },
+                                "Foo",
+                                "Bar",
+                            }
                         }
                     }
                 }

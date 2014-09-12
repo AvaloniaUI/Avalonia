@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ItemsControlStyle.cs" company="Steven Kirk">
+// <copyright file="TabStyle.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -8,30 +8,34 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Media;
     using Perspex.Styling;
 
-    public class ItemsControlStyle : Styles
+    public class TabStyle : Styles
     {
-        public ItemsControlStyle()
+        public TabStyle()
         {
             this.AddRange(new[]
             {
-                new Style(x => x.OfType<ItemsControl>())
+                new Style(x => x.OfType<Tab>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<ItemsControl>(this.Template)),
+                        new Setter(Button.TemplateProperty, ControlTemplate.Create<Tab>(this.Template)),
                     },
                 },
             });
         }
 
-        private Control Template(ItemsControl control)
+        private Control Template(Tab control)
         {
-            return new ItemsPresenter
+            return new Border
             {
-                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                Background = Brushes.Red,
+                Content = new ContentPresenter
+                {
+                    [~ContentPresenter.ContentProperty] = control[~Tab.ContentProperty],
+                }
             };
         }
     }

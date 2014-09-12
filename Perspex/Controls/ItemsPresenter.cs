@@ -15,10 +15,10 @@ namespace Perspex.Controls
     public class ItemsPresenter : Control, IVisual
     {
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
+            PerspexProperty.Register<ItemsPresenter, IEnumerable>("Items");
 
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
-            PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel");
+            PerspexProperty.Register<ItemsPresenter, ItemsPanelTemplate>("ItemsPanel");
 
         private Panel panel;
 

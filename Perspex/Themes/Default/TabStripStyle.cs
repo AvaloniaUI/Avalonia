@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ItemsControlStyle.cs" company="Steven Kirk">
+// <copyright file="TabStripStyle.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -8,30 +8,31 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Media;
     using Perspex.Styling;
 
-    public class ItemsControlStyle : Styles
+    public class TabStripStyle : Styles
     {
-        public ItemsControlStyle()
+        public TabStripStyle()
         {
             this.AddRange(new[]
             {
-                new Style(x => x.OfType<ItemsControl>())
+                new Style(x => x.OfType<TabStrip>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<ItemsControl>(this.Template)),
+                        new Setter(Button.TemplateProperty, ControlTemplate.Create<TabStrip>(this.Template)),
                     },
                 },
             });
         }
 
-        private Control Template(ItemsControl control)
+        private Control Template(TabStrip control)
         {
             return new ItemsPresenter
             {
+                ItemsPanel = new ItemsPanelTemplate(() => new StackPanel()),
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
             };
         }
     }
