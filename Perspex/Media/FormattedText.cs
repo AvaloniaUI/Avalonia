@@ -17,13 +17,16 @@ namespace Perspex.Media
 
         public string Text { get; set; }
 
-        public Size Size
+        public double[] GetLineHeights(Size constraint)
         {
-            get
-            {
-                IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-                return factory.TextService.Measure(this);
-            }
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            return factory.TextService.GetLineHeights(this, constraint);
+        }
+
+        public Size Measure(Size constraint)
+        {
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            return factory.TextService.Measure(this, constraint);
         }
     }
 }

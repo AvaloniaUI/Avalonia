@@ -18,7 +18,7 @@ namespace Perspex.Controls
 
         static TextBlock()
         {
-            AffectsRender(TextProperty);
+            AffectsMeasure(TextProperty);
         }
 
         public string Text
@@ -56,7 +56,7 @@ namespace Perspex.Controls
         {
             if (!string.IsNullOrEmpty(this.Text))
             {
-                return this.FormattedText.Size;
+                return this.FormattedText.Measure(availableSize);
             }
 
             return new Size();

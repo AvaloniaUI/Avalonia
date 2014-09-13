@@ -126,7 +126,8 @@ namespace Perspex.Controls
             IPlatformRenderInterface platform = Locator.Current.GetService<IPlatformRenderInterface>();
             this.CaretIndex = platform.TextService.GetCaretIndex(
                 this.textBoxView.FormattedText,
-                e.GetPosition(this.textBoxView));
+                e.GetPosition(this.textBoxView),
+                this.ActualSize);
         }
     }
 }

@@ -10,10 +10,12 @@ namespace Perspex.Platform
 
     public interface ITextService
     {
-        Size Measure(FormattedText text);
+        int GetCaretIndex(FormattedText text, Point point, Size constraint);
 
-        int GetCaretIndex(FormattedText text, Point point);
+        Point GetCaretPosition(FormattedText text, int caretIndex, Size constraint);
 
-        Point GetCaretPosition(FormattedText text, int caretIndex);
+        double[] GetLineHeights(FormattedText text, Size constraint);
+
+        Size Measure(FormattedText text, Size constraint);
     }
 }

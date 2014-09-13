@@ -79,7 +79,11 @@ namespace Perspex.Controls
             if (this.parent.IsFocused)
             {
                 IPlatformRenderInterface platform = Locator.Current.GetService<IPlatformRenderInterface>();
-                Point caretPos = platform.TextService.GetCaretPosition(this.formattedText, this.parent.CaretIndex);
+                Point caretPos = platform.TextService.GetCaretPosition(
+                    this.formattedText, 
+                    this.parent.CaretIndex,
+                    this.ActualSize);
+                double[] lineHeights = platform.TextService.GetLineHeights(this.formattedText, this.ActualSize);
                 Brush caretBrush = Brushes.Black;
 
                 if (this.caretBlink)
@@ -87,14 +91,14 @@ namespace Perspex.Controls
                     context.DrawLine(
                         new Pen(caretBrush, 1),
                         caretPos,
-                        new Point(caretPos.X, caretPos.Y + this.FormattedText.Size.Height));
+                        new Point(caretPos.X, caretPos.Y + lineHeights[0]));
                 }
             }
         }
 
         protected override Size MeasureOverride(Size constraint)
         {
-            return new Size(this.FormattedText.Size.Width, this.FormattedText.Size.Height);
+            return this.FormattedText.Measure(constraint);
         }
 
         private FormattedText CreateFormattedText()
