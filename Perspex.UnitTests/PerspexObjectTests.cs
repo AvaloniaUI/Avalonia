@@ -124,6 +124,24 @@ namespace Perspex.UnitTests
             Class1 target = new Class1();
             bool raised = false;
 
+            target.SetValue(Class1.FooProperty, "bar");
+
+            target.PropertyChanged += (s, e) =>
+            {
+                raised = true;
+            };
+
+            target.SetValue(Class1.FooProperty, "bar");
+
+            Assert.IsFalse(raised);
+        }
+
+        [TestMethod]
+        public void SetValue_Doesnt_Raise_PropertyChanged_If_Value_Not_Changed_From_Default()
+        {
+            Class1 target = new Class1();
+            bool raised = false;
+
             target.PropertyChanged += (s, e) =>
             {
                 raised = true;

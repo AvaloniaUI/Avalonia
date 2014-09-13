@@ -214,18 +214,18 @@ namespace Perspex.Controls
 
         protected virtual DataTemplate FindDataTemplate(object content)
         {
-            IVisual visual = content as IVisual;
+            Control control = content as Control;
 
-            if (visual != null)
+            if (control != null)
             {
-                return new DataTemplate(x => visual);
+                return new DataTemplate(x => control);
             }
 
             ILogical node = this;
 
             while (node != null)
             {
-                Control control = node as Control;
+                control = node as Control;
 
                 if (control != null)
                 {

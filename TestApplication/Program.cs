@@ -36,55 +36,85 @@ namespace TestApplication
         {
             App application = new App();
 
-            Locator.CurrentMutable.Register(() => new TestLogger { Level = LogLevel.Debug } , typeof(ILogger));
+            //Locator.CurrentMutable.Register(() => new TestLogger { Level = LogLevel.Debug } , typeof(ILogger));
 
             Window window = new Window
             {
-                Content = new StackPanel
+                Content = new TabControl
                 {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Orientation = Orientation.Vertical,
-                    Gap = 6,
-                    Children = new PerspexList<Control>
+                    Items = new[]
                     {
-                        new Button
+                        new TabItem
                         {
-                            Content = "Button",
-                        },
-                        new Button
-                        {
-                            Content = "Explict Background",
-                            Background = new SolidColorBrush(0xffa0a0ff),
-                        },
-                        new CheckBox
-                        {
-                            Content = "Checkbox",
-                        },
-                        new TextBox
-                        {
-                            Text = "Hello World!",
-                        },
-                        new Image
-                        {
-                            Source = new Bitmap("github_icon.png"),
-                            Width = 200,
-                        },
-                        new TabStrip
-                        {
-                            Items = new[]
+                            Header = "Buttons",
+                            Content = new StackPanel
                             {
-                                new TabItem
+                                Orientation = Orientation.Vertical,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Gap = 8,
+                                MinWidth = 120,
+                                Children = new Controls
                                 {
-                                    Header = "Tab 1",
-                                    IsSelected = true,
-                                },
-                                new TabItem
+                                    new Button
+                                    {
+                                        Content = "Button",
+                                    },
+                                    new Button
+                                    {
+                                        Content = "Button",
+                                        Background = new SolidColorBrush(0xcc119eda),
+                                    },
+                                    new CheckBox
+                                    {
+                                        Content = "Checkbox",
+                                    },
+                                }
+                            },
+                        },
+                        new TabItem
+                        {
+                            Header = "Text",
+                            Content = new StackPanel
+                            {
+                                Orientation = Orientation.Vertical,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Gap = 8,
+                                Width = 120,
+                                Children = new Controls
                                 {
-                                    Header = "Tab 2",
-                                },
-                            }
-                        }
+                                    new TextBlock
+                                    {
+                                        Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
+                                    },
+                                    new TextBox
+                                    {
+                                        Text = "Text Box",
+                                    },
+                                }
+                            },
+                        },
+                        new TabItem
+                        {
+                            Header = "Images",
+                            Content = new StackPanel
+                            {
+                                Orientation = Orientation.Vertical,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Gap = 8,
+                                Width = 120,
+                                Children = new Controls
+                                {
+                                    new Image
+                                    {
+                                        Source = new Bitmap("github_icon.png"),
+                                        Width = 200,
+                                    },
+                                }
+                            },
+                        },
                     }
                 }
             };

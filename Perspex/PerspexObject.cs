@@ -412,8 +412,7 @@ namespace Perspex
                 this.GetHashCode(),
                 value));
 
-            v.Clear(Priority);
-            v.Add(Observable.Never<object>().StartWith(value), Priority);
+            v.Replace(Observable.Never<object>().StartWith(value), Priority);
         }
 
         /// <summary>
@@ -455,11 +454,6 @@ namespace Perspex
                 this.values.Add(property, v);
             }
 
-            if (priority == BindingPriority.LocalValue)
-            {
-                v.Clear((int)priority);
-            }
-
             this.Log().Debug(string.Format(
                 "Bound value of {0}.{1} (#{2:x8}) to {3}",
                 this.GetType().Name,
@@ -467,7 +461,14 @@ namespace Perspex
                 this.GetHashCode(),
                 description != null ? description.Description : "[Anonymous]"));
 
-            return v.Add(source, (int)priority);
+            if (priority == BindingPriority.LocalValue)
+            {
+                return v.Replace(source, (int)priority);
+            }
+            else
+            {
+                return v.Add(source, (int)priority);
+            }
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ namespace Perspex.Themes.Default
                         new ColumnDefinition(GridLength.Auto),
                         new ColumnDefinition(new GridLength(1, GridUnitType.Star)),
                     },
-                    Children = new PerspexList<Control>
+                    Children = new Controls
                     {
                         new Border
                         {

@@ -27,6 +27,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
+                        new Setter(StackPanel.GapProperty, 16.0),
                         new Setter(StackPanel.OrientationProperty, Orientation.Horizontal),
                     },
                 },

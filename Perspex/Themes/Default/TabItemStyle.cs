@@ -23,7 +23,6 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(TextBox.FontSizeProperty, 28.7),
                         new Setter(Control.ForegroundProperty, Brushes.Gray),
-                        new Setter(Control.MarginProperty, new Thickness(8, 0)),
                         new Setter(TabItem.TemplateProperty, ControlTemplate.Create<TabItem>(this.Template)),
                     },
                 },

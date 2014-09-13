@@ -9,6 +9,7 @@ namespace Perspex
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Controls;
     using Perspex.Styling;
 
     public static class VisualExtensions

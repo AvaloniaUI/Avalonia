@@ -110,6 +110,49 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Adds a new binding, replacing all those of the same priority.
+        /// </summary>
+        /// <param name="binding">The binding.</param>
+        /// <param name="priority">The binding priority.</param>
+        /// <returns>
+        /// A disposable that will remove the binding.
+        /// </returns>
+        public IDisposable Replace(IObservable<object> binding, int priority)
+        {
+            BindingEntry entry = new BindingEntry();
+            LinkedListNode<BindingEntry> insert = this.bindings.First;
+
+            while (insert != null && insert.Value.Priority < priority)
+            {
+                insert = insert.Next;
+            }
+
+            while (insert != null && insert.Value.Priority == priority)
+            {
+                LinkedListNode<BindingEntry> next = insert.Next;
+                insert.Value.Dispose();
+                this.bindings.Remove(insert);
+                insert = next;
+            }
+
+            if (insert == null)
+            {
+                this.bindings.AddLast(entry);
+            }
+            else
+            {
+                this.bindings.AddBefore(insert, entry);
+            }
+
+            entry.Start(binding, priority, this.EntryChanged, this.EntryCompleted);
+
+            return Disposable.Create(() =>
+            {
+                this.Remove(entry);
+            });
+        }
+
+        /// <summary>
         /// Removes all bindings with the specified priority.
         /// </summary>
         /// <param name="priority">The priority.</param>

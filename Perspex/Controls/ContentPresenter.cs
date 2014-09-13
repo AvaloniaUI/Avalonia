@@ -24,20 +24,20 @@ namespace Perspex.Controls
 
         public ContentPresenter()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
-            {
-                if (x.Item1 is Control)
-                {
-                    ((IVisual)x.Item1).VisualParent = null;
-                    ((ILogical)x.Item1).LogicalParent = null;
-                }
+            this.GetObservableWithHistory(ContentProperty).Subscribe(this.ContentChanged);
+            //{
+            //    if (x.Item1 is Control)
+            //    {
+            //        ((IVisual)x.Item1).VisualParent = null;
+            //        ((ILogical)x.Item1).LogicalParent = null;
+            //    }
 
-                if (x.Item2 is Control)
-                {
-                    ((IVisual)x.Item2).VisualParent = this;
-                    ((ILogical)x.Item2).LogicalParent = this;
-                }
-            });
+            //    if (x.Item2 is Control)
+            //    {
+            //        ((IVisual)x.Item2).VisualParent = this;
+            //        ((ILogical)x.Item2).LogicalParent = this;
+            //    }
+            //});
         }
 
         public object Content
@@ -159,6 +159,42 @@ namespace Perspex.Controls
             }
 
             return new Size();
+        }
+
+        private void ContentChanged(Tuple<object, object> content)
+        {
+            if (content.Item1 != null)
+            {
+                this.visualChild.VisualParent = null;
+                ILogical logical = content.Item1 as ILogical;
+
+                if (logical != null)
+                {
+                    logical.LogicalParent = null;
+                }
+            }
+
+            if (content.Item2 != null)
+            {
+                IVisual visual = content.Item2 as IVisual;
+
+                if (visual == null)
+                {
+                    visual = this.GetDataTemplate(content.Item2).Build(content.Item2);
+                }
+
+                visual.VisualParent = this;
+                this.visualChild = visual;
+
+                ILogical logical = content.Item2 as ILogical;
+
+                if (logical != null)
+                {
+                    logical.LogicalParent = (ILogical)this.TemplatedParent;
+                }
+            }
+
+            this.InvalidateMeasure();
         }
     }
 }

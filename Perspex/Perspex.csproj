@@ -71,7 +71,10 @@
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
     <Compile Include="Controls\HeaderedContentControl.cs" />
+    <Compile Include="Controls\Controls.cs" />
+    <Compile Include="Controls\SelectingItemsControl.cs" />
     <Compile Include="Controls\TabItem.cs" />
+    <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\TabStrip.cs" />
     <Compile Include="Controls\ItemsPresenter.cs" />
     <Compile Include="Controls\ItemsPanelTemplate.cs" />
@@ -134,6 +137,7 @@
     <Compile Include="Themes\Default\ContentControlStyle.cs" />
     <Compile Include="Themes\Default\ItemsControlStyle.cs" />
     <Compile Include="Themes\Default\TabItemStyle.cs" />
+    <Compile Include="Themes\Default\TabControlStyle.cs" />
     <Compile Include="Themes\Default\TabStripStyle.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Rendering\RenderManager.cs" />
@@ -205,6 +209,7 @@
     <Compile Include="Threading\DispatcherTimer.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ControlExtensions.cs" />
     <Compile Include="VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -44,12 +44,12 @@ namespace Perspex.UnitTests.Styling
         }
 
         [TestMethod]
-        public void OfType_Doesnt_Match_Control_With_TemplatedParent()
+        public void OfType_Matches_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = new Selector().OfType<Control1>();
 
-            Assert.IsFalse(ActivatorValue(target, control));
+            Assert.IsTrue(ActivatorValue(target, control));
         }
 
         [TestMethod]

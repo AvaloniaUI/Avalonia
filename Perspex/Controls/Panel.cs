@@ -19,17 +19,17 @@ namespace Perspex.Controls
     /// </summary>
     public class Panel : Control, IVisual
     {
-        private PerspexList<Control> children;
+        private Controls children;
 
         private LogicalChildren<Control> logicalChildren;
 
-        public PerspexList<Control> Children
+        public Controls Children
         {
             get
             {
                 if (this.children == null)
                 {
-                    this.children = new PerspexList<Control>();
+                    this.children = new Controls();
                     this.logicalChildren = new LogicalChildren<Control>(this, this.children);
                 }
 

@@ -71,27 +71,27 @@ namespace Perspex.Controls
             return finalSize;
         }
 
-        protected override DataTemplate FindDataTemplate(object content)
+        private Control CreateItemControl(object item)
         {
-            TabItem tabItem = content as TabItem;
+            ItemsControl i = this.TemplatedParent as ItemsControl;
 
-            if (tabItem != null)
+            if (i != null)
             {
-                return new DataTemplate(_ => tabItem);
+                return i.CreateItemControl(item);
             }
             else
             {
-                return this.ItemTemplate ?? base.FindDataTemplate(content);
+                return this.GetDataTemplate(item).Build(item) as Control;
             }
         }
-
-        private IEnumerable<Control> CreateItems(IEnumerable items)
+         
+        private IEnumerable<Control> CreateItemControls(IEnumerable items)
         {
             if (items != null)
             {
                 return items
                     .Cast<object>()
-                    .Select(x => this.GetDataTemplate(x).Build(x))
+                    .Select(x => this.CreateItemControl(x))
                     .OfType<Control>();
             }
             else
@@ -116,7 +116,7 @@ namespace Perspex.Controls
         {
             if (this.panel != null)
             {
-                this.panel.Children = new PerspexList<Control>(this.CreateItems(items));
+                this.panel.Children = new Controls(this.CreateItemControls(items));
             }
         }
     }

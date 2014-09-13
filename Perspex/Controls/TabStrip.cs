@@ -4,11 +4,12 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Perspex.Input;
-
 namespace Perspex.Controls
 {
-    public class TabStrip : ItemsControl
+    using System;
+    using Perspex.Input;
+
+    public class TabStrip : SelectingItemsControl
     {
         private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
             () => new StackPanel());
@@ -25,6 +26,24 @@ namespace Perspex.Controls
         public TabStrip()
         {
             this.PointerPressed += this.OnPointerPressed;
+            this.GetObservable(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
+        }
+
+        protected override Control CreateItemControlOverride(object item)
+        {
+            TabItem result = item as TabItem;
+
+            if (result == null)
+            {
+                result = new TabItem
+                {
+                    Content = item,
+                };
+            }
+
+            result.IsSelected = this.SelectedItem == item;
+
+            return result;
         }
 
         private void OnPointerPressed(object sender, PointerEventArgs e)
@@ -36,15 +55,18 @@ namespace Perspex.Controls
             {
                 TabItem item = presenter.TemplatedParent as TabItem;
 
-                if (item != null && item.TemplatedParent == this)
+                if (item != null)
                 {
-                    item.IsSelected = true;
-
-                    foreach (var i in item.GetVisualSiblings<TabItem>())
-                    {
-                        i.IsSelected = false;
-                    }
+                    this.SelectedItem = item;
                 }
+            }
+        }
+
+        private void SelectedItemChanged(object selectedItem)
+        {
+            foreach (TabItem item in this.GetAllItemControls())
+            {
+                item.IsSelected = item == selectedItem;
             }
         }
     }

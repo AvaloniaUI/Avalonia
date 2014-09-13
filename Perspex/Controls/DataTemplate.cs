@@ -14,17 +14,17 @@ namespace Perspex.Controls
         public static readonly DataTemplate Default =
             new DataTemplate(typeof(object), o => new TextBlock { Text = o.ToString() });
 
-        public DataTemplate(Func<object, IVisual> build)
+        public DataTemplate(Func<object, Control> build)
             : this(o => true, build)
         {
         }
 
-        public DataTemplate(Type type, Func<object, IVisual> build)
+        public DataTemplate(Type type, Func<object, Control> build)
             : this(o => type.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()), build)
         {
         }
 
-        public DataTemplate(Func<object, bool> match, Func<object, IVisual> build)
+        public DataTemplate(Func<object, bool> match, Func<object, Control> build)
         {
             Contract.Requires<ArgumentNullException>(match != null);
             Contract.Requires<ArgumentNullException>(build != null);
@@ -35,17 +35,17 @@ namespace Perspex.Controls
 
         public Func<object, bool> Match { get; private set; }
 
-        public Func<object, IVisual> Build { get; private set; }
+        public Func<object, Control> Build { get; private set; }
     }
 
     public class DataTemplate<T> : DataTemplate
     {
-        public DataTemplate(Func<T, IVisual> build)
+        public DataTemplate(Func<T, Control> build)
             : base(typeof(T), o => build((T)o))
         {
         }
 
-        public DataTemplate(Func<T, bool> match, Func<T, IVisual> build)
+        public DataTemplate(Func<T, bool> match, Func<T, Control> build)
             : base(o => (o is T) ? match((T)o) : false, o => build((T)o))
         {
         }

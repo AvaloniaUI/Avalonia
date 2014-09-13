@@ -6,7 +6,9 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using System.Collections;
+    using System.Collections.Generic;
 
     public class ItemsControl : TemplatedControl
     {
@@ -21,6 +23,8 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<DataTemplate> ItemTemplateProperty =
             PerspexProperty.Register<ItemsControl, DataTemplate>("ItemTemplate");
+
+        private Dictionary<object, Control> itemControls = new Dictionary<object, Control>();
 
         public IEnumerable Items
         {
@@ -38,6 +42,44 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ItemTemplateProperty); }
             set { this.SetValue(ItemTemplateProperty, value); }
+        }
+
+        public Control GetControlForItem(object item)
+        {
+            Control result;
+            this.itemControls.TryGetValue(item, out result);
+            return result;
+        }
+
+        public IEnumerable<Control> GetAllItemControls()
+        {
+            return this.itemControls.Values;
+        }
+
+        internal Control CreateItemControl(object item)
+        {
+            Control control = this.CreateItemControlOverride(item);
+            this.itemControls.Add(item, control);
+            return control;
+        }
+
+        protected virtual Control CreateItemControlOverride(object item)
+        {
+            Control control = item as Control;
+            DataTemplate template = this.ItemTemplate;
+
+            if (control != null)
+            {
+                return control;
+            }
+            else if (template != null)
+            {
+                return template.Build(item);
+            }
+            else
+            {
+                return this.GetDataTemplate(item).Build(item);
+            }
         }
     }
 }

@@ -16,9 +16,10 @@ namespace Perspex.Themes.Default
             this.Add(new CheckBoxStyle());
             this.Add(new ContentControlStyle());
             this.Add(new ItemsControlStyle());
-            this.Add(new TextBoxStyle());
+            this.Add(new TabControlStyle());
             this.Add(new TabItemStyle());
             this.Add(new TabStripStyle());
+            this.Add(new TextBoxStyle());
         }
     }
 }

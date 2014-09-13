@@ -52,7 +52,7 @@ namespace Perspex.UnitTests.Styling
         }
 
         [TestMethod]
-        public void Class_Doesnt_Match_Control_With_TemplatedParent()
+        public void Class_Matches_Control_With_TemplatedParent()
         {
             var control = new Control1
             {
@@ -62,7 +62,7 @@ namespace Perspex.UnitTests.Styling
 
             var target = new Selector().Class("foo");
 
-            Assert.IsFalse(ActivatorValue(target, control));
+            Assert.IsTrue(ActivatorValue(target, control));
         }
 
         [TestMethod]
