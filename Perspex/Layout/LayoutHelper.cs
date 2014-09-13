@@ -15,6 +15,17 @@ namespace Perspex.Layout
 
     public static class LayoutHelper
     {
+        public static Size ApplyLayoutConstraints(Layoutable control, Size constraints)
+        {
+            double width = (control.Width > 0) ? control.Width : constraints.Width;
+            double height = (control.Height > 0) ? control.Height : constraints.Height;
+            width = Math.Min(width, control.MaxWidth);
+            width = Math.Max(width, control.MinWidth);
+            height = Math.Min(height, control.MaxHeight);
+            height = Math.Max(height, control.MinHeight);
+            return new Size(width, height);
+        }
+        
         public static Size MeasureDecorator(
             Control decorator,
             Control content,
@@ -26,7 +37,7 @@ namespace Perspex.Layout
 
             if (content != null)
             {
-                content.Measure(availableSize);
+                content.Measure(availableSize.Deflate(padding));
                 Size s = content.DesiredSize.Value.Inflate(padding);
                 width = s.Width;
                 height = s.Height;

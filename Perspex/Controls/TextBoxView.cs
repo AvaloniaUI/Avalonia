@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Globalization;
+    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Platform;
     using Perspex.Threading;
@@ -98,7 +99,12 @@ namespace Perspex.Controls
 
         protected override Size MeasureOverride(Size constraint)
         {
-            return this.FormattedText.Measure(constraint);
+            if (!string.IsNullOrEmpty(this.parent.Text))
+            {
+                return this.FormattedText.Measure(constraint);
+            }
+
+            return new Size();
         }
 
         private FormattedText CreateFormattedText()

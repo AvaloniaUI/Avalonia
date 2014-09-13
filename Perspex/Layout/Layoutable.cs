@@ -217,16 +217,11 @@ namespace Perspex.Layout
         {
             if (this.IsVisible)
             {
-                Size measuredSize = this.MeasureOverride(availableSize.Deflate(this.Margin)).Inflate(this.Margin);
-                double width = (this.Width > 0) ? this.Width : measuredSize.Width;
-                double height = (this.Height > 0) ? this.Height : measuredSize.Height;
+                availableSize = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
+                    .Deflate(this.Margin);
+                var measured = this.MeasureOverride(availableSize);
 
-                width = Math.Min(width, this.MaxWidth);
-                width = Math.Max(width, this.MinWidth);
-                height = Math.Min(height, this.MaxHeight);
-                height = Math.Max(height, this.MinHeight);
-
-                return new Size(width, height);
+                return measured.Inflate(this.Margin);
             }
             else
             {
