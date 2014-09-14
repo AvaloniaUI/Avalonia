@@ -14,8 +14,8 @@ namespace Perspex.Controls
 
     public enum Orientation
     {
-        Horizontal,
         Vertical,
+        Horizontal,
     }
 
     public class StackPanel : Panel
