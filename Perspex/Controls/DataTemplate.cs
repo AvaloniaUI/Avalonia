@@ -20,7 +20,7 @@ namespace Perspex.Controls
         }
 
         public DataTemplate(Type type, Func<object, Control> build)
-            : this(o => type.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()), build)
+            : this(o => IsInstance(o, type), build)
         {
         }
 
@@ -31,6 +31,11 @@ namespace Perspex.Controls
 
             this.Match = match;
             this.Build = build;
+        }
+
+        public static bool IsInstance(object o, Type t)
+        {
+            return t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
         }
 
         public Func<object, bool> Match { get; private set; }

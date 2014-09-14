@@ -10,6 +10,7 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Reactive.Disposables;
     using System.Reactive.Subjects;
+    using System.Reflection;
 
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.
@@ -25,6 +26,16 @@ namespace Perspex
     /// </remarks>
     public class PriorityValue
     {
+        /// <summary>
+        /// The name of the property.
+        /// </summary>
+        private string name;
+
+        /// <summary>
+        /// The value type.
+        /// </summary>
+        private Type valueType;
+
         /// <summary>
         /// The currently registered binding entries.
         /// </summary>
@@ -43,8 +54,12 @@ namespace Perspex
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
-        public PriorityValue()
+        /// <param name="name">The name of the property.</param>
+        /// <param name="valueType">The value type.</param>
+        public PriorityValue(string name, Type valueType)
         {
+            this.name = name;
+            this.valueType = valueType;
             this.value = PerspexProperty.UnsetValue;
             this.ValuePriority = int.MaxValue;
         }
@@ -72,6 +87,39 @@ namespace Perspex
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Checks whether a value is valid for a type.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="propertyType"></param>
+        /// <returns></returns>
+        public static bool IsValidValue(object value, Type propertyType)
+        {
+            TypeInfo type = propertyType.GetTypeInfo();
+
+            if (value == PerspexProperty.UnsetValue)
+            {
+                return true;
+            }
+            else if (value == null)
+            {
+                if (type.IsValueType && 
+                    (!type.IsGenericType || !(type.GetGenericTypeDefinition() == typeof(Nullable<>))))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!type.IsAssignableFrom(value.GetType().GetTypeInfo()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -218,6 +266,15 @@ namespace Perspex
         /// <param name="priority">The priority of the binding which produced the value.</param>
         private void SetValue(object value, int priority)
         {
+            if (!IsValidValue(value, this.valueType))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Invalid value for Property '{0}': {1} ({2})",
+                    this.name,
+                    value,
+                    value.GetType().FullName));
+            }
+
             object old = this.value;
 
             this.ValuePriority = priority;

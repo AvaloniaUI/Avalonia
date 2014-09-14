@@ -162,6 +162,15 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void SetValue_Throws_Exception_For_Invalid_Value_Type()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, 123);
+        }
+
+        [TestMethod]
         public void GetObservable_Returns_Initial_Value()
         {
             Class1 target = new Class1();
@@ -271,7 +280,7 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Binding_Sets_Current_Value()
+        public void Bind_Sets_Current_Value()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
@@ -283,7 +292,7 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Binding_NonGeneric_Sets_Current_Value()
+        public void Bind_NonGeneric_Sets_Current_Value()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
@@ -295,7 +304,7 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Binding_Sets_Subsequent_Value()
+        public void Bind_Sets_Subsequent_Value()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
@@ -322,7 +331,7 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
-        public void Binding_Doesnt_Set_Value_After_Reset()
+        public void Bind_Doesnt_Set_Value_After_Reset()
         {
             Class1 target = new Class1();
             Class1 source = new Class1();
@@ -333,6 +342,15 @@ namespace Perspex.UnitTests
             source.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.AreEqual("reset", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Bind_Throws_Exception_For_Invalid_Value_Type()
+        {
+            Class1 target = new Class1();
+
+            target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
         }
 
         [TestMethod]

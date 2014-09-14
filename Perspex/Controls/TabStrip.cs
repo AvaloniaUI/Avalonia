@@ -14,13 +14,9 @@ namespace Perspex.Controls
         private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
             () => new StackPanel());
 
-        private static readonly DataTemplate TabTemplate = new DataTemplate(
-            o => new TabItem { Content = o });
-
         static TabStrip()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
-            ItemTemplateProperty.OverrideDefaultValue(typeof(TabStrip), TabTemplate);
         }
 
         public TabStrip()
@@ -37,7 +33,7 @@ namespace Perspex.Controls
             {
                 result = new TabItem
                 {
-                    Content = item,
+                    Content = this.GetDataTemplate(item).Build(item),
                 };
             }
 

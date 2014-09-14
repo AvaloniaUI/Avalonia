@@ -43,6 +43,11 @@ namespace Perspex
         /// A style binding.
         /// </summary>
         Style,
+
+        /// <summary>
+        /// The binding is uninitialized.
+        /// </summary>
+        Unset = int.MaxValue,
     }
 
     /// <summary>
@@ -200,7 +205,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Clears a <see cref="PerspexProperty"/> value, including its binding.
+        /// Clears a <see cref="PerspexProperty"/>'s local value.
         /// </summary>
         /// <param name="property">The property.</param>
         public void ClearValue(PerspexProperty property)
@@ -394,6 +399,15 @@ namespace Perspex
                     this.GetType()));
             }
 
+            if (!PriorityValue.IsValidValue(value, property.PropertyType))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Invalid value for Property '{0}': {1} ({2})",
+                    property.Name,
+                    value,
+                    value.GetType().FullName));
+            }
+
             if (!this.values.TryGetValue(property, out v))
             {
                 if (value == PerspexProperty.UnsetValue)
@@ -493,7 +507,7 @@ namespace Perspex
 
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
-            PriorityValue result = new PriorityValue();
+            PriorityValue result = new PriorityValue(property.Name, property.PropertyType);
 
             result.Changed.Subscribe(x =>
             {

@@ -21,9 +21,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
-        public static readonly PerspexProperty<DataTemplate> ItemTemplateProperty =
-            PerspexProperty.Register<ItemsControl, DataTemplate>("ItemTemplate");
-
         private Dictionary<object, Control> itemControls = new Dictionary<object, Control>();
 
         public IEnumerable Items
@@ -36,12 +33,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
-        }
-
-        public DataTemplate ItemTemplate
-        {
-            get { return this.GetValue(ItemTemplateProperty); }
-            set { this.SetValue(ItemTemplateProperty, value); }
         }
 
         public Control GetControlForItem(object item)
@@ -65,21 +56,7 @@ namespace Perspex.Controls
 
         protected virtual Control CreateItemControlOverride(object item)
         {
-            Control control = item as Control;
-            DataTemplate template = this.ItemTemplate;
-
-            if (control != null)
-            {
-                return control;
-            }
-            else if (template != null)
-            {
-                return template.Build(item);
-            }
-            else
-            {
-                return this.GetDataTemplate(item).Build(item);
-            }
+            return (item as Control) ?? this.GetDataTemplate(item).Build(item);
         }
     }
 }

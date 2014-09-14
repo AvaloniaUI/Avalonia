@@ -25,7 +25,7 @@ namespace Perspex
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
-        public static readonly object UnsetValue = new object();
+        public static readonly object UnsetValue = new Unset();
 
         /// <summary>
         /// The default values for the property, by type.
@@ -257,6 +257,14 @@ namespace Perspex
             {
                 get;
                 private set;
+            }
+        }
+
+        private class Unset
+        {
+            public override string ToString()
+            {
+                return "{Unset}";
             }
         }
     }

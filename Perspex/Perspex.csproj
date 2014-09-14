@@ -70,9 +70,13 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="BindingExtensions.cs" />
+    <Compile Include="Controls\TreeDataTemplate.cs" />
     <Compile Include="Controls\HeaderedContentControl.cs" />
     <Compile Include="Controls\Controls.cs" />
     <Compile Include="Controls\SelectingItemsControl.cs" />
+    <Compile Include="Controls\HeaderedItemsControl.cs" />
+    <Compile Include="Controls\TreeViewItem.cs" />
+    <Compile Include="Controls\TreeView.cs" />
     <Compile Include="Controls\TabItem.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\TabStrip.cs" />
@@ -135,6 +139,8 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\Stretch.cs" />
     <Compile Include="Themes\Default\ContentControlStyle.cs" />
+    <Compile Include="Themes\Default\TreeViewItemStyle.cs" />
+    <Compile Include="Themes\Default\TreeViewStyle.cs" />
     <Compile Include="Themes\Default\ItemsControlStyle.cs" />
     <Compile Include="Themes\Default\TabItemStyle.cs" />
     <Compile Include="Themes\Default\TabControlStyle.cs" />

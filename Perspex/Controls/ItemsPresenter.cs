@@ -20,9 +20,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        public static readonly PerspexProperty<DataTemplate> ItemTemplateProperty =
-            ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenter>();
-
         private Panel panel;
 
         public ItemsPresenter()
@@ -40,12 +37,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
-        }
-
-        public DataTemplate ItemTemplate
-        {
-            get { return this.GetValue(ItemTemplateProperty); }
-            set { this.SetValue(ItemTemplateProperty, value); }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
