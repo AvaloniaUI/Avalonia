@@ -23,7 +23,7 @@ namespace Perspex.Windows
     using Perspex.Windows.Threading;
     using Splat;
 
-    public class Window : ContentControl, ILayoutRoot, IRendered
+    public class Window : ContentControl, ILayoutRoot, IRendered, ICloseable
     {
         private UnmanagedMethods.WndProc wndProcDelegate;
 
@@ -74,6 +74,8 @@ namespace Perspex.Windows
                     });
             });
         }
+
+        public event EventHandler Closed;
 
         public Size ClientSize
         {
@@ -166,6 +168,14 @@ namespace Perspex.Windows
             }
         }
 
+        private void OnClosed()
+        {
+            if (this.Closed != null)
+            {
+                this.Closed(this, EventArgs.Empty);
+            }
+        }
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -175,9 +185,9 @@ namespace Perspex.Windows
 
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
-                ////case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                ////    this.OnClosed();
-                ////    break;
+                case UnmanagedMethods.WindowsMessage.WM_DESTROY:
+                    this.OnClosed();
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                     WindowsKeyboardDevice.Instance.UpdateKeyStates();

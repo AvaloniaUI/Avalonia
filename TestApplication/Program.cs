@@ -234,7 +234,7 @@ namespace TestApplication
             };
 
             window.Show();
-            Dispatcher.Run();
+            Application.Current.Run(window);
         }
     }
 }

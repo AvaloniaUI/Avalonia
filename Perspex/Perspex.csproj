@@ -101,6 +101,7 @@
     <Compile Include="Controls\LogicalChildren.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\StackPanel.cs" />
+    <Compile Include="ICloseable.cs" />
     <Compile Include="IHeadered.cs" />
     <Compile Include="Diagnostics\Debug.cs" />
     <Compile Include="Input\InputElement.cs" />

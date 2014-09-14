@@ -6,9 +6,11 @@
 
 namespace Perspex
 {
+    using System.Threading;
     using Perspex.Controls;
     using Perspex.Input;
     using Perspex.Styling;
+    using Perspex.Threading;
     using Splat;
 
     public class Application
@@ -84,6 +86,13 @@ namespace Perspex
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => styler, typeof(IStyler));
+        }
+
+        public void Run(ICloseable closable)
+        {
+            DispatcherFrame frame = new DispatcherFrame();
+            closable.Closed += (s, e) => frame.Continue = false;
+            Dispatcher.PushFrame(frame);
         }
     }
 }
