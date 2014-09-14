@@ -61,6 +61,7 @@ namespace Perspex.Themes.Default
                         Margin = new Thickness(24, 0, 0, 0),
                         [~ItemsPresenter.ItemsProperty] = control[~TreeViewItem.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeViewItem.ItemsPanelProperty],
+                        [~ItemsPresenter.IsVisibleProperty] = control[~TreeViewItem.IsExpandedProperty],
                     }
                 }
             };

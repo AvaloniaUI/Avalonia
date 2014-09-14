@@ -6,12 +6,15 @@
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Linq;
-    using System.Reactive.Linq;
-
     public class TreeViewItem : HeaderedItemsControl
     {
+        public static readonly PerspexProperty<bool> IsExpandedProperty =
+            PerspexProperty.Register<TreeViewItem, bool>("IsExpanded");
+
+        public bool IsExpanded
+        {
+            get { return this.GetValue(IsExpandedProperty); }
+            set { this.SetValue(IsExpandedProperty, value); }
+        }
     }
 }
