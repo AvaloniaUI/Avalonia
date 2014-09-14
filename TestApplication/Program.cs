@@ -193,7 +193,7 @@ namespace TestApplication
                 }
             };
 
-            System.Console.WriteLine(Perspex.Diagnostics.Debug.PrintVisualTree(window));
+            //System.Console.WriteLine(Perspex.Diagnostics.Debug.PrintVisualTree(window));
 
             window.Show();
             Dispatcher.Run();

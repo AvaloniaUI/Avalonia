@@ -26,7 +26,14 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeViewItem>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().OfType<ContentPresenter>())
+                new Style(x => x.OfType<TreeViewItem>().Template().Id("header"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Border.PaddingProperty, new Thickness(2)),
+                    },
+                },
+                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().Id("header"))
                 {
                     Setters = new[]
                     {
@@ -71,12 +78,16 @@ namespace Perspex.Themes.Default
                                 Classes = new Classes("expander"),
                                 [~~ToggleButton.IsCheckedProperty] = control[~TreeViewItem.IsExpandedProperty],
                             },
-                            new ContentPresenter
+                            new Border
                             {
+                                Id = "header",
                                 [~ContentPresenter.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
-                                [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
-                            },
+                                Content = new ContentPresenter
+                                {
+                                    [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
+                                },
+                            }
                         }
                     },
                     new ItemsPresenter
