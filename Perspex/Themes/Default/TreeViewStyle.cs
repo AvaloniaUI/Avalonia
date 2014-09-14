@@ -8,6 +8,7 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Media;
     using Perspex.Styling;
 
     public class TreeViewStyle : Styles
@@ -20,7 +21,9 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeView>(this.Template)),
+                        new Setter(TreeView.TemplateProperty, ControlTemplate.Create<TreeView>(this.Template)),
+                        new Setter(TreeView.BorderBrushProperty, Brushes.Black),
+                        new Setter(TreeView.BorderThicknessProperty, 1.0),
                     },
                 },
             });
@@ -28,10 +31,16 @@ namespace Perspex.Themes.Default
 
         private Control Template(TreeView control)
         {
-            return new ItemsPresenter
+            return new Border
             {
-                [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
+                [~Border.BackgroundProperty] = control[~TreeView.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TreeView.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TreeView.BorderThicknessProperty],
+                Content = new ItemsPresenter
+                {
+                    [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
+                }
             };
         }
     }
