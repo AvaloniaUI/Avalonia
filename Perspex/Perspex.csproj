@@ -122,6 +122,7 @@
     <Compile Include="Layout\Layoutable.cs" />
     <Compile Include="Layout\LayoutHelper.cs" />
     <Compile Include="Media\Brushes.cs" />
+    <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
