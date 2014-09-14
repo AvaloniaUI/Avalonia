@@ -74,10 +74,9 @@ namespace Perspex.Themes.Default
                 Fill = Brushes.Black,
                 Stroke = Brushes.Black,
                 StrokeThickness = 1,
-                Width = 16,
-                Height = 16,
+                Margin = new Thickness(3, 0),
                 VerticalAlignment = Layout.VerticalAlignment.Center,
-                Data = StreamGeometry.Parse("M 4 0 L 8 4 L 4 8 Z"),
+                Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
             };
         }
     }

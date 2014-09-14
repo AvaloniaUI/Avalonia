@@ -70,22 +70,22 @@ namespace Perspex.Shapes
 
             if (double.IsInfinity(availableSize.Width))
             {
-                desiredX = shapeBounds.Width;
+                desiredX = shapeBounds.Right;
             }
 
             if (double.IsInfinity(availableSize.Height))
             {
-                desiredY = shapeBounds.Height;
+                desiredY = shapeBounds.Bottom;
             }
 
             if (shapeBounds.Width > 0)
             {
-                sx = desiredX / shapeBounds.Width;
+                sx = desiredX / shapeBounds.Right;
             }
 
             if (shapeBounds.Height > 0)
             {
-                sy = desiredY / shapeBounds.Height;
+                sy = desiredY / shapeBounds.Bottom;
             }
 
             if (double.IsInfinity(availableSize.Width))
@@ -123,8 +123,8 @@ namespace Perspex.Shapes
                     break;
             }
 
-            double finalX = (width > 0) ? width : shapeBounds.Width * sx;
-            double finalY = (height > 0) ? height : shapeBounds.Height * sy;
+            double finalX = (width > 0) ? width : shapeBounds.Right * sx;
+            double finalY = (height > 0) ? height : shapeBounds.Bottom * sy;
             return new Size(finalX, finalY);
         }
 

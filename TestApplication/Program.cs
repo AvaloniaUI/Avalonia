@@ -172,6 +172,7 @@ namespace TestApplication
                         new TabItem
                         {
                             Header = "Lists",
+                            IsSelected = true,
                             Content = new StackPanel
                             {
                                 Orientation = Orientation.Vertical,
