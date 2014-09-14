@@ -41,7 +41,7 @@ namespace Perspex.Controls
     public class TreeDataTemplate<T> : TreeDataTemplate
     {
         public TreeDataTemplate(
-            Func<object, Control> build,
+            Func<T, Control> build,
             Func<T, IEnumerable> itemsSelector)
             : base(typeof(T), o => build((T)o), o => itemsSelector((T)o))
         {
