@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Perspex.Controls;
 
 namespace Perspex.Diagnostics
 {
@@ -17,6 +18,8 @@ namespace Perspex.Diagnostics
 
         private static void PrintVisualTree(IVisual visual, StringBuilder builder, int indent)
         {
+            Control control = visual as Control;
+
             builder.Append(Indent(indent - 1));
 
             if (indent > 0)
@@ -24,13 +27,14 @@ namespace Perspex.Diagnostics
                 builder.Append(" +- ");
             }
 
-            builder.AppendLine(visual.GetType().Name);
+            builder.Append(visual.GetType().Name);
 
-            PerspexObject p = visual as PerspexObject;
-
-            if (p != null)
+            if (control != null)
             {
-                foreach (var value in p.GetSetValues())
+                builder.Append(" ");
+                builder.AppendLine(control.Classes.ToString());
+
+                foreach (var value in control.GetSetValues())
                 {
                     builder.Append(Indent(indent));
                     builder.Append(" |  ");
@@ -41,6 +45,10 @@ namespace Perspex.Diagnostics
                     builder.Append(value.Item3);
                     builder.AppendLine("]");
                 }
+            }
+            else
+            {
+                builder.AppendLine();
             }
 
             foreach (var child in visual.VisualChildren)
