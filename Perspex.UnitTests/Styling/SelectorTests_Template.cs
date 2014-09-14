@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.UnitTests.Styling
 {
     using System.Linq;
@@ -80,7 +81,7 @@ namespace Perspex.UnitTests.Styling
             templatedControl.Setup(x => x.Classes).Returns(new Classes("bar"));
             var border = (Border)templatedControl.Object.VisualChildren.Single();
 
-            var selector = new Selector().OfType<TestTemplatedControl>().Class("foo").Template().OfType<Border>();
+            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
 
             Assert.IsFalse(ActivatorValue(selector, border));
         }

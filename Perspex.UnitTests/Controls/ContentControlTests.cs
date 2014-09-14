@@ -106,12 +106,36 @@ namespace Perspex.UnitTests.Controls
             Assert.IsFalse(((ILogical)target).LogicalChildren.Any());
         }
 
+        [TestMethod]
+        public void ContentPresenter_Should_Have_TemplatedParent_Set()
+        {
+            var target = new ContentControl();
+            var child = new Border();
+
+            target.Template = this.GetTemplate();
+            target.Content = child;
+            this.ApplyTemplate(target);
+
+            var contentPresenter = (ContentPresenter)((IVisual)child).VisualParent;
+            Assert.AreEqual(target, contentPresenter.TemplatedParent);
+        }
+
+        [TestMethod]
+        public void Content_Should_Have_TemplatedParent_Set_To_Null()
+        {
+            var target = new ContentControl();
+            var child = new Border();
+
+            target.Template = this.GetTemplate();
+            target.Content = child;
+            this.ApplyTemplate(target);
+
+            Assert.IsNull(child.TemplatedParent);
+        }
+
         private void ApplyTemplate(IVisual visual)
         {
-            foreach (IVisual child in visual.VisualChildren)
-            {
-                this.ApplyTemplate(child);
-            }
+            var c = visual.GetVisualDescendents().ToList();
         }
 
         private ControlTemplate GetTemplate()
