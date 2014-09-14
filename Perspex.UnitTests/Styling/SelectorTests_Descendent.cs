@@ -24,7 +24,7 @@ namespace Perspex.UnitTests.Styling
  
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
-            var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical2>();
+            var selector = new Selector().OfType(parent.Object.GetType()).Descendent().OfType(child.Object.GetType());
 
             Assert.IsTrue(ActivatorValue(selector, child.Object));
         }
@@ -39,7 +39,7 @@ namespace Perspex.UnitTests.Styling
             parent.Setup(x => x.LogicalParent).Returns(grandparent.Object);
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
-            var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical3>();
+            var selector = new Selector().OfType(grandparent.Object.GetType()).Descendent().OfType(child.Object.GetType());
 
             Assert.IsTrue(ActivatorValue(selector, child.Object));
         }
@@ -56,7 +56,7 @@ namespace Perspex.UnitTests.Styling
             parent.Setup(x => x.Classes).Returns(new Classes());
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
-            var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
+            var selector = new Selector().OfType(grandparent.Object.GetType()).Class("foo").Descendent().OfType(child.Object.GetType());
 
             Assert.IsTrue(ActivatorValue(selector, child.Object));
         }

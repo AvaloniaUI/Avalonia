@@ -76,6 +76,17 @@ namespace Perspex.Styling
             };
         }
 
+        public static Selector OfType(this Selector previous, Type type)
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+
+            return new Selector(previous)
+            {
+                GetObservable = control => Observable.Return(control.GetType() == type),
+                SelectorString = type.Name,
+            };
+        }
+
         public static Selector Template(this Selector previous)
         {
             Contract.Requires<ArgumentNullException>(previous != null);

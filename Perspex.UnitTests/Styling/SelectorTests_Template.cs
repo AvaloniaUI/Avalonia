@@ -17,20 +17,6 @@ namespace Perspex.UnitTests.Styling
     public class SelectorTests_Template
     {
         [TestMethod]
-        public void Control_In_Template_Is_Not_Matched_Without_Template_Selector()
-        {
-            var templatedControl = new Mock<ITemplatedControl>();
-            var styleable = templatedControl.As<IStyleable>();
-            this.BuildVisualTree(templatedControl);
-
-            var border = (Border)templatedControl.Object.VisualChildren.Single();
-
-            var selector = new Selector().OfType<Border>();
-
-            Assert.IsFalse(ActivatorValue(selector, border));
-        }
-
-        [TestMethod]
         public void Control_In_Template_Is_Matched_With_Template_Selector()
         {
             var templatedControl = new Mock<ITemplatedControl>();
@@ -66,7 +52,7 @@ namespace Perspex.UnitTests.Styling
 
             var border = (Border)templatedControl.Object.VisualChildren.Single();
 
-            var selector = new Selector().OfType<TestTemplatedControl>().Template().OfType<Border>();
+            var selector = new Selector().OfType(templatedControl.Object.GetType()).Template().OfType<Border>();
 
             Assert.IsTrue(ActivatorValue(selector,border));
         }
@@ -80,7 +66,7 @@ namespace Perspex.UnitTests.Styling
             templatedControl.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)templatedControl.Object.VisualChildren.Single();
 
-            var selector = new Selector().OfType<TestTemplatedControl>().Class("foo").Template().OfType<Border>();
+            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
 
             Assert.IsTrue(ActivatorValue(selector, border));
         }
