@@ -1,4 +1,5 @@
-﻿namespace Perspex.UnitTests.Styling
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+namespace Perspex.UnitTests.Styling
 {
     using System;
     using System.Collections.Generic;
@@ -9,16 +10,15 @@
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Styling;
-    using Activator = Perspex.Styling.StyleActivator;
 
     [TestClass]
-    public class ActivatorTests
+    public class StyleActivatorTests
     {
         [TestMethod]
         public void Activator_And_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new StyleActivator(inputs, ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -42,7 +42,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new StyleActivator(inputs, ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -67,7 +67,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new StyleActivator(inputs, ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -93,7 +93,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.And);
+            var target = new StyleActivator(inputs, ActivatorMode.And);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -110,7 +110,7 @@
         public void Activator_Or_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new StyleActivator(inputs, ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -134,7 +134,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new StyleActivator(inputs, ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -158,7 +158,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new StyleActivator(inputs, ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -183,7 +183,7 @@
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new Activator(inputs, ActivatorMode.Or);
+            var target = new StyleActivator(inputs, ActivatorMode.Or);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -195,6 +195,22 @@
             Assert.AreEqual(1, inputs[0].SubscriberCount);
             Assert.AreEqual(1, inputs[1].SubscriberCount);
             Assert.AreEqual(1, inputs[2].SubscriberCount);
+        }
+
+        [TestMethod]
+        public void Completed_Activator_Should_Signal_OnCompleted()
+        {
+            var inputs = new[]
+            {
+                Observable.Return(false),
+            };
+
+            var target = new StyleActivator(inputs, ActivatorMode.Or);
+            var completed = false;
+
+            target.Subscribe(_ => { }, () => completed = true);
+
+            Assert.IsTrue(completed);
         }
     }
 }

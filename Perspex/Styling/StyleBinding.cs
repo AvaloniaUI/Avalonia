@@ -15,15 +15,14 @@ namespace Perspex.Styling
     /// <remarks>
     /// This class takes an activator and a value. The activator is an observable which produces
     /// a bool. When the activator produces true, this observable will produce <see cref="Value"/>.
-    /// When the activator produces false (and before the activator returns a value) it will 
-    /// produce <see cref="PerspexProperty.UnsetValue"/>.
+    /// When the activator produces false it will produce <see cref="PerspexProperty.UnsetValue"/>.
     /// </remarks>
     internal class StyleBinding : IObservable<object>, IObservableDescription
     {
         /// <summary>
-        /// The subject that provides the observable implementation.
+        /// The activator.
         /// </summary>
-        private BehaviorSubject<object> subject = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
+        private IObservable<bool> activator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleBinding"/> class.
@@ -36,13 +35,9 @@ namespace Perspex.Styling
             object activatedValue,
             string description)
         {
+            this.activator = activator;
             this.ActivatedValue = activatedValue;
             this.Description = description;
-
-            activator.Subscribe(
-                active => this.subject.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
-                error => this.subject.OnError(error),
-                () => this.subject.OnCompleted());
         }
 
         /// <summary>
@@ -71,7 +66,10 @@ namespace Perspex.Styling
         public IDisposable Subscribe(IObserver<object> observer)
         {
             Contract.Requires<NullReferenceException>(observer != null);
-            return this.subject.Subscribe(observer);
+            return this.activator.Subscribe(
+                active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
+                observer.OnError,
+                observer.OnCompleted);
         }
     }
 }

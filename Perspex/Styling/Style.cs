@@ -43,11 +43,21 @@ namespace Perspex.Styling
             string description = "Style " + this.Selector.ToString();
             StyleActivator activator = this.Selector.GetActivator(control);
 
-            if (!(activator.CurrentValue == false && activator.HasCompleted))
+            if (activator.CurrentValue || !activator.HasCompleted)
             {
+                IObservable<bool> observable = activator;
+
+                // If the activator has completed, then we want its value to be true forever.
+                // Because of this we can't pass the activator directly as it will complete 
+                // immediately and remove the binding.
+                if (activator.HasCompleted)
+                {
+                    observable = Observable.Never<bool>().StartWith(true);
+                }
+
                 foreach (Setter setter in this.Setters)
                 {
-                    StyleBinding binding = new StyleBinding(activator, setter.Value, description);
+                    StyleBinding binding = new StyleBinding(observable, setter.Value, description);
                     control.Bind(setter.Property, binding, this.Selector.Priority);
                 }
             }

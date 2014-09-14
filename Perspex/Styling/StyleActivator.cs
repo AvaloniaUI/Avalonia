@@ -21,25 +21,24 @@ namespace Perspex.Styling
     {
         private ActivatorMode mode;
 
-        private List<bool> values = new List<bool>();
+        private bool[] values;
 
         private List<IDisposable> subscriptions = new List<IDisposable>();
 
         private List<IObserver<bool>> observers = new List<IObserver<bool>>();
 
         public StyleActivator(
-            IEnumerable<IObservable<bool>> inputs, 
+            IList<IObservable<bool>> inputs, 
             ActivatorMode mode = ActivatorMode.And)
         {
             int i = 0;
 
             this.mode = mode;
+            this.values = new bool[inputs.Count];
 
             foreach (IObservable<bool> input in inputs)
             {
                 int capturedIndex = i;
-
-                this.values.Add(false);
 
                 IDisposable subscription = input.Subscribe(
                     x => this.Update(capturedIndex, x),
@@ -79,9 +78,18 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(observer != null);
 
-            this.observers.Add(observer);
             observer.OnNext(this.CurrentValue);
-            return Disposable.Create(() => this.observers.Remove(observer));
+
+            if (this.HasCompleted)
+            {
+                observer.OnCompleted();
+                return Disposable.Empty;
+            }
+            else
+            {
+                this.observers.Add(observer);
+                return Disposable.Create(() => this.observers.Remove(observer));
+            }
         }
 
         private void Update(int index, bool value)
@@ -111,10 +119,14 @@ namespace Perspex.Styling
 
         private void Finish(int i)
         {
-            // If the observable has finished on 'false' and we're in And mode then it will never 
-            // go back to true so we can unsubscribe from all the other subscriptions now. 
-            // Similarly in Or mode; if the completed value is true then we're done.
-            bool unsubscribe = this.mode == ActivatorMode.And ? !this.values[i] : this.values[i];
+            // We can unsubscribe from everything if the completed observable:
+            // - Is the only subscription.
+            // - Has finished on 'false' and we're in And mode 
+            // - Has finished on 'true' and we're in Or mode
+            var value = this.values[i];
+            var unsubscribe = 
+                (this.values.Length == 1) ||
+                (this.mode == ActivatorMode.And ? !value : value);
 
             if (unsubscribe)
             {

@@ -76,7 +76,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
     <Compile Include="StyleTests.cs" />
-    <Compile Include="Styling\ActivatorTests.cs" />
+    <Compile Include="Styling\StyleActivatorTests.cs" />
     <Compile Include="Styling\SelectorTests_Multiple.cs" />
     <Compile Include="Styling\SelectorTests_Class.cs" />
     <Compile Include="Styling\SelectorTests_Id.cs" />

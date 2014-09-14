@@ -18,7 +18,12 @@ namespace Perspex.Styling
         {
             IVisual visual = control as IVisual;
             IStyled styleContainer = visual.GetVisualAncestorOrSelf<IStyled>();
-            Application.Current.Styles.Attach(control);
+
+            if (Application.Current != null)
+            {
+                Application.Current.Styles.Attach(control);
+            }
+
             this.ApplyStyles(control, styleContainer);
         }
 
