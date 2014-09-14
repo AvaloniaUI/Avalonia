@@ -107,7 +107,14 @@ namespace Perspex.Controls
         {
             if (this.panel != null)
             {
-                this.panel.Children = new Controls(this.CreateItemControls(items));
+                var controls = this.CreateItemControls(items).ToList();
+
+                foreach (var control in controls)
+                {
+                    control.TemplatedParent = null;
+                }
+
+                this.panel.Children = new Controls(controls);
             }
         }
     }

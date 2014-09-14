@@ -8,6 +8,8 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Media;
+    using Perspex.Shapes;
     using Perspex.Styling;
 
     public class TreeViewItemStyle : Styles
@@ -23,6 +25,13 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeViewItem>(this.Template)),
                     },
                 },
+                new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.ToggleButtonTemplate)),
+                    },
+                },
             });
         }
 
@@ -32,17 +41,42 @@ namespace Perspex.Themes.Default
             {
                 Children = new Controls
                 {
-                    new ContentPresenter
+                    new StackPanel
                     {
-                        [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
+                        Orientation = Orientation.Horizontal,
+                        Children = new Controls
+                        {
+                            new ToggleButton
+                            {
+                                Classes = new Classes("expander"),
+                            },
+                            new ContentPresenter
+                            {
+                                [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
+                            },
+                        }
                     },
                     new ItemsPresenter
                     {
-                        Margin = new Thickness(13, 0, 0, 0),
+                        Margin = new Thickness(24, 0, 0, 0),
                         [~ItemsPresenter.ItemsProperty] = control[~TreeViewItem.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeViewItem.ItemsPanelProperty],
                     }
                 }
+            };
+        }
+
+        private Control ToggleButtonTemplate(ToggleButton control)
+        {
+            return new Path
+            {
+                Fill = Brushes.Black,
+                Stroke = Brushes.Black,
+                StrokeThickness = 1,
+                Width = 16,
+                Height = 16,
+                VerticalAlignment = Layout.VerticalAlignment.Center,
+                Data = StreamGeometry.Parse("M 4 0 L 8 4 L 4 8 Z"),
             };
         }
     }
