@@ -55,7 +55,7 @@ namespace Perspex.Direct2D1.RenderTests
             MagickImage actual = new MagickImage(actualPath);
             MagickErrorInfo error = expected.Compare(actual);
 
-            if (error.NormalizedMaximumError > 0)
+            if (error.NormalizedMaximumError > 0.01)
             {
                 if (error.NormalizedMaximumError > 0.15)
                 {
