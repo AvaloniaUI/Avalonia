@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
 
     public class ItemsControl : TemplatedControl
     {
@@ -22,6 +23,11 @@ namespace Perspex.Controls
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
         private Dictionary<object, Control> itemControls = new Dictionary<object, Control>();
+
+        public ItemsControl()
+        {
+            this.GetObservable(ItemsProperty).Subscribe(this.ItemsChanged);
+        }
 
         public IEnumerable Items
         {
@@ -57,6 +63,18 @@ namespace Perspex.Controls
         protected virtual Control CreateItemControlOverride(object item)
         {
             return (item as Control) ?? this.GetDataTemplate(item).Build(item);
+        }
+
+        private void ItemsChanged(IEnumerable items)
+        {
+            if (items == null || !items.OfType<object>().Any())
+            {
+                this.Classes.Add(":empty");
+            }
+            else
+            {
+                this.Classes.Remove(":empty");
+            }
         }
     }
 }

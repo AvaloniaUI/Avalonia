@@ -8,6 +8,7 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Shapes;
     using Perspex.Styling;
@@ -32,6 +33,13 @@ namespace Perspex.Themes.Default
                         new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.ToggleButtonTemplate)),
                     },
                 },
+                new Style(x => x.OfType<TreeViewItem>().Class(":empty").Template().OfType<ToggleButton>().Class("expander"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ToggleButton.IsVisibleProperty, false),
+                    },
+                },
             });
         }
 
@@ -41,9 +49,13 @@ namespace Perspex.Themes.Default
             {
                 Children = new Controls
                 {
-                    new StackPanel
+                    new Grid
                     {
-                        Orientation = Orientation.Horizontal,
+                        ColumnDefinitions = new ColumnDefinitions
+                        {
+                            new ColumnDefinition(new GridLength(16, GridUnitType.Pixel)),
+                            new ColumnDefinition(GridLength.Auto),
+                        },
                         Children = new Controls
                         {
                             new ToggleButton
@@ -53,6 +65,7 @@ namespace Perspex.Themes.Default
                             },
                             new ContentPresenter
                             {
+                                [Grid.ColumnProperty] = 1,
                                 [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
                             },
                         }
@@ -77,8 +90,8 @@ namespace Perspex.Themes.Default
                     Fill = Brushes.Black,
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    Margin = new Thickness(3, 0),
-                    VerticalAlignment = Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
                     Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
                 }
             };
