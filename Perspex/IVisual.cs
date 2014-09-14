@@ -18,6 +18,8 @@ namespace Perspex
 
         bool IsVisible { get; }
 
+        double Opacity { get; }
+
         IEnumerable<IVisual> VisualChildren { get; }
 
         IVisual VisualParent { get; set; }

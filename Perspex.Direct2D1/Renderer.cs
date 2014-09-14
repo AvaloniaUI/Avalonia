@@ -120,8 +120,16 @@ namespace Perspex.Direct2D1
         /// <param name="context">The drawing context.</param>
         private void Render(IVisual visual, DrawingContext context)
         {
-            if (visual.IsVisible)
+            if (visual.IsVisible && visual.Opacity > 0)
             {
+                if (visual.Opacity < 1)
+                {
+                    Layer layer = new Layer(this.renderTarget);
+                    LayerParameters p = new LayerParameters();
+                    p.Opacity = (float)visual.Opacity;
+                    this.renderTarget.PushLayer(ref p, layer);
+                }
+
                 visual.Render(context);
 
                 foreach (IVisual child in visual.VisualChildren)
@@ -132,6 +140,11 @@ namespace Perspex.Direct2D1
                     {
                         this.Render(child, context);
                     }
+                }
+
+                if (visual.Opacity < 1)
+                {
+                    this.renderTarget.PopLayer();
                 }
             }
         }

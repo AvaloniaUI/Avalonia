@@ -19,6 +19,9 @@ namespace Perspex
         public static readonly PerspexProperty<bool> IsVisibleProperty =
             PerspexProperty.Register<Visual, bool>("IsVisible", true);
 
+        public static readonly PerspexProperty<double> OpacityProperty =
+            PerspexProperty.Register<Visual, double>("Opacity", 1);
+
         private IVisual visualParent;
 
         private Rect bounds;
@@ -32,6 +35,12 @@ namespace Perspex
         {
             get { return this.GetValue(IsVisibleProperty); }
             set { this.SetValue(IsVisibleProperty, value); }
+        }
+
+        public double Opacity
+        {
+            get { return this.GetValue(OpacityProperty); }
+            set { this.SetValue(OpacityProperty, value); }
         }
 
         Rect IVisual.Bounds

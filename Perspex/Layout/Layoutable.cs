@@ -130,7 +130,10 @@ namespace Perspex.Layout
 
         public void Arrange(Rect rect)
         {
-            this.ArrangeCore(rect);
+            if (this.DesiredSize.HasValue)
+            {
+                this.ArrangeCore(rect);
+            }
         }
 
         public void InvalidateMeasure()
