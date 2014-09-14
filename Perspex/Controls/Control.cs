@@ -246,11 +246,14 @@ namespace Perspex.Controls
                 }
             }
 
-            foreach (DataTemplate dt in Application.Current.DataTemplates.Reverse())
+            if (Application.Current != null && Application.Current.DataTemplates != null)
             {
-                if (dt.Match(content))
+                foreach (DataTemplate dt in Application.Current.DataTemplates.Reverse())
                 {
-                    return dt;
+                    if (dt.Match(content))
+                    {
+                        return dt;
+                    }
                 }
             }
 
