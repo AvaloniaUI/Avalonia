@@ -7,7 +7,6 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Collections;
     using System.Linq;
     using System.Reactive.Linq;
 
@@ -20,7 +19,6 @@ namespace Perspex.Controls
 
         public TabControl()
         {
-            this.GetObservable(ItemsProperty).Subscribe(this.ItemsChanged);
             this.GetObservable(SelectedItemProperty).Skip(1).Subscribe(this.SelectedItemChanged);
         }
 
@@ -32,23 +30,15 @@ namespace Perspex.Controls
 
             if (this.tabStrip != null)
             {
-                this.tabStrip.SelectedItem = this.SelectedItem;
-                this.tabStrip.GetObservable(TabStrip.SelectedItemProperty).Skip(1).Subscribe(x =>
+                if (this.IsSet(SelectedItemProperty))
+                {
+                    this.SelectedItem = SelectedItem;
+                }
+
+                this.tabStrip.GetObservable(TabStrip.SelectedItemProperty).Subscribe(x =>
                 {
                     this.SelectedItem = x;
                 });
-            }
-        }
-
-        private void ItemsChanged(IEnumerable items)
-        {
-            if (items != null)
-            {
-                this.SelectedItem = items.OfType<object>().FirstOrDefault();
-            }
-            else
-            {
-                this.SelectedItem = null;
             }
         }
 

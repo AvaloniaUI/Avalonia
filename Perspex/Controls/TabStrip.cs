@@ -7,6 +7,8 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections;
+    using System.Linq;
     using Perspex.Input;
 
     public class TabStrip : SelectingItemsControl
@@ -26,6 +28,7 @@ namespace Perspex.Controls
         public TabStrip()
         {
             this.PointerPressed += this.OnPointerPressed;
+            this.GetObservable(ItemsProperty).Subscribe(this.ItemsChanged);
             this.GetObservable(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
         }
 
@@ -44,6 +47,20 @@ namespace Perspex.Controls
             result.IsSelected = this.SelectedItem == item;
 
             return result;
+        }
+
+        private void ItemsChanged(IEnumerable items)
+        {
+            if (items != null)
+            {
+                this.SelectedItem =
+                    items.OfType<TabItem>().FirstOrDefault(x => x.IsSelected) ??
+                    items.OfType<object>().FirstOrDefault();
+            }
+            else
+            {
+                this.SelectedItem = null;
+            }
         }
 
         private void OnPointerPressed(object sender, PointerEventArgs e)
