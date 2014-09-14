@@ -70,14 +70,17 @@ namespace Perspex.Themes.Default
 
         private Control ToggleButtonTemplate(ToggleButton control)
         {
-            return new Path
+            return new Border
             {
-                Fill = Brushes.Black,
-                Stroke = Brushes.Black,
-                StrokeThickness = 1,
-                Margin = new Thickness(3, 0),
-                VerticalAlignment = Layout.VerticalAlignment.Center,
-                Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
+                Content = new Path
+                {
+                    Fill = Brushes.Black,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1,
+                    Margin = new Thickness(3, 0),
+                    VerticalAlignment = Layout.VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
+                }
             };
         }
     }

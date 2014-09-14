@@ -34,7 +34,7 @@ namespace Perspex.Controls
         protected override void OnAttachedToVisualTree()
         {
             base.OnAttachedToVisualTree();
-            this.parent = this.GetVisualParent<Control>().TemplatedParent as TreeView;
+            this.parent = this.GetVisualAncestor<TreeView>();
         }
     }
 }
