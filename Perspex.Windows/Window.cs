@@ -73,8 +73,9 @@ namespace Perspex.Windows
                         if (!this.layoutPending)
                         {
                             this.renderer.Render(this);
-                            this.renderPending = false;
                         }
+
+                        this.renderPending = false;
                     });
             });
         }
