@@ -88,7 +88,8 @@ namespace TestApplication
                 {
                     new TreeDataTemplate<Node>(
                         x => new TextBlock { Text = x.Name },
-                        x => x.Children),
+                        x => x.Children,
+                        x => true),
                 },
             };
 

@@ -64,11 +64,11 @@ namespace Perspex
                     IVisual oldValue = this.visualParent;
                     this.visualParent = value;
                     this.InheritanceParent = (PerspexObject)value;
-                    this.VisualParentChanged(oldValue, value);
+                    this.OnVisualParentChanged(oldValue, value);
 
                     if (this.GetVisualAncestor<ILayoutRoot>() != null)
                     {
-                        this.AttachedToVisualTree();
+                        this.NotifyAttachedToVisualTree();
                     }
                 }
             }
@@ -104,21 +104,27 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(context != null);
         }
 
-        protected virtual void AttachedToVisualTree()
+        protected virtual void OnAttachedToVisualTree()
+        {
+        }
+
+        protected virtual void OnVisualParentChanged(IVisual oldValue, IVisual newValue)
+        {
+        }
+
+        private void NotifyAttachedToVisualTree()
         {
             this.Log().Debug(string.Format(
                 "Attached {0} (#{1:x8}) to visual tree",
                 this.GetType().Name,
                 this.GetHashCode()));
 
+            this.OnAttachedToVisualTree();
+
             foreach (Visual child in ((IVisual)this).ExistingVisualChildren.OfType<Visual>())
             {
-                child.AttachedToVisualTree();
+                child.NotifyAttachedToVisualTree();
             }
-        }
-
-        protected virtual void VisualParentChanged(IVisual oldValue, IVisual newValue)
-        {
         }
     }
 }

@@ -190,11 +190,11 @@ namespace Perspex.Controls
             get { return Enumerable.Empty<ILogical>(); }
         }
 
-        protected override void AttachedToVisualTree()
+        protected override void OnAttachedToVisualTree()
         {
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
-            base.AttachedToVisualTree();
+            base.OnAttachedToVisualTree();
         }
 
         protected void AddPseudoClass(PerspexProperty<bool> property, string className)

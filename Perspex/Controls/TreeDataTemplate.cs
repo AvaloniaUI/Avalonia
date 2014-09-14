@@ -27,15 +27,37 @@ namespace Perspex.Controls
         }
 
         public TreeDataTemplate(
+            Type type,
+            Func<object, Control> build,
+            Func<object, IEnumerable> itemsSelector,
+            Func<object, bool> isExpanded)
+            : this(o => IsInstance(o, type), build, itemsSelector, isExpanded)
+        {
+        }
+
+        public TreeDataTemplate(
             Func<object, bool> match, 
             Func<object, Control> build,
             Func<object, IEnumerable> itemsSelector)
-            : base(match, build)
+            : this(match, build, itemsSelector, _ => false)
         {
             this.ItemsSelector = itemsSelector;
         }
 
+        public TreeDataTemplate(
+            Func<object, bool> match,
+            Func<object, Control> build,
+            Func<object, IEnumerable> itemsSelector,
+            Func<object, bool> isExpanded)
+            : base(match, build)
+        {
+            this.ItemsSelector = itemsSelector;
+            this.IsExpanded = isExpanded;
+        }
+
         public Func<object, IEnumerable> ItemsSelector { get; private set; }
+
+        public Func<object, bool> IsExpanded { get; private set; }
     }
 
     public class TreeDataTemplate<T> : TreeDataTemplate
@@ -43,7 +65,15 @@ namespace Perspex.Controls
         public TreeDataTemplate(
             Func<T, Control> build,
             Func<T, IEnumerable> itemsSelector)
-            : base(typeof(T), o => build((T)o), o => itemsSelector((T)o))
+            : base(typeof(T), Cast(build), Cast(itemsSelector))
+        {
+        }
+
+        public TreeDataTemplate(
+            Func<T, Control> build,
+            Func<T, IEnumerable> itemsSelector,
+            Func<T, bool> isExpanded)
+            : base(typeof(T), Cast(build), Cast(itemsSelector), Cast(isExpanded))
         {
         }
 
@@ -51,8 +81,27 @@ namespace Perspex.Controls
             Func<T, bool> match, 
             Func<T, Control> build,
             Func<T, IEnumerable> itemsSelector)
-            : base(o => (o is T) ? match((T)o) : false, o => build((T)o), o => itemsSelector((T)o))
+            : base(CastMatch(match), Cast(build), Cast(itemsSelector))
         {
+        }
+
+        public TreeDataTemplate(
+            Func<T, bool> match,
+            Func<T, Control> build,
+            Func<T, IEnumerable> itemsSelector,
+            Func<T, bool> isExpanded)
+            : base(CastMatch(match), Cast(build), Cast(itemsSelector), Cast(isExpanded))
+        {
+        }
+
+        private static Func<object, bool> CastMatch(Func<T, bool> f)
+        {
+            return o => (o is T) ? f((T)o) : false;
+        }
+
+        private static Func<object, TResult> Cast<TResult>(Func<T, TResult> f)
+        {
+            return o => f((T)o);
         }
     }
 }

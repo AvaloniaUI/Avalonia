@@ -46,13 +46,23 @@ namespace Perspex.Controls
     public class DataTemplate<T> : DataTemplate
     {
         public DataTemplate(Func<T, Control> build)
-            : base(typeof(T), o => build((T)o))
+            : base(typeof(T), Cast(build))
         {
         }
 
         public DataTemplate(Func<T, bool> match, Func<T, Control> build)
-            : base(o => (o is T) ? match((T)o) : false, o => build((T)o))
+            : base(CastMatch(match), Cast(build))
         {
+        }
+
+        private static Func<object, bool> CastMatch(Func<T, bool> f)
+        {
+            return o => (o is T) ? f((T)o) : false;
+        }
+
+        private static Func<object, TResult> Cast<TResult>(Func<T, TResult> f)
+        {
+            return o => f((T)o);
         }
     }
 }

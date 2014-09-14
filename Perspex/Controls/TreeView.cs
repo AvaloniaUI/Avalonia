@@ -25,6 +25,7 @@ namespace Perspex.Controls
                 {
                     Header = template.Build(item),
                     Items = template.ItemsSelector(item),
+                    IsExpanded = template.IsExpanded(item),
                 };
             }
 

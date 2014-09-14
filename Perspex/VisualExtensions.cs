@@ -126,6 +126,16 @@ namespace Perspex
             }
         }
 
+        public static IVisual GetVisualParent(this IVisual visual)
+        {
+            return visual.VisualParent;
+        }
+
+        public static T GetVisualParent<T>(this IVisual visual) where T : class
+        {
+            return visual.VisualParent as T;
+        }
+
         public static IEnumerable<T> GetVisualSiblings<T>(this IVisual visual)
         {
             IVisual parent = visual.VisualParent;
