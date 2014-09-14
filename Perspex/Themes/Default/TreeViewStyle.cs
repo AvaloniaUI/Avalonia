@@ -33,6 +33,7 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
+                Padding = new Thickness(4),
                 [~Border.BackgroundProperty] = control[~TreeView.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TreeView.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TreeView.BorderThicknessProperty],

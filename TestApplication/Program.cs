@@ -180,7 +180,6 @@ namespace TestApplication
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Gap = 8,
-                                Width = 120,
                                 Children = new Controls
                                 {
                                     new TreeView

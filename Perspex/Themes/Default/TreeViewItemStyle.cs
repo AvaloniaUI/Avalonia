@@ -26,6 +26,14 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeViewItem>(this.Template)),
                     },
                 },
+                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().OfType<ContentPresenter>())
+                {
+                    Setters = new[]
+                    {
+                        new Setter(TreeViewItem.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
+                        new Setter(TreeViewItem.ForegroundProperty, Brushes.White),
+                    },
+                },
                 new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander"))
                 {
                     Setters = new[]
@@ -65,6 +73,7 @@ namespace Perspex.Themes.Default
                             },
                             new ContentPresenter
                             {
+                                [~ContentPresenter.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
                                 [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
                             },

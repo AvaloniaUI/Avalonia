@@ -10,9 +10,15 @@ namespace Perspex.Controls
     using System.Collections;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Input;
 
     public class TreeView : SelectingItemsControl
     {
+        public TreeView()
+        {
+            this.PointerPressed += this.OnPointerPressed;
+        }
+
         protected override Control CreateItemControlOverride(object item)
         {
             TreeViewItem result = item as TreeViewItem;
@@ -43,6 +49,26 @@ namespace Perspex.Controls
             }
 
             return treeTemplate;
+        }
+
+        private void OnPointerPressed(object sender, PointerEventArgs e)
+        {
+            IVisual source = (IVisual)e.Source;
+            ContentPresenter contentPresenter = source.GetVisualAncestor<ContentPresenter>();
+
+            if (contentPresenter != null)
+            {
+                TreeViewItem item = contentPresenter.TemplatedParent as TreeViewItem;
+
+                if (item != null)
+                {
+                    foreach (var i in this.GetVisualDescendents().OfType<TreeViewItem>())
+                    {
+                        i.IsSelected = i == item;
+                    }
+                }
+            }
+
         }
     }
 }
