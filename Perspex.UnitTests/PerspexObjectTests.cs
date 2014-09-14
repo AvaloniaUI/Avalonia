@@ -354,6 +354,37 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
+        public void BindTwoWay_Gets_Initial_Value_From_Source()
+        {
+            Class1 source = new Class1();
+            Class1 target = new Class1();
+
+            source.SetValue(Class1.FooProperty, "initial");
+            target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
+
+            Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        public void BindTwoWay_Updates_Values()
+        {
+            Class1 source = new Class1();
+            Class1 target = new Class1();
+
+            System.Diagnostics.Debug.WriteLine("source: " + source.GetHashCode());
+            System.Diagnostics.Debug.WriteLine("target: " + target.GetHashCode());
+
+            source.SetValue(Class1.FooProperty, "first");
+            target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
+
+            Assert.AreEqual("first", target.GetValue(Class1.FooProperty));
+            source.SetValue(Class1.FooProperty, "second");
+            Assert.AreEqual("second", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "third");
+            Assert.AreEqual("third", source.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             Class1 target = new Class1();
@@ -383,6 +414,79 @@ namespace Perspex.UnitTests
             target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
 
             Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        public void this_Operator_Returns_Value_Property()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.AreEqual("newvalue", target[Class1.FooProperty]);
+        }
+
+        [TestMethod]
+        public void this_Operator_Sets_Value_Property()
+        {
+            Class1 target = new Class1();
+
+            target[Class1.FooProperty] = "newvalue";
+
+            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void this_Operator_Doesnt_Accept_Observable()
+        {
+            Class1 target = new Class1();
+
+            target[Class1.FooProperty] = Observable.Return("newvalue");
+        }
+
+        [TestMethod]
+        public void this_Operator_Binds_One_Way()
+        {
+            Class1 target1 = new Class1();
+            Class1 target2 = new Class1();
+            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+
+            target1.SetValue(Class1.FooProperty, "first");
+            target2[binding] = target1[!Class1.FooProperty];
+            target1.SetValue(Class1.FooProperty, "second");
+
+            Assert.AreEqual("second", target2.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        public void this_Operator_Binds_Two_Way()
+        {
+            Class1 target1 = new Class1();
+            Class1 target2 = new Class1();
+            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
+
+            target1.SetValue(Class1.FooProperty, "first");
+            target2[binding] = target1[!Class1.FooProperty];
+            Assert.AreEqual("first", target2.GetValue(Class1.FooProperty));
+            target1.SetValue(Class1.FooProperty, "second");
+            Assert.AreEqual("second", target2.GetValue(Class1.FooProperty));
+            target2.SetValue(Class1.FooProperty, "third");
+            Assert.AreEqual("third", target1.GetValue(Class1.FooProperty));
+        }
+
+        [TestMethod]
+        public void this_Operator_Binds_One_Time()
+        {
+            Class1 target1 = new Class1();
+            Class1 target2 = new Class1();
+            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
+
+            target1.SetValue(Class1.FooProperty, "first");
+            target2[binding] = target1[!Class1.FooProperty];
+            target1.SetValue(Class1.FooProperty, "second");
+
+            Assert.AreEqual("first", target2.GetValue(Class1.FooProperty));
         }
 
         /// <summary>

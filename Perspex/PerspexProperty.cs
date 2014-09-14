@@ -45,12 +45,14 @@ namespace Perspex
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         public PerspexProperty(
             string name,
             Type valueType,
             Type ownerType,
             object defaultValue,
-            bool inherits)
+            bool inherits,
+            BindingMode defaultBindingMode)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(valueType != null);
@@ -60,6 +62,7 @@ namespace Perspex
             this.PropertyType = valueType;
             this.OwnerType = ownerType;
             this.Inherits = inherits;
+            this.DefaultBindingMode = defaultBindingMode;
             this.defaultValues.Add(ownerType, defaultValue);
         }
 
@@ -84,6 +87,12 @@ namespace Perspex
         public bool Inherits { get; private set; }
 
         /// <summary>
+        /// Gets the default binding mode for the property.
+        /// </summary>
+        /// <returns></returns>
+        public BindingMode DefaultBindingMode { get; private set; }
+
+        /// <summary>
         /// Gets an observable that is fired when this property changes on any 
         /// <see cref="PerspexObject"/> instance.
         /// </summary>
@@ -100,11 +109,13 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <returns></returns>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static PerspexProperty<TValue> Register<TOwner, TValue>(
             string name,
             TValue defaultValue = default(TValue),
-            bool inherits = false)
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.OneWay)
             where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -113,7 +124,8 @@ namespace Perspex
                 name,
                 typeof(TOwner),
                 defaultValue,
-                inherits);
+                inherits,
+                defaultBindingMode);
 
             PerspexObject.Register(typeof(TOwner), result);
 
@@ -129,11 +141,13 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <returns></returns>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static PerspexProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
-            bool inherits = false)
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.OneWay)
             where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -142,7 +156,8 @@ namespace Perspex
                 name,
                 typeof(TOwner),
                 defaultValue,
-                inherits);
+                inherits,
+                defaultBindingMode);
 
             PerspexObject.Register(typeof(THost), result);
 
@@ -154,10 +169,14 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="BindingAccessor"/> describing the binding.</returns>
-        public static BindingAccessor operator!(PerspexProperty property)
+        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
+        public static Binding operator!(PerspexProperty property)
         {
-            return new BindingAccessor(property, BindingPriority.LocalValue);
+            return new Binding
+            {
+                Priority = BindingPriority.LocalValue,
+                Property = property,
+            };
         }
 
         /// <summary>
@@ -165,10 +184,30 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="BindingAccessor"/> describing the binding.</returns>
-        public static BindingAccessor operator ~(PerspexProperty property)
+        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
+        public static Binding operator ~(PerspexProperty property)
         {
-            return new BindingAccessor(property, BindingPriority.TemplatedParent);
+            return new Binding
+            {
+                Priority = BindingPriority.TemplatedParent,
+                Property = property,
+            };
+        }
+
+        /// <summary>
+        /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s [] 
+        /// operator to initiate a binding.
+        /// </summary>
+        /// <returns>A <see cref="Binding"/>.</returns>
+        /// <remarks>
+        /// The ! and ~ operators are short forms of this.
+        /// </remarks>
+        public Binding Bind()
+        {
+            return new Binding
+            {
+                Property = this,
+            };
         }
 
         /// <summary>
@@ -239,27 +278,6 @@ namespace Perspex
             this.changed.OnNext(e);
         }
 
-        public class BindingAccessor
-        {
-            public BindingAccessor(PerspexProperty property, BindingPriority priority)
-            {
-                this.Property = property;
-                this.Priority = priority;
-            }
-
-            public PerspexProperty Property
-            {
-                get;
-                private set;
-            }
-
-            public BindingPriority Priority
-            {
-                get;
-                private set;
-            }
-        }
-
         private class Unset
         {
             public override string ToString()
@@ -281,12 +299,14 @@ namespace Perspex
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         public PerspexProperty(
             string name,
             Type ownerType,
             TValue defaultValue,
-            bool inherits)
-            : base(name, typeof(TValue), ownerType, defaultValue, inherits)
+            bool inherits,
+            BindingMode defaultBindingMode)
+            : base(name, typeof(TValue), ownerType, defaultValue, inherits, defaultBindingMode)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);

@@ -49,6 +49,7 @@ namespace Perspex.Themes.Default
                             new ToggleButton
                             {
                                 Classes = new Classes("expander"),
+                                [~~ToggleButton.IsCheckedProperty] = control[~TreeViewItem.IsExpandedProperty],
                             },
                             new ContentPresenter
                             {

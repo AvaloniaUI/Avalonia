@@ -19,7 +19,8 @@ namespace Perspex.UnitTests
                 "test",
                 typeof(Class1),
                 "Foo",
-                false);
+                false,
+                BindingMode.OneWay);
 
             Assert.AreEqual("test", target.Name);
             Assert.AreEqual(typeof(string), target.PropertyType);
@@ -34,7 +35,8 @@ namespace Perspex.UnitTests
                 "test",
                 typeof(Class1),
                 "Foo",
-                false);
+                false,
+                BindingMode.OneWay);
 
             Assert.AreEqual("Foo", target.GetDefaultValue<Class1>());
         }
@@ -46,7 +48,8 @@ namespace Perspex.UnitTests
                 "test",
                 typeof(Class1),
                 "Foo",
-                false);
+                false,
+                BindingMode.OneWay);
 
             Assert.AreEqual("Foo", target.GetDefaultValue<Class2>());
         }
@@ -58,7 +61,8 @@ namespace Perspex.UnitTests
                 "test",
                 typeof(Class3),
                 "Foo",
-                false);
+                false,
+                BindingMode.OneWay);
 
             Assert.AreEqual("Foo", target.GetDefaultValue<Class2>());
         }
@@ -70,7 +74,8 @@ namespace Perspex.UnitTests
                 "test",
                 typeof(Class1),
                 "Foo",
-                false);
+                false,
+                BindingMode.OneWay);
 
             target.OverrideDefaultValue(typeof(Class2), "Bar");
 

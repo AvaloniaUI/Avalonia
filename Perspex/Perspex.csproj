@@ -69,6 +69,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="Binding.cs" />
     <Compile Include="BindingExtensions.cs" />
     <Compile Include="Controls\TreeDataTemplate.cs" />
     <Compile Include="Controls\HeaderedContentControl.cs" />

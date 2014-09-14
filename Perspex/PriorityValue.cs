@@ -239,7 +239,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Called when an binding's value changes.
+        /// Called when a binding's value changes.
         /// </summary>
         /// <param name="changed">The changed entry.</param>
         private void EntryChanged(BindingEntry changed)
@@ -251,7 +251,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Called when an binding completes.
+        /// Called when a binding completes.
         /// </summary>
         /// <param name="changed">The completed entry.</param>
         private void EntryCompleted(BindingEntry entry)

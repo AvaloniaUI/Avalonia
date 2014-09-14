@@ -140,13 +140,45 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets or sets the binding for a <see cref="PerspexProperty"/>.
+        /// Gets or sets a binding for a <see cref="PerspexProperty"/>.
         /// </summary>
-        /// <param name="property">The property.</param>
-        public IObservable<object> this[PerspexProperty.BindingAccessor property]
+        /// <param name="binding">The binding information.</param>
+        public Binding this[Binding binding]
         {
-            get { return this.GetObservable(property.Property); }
-            set { this.Bind(property.Property, value, property.Priority); }
+            get
+            {
+                return new Binding
+                {
+                    Mode = binding.Mode,
+                    Priority = binding.Priority,
+                    Property = binding.Property,
+                    Source = this,
+                };
+            }
+
+            set
+            {
+                BindingMode mode = (binding.Mode == BindingMode.Default) ? 
+                    binding.Property.DefaultBindingMode : 
+                    binding.Mode;
+
+                switch (mode)
+                {
+                    case BindingMode.Default:
+                    case BindingMode.OneWay:
+                        this.Bind(binding.Property, value.Source.GetObservable(value.Property), binding.Priority);
+                        break;
+                    case BindingMode.OneTime:
+                        this.SetValue(binding.Property, value.Source.GetValue(value.Property));
+                        break;
+                    case BindingMode.OneWayToSource:
+                        value.Source.Bind(value.Property, this.GetObservable(binding.Property), binding.Priority);
+                        break;
+                    case BindingMode.TwoWay:
+                        this.BindTwoWay(binding.Property, value.Source, value.Property);
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -218,8 +250,8 @@ namespace Perspex
         /// <summary>
         /// Gets an observable for a <see cref="PerspexProperty"/>.
         /// </summary>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <param name="property">The property.</param>
+        /// <returns>An observable.</returns>
         public IObservable<object> GetObservable(PerspexProperty property)
         {
             Contract.Requires<NullReferenceException>(property != null);
@@ -505,6 +537,28 @@ namespace Perspex
             return this.Bind((PerspexProperty)property, (IObservable<object>)source, priority);
         }
 
+        /// <summary>
+        /// Initialites a two-way bind between <see cref="PerspexProperty"/>s.
+        /// </summary>
+        /// <param name="property">The property on this object.</param>
+        /// <param name="source">The source object.</param>
+        /// <param name="sourceProperty">The property on the source object.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        /// <remarks>
+        /// The binding is first carried out from <paramref name="source"/> to this. Two-way 
+        /// bindings are always at the LocalValue priority.
+        /// </remarks>
+        public void BindTwoWay(
+            PerspexProperty property, 
+            PerspexObject source, 
+            PerspexProperty sourceProperty)
+        {
+            source.GetObservable(sourceProperty).Subscribe(x => this.SetValue(property, x));
+            this.GetObservable(property).Subscribe(x => source.SetValue(sourceProperty, x));
+        }
+
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
             PriorityValue result = new PriorityValue(property.Name, property.PropertyType);
@@ -535,6 +589,11 @@ namespace Perspex
             return result;
         }
 
+        /// <summary>
+        /// Gets the default value for a property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The default value.</returns>
         private object GetDefaultValue(PerspexProperty property)
         {
             if (property.Inherits && this.inheritanceParent != null)
