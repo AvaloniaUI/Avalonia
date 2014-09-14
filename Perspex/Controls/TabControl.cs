@@ -7,10 +7,11 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
 
-    public class TabControl : SelectingItemsControl
+    public class TabControl : SelectingItemsControl, ILogical
     {
         public static readonly PerspexProperty<object> SelectedContentProperty =
             PerspexProperty.Register<TabControl, object>("SelectedContent");
@@ -20,6 +21,11 @@ namespace Perspex.Controls
         public TabControl()
         {
             this.GetObservable(SelectedItemProperty).Skip(1).Subscribe(this.SelectedItemChanged);
+        }
+
+        IEnumerable<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.Items.OfType<TabItem>(); }
         }
 
         protected override void OnTemplateApplied()

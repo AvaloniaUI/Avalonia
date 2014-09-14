@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Layout;
@@ -34,18 +35,23 @@ namespace TestApplication
 
     class Node
     {
+        public Node()
+        {
+            this.Children = new PerspexList<Node>();
+        }
+
         public string Name { get; set; }
-        public IEnumerable<Node> Children { get; set; }
+        public PerspexList<Node> Children { get; set; }
     }
 
     class Program
     {
-        private static Node[] treeData = new[]
+        private static PerspexList<Node> treeData = new PerspexList<Node>
         {
             new Node
             {
                 Name = "Root 1",
-                Children = new[]
+                Children = new PerspexList<Node>
                 {
                     new Node
                     {
@@ -54,7 +60,7 @@ namespace TestApplication
                     new Node
                     {
                         Name = "Child 2",
-                        Children = new[]
+                        Children = new PerspexList<Node>
                         {
                             new Node
                             {
@@ -176,7 +182,7 @@ namespace TestApplication
                             IsSelected = true,
                             Content = new StackPanel
                             {
-                                Orientation = Orientation.Vertical,
+                                Orientation = Orientation.Horizontal,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Gap = 8,
@@ -184,7 +190,26 @@ namespace TestApplication
                                 {
                                     new TreeView
                                     {
+                                        Id = "treeView",
                                         Items = treeData,
+                                    },
+                                    new StackPanel
+                                    {
+                                        Orientation = Orientation.Vertical,
+                                        Gap = 2.0,
+                                        Children = new Controls
+                                        {
+                                            new TextBox
+                                            {
+                                                Id = "newTreeViewItemText",
+                                                Text = "New Item"
+                                            },
+                                            new Button
+                                            {
+                                                Id = "addTreeViewItem",
+                                                Content = "Add",
+                                            },
+                                        }
                                     },
                                 }
                             },
@@ -193,7 +218,20 @@ namespace TestApplication
                 }
             };
 
-            //System.Console.WriteLine(Perspex.Diagnostics.Debug.PrintVisualTree(window));
+            var treeView = window.FindControl<TreeView>("treeView");
+            var newTreeViewItemText = window.FindControl<TextBox>("newTreeViewItemText");
+            var addTreeViewItem = window.FindControl<Button>("addTreeViewItem");
+
+            addTreeViewItem.Click += (s, e) =>
+            {
+                if (treeView.SelectedItem != null)
+                {
+                    ((Node)treeView.SelectedItem).Children.Add(new Node
+                    {
+                        Name = newTreeViewItemText.Text,
+                    });
+                }
+            };
 
             window.Show();
             Dispatcher.Run();

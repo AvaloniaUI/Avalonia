@@ -17,7 +17,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
-    public class Panel : Control, IVisual
+    public class Panel : Control, ILogical, IVisual
     {
         private Controls children;
 
@@ -49,6 +49,11 @@ namespace Perspex.Controls
                     this.logicalChildren = new LogicalChildren<Control>(this, this.children);
                 }
             }
+        }
+
+        IEnumerable<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.children ?? Enumerable.Empty<ILogical>(); }
         }
 
         IEnumerable<IVisual> IVisual.VisualChildren

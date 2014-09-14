@@ -218,6 +218,7 @@
     <Compile Include="Visual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ControlExtensions.cs" />
+    <Compile Include="LogicalExtensions.cs" />
     <Compile Include="VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

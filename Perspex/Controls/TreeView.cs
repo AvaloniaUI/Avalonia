@@ -66,6 +66,8 @@ namespace Perspex.Controls
                     {
                         i.IsSelected = i == item;
                     }
+
+                    this.SelectedItem = this.GetItemForControl(item);
                 }
             }
 
