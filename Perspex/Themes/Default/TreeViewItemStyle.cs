@@ -48,6 +48,13 @@ namespace Perspex.Themes.Default
                         new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.ToggleButtonTemplate)),
                     },
                 },
+                new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander").Class(":checked"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ToggleButton.RenderTransformProperty, new RotateTransform(1)),
+                    },
+                },
                 new Style(x => x.OfType<TreeViewItem>().Class(":empty").Template().OfType<ToggleButton>().Class("expander"))
                 {
                     Setters = new[]
@@ -105,6 +112,7 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
+                Background = Brushes.Chartreuse,
                 Content = new Path
                 {
                     Fill = Brushes.Black,

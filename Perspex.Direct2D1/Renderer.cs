@@ -9,12 +9,14 @@ namespace Perspex.Direct2D1
     using System;
     using System.Linq;
     using Perspex.Direct2D1.Media;
+    using Perspex.Media;
     using Perspex.Platform;
     using SharpDX;
     using SharpDX.Direct2D1;
     using Splat;
     using DwFactory = SharpDX.DirectWrite.Factory;
     using Matrix = Perspex.Media.Matrix;
+    using Point = Perspex.Point;
 
     /// <summary>
     /// Renders a <see cref="Canvas"/>.
@@ -122,29 +124,30 @@ namespace Perspex.Direct2D1
         {
             if (visual.IsVisible && visual.Opacity > 0)
             {
-                if (visual.Opacity < 1)
+                Matrix transform = Matrix.Identity;
+
+                if (visual.RenderTransform != null)
                 {
-                    Layer layer = new Layer(this.renderTarget);
-                    LayerParameters p = new LayerParameters();
-                    p.Opacity = (float)visual.Opacity;
-                    this.renderTarget.PushLayer(ref p, layer);
+                    Matrix current = context.CurrentTransform;
+                    Matrix offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
+                    transform = -current * -offset * visual.RenderTransform.Value * offset * current;
                 }
 
-                visual.Render(context);
+                transform *= Matrix.Translation(visual.Bounds.Position);
 
-                foreach (IVisual child in visual.VisualChildren)
+                using (context.PushTransform(transform))
                 {
-                    Matrix translate = Matrix.Translation(child.Bounds.X, child.Bounds.Y);
+                    visual.Render(context);
 
-                    using (context.PushTransform(translate))
+                    foreach (var child in visual.VisualChildren)
                     {
                         this.Render(child, context);
                     }
                 }
 
-                if (visual.Opacity < 1)
+                if (visual.RenderTransform != null)
                 {
-                    this.renderTarget.PopLayer();
+                    ((RotateTransform)visual.RenderTransform).Angle++;
                 }
             }
         }

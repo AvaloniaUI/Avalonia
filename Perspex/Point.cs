@@ -60,6 +60,11 @@ namespace Perspex
             return new Point(a.x - b.x, a.y - b.y);
         }
 
+        public static implicit operator Vector(Point p)
+        {
+            return new Vector(p.x, p.y);
+        }
+
         /// <summary>
         /// Returns the string representation of the point.
         /// </summary>

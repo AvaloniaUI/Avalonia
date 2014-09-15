@@ -15,6 +15,8 @@ namespace Perspex.Media
     /// </summary>
     public interface IDrawingContext : IDisposable
     {
+        Matrix CurrentTransform { get; }
+
         void DrawImage(Bitmap source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>

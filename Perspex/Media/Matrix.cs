@@ -83,14 +83,47 @@ namespace Perspex.Media
             get { return this.offsetY; }
         }
 
+        public static Matrix operator *(Matrix left, Matrix right)
+        {
+            return new Matrix(
+                (left.M11 * right.M11) + (left.M12 * right.M21),
+                (left.M11 * right.M12) + (left.M12 * right.M22),
+                (left.M21 * right.M11) + (left.M22 * right.M21),
+                (left.M21 * right.M12) + (left.M22 * right.M22),
+                (left.offsetX * right.M11) + (left.offsetY * right.M21) + right.offsetX,
+                (left.offsetX * right.M12) + (left.offsetY * right.M22) + right.offsetY);
+        }
+
         public static bool Equals(Matrix matrix1, Matrix matrix2)
         {
             return matrix1.Equals(matrix2);
         }
 
+        public static Matrix Rotation(double angle)
+        {
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+            return new Matrix(cos, sin, -sin, cos, 0, 0);
+        }
+
+        public static Matrix Translation(Vector v)
+        {
+            return Translation(v.X, v.Y);
+        }
+
         public static Matrix Translation(double x, double y)
         {
             return new Matrix(1.0, 0.0, 0.0, 1.0, x, y);
+        }
+
+        public static double ToRadians(double angle)
+        {
+            return angle * 0.0174532925;
+        }
+
+        public static Matrix operator -(Matrix matrix)
+        {
+            return matrix.Invert();
         }
 
         public static bool operator ==(Matrix matrix1, Matrix matrix2)
@@ -126,6 +159,24 @@ namespace Perspex.Media
         public override int GetHashCode()
         {
             throw new NotImplementedException();
+        }
+
+        public Matrix Invert()
+        {
+            if (!this.HasInverse)
+            {
+                throw new InvalidOperationException("Transform is not invertible.");
+            }
+
+            double d = this.Determinant;
+
+            return new Matrix(
+                this.m22 / d,
+                -this.m12 / d,
+                -this.m21 / d,
+                this.m11 / d,
+                ((this.m21 * this.offsetY) - (this.m22 * this.offsetX)) / d,
+                ((this.m12 * this.offsetX) - (this.m11 * this.offsetY)) / d);
         }
     }
 }

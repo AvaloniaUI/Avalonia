@@ -20,6 +20,10 @@ namespace Perspex
 
         double Opacity { get; }
 
+        Transform RenderTransform { get; }
+
+        Origin TransformOrigin { get; }
+
         IEnumerable<IVisual> VisualChildren { get; }
 
         IVisual VisualParent { get; set; }

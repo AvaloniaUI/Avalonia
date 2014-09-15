@@ -43,6 +43,12 @@ namespace Perspex.Direct2D1.Media
             this.renderTarget.BeginDraw();
         }
 
+        public Matrix CurrentTransform
+        {
+            get { return Convert(this.renderTarget.Transform); }
+            set { this.renderTarget.Transform = Convert(value); }
+        }
+
         /// <summary>
         /// Ends a draw operation.
         /// </summary>
@@ -233,6 +239,17 @@ namespace Perspex.Direct2D1.Media
                 (float)matrix.M22,
                 (float)matrix.OffsetX,
                 (float)matrix.OffsetY);
+        }
+
+        private Matrix Convert(Matrix3x2 matrix)
+        {
+            return new Matrix(
+                matrix.M11,
+                matrix.M12,
+                matrix.M21,
+                matrix.M22,
+                matrix.M31,
+                matrix.M32);
         }
 
         /// <summary>

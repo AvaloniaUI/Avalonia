@@ -128,6 +128,8 @@
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Media\RotateTransform.cs" />
+    <Compile Include="Media\Transform.cs" />
     <Compile Include="Platform\IPlatformThreadingInterface.cs" />
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
@@ -141,6 +143,7 @@
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Origin.cs" />
     <Compile Include="Themes\Default\ContentControlStyle.cs" />
     <Compile Include="Themes\Default\TreeViewItemStyle.cs" />
     <Compile Include="Themes\Default\TreeViewStyle.cs" />

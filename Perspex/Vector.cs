@@ -50,6 +50,11 @@ namespace Perspex
             get { return this.y; }
         }
 
+        public static Vector operator -(Vector a)
+        {
+            return new Vector(-a.x, -a.y);
+        }
+
         public static Vector operator +(Vector a, Vector b)
         {
             return new Vector(a.x + b.x, a.y + b.y);
