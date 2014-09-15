@@ -144,11 +144,6 @@ namespace Perspex.Direct2D1
                         this.Render(child, context);
                     }
                 }
-
-                if (visual.RenderTransform != null)
-                {
-                    ((RotateTransform)visual.RenderTransform).Angle++;
-                }
             }
         }
     }
