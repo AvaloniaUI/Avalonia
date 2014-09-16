@@ -80,6 +80,8 @@ namespace Perspex.Windows
             });
         }
 
+        public event EventHandler Activated;
+
         public event EventHandler Closed;
 
         public Size ClientSize
@@ -173,6 +175,16 @@ namespace Perspex.Windows
             }
         }
 
+        private void OnActivated()
+        {
+            WindowsKeyboardDevice.Instance.WindowActivated(this);
+
+            if (this.Activated != null)
+            {
+                this.Activated(this, EventArgs.Empty);
+            }
+        }
+
         private void OnClosed()
         {
             if (this.Closed != null)
@@ -190,6 +202,10 @@ namespace Perspex.Windows
 
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
+                case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
+                    this.OnActivated();
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     this.OnClosed();
                     break;

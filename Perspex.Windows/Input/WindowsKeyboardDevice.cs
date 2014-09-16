@@ -55,6 +55,10 @@ namespace Perspex.Windows.Input
             }
         }
 
+        public void WindowActivated(Window window)
+        {
+            this.FocusedElement = window;
+        }
 
         public string StringFromVirtualKey(uint virtualKey)
         {

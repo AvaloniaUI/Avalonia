@@ -17,8 +17,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
-        private IVisual visualChild;
-
         public ControlTemplate Template
         {
             get { return this.GetValue(TemplateProperty); }

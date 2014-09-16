@@ -6,7 +6,6 @@
 
 namespace Perspex
 {
-    using System.Threading;
     using Perspex.Controls;
     using Perspex.Input;
     using Perspex.Styling;

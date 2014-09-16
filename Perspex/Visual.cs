@@ -8,6 +8,7 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
     using Perspex.Layout;
     using Perspex.Media;
@@ -28,9 +29,11 @@ namespace Perspex
         public static readonly PerspexProperty<Origin> TransformOriginProperty =
             PerspexProperty.Register<Visual, Origin>("TransformOrigin", defaultValue: Origin.Default);
 
-        private IVisual visualParent;
-
         private Rect bounds;
+
+        private PerspexList<IVisual> visualChildren;
+
+        private IVisual visualParent;
 
         static Visual()
         {
@@ -69,36 +72,26 @@ namespace Perspex
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
         {
-            get { return ((IVisual)this).VisualChildren; }
+            get { return this.visualChildren != null ? this.visualChildren : Enumerable.Empty<IVisual>(); }
         }
 
-        IEnumerable<IVisual> IVisual.VisualChildren
+        PerspexList<IVisual> IVisual.VisualChildren
         {
-            get { return Enumerable.Empty<Visual>(); }
+            get
+            {
+                if (this.visualChildren == null)
+                {
+                    this.visualChildren = new PerspexList<IVisual>(this.CreateVisualChildren());
+                    this.visualChildren.CollectionChanged += VisualChildrenChanged;
+                }
+
+                return this.visualChildren;
+            }
         }
 
         IVisual IVisual.VisualParent
         {
-            get 
-            { 
-                return this.visualParent;
-            }
-
-            set
-            {
-                if (this.visualParent != value)
-                {
-                    IVisual oldValue = this.visualParent;
-                    this.visualParent = value;
-                    this.InheritanceParent = (PerspexObject)value;
-                    this.OnVisualParentChanged(oldValue, value);
-
-                    if (this.GetVisualAncestor<ILayoutRoot>() != null)
-                    {
-                        this.NotifyAttachedToVisualTree();
-                    }
-                }
-            }
+            get  {  return this.visualParent; }
         }
 
         protected static void AffectsRender(PerspexProperty property)
@@ -131,26 +124,54 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(context != null);
         }
 
-        protected virtual void OnAttachedToVisualTree()
+        private IEnumerable<IVisual> CreateVisualChildren()
+        {
+            return Enumerable.Empty<IVisual>();
+        }
+
+        protected virtual void OnAttachedToVisualTree(ILayoutRoot root)
         {
         }
 
-        protected virtual void OnVisualParentChanged(IVisual oldValue, IVisual newValue)
+        protected virtual void OnDetachedFromVisualTree(ILayoutRoot oldRoot)
         {
         }
 
-        private void NotifyAttachedToVisualTree()
+        protected virtual void OnVisualParentChanged(IVisual oldParent)
+        {
+        }
+
+        private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        private void NotifyAttachedToVisualTree(ILayoutRoot root)
         {
             this.Log().Debug(string.Format(
                 "Attached {0} (#{1:x8}) to visual tree",
                 this.GetType().Name,
                 this.GetHashCode()));
 
-            this.OnAttachedToVisualTree();
+            this.OnAttachedToVisualTree(root);
 
             foreach (Visual child in ((IVisual)this).ExistingVisualChildren.OfType<Visual>())
             {
-                child.NotifyAttachedToVisualTree();
+                child.NotifyAttachedToVisualTree(root);
+            }
+        }
+
+        private void NotifyDetachedFromVisualTree(ILayoutRoot oldRoot)
+        {
+            this.Log().Debug(string.Format(
+                "Detached {0} (#{1:x8}) from visual tree",
+                this.GetType().Name,
+                this.GetHashCode()));
+
+            this.OnDetachedFromVisualTree(oldRoot);
+
+            foreach (Visual child in ((IVisual)this).ExistingVisualChildren.OfType<Visual>())
+            {
+                child.NotifyDetachedFromVisualTree(oldRoot);
             }
         }
     }

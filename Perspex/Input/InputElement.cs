@@ -37,6 +37,9 @@ namespace Perspex.Input
         public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>("KeyDown", RoutingStrategy.Bubble);
 
+        public static readonly RoutedEvent<KeyEventArgs> PreviewKeyDownEvent =
+            RoutedEvent.Register<InputElement, KeyEventArgs>("PreviewKeyDown", RoutingStrategy.Tunnel);
+
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
 

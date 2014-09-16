@@ -26,14 +26,14 @@ namespace Perspex.Controls
             {
                 if (x.Item1 != null)
                 {
-                    ((IVisual)x.Item1).VisualParent = null;
-                    ((ILogical)x.Item1).LogicalParent = null;
+                    ((IVisual)this).RemoveVisualChild(x.Item1);
+                    ((ILogical)this).RemoveLogicalChild(x.Item1);
                 }
 
                 if (x.Item2 != null)
                 {
-                    ((IVisual)x.Item2).VisualParent = this;
-                    ((ILogical)x.Item2).LogicalParent = this;
+                    ((IVisual)this).AddVisualChild(x.Item2);
+                    ((ILogical)this).AddLogicalChild(x.Item2);
                 }
             });
         }

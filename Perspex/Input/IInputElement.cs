@@ -31,5 +31,7 @@ namespace Perspex.Input
         bool IsPointerOver { get; }
 
         void Focus();
+
+        void RaiseEvent(RoutedEventArgs e);
     }
 }

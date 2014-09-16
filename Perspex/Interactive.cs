@@ -8,6 +8,7 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reactive;
     using System.Reactive.Linq;
     using Perspex.Layout;
@@ -68,8 +69,9 @@ namespace Perspex
                     case RoutingStrategy.Direct:
                         this.RaiseEventImpl(e);
                         break;
-                    default:
-                        throw new NotImplementedException();
+                    case RoutingStrategy.Tunnel:
+                        this.TunnelEvent(e);
+                        break;
                 }
             }
         }
@@ -78,12 +80,29 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(e != null);
 
-            Interactive target = this;
-
-            while (target != null)
+            foreach (var target in this.GetVisualAncestorsAndSelf().OfType<Interactive>())
             {
                 target.RaiseEventImpl(e);
-                target = target.GetVisualAncestor<Interactive>();
+
+                if (e.Handled)
+                {
+                    break;
+                }
+            }
+        }
+
+        private void TunnelEvent(RoutedEventArgs e)
+        {
+            Contract.Requires<NullReferenceException>(e != null);
+
+            foreach (var target in this.GetVisualAncestorsAndSelf().OfType<Interactive>().Reverse())
+            {
+                target.RaiseEventImpl(e);
+
+                if (e.Handled)
+                {
+                    break;
+                }
             }
         }
 
@@ -97,7 +116,6 @@ namespace Perspex
             {
                 foreach (Delegate handler in delegates)
                 {
-                    // TODO: Implement the Handled stuff.
                     handler.DynamicInvoke(this, e);
                 }
             }

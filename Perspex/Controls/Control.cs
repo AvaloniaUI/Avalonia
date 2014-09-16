@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Input;
+    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
     using Splat;
@@ -190,11 +191,10 @@ namespace Perspex.Controls
             get { return Enumerable.Empty<ILogical>(); }
         }
 
-        protected override void OnAttachedToVisualTree()
+        protected override void OnAttachedToVisualTree(ILayoutRoot root)
         {
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
-            base.OnAttachedToVisualTree();
         }
 
         protected void AddPseudoClass(PerspexProperty<bool> property, string className)

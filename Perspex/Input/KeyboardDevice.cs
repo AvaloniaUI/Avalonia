@@ -33,25 +33,40 @@ namespace Perspex.Input
             get { return Locator.Current.GetService<IFocusManager>(); }
         }
 
+        public IInputElement FocusedElement
+        {
+            get;
+            protected set;
+        }
+
         public abstract ModifierKeys Modifiers { get; }
 
         private void ProcessRawEvent(RawKeyEventArgs e)
         {
-            Interactive interactive = FocusManager.Current as Interactive;
+            IInputElement element = this.FocusedElement;
 
-            if (interactive != null)
+            if (element != null)
             {
                 switch (e.Type)
                 {
                     case RawKeyEventType.KeyDown:
-                        interactive.RaiseEvent(new KeyEventArgs
+                        element.RaiseEvent(new KeyEventArgs
+                        {
+                            RoutedEvent = Control.PreviewKeyDownEvent,
+                            Device = this,
+                            Key = e.Key,
+                            Text = e.Text,
+                            Source = element,
+                            OriginalSource = element,
+                        });
+                        element.RaiseEvent(new KeyEventArgs
                         {
                             RoutedEvent = Control.KeyDownEvent,
                             Device = this,
                             Key = e.Key,
                             Text = e.Text,
-                            Source = interactive,
-                            OriginalSource = interactive,
+                            Source = element,
+                            OriginalSource = element,
                         });
                         break;
                 }
