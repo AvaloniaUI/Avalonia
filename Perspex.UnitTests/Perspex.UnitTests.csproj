@@ -38,8 +38,9 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1312.1622\lib\net40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="Splat">
-      <HintPath>..\packages\Splat.1.1.1\lib\Net45\Splat.dll</HintPath>
+    <Reference Include="Splat, Version=1.3.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Splat.1.3.3\lib\Net45\Splat.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Reactive.Core, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -68,38 +69,20 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Controls\ContentControlTests.cs" />
-    <Compile Include="Controls\ControlTests.cs" />
-    <Compile Include="Controls\TemplatedControlTests.cs" />
     <Compile Include="PriorityValueTests.cs" />
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
-    <Compile Include="StyleTests.cs" />
-    <Compile Include="Styling\StyleActivatorTests.cs" />
-    <Compile Include="Styling\SelectorTests_Multiple.cs" />
-    <Compile Include="Styling\SelectorTests_Class.cs" />
-    <Compile Include="Styling\SelectorTests_Id.cs" />
-    <Compile Include="Styling\SelectorTests_OfType.cs" />
-    <Compile Include="Styling\SelectorTests_Descendent.cs" />
-    <Compile Include="Styling\SelectorTests_Template.cs" />
-    <Compile Include="Styling\TestLogical.cs" />
-    <Compile Include="Styling\TestTemplatedControl.cs" />
-    <Compile Include="Styling\TestSelectors.cs" />
-    <Compile Include="Styling\TestObservable.cs" />
-    <Compile Include="Styling\TestControlBase.cs" />
-    <Compile Include="TestRoot.cs" />
-    <Compile Include="TestSubject.cs" />
-    <Compile Include="TestObserver.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Perspex\Perspex.csproj">
-      <Project>{3c9f40da-d2a5-43a1-a272-e965876c6d46}</Project>
-      <Name>Perspex</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

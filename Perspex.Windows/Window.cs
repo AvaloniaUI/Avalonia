@@ -23,7 +23,7 @@ namespace Perspex.Windows
     using Perspex.Windows.Threading;
     using Splat;
 
-    public class Window : ContentControl, ILayoutRoot, IRendered, ICloseable
+    public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable
     {
         private UnmanagedMethods.WndProc wndProcDelegate;
 

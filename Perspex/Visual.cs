@@ -67,7 +67,6 @@ namespace Perspex
         Rect IVisual.Bounds
         {
             get { return this.bounds; }
-            set { this.bounds = value; }
         }
 
         IEnumerable<IVisual> IVisual.ExistingVisualChildren
@@ -111,7 +110,7 @@ namespace Perspex
 
         public void InvalidateVisual()
         {
-            IRendered root = this.GetVisualAncestorOrSelf<IRendered>();
+            IRenderRoot root = this.GetVisualAncestorOrSelf<IRenderRoot>();
 
             if (root != null && root.RenderManager != null)
             {
