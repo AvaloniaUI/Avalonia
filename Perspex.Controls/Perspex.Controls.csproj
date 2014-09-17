@@ -63,6 +63,9 @@
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />
     <Compile Include="SelectingItemsControl.cs" />
+    <Compile Include="Shapes\Path.cs" />
+    <Compile Include="Shapes\Rectangle.cs" />
+    <Compile Include="Shapes\Shape.cs" />
     <Compile Include="StackPanel.cs" />
     <Compile Include="TabControl.cs" />
     <Compile Include="TabItem.cs" />

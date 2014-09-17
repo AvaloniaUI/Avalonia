@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Styling.UnitTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Controls.UnitTests", "Perspex.Controls.UnitTests\Perspex.Controls.UnitTests.csproj", "{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Themes.Default", "Perspex.Themes.Default\Perspex.Themes.Default.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,10 @@ Global
 		{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

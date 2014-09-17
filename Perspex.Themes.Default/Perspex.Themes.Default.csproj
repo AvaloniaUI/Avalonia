@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EB582467-6ABB-43A1-B052-E981BA910E3A}</ProjectGuid>
+    <ProjectGuid>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex</RootNamespace>
-    <AssemblyName>Perspex.SceneGraph</AssemblyName>
+    <RootNamespace>Perspex.Themes.Default</RootNamespace>
+    <AssemblyName>Perspex.Themes.Default</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -39,50 +39,44 @@
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Perspex.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Layout\Perspex.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Media\Brush.cs" />
-    <Compile Include="Media\Brushes.cs" />
-    <Compile Include="Media\Color.cs" />
-    <Compile Include="Media\Colors.cs" />
-    <Compile Include="Media\FormattedText.cs" />
-    <Compile Include="Media\Geometry.cs" />
-    <Compile Include="Media\IDrawingContext.cs" />
-    <Compile Include="IVisual.cs" />
-    <Compile Include="Matrix.cs" />
-    <Compile Include="Media\Imaging\Bitmap.cs" />
-    <Compile Include="Media\Imaging\IBitmap.cs" />
-    <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
-    <Compile Include="Media\ITransform.cs" />
-    <Compile Include="Media\PathMarkupParser.cs" />
-    <Compile Include="Media\Pen.cs" />
-    <Compile Include="Media\RectangleGeometry.cs" />
-    <Compile Include="Media\RotateTransform.cs" />
-    <Compile Include="Media\SolidColorBrush.cs" />
-    <Compile Include="Media\StreamGeometry.cs" />
-    <Compile Include="Media\StreamGeometryContext.cs" />
-    <Compile Include="Media\Stretch.cs" />
-    <Compile Include="Media\Transform.cs" />
-    <Compile Include="Origin.cs" />
-    <Compile Include="Platform\IBitmapImpl.cs" />
-    <Compile Include="Platform\IGeometryImpl.cs" />
-    <Compile Include="Platform\IPlatformRenderInterface.cs" />
-    <Compile Include="Platform\IRenderer.cs" />
-    <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
-    <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
-    <Compile Include="Platform\IStreamGeometryImpl.cs" />
-    <Compile Include="Platform\ITextService.cs" />
-    <Compile Include="Point.cs" />
+    <Compile Include="ButtonStyle.cs" />
+    <Compile Include="CheckBoxStyle.cs" />
+    <Compile Include="ContentControlStyle.cs" />
+    <Compile Include="DefaultTheme.cs" />
+    <Compile Include="ItemsControlStyle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rect.cs" />
-    <Compile Include="Rendering\IRenderRoot.cs" />
-    <Compile Include="Rendering\IRenderManager.cs" />
-    <Compile Include="Rendering\RenderManager.cs" />
-    <Compile Include="Size.cs" />
-    <Compile Include="Thickness.cs" />
-    <Compile Include="Vector.cs" />
-    <Compile Include="Visual.cs" />
-    <Compile Include="VisualExtensions.cs" />
+    <Compile Include="TabControlStyle.cs" />
+    <Compile Include="TabItemStyle.cs" />
+    <Compile Include="TabStripStyle.cs" />
+    <Compile Include="TextBoxStyle.cs" />
+    <Compile Include="TreeViewItemStyle.cs" />
+    <Compile Include="TreeViewStyle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">
@@ -101,17 +95,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Readme.txt" />
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
