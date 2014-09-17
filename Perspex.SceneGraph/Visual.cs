@@ -14,7 +14,7 @@ namespace Perspex
     using Perspex.Rendering;
     using Splat;
 
-    public abstract class Visual : PerspexObject, IVisual
+    public class Visual : PerspexObject, IVisual
     {
         public static readonly PerspexProperty<bool> IsVisibleProperty =
             PerspexProperty.Register<Visual, bool>("IsVisible", true);
@@ -32,7 +32,7 @@ namespace Perspex
 
         private PerspexList<Visual> visualChildren;
 
-        private IVisual visualParent;
+        private Visual visualParent;
 
         static Visual()
         {
@@ -79,7 +79,10 @@ namespace Perspex
 
         IVisual IVisual.VisualParent
         {
-            get { return this.visualParent; }
+            get
+            {
+                return this.visualParent;
+            }
         }
 
         public void InvalidateVisual()
@@ -119,7 +122,13 @@ namespace Perspex
         protected void ClearVisualChildren()
         {
             this.EnsureVisualChildrenCreated();
-            this.visualChildren.Clear();
+
+            // TODO: Just call visualChildren.Clear() when we have a PerspexList that notifies of 
+            // the removed items.
+            while (this.visualChildren.Count > 0)
+            {
+                this.visualChildren.RemoveAt(this.visualChildren.Count - 1);
+            }
         }
 
         protected void RemoveVisualChild(Visual visual)
@@ -146,7 +155,7 @@ namespace Perspex
         {
         }
 
-        protected virtual void OnVisualParentChanged(IVisual oldParent)
+        protected virtual void OnVisualParentChanged(Visual oldParent)
         {
         }
 
@@ -164,13 +173,58 @@ namespace Perspex
         {
             if (this.visualChildren == null)
             {
-                this.visualChildren = new PerspexList<Visual>(this.CreateVisualChildren());
+                this.visualChildren = new PerspexList<Visual>();
                 this.visualChildren.CollectionChanged += VisualChildrenChanged;
+                this.visualChildren.AddRange(this.CreateVisualChildren());
+            }
+        }
+
+        private void SetVisualParent(Visual value)
+        {
+            if (this.visualParent != value)
+            {
+                var old = this.visualParent;
+                var oldRoot = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var newRoot = default(IRenderRoot);
+
+                if (value != null)
+                {
+                    newRoot = value.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                }
+
+                this.visualParent = value;
+                this.OnVisualParentChanged(old);
+
+                if (oldRoot != null)
+                {
+                    this.NotifyDetachedFromVisualTree(oldRoot);
+                }
+
+                if (newRoot != null)
+                {
+                    this.NotifyAttachedToVisualTree(newRoot);
+                }
             }
         }
 
         private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Visual v in e.NewItems)
+                    {
+                        v.SetVisualParent(this);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (Visual v in e.OldItems)
+                    {
+                        v.SetVisualParent(null);
+                    }
+                    break;
+            }
         }
 
         private void NotifyAttachedToVisualTree(IRenderRoot root)

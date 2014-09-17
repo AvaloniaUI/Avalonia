@@ -48,7 +48,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void OnVisualParentChanged(IVisual oldParent)
+        protected override void OnVisualParentChanged(Visual oldParent)
         {
             this.parent = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
         }
