@@ -213,7 +213,7 @@ namespace Perspex.Controls
             // TODO: This needs to traverse the logical tree, not the visual.
             foreach (var i in this.GetVisualAncestors().OfType<Control>())
             {
-                foreach (DataTemplate dt in control.DataTemplates.Reverse())
+                foreach (DataTemplate dt in i.DataTemplates.Reverse())
                 {
                     if (dt.Match(content))
                     {

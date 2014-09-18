@@ -50,9 +50,12 @@ namespace Perspex.SceneGraph.UnitTests
             this.ClearVisualChildren();
         }
 
-        protected override IEnumerable<Visual> CreateVisualChildren()
+        protected override void CreateVisualChildren()
         {
-            return this.InitialChildren ?? Enumerable.Empty<Visual>();
+            if (this.InitialChildren != null)
+            {
+                this.AddVisualChildren(this.InitialChildren);
+            }
         }
 
         protected override void OnVisualParentChanged(Visual oldParent)

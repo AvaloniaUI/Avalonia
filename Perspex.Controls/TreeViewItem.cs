@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using System.Linq;
 
     public class TreeViewItem : HeaderedItemsControl
@@ -44,7 +45,7 @@ namespace Perspex.Controls
             }
             else
             {
-                return null;
+                throw new InvalidOperationException("TreeViewItem must be added to TreeView.");
             }
         }
 

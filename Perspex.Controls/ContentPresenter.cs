@@ -32,7 +32,7 @@ namespace Perspex.Controls
             set { this.SetValue(ContentProperty, value); }
         }
 
-        protected override IEnumerable<Visual> CreateVisualChildren()
+        protected override void CreateVisualChildren()
         {
             object content = this.Content;
 
@@ -62,11 +62,7 @@ namespace Perspex.Controls
                 }
 
                 result.TemplatedParent = null;
-                return Enumerable.Repeat(result, 1);
-            }
-            else
-            {
-                return Enumerable.Empty<Visual>();
+                this.AddVisualChild(result);
             }
         }
 
@@ -142,9 +138,8 @@ namespace Perspex.Controls
 
         private void ContentChanged(Tuple<object, object> content)
         {
-            var children = this.CreateVisualChildren();
             this.ClearVisualChildren();
-            this.AddVisualChildren(children);
+            this.CreateVisualChildren();
             this.InvalidateMeasure();
         }
     }

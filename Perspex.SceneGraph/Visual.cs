@@ -109,12 +109,16 @@ namespace Perspex
 
         protected void AddVisualChild(Visual visual)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             this.EnsureVisualChildrenCreated();
             this.visualChildren.Add(visual);
         }
 
         protected void AddVisualChildren(IEnumerable<Visual> visuals)
         {
+            Contract.Requires<ArgumentNullException>(visuals != null);
+
             this.EnsureVisualChildrenCreated();
             this.visualChildren.AddRange(visuals);
         }
@@ -133,6 +137,8 @@ namespace Perspex
 
         protected void RemoveVisualChild(Visual visual)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             this.EnsureVisualChildrenCreated();
             this.visualChildren.Remove(visual);
         }
@@ -142,9 +148,8 @@ namespace Perspex
             this.bounds = bounds;
         }
 
-        protected virtual IEnumerable<Visual> CreateVisualChildren()
+        protected virtual void CreateVisualChildren()
         {
-            return Enumerable.Empty<Visual>();
         }
 
         protected virtual void OnAttachedToVisualTree(IRenderRoot root)
@@ -175,7 +180,7 @@ namespace Perspex
             {
                 this.visualChildren = new PerspexList<Visual>();
                 this.visualChildren.CollectionChanged += VisualChildrenChanged;
-                this.visualChildren.AddRange(this.CreateVisualChildren());
+                this.CreateVisualChildren();
             }
         }
 

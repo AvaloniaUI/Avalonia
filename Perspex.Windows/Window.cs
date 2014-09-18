@@ -56,6 +56,7 @@ namespace Perspex.Windows
                     {
                         this.LayoutManager.ExecuteLayoutPass();
                         this.renderer.Render(this);
+                        this.RenderManager.RenderFinished();
                         this.layoutPending = false;
                     });
             });
@@ -67,8 +68,11 @@ namespace Perspex.Windows
                     DispatcherPriority.Render,
                     () =>
                     {
-                        this.renderer.Render(this);
-                        this.RenderManager.RenderFinished();
+                        if (!this.layoutPending)
+                        {
+                            this.renderer.Render(this);
+                            this.RenderManager.RenderFinished();
+                        }
                     });
             });
         }

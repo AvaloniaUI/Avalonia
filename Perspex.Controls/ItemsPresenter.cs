@@ -52,9 +52,10 @@ namespace Perspex.Controls
             return finalSize;
         }
 
-        protected override IEnumerable<Visual> CreateVisualChildren()
+        protected override void CreateVisualChildren()
         {
-            return Enumerable.Repeat(this.GetPanel(), 1);
+            this.AddVisualChild(this.GetPanel());
+            this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
         }
 
         private Control CreateItemControl(object item)
@@ -111,7 +112,6 @@ namespace Perspex.Controls
             if (this.panel == null && this.ItemsPanel != null)
             {
                 this.panel = this.ItemsPanel.Build();
-                this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
             }
 
             return this.panel;

@@ -13,7 +13,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class TemplatedControl : Control, IVisual, ITemplatedControl
+    public class TemplatedControl : Control, ITemplatedControl
     {
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
@@ -56,7 +56,7 @@ namespace Perspex.Controls
             return new Size();
         }
 
-        protected override IEnumerable<Visual> CreateVisualChildren()
+        protected override void CreateVisualChildren()
         {
             if (this.Template != null)
             {
@@ -66,11 +66,8 @@ namespace Perspex.Controls
                     this.GetHashCode()));
 
                 var child = this.Template.Build(this);
-                return Enumerable.Repeat(child, 1);
-            }
-            else
-            {
-                return Enumerable.Empty<Visual>();
+                this.AddVisualChild(child);
+                this.OnTemplateApplied();
             }
         }
 

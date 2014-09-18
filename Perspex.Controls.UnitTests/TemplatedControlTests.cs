@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Controls.UnitTests
 {
     using System;
@@ -96,5 +97,22 @@ namespace Perspex.Controls.UnitTests
 
             Assert.AreEqual(target, templateResult.TemplatedParent);
         }
+
+        [TestMethod]
+        public void OnTemplateApplied_Is_Called()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new ControlTemplate(_ =>
+                {
+                    return new Control();
+                })
+            };
+
+            var children = ((IVisual)target).VisualChildren.ToArray();
+
+            Assert.IsTrue(target.OnTemplateAppliedCalled);
+        }
     }
 }
+
