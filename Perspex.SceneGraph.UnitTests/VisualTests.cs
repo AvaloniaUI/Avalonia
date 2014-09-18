@@ -3,7 +3,7 @@
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Perspex.SceneGraph.UnitTests
 {
     using System.Linq;
