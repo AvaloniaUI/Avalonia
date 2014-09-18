@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.SceneGraph.UnitTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Application", "Perspex.Application\Perspex.Application.csproj", "{799A7BB5-3C2C-48B6-85A7-406A12C420DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Diagnostics", "Perspex.Diagnostics\Perspex.Diagnostics.csproj", "{7062AE20-5DCC-4442-9645-8195BDECE63E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,10 @@ Global
 		{799A7BB5-3C2C-48B6-85A7-406A12C420DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{799A7BB5-3C2C-48B6-85A7-406A12C420DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{799A7BB5-3C2C-48B6-85A7-406A12C420DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
