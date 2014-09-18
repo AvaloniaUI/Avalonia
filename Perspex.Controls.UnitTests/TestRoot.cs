@@ -6,10 +6,12 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System;
     using Moq;
     using Perspex.Layout;
+    using Perspex.Rendering;
 
-    internal class TestRoot : Decorator, ILayoutRoot
+    internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot
     {
         public Size ClientSize
         {
@@ -19,6 +21,11 @@ namespace Perspex.Controls.UnitTests
         public ILayoutManager LayoutManager
         {
             get { return new Mock<ILayoutManager>().Object; }
+        }
+
+        public IRenderManager RenderManager
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }
