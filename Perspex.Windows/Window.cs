@@ -35,8 +35,6 @@ namespace Perspex.Windows
 
         private bool layoutPending;
 
-        private bool renderPending;
-
         public Window()
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
@@ -62,20 +60,15 @@ namespace Perspex.Windows
                     });
             });
 
-            this.RenderManager.RenderNeeded.Where(_ => !layoutPending && !renderPending)
+            this.RenderManager.RenderNeeded.Where(_ => !layoutPending)
                 .Subscribe(x =>
             {
-                this.renderPending = true;
                 WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
-                        if (!this.layoutPending)
-                        {
-                            this.renderer.Render(this);
-                        }
-
-                        this.renderPending = false;
+                        this.renderer.Render(this);
+                        this.RenderManager.RenderFinished();
                     });
             });
         }

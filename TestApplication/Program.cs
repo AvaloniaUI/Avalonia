@@ -218,6 +218,8 @@ namespace TestApplication
                 }
             };
 
+            System.Console.Write(Perspex.Diagnostics.Debug.PrintVisualTree(window));
+
             ////var treeView = window.FindControl<TreeView>("treeView");
             ////var newTreeViewItemText = window.FindControl<TextBox>("newTreeViewItemText");
             ////var addTreeViewItem = window.FindControl<Button>("addTreeViewItem");

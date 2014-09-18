@@ -50,6 +50,17 @@ namespace Perspex.SceneGraph.UnitTests
         }
 
         [TestMethod]
+        public void Added_Child_Should_Have_InheritanceParent_Set()
+        {
+            var target = new TestVisual();
+            var child = new TestVisual();
+
+            target.AddChild(child);
+
+            Assert.AreEqual(target, child.InheritanceParent);
+        }
+
+        [TestMethod]
         public void Removed_Child_Should_Have_VisualParent_Cleared()
         {
             var target = new TestVisual();
@@ -59,6 +70,18 @@ namespace Perspex.SceneGraph.UnitTests
             target.RemoveChild(child);
 
             Assert.IsNull(child.GetVisualParent());
+        }
+
+        [TestMethod]
+        public void Removed_Child_Should_Have_InheritanceParent_Cleared()
+        {
+            var target = new TestVisual();
+            var child = new TestVisual();
+
+            target.AddChild(child);
+            target.RemoveChild(child);
+
+            Assert.IsNull(child.InheritanceParent);
         }
 
         [TestMethod]

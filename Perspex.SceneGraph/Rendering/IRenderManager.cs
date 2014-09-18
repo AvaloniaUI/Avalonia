@@ -14,5 +14,7 @@ namespace Perspex.Rendering
         IObservable<Unit> RenderNeeded { get; }
 
         void InvalidateRender(IVisual visual);
+
+        void RenderFinished();
     }
 }

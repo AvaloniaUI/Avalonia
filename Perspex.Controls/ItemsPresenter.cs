@@ -52,6 +52,11 @@ namespace Perspex.Controls
             return finalSize;
         }
 
+        protected override IEnumerable<Visual> CreateVisualChildren()
+        {
+            return Enumerable.Repeat(this.GetPanel(), 1);
+        }
+
         private Control CreateItemControl(object item)
         {
             ItemsControl i = this.TemplatedParent as ItemsControl;

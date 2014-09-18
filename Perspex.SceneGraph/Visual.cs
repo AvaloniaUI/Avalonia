@@ -214,6 +214,7 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual v in e.NewItems)
                     {
+                        v.InheritanceParent = this;
                         v.SetVisualParent(this);
                     }
                     break;
@@ -221,6 +222,7 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Remove:
                     foreach (Visual v in e.OldItems)
                     {
+                        v.InheritanceParent = null;
                         v.SetVisualParent(null);
                     }
                     break;

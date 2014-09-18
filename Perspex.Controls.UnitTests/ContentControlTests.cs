@@ -144,14 +144,16 @@ namespace Perspex.Controls.UnitTests
 
         private ControlTemplate GetTemplate()
         {
-            return new ControlTemplate(parent =>
+            return ControlTemplate.Create<ContentControl>(parent =>
             {
-                Border border = new Border();
-                border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
-                ContentPresenter contentPresenter = new ContentPresenter();
-                ////contentPresenter[~ContentPresenter.ContentProperty] = parent[~ContentPresenter.ContentProperty];
-                border.Content = contentPresenter;
-                return border;
+                return new Border
+                {
+                    Background = new Perspex.Media.SolidColorBrush(0xffffffff),
+                    Content = new ContentPresenter
+                    {
+                        [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                    }
+                };
             });
         }
     }

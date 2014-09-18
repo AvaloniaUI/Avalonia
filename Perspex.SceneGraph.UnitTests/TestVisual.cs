@@ -22,6 +22,11 @@ namespace Perspex.SceneGraph.UnitTests
 
     public class TestVisual : Visual
     {
+        public new PerspexObject InheritanceParent
+        {
+            get { return base.InheritanceParent; }
+        }
+
         public Visual[] InitialChildren { get; set; }
 
         public event EventHandler<ParamEventArgs<Visual>> VisualParentChangedCalled;

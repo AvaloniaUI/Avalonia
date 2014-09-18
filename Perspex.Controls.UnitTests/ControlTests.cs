@@ -6,11 +6,13 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System;
     using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Controls;
     using Perspex.Layout;
+    using Perspex.Rendering;
     using Perspex.Styling;
     using Splat;
 
@@ -26,7 +28,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
-        public void Adding_Control_To_ILayoutRoot_Should_Style_Control()
+        public void Adding_Control_To_IRenderRoot_Should_Style_Control()
         {
             using (Locator.CurrentMutable.WithResolver())
             {
@@ -68,7 +70,7 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        private class TestRoot : Decorator, ILayoutRoot
+        private class TestRoot : Decorator, ILayoutRoot, IRenderRoot
         {
             public Size ClientSize
             {
@@ -78,6 +80,11 @@ namespace Perspex.Controls.UnitTests
             public ILayoutManager LayoutManager
             {
                 get { throw new System.NotImplementedException(); }
+            }
+
+            public IRenderManager RenderManager
+            {
+                get { throw new NotImplementedException(); }
             }
         }
     }
