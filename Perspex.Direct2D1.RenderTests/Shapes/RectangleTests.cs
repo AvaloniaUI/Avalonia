@@ -9,7 +9,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Media;
-    using Perspex.Shapes;
+    using Perspex.Controls.Shapes;
 
     [TestClass]
     public class RectangleTests : TestBase

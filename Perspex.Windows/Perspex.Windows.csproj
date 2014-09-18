@@ -67,13 +67,37 @@
     <Compile Include="WindowsPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Perspex\Perspex.csproj">
-      <Project>{3c9f40da-d2a5-43a1-a272-e965876c6d46}</Project>
-      <Name>Perspex</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Perspex.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Layout\Perspex.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

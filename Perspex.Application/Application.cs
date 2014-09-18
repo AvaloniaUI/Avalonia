@@ -13,7 +13,7 @@ namespace Perspex
     using Perspex.Threading;
     using Splat;
 
-    public class Application
+    public class Application : IGlobalDataTemplates, IGlobalStyles
     {
         private DataTemplates dataTemplates;
 
@@ -77,8 +77,8 @@ namespace Perspex
 
         protected virtual void RegisterServices()
         {
-            Locator.CurrentMutable.Register(() => this.DataTemplates, typeof(IGlobalDataTemplates));
-            Locator.CurrentMutable.Register(() => this.Styles, typeof(IGlobalStyle));
+            Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
+            Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));

@@ -58,13 +58,20 @@ namespace Perspex.Controls
 
         protected override IEnumerable<Visual> CreateVisualChildren()
         {
-            this.Log().Debug(string.Format(
-                "Creating template for {0} (#{1:x8})",
-                this.GetType().Name,
-                this.GetHashCode()));
+            if (this.Template != null)
+            {
+                this.Log().Debug(string.Format(
+                    "Creating template for {0} (#{1:x8})",
+                    this.GetType().Name,
+                    this.GetHashCode()));
 
-            var child = this.Template.Build(this);
-            return Enumerable.Repeat(child, 1);
+                var child = this.Template.Build(this);
+                return Enumerable.Repeat(child, 1);
+            }
+            else
+            {
+                return Enumerable.Empty<Visual>();
+            }
         }
 
         protected virtual void OnTemplateApplied()

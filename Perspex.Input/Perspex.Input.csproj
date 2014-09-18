@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FocusManager.cs" />
+    <Compile Include="ICloseable.cs" />
     <Compile Include="IFocusManager.cs" />
     <Compile Include="IInputDevice.cs" />
     <Compile Include="IInputElement.cs" />

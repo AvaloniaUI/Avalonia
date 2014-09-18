@@ -12,7 +12,8 @@ namespace Perspex.Direct2D1.Media
     using Perspex.Media;
     using SharpDX;
     using SharpDX.Direct2D1;
-    using Matrix = Perspex.Media.Matrix;
+    using IBitmap = Perspex.Media.Imaging.IBitmap;
+    using Matrix = Perspex.Matrix;
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -57,7 +58,7 @@ namespace Perspex.Direct2D1.Media
             this.renderTarget.EndDraw();
         }
 
-        public void DrawImage(Perspex.Media.Imaging.Bitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
             BitmapImpl impl = (BitmapImpl)bitmap.PlatformImpl;
             Bitmap d2d = impl.GetDirect2DBitmap(this.renderTarget);

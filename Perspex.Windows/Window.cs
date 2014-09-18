@@ -43,7 +43,7 @@ namespace Perspex.Windows
 
             this.CreateWindow();
             Size clientSize = this.ClientSize;
-            this.LayoutManager = new LayoutManager();
+            this.LayoutManager = new LayoutManager(this);
             this.RenderManager = new RenderManager();
             this.renderer = factory.CreateRenderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
             this.inputManager = Locator.Current.GetService<IInputManager>();

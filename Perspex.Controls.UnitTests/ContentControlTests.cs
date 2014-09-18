@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System;
     using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
@@ -58,51 +59,55 @@ namespace Perspex.Controls.UnitTests
         [TestMethod]
         public void Setting_Content_To_Control_Should_Set_Parent()
         {
-            var target = new ContentControl();
-            var child = new Border();
+            throw new NotImplementedException();
+            ////var target = new ContentControl();
+            ////var child = new Border();
 
-            target.Content = child;
+            ////target.Content = child;
 
-            Assert.AreEqual(child.Parent, target);
-            Assert.AreEqual(((IVisual)child).VisualParent, target);
-            Assert.AreEqual(((ILogical)child).LogicalParent, target);
+            ////Assert.AreEqual(child.Parent, target);
+            ////Assert.AreEqual(((IVisual)child).VisualParent, target);
+            ////Assert.AreEqual(((ILogical)child).LogicalParent, target);
         }
 
         [TestMethod]
         public void Setting_Content_To_Control_Should_Set_Logical_Child()
         {
-            var target = new ContentControl();
-            var child = new Border();
+            throw new NotImplementedException();
+            ////var target = new ContentControl();
+            ////var child = new Border();
 
-            target.Content = child;
+            ////target.Content = child;
 
-            Assert.AreEqual(child, ((ILogical)target).LogicalChildren.Single());
+            ////Assert.AreEqual(child, ((ILogical)target).LogicalChildren.Single());
         }
 
         [TestMethod]
         public void Removing_Control_From_Content_Should_Clear_Parent()
         {
-            var target = new ContentControl();
-            var child = new Border();
+            throw new NotImplementedException();
+            ////var target = new ContentControl();
+            ////var child = new Border();
 
-            target.Content = child;
-            target.Content = "foo";
+            ////target.Content = child;
+            ////target.Content = "foo";
 
-            Assert.IsNull(child.Parent);
-            Assert.IsNull(((IVisual)child).VisualParent);
-            Assert.IsNull(((ILogical)child).LogicalParent);
+            ////Assert.IsNull(child.Parent);
+            ////Assert.IsNull(((IVisual)child).VisualParent);
+            ////Assert.IsNull(((ILogical)child).LogicalParent);
         }
 
         [TestMethod]
         public void Removing_Control_From_Content_Should_Clear_Logical_Child()
         {
-            var target = new ContentControl();
-            var child = new Border();
+            throw new NotImplementedException();
+            ////var target = new ContentControl();
+            ////var child = new Border();
 
-            target.Content = child;
-            target.Content = "foo";
+            ////target.Content = child;
+            ////target.Content = "foo";
 
-            Assert.IsFalse(((ILogical)target).LogicalChildren.Any());
+            ////Assert.IsFalse(((ILogical)target).LogicalChildren.Any());
         }
 
         [TestMethod]

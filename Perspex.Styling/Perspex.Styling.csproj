@@ -37,8 +37,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes.cs" />
-    <Compile Include="IGlobalStyle.cs" />
-    <Compile Include="ILogical.cs" />
+    <Compile Include="IGlobalStyles.cs" />
     <Compile Include="IStyle.cs" />
     <Compile Include="IStyleable.cs" />
     <Compile Include="IStyleHost.cs" />

@@ -16,7 +16,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : InputElement, ILogical, IStyleable, IStyleHost
+    public class Control : InputElement, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background", inherits: true);
@@ -180,17 +180,6 @@ namespace Perspex.Controls
             internal set { this.SetValue(TemplatedParentProperty, value); }
         }
 
-        ILogical ILogical.LogicalParent
-        {
-            get { return this.Parent; }
-            set { this.Parent = (Control)value; }
-        }
-
-        IEnumerable<ILogical> ILogical.LogicalChildren
-        {
-            get { return Enumerable.Empty<ILogical>(); }
-        }
-
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             IStyler styler = Locator.Current.GetService<IStyler>();
@@ -221,28 +210,15 @@ namespace Perspex.Controls
                 return new DataTemplate(x => control);
             }
 
-            ILogical node = this;
-
-            while (node != null)
+            // TODO: This needs to traverse the logical tree, not the visual.
+            foreach (var i in this.GetVisualAncestors().OfType<Control>())
             {
-                control = node as Control;
-
-                if (control != null)
+                foreach (DataTemplate dt in control.DataTemplates.Reverse())
                 {
-                    foreach (DataTemplate dt in control.DataTemplates.Reverse())
+                    if (dt.Match(content))
                     {
-                        if (dt.Match(content))
-                        {
-                            return dt;
-                        }
+                        return dt;
                     }
-                }
-
-                node = node.LogicalParent;
-
-                if (node == null && control != null)
-                {
-                    node = control.TemplatedParent as ILogical;
                 }
             }
 
@@ -250,7 +226,7 @@ namespace Perspex.Controls
 
             if (global != null)
             {
-                foreach (DataTemplate dt in global.Reverse())
+                foreach (DataTemplate dt in global.DataTemplates.Reverse())
                 {
                     if (dt.Match(content))
                     {

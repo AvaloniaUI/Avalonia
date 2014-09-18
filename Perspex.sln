@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex", "Perspex\Perspex.csproj", "{3C9F40DA-D2A5-43A1-A272-E965876C6D46}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Windows", "Perspex.Windows\Perspex.Windows.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
@@ -47,10 +45,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3C9F40DA-D2A5-43A1-A272-E965876C6D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C9F40DA-D2A5-43A1-A272-E965876C6D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C9F40DA-D2A5-43A1-A272-E965876C6D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C9F40DA-D2A5-43A1-A272-E965876C6D46}.Release|Any CPU.Build.0 = Release|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Release|Any CPU.ActiveCfg = Release|Any CPU

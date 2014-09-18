@@ -19,11 +19,11 @@ namespace Perspex.Styling
                 .GetSelfAndVisualAncestors()
                 .OfType<IStyleHost>()
                 .FirstOrDefault();
-            IGlobalStyle global = Locator.Current.GetService<IGlobalStyle>();
+            IGlobalStyles global = Locator.Current.GetService<IGlobalStyles>();
 
             if (global != null)
             {
-                global.Attach(control);
+                global.Styles.Attach(control);
             }
 
             if (styleContainer != null)

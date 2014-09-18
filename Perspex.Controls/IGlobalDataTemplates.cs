@@ -8,7 +8,8 @@ namespace Perspex.Controls
 {
     using System.Collections.Generic;
 
-    public interface IGlobalDataTemplates : IEnumerable<DataTemplate>
+    public interface IGlobalDataTemplates
     {
+        DataTemplates DataTemplates { get; }
     }
 }

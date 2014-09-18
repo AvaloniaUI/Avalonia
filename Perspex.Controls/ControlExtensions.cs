@@ -14,6 +14,14 @@ namespace Perspex.Controls
 
     public static class ControlExtensions
     {
+        // TODO: This needs to traverse the logical tree, not the visual.
+        public static T FindControl<T>(this Control control, string id) where T : Control
+        {
+            return control.GetVisualDescendents()
+                .OfType<T>()
+                .FirstOrDefault(x => x.Id == id);
+        }
+
         public static IEnumerable<Control> GetTemplateControls(this ITemplatedControl control)
         {
             return GetTemplateControls(control, (IVisual)control);

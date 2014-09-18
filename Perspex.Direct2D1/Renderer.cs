@@ -15,7 +15,7 @@ namespace Perspex.Direct2D1
     using SharpDX.Direct2D1;
     using Splat;
     using DwFactory = SharpDX.DirectWrite.Factory;
-    using Matrix = Perspex.Media.Matrix;
+    using Matrix = Perspex.Matrix;
     using Point = Perspex.Point;
 
     /// <summary>

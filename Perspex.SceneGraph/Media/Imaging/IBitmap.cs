@@ -6,11 +6,15 @@
 
 namespace Perspex.Media.Imaging
 {
+    using Perspex.Platform;
+
     public interface IBitmap
     {
         int PixelWidth { get; }
 
         int PixelHeight { get; }
+
+        IBitmapImpl PlatformImpl { get; }
 
         void Save(string fileName);
     }

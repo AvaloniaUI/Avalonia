@@ -1,17 +1,13 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ILogical.cs" company="Steven Kirk">
+// <copyright file="IGlobalStyles.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Styling
 {
-    using System.Collections.Generic;
-
-    public interface ILogical
+    public interface IGlobalStyles
     {
-        ILogical LogicalParent { get; set; }
-
-        IEnumerable<ILogical> LogicalChildren { get; }
+        Styles Styles { get; }
     }
 }

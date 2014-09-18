@@ -10,7 +10,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
-    using Perspex.Shapes;
+    using Perspex.Controls.Shapes;
 
     [TestClass]
     public class PathTests : TestBase
