@@ -7,11 +7,9 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive.Linq;
     using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Styling;
 
     public class ContentPresenter : Control, IVisual
     {
@@ -23,7 +21,7 @@ namespace Perspex.Controls
 
         public ContentPresenter()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(this.ContentChanged);
+            this.GetObservable(ContentProperty).Skip(1).Subscribe(this.ContentChanged);
         }
 
         public object Content
@@ -136,7 +134,7 @@ namespace Perspex.Controls
             return new Size();
         }
 
-        private void ContentChanged(Tuple<object, object> content)
+        private void ContentChanged(object content)
         {
             this.ClearVisualChildren();
             this.CreateVisualChildren();

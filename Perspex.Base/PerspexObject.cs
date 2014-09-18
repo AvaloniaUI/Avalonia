@@ -13,7 +13,6 @@ namespace Perspex
     using System.Reflection;
     using Splat;
 
-
     /// <summary>
     /// The priority of a binding.
     /// </summary>
@@ -451,7 +450,7 @@ namespace Perspex
                 v = this.CreatePriorityValue(property);
                 this.values.Add(property, v);
             }
-
+            
             this.Log().Debug(string.Format(
                 "Set local value of {0}.{1} (#{2:x8}) to {3}",
                 this.GetType().Name,

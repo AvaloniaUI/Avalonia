@@ -37,8 +37,6 @@ namespace Perspex.Layout
                 this.root.Measure(this.root.ClientSize);
                 this.root.Arrange(new Rect(this.root.ClientSize));
             }
-
-            this.root = null;
         }
 
         public void InvalidateMeasure(ILayoutable item)
