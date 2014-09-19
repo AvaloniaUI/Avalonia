@@ -35,7 +35,7 @@ namespace Perspex.Input
         public IInputElement FocusedElement
         {
             get;
-            protected set;
+            set;
         }
 
         public abstract ModifierKeys Modifiers { get; }
@@ -49,7 +49,7 @@ namespace Perspex.Input
                 switch (e.Type)
                 {
                     case RawKeyEventType.KeyDown:
-                        element.RaiseEvent(new KeyEventArgs
+                        KeyEventArgs ev = new KeyEventArgs
                         {
                             RoutedEvent = InputElement.PreviewKeyDownEvent,
                             Device = this,
@@ -57,16 +57,11 @@ namespace Perspex.Input
                             Text = e.Text,
                             Source = element,
                             OriginalSource = element,
-                        });
-                        element.RaiseEvent(new KeyEventArgs
-                        {
-                            RoutedEvent = InputElement.KeyDownEvent,
-                            Device = this,
-                            Key = e.Key,
-                            Text = e.Text,
-                            Source = element,
-                            OriginalSource = element,
-                        });
+                        };
+
+                        element.RaiseEvent(ev); ;
+                        ev.RoutedEvent = InputElement.KeyDownEvent;
+                        element.RaiseEvent(ev); ;
                         break;
                 }
             }

@@ -7,6 +7,7 @@
 namespace Perspex.Input
 {
     using Perspex.Interactivity;
+    using Splat;
 
     public class FocusManager : IFocusManager
     {
@@ -32,6 +33,13 @@ namespace Perspex.Input
             }
 
             this.Current = control;
+
+            IKeyboardDevice keyboard = Locator.Current.GetService<IKeyboardDevice>();
+
+            if (keyboard != null)
+            {
+                keyboard.FocusedElement = control;
+            }
 
             if (next != null)
             {

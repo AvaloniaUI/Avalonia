@@ -8,8 +8,10 @@ namespace Perspex.Windows
 {
     using System;
     using System.Collections.Generic;
+    using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Threading;
+    using Perspex.Windows.Input;
     using Perspex.Windows.Interop;
     using Perspex.Windows.Threading;
     using Splat;
@@ -24,6 +26,7 @@ namespace Perspex.Windows
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
 

@@ -59,7 +59,7 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(e != null);
 
-            if (e.RoutedEvent != null)
+            if (!e.Handled)
             {
                 switch (e.RoutedEvent.RoutingStrategy)
                 {
