@@ -29,7 +29,7 @@ namespace Perspex.Controls
 
                 return this.children;
             }
-            
+
             set
             {
                 Contract.Requires<ArgumentNullException>(value != null);
@@ -48,6 +48,7 @@ namespace Perspex.Controls
                     {
                         this.children.CollectionChanged += ChildrenChanged;
                         this.AddVisualChildren(value);
+                        this.InvalidateMeasure();
                     }
                 }
             }
@@ -71,6 +72,8 @@ namespace Perspex.Controls
                     this.AddVisualChildren(this.children);
                     break;
             }
+
+            this.InvalidateMeasure();
         }
     }
 }
