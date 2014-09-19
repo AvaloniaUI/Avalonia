@@ -143,6 +143,18 @@ namespace Perspex
             this.visualChildren.Remove(visual);
         }
 
+        protected void RemoveVisualChildren(IEnumerable<Visual> visuals)
+        {
+            Contract.Requires<ArgumentNullException>(visuals != null);
+
+            this.EnsureVisualChildrenCreated();
+
+            foreach (var v in visuals)
+            {
+                this.visualChildren.Remove(v);
+            }
+        }
+
         protected void SetVisualBounds(Rect bounds)
         {
             this.bounds = bounds;

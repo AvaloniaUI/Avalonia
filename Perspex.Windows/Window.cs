@@ -33,8 +33,6 @@ namespace Perspex.Windows
 
         private IInputManager inputManager;
 
-        private bool layoutPending;
-
         public Window()
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
@@ -47,9 +45,8 @@ namespace Perspex.Windows
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 
-            this.LayoutManager.LayoutNeeded.Where(_ => !this.layoutPending).Subscribe(x => 
+            this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
-                this.layoutPending = true;
                 WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render, 
                     () =>
@@ -57,22 +54,18 @@ namespace Perspex.Windows
                         this.LayoutManager.ExecuteLayoutPass();
                         this.renderer.Render(this);
                         this.RenderManager.RenderFinished();
-                        this.layoutPending = false;
                     });
             });
 
-            this.RenderManager.RenderNeeded.Where(_ => !layoutPending)
+            this.RenderManager.RenderNeeded
                 .Subscribe(x =>
             {
                 WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
-                        if (!this.layoutPending)
-                        {
-                            this.renderer.Render(this);
-                            this.RenderManager.RenderFinished();
-                        }
+                        this.renderer.Render(this);
+                        this.RenderManager.RenderFinished();
                     });
             });
         }

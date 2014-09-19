@@ -8,6 +8,7 @@ namespace Perspex.Layout
 {
     using System;
     using System.Linq;
+    using Splat;
 
     public enum HorizontalAlignment
     {
@@ -25,7 +26,7 @@ namespace Perspex.Layout
         Bottom,
     }
 
-    public class Layoutable : Visual, ILayoutable
+    public class Layoutable : Visual, ILayoutable, IEnableLogger
     {
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Layoutable, double>("Width", double.NaN);
@@ -123,10 +124,22 @@ namespace Perspex.Layout
         {
             availableSize = availableSize.Deflate(this.Margin);
             this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+
+            this.Log().Debug(string.Format(
+                "Measure of {0} (#{1:x8}) requested {2} ",
+                this.GetType().Name,
+                this.GetHashCode(),
+                this.DesiredSize));
         }
 
         public void Arrange(Rect rect)
         {
+            this.Log().Debug(string.Format(
+                "Arrange of {0} (#{1:x8}) gave {2} ",
+                this.GetType().Name,
+                this.GetHashCode(),
+                rect));
+
             if (this.DesiredSize.HasValue)
             {
                 this.ArrangeCore(rect);
