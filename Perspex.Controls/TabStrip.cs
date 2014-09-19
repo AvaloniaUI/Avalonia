@@ -36,7 +36,7 @@ namespace Perspex.Controls
             {
                 result = new TabItem
                 {
-                    Content = this.GetDataTemplate(item).Build(item),
+                    Content = this.ApplyDataTemplate(item),
                 };
             }
 

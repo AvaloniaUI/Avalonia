@@ -90,7 +90,7 @@ namespace Perspex.Controls
 
         protected virtual Control CreateItemControlOverride(object item)
         {
-            return (item as Control) ?? this.GetDataTemplate(item).Build(item);
+            return this.ApplyDataTemplate(item);
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

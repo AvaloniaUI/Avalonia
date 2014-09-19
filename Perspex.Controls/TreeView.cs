@@ -40,7 +40,13 @@ namespace Perspex.Controls
 
         private TreeDataTemplate GetTreeDataTemplate(object item)
         {
-            DataTemplate template = this.GetDataTemplate(item);
+            DataTemplate template = this.FindDataTemplate(item);
+
+            if (template == null)
+            {
+                template = DataTemplate.Default;
+            }
+
             TreeDataTemplate treeTemplate = template as TreeDataTemplate;
 
             if (treeTemplate == null)

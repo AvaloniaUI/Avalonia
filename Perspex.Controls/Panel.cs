@@ -7,7 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
 
     /// <summary>
@@ -24,6 +24,7 @@ namespace Perspex.Controls
                 if (this.children == null)
                 {
                     this.children = new Controls();
+                    this.children.CollectionChanged += ChildrenChanged;
                 }
 
                 return this.children;
@@ -35,10 +36,40 @@ namespace Perspex.Controls
 
                 if (this.children != value)
                 {
+                    if (this.children != null)
+                    {
+                        this.children.CollectionChanged -= ChildrenChanged;
+                    }
+
                     this.children = value;
                     this.ClearVisualChildren();
-                    this.AddVisualChildren(value);
+
+                    if (this.children != null)
+                    {
+                        this.children.CollectionChanged += ChildrenChanged;
+                        this.AddVisualChildren(value);
+                    }
                 }
+            }
+        }
+
+        private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // TODO: Handle Move and Replace.
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    this.AddVisualChildren(e.NewItems.OfType<Visual>());
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    this.ClearVisualChildren();
+                    this.AddVisualChildren(this.children);
+                    break;
             }
         }
     }

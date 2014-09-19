@@ -47,10 +47,14 @@ namespace Perspex.Input
 
         public InputElement()
         {
-            this.GotFocus += (s, e) => this.IsFocused = true;
-            this.LostFocus += (s, e) => this.IsFocused = false;
-            this.PointerEnter += (s, e) => this.IsPointerOver = true;
-            this.PointerLeave += (s, e) => this.IsPointerOver = false;
+            this.GotFocus += (_, e) => this.OnGotFocus(e);
+            this.LostFocus += (_, e) => this.OnLostFocus(e);
+            this.KeyDown += (_, e) => this.OnKeyDown(e);
+            this.PreviewKeyDown += (_, e) => this.OnPreviewKeyDown(e);
+            this.PointerEnter += (_, e) => this.OnPointerEnter(e);
+            this.PointerLeave += (_, e) => this.OnPointerLeave(e);
+            this.PointerPressed += (_, e) => this.OnPointerPressed(e);
+            this.PointerReleased += (_, e) => this.OnPointerReleased(e);
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus
@@ -69,6 +73,12 @@ namespace Perspex.Input
         {
             add { this.AddHandler(KeyDownEvent, value); }
             remove { this.RemoveHandler(KeyDownEvent, value); }
+        }
+
+        public event EventHandler<KeyEventArgs> PreviewKeyDown
+        {
+            add { this.AddHandler(PreviewKeyDownEvent, value); }
+            remove { this.RemoveHandler(PreviewKeyDownEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerEnter
@@ -116,6 +126,42 @@ namespace Perspex.Input
         public void Focus()
         {
             Locator.Current.GetService<IFocusManager>().Focus(this);
+        }
+
+        protected virtual void OnGotFocus(RoutedEventArgs e)
+        {
+            this.IsFocused = true;
+        }
+
+        protected virtual void OnLostFocus(RoutedEventArgs e)
+        {
+            this.IsFocused = false;
+        }
+
+        protected virtual void OnKeyDown(KeyEventArgs e)
+        {
+        }
+
+        protected virtual void OnPreviewKeyDown(KeyEventArgs e)
+        {
+        }
+
+        protected virtual void OnPointerEnter(PointerEventArgs e)
+        {
+            this.IsPointerOver = true;
+        }
+
+        protected virtual void OnPointerLeave(PointerEventArgs e)
+        {
+            this.IsPointerOver = false;
+        }
+
+        protected virtual void OnPointerPressed(PointerEventArgs e)
+        {
+        }
+
+        protected virtual void OnPointerReleased(PointerEventArgs e)
+        {
         }
     }
 }

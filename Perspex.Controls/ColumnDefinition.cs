@@ -21,6 +21,11 @@ namespace Perspex.Controls
         {
         }
 
+        public ColumnDefinition(double value, GridUnitType type)
+        {
+            this.Width = new GridLength(value, type);
+        }
+
         public ColumnDefinition(GridLength width)
         {
             this.Width = width;

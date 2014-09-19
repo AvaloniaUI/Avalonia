@@ -179,7 +179,6 @@ namespace TestApplication
                         new TabItem
                         {
                             Header = "Lists",
-                            IsSelected = true,
                             Content = new StackPanel
                             {
                                 Orientation = Orientation.Horizontal,
@@ -218,22 +217,20 @@ namespace TestApplication
                 }
             };
 
-            System.Console.Write(Perspex.Diagnostics.Debug.PrintVisualTree(window));
+            //var treeView = window.FindControl<TreeView>("treeView");
+            //var newTreeViewItemText = window.FindControl<TextBox>("newTreeViewItemText");
+            //var addTreeViewItem = window.FindControl<Button>("addTreeViewItem");
 
-            ////var treeView = window.FindControl<TreeView>("treeView");
-            ////var newTreeViewItemText = window.FindControl<TextBox>("newTreeViewItemText");
-            ////var addTreeViewItem = window.FindControl<Button>("addTreeViewItem");
-
-            ////addTreeViewItem.Click += (s, e) =>
-            ////{
-            ////    if (treeView.SelectedItem != null)
-            ////    {
-            ////        ((Node)treeView.SelectedItem).Children.Add(new Node
-            ////        {
-            ////            Name = newTreeViewItemText.Text,
-            ////        });
-            ////    }
-            ////};
+            //addTreeViewItem.Click += (s, e) =>
+            //{
+            //    if (treeView.SelectedItem != null)
+            //    {
+            //        ((Node)treeView.SelectedItem).Children.Add(new Node
+            //        {
+            //            Name = newTreeViewItemText.Text,
+            //        });
+            //    }
+            //};
 
             window.Show();
             Application.Current.Run(window);

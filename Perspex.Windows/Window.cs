@@ -12,6 +12,7 @@ namespace Perspex.Windows
     using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
+    using Perspex.Diagnostics;
     using Perspex.Input;
     using Perspex.Input.Raw;
     using Perspex.Layout;
@@ -112,6 +113,22 @@ namespace Perspex.Windows
         public void Show()
         {
             UnmanagedMethods.ShowWindow(this.Handle, 4);
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.F12)
+            {
+                Window window = new Window
+                {
+                    Content = new DevTools
+                    {
+                        Root = this,
+                    },
+                };
+
+                window.Show();
+            }
         }
 
         private Control DefaultTemplate(Window c)

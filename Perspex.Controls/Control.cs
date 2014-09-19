@@ -203,13 +203,6 @@ namespace Perspex.Controls
 
         protected virtual DataTemplate FindDataTemplate(object content)
         {
-            Control control = content as Control;
-
-            if (control != null)
-            {
-                return new DataTemplate(x => control);
-            }
-
             // TODO: This needs to traverse the logical tree, not the visual.
             foreach (var i in this.GetVisualAncestors().OfType<Control>())
             {
@@ -238,9 +231,22 @@ namespace Perspex.Controls
             return null;
         }
 
-        protected DataTemplate GetDataTemplate(object content)
+        protected Control ApplyDataTemplate(object content)
         {
-            return this.FindDataTemplate(content) ?? DataTemplate.Default;
+            DataTemplate result = this.FindDataTemplate(content);
+
+            if (result != null)
+            {
+                return result.Build(content);
+            }
+            else if (content is Control)
+            {
+                return (Control)content;
+            }
+            else
+            {
+                return DataTemplate.Default.Build(content);
+            }
         }
     }
 }

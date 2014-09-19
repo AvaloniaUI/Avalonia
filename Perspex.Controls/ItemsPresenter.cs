@@ -68,7 +68,7 @@ namespace Perspex.Controls
             }
             else
             {
-                return this.GetDataTemplate(item).Build(item) as Control;
+                return this.ApplyDataTemplate(item);
             }
         }
          
