@@ -125,20 +125,20 @@ namespace Perspex.Layout
             availableSize = availableSize.Deflate(this.Margin);
             this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
 
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Measure of {0} (#{1:x8}) requested {2} ",
                 this.GetType().Name,
                 this.GetHashCode(),
-                this.DesiredSize));
+                this.DesiredSize);
         }
 
         public void Arrange(Rect rect)
         {
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Arrange of {0} (#{1:x8}) gave {2} ",
                 this.GetType().Name,
                 this.GetHashCode(),
-                rect));
+                rect);
 
             if (this.DesiredSize.HasValue)
             {

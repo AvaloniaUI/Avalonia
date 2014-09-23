@@ -457,12 +457,12 @@ namespace Perspex
                 this.values.Add(property, v);
             }
             
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Set local value of {0}.{1} (#{2:x8}) to {3}",
                 this.GetType().Name,
                 property.Name,
                 this.GetHashCode(),
-                value));
+                value);
 
             v.Replace(Observable.Never<object>().StartWith(value), Priority);
         }
@@ -506,12 +506,12 @@ namespace Perspex
                 this.values.Add(property, v);
             }
 
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Bound value of {0}.{1} (#{2:x8}) to {3}",
                 this.GetType().Name,
                 property.Name,
                 this.GetHashCode(),
-                description != null ? description.Description : "[Anonymous]"));
+                description != null ? description.Description : "[Anonymous]");
 
             if (priority == BindingPriority.LocalValue)
             {
@@ -582,13 +582,13 @@ namespace Perspex
                 {
                     this.RaisePropertyChanged(property, oldValue, newValue);
 
-                    this.Log().Debug(string.Format(
+                    this.Log().Debug(
                         "Value of {0}.{1} (#{2:x8}) changed from {3} to {4}",
                         this.GetType().Name,
                         property.Name,
                         this.GetHashCode(),
                         oldValue,
-                        newValue));
+                        newValue);
                 }
             });
 

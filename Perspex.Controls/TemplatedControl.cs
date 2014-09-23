@@ -60,10 +60,10 @@ namespace Perspex.Controls
         {
             if (this.Template != null)
             {
-                this.Log().Debug(string.Format(
+                this.Log().Debug(
                     "Creating template for {0} (#{1:x8})",
                     this.GetType().Name,
-                    this.GetHashCode()));
+                    this.GetHashCode());
 
                 var child = this.Template.Build(this);
                 this.AddVisualChild(child);

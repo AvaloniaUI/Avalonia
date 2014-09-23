@@ -248,10 +248,10 @@ namespace Perspex
 
         private void NotifyAttachedToVisualTree(IRenderRoot root)
         {
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Attached {0} (#{1:x8}) to visual tree",
                 this.GetType().Name,
-                this.GetHashCode()));
+                this.GetHashCode());
 
             this.OnAttachedToVisualTree(root);
 
@@ -266,10 +266,10 @@ namespace Perspex
 
         private void NotifyDetachedFromVisualTree(IRenderRoot oldRoot)
         {
-            this.Log().Debug(string.Format(
+            this.Log().Debug(
                 "Detached {0} (#{1:x8}) from visual tree",
                 this.GetType().Name,
-                this.GetHashCode()));
+                this.GetHashCode());
 
             this.OnDetachedFromVisualTree(oldRoot);
 

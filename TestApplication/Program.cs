@@ -1,5 +1,6 @@
 ﻿using Perspex;
 using Perspex.Controls;
+using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
@@ -82,8 +83,8 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            //LogManager.Enable(new TestLogger());
-            //LogManager.Instance.LogLayoutMessages = true;
+            LogManager.Enable(new TestLogger());
+            LogManager.Instance.LogLayoutMessages = true;
 
             App application = new App
             {
