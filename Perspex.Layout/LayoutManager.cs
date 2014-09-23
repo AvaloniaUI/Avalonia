@@ -7,7 +7,6 @@
 namespace Perspex.Layout
 {
     using System;
-    using System.Linq;
     using System.Reactive;
     using System.Reactive.Subjects;
 
@@ -30,25 +29,42 @@ namespace Perspex.Layout
             get { return this.layoutNeeded; }
         }
 
+        public bool LayoutQueued
+        {
+            get;
+            private set;
+        }
+
         public void ExecuteLayoutPass()
         {
-            if (this.root != null)
-            {
-                this.root.Measure(this.root.ClientSize);
-                this.root.Arrange(new Rect(this.root.ClientSize));
-            }
+            this.root.Measure(this.root.ClientSize);
+            this.root.Arrange(new Rect(this.root.ClientSize));
+            this.LayoutQueued = false;
         }
 
         public void InvalidateMeasure(ILayoutable item)
         {
-            IVisual visual = item as IVisual;
-            this.layoutNeeded.OnNext(Unit.Default);
+            if (!this.LayoutQueued)
+            {
+                IVisual visual = item as IVisual;
+                this.layoutNeeded.OnNext(Unit.Default);
+                this.LayoutQueued = true;
+            }
         }
 
         public void InvalidateArrange(ILayoutable item)
         {
-            IVisual visual = item as IVisual;
-            this.layoutNeeded.OnNext(Unit.Default);
+            if (!this.LayoutQueued)
+            {
+                IVisual visual = item as IVisual;
+                this.layoutNeeded.OnNext(Unit.Default);
+                this.LayoutQueued = true;
+            }
+        }
+
+        public void LayoutFinished()
+        {
+            this.LayoutQueued = false;
         }
     }
 }

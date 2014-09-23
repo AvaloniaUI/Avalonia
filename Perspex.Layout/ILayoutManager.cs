@@ -13,6 +13,8 @@ namespace Perspex.Layout
     {
         IObservable<Unit> LayoutNeeded { get; }
 
+        bool LayoutQueued { get; }
+
         void ExecuteLayoutPass();
 
         void InvalidateMeasure(ILayoutable item);

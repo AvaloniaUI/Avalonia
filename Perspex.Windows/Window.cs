@@ -59,14 +59,18 @@ namespace Perspex.Windows
             });
 
             this.RenderManager.RenderNeeded
+                .Where(_ => !this.LayoutManager.LayoutQueued)
                 .Subscribe(x =>
             {
                 WindowsDispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
-                        this.renderer.Render(this);
-                        this.RenderManager.RenderFinished();
+                        if (!this.LayoutManager.LayoutQueued)
+                        {
+                            this.renderer.Render(this);
+                            this.RenderManager.RenderFinished();
+                        }
                     });
             });
         }

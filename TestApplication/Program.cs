@@ -1,12 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Perspex;
+﻿using Perspex;
 using Perspex.Controls;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Perspex.Threading;
 using Perspex.Windows;
 using Splat;
 
@@ -86,7 +82,8 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            //Locator.CurrentMutable.Register(() => new TestLogger { Level = LogLevel.Debug } , typeof(ILogger));
+            //LogManager.Enable(new TestLogger());
+            //LogManager.Instance.LogLayoutMessages = true;
 
             App application = new App
             {
