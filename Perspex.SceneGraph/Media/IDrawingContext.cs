@@ -57,6 +57,13 @@ namespace Perspex.Media
         void FillRectange(Brush brush, Rect rect);
 
         /// <summary>
+        /// Pushes a clip rectange.
+        /// </summary>
+        /// <param name="clip">The clip rectangle.</param>
+        /// <returns>A disposable used to undo the clip rectangle.</returns>
+        IDisposable PushClip(Rect clip);
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>

@@ -172,6 +172,21 @@ namespace Perspex.Direct2D1.Media
         }
 
         /// <summary>
+        /// Pushes a clip rectange.
+        /// </summary>
+        /// <param name="clip">The clip rectangle.</param>
+        /// <returns>A disposable used to undo the clip rectangle.</returns>
+        public IDisposable PushClip(Rect clip)
+        {
+            this.renderTarget.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
+
+            return Disposable.Create(() =>
+            {
+                this.renderTarget.PopAxisAlignedClip();
+            });
+        }
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>

@@ -83,8 +83,8 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            LogManager.Enable(new TestLogger());
-            LogManager.Instance.LogLayoutMessages = true;
+            //LogManager.Enable(new TestLogger());
+            //LogManager.Instance.LogLayoutMessages = true;
 
             App application = new App
             {
