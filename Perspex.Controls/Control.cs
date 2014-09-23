@@ -204,7 +204,7 @@ namespace Perspex.Controls
         protected virtual DataTemplate FindDataTemplate(object content)
         {
             // TODO: This needs to traverse the logical tree, not the visual.
-            foreach (var i in this.GetVisualAncestors().OfType<Control>())
+            foreach (var i in this.GetSelfAndVisualAncestors().OfType<Control>())
             {
                 foreach (DataTemplate dt in i.DataTemplates.Reverse())
                 {

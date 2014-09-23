@@ -7,6 +7,7 @@
 namespace Perspex.Diagnostics
 {
     using Perspex.Controls;
+    using System.Reactive.Linq;
 
     public class DevTools : Decorator
     {
@@ -32,7 +33,7 @@ namespace Perspex.Diagnostics
                                 x => new TextBlock {Text = x.GetType().Name },
                                 x => x.VisualChildren),
                         },
-                        [TreeView.ItemsProperty] = this[DevTools.RootProperty],
+                        [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x => new[] { x }),
                     }
                 }
             };
