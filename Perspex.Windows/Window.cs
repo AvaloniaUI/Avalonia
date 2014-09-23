@@ -109,7 +109,7 @@ namespace Perspex.Windows
 
         public void Show()
         {
-            UnmanagedMethods.ShowWindow(this.Handle, 4);
+            UnmanagedMethods.ShowWindow(this.Handle, 1);
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
