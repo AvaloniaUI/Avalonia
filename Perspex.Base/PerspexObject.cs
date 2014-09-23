@@ -143,7 +143,7 @@ namespace Perspex
         /// Gets or sets a binding for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public Binding this[Binding binding]
+        public IObservable<object> this[Binding binding]
         {
             get
             {
@@ -161,21 +161,27 @@ namespace Perspex
                 BindingMode mode = (binding.Mode == BindingMode.Default) ? 
                     binding.Property.DefaultBindingMode : 
                     binding.Mode;
+                Binding sourceBinding = value as Binding;
+
+                if (sourceBinding == null && mode != BindingMode.OneWay)
+                {
+                    throw new InvalidOperationException("Can only bind OneWay to plain IObservable.");
+                }
 
                 switch (mode)
                 {
                     case BindingMode.Default:
                     case BindingMode.OneWay:
-                        this.Bind(binding.Property, value.Source.GetObservable(value.Property), binding.Priority);
+                        this.Bind(binding.Property, value, binding.Priority);
                         break;
                     case BindingMode.OneTime:
-                        this.SetValue(binding.Property, value.Source.GetValue(value.Property));
+                        this.SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property));
                         break;
                     case BindingMode.OneWayToSource:
-                        value.Source.Bind(value.Property, this.GetObservable(binding.Property), binding.Priority);
+                        sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
                         break;
                     case BindingMode.TwoWay:
-                        this.BindTwoWay(binding.Property, value.Source, value.Property);
+                        this.BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
                         break;
                 }
             }

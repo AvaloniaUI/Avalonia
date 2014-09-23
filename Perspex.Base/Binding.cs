@@ -6,6 +6,9 @@
 
 namespace Perspex
 {
+    using System;
+    using System.Reactive.Linq;
+
     public enum BindingMode
     {
         Default,
@@ -15,7 +18,7 @@ namespace Perspex
         OneWayToSource,
     }
 
-    public struct Binding
+    public class Binding : IObservable<object>
     {
         public BindingMode Mode
         {
@@ -49,6 +52,11 @@ namespace Perspex
         public static Binding operator ~(Binding binding)
         {
             return binding.WithMode(BindingMode.TwoWay);
+        }
+
+        public IDisposable Subscribe(IObserver<object> observer)
+        {
+            return this.Source.GetObservable(Property).Subscribe(observer);
         }
 
         public Binding WithMode(BindingMode mode)
