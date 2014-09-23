@@ -111,7 +111,8 @@ namespace Perspex.Controls
             return new FormattedText
             {
                 FontFamilyName = "Segoe UI",
-                FontSize = this.FontSize,
+                FontSize = this.GetValue(TextBlock.FontSizeProperty),
+                FontStyle = this.GetValue(TextBlock.FontStyleProperty),
                 Text = this.parent.Text,
             };
         }

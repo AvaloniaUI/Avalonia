@@ -27,12 +27,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Control, double>("BorderThickness");
 
-        public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.Register<Control, double>(
-                "FontSize",
-                defaultValue: 12.0,
-                inherits: true);
-
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
 
@@ -113,12 +107,6 @@ namespace Perspex.Controls
             {
                 this.dataTemplates = value;
             }
-        }
-
-        public double FontSize
-        {
-            get { return this.GetValue(FontSizeProperty); }
-            set { this.SetValue(FontSizeProperty, value); }
         }
 
         public Brush Foreground

@@ -29,9 +29,7 @@ namespace Perspex.Diagnostics
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<IVisual>(
-                                x => new TextBlock {Text = x.GetType().Name },
-                                x => x.VisualChildren),
+                            new TreeDataTemplate<IVisual>(GetHeader, x => x.VisualChildren),
                         },
                         [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x => new[] { x }),
                     }
@@ -43,6 +41,20 @@ namespace Perspex.Diagnostics
         {
             get { return this.GetValue(RootProperty); }
             set { this.SetValue(RootProperty, value); }
+        }
+
+        private static Control GetHeader(IVisual visual)
+        {
+            Control control = visual as Control;
+            TextBlock result = new TextBlock();
+            result.Text = visual.GetType().Name;
+
+            if (control != null && control.TemplatedParent != null)
+            {
+                result.FontStyle = Media.FontStyle.Italic;
+            }
+
+            return result;
         }
     }
 }

@@ -26,6 +26,8 @@ namespace Perspex.Direct2D1
             return new TextFormat(
                 factory,
                 text.FontFamilyName,
+                FontWeight.Normal,
+                (SharpDX.DirectWrite.FontStyle)text.FontStyle,
                 (float)text.FontSize);
         }
 

@@ -13,6 +13,15 @@ namespace Perspex.Controls
 
     public class TextBlock : Control
     {
+        public static readonly PerspexProperty<double> FontSizeProperty =
+            PerspexProperty.Register<Control, double>(
+                "FontSize",
+                defaultValue: 12.0,
+                inherits: true);
+
+        public static readonly PerspexProperty<FontStyle> FontStyleProperty =
+            PerspexProperty.Register<Control, FontStyle>("FontStyle", inherits: true);
+
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
@@ -27,6 +36,18 @@ namespace Perspex.Controls
             set { this.SetValue(TextProperty, value); }
         }
 
+        public double FontSize
+        {
+            get { return this.GetValue(FontSizeProperty); }
+            set { this.SetValue(FontSizeProperty, value); }
+        }
+
+        public FontStyle FontStyle
+        {
+            get { return this.GetValue(FontStyleProperty); }
+            set { this.SetValue(FontStyleProperty, value); }
+        }
+
         private FormattedText FormattedText
         {
             get
@@ -35,6 +56,7 @@ namespace Perspex.Controls
                 {
                     FontFamilyName = "Segoe UI",
                     FontSize = this.FontSize,
+                    FontStyle = this.FontStyle,
                     Text = this.Text,
                 };
             }

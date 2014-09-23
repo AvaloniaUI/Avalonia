@@ -147,6 +147,11 @@ namespace TestApplication
                                     {
                                         Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                                     },
+                                    new TextBlock
+                                    {
+                                        Text = "Italic text.",
+                                        FontStyle = FontStyle.Italic,
+                                    },
                                     new TextBox
                                     {
                                         Text = "Text Box",
