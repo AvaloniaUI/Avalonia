@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Linq;
+    using Perspex.Controls.Generators;
 
     public class TreeViewItem : HeaderedItemsControl
     {
@@ -17,7 +18,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             PerspexProperty.Register<TreeViewItem, bool>("IsSelected");
 
-        TreeView parent;
+        TreeView treeView;
 
         public TreeViewItem()
         {
@@ -37,21 +38,33 @@ namespace Perspex.Controls
             set { this.SetValue(IsSelectedProperty, value); }
         }
 
-        protected override Control CreateItemControlOverride(object item)
+        protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
-            if (this.parent != null)
+            if (this.treeView == null)
             {
-                return this.parent.CreateItemControl(item);
+                throw new InvalidOperationException(
+                    "Cannot get the ItemContainerGenerator for a TreeViewItem " + 
+                    "before it is added to a TreeView.");
             }
-            else
-            {
-                throw new InvalidOperationException("TreeViewItem must be added to TreeView.");
-            }
+
+            return this.treeView.ItemContainerGenerator;
         }
 
         protected override void OnVisualParentChanged(Visual oldParent)
         {
-            this.parent = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
+            if (this.GetVisualParent() != null)
+            {
+                this.treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
+
+                if (this.treeView == null)
+                {
+                    throw new InvalidOperationException("TreeViewItems must be added to a TreeView.");
+                }
+            }
+            else
+            {
+                this.treeView = null;
+            }
         }
     }
 }

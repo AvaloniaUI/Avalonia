@@ -8,9 +8,9 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections;
-    using System.Collections.Generic;
     using System.Collections.Specialized;
-    using System.Linq;
+    using System.Reactive.Linq;
+    using Perspex.Controls.Generators;
 
     public class ItemsPresenter : Control, IVisual
     {
@@ -24,7 +24,7 @@ namespace Perspex.Controls
 
         public ItemsPresenter()
         {
-            this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
+            this.GetObservableWithHistory(ItemsProperty).Skip(1).Subscribe(this.ItemsChanged);
         }
 
         public IEnumerable Items
@@ -58,53 +58,16 @@ namespace Perspex.Controls
             this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
         }
 
-        private Control CreateItemControl(object item)
+        private IItemContainerGenerator GetGenerator()
         {
             ItemsControl i = this.TemplatedParent as ItemsControl;
 
-            if (i != null)
+            if (i == null)
             {
-                return i.CreateItemControl(item);
+                throw new InvalidOperationException("ItemsPresenter must be part of an ItemsControl template.");
             }
-            else
-            {
-                return this.ApplyDataTemplate(item);
-            }
-        }
-         
-        private IEnumerable<Control> CreateItemControls(IEnumerable items)
-        {
-            if (items != null)
-            {
-                return items
-                    .Cast<object>()
-                    .Select(x => this.CreateItemControl(x))
-                    .OfType<Control>();
-            }
-            else
-            {
-                return Enumerable.Empty<Control>();
-            }
-        }
 
-        private void ClearItemControls()
-        {
-            ItemsControl i = this.TemplatedParent as ItemsControl;
-
-            if (i != null)
-            {
-                i.ClearItemControls();
-            }
-        }
-
-        private void RemoveItemControls(IEnumerable items)
-        {
-            ItemsControl i = this.TemplatedParent as ItemsControl;
-
-            if (i != null)
-            {
-                i.RemoveItemControls(items);
-            }
+            return i.ItemContainerGenerator;
         }
 
         private Panel GetPanel()
@@ -119,8 +82,12 @@ namespace Perspex.Controls
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)
         {
+            var generator = this.GetGenerator();
+
             if (value.Item1 != null)
             {
+                this.panel.Children.RemoveAll(generator.Remove(value.Item1));
+
                 INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
 
                 if (incc != null)
@@ -129,24 +96,18 @@ namespace Perspex.Controls
                 }
             }
 
-            this.ClearItemControls();
-
             if (this.panel != null)
             {
-                var controls = this.CreateItemControls(value.Item2).ToList();
-
-                foreach (var control in controls)
+                if (value.Item2 != null)
                 {
-                    control.TemplatedParent = null;
-                }
+                    this.panel.Children.AddRange(generator.Generate(this.Items));
 
-                this.panel.Children = new Controls(controls);
+                    INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
 
-                INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
-
-                if (incc != null)
-                {
-                    incc.CollectionChanged += this.ItemsCollectionChanged;
+                    if (incc != null)
+                    {
+                        incc.CollectionChanged += this.ItemsCollectionChanged;
+                    }
                 }
             }
         }
@@ -155,28 +116,21 @@ namespace Perspex.Controls
         {
             if (this.panel != null)
             {
-                // TODO: Handle Move and Replace.
+                var generator = this.GetGenerator();
+
+                // TODO: Handle Move and Replace etc.
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        var controls = this.CreateItemControls(e.NewItems).ToList();
-
-                        foreach (var control in controls)
-                        {
-                            control.TemplatedParent = null;
-                        }
-
-                        this.panel.Children.AddRange(controls);
+                        this.panel.Children.AddRange(generator.Generate(e.NewItems));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        this.RemoveItemControls(e.OldItems);
-                        break;
-                        
-                    case NotifyCollectionChangedAction.Reset:
-                        this.ItemsChanged(Tuple.Create(this.Items, this.Items));
+                        this.panel.Children.RemoveAll(generator.Remove(e.OldItems));
                         break;
                 }
+
+                this.InvalidateMeasure();
             }
         }
     }

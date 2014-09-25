@@ -38,6 +38,7 @@
     <Compile Include="Contract.cs" />
     <Compile Include="IDescription.cs" />
     <Compile Include="IObservableDescription.cs" />
+    <Compile Include="IReadOnlyPerspexList.cs" />
     <Compile Include="PerspexList.cs" />
     <Compile Include="PerspexObject.cs" />
     <Compile Include="PerspexProperty.cs" />

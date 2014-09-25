@@ -195,45 +195,12 @@ namespace TestApplication
                                         Id = "treeView",
                                         Items = treeData,
                                     },
-                                    new StackPanel
-                                    {
-                                        Orientation = Orientation.Vertical,
-                                        Gap = 2.0,
-                                        Children = new Controls
-                                        {
-                                            new TextBox
-                                            {
-                                                Id = "newTreeViewItemText",
-                                                Text = "New Item"
-                                            },
-                                            new Button
-                                            {
-                                                Id = "addTreeViewItem",
-                                                Content = "Add",
-                                            },
-                                        }
-                                    },
                                 }
                             },
                         },
                     }
                 }
             };
-
-            //var treeView = window.FindControl<TreeView>("treeView");
-            //var newTreeViewItemText = window.FindControl<TextBox>("newTreeViewItemText");
-            //var addTreeViewItem = window.FindControl<Button>("addTreeViewItem");
-
-            //addTreeViewItem.Click += (s, e) =>
-            //{
-            //    if (treeView.SelectedItem != null)
-            //    {
-            //        ((Node)treeView.SelectedItem).Children.Add(new Node
-            //        {
-            //            Name = newTreeViewItemText.Text,
-            //        });
-            //    }
-            //};
 
             window.Show();
             Application.Current.Run(window);

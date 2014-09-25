@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Collections;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Controls.Generators;
     using Perspex.Input;
 
     public class TreeView : SelectingItemsControl
@@ -19,42 +20,9 @@ namespace Perspex.Controls
             this.PointerPressed += this.OnPointerPressed;
         }
 
-        protected override Control CreateItemControlOverride(object item)
+        protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
-            TreeViewItem result = item as TreeViewItem;
-
-            if (result == null)
-            {
-                TreeDataTemplate template = this.GetTreeDataTemplate(item);
-
-                result = new TreeViewItem
-                {
-                    Header = template.Build(item),
-                    Items = template.ItemsSelector(item),
-                    IsExpanded = template.IsExpanded(item),
-                };
-            }
-
-            return result;
-        }
-
-        private TreeDataTemplate GetTreeDataTemplate(object item)
-        {
-            DataTemplate template = this.FindDataTemplate(item);
-
-            if (template == null)
-            {
-                template = DataTemplate.Default;
-            }
-
-            TreeDataTemplate treeTemplate = template as TreeDataTemplate;
-
-            if (treeTemplate == null)
-            {
-                treeTemplate = new TreeDataTemplate(template.Build, x => null);
-            }
-
-            return treeTemplate;
+            return new TreeItemContainerGenerator<TreeViewItem>(this);
         }
 
         private void OnPointerPressed(object sender, PointerEventArgs e)
@@ -75,7 +43,7 @@ namespace Perspex.Controls
                         i.IsSelected = i == item;
                     }
 
-                    this.SelectedItem = this.GetItemForControl(item);
+                    this.SelectedItem = this.ItemContainerGenerator.GetContainerForItem(item);
                 }
             }
 

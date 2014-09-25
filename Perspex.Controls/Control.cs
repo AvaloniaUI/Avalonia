@@ -188,53 +188,5 @@ namespace Perspex.Controls
                 }
             });
         }
-
-        protected virtual DataTemplate FindDataTemplate(object content)
-        {
-            // TODO: This needs to traverse the logical tree, not the visual.
-            foreach (var i in this.GetSelfAndVisualAncestors().OfType<Control>())
-            {
-                foreach (DataTemplate dt in i.DataTemplates.Reverse())
-                {
-                    if (dt.Match(content))
-                    {
-                        return dt;
-                    }
-                }
-            }
-
-            IGlobalDataTemplates global = Locator.Current.GetService<IGlobalDataTemplates>();
-
-            if (global != null)
-            {
-                foreach (DataTemplate dt in global.DataTemplates.Reverse())
-                {
-                    if (dt.Match(content))
-                    {
-                        return dt;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        protected Control ApplyDataTemplate(object content)
-        {
-            DataTemplate result = this.FindDataTemplate(content);
-
-            if (result != null)
-            {
-                return result.Build(content);
-            }
-            else if (content is Control)
-            {
-                return (Control)content;
-            }
-            else
-            {
-                return DataTemplate.Default.Build(content);
-            }
-        }
     }
 }

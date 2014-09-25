@@ -45,7 +45,11 @@
     <Compile Include="ControlExtensions.cs" />
     <Compile Include="Controls.cs" />
     <Compile Include="ControlTemplate.cs" />
+    <Compile Include="DataTemplateExtensions.cs" />
     <Compile Include="DataTemplate.cs" />
+    <Compile Include="Generators\TreeItemContainerGenerator.cs" />
+    <Compile Include="Generators\TypedItemContainerGenerator.cs" />
+    <Compile Include="Generators\ItemContainerGenerator.cs" />
     <Compile Include="IGlobalDataTemplates.cs" />
     <Compile Include="DataTemplates.cs" />
     <Compile Include="Decorator.cs" />
@@ -56,6 +60,7 @@
     <Compile Include="HeaderedItemsControl.cs" />
     <Compile Include="IHeadered.cs" />
     <Compile Include="Image.cs" />
+    <Compile Include="Generators\IItemContainerGenerator.cs" />
     <Compile Include="ItemsControl.cs" />
     <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="ItemsPresenter.cs" />

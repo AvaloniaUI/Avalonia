@@ -30,7 +30,7 @@ namespace Perspex
 
         private Rect bounds;
 
-        private PerspexList<Visual> visualChildren;
+        private PerspexList<IVisual> visualChildren;
 
         private Visual visualParent;
 
@@ -68,7 +68,7 @@ namespace Perspex
             get { return this.bounds; }
         }
 
-        IEnumerable<IVisual> IVisual.VisualChildren
+        IReadOnlyPerspexList<IVisual> IVisual.VisualChildren
         {
             get
             {
@@ -190,7 +190,7 @@ namespace Perspex
         {
             if (this.visualChildren == null)
             {
-                this.visualChildren = new PerspexList<Visual>();
+                this.visualChildren = new PerspexList<IVisual>();
                 this.visualChildren.CollectionChanged += VisualChildrenChanged;
                 this.CreateVisualChildren();
             }

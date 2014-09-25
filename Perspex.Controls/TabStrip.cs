@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Collections;
     using System.Linq;
+    using Perspex.Controls.Generators;
     using Perspex.Input;
 
     public class TabStrip : SelectingItemsControl
@@ -24,38 +25,38 @@ namespace Perspex.Controls
         public TabStrip()
         {
             this.PointerPressed += this.OnPointerPressed;
-            this.GetObservable(ItemsProperty).Subscribe(this.ItemsChanged);
             this.GetObservable(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
         }
 
-        protected override Control CreateItemControlOverride(object item)
+        protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
-            TabItem result = item as TabItem;
+            TabControl tabControl = this.TemplatedParent as TabControl;
+            ItemContainerGenerator result;
 
-            if (result == null)
+            if (tabControl != null)
             {
-                result = new TabItem
-                {
-                    Content = this.ApplyDataTemplate(item),
-                };
+                result = tabControl.ItemContainerGenerator;
+            }
+            else
+            {
+                result = new TypedItemContainerGenerator<TabItem>(this);
             }
 
-            result.IsSelected = this.SelectedItem == item;
+            result.StateChanged += ItemsContainerGeneratorStateChanged;
 
             return result;
         }
 
-        private void ItemsChanged(IEnumerable items)
+        private void ItemsContainerGeneratorStateChanged(object sender, EventArgs e)
         {
-            if (items != null)
+            if (this.ItemContainerGenerator.State == ItemContainerGeneratorState.Generated)
             {
-                this.SelectedItem =
-                    items.OfType<TabItem>().FirstOrDefault(x => x.IsSelected) ??
-                    items.OfType<object>().FirstOrDefault();
-            }
-            else
-            {
-                this.SelectedItem = null;
+                var tabs = this.ItemContainerGenerator.GetAll()
+                    .Select(x => x.Item2)
+                    .OfType<TabItem>()
+                    .ToList();
+
+                this.SelectedItem = tabs.FirstOrDefault(x => x.IsSelected) ?? tabs.FirstOrDefault();
             }
         }
 
@@ -77,11 +78,11 @@ namespace Perspex.Controls
             }
         }
 
-        private void SelectedItemChanged(object selectedItem)
+        private void SelectedItemChanged(object selected)
         {
-            foreach (TabItem item in this.GetAllItemControls())
+            foreach (TabItem item in this.ItemContainerGenerator.GetAll().Select(x => x.Item2))
             {
-                item.IsSelected = item == selectedItem;
+                item.IsSelected = selected == item;
             }
         }
     }
