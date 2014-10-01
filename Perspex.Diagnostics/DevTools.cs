@@ -17,6 +17,38 @@ namespace Perspex.Diagnostics
 
         public DevTools()
         {
+            var treeView = new TreeView
+            {
+                DataTemplates = new DataTemplates
+                {
+                    new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
+                },
+                [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x =>
+                {
+                    if (x != null)
+                    {
+                        return new[] { new VisualTreeNode((IVisual)x) };
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }),
+            };
+
+            var detailsView = new ContentControl
+            {
+                DataTemplates = new DataTemplates
+                {
+                    new DataTemplate<ControlDetails>(CreateDetailsView),
+                },
+                [!ContentControl.ContentProperty] = treeView[!TreeView.SelectedItemProperty]
+                    .Where(x => x != null)
+                    .Cast<VisualTreeNode>()
+                    .Select(x => new ControlDetails(x.Visual)),
+                [Grid.ColumnProperty] = 1,
+            };
+
             this.Content = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions
@@ -26,24 +58,8 @@ namespace Perspex.Diagnostics
                 },
                 Children = new Controls
                 {
-                    new TreeView
-                    {
-                        DataTemplates = new DataTemplates
-                        {
-                            new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
-                        },
-                        [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x =>
-                        {
-                            if (x != null)
-                            {
-                                return new[] { new VisualTreeNode((IVisual)x) };
-                            }
-                            else
-                            {
-                                return null;
-                            }
-                        }),
-                    }
+                    treeView,
+                    detailsView,
                 }
             };
         }
@@ -52,6 +68,14 @@ namespace Perspex.Diagnostics
         {
             get { return this.GetValue(RootProperty); }
             set { this.SetValue(RootProperty, value); }
+        }
+
+        private static Control CreateDetailsView(ControlDetails i)
+        {
+            return new ItemsControl
+            {
+                Items = i.Properties,
+            };
         }
 
         private static Control GetHeader(VisualTreeNode node)

@@ -69,6 +69,7 @@
     <Compile Include="DevTools.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\ControlDetails.cs" />
     <Compile Include="ViewModels\VisualTreeNode.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -34,16 +34,16 @@ namespace Perspex.Controls
 
             if (contentPresenter != null)
             {
-                TreeViewItem item = contentPresenter.TemplatedParent as TreeViewItem;
+                TreeViewItem container = contentPresenter.TemplatedParent as TreeViewItem;
 
-                if (item != null)
+                if (container != null)
                 {
                     foreach (var i in this.GetVisualDescendents().OfType<TreeViewItem>())
                     {
-                        i.IsSelected = i == item;
+                        i.IsSelected = i == container;
                     }
 
-                    this.SelectedItem = this.ItemContainerGenerator.GetContainerForItem(item);
+                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer(container);
                 }
             }
 
