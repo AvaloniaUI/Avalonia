@@ -8,6 +8,7 @@ namespace Perspex.Diagnostics
 {
     using Perspex.Controls;
     using System.Reactive.Linq;
+    using Perspex.Diagnostics.ViewModels;
 
     public class DevTools : Decorator
     {
@@ -29,9 +30,19 @@ namespace Perspex.Diagnostics
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<IVisual>(GetHeader, x => x.VisualChildren),
+                            new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
                         },
-                        [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x => new[] { x }),
+                        [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x =>
+                        {
+                            if (x != null)
+                            {
+                                return new[] { new VisualTreeNode((IVisual)x) };
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }),
                     }
                 }
             };
@@ -43,16 +54,15 @@ namespace Perspex.Diagnostics
             set { this.SetValue(RootProperty, value); }
         }
 
-        private static Control GetHeader(IVisual visual)
+        private static Control GetHeader(VisualTreeNode node)
         {
-            Control control = visual as Control;
             TextBlock result = new TextBlock();
-            result.Text = visual.GetType().Name;
+            result.Text = node.Type;
 
-            if (control != null && control.TemplatedParent != null)
-            {
-                result.FontStyle = Media.FontStyle.Italic;
-            }
+            //if (control != null && control.TemplatedParent != null)
+            //{
+            //    result.FontStyle = Media.FontStyle.Italic;
+            //}
 
             return result;
         }

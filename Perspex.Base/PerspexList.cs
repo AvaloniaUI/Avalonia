@@ -100,21 +100,21 @@ namespace Perspex
         {
             int index = this.inner.Count;
             this.inner.Add(item);
-            this.NotifyAdd(new[] { item });
+            this.NotifyAdd(new[] { item }, index);
         }
 
         public void AddRange(IEnumerable<T> items)
         {
             int index = this.inner.Count;
             this.inner.AddRange(items);
-            this.NotifyAdd((items as IList) ?? items.ToList());
+            this.NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
         public void Clear()
         {
             var old = this.inner;
             this.inner = new List<T>();
-            this.NotifyRemove(old);
+            this.NotifyRemove(old, 0);
         }
 
         public bool Contains(T item)
@@ -140,20 +140,27 @@ namespace Perspex
         public void Insert(int index, T item)
         {
             this.inner.Insert(index, item);
-            this.NotifyAdd(new[] { item });
+            this.NotifyAdd(new[] { item }, index);
         }
 
         public void InsertRange(int index, IEnumerable<T> items)
         {
             this.inner.InsertRange(index, items);
-            this.NotifyAdd((items as IList) ?? items.ToList());
+            this.NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
         public bool Remove(T item)
         {
-            bool result = this.inner.Remove(item);
-            this.NotifyRemove(new[] { item });
-            return result;
+            int index = this.inner.IndexOf(item);
+
+            if (index != -1)
+            {
+                this.inner.RemoveAt(index);
+                this.NotifyRemove(new[] { item }, index);
+                return true;
+            }
+
+            return false;
         }
 
         public void RemoveAll(IEnumerable<T> items)
@@ -162,20 +169,16 @@ namespace Perspex
 
             foreach (var i in items)
             {
-                if (this.inner.Remove(i))
-                {
-                    removed.Add(i);
-                }
+                // TODO: Optimize to only send as many notifications as necessary.
+                this.Remove(i);
             }
-
-            this.NotifyRemove(removed);
         }
 
         public void RemoveAt(int index)
         {
             T item = this.inner[index];
             this.inner.RemoveAt(index);
-            this.NotifyRemove(new[] { item });
+            this.NotifyRemove(new[] { item }, index);
         }
 
         int IList.Add(object value)
@@ -225,11 +228,11 @@ namespace Perspex
             return this.inner.GetEnumerator();
         }
 
-        private void NotifyAdd(IList t)
+        private void NotifyAdd(IList t, int index)
         {
             if (this.CollectionChanged != null)
             {
-                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, t);
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, t, index);
                 this.CollectionChanged(this, e);
             }
 
@@ -244,11 +247,11 @@ namespace Perspex
             }
         }
 
-        private void NotifyRemove(IList t)
+        private void NotifyRemove(IList t, int index)
         {
             if (this.CollectionChanged != null)
             {
-                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t);
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, index);
                 this.CollectionChanged(this, e);
             }
 

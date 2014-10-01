@@ -69,8 +69,12 @@
     <Compile Include="DevTools.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\VisualTreeNode.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="ReactiveUI">
+      <HintPath>..\packages\reactiveui-core.6.0.7\lib\Portable-Net45+Win8+WP8+WPA81\ReactiveUI.dll</HintPath>
+    </Reference>
     <Reference Include="Splat">
       <HintPath>..\packages\Splat.1.5.0\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
     </Reference>
