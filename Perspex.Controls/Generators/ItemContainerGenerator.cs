@@ -84,9 +84,10 @@ namespace Perspex.Controls.Generators
                 {
                     Control container = this.CreateContainerOverride(item);
                     container.TemplatedParent = null;
-                    this.containersByItem.Add(item, container);
-                    this.itemsByContainer.Add(container, item);
+                    this.AddInternal(item, container);
                     result.Add(container);
+
+                    System.Diagnostics.Debug.WriteLine("{0} : Generated container for {1} {2}: {3}", this.GetHashCode(), item, item.GetHashCode(), container);
                 }
             }
             finally
@@ -103,10 +104,7 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                Control container = this.containersByItem[item];
-                this.containersByItem.Remove(item);
-                this.itemsByContainer.Remove(container);
-                result.Add(container);
+                result.Add(this.RemoveByItemInternal(item));
             }
 
             return result;
@@ -121,6 +119,30 @@ namespace Perspex.Controls.Generators
         protected virtual Control CreateContainerOverride(object item)
         {
             return this.Owner.ApplyDataTemplate(item);
+        }
+
+        protected void AddInternal(object item, Control container)
+        {
+            this.containersByItem.Add(item, container);
+            this.itemsByContainer.Add(container, item);
+        }
+
+        protected object RemoveByContainerInternal(Control container)
+        {
+            object item = this.itemsByContainer[container];
+            this.containersByItem.Remove(item);
+            this.itemsByContainer.Remove(container);
+            System.Diagnostics.Debug.WriteLine("{0} : Removed container for {1} {2}", this.GetHashCode(), item, item.GetHashCode());
+            return item;
+        }
+
+        protected Control RemoveByItemInternal(object item)
+        {
+            Control container = this.containersByItem[item];
+            this.containersByItem.Remove(item);
+            this.itemsByContainer.Remove(container);
+            System.Diagnostics.Debug.WriteLine("{0} : Removed container for {1} {2}", this.GetHashCode(), item, item.GetHashCode());
+            return container;
         }
     }
 }

@@ -6,11 +6,29 @@
 
 namespace Perspex.Controls.Generators
 {
-    public class TreeItemContainerGenerator<T> : ItemContainerGenerator where T : TreeViewItem, new()
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public class TreeItemContainerGenerator<T> : ItemContainerGenerator, IItemContainerGenerator where T : TreeViewItem, new()
     {
         public TreeItemContainerGenerator(ItemsControl owner)
             : base(owner)
         {
+        }
+
+        IEnumerable<Control> IItemContainerGenerator.Remove(IEnumerable items)
+        {
+            var result = new List<Control>();
+
+            foreach (var item in items)
+            {
+                var container = (T)this.GetContainerForItem(item);
+                this.Remove(container, result);
+            }
+
+            return result;
         }
 
         protected override Control CreateContainerOverride(object item)
@@ -51,6 +69,25 @@ namespace Perspex.Controls.Generators
             }
 
             return treeTemplate;
+        }
+
+        private void Remove(T container, List<Control> removed)
+        {
+            if (container.Items != null)
+            {
+                foreach (var childItem in container.Items)
+                {
+                    var childContainer = (T)this.GetContainerForItem(childItem);
+
+                    if (childContainer != null)
+                    {
+                        this.Remove(childContainer, removed);
+                    }
+                }
+            }
+
+            this.RemoveByContainerInternal(container);
+            removed.Add(container);
         }
     }
 }
