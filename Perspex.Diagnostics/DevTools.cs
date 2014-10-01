@@ -59,10 +59,10 @@ namespace Perspex.Diagnostics
             TextBlock result = new TextBlock();
             result.Text = node.Type;
 
-            //if (control != null && control.TemplatedParent != null)
-            //{
-            //    result.FontStyle = Media.FontStyle.Italic;
-            //}
+            if (node.IsInTemplate)
+            {
+                result.FontStyle = Media.FontStyle.Italic;
+            }
 
             return result;
         }
