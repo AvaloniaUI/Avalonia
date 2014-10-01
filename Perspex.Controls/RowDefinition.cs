@@ -21,6 +21,11 @@ namespace Perspex.Controls
         {
         }
 
+        public RowDefinition(double value, GridUnitType type)
+        {
+            this.Height = new GridLength(value, type);
+        }
+
         public RowDefinition(GridLength height)
         {
             this.Height = height;
