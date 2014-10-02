@@ -34,7 +34,10 @@ namespace Perspex.Controls
 
                 if (this.Classes.Contains(":pointerover"))
                 {
-                    RoutedEventArgs click = new RoutedEventArgs(ClickEvent, this);
+                    RoutedEventArgs click = new RoutedEventArgs
+                    {
+                        RoutedEvent = ClickEvent,
+                    };
                     this.RaiseEvent(click);
                 }
             };

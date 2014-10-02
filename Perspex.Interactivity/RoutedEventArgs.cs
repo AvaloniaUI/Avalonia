@@ -10,21 +10,6 @@ namespace Perspex.Interactivity
 
     public class RoutedEventArgs : EventArgs
     {
-        public RoutedEventArgs()
-        {
-        }
-
-        public RoutedEventArgs(RoutedEvent routedEvent)
-        {
-            this.RoutedEvent = routedEvent;
-        }
-
-        public RoutedEventArgs(RoutedEvent routedEvent, IInteractive source)
-        {
-            this.RoutedEvent = routedEvent;
-            this.Source = source;
-        }
-
         public bool Handled { get; set; }
 
         public IInteractive OriginalSource { get; set; }

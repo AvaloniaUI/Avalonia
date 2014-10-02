@@ -40,6 +40,7 @@
     <Compile Include="ColumnDefinition.cs" />
     <Compile Include="ColumnDefinitions.cs" />
     <Compile Include="ContentControl.cs" />
+    <Compile Include="GridSplitter.cs" />
     <Compile Include="Presenters\ContentPresenter.cs" />
     <Compile Include="Control.cs" />
     <Compile Include="ControlExtensions.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="Presenters\ItemsPresenter.cs" />
     <Compile Include="Panel.cs" />
+    <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />
     <Compile Include="Primitives\SelectingItemsControl.cs" />

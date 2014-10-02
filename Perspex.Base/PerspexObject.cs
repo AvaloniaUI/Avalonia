@@ -8,6 +8,7 @@ namespace Perspex
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Reactive.Linq;
     using System.Reflection;
@@ -56,7 +57,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IEnableLogger
+    public class PerspexObject : INotifyPropertyChanged, IEnableLogger
     {
         /// <summary>
         /// The registered properties by type.
@@ -76,9 +77,23 @@ namespace Perspex
             new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
-        /// Raised when a <see cref="PerspexProperty"/> value changes on this object/
+        /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
+        /// </summary>
+        private PropertyChangedEventHandler inpcChanged;
+
+        /// <summary>
+        /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
         /// </summary>
         public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
+
+        /// <summary>
+        /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
+        /// </summary>
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        {
+            add { this.inpcChanged += value; }
+            remove { this.inpcChanged -= value; }
+        }
 
         /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values 
@@ -645,6 +660,12 @@ namespace Perspex
                 PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(this, property, oldValue, newValue);
                 property.NotifyChanged(e);
                 this.PropertyChanged(this, e);
+            }
+
+            if (this.inpcChanged != null)
+            {
+                PropertyChangedEventArgs e = new PropertyChangedEventArgs(property.Name);
+                this.inpcChanged(this, e);
             }
         }
     }

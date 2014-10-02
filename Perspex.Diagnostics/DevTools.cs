@@ -46,7 +46,13 @@ namespace Perspex.Diagnostics
                     .Where(x => x != null)
                     .Cast<VisualTreeNode>()
                     .Select(x => new ControlDetails(x.Visual)),
+                [Grid.ColumnProperty] = 2,
+            };
+
+            var splitter = new GridSplitter
+            {
                 [Grid.ColumnProperty] = 1,
+                Width = 4,
             };
 
             this.Content = new Grid
@@ -54,11 +60,13 @@ namespace Perspex.Diagnostics
                 ColumnDefinitions = new ColumnDefinitions
                 {
                     new ColumnDefinition(1, GridUnitType.Star),
+                    new ColumnDefinition(4, GridUnitType.Pixel),
                     new ColumnDefinition(3, GridUnitType.Star),
                 },
                 Children = new Controls
                 {
                     treeView,
+                    splitter,
                     detailsView,
                 }
             };

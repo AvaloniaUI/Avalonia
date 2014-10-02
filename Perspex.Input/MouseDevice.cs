@@ -81,9 +81,12 @@ namespace Perspex.Input
 
         private void MouseMove(IMouseDevice device, IVisual visual, Point p)
         {
+            IInteractive source;
+
             if (this.Captured == null)
             {
                 this.InputManager.SetPointerOver(this, visual, p);
+                source = visual as IInteractive;
             }
             else
             {
@@ -95,6 +98,18 @@ namespace Perspex.Input
                 }
 
                 this.InputManager.SetPointerOver(this, this.Captured, p - offset);
+                source = this.Captured as IInteractive;
+            }
+
+            if (source != null)
+            {
+                source.RaiseEvent(new PointerEventArgs
+                {
+                    Device = this,
+                    RoutedEvent = InputElement.PointerMovedEvent,
+                    OriginalSource = source,
+                    Source = source,
+                });
             }
         }
 

@@ -39,6 +39,9 @@ namespace Perspex.Input
         public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerLeave", RoutingStrategy.Direct);
 
+        public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerMove", RoutingStrategy.Bubble);
+
         public static readonly RoutedEvent<PointerEventArgs> PointerPressedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerPressed", RoutingStrategy.Bubble);
 
@@ -53,6 +56,7 @@ namespace Perspex.Input
             this.PreviewKeyDown += (_, e) => this.OnPreviewKeyDown(e);
             this.PointerEnter += (_, e) => this.OnPointerEnter(e);
             this.PointerLeave += (_, e) => this.OnPointerLeave(e);
+            this.PointerMoved += (_, e) => this.OnPointerMoved(e);
             this.PointerPressed += (_, e) => this.OnPointerPressed(e);
             this.PointerReleased += (_, e) => this.OnPointerReleased(e);
         }
@@ -91,6 +95,12 @@ namespace Perspex.Input
         {
             add { this.AddHandler(PointerLeaveEvent, value); }
             remove { this.RemoveHandler(PointerLeaveEvent, value); }
+        }
+
+        public event EventHandler<PointerEventArgs> PointerMoved
+        {
+            add { this.AddHandler(PointerMovedEvent, value); }
+            remove { this.RemoveHandler(PointerMovedEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerPressed
@@ -154,6 +164,10 @@ namespace Perspex.Input
         protected virtual void OnPointerLeave(PointerEventArgs e)
         {
             this.IsPointerOver = false;
+        }
+
+        protected virtual void OnPointerMoved(PointerEventArgs e)
+        {
         }
 
         protected virtual void OnPointerPressed(PointerEventArgs e)

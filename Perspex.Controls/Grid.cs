@@ -27,25 +27,64 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<int> RowSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
+        private ColumnDefinitions columnDefinitions;
+
+        private RowDefinitions rowDefinitions;
+
         private Segment[,] rowMatrix;
+
         private Segment[,] colMatrix;
 
         public Grid()
         {
-            this.ColumnDefinitions = new ColumnDefinitions();
-            this.RowDefinitions = new RowDefinitions();
         }
 
         public ColumnDefinitions ColumnDefinitions
         {
-            get;
-            set;
+            get
+            {
+                if (this.columnDefinitions == null)
+                {
+                    this.ColumnDefinitions = new ColumnDefinitions();
+                }
+
+                return this.columnDefinitions;
+            }
+
+            set
+            {
+                if (this.columnDefinitions != null)
+                {
+                    throw new NotSupportedException("Reassigning ColumnDefinitions not yet implemented.");
+                }
+
+                this.columnDefinitions = value;
+                this.columnDefinitions.TrackItemPropertyChanged(_ => this.InvalidateMeasure());
+            }
         }
 
         public RowDefinitions RowDefinitions
         {
-            get;
-            set;
+            get
+            {
+                if (this.rowDefinitions == null)
+                {
+                    this.RowDefinitions = new RowDefinitions();
+                }
+
+                return this.rowDefinitions;
+            }
+
+            set
+            {
+                if (this.rowDefinitions != null)
+                {
+                    throw new NotSupportedException("Reassigning RowDefinitions not yet implemented.");
+                }
+
+                this.rowDefinitions = value;
+                this.rowDefinitions.TrackItemPropertyChanged(_ => this.InvalidateMeasure());
+            }
         }
 
         public static int GetColumn(PerspexObject element)

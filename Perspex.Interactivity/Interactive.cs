@@ -59,6 +59,9 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(e != null);
 
+            e.Source = e.Source ?? this;
+            e.OriginalSource = e.OriginalSource ?? this;
+
             if (!e.Handled)
             {
                 switch (e.RoutedEvent.RoutingStrategy)
