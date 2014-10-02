@@ -12,6 +12,7 @@ namespace Perspex.Windows
     using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
+    using Perspex.Controls.Presenters;
     using Perspex.Diagnostics;
     using Perspex.Input;
     using Perspex.Input.Raw;

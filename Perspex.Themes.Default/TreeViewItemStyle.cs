@@ -12,6 +12,8 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Controls.Shapes;
     using Perspex.Styling;
+    using Perspex.Controls.Presenters;
+    using Perspex.Controls.Primitives;
 
     public class TreeViewItemStyle : Styles
     {

@@ -6,10 +6,7 @@
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
-    using Moq;
-    using Perspex.Layout;
-    using Perspex.Rendering;
+    using Perspex.Controls.Primitives;
 
     internal class TestTemplatedControl : TemplatedControl
     {

@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.ComponentModel;
     using System.Linq;
     using Perspex.Controls.Generators;
+    using Perspex.Controls.Primitives;
 
     public class ItemsControl : TemplatedControl
     {

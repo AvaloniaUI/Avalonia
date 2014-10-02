@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Linq;
     using Perspex.Controls.Generators;
+    using Perspex.Controls.Primitives;
 
     public class TreeViewItem : HeaderedItemsControl
     {

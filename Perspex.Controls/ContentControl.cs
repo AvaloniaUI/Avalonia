@@ -6,9 +6,7 @@
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    using Perspex.Controls.Primitives;
 
     public class ContentControl : TemplatedControl
     {

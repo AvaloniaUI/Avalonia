@@ -13,6 +13,7 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Controls.Shapes;
     using Perspex.Styling;
+    using Perspex.Controls.Presenters;
 
     public class CheckBoxStyle : Styles
     {

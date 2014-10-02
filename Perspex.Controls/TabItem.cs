@@ -6,6 +6,8 @@
 
 namespace Perspex.Controls
 {
+    using Perspex.Controls.Primitives;
+
     public class TabItem : HeaderedContentControl
     {
         public static readonly PerspexProperty<bool> IsSelectedProperty =

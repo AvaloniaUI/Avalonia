@@ -9,6 +9,8 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Controls;
+    using Perspex.Controls.Presenters;
+    using Perspex.Controls.Primitives;
     using Perspex.Styling;
 
     public class TabControlStyle : Styles

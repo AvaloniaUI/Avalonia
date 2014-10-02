@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// <copyright file="Dispatcher.cs" company="Steven Kirk">
+// <copyright file="WindowsDispatcher.cs" company="Steven Kirk">
 // Copyright 2013 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------

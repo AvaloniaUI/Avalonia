@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Controls.Primitives;
+
 namespace Perspex.Controls
 {
     public class CheckBox : ToggleButton

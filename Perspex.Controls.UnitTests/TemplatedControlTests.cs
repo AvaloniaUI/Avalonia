@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Controls.UnitTests
 {
     using System;
@@ -14,6 +13,7 @@ namespace Perspex.Controls.UnitTests
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
+    using Perspex.Controls.Primitives;
 
     [TestClass]
     public class TemplatedControlTests

@@ -11,6 +11,7 @@ namespace Perspex.Controls.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Controls;
+    using Perspex.Controls.Presenters;
     using Perspex.Layout;
     using Perspex.Styling;
     using Splat;

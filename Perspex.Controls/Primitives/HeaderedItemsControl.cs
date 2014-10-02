@@ -4,13 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections;
-    using System.Linq;
-    using System.Reactive.Linq;
-
     public class HeaderedItemsControl : ItemsControl
     {
         public static readonly PerspexProperty<object> HeaderProperty =

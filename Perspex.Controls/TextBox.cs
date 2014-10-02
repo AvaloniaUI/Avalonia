@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Linq;
+    using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Styling;
