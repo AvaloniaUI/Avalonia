@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Collections;
     using System.Linq;
     using Perspex.Controls.Generators;
+    using Perspex.Controls.Presenters;
     using Perspex.Input;
 
     public class TabStrip : SelectingItemsControl

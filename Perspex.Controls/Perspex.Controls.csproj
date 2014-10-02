@@ -40,7 +40,7 @@
     <Compile Include="ColumnDefinition.cs" />
     <Compile Include="ColumnDefinitions.cs" />
     <Compile Include="ContentControl.cs" />
-    <Compile Include="ContentPresenter.cs" />
+    <Compile Include="Presenters\ContentPresenter.cs" />
     <Compile Include="Control.cs" />
     <Compile Include="ControlExtensions.cs" />
     <Compile Include="Controls.cs" />
@@ -63,7 +63,7 @@
     <Compile Include="Generators\IItemContainerGenerator.cs" />
     <Compile Include="ItemsControl.cs" />
     <Compile Include="ItemsPanelTemplate.cs" />
-    <Compile Include="ItemsPresenter.cs" />
+    <Compile Include="Presenters\ItemsPresenter.cs" />
     <Compile Include="Panel.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />

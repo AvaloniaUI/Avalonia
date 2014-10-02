@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Controls.Generators;
+    using Perspex.Controls.Presenters;
     using Perspex.Input;
 
     public class TreeView : SelectingItemsControl

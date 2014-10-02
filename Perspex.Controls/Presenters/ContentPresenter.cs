@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Controls.Presenters
 {
     using System;
     using System.Linq;
