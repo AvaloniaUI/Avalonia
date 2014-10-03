@@ -6,10 +6,8 @@
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Controls;
     using ReactiveUI;
 
     internal class ControlDetails : ReactiveObject
@@ -20,11 +18,11 @@ namespace Perspex.Diagnostics.ViewModels
 
             if (po != null)
             {
-                this.Properties = po.GetSetValues().Select(x => Tuple.Create(x.Item1.Name, x.Item2));
+                this.Properties = po.GetAllValues().Select(x => new PropertyDetails(x));
             }
         }
 
-        public IEnumerable<Tuple<string, object>> Properties
+        public IEnumerable<PropertyDetails> Properties
         {
             get;
             private set;

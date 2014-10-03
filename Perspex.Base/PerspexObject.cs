@@ -12,6 +12,7 @@ namespace Perspex
     using System.Linq;
     using System.Reactive.Linq;
     using System.Reflection;
+    using Perspex.Diagnostics;
     using Splat;
 
     /// <summary>
@@ -377,6 +378,43 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             return (T)this.GetValue((PerspexProperty)property);
+        }
+
+        public IEnumerable<PerspexPropertyValue> GetAllValues()
+        {
+            foreach (PerspexProperty property in this.GetRegisteredProperties())
+            {
+                PriorityValue value;
+
+                if (this.values.TryGetValue(property, out value))
+                {
+                    yield return new PerspexPropertyValue(property, value);
+                }
+                else
+                {
+                    yield return new PerspexPropertyValue(property, this.GetValue(property));
+                }
+            }
+        }
+
+        public IEnumerable<PerspexProperty> GetRegisteredProperties()
+        {
+            Type type = this.GetType();
+
+            while (type != null)
+            {
+                List<PerspexProperty> list;
+
+                if (registered.TryGetValue(type, out list))
+                {
+                    foreach (var p in list)
+                    {
+                        yield return p;
+                    }
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
         }
 
         /// <summary>

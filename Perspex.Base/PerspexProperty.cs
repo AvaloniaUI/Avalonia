@@ -150,7 +150,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
-                name,
+                typeof(TOwner) + "." + name,
                 typeof(TOwner),
                 defaultValue,
                 inherits,

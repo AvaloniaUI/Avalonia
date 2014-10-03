@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Binding.cs" />
     <Compile Include="Contract.cs" />
+    <Compile Include="Diagnostics\PerspexPropertyValue.cs" />
     <Compile Include="IDescription.cs" />
     <Compile Include="PerspexListExtensions.cs" />
     <Compile Include="IObservableDescription.cs" />

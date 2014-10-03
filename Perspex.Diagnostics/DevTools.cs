@@ -9,6 +9,7 @@ namespace Perspex.Diagnostics
     using Perspex.Controls;
     using System.Reactive.Linq;
     using Perspex.Diagnostics.ViewModels;
+    using System;
 
     public class DevTools : Decorator
     {
@@ -82,6 +83,21 @@ namespace Perspex.Diagnostics
         {
             return new ItemsControl
             {
+                DataTemplates = new DataTemplates
+                {
+                    new DataTemplate<PropertyDetails>(x =>
+                        new StackPanel
+                        {
+                            Gap = 16,
+                            Orientation = Orientation.Horizontal,
+                            Children = new Controls
+                            {
+                                new TextBlock { Text = x.Name },
+                                new TextBlock { Text = Convert.ToString(x.Value) },
+                                new TextBlock { Text = x.Priority },
+                            },
+                        }),
+                },
                 Items = i.Properties,
             };
         }

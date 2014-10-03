@@ -18,9 +18,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<int> ColumnSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("ColumnSpan", 1);
 
-        public static readonly PerspexProperty<bool> IsSharedSizeScopeProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScopeProperty");
-
         public static readonly PerspexProperty<int> RowProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("Row");
 
