@@ -178,5 +178,10 @@ namespace Perspex
                 return hash;
             }
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0},{1},{2},{3}", this.left, this.top, this.right, this.bottom);
+        }
     }
 }
