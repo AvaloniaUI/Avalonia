@@ -6,6 +6,8 @@
 
 namespace Perspex.Controls.Primitives
 {
+    using System;
+
     public class ScrollBar : TemplatedControl
     {
         public static readonly PerspexProperty<double> MinimumProperty =
@@ -22,6 +24,23 @@ namespace Perspex.Controls.Primitives
 
         public static readonly PerspexProperty<Orientation> OrientationProperty =
             PerspexProperty.Register<ScrollBar, Orientation>("Orientation");
+
+        public ScrollBar()
+        {
+            this.GetObservable(OrientationProperty).Subscribe(o =>
+            {
+                if (o == Orientation.Horizontal)
+                {
+                    this.Classes.Remove(":vertical");
+                    this.Classes.Add(":horizontal");
+                }
+                else
+                {
+                    this.Classes.Remove(":horizontal");
+                    this.Classes.Add(":vertical");
+                }
+            });
+        }
 
         public double Minimum
         {

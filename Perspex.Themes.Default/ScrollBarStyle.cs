@@ -24,7 +24,22 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
-                        new Setter(ScrollBar.HeightProperty, 20.0),
+                    },
+                },
+                new Style(x => x.OfType<ScrollBar>().Class(":horizontal"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.HeightProperty, 10.0),
+                    },
+                },
+                new Style(x => x.OfType<ScrollBar>().Class(":vertical"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.WidthProperty, 10.0),
                     },
                 },
             });

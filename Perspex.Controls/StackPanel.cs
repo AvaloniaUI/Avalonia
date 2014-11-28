@@ -114,25 +114,13 @@ namespace Perspex.Controls
 
                 if (Orientation == Orientation.Vertical)
                 {
-                    childWidth = finalSize.Width;
-
                     Rect childFinal = new Rect(0, arrangedHeight, childWidth, childHeight);
-
-                    if (childFinal.IsEmpty)
-                    {
-                        child.Arrange(new Rect());
-                    }
-                    else
-                    {
-                        child.Arrange(childFinal);
-                    }
-
+                    child.Arrange(childFinal);
                     arrangedWidth = Math.Max(arrangedWidth, childWidth);
                     arrangedHeight += childHeight + gap;
                 }
                 else
                 {
-                    childHeight = finalSize.Height;
                     Rect childFinal = new Rect(arrangedWidth, 0, childWidth, childHeight);
                     child.Arrange(childFinal);
                     arrangedWidth += childWidth + gap;

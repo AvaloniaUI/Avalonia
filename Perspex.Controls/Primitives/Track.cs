@@ -51,6 +51,7 @@ namespace Perspex.Controls.Primitives
             AffectsArrange(MinimumProperty);
             AffectsArrange(MaximumProperty);
             AffectsArrange(ValueProperty);
+            AffectsMeasure(OrientationProperty);
         }
 
         public double Minimum
@@ -127,6 +128,9 @@ namespace Perspex.Controls.Primitives
                 }
                 else
                 {
+                    var height = finalSize.Height * thumbsize;
+                    var y = finalSize.Height * (this.Value / range);
+                    thumb.Arrange(new Rect(0, y, finalSize.Width, height));
                 }
             }
 
@@ -136,16 +140,22 @@ namespace Perspex.Controls.Primitives
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
             var range = this.Maximum - this.Minimum;
+            var value = this.Value;
 
             if (this.Orientation == Orientation.Horizontal)
             {
-                var value = this.Value + e.Vector.X * (range / this.ActualSize.Width);
+                value += e.Vector.X * (range / this.ActualSize.Width);
 
-                value = Math.Max(value, this.Minimum);
-                value = Math.Min(value, this.Maximum - this.ViewportSize);
-
-                this.Value = value;
             }
+            else
+            {
+                value += e.Vector.Y * (range / this.ActualSize.Height);
+            }
+
+            value = Math.Max(value, this.Minimum);
+            value = Math.Min(value, this.Maximum - this.ViewportSize);
+
+            this.Value = value;
         }
     }
 }

@@ -84,8 +84,8 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            //LogManager.Enable(new TestLogger());
-            //LogManager.Instance.LogLayoutMessages = true;
+            LogManager.Enable(new TestLogger());
+            LogManager.Instance.LogLayoutMessages = true;
 
             App application = new App
             {
@@ -258,6 +258,13 @@ namespace TestApplication
                     Gap = 8,
                     Children = new Controls
                     {
+                        new ScrollBar
+                        {
+                            Orientation = Orientation.Vertical,
+                            ViewportSize = 25,
+                            Value = 25,
+                            Height = 300,
+                        },
                         new ScrollBar
                         {
                             Orientation = Orientation.Horizontal,
