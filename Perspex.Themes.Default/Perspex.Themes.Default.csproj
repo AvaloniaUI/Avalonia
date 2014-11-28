@@ -66,6 +66,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ScrollBarStyle.cs" />
     <Compile Include="GridSplitterStyle.cs" />
     <Compile Include="ButtonStyle.cs" />
     <Compile Include="CheckBoxStyle.cs" />

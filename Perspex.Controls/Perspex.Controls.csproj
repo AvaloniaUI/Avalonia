@@ -66,6 +66,7 @@
     <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="Presenters\ItemsPresenter.cs" />
     <Compile Include="Panel.cs" />
+    <Compile Include="Primitives\Track.cs" />
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Shapes\Path.cs" />
     <Compile Include="Shapes\Rectangle.cs" />
     <Compile Include="Shapes\Shape.cs" />
+    <Compile Include="Primitives\ScrollBar.cs" />
     <Compile Include="StackPanel.cs" />
     <Compile Include="TabControl.cs" />
     <Compile Include="TabItem.cs" />

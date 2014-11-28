@@ -56,8 +56,6 @@ namespace Perspex
 
             collection.CollectionChanged += handler;
 
-            System.Diagnostics.Debug.WriteLine("Tracked " + collection.GetHashCode());
-
             return Disposable.Create(() => collection.CollectionChanged -= handler);
         }
 

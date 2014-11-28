@@ -28,6 +28,9 @@ namespace Perspex.Layout
 
     public class Layoutable : Visual, ILayoutable, IEnableLogger
     {
+        public static readonly PerspexProperty<Size> ActualSizeProperty =
+            PerspexProperty.Register<Layoutable, Size>("ActualSize");
+
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Layoutable, double>("Width", double.NaN);
 
@@ -111,7 +114,7 @@ namespace Perspex.Layout
 
         public Size ActualSize
         {
-            get { return ((IVisual)this).Bounds.Size; }
+            get { return this.GetValue(ActualSizeProperty); }
         }
 
         public Size? DesiredSize
@@ -218,7 +221,9 @@ namespace Perspex.Layout
                     break;
             }
 
-            this.SetVisualBounds(new Rect(originX, originY, sizeX, sizeY));
+            var bounds = new Rect(originX, originY, sizeX, sizeY);
+            this.SetVisualBounds(bounds);
+            this.SetValue(ActualSizeProperty, bounds.Size);
         }
 
         protected virtual Size ArrangeOverride(Size finalSize)
@@ -237,9 +242,28 @@ namespace Perspex.Layout
             {
                 availableSize = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
                     .Deflate(this.Margin);
-                var measured = this.MeasureOverride(availableSize);
 
-                return measured.Inflate(this.Margin);
+                var measured = this.MeasureOverride(availableSize);
+                var width = measured.Width;
+                var height = measured.Height;
+
+                if (!double.IsNaN(this.Width))
+                {
+                    width = this.Width;
+                }
+
+                width = Math.Min(width, this.MaxWidth);
+                width = Math.Max(width, this.MinWidth);
+
+                if (!double.IsNaN(this.Height))
+                {
+                    height = this.Height;
+                }
+
+                height = Math.Min(height, this.MaxHeight);
+                height = Math.Max(height, this.MinHeight);
+
+                return new Size(width, height).Inflate(this.Margin);
             }
             else
             {

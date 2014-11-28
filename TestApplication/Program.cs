@@ -1,5 +1,6 @@
 ﻿using Perspex;
 using Perspex.Controls;
+using Perspex.Controls.Primitives;
 using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
@@ -112,101 +113,10 @@ namespace TestApplication
                         {
                             Items = new[]
                             {
-                                new TabItem
-                                {
-                                    Header = "Buttons",
-                                    Content = new StackPanel
-                                    {
-                                        Orientation = Orientation.Vertical,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Gap = 8,
-                                        MinWidth = 120,
-                                        Children = new Controls
-                                        {
-                                            new Button
-                                            {
-                                                Content = "Button",
-                                            },
-                                            new Button
-                                            {
-                                                Content = "Button",
-                                                Background = new SolidColorBrush(0xcc119eda),
-                                            },
-                                            new CheckBox
-                                            {
-                                                Content = "Checkbox",
-                                            },
-                                        }
-                                    },
-                                },
-                                new TabItem
-                                {
-                                    Header = "Text",
-                                    Content = new StackPanel
-                                    {
-                                        Orientation = Orientation.Vertical,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Gap = 8,
-                                        Width = 120,
-                                        Children = new Controls
-                                        {
-                                            new TextBlock
-                                            {
-                                                Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
-                                            },
-                                            new TextBlock
-                                            {
-                                                Text = "Italic text.",
-                                                FontStyle = FontStyle.Italic,
-                                            },
-                                            new TextBox
-                                            {
-                                                Text = "Text Box",
-                                            },
-                                        }
-                                    },
-                                },
-                                new TabItem
-                                {
-                                    Header = "Images",
-                                    Content = new StackPanel
-                                    {
-                                        Orientation = Orientation.Vertical,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Gap = 8,
-                                        Width = 120,
-                                        Children = new Controls
-                                        {
-                                            new Image
-                                            {
-                                                Source = new Bitmap("github_icon.png"),
-                                                Width = 200,
-                                            },
-                                        }
-                                    },
-                                },
-                                new TabItem
-                                {
-                                    Header = "Lists",
-                                    Content = new StackPanel
-                                    {
-                                        Orientation = Orientation.Horizontal,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Gap = 8,
-                                        Children = new Controls
-                                        {
-                                            new TreeView
-                                            {
-                                                Id = "treeView",
-                                                Items = treeData,
-                                            },
-                                        }
-                                    },
-                                },
+                                ButtonsTab(),
+                                TextTab(),
+                                ListsTab(),
+                                SlidersTab(),
                             }
                         },
                         new TextBlock
@@ -223,5 +133,142 @@ namespace TestApplication
             window.Show();
             Application.Current.Run(window);
         }
+
+        private static TabItem ButtonsTab()
+        {
+            return new TabItem
+            {
+                Header = "Buttons",
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Gap = 8,
+                    MinWidth = 120,
+                    Children = new Controls
+                    {
+                        new Button
+                        {
+                            Content = "Button",
+                        },
+                        new Button
+                        {
+                            Content = "Button",
+                            Background = new SolidColorBrush(0xcc119eda),
+                        },
+                        new CheckBox
+                        {
+                            Content = "Checkbox",
+                        },
+                    }
+                },
+            };
+        }
+
+        private static TabItem TextTab()
+        {
+            return new TabItem
+            {
+                Header = "Text",
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Gap = 8,
+                    Width = 120,
+                    Children = new Controls
+                    {
+                        new TextBlock
+                        {
+                            Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
+                        },
+                        new TextBlock
+                        {
+                            Text = "Italic text.",
+                            FontStyle = FontStyle.Italic,
+                        },
+                        new TextBox
+                        {
+                            Text = "Text Box",
+                        },
+                    }
+                },
+            };
+        }
+
+        private static TabItem ImagesTab()
+        {
+            return new TabItem
+            {
+                Header = "Images",
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Gap = 8,
+                    Width = 120,
+                    Children = new Controls
+                    {
+                        new Image
+                        {
+                            Source = new Bitmap("github_icon.png"),
+                            Width = 200,
+                        },
+                    }
+                },
+            };
+        }
+
+        private static TabItem ListsTab()
+        {
+            return new TabItem
+            {
+                Header = "Lists",
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Gap = 8,
+                    Children = new Controls
+                    {
+                        new TreeView
+                        {
+                            Id = "treeView",
+                            Items = treeData,
+                        },
+                    }
+                },
+            };
+        }
+
+        private static TabItem SlidersTab()
+        {
+            return new TabItem
+            {
+                Header = "Sliders",
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Gap = 8,
+                    Children = new Controls
+                    {
+                        new ScrollBar
+                        {
+                            Orientation = Orientation.Horizontal,
+                            ViewportSize = 25,
+                            Value = 25,
+                            Width = 300,
+                        },
+                    },
+                }
+            };
+        }
+
     }
 }

@@ -18,7 +18,9 @@ namespace Perspex.Diagnostics.ViewModels
 
             if (po != null)
             {
-                this.Properties = po.GetAllValues().Select(x => new PropertyDetails(x));
+                this.Properties = po.GetAllValues()
+                    .Select(x => new PropertyDetails(x))
+                    .OrderBy(x => x.Name);
             }
         }
 
