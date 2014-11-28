@@ -37,11 +37,11 @@
   <ItemGroup>
     <Reference Include="Magick.NET-x86, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Magick.NET-Q16-x86.7.0.0.0004\lib\net40-client\Magick.NET-x86.dll</HintPath>
+      <HintPath>..\packages\Magick.NET-Q16-x86.7.0.0.0007\lib\net40-client\Magick.NET-x86.dll</HintPath>
     </Reference>
-    <Reference Include="Splat, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Splat, Version=1.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Splat.1.5.0\lib\Net45\Splat.dll</HintPath>
+      <HintPath>..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
