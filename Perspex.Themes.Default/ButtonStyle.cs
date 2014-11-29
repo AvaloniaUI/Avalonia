@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
 
@@ -23,6 +24,8 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
+                        new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
+                        new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
                 },
                 new Style(x => x.OfType<Button>().Template().Id("border"))
@@ -69,6 +72,8 @@ namespace Perspex.Themes.Default
                 Content = new ContentPresenter
                 {
                     [~ContentPresenter.ContentProperty] = control[~Button.ContentProperty],
+                    [~ContentPresenter.HorizontalAlignmentProperty] = control[~Button.HorizontalContentAlignmentProperty],
+                    [~ContentPresenter.VerticalAlignmentProperty] = control[~Button.VerticalContentAlignmentProperty],
                 },
                 [~Border.BackgroundProperty] = control[~Button.BackgroundProperty],
             };

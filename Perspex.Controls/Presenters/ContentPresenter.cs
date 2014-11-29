@@ -16,9 +16,6 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<Control>();
 
-        public static readonly PerspexProperty<Func<object, Visual>> DataTemplateProperty =
-            PerspexProperty.Register<ContentPresenter, Func<object, Visual>>("DataTemplate");
-
         public ContentPresenter()
         {
             this.GetObservable(ContentProperty).Skip(1).Subscribe(this.ContentChanged);
