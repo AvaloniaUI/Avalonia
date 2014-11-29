@@ -119,9 +119,9 @@ namespace Perspex.Controls.Primitives
             {
                 var range = this.Maximum - this.Minimum;
                 var thumbFraction = this.ViewportSize / range;
-                var valueFraction = this.Value / range;
+                var valueFraction = (this.Value - this.Minimum) / range;
 
-                if (double.IsNaN(thumbFraction))
+                if (double.IsNaN(thumbFraction) || double.IsInfinity(thumbFraction))
                 {
                     thumbFraction = 0;
                 }

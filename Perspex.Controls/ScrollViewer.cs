@@ -60,9 +60,9 @@ namespace Perspex.Controls
                 this.GetObservable(ViewportProperty).StartWith(this.Viewport))
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
-            //this.horizontalScrollBar.Bind(
-            //    IsVisibleProperty,
-            //    extentAndViewport.Select(x => x.Extent.Width > x.Viewport.Width));
+            this.horizontalScrollBar.Bind(
+                IsVisibleProperty,
+                extentAndViewport.Select(x => x.Extent.Width > x.Viewport.Width));
 
             this.horizontalScrollBar.Bind(
                 ScrollBar.MaximumProperty,
@@ -72,9 +72,9 @@ namespace Perspex.Controls
                 ScrollBar.ViewportSizeProperty,
                 extentAndViewport.Select(x => x.Viewport.Width));
 
-            //this.verticalScrollBar.Bind(
-            //    IsVisibleProperty,
-            //    extentAndViewport.Select(x => x.Extent.Height > x.Viewport.Height));
+            this.verticalScrollBar.Bind(
+                IsVisibleProperty,
+                extentAndViewport.Select(x => x.Extent.Height > x.Viewport.Height));
 
             this.verticalScrollBar.Bind(
                 ScrollBar.MaximumProperty,

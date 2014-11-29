@@ -37,9 +37,9 @@ namespace Perspex.Layout
 
         public void ExecuteLayoutPass()
         {
+            this.LayoutQueued = false;
             this.root.Measure(this.root.ClientSize);
             this.root.Arrange(new Rect(this.root.ClientSize));
-            this.LayoutQueued = false;
         }
 
         public void InvalidateMeasure(ILayoutable item)

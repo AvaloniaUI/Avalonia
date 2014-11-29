@@ -203,6 +203,8 @@ namespace TestApplication
 
         private static TabItem ImagesTab()
         {
+            ScrollBar size;
+
             return new TabItem
             {
                 Header = "Images",
@@ -214,6 +216,13 @@ namespace TestApplication
                     Gap = 8,
                     Children = new Controls
                     {
+                        (size = new ScrollBar
+                        {
+                            Minimum = 100,
+                            Maximum = 400,
+                            Value = 400,
+                            Orientation = Orientation.Horizontal,
+                        }),
                         new ScrollViewer
                         {
                             Width = 200,
@@ -221,10 +230,10 @@ namespace TestApplication
                             Content = new Image
                             {
                                 Source = new Bitmap("github_icon.png"),
-                                Width = 400,
-                                Height = 400,
+                                [!Image.WidthProperty] = size[!ScrollBar.ValueProperty],
+                                [!Image.HeightProperty] = size[!ScrollBar.ValueProperty],
                             },
-                        }
+                        },
                     }
                 },
             };
