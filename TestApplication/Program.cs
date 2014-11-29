@@ -1,4 +1,5 @@
-﻿using Perspex;
+﻿using System.Reactive.Linq;
+using Perspex;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Diagnostics;
@@ -248,15 +249,25 @@ namespace TestApplication
 
         private static TabItem SlidersTab()
         {
+            ScrollBar sb;
+
             return new TabItem
             {
                 Header = "Sliders",
-                Content = new StackPanel
+                Content = new Grid
                 {
-                    Orientation = Orientation.Horizontal,
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition(GridLength.Auto),
+                        new ColumnDefinition(GridLength.Auto),
+                    },
+                    RowDefinitions = new RowDefinitions
+                    {
+                        new RowDefinition(GridLength.Auto),
+                        new RowDefinition(GridLength.Auto),
+                    },
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Gap = 8,
                     Children = new Controls
                     {
                         new ScrollBar
@@ -265,14 +276,25 @@ namespace TestApplication
                             ViewportSize = 25,
                             Value = 25,
                             Height = 300,
+                            [Grid.ColumnProperty] = 0,
+                            [Grid.RowProperty] = 1,
                         },
-                        new ScrollBar
+                        (sb = new ScrollBar
                         {
                             Orientation = Orientation.Horizontal,
                             ViewportSize = 25,
                             Value = 25,
                             Width = 300,
-                        },
+                            [Grid.ColumnProperty] = 1,
+                            [Grid.RowProperty] = 0,
+                        }),
+                        new TextBlock
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            [!TextBlock.TextProperty] = sb[!ScrollBar.ValueProperty].Cast<double>().Select(x => x.ToString("0")),
+                            [Grid.ColumnProperty] = 1,
+                            [Grid.RowProperty] = 1,
+                        }
                     },
                 }
             };
