@@ -183,45 +183,44 @@ namespace Perspex.Layout
         {
             double originX = finalRect.X + this.Margin.Left;
             double originY = finalRect.Y + this.Margin.Top;
-            double sizeX = Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right);
-            double sizeY = Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom);
+            var size = new Size(
+                Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right),
+                Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom));
 
             if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
             {
-                sizeX = Math.Min(sizeX, this.DesiredSize.Value.Width);
+                size = size.WithWidth(Math.Min(size.Width, this.DesiredSize.Value.Width));
             }
 
             if (this.VerticalAlignment != VerticalAlignment.Stretch)
             {
-                sizeY = Math.Min(sizeY, this.DesiredSize.Value.Height);
+                size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Value.Height));
             }
 
-            Size taken = this.ArrangeOverride(new Size(sizeX, sizeY));
-
-            sizeX = Math.Min(taken.Width, sizeX);
-            sizeY = Math.Min(taken.Height, sizeY);
+            size = LayoutHelper.ApplyLayoutConstraints(this, finalRect.Size);
+            size = this.ArrangeOverride(size).Constrain(size);
 
             switch (this.HorizontalAlignment)
             {
                 case HorizontalAlignment.Center:
-                    originX += (finalRect.Width - sizeX) / 2;
+                    originX += (finalRect.Width - size.Width) / 2;
                     break;
                 case HorizontalAlignment.Right:
-                    originX += finalRect.Width - sizeX;
+                    originX += finalRect.Width - size.Width;
                     break;
             }
 
             switch (this.VerticalAlignment)
             {
                 case VerticalAlignment.Center:
-                    originY += (finalRect.Height - sizeY) / 2;
+                    originY += (finalRect.Height - size.Height) / 2;
                     break;
                 case VerticalAlignment.Bottom:
-                    originY += finalRect.Height - sizeY;
+                    originY += finalRect.Height - size.Height;
                     break;
             }
 
-            var bounds = new Rect(originX, originY, sizeX, sizeY);
+            var bounds = new Rect(originX, originY, size.Width, size.Height);
             this.SetVisualBounds(bounds);
             this.SetValue(ActualSizeProperty, bounds.Size);
         }
@@ -240,10 +239,10 @@ namespace Perspex.Layout
         {
             if (this.IsVisible)
             {
-                availableSize = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
+                var constrained = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
                     .Deflate(this.Margin);
 
-                var measured = this.MeasureOverride(availableSize);
+                var measured = this.MeasureOverride(constrained);
                 var width = measured.Width;
                 var height = measured.Height;
 
