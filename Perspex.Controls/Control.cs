@@ -19,7 +19,7 @@ namespace Perspex.Controls
     public class Control : InputElement, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
-            PerspexProperty.Register<Control, Brush>("Background", inherits: true);
+            PerspexProperty.Register<Control, Brush>("Background");
 
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
             PerspexProperty.Register<Control, Brush>("BorderBrush");
