@@ -116,6 +116,7 @@ namespace TestApplication
                             {
                                 ButtonsTab(),
                                 TextTab(),
+                                ImagesTab(),
                                 ListsTab(),
                                 SlidersTab(),
                                 LayoutTab(),
@@ -211,14 +212,19 @@ namespace TestApplication
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Gap = 8,
-                    Width = 120,
                     Children = new Controls
                     {
-                        new Image
+                        new ScrollViewer
                         {
-                            Source = new Bitmap("github_icon.png"),
                             Width = 200,
-                        },
+                            Height = 200,
+                            Content = new Image
+                            {
+                                Source = new Bitmap("github_icon.png"),
+                                Width = 400,
+                                Height = 400,
+                            },
+                        }
                     }
                 },
             };

@@ -593,7 +593,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return this.Bind((PerspexProperty)property, (IObservable<object>)source, priority);
+            return this.Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
         }
 
         /// <summary>

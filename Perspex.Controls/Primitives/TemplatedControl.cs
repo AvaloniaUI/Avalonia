@@ -71,6 +71,26 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        protected T FindTemplateChild<T>(string id) where T : Control
+        {
+            return this.GetTemplateControls().OfType<T>().FirstOrDefault(x => x.Id == id);
+        }
+
+        protected T GetTemplateChild<T>(string id) where T : Control
+        {
+            var result = this.FindTemplateChild<T>(id);
+
+            if (result == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Could not find template child '{0}' in template for '{1}'.",
+                    id,
+                    this.GetType().FullName));
+            }
+
+            return result;
+        }
+
         protected virtual void OnTemplateApplied()
         {
         }
