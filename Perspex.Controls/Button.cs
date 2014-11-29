@@ -48,5 +48,15 @@ namespace Perspex.Controls
             add { this.AddHandler(ClickEvent, value); }
             remove { this.RemoveHandler(ClickEvent, value); }
         }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(availableSize);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return base.ArrangeOverride(finalSize);
+        }
     }
 }

@@ -197,7 +197,7 @@ namespace Perspex.Layout
                 size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Value.Height));
             }
 
-            size = LayoutHelper.ApplyLayoutConstraints(this, finalRect.Size);
+            size = LayoutHelper.ApplyLayoutConstraints(this, size);
             size = this.ArrangeOverride(size).Constrain(size);
 
             switch (this.HorizontalAlignment)

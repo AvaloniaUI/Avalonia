@@ -117,6 +117,7 @@ namespace TestApplication
                                 TextTab(),
                                 ListsTab(),
                                 SlidersTab(),
+                                LayoutTab(),
                             }
                         },
                         new TextBlock
@@ -127,7 +128,7 @@ namespace TestApplication
                             [Grid.RowProperty] = 1,
                         }
                     }
-                }
+                },
             };
 
             window.Show();
@@ -277,5 +278,50 @@ namespace TestApplication
             };
         }
 
+        private static TabItem LayoutTab()
+        {
+            return new TabItem
+            {
+                Header = "Layout",
+                Content = new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition(1, GridUnitType.Star),
+                        new ColumnDefinition(1, GridUnitType.Star),
+                    },
+                    Margin = new Thickness(50),
+                    Children = new Controls
+                    {
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                            Gap = 8,
+                            Children = new Controls
+                            {
+                                new Button { HorizontalAlignment = HorizontalAlignment.Left, Content = "Left Aligned" },
+                                new Button { HorizontalAlignment = HorizontalAlignment.Center, Content = "Center Aligned" },
+                                new Button { HorizontalAlignment = HorizontalAlignment.Right, Content = "Right Aligned" },
+                                new Button { HorizontalAlignment = HorizontalAlignment.Stretch, Content = "Stretch" },
+                            },
+                            [Grid.ColumnProperty] = 0,
+                        },
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Gap = 8,
+                            Children = new Controls
+                            {
+                                new Button { VerticalAlignment = VerticalAlignment.Top, Content = "Top Aligned" },
+                                new Button { VerticalAlignment = VerticalAlignment.Center, Content = "Center Aligned" },
+                                new Button { VerticalAlignment = VerticalAlignment.Bottom, Content = "Bottom Aligned" },
+                                new Button { VerticalAlignment = VerticalAlignment.Stretch, Content = "Stretch" },
+                            },
+                            [Grid.ColumnProperty] = 1,
+                        },
+                    },
+                }
+            };
+        }
     }
 }
