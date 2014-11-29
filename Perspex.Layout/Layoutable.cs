@@ -125,6 +125,11 @@ namespace Perspex.Layout
 
         public void Measure(Size availableSize)
         {
+            if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
+            {
+                throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
+            }
+
             availableSize = availableSize.Deflate(this.Margin);
             this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
 
@@ -137,6 +142,13 @@ namespace Perspex.Layout
 
         public void Arrange(Rect rect)
         {
+            if (rect.Width < 0 || rect.Height < 0 ||
+                double.IsInfinity(rect.Width) || double.IsInfinity(rect.Height) ||
+                double.IsNaN(rect.Width) || double.IsNaN(rect.Height))
+            {
+                throw new InvalidOperationException("Invalid Arrange rectangle.");
+            }
+
             this.Log().Debug(
                 "Arrange of {0} (#{1:x8}) gave {2} ",
                 this.GetType().Name,

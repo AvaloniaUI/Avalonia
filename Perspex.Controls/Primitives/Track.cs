@@ -118,18 +118,24 @@ namespace Perspex.Controls.Primitives
             if (thumb != null)
             {
                 var range = this.Maximum - this.Minimum;
-                var thumbsize = this.ViewportSize / range;
+                var thumbFraction = this.ViewportSize / range;
+                var valueFraction = this.Value / range;
+
+                if (double.IsNaN(thumbFraction))
+                {
+                    thumbFraction = 0;
+                }
 
                 if (this.Orientation == Orientation.Horizontal)
                 {
-                    var width = finalSize.Width * thumbsize;
-                    var x = finalSize.Width * (this.Value / range);
+                    var width = finalSize.Width * thumbFraction;
+                    var x = (finalSize.Width - thumb.ActualSize.Width) * valueFraction;
                     thumb.Arrange(new Rect(x, 0, width, finalSize.Height));
                 }
                 else
                 {
-                    var height = finalSize.Height * thumbsize;
-                    var y = finalSize.Height * (this.Value / range);
+                    var height = finalSize.Height * thumbFraction;
+                    var y = (finalSize.Height - thumb.ActualSize.Height) * valueFraction;
                     thumb.Arrange(new Rect(0, y, finalSize.Width, height));
                 }
             }
@@ -139,23 +145,26 @@ namespace Perspex.Controls.Primitives
 
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
-            var range = this.Maximum - this.Minimum;
-            var value = this.Value;
+            double range = this.Maximum - this.Minimum;
+            double value = this.Value;
+            double offset;
 
             if (this.Orientation == Orientation.Horizontal)
             {
-                value += e.Vector.X * (range / this.ActualSize.Width);
-
+                offset = e.Vector.X / ((this.ActualSize.Width - this.Thumb.ActualSize.Width) / range);
             }
             else
             {
-                value += e.Vector.Y * (range / this.ActualSize.Height);
+                offset = e.Vector.Y * (range / (this.ActualSize.Height - this.Thumb.ActualSize.Height));
             }
 
-            value = Math.Max(value, this.Minimum);
-            value = Math.Min(value, this.Maximum - this.ViewportSize);
-
-            this.Value = value;
+            if (!double.IsNaN(offset) && !double.IsInfinity(offset))
+            {
+                value += offset;
+                value = Math.Max(value, this.Minimum);
+                value = Math.Min(value, this.Maximum);
+                this.Value = value;
+            }
         }
     }
 }

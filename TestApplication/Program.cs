@@ -273,7 +273,6 @@ namespace TestApplication
                         new ScrollBar
                         {
                             Orientation = Orientation.Vertical,
-                            ViewportSize = 25,
                             Value = 25,
                             Height = 300,
                             [Grid.ColumnProperty] = 0,
