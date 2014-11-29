@@ -28,8 +28,6 @@ namespace Perspex.Controls.Primitives
 
         public ScrollBar()
         {
-            this.Classes.Add(":vertical");
-
             this.GetObservable(OrientationProperty).Subscribe(o =>
             {
                 if (o == Orientation.Horizontal)

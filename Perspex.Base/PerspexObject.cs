@@ -295,7 +295,7 @@ namespace Perspex
                 {
                     this.PropertyChanged -= handler;
                 };
-            });
+            }).StartWith(this.GetValue(property));
         }
 
         /// <summary>
