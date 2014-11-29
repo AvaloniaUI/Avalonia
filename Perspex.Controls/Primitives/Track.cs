@@ -128,13 +128,13 @@ namespace Perspex.Controls.Primitives
 
                 if (this.Orientation == Orientation.Horizontal)
                 {
-                    var width = finalSize.Width * thumbFraction;
+                    var width = Math.Max(finalSize.Width * thumbFraction, thumb.MinWidth);
                     var x = (finalSize.Width - width) * valueFraction;
                     thumb.Arrange(new Rect(x, 0, width, finalSize.Height));
                 }
                 else
                 {
-                    var height = finalSize.Height * thumbFraction;
+                    var height = Math.Max(finalSize.Height * thumbFraction, thumb.MinHeight);
                     var y = (finalSize.Height - height) * valueFraction;
                     thumb.Arrange(new Rect(0, y, finalSize.Width, height));
                 }
