@@ -66,11 +66,11 @@ namespace Perspex.Controls
 
             this.horizontalScrollBar.Bind(
                 ScrollBar.MaximumProperty,
-                extentAndViewport.Select(x => x.Extent.Width));
+                extentAndViewport.Select(x => x.Extent.Width - x.Viewport.Width));
 
             this.horizontalScrollBar.Bind(
                 ScrollBar.ViewportSizeProperty,
-                extentAndViewport.Select(x => x.Viewport.Width));
+                extentAndViewport.Select(x => (x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width)));
 
             this.verticalScrollBar.Bind(
                 IsVisibleProperty,
@@ -78,11 +78,11 @@ namespace Perspex.Controls
 
             this.verticalScrollBar.Bind(
                 ScrollBar.MaximumProperty,
-                extentAndViewport.Select(x => x.Extent.Height));
+                extentAndViewport.Select(x => x.Extent.Height - x.Viewport.Height));
 
             this.verticalScrollBar.Bind(
                 ScrollBar.ViewportSizeProperty,
-                extentAndViewport.Select(x => x.Viewport.Height));
+                extentAndViewport.Select(x => (x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height)));
 
             var offset = Observable.CombineLatest(
                 this.horizontalScrollBar.GetObservable(ScrollBar.ValueProperty),
