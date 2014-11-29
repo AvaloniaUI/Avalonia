@@ -197,6 +197,14 @@ namespace Perspex.Windows
             }
         }
 
+        private void OnResized(int width, int height)
+        {
+            this.renderer.Resize(width, height);
+            this.LayoutManager.ExecuteLayoutPass();
+            this.renderer.Render(this);
+            this.RenderManager.RenderFinished();
+        }
+
         private void OnClosed()
         {
             if (this.Closed != null)
@@ -256,8 +264,7 @@ namespace Perspex.Windows
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                    this.renderer.Resize((int)lParam & 0xffff, (int)lParam >> 16);
-                    this.InvalidateMeasure();
+                    this.OnResized((int)lParam & 0xffff, (int)lParam >> 16);
                     return IntPtr.Zero;
             }
 
