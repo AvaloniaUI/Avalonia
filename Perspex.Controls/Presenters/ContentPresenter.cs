@@ -30,23 +30,21 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ContentProperty, value); }
         }
 
-        protected override Size MeasureCore(Size availableSize)
+        protected override sealed void ApplyTemplate()
         {
             if (!this.createdChild)
             {
                 this.CreateChild();
             }
+        }
 
+        protected override Size MeasureCore(Size availableSize)
+        {
             return base.MeasureCore(availableSize);
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!this.createdChild)
-            {
-                this.CreateChild();
-            }
-
             Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)

@@ -30,6 +30,28 @@ namespace Perspex.Controls.Primitives
         {
         }
 
+        protected sealed override void ApplyTemplate()
+        {
+            if (!this.templateApplied)
+            {
+                this.ClearVisualChildren();
+
+                if (this.Template != null)
+                {
+                    this.Log().Debug(
+                        "Creating template for {0} (#{1:x8})",
+                        this.GetType().Name,
+                        this.GetHashCode());
+
+                    var child = this.Template.Build(this);
+                    this.AddVisualChild(child);
+                    this.OnTemplateApplied();
+                }
+
+                this.templateApplied = true;
+            }
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
@@ -47,11 +69,6 @@ namespace Perspex.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!this.templateApplied)
-            {
-                this.ApplyTemplate();
-            }
-
             Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
@@ -85,25 +102,6 @@ namespace Perspex.Controls.Primitives
 
         protected virtual void OnTemplateApplied()
         {
-        }
-
-        private void ApplyTemplate()
-        {
-            this.ClearVisualChildren();
-
-            if (this.Template != null)
-            {
-                this.Log().Debug(
-                    "Creating template for {0} (#{1:x8})",
-                    this.GetType().Name,
-                    this.GetHashCode());
-
-                var child = this.Template.Build(this);
-                this.AddVisualChild(child);
-                this.OnTemplateApplied();
-            }
-
-            this.templateApplied = true;
         }
     }
 }

@@ -196,6 +196,10 @@ namespace Perspex.Layout
             property.Changed.Subscribe(AffectsMeasureInvalidate);
         }
 
+        protected virtual void ApplyTemplate()
+        {
+        }
+
         protected virtual void ArrangeCore(Rect finalRect)
         {
             if (this.IsVisible)
@@ -259,6 +263,8 @@ namespace Perspex.Layout
         {
             if (this.IsVisible)
             {
+                this.ApplyTemplate();
+
                 var constrained = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
                     .Deflate(this.Margin);
 

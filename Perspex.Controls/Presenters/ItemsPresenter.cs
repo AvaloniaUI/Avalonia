@@ -41,13 +41,16 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override sealed void ApplyTemplate()
         {
             if (!this.createdPanel)
             {
                 this.CreatePanel();
             }
+        }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
             panel.Measure(availableSize);
             return panel.DesiredSize.Value;
         }
