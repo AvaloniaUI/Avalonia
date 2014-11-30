@@ -63,8 +63,8 @@ namespace Perspex.Controls.Presenters
             this.ClearVisualChildren();
             this.panel = this.ItemsPanel.Build();
             this.AddVisualChild(this.panel);
-            this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
             this.createdPanel = true;
+            this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
         }
 
         private IItemContainerGenerator GetGenerator()
@@ -81,31 +81,34 @@ namespace Perspex.Controls.Presenters
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)
         {
-            var generator = this.GetGenerator();
-
-            if (value.Item1 != null)
+            if (this.createdPanel)
             {
-                this.panel.Children.RemoveAll(generator.Remove(value.Item1));
+                var generator = this.GetGenerator();
 
-                INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
-
-                if (incc != null)
+                if (value.Item1 != null)
                 {
-                    incc.CollectionChanged -= this.ItemsCollectionChanged;
-                }
-            }
+                    this.panel.Children.RemoveAll(generator.Remove(value.Item1));
 
-            if (this.panel != null)
-            {
-                if (value.Item2 != null)
-                {
-                    this.panel.Children.AddRange(generator.Generate(this.Items));
-
-                    INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
+                    INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
 
                     if (incc != null)
                     {
-                        incc.CollectionChanged += this.ItemsCollectionChanged;
+                        incc.CollectionChanged -= this.ItemsCollectionChanged;
+                    }
+                }
+
+                if (this.panel != null)
+                {
+                    if (value.Item2 != null)
+                    {
+                        this.panel.Children.AddRange(generator.Generate(this.Items));
+
+                        INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
+
+                        if (incc != null)
+                        {
+                            incc.CollectionChanged += this.ItemsCollectionChanged;
+                        }
                     }
                 }
             }
@@ -113,7 +116,7 @@ namespace Perspex.Controls.Presenters
 
         private void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (this.panel != null)
+            if (this.createdPanel)
             {
                 var generator = this.GetGenerator();
 

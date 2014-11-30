@@ -30,6 +30,16 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ContentProperty, value); }
         }
 
+        protected override Size MeasureCore(Size availableSize)
+        {
+            if (!this.createdChild)
+            {
+                this.CreateChild();
+            }
+
+            return base.MeasureCore(availableSize);
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (!this.createdChild)
@@ -85,7 +95,14 @@ namespace Perspex.Controls.Presenters
                     }
                 }
 
-                result.TemplatedParent = null;
+                var foo = this.TemplatedParent as TemplatedControl;
+
+                if (foo != null)
+                {
+                    foo = foo.TemplatedParent as TemplatedControl;
+                }
+
+                result.TemplatedParent = foo;
                 this.AddVisualChild(result);
             }
 

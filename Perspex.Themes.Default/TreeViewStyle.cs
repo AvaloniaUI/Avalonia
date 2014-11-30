@@ -38,10 +38,13 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~TreeView.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TreeView.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TreeView.BorderThicknessProperty],
-                Content = new ItemsPresenter
+                Content = new ScrollViewer
                 {
-                    [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
+                    Content = new ItemsPresenter
+                    {
+                        [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
+                    }
                 }
             };
         }
