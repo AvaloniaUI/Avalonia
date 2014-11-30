@@ -22,6 +22,8 @@ namespace Perspex.Controls.Presenters
 
         private Panel panel;
 
+        private bool createdPanel;
+
         public ItemsPresenter()
         {
             this.GetObservableWithHistory(ItemsProperty).Skip(1).Subscribe(this.ItemsChanged);
@@ -41,21 +43,28 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            Panel panel = this.GetPanel();
+            if (!this.createdPanel)
+            {
+                this.CreatePanel();
+            }
+
             panel.Measure(availableSize);
             return panel.DesiredSize.Value;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            this.GetPanel().Arrange(new Rect(finalSize));
+            this.panel.Arrange(new Rect(finalSize));
             return finalSize;
         }
 
-        protected override void CreateVisualChildren()
+        private void CreatePanel()
         {
-            this.AddVisualChild(this.GetPanel());
+            this.ClearVisualChildren();
+            this.panel = this.ItemsPanel.Build();
+            this.AddVisualChild(this.panel);
             this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
+            this.createdPanel = true;
         }
 
         private IItemContainerGenerator GetGenerator()
@@ -68,16 +77,6 @@ namespace Perspex.Controls.Presenters
             }
 
             return i.ItemContainerGenerator;
-        }
-
-        private Panel GetPanel()
-        {
-            if (this.panel == null && this.ItemsPanel != null)
-            {
-                this.panel = this.ItemsPanel.Build();
-            }
-
-            return this.panel;
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

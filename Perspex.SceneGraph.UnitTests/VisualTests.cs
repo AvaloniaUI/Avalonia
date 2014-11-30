@@ -13,32 +13,6 @@ namespace Perspex.SceneGraph.UnitTests
     public class VisualTests
     {
         [TestMethod]
-        public void Initial_Children_Should_Be_Created()
-        {
-            var target = new TestVisual
-            {
-                InitialChildren = new[] { new Visual(), new Visual() }
-            };
-
-            var result = target.GetVisualChildren().ToList();
-
-            CollectionAssert.AreEqual(target.InitialChildren.ToList(), result);
-        }
-
-        [TestMethod]
-        public void Initial_Children_Should_Have_VisualParent_Set()
-        {
-            var target = new TestVisual
-            {
-                InitialChildren = new[] { new Visual(), new Visual() }
-            };
-
-            var result = target.GetVisualChildren().Select(x => x.GetVisualParent()).ToList();
-
-            CollectionAssert.AreEqual(new[] { target, target }, result);
-        }
-
-        [TestMethod]
         public void Added_Child_Should_Have_VisualParent_Set()
         {
             var target = new TestVisual();
@@ -87,14 +61,13 @@ namespace Perspex.SceneGraph.UnitTests
         [TestMethod]
         public void Clearing_Children_Should_Clear_VisualParent()
         {
-            var target = new TestVisual
-            {
-                InitialChildren = new[] { new Visual(), new Visual() }
-            };
+            var children = new[] { new Visual(), new Visual() };
+            var target = new TestVisual();
 
+            target.AddChildren(children);
             target.ClearChildren();
 
-            var result = target.InitialChildren.Select(x => x.GetVisualParent()).ToList();
+            var result = children.Select(x => x.GetVisualParent()).ToList();
 
             CollectionAssert.AreEqual(new Visual[] { null, null }, result);
         }
@@ -108,11 +81,10 @@ namespace Perspex.SceneGraph.UnitTests
             int attched = 0;
             int i = 1;
 
-            target.InitialChildren = new[] { child };
             child.VisualParentChangedCalled += (s, e) => changed = i++;
             child.AttachedToVisualTreeCalled += (s, e) => attched = i++;
 
-            target.GetVisualChildren().First();
+            target.AddChild(child);
 
             Assert.AreEqual(1, changed);
             Assert.AreEqual(2, attched);
@@ -127,8 +99,7 @@ namespace Perspex.SceneGraph.UnitTests
             int detached = 0;
             int i = 1;
 
-            target.InitialChildren = new[] { child };
-            target.GetVisualChildren().First();
+            target.AddChild(child);
 
             child.VisualParentChangedCalled += (s, e) => changed = i++;
             child.DetachedFromVisualTreeCalled += (s, e) => detached = i++;

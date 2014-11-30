@@ -107,7 +107,7 @@ namespace Perspex.Controls
                 arrangedWidth = 0;
             }
 
-            foreach (Control child in this.Children.Where(x => x.DesiredSize.HasValue))
+            foreach (Control child in this.Children)
             {
                 double childWidth = child.DesiredSize.Value.Width;
                 double childHeight = child.DesiredSize.Value.Height;

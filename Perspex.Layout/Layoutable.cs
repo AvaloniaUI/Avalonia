@@ -149,6 +149,11 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Invalid Arrange rectangle.");
             }
 
+            if (!this.DesiredSize.HasValue)
+            {
+                throw new InvalidOperationException("Arrange called before Measure.");
+            }
+
             this.Log().Debug(
                 "Arrange of {0} (#{1:x8}) gave {2} ",
                 this.GetType().Name,
@@ -193,48 +198,51 @@ namespace Perspex.Layout
 
         protected virtual void ArrangeCore(Rect finalRect)
         {
-            double originX = finalRect.X + this.Margin.Left;
-            double originY = finalRect.Y + this.Margin.Top;
-            var size = new Size(
-                Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right),
-                Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom));
-
-            if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
+            if (this.IsVisible)
             {
-                size = size.WithWidth(Math.Min(size.Width, this.DesiredSize.Value.Width));
+                double originX = finalRect.X + this.Margin.Left;
+                double originY = finalRect.Y + this.Margin.Top;
+                var size = new Size(
+                    Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right),
+                    Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom));
+
+                if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
+                {
+                    size = size.WithWidth(Math.Min(size.Width, this.DesiredSize.Value.Width));
+                }
+
+                if (this.VerticalAlignment != VerticalAlignment.Stretch)
+                {
+                    size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Value.Height));
+                }
+
+                size = LayoutHelper.ApplyLayoutConstraints(this, size);
+                size = this.ArrangeOverride(size).Constrain(size);
+
+                switch (this.HorizontalAlignment)
+                {
+                    case HorizontalAlignment.Center:
+                        originX += (finalRect.Width - size.Width) / 2;
+                        break;
+                    case HorizontalAlignment.Right:
+                        originX += finalRect.Width - size.Width;
+                        break;
+                }
+
+                switch (this.VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        originY += (finalRect.Height - size.Height) / 2;
+                        break;
+                    case VerticalAlignment.Bottom:
+                        originY += finalRect.Height - size.Height;
+                        break;
+                }
+
+                var bounds = new Rect(originX, originY, size.Width, size.Height);
+                this.SetVisualBounds(bounds);
+                this.SetValue(ActualSizeProperty, bounds.Size);
             }
-
-            if (this.VerticalAlignment != VerticalAlignment.Stretch)
-            {
-                size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Value.Height));
-            }
-
-            size = LayoutHelper.ApplyLayoutConstraints(this, size);
-            size = this.ArrangeOverride(size).Constrain(size);
-
-            switch (this.HorizontalAlignment)
-            {
-                case HorizontalAlignment.Center:
-                    originX += (finalRect.Width - size.Width) / 2;
-                    break;
-                case HorizontalAlignment.Right:
-                    originX += finalRect.Width - size.Width;
-                    break;
-            }
-
-            switch (this.VerticalAlignment)
-            {
-                case VerticalAlignment.Center:
-                    originY += (finalRect.Height - size.Height) / 2;
-                    break;
-                case VerticalAlignment.Bottom:
-                    originY += finalRect.Height - size.Height;
-                    break;
-            }
-
-            var bounds = new Rect(originX, originY, size.Width, size.Height);
-            this.SetVisualBounds(bounds);
-            this.SetValue(ActualSizeProperty, bounds.Size);
         }
 
         protected virtual Size ArrangeOverride(Size finalSize)

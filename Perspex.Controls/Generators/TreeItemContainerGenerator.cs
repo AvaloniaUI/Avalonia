@@ -39,8 +39,6 @@ namespace Perspex.Controls.Generators
             {
                 TreeDataTemplate template = this.GetTreeDataTemplate(item);
 
-                System.Diagnostics.Debug.WriteLine("{0} created item for {1}", this.GetHashCode(), item);
-
                 result = new T
                 {
                     Header = template.Build(item),

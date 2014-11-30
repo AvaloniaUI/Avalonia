@@ -86,8 +86,6 @@ namespace Perspex.Controls.Generators
                     container.TemplatedParent = null;
                     this.AddInternal(item, container);
                     result.Add(container);
-
-                    System.Diagnostics.Debug.WriteLine("{0} : Generated container for {1} {2}: {3}", this.GetHashCode(), item, item.GetHashCode(), container);
                 }
             }
             finally
@@ -132,7 +130,6 @@ namespace Perspex.Controls.Generators
             object item = this.itemsByContainer[container];
             this.containersByItem.Remove(item);
             this.itemsByContainer.Remove(container);
-            System.Diagnostics.Debug.WriteLine("{0} : Removed container for {1} {2}", this.GetHashCode(), item, item.GetHashCode());
             return item;
         }
 
@@ -141,7 +138,6 @@ namespace Perspex.Controls.Generators
             Control container = this.containersByItem[item];
             this.containersByItem.Remove(item);
             this.itemsByContainer.Remove(container);
-            System.Diagnostics.Debug.WriteLine("{0} : Removed container for {1} {2}", this.GetHashCode(), item, item.GetHashCode());
             return container;
         }
     }

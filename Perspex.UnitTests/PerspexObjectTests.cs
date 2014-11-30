@@ -371,9 +371,6 @@ namespace Perspex.UnitTests
             Class1 source = new Class1();
             Class1 target = new Class1();
 
-            System.Diagnostics.Debug.WriteLine("source: " + source.GetHashCode());
-            System.Diagnostics.Debug.WriteLine("target: " + target.GetHashCode());
-
             source.SetValue(Class1.FooProperty, "first");
             target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
 

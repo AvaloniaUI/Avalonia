@@ -27,8 +27,6 @@ namespace Perspex.SceneGraph.UnitTests
             get { return base.InheritanceParent; }
         }
 
-        public Visual[] InitialChildren { get; set; }
-
         public event EventHandler<ParamEventArgs<Visual>> VisualParentChangedCalled;
 
         public event EventHandler<ParamEventArgs<IRenderRoot>> AttachedToVisualTreeCalled;
@@ -40,6 +38,11 @@ namespace Perspex.SceneGraph.UnitTests
             this.AddVisualChild(v);
         }
 
+        public void AddChildren(IEnumerable<Visual> v)
+        {
+            this.AddVisualChildren(v);
+        }
+
         public void RemoveChild(Visual v)
         {
             this.RemoveVisualChild(v);
@@ -48,14 +51,6 @@ namespace Perspex.SceneGraph.UnitTests
         public void ClearChildren()
         {
             this.ClearVisualChildren();
-        }
-
-        protected override void CreateVisualChildren()
-        {
-            if (this.InitialChildren != null)
-            {
-                this.AddVisualChildren(this.InitialChildren);
-            }
         }
 
         protected override void OnVisualParentChanged(Visual oldParent)

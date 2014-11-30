@@ -18,6 +18,8 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
+        private bool templateApplied;
+
         public ControlTemplate Template
         {
             get { return this.GetValue(TemplateProperty); }
@@ -45,6 +47,11 @@ namespace Perspex.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (!this.templateApplied)
+            {
+                this.ApplyTemplate();
+            }
+
             Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
 
             if (child != null)
@@ -54,21 +61,6 @@ namespace Perspex.Controls.Primitives
             }
 
             return new Size();
-        }
-
-        protected override void CreateVisualChildren()
-        {
-            if (this.Template != null)
-            {
-                this.Log().Debug(
-                    "Creating template for {0} (#{1:x8})",
-                    this.GetType().Name,
-                    this.GetHashCode());
-
-                var child = this.Template.Build(this);
-                this.AddVisualChild(child);
-                this.OnTemplateApplied();
-            }
         }
 
         protected T FindTemplateChild<T>(string id) where T : Control
@@ -93,6 +85,25 @@ namespace Perspex.Controls.Primitives
 
         protected virtual void OnTemplateApplied()
         {
+        }
+
+        private void ApplyTemplate()
+        {
+            this.ClearVisualChildren();
+
+            if (this.Template != null)
+            {
+                this.Log().Debug(
+                    "Creating template for {0} (#{1:x8})",
+                    this.GetType().Name,
+                    this.GetHashCode());
+
+                var child = this.Template.Build(this);
+                this.AddVisualChild(child);
+                this.OnTemplateApplied();
+            }
+
+            this.templateApplied = true;
         }
     }
 }

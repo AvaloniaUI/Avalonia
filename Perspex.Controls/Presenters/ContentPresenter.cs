@@ -9,12 +9,15 @@ namespace Perspex.Controls.Presenters
     using System;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Controls.Primitives;
     using Perspex.Layout;
 
     public class ContentPresenter : Control, IVisual
     {
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<Control>();
+
+        private bool createdChild;
 
         public ContentPresenter()
         {
@@ -27,9 +30,35 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ContentProperty, value); }
         }
 
-        protected override void CreateVisualChildren()
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (!this.createdChild)
+            {
+                this.CreateChild();
+            }
+
+            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
+
+            if (child != null)
+            {
+                child.Measure(availableSize);
+                return child.DesiredSize.Value;
+            }
+
+            return new Size();
+        }
+
+        private void ContentChanged(object content)
+        {
+            this.createdChild = false;
+            this.InvalidateMeasure();
+        }
+
+        private void CreateChild()
         {
             object content = this.Content;
+
+            this.ClearVisualChildren();
 
             if (content != null)
             {
@@ -59,26 +88,8 @@ namespace Perspex.Controls.Presenters
                 result.TemplatedParent = null;
                 this.AddVisualChild(result);
             }
-        }
 
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-            if (child != null)
-            {
-                child.Measure(availableSize);
-                return child.DesiredSize.Value;
-            }
-
-            return new Size();
-        }
-
-        private void ContentChanged(object content)
-        {
-            this.ClearVisualChildren();
-            this.CreateVisualChildren();
-            this.InvalidateMeasure();
+            this.createdChild = true;
         }
     }
 }

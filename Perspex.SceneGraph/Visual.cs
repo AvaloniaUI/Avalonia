@@ -39,6 +39,12 @@ namespace Perspex
             AffectsRender(IsVisibleProperty);
         }
 
+        public Visual()
+        {
+            this.visualChildren = new PerspexList<IVisual>();
+            this.visualChildren.CollectionChanged += VisualChildrenChanged;
+        }
+
         public bool IsVisible
         {
             get { return this.GetValue(IsVisibleProperty); }
@@ -70,11 +76,7 @@ namespace Perspex
 
         IReadOnlyPerspexList<IVisual> IVisual.VisualChildren
         {
-            get
-            {
-                this.EnsureVisualChildrenCreated();
-                return this.visualChildren;
-            }
+            get { return this.visualChildren; }
         }
 
         IVisual IVisual.VisualParent
@@ -111,7 +113,6 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            this.EnsureVisualChildrenCreated();
             this.visualChildren.Add(visual);
         }
 
@@ -119,14 +120,11 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visuals != null);
 
-            this.EnsureVisualChildrenCreated();
             this.visualChildren.AddRange(visuals);
         }
 
         protected void ClearVisualChildren()
         {
-            this.EnsureVisualChildrenCreated();
-
             // TODO: Just call visualChildren.Clear() when we have a PerspexList that notifies of 
             // the removed items.
             while (this.visualChildren.Count > 0)
@@ -139,15 +137,12 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            this.EnsureVisualChildrenCreated();
             this.visualChildren.Remove(visual);
         }
 
         protected void RemoveVisualChildren(IEnumerable<Visual> visuals)
         {
             Contract.Requires<ArgumentNullException>(visuals != null);
-
-            this.EnsureVisualChildrenCreated();
 
             foreach (var v in visuals)
             {
@@ -158,10 +153,6 @@ namespace Perspex
         protected void SetVisualBounds(Rect bounds)
         {
             this.bounds = bounds;
-        }
-
-        protected virtual void CreateVisualChildren()
-        {
         }
 
         protected virtual void OnAttachedToVisualTree(IRenderRoot root)
@@ -183,16 +174,6 @@ namespace Perspex
             if (visual != null)
             {
                 visual.InvalidateVisual();
-            }
-        }
-
-        private void EnsureVisualChildrenCreated()
-        {
-            if (this.visualChildren == null)
-            {
-                this.visualChildren = new PerspexList<IVisual>();
-                this.visualChildren.CollectionChanged += VisualChildrenChanged;
-                this.CreateVisualChildren();
             }
         }
 
