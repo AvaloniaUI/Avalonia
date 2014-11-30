@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Windows", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Win32", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
 EndProject
@@ -40,6 +40,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Application", "Perspex.Application\Perspex.Application.csproj", "{799A7BB5-3C2C-48B6-85A7-406A12C420DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Diagnostics", "Perspex.Diagnostics\Perspex.Diagnostics.csproj", "{7062AE20-5DCC-4442-9645-8195BDECE63E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cairo", "Cairo", "{1D577B69-F23B-4C4F-8605-97704DAC75A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Cairo", "Cairo\Perspex.Cairo\Perspex.Cairo.csproj", "{FB05AC90-89BA-4F2F-A924-F37875FB547C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +123,10 @@ Global
 		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7062AE20-5DCC-4442-9645-8195BDECE63E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB05AC90-89BA-4F2F-A924-F37875FB547C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB05AC90-89BA-4F2F-A924-F37875FB547C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB05AC90-89BA-4F2F-A924-F37875FB547C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB05AC90-89BA-4F2F-A924-F37875FB547C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,5 +136,6 @@ Global
 		{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{DABFD304-D6A4-4752-8123-C2CCF7AC7831} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
+		{FB05AC90-89BA-4F2F-A924-F37875FB547C} = {1D577B69-F23B-4C4F-8605-97704DAC75A9}
 	EndGlobalSection
 EndGlobal

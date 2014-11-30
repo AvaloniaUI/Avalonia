@@ -19,9 +19,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PERSPEX_CAIRO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -96,6 +97,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cairo\Perspex.Cairo\Perspex.Cairo.csproj">
+      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
+      <Name>Perspex.Cairo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Perspex.Application\Perspex.Application.csproj">
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
       <Name>Perspex.Application</Name>
@@ -142,7 +147,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Windows\Perspex.Win32\Perspex.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
-      <Name>Perspex.Windows</Name>
+      <Name>Perspex.Win32</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
