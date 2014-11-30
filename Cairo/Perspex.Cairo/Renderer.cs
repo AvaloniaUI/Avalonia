@@ -17,9 +17,9 @@ namespace Perspex.Cairo
     public class Renderer : IRenderer
     {
         /// <summary>
-        /// The target cairo surface.
+        /// The handle of the window to draw to.
         /// </summary>
-        private Surface surface;
+        private IntPtr hwnd;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -29,16 +29,7 @@ namespace Perspex.Cairo
         /// <param name="height">The height of the window.</param>
         public Renderer(IntPtr hwnd, double width, double height)
         {
-            surface = new Win32Surface(GetDC(hwnd));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Renderer"/> class.
-        /// </summary>
-        /// <param name="surface">The target surface.</param>
-        public Renderer(Surface surface)
-        {
-            this.surface = surface;
+            this.hwnd = hwnd;
         }
 
         /// <summary>
@@ -47,7 +38,8 @@ namespace Perspex.Cairo
         /// <param name="visual">The visual to render.</param>
         public void Render(IVisual visual)
         {
-            using (DrawingContext context = new DrawingContext(this.surface))
+            using (var surface = new Win32Surface(GetDC(this.hwnd)))
+            using (DrawingContext context = new DrawingContext(surface))
             {
                 this.Render(visual, context);
             }
@@ -60,9 +52,6 @@ namespace Perspex.Cairo
         /// <param name="height">The new height.</param>
         public void Resize(int width, int height)
         {
-            var s = this.surface.CreateSimilar(Content.ColorAlpha, width, height);
-            this.surface.Dispose();
-            this.surface = s;
         }
 
         [DllImport("user32.dll")]
