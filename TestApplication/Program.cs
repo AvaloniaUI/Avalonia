@@ -101,6 +101,7 @@ namespace TestApplication
 
             Window window = new Window
             {
+                Title = "Perspex Test Application",
                 Content = new Grid
                 {
                     RowDefinitions = new RowDefinitions

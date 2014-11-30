@@ -27,6 +27,8 @@ namespace Perspex.Win32
 
     public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable
     {
+        public static readonly PerspexProperty<string> TitleProperty = PerspexProperty.Register<Window, string>("Title");
+
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
@@ -49,7 +51,7 @@ namespace Perspex.Win32
 
             this.LayoutManager.LayoutNeeded.Subscribe(x => 
             {
-                WindowsDispatcher.CurrentDispatcher.BeginInvoke(
+                Dispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render, 
                     () =>
                     {
@@ -59,11 +61,13 @@ namespace Perspex.Win32
                     });
             });
 
+            this.GetObservable(TitleProperty).Subscribe(s => UnmanagedMethods.SetWindowText(Handle, s));
+
             this.RenderManager.RenderNeeded
                 .Where(_ => !this.LayoutManager.LayoutQueued)
                 .Subscribe(x =>
             {
-                WindowsDispatcher.CurrentDispatcher.BeginInvoke(
+                Dispatcher.CurrentDispatcher.BeginInvoke(
                     DispatcherPriority.Render,
                     () =>
                     {
@@ -79,6 +83,12 @@ namespace Perspex.Win32
         public event EventHandler Activated;
 
         public event EventHandler Closed;
+
+        public string Title
+        {
+            get { return this.GetValue(TitleProperty); }
+            set { this.SetValue(TitleProperty, value); }
+        }
 
         public Size ClientSize
         {
