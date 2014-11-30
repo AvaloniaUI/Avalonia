@@ -25,9 +25,6 @@ namespace Perspex.Cairo
             var locator = Locator.CurrentMutable;
             locator.Register(() => instance, typeof(IPlatformRenderInterface));
             locator.Register(() => textService, typeof(ITextService));
-            //locator.Register(() => d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
-            //locator.Register(() => dwFactory, typeof(SharpDX.DirectWrite.Factory));
-            //locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
         }
 
         public ITextService TextService
