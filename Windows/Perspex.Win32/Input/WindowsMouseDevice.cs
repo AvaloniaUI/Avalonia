@@ -4,11 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Input
+namespace Perspex.Win32.Input
 {
     using System;
     using Perspex.Input;
-    using Perspex.Windows.Interop;
+    using Perspex.Win32.Interop;
 
     public class WindowsMouseDevice : MouseDevice
     {

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Interop
+namespace Perspex.Win32.Interop
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

@@ -4,21 +4,21 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows
+namespace Perspex.Win32
 {
     using System;
     using System.Collections.Generic;
     using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Threading;
-    using Perspex.Windows.Input;
-    using Perspex.Windows.Interop;
-    using Perspex.Windows.Threading;
+    using Perspex.Win32.Input;
+    using Perspex.Win32.Interop;
+    using Perspex.Win32.Threading;
     using Splat;
 
-    public class WindowsPlatform : IPlatformThreadingInterface
+    public class Win32Platform : IPlatformThreadingInterface
     {
-        private static WindowsPlatform instance = new WindowsPlatform();
+        private static Win32Platform instance = new Win32Platform();
 
         private Dictionary<IntPtr, UnmanagedMethods.TimerProc> timerCallbacks =
             new Dictionary<IntPtr, UnmanagedMethods.TimerProc>();

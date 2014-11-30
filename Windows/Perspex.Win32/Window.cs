@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows
+namespace Perspex.Win32
 {
     using System;
     using System.ComponentModel;
@@ -20,9 +20,9 @@ namespace Perspex.Windows
     using Perspex.Platform;
     using Perspex.Rendering;
     using Perspex.Threading;
-    using Perspex.Windows.Input;
-    using Perspex.Windows.Interop;
-    using Perspex.Windows.Threading;
+    using Perspex.Win32.Input;
+    using Perspex.Win32.Interop;
+    using Perspex.Win32.Threading;
     using Splat;
 
     public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable

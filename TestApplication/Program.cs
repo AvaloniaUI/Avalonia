@@ -6,7 +6,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Perspex.Windows;
+using Perspex.Win32;
 using Splat;
 
 namespace TestApplication

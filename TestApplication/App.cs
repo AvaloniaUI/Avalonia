@@ -3,7 +3,7 @@
     using Perspex;
     using Perspex.Direct2D1;
     using Perspex.Themes.Default;
-    using Perspex.Windows;
+    using Perspex.Win32;
 
     public class App : Application
     {
@@ -12,7 +12,7 @@
         {
             this.RegisterServices();
             Direct2D1Platform.Initialize();
-            WindowsPlatform.Initialize();
+            Win32Platform.Initialize();
         }
     }
 }

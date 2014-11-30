@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Windows", "Perspex.Windows\Perspex.Windows.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Windows", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.UnitTests", "Perspex.UnitTests\Perspex.UnitTests.csproj", "{2905FF23-53FB-45E6-AA49-6AF47A172056}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1", "Perspex.Direct2D1\Perspex.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1", "Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1.RenderTests", "Perspex.Direct2D1.RenderTests\Perspex.Direct2D1.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1.RenderTests", "Windows\Perspex.Direct2D1.RenderTests\Perspex.Direct2D1.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Base", "Perspex.Base\Perspex.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject

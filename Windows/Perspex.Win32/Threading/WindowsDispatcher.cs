@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Windows.Threading
+namespace Perspex.Win32.Threading
 {
     using System;
     using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace Perspex.Windows.Threading
     using System.Security;
     using System.Threading;
     using Perspex.Threading;
-    using Perspex.Windows.Interop;
+    using Perspex.Win32.Interop;
 
     [Flags]
     internal enum Flags
