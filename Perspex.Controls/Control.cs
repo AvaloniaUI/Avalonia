@@ -30,9 +30,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
 
-        public static readonly PerspexProperty<Control> ParentProperty =
-            PerspexProperty.Register<Control, Control>("Parent");
-
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
 
@@ -136,12 +133,6 @@ namespace Perspex.Controls
 
                 this.id = value;
             }
-        }
-
-        public Control Parent
-        {
-            get { return this.GetValue(ParentProperty); }
-            protected set { this.SetValue(ParentProperty, value); }
         }
 
         public Styles Styles
