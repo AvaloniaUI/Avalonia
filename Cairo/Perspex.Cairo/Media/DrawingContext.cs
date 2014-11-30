@@ -12,6 +12,7 @@ namespace Perspex.Cairo.Media
     using Perspex.Media;
     using IBitmap = Perspex.Media.Imaging.IBitmap;
     using Matrix = Perspex.Matrix;
+    using CairoMatrix = global::Cairo.Matrix;
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -125,7 +126,19 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            return Disposable.Empty;
+            var m = Convert(matrix);
+            this.context.Transform(m);
+
+            return Disposable.Create(() =>
+            {
+                m.Invert();
+                this.context.Transform(m);
+            });
+        }
+
+        private static CairoMatrix Convert(Matrix m)
+        {
+            return new CairoMatrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
         }
 
         private void SetBrush(Brush brush)
