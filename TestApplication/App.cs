@@ -1,10 +1,19 @@
 ﻿namespace TestApplication
 {
     using Perspex;
-    using Perspex.Cairo;
-    using Perspex.Direct2D1;
-    using Perspex.Themes.Default;
+	using Perspex.Themes.Default;
+
+#if PERSPEX_CAIRO
+	using Perspex.Cairo;
+#else
+	using Perspex.Direct2D1;
+#endif
+
+#if PERSPEX_GTK
+	using Perspex.Gtk;
+#else
     using Perspex.Win32;
+#endif
 
     public class App : Application
     {
@@ -17,7 +26,12 @@
 #else
             Direct2D1Platform.Initialize();
 #endif
-            Win32Platform.Initialize();
+
+#if PERSPEX_GTK
+			GtkPlatform.Initialize();
+#else
+			Win32Platform.Initialize();
+#endif
         }
     }
 }

@@ -1,0 +1,27 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Gtk/Perspex.Gtk/Window.cs">
+    <Files>
+      <File FileName="Gtk/Perspex.Gtk/GtkPlatform.cs" Line="17" Column="17" />
+      <File FileName="TestApplication/App.cs" Line="16" Column="16" />
+      <File FileName="Gtk/Perspex.Gtk/Window.cs" Line="9" Column="9" />
+      <File FileName="Windows/Perspex.Win32/Window.cs" Line="79" Column="79" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Gtk" expanded="True">
+            <Node name="Perspex.Gtk" expanded="True">
+              <Node name="References" selected="True" />
+            </Node>
+          </Node>
+          <Node name="TestApplication-Mono" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

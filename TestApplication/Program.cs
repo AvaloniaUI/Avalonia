@@ -6,7 +6,11 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+#if PERSPEX_GTK
+using Perspex.Gtk;
+#else
 using Perspex.Win32;
+#endif
 using Splat;
 
 namespace TestApplication
