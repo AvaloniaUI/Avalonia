@@ -22,7 +22,6 @@ namespace Perspex.Win32
     using Perspex.Threading;
     using Perspex.Win32.Input;
     using Perspex.Win32.Interop;
-    using Perspex.Win32.Threading;
     using Splat;
 
     public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable
@@ -32,6 +31,8 @@ namespace Perspex.Win32
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
+
+        private Dispatcher dispatcher;
 
         private IRenderer renderer;
 
@@ -43,22 +44,23 @@ namespace Perspex.Win32
 
             this.CreateWindow();
             Size clientSize = this.ClientSize;
+            this.dispatcher = Dispatcher.UIThread;
             this.LayoutManager = new LayoutManager(this);
             this.RenderManager = new RenderManager();
             this.renderer = factory.CreateRenderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
 
-            this.LayoutManager.LayoutNeeded.Subscribe(x => 
+            this.LayoutManager.LayoutNeeded.Subscribe(x =>
             {
-                Dispatcher.CurrentDispatcher.BeginInvoke(
-                    DispatcherPriority.Render, 
+                this.dispatcher.InvokeAsync(
                     () =>
                     {
                         this.LayoutManager.ExecuteLayoutPass();
                         this.renderer.Render(this);
                         this.RenderManager.RenderFinished();
-                    });
+                    },
+                    DispatcherPriority.Render);
             });
 
             this.GetObservable(TitleProperty).Subscribe(s => UnmanagedMethods.SetWindowText(Handle, s));
@@ -67,8 +69,7 @@ namespace Perspex.Win32
                 .Where(_ => !this.LayoutManager.LayoutQueued)
                 .Subscribe(x =>
             {
-                Dispatcher.CurrentDispatcher.BeginInvoke(
-                    DispatcherPriority.Render,
+                this.dispatcher.InvokeAsync(
                     () =>
                     {
                         if (!this.LayoutManager.LayoutQueued)
@@ -76,7 +77,8 @@ namespace Perspex.Win32
                             this.renderer.Render(this);
                             this.RenderManager.RenderFinished();
                         }
-                    });
+                    },
+                    DispatcherPriority.Render);
             });
         }
 

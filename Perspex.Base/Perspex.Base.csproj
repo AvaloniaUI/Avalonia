@@ -49,9 +49,31 @@
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
-    <Compile Include="Threading\DispatcherFrame.cs" />
-    <Compile Include="Threading\DispatcherOperation.cs" />
+    <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
+    <Compile Include="Threading\MainLoop.cs" />
+    <Compile Include="Threading\NGenerics\BinarySearchTreeBase.cs" />
+    <Compile Include="Threading\NGenerics\BinaryTree.cs" />
+    <Compile Include="Threading\NGenerics\ComparisonComparer.cs" />
+    <Compile Include="Threading\NGenerics\Constants.cs" />
+    <Compile Include="Threading\NGenerics\Guard.cs" />
+    <Compile Include="Threading\NGenerics\InOrderVisitor.cs" />
+    <Compile Include="Threading\NGenerics\IQueue.cs" />
+    <Compile Include="Threading\NGenerics\ISearchTree.cs" />
+    <Compile Include="Threading\NGenerics\ITree.cs" />
+    <Compile Include="Threading\NGenerics\IVisitor.cs" />
+    <Compile Include="Threading\NGenerics\KeyTrackingVisitor.cs" />
+    <Compile Include="Threading\NGenerics\KeyValuePairComparer.cs" />
+    <Compile Include="Threading\NGenerics\NodeColor.cs" />
+    <Compile Include="Threading\NGenerics\OrderedVisitor.cs" />
+    <Compile Include="Threading\NGenerics\PriorityQueue.cs" />
+    <Compile Include="Threading\NGenerics\PriorityQueueType.cs" />
+    <Compile Include="Threading\NGenerics\RedBlackTree.cs" />
+    <Compile Include="Threading\NGenerics\RedBlackTreeDictionary.cs" />
+    <Compile Include="Threading\NGenerics\RedBlackTreeList.cs" />
+    <Compile Include="Threading\NGenerics\RedBlackTreeNode.cs" />
+    <Compile Include="Threading\NGenerics\TrackingVisitor.cs" />
+    <Compile Include="Threading\NGenerics\ValueTrackingVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">

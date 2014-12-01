@@ -12,7 +12,7 @@ namespace Perspex.Threading
 
     public class DispatcherTimer
     {
-        private object timerHandle;
+        private IDisposable timer;
 
         private DispatcherPriority priority;
 
@@ -21,13 +21,13 @@ namespace Perspex.Threading
         public DispatcherTimer()
         {
             this.priority = DispatcherPriority.Normal;
-            this.Dispatcher = Dispatcher.CurrentDispatcher;
+            this.Dispatcher = Dispatcher.UIThread;
         }
 
         public DispatcherTimer(DispatcherPriority priority)
         {
             this.priority = priority;
-            this.Dispatcher = Dispatcher.CurrentDispatcher;
+            this.Dispatcher = Dispatcher.UIThread;
         }
 
         public DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher)
@@ -46,7 +46,7 @@ namespace Perspex.Threading
 
         ~DispatcherTimer()
         {
-            if (this.timerHandle != null)
+            if (this.timer != null)
             {
                 this.Stop();
             }
@@ -80,7 +80,7 @@ namespace Perspex.Threading
         {
             get
             {
-                return this.timerHandle != null;
+                return this.timer != null;
             }
             
             set
@@ -110,7 +110,7 @@ namespace Perspex.Threading
             if (!this.IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
-                this.timerHandle = threading.StartTimer(this.Interval, this.InternalTick);
+                this.timer = threading.StartTimer(this.Interval, this.InternalTick);
             }
         }
         
@@ -119,14 +119,14 @@ namespace Perspex.Threading
             if (this.IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
-                threading.KillTimer(this.timerHandle);
-                this.timerHandle = null;
+                this.timer.Dispose();
+                this.timer = null;
             }
         }
 
         private void InternalTick()
         {
-            this.Dispatcher.BeginInvoke(this.priority, (Action)this.RaiseTick);
+            this.Dispatcher.InvokeAsync(this.RaiseTick, this.priority);
         }
 
         private void RaiseTick()

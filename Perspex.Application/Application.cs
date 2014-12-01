@@ -7,6 +7,7 @@
 namespace Perspex
 {
     using System;
+    using System.Threading;
     using Perspex.Controls;
     using Perspex.Input;
     using Perspex.Styling;
@@ -86,9 +87,9 @@ namespace Perspex
 
         public void Run(ICloseable closable)
         {
-            DispatcherFrame frame = new DispatcherFrame();
-            closable.Closed += (s, e) => frame.Continue = false;
-            Dispatcher.PushFrame(frame);
+            var source = new CancellationTokenSource();
+            closable.Closed += (s, e) => source.Cancel();
+            Dispatcher.UIThread.MainLoop(source.Token);
         }
     }
 }

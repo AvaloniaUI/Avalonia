@@ -7,14 +7,28 @@
 namespace Perspex.Platform
 {
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Perspex.Threading;
 
     public interface IPlatformThreadingInterface
     {
-        Dispatcher GetThreadDispatcher();
+        /// <summary>
+        /// Process a single message from the windowing system, blocking until one is available.
+        /// </summary>
+        void ProcessMessage();
 
-        void KillTimer(object timerHandle);
+        /// <summary>
+        /// Starts a timer.
+        /// </summary>
+        /// <param name="interval">The interval.</param>
+        /// <param name="internalTick">The action to call on each tick.</param>
+        /// <returns>An <see cref="IDisposable"/> used to stop the timer.</returns>
+        IDisposable StartTimer(TimeSpan interval, Action internalTick);
 
-        object StartTimer(TimeSpan interval, Action internalTick);
+        /// <summary>
+        /// Sends a message that causes <see cref="ProcessMessage"/> to exit.
+        /// </summary>
+        void Wake();
     }
 }
