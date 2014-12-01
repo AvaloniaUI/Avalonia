@@ -7,21 +7,19 @@
 namespace Perspex.Win32
 {
     using System;
-    using System.Collections.Generic;
+    using System.Reactive.Disposables;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Threading;
     using Perspex.Win32.Input;
     using Perspex.Win32.Interop;
-    using Perspex.Win32.Threading;
     using Splat;
 
     public class Win32Platform : IPlatformThreadingInterface
     {
         private static Win32Platform instance = new Win32Platform();
-
-        private Dictionary<IntPtr, UnmanagedMethods.TimerProc> timerCallbacks =
-            new Dictionary<IntPtr, UnmanagedMethods.TimerProc>();
 
         public static void Initialize()
         {
@@ -30,19 +28,15 @@ namespace Perspex.Win32
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
 
-        public Dispatcher GetThreadDispatcher()
+        public void ProcessMessage()
         {
-            return WindowsDispatcher.GetThreadDispatcher();
+            UnmanagedMethods.MSG msg;
+            UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
+            UnmanagedMethods.TranslateMessage(ref msg);
+            UnmanagedMethods.DispatchMessage(ref msg);
         }
 
-
-        public void KillTimer(object handle)
-        {
-            this.timerCallbacks.Remove((IntPtr)handle);
-            UnmanagedMethods.KillTimer(IntPtr.Zero, (IntPtr)handle);
-        }
-
-        public object StartTimer(TimeSpan interval, Action callback)
+        public IDisposable StartTimer(TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate = (UnmanagedMethods.TimerProc)
                 ((hWnd, uMsg, nIDEvent, dwTime) => callback());
@@ -53,9 +47,19 @@ namespace Perspex.Win32
                 (uint)interval.TotalMilliseconds,
                 timerDelegate);
 
-            this.timerCallbacks.Add(handle, timerDelegate);
+            return Disposable.Create(() =>
+            {
+                UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
+            });
+        }
 
-            return handle;
+        public void Wake()
+        {
+            UnmanagedMethods.PostMessage(
+                IntPtr.Zero,
+                (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                IntPtr.Zero,
+                IntPtr.Zero);
         }
     }
 }

@@ -64,7 +64,6 @@
     <Compile Include="Input\KeyInterop.cs" />
     <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />
-    <Compile Include="Threading\WindowsDispatcher.cs" />
     <Compile Include="Interop\UnmanagedMethods.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -459,6 +459,9 @@ namespace Perspex.Win32.Interop
            IntPtr hInstance,
            IntPtr lpParam);
 
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool SetWindowText(IntPtr hwnd, String lpString);
+
         public struct MSG
         {
             public IntPtr hwnd;
@@ -498,6 +501,6 @@ namespace Perspex.Win32.Interop
             public string lpszMenuName;
             public string lpszClassName;
             public IntPtr hIconSm;
-        }
+        }      
     }
 }

@@ -1,102 +1,39 @@
 // -----------------------------------------------------------------------
 // <copyright file="Dispatcher.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Threading
 {
     using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Security;
     using System.Threading;
-    using Perspex.Platform;
-    using Splat;
+    using System.Threading.Tasks;
+    using Perspex.Win32.Threading;
 
-    public enum DispatcherPriority
+    public class Dispatcher
     {
-        Invalid = -1,
-        Inactive = 0,
-        SystemIdle = 1,
-        ApplicationIdle = 2,
-        ContextIdle = 3,
-        Background = 4,
-        Input = 5,
-        Loaded = 6,
-        Render = 7,
-        DataBind = 8,
-        Normal = 9,
-        Send = 10,
-    }
+        private static Dispatcher instance = new Dispatcher();
 
-    [Flags]
-    internal enum Flags
-    {
-        ShutdownStarted = 1,
-        Shutdown = 2,
-        Disabled = 4
-    }
+        private MainLoop mainLoop = new MainLoop();
 
-    public abstract class Dispatcher
-    {
-        private static DispatcherFrame mainExecutionFrame = new DispatcherFrame();
-
-        public static Dispatcher CurrentDispatcher
+        private Dispatcher()
         {
-            get { return Locator.Current.GetService<IPlatformThreadingInterface>().GetThreadDispatcher(); }
         }
 
-        public abstract bool HasShutdownFinished
+        public static Dispatcher UIThread
         {
-            get;
+            get { return instance; }
         }
 
-        public abstract DispatcherFrame CurrentFrame
+        public void MainLoop(CancellationToken cancellationToken)
         {
-            get;
-            set;
+            this.mainLoop.Run(cancellationToken);
         }
 
-        public static void PushFrame(DispatcherFrame frame)
+        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            if (frame == null)
-            {
-                throw new ArgumentNullException("frame");
-            }
-
-            Dispatcher dis = CurrentDispatcher;
-
-            if (dis.HasShutdownFinished)
-            {
-                throw new InvalidOperationException("The Dispatcher has shut down");
-            }
-
-            if (frame.Running != null)
-            {
-                throw new InvalidOperationException("Frame is already running on a different dispatcher");
-            }
-
-            frame.ParentFrame = dis.CurrentFrame;
-            dis.CurrentFrame = frame;
-
-            frame.Running = dis;
-
-            dis.RunFrame(frame);
+            return this.mainLoop.InvokeAsync(action, priority);
         }
-
-
-        public static void Run()
-        {
-            PushFrame(mainExecutionFrame);
-        }
-
-        public abstract DispatcherOperation BeginInvoke(Action method);
-
-        public abstract DispatcherOperation BeginInvoke(DispatcherPriority priority, Action method);
-
-        protected internal abstract void Reprioritize(DispatcherOperation op, DispatcherPriority oldpriority);
-
-        protected abstract void RunFrame(DispatcherFrame frame);
     }
 }
