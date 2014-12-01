@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Windows", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Win32", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
 EndProject
@@ -125,7 +125,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
-		{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{DABFD304-D6A4-4752-8123-C2CCF7AC7831} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 	EndGlobalSection
