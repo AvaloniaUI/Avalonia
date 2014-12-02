@@ -12,22 +12,17 @@ namespace Perspex.Gtk
     using Perspex.Platform;
     using Gtk = global::Gtk;
 
-    public class WindowImpl : IWindowImpl
+    public class WindowImpl : Gtk.Window, IWindowImpl
 	{
-		private Gtk.Window inner;
-
         private Window owner;
 
-		public WindowImpl ()
-		{
-            this.inner = new Gtk.Window(Gtk.WindowType.Toplevel);
-            this.inner.DefaultSize = new Gdk.Size(640, 480);
-            this.inner.FocusActivated += (s, a) => this.Activated();
-            this.inner.Destroyed += (s, a) => this.Closed();
-            this.inner.ConfigureEvent += (s, a) => this.Resized(new Size(a.Event.Width, a.Event.Height));
-            this.inner.ExposeEvent += (s, a) => this.Paint(a.Event.Area.ToPerspex(), GetHandle(a.Event.Window));
+        private IPlatformHandle windowHandle;
 
-            this.Handle = new PlatformHandle(this.inner.Handle, "GtkWindow");
+		public WindowImpl()
+            : base(Gtk.WindowType.Toplevel)
+		{
+            this.DefaultSize = new Gdk.Size(640, 480);
+            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
         }
 
         public Size ClientSize
@@ -36,15 +31,14 @@ namespace Perspex.Gtk
             {
                 int width;
                 int height;
-                this.inner.GetSize(out width, out height);
+                this.GetSize(out width, out height);
                 return new Size(width, height);
             }
         }
 
-        public IPlatformHandle Handle
+        IPlatformHandle IWindowImpl.Handle
         {
-            get;
-            private set;
+            get { return this.windowHandle; }
         }
 
         public Action Activated { get; set; }
@@ -59,7 +53,7 @@ namespace Perspex.Gtk
 
         public void Invalidate(Rect rect)
         {
-            this.inner.QueueDraw();
+            this.QueueDraw();
         }
 
         public void SetOwner(Window window)
@@ -69,12 +63,29 @@ namespace Perspex.Gtk
 
         public void SetTitle(string title)
         {
-            this.inner.Title = title;
+            this.Title = title;
         }
 
-        public void Show()
+        protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
         {
-            this.inner.Show();
+            this.Resized(new Size(evnt.Width, evnt.Height));
+            return true;
+        }
+
+        protected override void OnDestroyed()
+        {
+            this.Closed();
+        }
+
+        protected override bool OnExposeEvent(Gdk.EventExpose evnt)
+        {
+            this.Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
+            return true;
+        }
+
+        protected override void OnFocusActivated()
+        {
+            this.Activated();
         }
 
         private IPlatformHandle GetHandle(Gdk.Window window)
