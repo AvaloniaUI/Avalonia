@@ -1,29 +1,28 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Perspex.Base/Threading/MainLoop.cs">
-    <Files>
-      <File FileName="Perspex.Base/Threading/MainLoop.cs" Line="18" Column="18" />
-    </Files>
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="Perspex.Base" expanded="True">
-            <Node name="Threading" expanded="True">
-              <Node name="MainLoop.cs" selected="True" />
+          <Node name="Gtk" expanded="True">
+            <Node name="Perspex.Gtk" expanded="True">
+              <Node name="Input" expanded="True" />
+              <Node name="WindowImpl.cs" selected="True" />
             </Node>
+          </Node>
+          <Node name="Perspex.Base" expanded="True" />
+          <Node name="Perspex.Input" expanded="True">
+            <Node name="Raw" expanded="True" />
           </Node>
           <Node name="TestApplication-Mono" expanded="True" />
         </State>
-      </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/home/steven/projects/Perspex/Gtk/Perspex.Gtk/Window.cs" line="56" column="1" />
-      <Breakpoint file="/home/steven/projects/Perspex/Perspex.Base/Threading/MainLoop.cs" line="60" column="1" />
+      <Catchpoint exceptionName="System.Exception" includeSubclasses="True" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

@@ -40,6 +40,11 @@ namespace Perspex.Cairo
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
+            if (textService.Context == null)
+            {
+                textService.Context = GetPangoContext(handle);
+            }
+
             return new Renderer(handle, width, height);
         }
 
@@ -59,6 +64,20 @@ namespace Perspex.Cairo
         {
             ImageSurface result = new ImageSurface(fileName);
             return new BitmapImpl(result);
+        }
+
+        private Pango.Context GetPangoContext(IPlatformHandle handle)
+        {
+            switch (handle.HandleDescriptor)
+            {
+                case "GtkWindow":
+                    var window = GLib.Object.GetObject(handle.Handle) as Gtk.Window;
+                    return window.PangoContext;
+                default:
+                    throw new NotSupportedException(string.Format(
+                        "Don't know how to get a Pango Context from a '{0}'.",
+                        handle.HandleDescriptor));
+            }
         }
     }
 }

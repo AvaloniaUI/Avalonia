@@ -121,7 +121,11 @@ namespace Perspex.Cairo.Media
         /// <param name="text">The text.</param>
         public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
         {
-            // TODO: Implement
+            this.SetBrush(foreground);
+            this.context.MoveTo(rect.X, rect.Bottom);
+            this.context.SelectFontFace(text.FontFamilyName, (FontSlant)text.FontStyle, FontWeight.Normal);
+            this.context.SetFontSize(text.FontSize);
+            this.context.ShowText(text.Text);
         }
 
         /// <summary>
