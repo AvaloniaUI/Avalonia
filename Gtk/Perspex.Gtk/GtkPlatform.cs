@@ -24,8 +24,9 @@ namespace Perspex.Gtk
 		public static void Initialize()
 		{
 			var locator = Locator.CurrentMutable;
-			//locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
-			locator.Register(() => instance, typeof(IPlatformThreadingInterface));
+            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
+            //locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
+            locator.Register(() => instance, typeof(IPlatformThreadingInterface));
 		}
 
 		public void ProcessMessage ()

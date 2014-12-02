@@ -124,7 +124,7 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.Handle = new PlatformHandle(this.hwnd);
+            this.Handle = new PlatformHandle(this.hwnd, "HWND");
         }
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
@@ -197,18 +197,6 @@ namespace Perspex.Win32
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
-        }
-
-        private class PlatformHandle : IPlatformHandle
-        {
-            public PlatformHandle(IntPtr hwnd)
-            {
-                this.Handle = hwnd;
-            }
-
-            public IntPtr Handle { get; private set; }
-
-            public string HandleDescriptor { get { return "HWND"; } }
         }
     }
 }
