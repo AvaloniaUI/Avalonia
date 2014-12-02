@@ -8,11 +8,11 @@ namespace Perspex.Cairo.Media
 {
     using System;
     using System.Reactive.Disposables;
-    using global::Cairo;
     using Perspex.Media;
+    using Perspex.Platform;
+    using Splat;
+    using Cairo = global::Cairo;
     using IBitmap = Perspex.Media.Imaging.IBitmap;
-    using Matrix = Perspex.Matrix;
-    using CairoMatrix = global::Cairo.Matrix;
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -22,21 +22,27 @@ namespace Perspex.Cairo.Media
         /// <summary>
         /// The cairo context.
         /// </summary>
-        private Context context;
+        private Cairo.Context context;
 
         /// <summary>
         /// The cairo surface.
         /// </summary>
-        private Surface surface;
+        private Cairo.Surface surface;
+
+        /// <summary>
+        /// The text service.
+        /// </summary>
+        private TextService textService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
-        public DrawingContext(Surface surface)
+        public DrawingContext(Cairo.Surface surface)
         {
             this.surface = surface;
-            this.context = new Context(surface);
+            this.context = new Cairo.Context(surface);
+            this.textService = Locator.Current.GetService<TextService>() as TextService;
         }
 
         /// <summary>
@@ -47,6 +53,7 @@ namespace Perspex.Cairo.Media
         {
             this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
+            this.textService = Locator.Current.GetService<ITextService>() as TextService;
         }
 
         public Matrix CurrentTransform
@@ -121,11 +128,10 @@ namespace Perspex.Cairo.Media
         /// <param name="text">The text.</param>
         public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
         {
+            var layout = this.textService.CreateLayout(text);
             this.SetBrush(foreground);
-            this.context.MoveTo(rect.X, rect.Bottom);
-            this.context.SelectFontFace(text.FontFamilyName, (FontSlant)text.FontStyle, FontWeight.Normal);
-            this.context.SetFontSize(text.FontSize);
-            this.context.ShowText(text.Text);
+            this.context.MoveTo(rect.X, rect.Y);
+            Pango.CairoHelper.ShowLayout(this.context, layout);
         }
 
         /// <summary>
@@ -167,9 +173,9 @@ namespace Perspex.Cairo.Media
             });
         }
 
-        private static CairoMatrix Convert(Matrix m)
+        private static Cairo.Matrix Convert(Matrix m)
         {
-            return new CairoMatrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
+            return new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
         }
 
         private void SetBrush(Brush brush)

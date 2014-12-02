@@ -27,6 +27,23 @@ namespace Perspex.Cairo.Media
             internal set;
         }
 
+        public Pango.Layout CreateLayout(FormattedText text)
+        {
+            var layout = new Pango.Layout(this.Context)
+                {
+                    FontDescription = new Pango.FontDescription
+                        {
+                            Family = text.FontFamilyName,
+                            Size = Pango.Units.FromDouble(text.FontSize),
+                            Style = (Pango.Style)text.FontStyle,
+                        }
+                };
+
+            layout.SetText(text.Text);
+
+            return layout;
+        }
+
         public int GetCaretIndex(FormattedText text, Point point, Size constraint)
         {
             throw new NotImplementedException();
@@ -50,24 +67,7 @@ namespace Perspex.Cairo.Media
             Pango.Rectangle logicalRect;
             layout.GetExtents(out inkRect, out logicalRect);
 
-            return new Size(Pango.Units.ToDouble(inkRect.Width), Pango.Units.ToDouble(inkRect.Height));
-        }
-
-        private Pango.Layout CreateLayout(FormattedText text)
-        {
-            var layout = new Pango.Layout(this.Context)
-            {
-                FontDescription = new Pango.FontDescription
-                {
-                    Family = text.FontFamilyName,
-                    Size = Pango.Units.FromDouble(text.FontSize),
-                    Style = (Pango.Style)text.FontStyle,
-                }
-            };
-
-            layout.SetText(text.Text);
-
-            return layout;
+            return new Size(Pango.Units.ToDouble(logicalRect.Width), Pango.Units.ToDouble(logicalRect.Height));
         }
     }
 }
