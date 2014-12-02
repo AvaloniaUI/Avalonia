@@ -38,7 +38,7 @@ namespace Perspex.Cairo
             //return new BitmapImpl(imagingFactory, width, height);
         }
 
-        public IRenderer CreateRenderer(IntPtr handle, double width, double height)
+        public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
             return new Renderer(handle, width, height);
         }
