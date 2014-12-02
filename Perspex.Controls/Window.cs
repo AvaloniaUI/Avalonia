@@ -66,6 +66,7 @@ namespace Perspex.Controls
             this.impl.Activated += this.HandleActivated;
             this.impl.Closed += this.HandleClosed;
             this.impl.Input += this.HandleInput;
+            this.impl.Resized += this.HandleResized;
 
             Size clientSize = this.ClientSize = this.impl.ClientSize;
             this.dispatcher = Dispatcher.UIThread;
@@ -142,6 +143,14 @@ namespace Perspex.Controls
         private void HandleRenderNeeded()
         {
             this.dispatcher.InvokeAsync(this.RenderVisualTree, DispatcherPriority.Render);
+        }
+
+        private void HandleResized(object sender, RawSizeEventArgs e)
+        {
+            this.ClientSize = e.Size;
+            this.renderer.Resize((int)e.Size.Width, (int)e.Size.Height);
+            this.LayoutManager.ExecuteLayoutPass();
+            this.RenderVisualTree();
         }
 
         private void LayoutPass()
