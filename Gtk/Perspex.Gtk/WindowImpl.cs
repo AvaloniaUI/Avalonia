@@ -14,9 +14,9 @@ namespace Perspex.Gtk
 
     public class WindowImpl : Gtk.Window, IWindowImpl
 	{
-        private Window owner;
-
         private IPlatformHandle windowHandle;
+
+        private Size clientSize;
 
 		public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
@@ -27,13 +27,7 @@ namespace Perspex.Gtk
 
         public Size ClientSize
         {
-            get
-            {
-                int width;
-                int height;
-                this.GetSize(out width, out height);
-                return new Size(width, height);
-            }
+            get { return this.clientSize; }
         }
 
         IPlatformHandle IWindowImpl.Handle
@@ -58,7 +52,6 @@ namespace Perspex.Gtk
 
         public void SetOwner(Window window)
         {
-            this.owner = window;
         }
 
         public void SetTitle(string title)
@@ -68,7 +61,14 @@ namespace Perspex.Gtk
 
         protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
         {
-            this.Resized(new Size(evnt.Width, evnt.Height));
+            var newSize = new Size(evnt.Width, evnt.Height);
+
+            if (newSize != this.clientSize)
+            {
+                this.clientSize = newSize;
+                this.Resized(clientSize);
+            }
+
             return true;
         }
 
