@@ -60,7 +60,7 @@
     <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />
     <Compile Include="Interop\UnmanagedMethods.cs" />
-    <Compile Include="Window.cs" />
+    <Compile Include="WindowImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Win32Platform.cs" />
   </ItemGroup>

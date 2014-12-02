@@ -7,6 +7,7 @@
 namespace Perspex.Win32.Input
 {
     using System.Text;
+    using Perspex.Controls;
     using Perspex.Input;
     using Perspex.Win32.Interop;
 

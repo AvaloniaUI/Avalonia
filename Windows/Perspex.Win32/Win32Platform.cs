@@ -24,6 +24,7 @@ namespace Perspex.Win32
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }

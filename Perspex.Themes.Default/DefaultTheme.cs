@@ -25,6 +25,7 @@ namespace Perspex.Themes.Default
             this.Add(new TextBoxStyle());
             this.Add(new TreeViewStyle());
             this.Add(new TreeViewItemStyle());
+            this.Add(new WindowStyle());
         }
     }
 }

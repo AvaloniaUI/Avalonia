@@ -66,6 +66,7 @@
     <Compile Include="IPointerDevice.cs" />
     <Compile Include="Key.cs" />
     <Compile Include="KeyboardDevice.cs" />
+    <Compile Include="Raw\RawSizeEventArgs.cs" />
     <Compile Include="VectorEventArgs.cs" />
     <Compile Include="KeyEventArgs.cs" />
     <Compile Include="MouseDevice.cs" />

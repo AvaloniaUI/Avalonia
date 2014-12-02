@@ -8,15 +8,18 @@ namespace Perspex.Input.Raw
 {
     using System;
 
-    public class RawInputEventArgs : EventArgs
+    public class RawSizeEventArgs : EventArgs
     {
-        public RawInputEventArgs(IInputDevice device)
+        public RawSizeEventArgs(Size size)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-
-            this.Device = device;
+            this.Size = size;
         }
 
-        public IInputDevice Device { get; private set; }
+        public RawSizeEventArgs(double width, double height)
+        {
+            this.Size = new Size(width, height);
+        }
+
+        public Size Size { get; private set; }
     }
 }

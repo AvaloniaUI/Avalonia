@@ -17,7 +17,7 @@ namespace Perspex.Platform
 
         IStreamGeometryImpl CreateStreamGeometry();
 
-        IRenderer CreateRenderer(IntPtr handle, double width, double height);
+        IRenderer CreateRenderer(IPlatformHandle handle, double width, double height);
 
         IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height);
 

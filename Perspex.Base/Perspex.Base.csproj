@@ -45,6 +45,7 @@
     <Compile Include="PerspexObject.cs" />
     <Compile Include="PerspexProperty.cs" />
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />
+    <Compile Include="Platform\IPlatformHandle.cs" />
     <Compile Include="Platform\IPlatformThreadingInterface.cs" />
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

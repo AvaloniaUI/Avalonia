@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Window.cs" company="Steven Kirk">
+// <copyright file="WindowImpl.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -24,134 +24,58 @@ namespace Perspex.Win32
     using Perspex.Win32.Interop;
     using Splat;
 
-    public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable
+    public class WindowImpl : IWindowImpl
     {
-        public static readonly PerspexProperty<string> TitleProperty = PerspexProperty.Register<Window, string>("Title");
-
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
 
-        private Dispatcher dispatcher;
+        private IntPtr hwnd;
 
-        private IRenderer renderer;
+        private Window owner;
 
-        private IInputManager inputManager;
-
-        public Window()
+        public WindowImpl()
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-
             this.CreateWindow();
-            Size clientSize = this.ClientSize;
-            this.dispatcher = Dispatcher.UIThread;
-            this.LayoutManager = new LayoutManager(this);
-            this.RenderManager = new RenderManager();
-            this.renderer = factory.CreateRenderer(this.Handle, (int)clientSize.Width, (int)clientSize.Height);
-            this.inputManager = Locator.Current.GetService<IInputManager>();
-            this.Template = ControlTemplate.Create<Window>(this.DefaultTemplate);
-
-            this.LayoutManager.LayoutNeeded.Subscribe(x =>
-            {
-                this.dispatcher.InvokeAsync(
-                    () =>
-                    {
-                        this.LayoutManager.ExecuteLayoutPass();
-                        this.renderer.Render(this);
-                        this.RenderManager.RenderFinished();
-                    },
-                    DispatcherPriority.Render);
-            });
-
-            this.GetObservable(TitleProperty).Subscribe(s => UnmanagedMethods.SetWindowText(Handle, s));
-
-            this.RenderManager.RenderNeeded
-                .Where(_ => !this.LayoutManager.LayoutQueued)
-                .Subscribe(x =>
-            {
-                this.dispatcher.InvokeAsync(
-                    () =>
-                    {
-                        if (!this.LayoutManager.LayoutQueued)
-                        {
-                            this.renderer.Render(this);
-                            this.RenderManager.RenderFinished();
-                        }
-                    },
-                    DispatcherPriority.Render);
-            });
         }
 
         public event EventHandler Activated;
 
         public event EventHandler Closed;
 
-        public string Title
-        {
-            get { return this.GetValue(TitleProperty); }
-            set { this.SetValue(TitleProperty, value); }
-        }
+        public event EventHandler<RawInputEventArgs> Input;
+
+        public event EventHandler<RawSizeEventArgs> Resized;
 
         public Size ClientSize
         {
             get
             {
                 UnmanagedMethods.RECT rect;
-                UnmanagedMethods.GetClientRect(this.Handle, out rect);
+                UnmanagedMethods.GetClientRect(this.hwnd, out rect);
                 return new Size(rect.right, rect.bottom);
             }
         }
 
-        public IntPtr Handle
+        public IPlatformHandle Handle
         {
             get;
             private set;
         }
 
-        public ILayoutManager LayoutManager
+        public void SetOwner(Window owner)
         {
-            get;
-            private set;
+            this.owner = owner;
         }
 
-        public IRenderManager RenderManager
+        public void SetTitle(string title)
         {
-            get;
-            private set;
+            UnmanagedMethods.SetWindowText(this.hwnd, title);
         }
 
         public void Show()
         {
-            UnmanagedMethods.ShowWindow(this.Handle, 1);
-        }
-
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
-        {
-            if (e.Key == Key.F12)
-            {
-                Window window = new Window
-                {
-                    Content = new DevTools
-                    {
-                        Root = this,
-                    },
-                };
-
-                window.Show();
-            }
-        }
-
-        private Control DefaultTemplate(Window c)
-        {
-            Border border = new Border();
-            border.Background = new Perspex.Media.SolidColorBrush(0xffffffff);
-            ContentPresenter contentPresenter = new ContentPresenter();
-            contentPresenter.Bind(
-                ContentPresenter.ContentProperty, 
-                this.GetObservable(Window.ContentProperty),
-                BindingPriority.Style);
-            border.Content = contentPresenter;
-            return border;
+            UnmanagedMethods.ShowWindow(this.hwnd, 1);
         }
 
         private void CreateWindow()
@@ -181,7 +105,7 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.Handle = UnmanagedMethods.CreateWindowEx(
+            this.hwnd = UnmanagedMethods.CreateWindowEx(
                 0,
                 atom,
                 null,
@@ -195,36 +119,12 @@ namespace Perspex.Win32
                 IntPtr.Zero,
                 IntPtr.Zero);
 
-            if (this.Handle == IntPtr.Zero)
+            if (this.hwnd == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
-        }
 
-        private void OnActivated()
-        {
-            WindowsKeyboardDevice.Instance.WindowActivated(this);
-
-            if (this.Activated != null)
-            {
-                this.Activated(this, EventArgs.Empty);
-            }
-        }
-
-        private void OnResized(int width, int height)
-        {
-            this.renderer.Resize(width, height);
-            this.LayoutManager.ExecuteLayoutPass();
-            this.renderer.Render(this);
-            this.RenderManager.RenderFinished();
-        }
-
-        private void OnClosed()
-        {
-            if (this.Closed != null)
-            {
-                this.Closed(this, EventArgs.Empty);
-            }
+            this.Handle = new PlatformHandle(this.hwnd);
         }
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
@@ -237,11 +137,17 @@ namespace Perspex.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    this.OnActivated();
+                    if (this.Activated != null)
+                    {
+                        this.Activated(this, EventArgs.Empty);
+                    }
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    this.OnClosed();
+                    if (this.Closed != null)
+                    {
+                        this.Closed(this, EventArgs.Empty);
+                    }
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
@@ -255,39 +161,54 @@ namespace Perspex.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
-                        WindowsMouseDevice.Instance, 
-                        this, 
+                        WindowsMouseDevice.Instance,
+                        this.owner,
                         RawMouseEventType.LeftButtonDown,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                     e = new RawMouseEventArgs(
-                        WindowsMouseDevice.Instance, 
-                        this, 
+                        WindowsMouseDevice.Instance,
+                        this.owner,
                         RawMouseEventType.LeftButtonUp,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     e = new RawMouseEventArgs(
-                        WindowsMouseDevice.Instance, 
-                        this, 
+                        WindowsMouseDevice.Instance,
+                        this.owner,
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                    this.OnResized((int)lParam & 0xffff, (int)lParam >> 16);
+                    if (this.Resized != null)
+                    {
+                        this.Resized(this, new RawSizeEventArgs((int)lParam & 0xffff, (int)lParam >> 16));
+                    }
                     return IntPtr.Zero;
             }
 
-            if (e != null)
+            if (e != null && this.Input != null)
             {
-                this.inputManager.Process(e);
+                this.Input(this, e);
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private class PlatformHandle : IPlatformHandle
+        {
+            public PlatformHandle(IntPtr hwnd)
+            {
+                this.Handle = hwnd;
+            }
+
+            public IntPtr Handle { get; private set; }
+
+            public string HandleDescriptor { get { return "HWND"; } }
         }
     }
 }
