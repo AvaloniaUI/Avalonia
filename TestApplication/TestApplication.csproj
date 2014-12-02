@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PERSPEX_CAIRO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>true</Prefer32Bit>
@@ -34,18 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct2D1, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SharpDXPackageBinDir)\SharpDX.Direct2D1.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SharpDXPackageBinDir)\SharpDX.DXGI.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -88,10 +76,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cairo\Perspex.Cairo\Perspex.Cairo.csproj">
-      <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
-      <Name>Perspex.Cairo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Perspex.Application\Perspex.Application.csproj">
       <Project>{799A7BB5-3C2C-48B6-85A7-406A12C420DA}</Project>
       <Name>Perspex.Application</Name>
@@ -131,6 +115,14 @@
     <ProjectReference Include="..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Perspex.Themes.Default</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
+      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
+      <Name>Perspex.Direct2D1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Windows\Perspex.Win32\Perspex.Win32.csproj">
+      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
+      <Name>Perspex.Win32</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
