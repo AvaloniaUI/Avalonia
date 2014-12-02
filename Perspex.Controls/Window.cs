@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Reactive.Linq;
     using Perspex.Input;
+    using Perspex.Input.Raw;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Platform;
@@ -64,6 +65,7 @@ namespace Perspex.Controls
             this.impl.SetOwner(this);
             this.impl.Activated += this.HandleActivated;
             this.impl.Closed += this.HandleClosed;
+            this.impl.Input += this.HandleInput;
 
             Size clientSize = this.ClientSize = this.impl.ClientSize;
             this.dispatcher = Dispatcher.UIThread;
@@ -125,6 +127,11 @@ namespace Perspex.Controls
             {
                 this.Closed(this, EventArgs.Empty);
             }
+        }
+
+        private void HandleInput(object sender, RawInputEventArgs e)
+        {
+            this.inputManager.Process(e);
         }
 
         private void HandleLayoutNeeded()
