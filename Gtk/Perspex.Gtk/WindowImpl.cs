@@ -14,6 +14,8 @@ namespace Perspex.Gtk
 
     public class WindowImpl : Gtk.Window, IWindowImpl
 	{
+        private Window owner;
+
         private IPlatformHandle windowHandle;
 
         private Size clientSize;
@@ -22,6 +24,9 @@ namespace Perspex.Gtk
             : base(Gtk.WindowType.Toplevel)
 		{
             this.DefaultSize = new Gdk.Size(640, 480);
+            this.Events = Gdk.EventMask.PointerMotionMask | 
+                          Gdk.EventMask.ButtonPressMask | 
+                          Gdk.EventMask.ButtonReleaseMask;
             this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
         }
 
@@ -52,11 +57,34 @@ namespace Perspex.Gtk
 
         public void SetOwner(Window window)
         {
+            this.owner = window;
         }
 
         public void SetTitle(string title)
         {
             this.Title = title;
+        }
+
+        protected override bool OnButtonPressEvent(Gdk.EventButton evnt)
+        {
+            var e = new RawMouseEventArgs(
+                GtkMouseDevice.Instance,
+                this.owner,
+                RawMouseEventType.LeftButtonDown,
+                new Point(evnt.X, evnt.Y));
+            this.Input(e);
+            return true;
+        }
+
+        protected override bool OnButtonReleaseEvent(Gdk.EventButton evnt)
+        {
+            var e = new RawMouseEventArgs(
+                GtkMouseDevice.Instance,
+                this.owner,
+                RawMouseEventType.LeftButtonUp,
+                new Point(evnt.X, evnt.Y));
+            this.Input(e);
+            return true;
         }
 
         protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
@@ -77,6 +105,17 @@ namespace Perspex.Gtk
             this.Closed();
         }
 
+        protected override bool OnKeyPressEvent(Gdk.EventKey evnt)
+        {
+            var e = new RawKeyEventArgs(
+                GtkKeyboardDevice.Instance,
+                RawKeyEventType.KeyDown,
+                GtkKeyboardDevice.ConvertKey(evnt.Key),
+                "X");
+            this.Input(e);
+            return true;
+        }
+
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)
         {
             this.Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
@@ -86,6 +125,17 @@ namespace Perspex.Gtk
         protected override void OnFocusActivated()
         {
             this.Activated();
+        }
+
+        protected override bool OnMotionNotifyEvent(Gdk.EventMotion evnt)
+        {
+            var e = new RawMouseEventArgs(
+                GtkMouseDevice.Instance,
+                this.owner,
+                RawMouseEventType.Move,
+                new Point(evnt.X, evnt.Y));
+            this.Input(e);
+            return true;
         }
 
         private IPlatformHandle GetHandle(Gdk.Window window)

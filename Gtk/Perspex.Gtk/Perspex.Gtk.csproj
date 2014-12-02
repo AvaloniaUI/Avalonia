@@ -59,6 +59,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GtkPlatform.cs" />
     <Compile Include="WindowImpl.cs" />
+    <Compile Include="Input\GtkKeyboardDevice.cs" />
+    <Compile Include="Input\GtkMouseDevice.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -93,5 +95,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Input\" />
   </ItemGroup>
 </Project>
