@@ -21,11 +21,11 @@ namespace Perspex.Gtk
 		public WindowImpl ()
 		{
             this.inner = new Gtk.Window(Gtk.WindowType.Toplevel);
-
-            // TODO: Use ?. operator on these when it's available.
-            this.inner.FocusActivated += (s, a) => this.Activated.Invoke(this, EventArgs.Empty);
-            this.inner.Destroyed += (s, a) => this.Closed.Invoke(this, EventArgs.Empty);
-            this.inner.ConfigureEvent += (s, a) => this.Resized.Invoke(this, new RawSizeEventArgs(a.Event.Width, a.Event.Height));
+            this.inner.DefaultSize = new Gdk.Size(640, 480);
+            this.inner.FocusActivated += (s, a) => this.Activated();
+            this.inner.Destroyed += (s, a) => this.Closed();
+            this.inner.ConfigureEvent += (s, a) => this.Resized(new Size(a.Event.Width, a.Event.Height));
+            this.inner.ExposeEvent += (s, a) => this.Paint(a.Event.Area.ToPerspex(), GetHandle(a.Event.Window));
 
             this.Handle = new PlatformHandle(this.inner.Handle, "GtkWindow");
         }
@@ -47,13 +47,20 @@ namespace Perspex.Gtk
             private set;
         }
 
-        public event EventHandler Activated;
+        public Action Activated { get; set; }
 
-        public event EventHandler Closed;
+        public Action Closed { get; set; }
 
-        public event EventHandler<RawInputEventArgs> Input;
+        public Action<RawInputEventArgs> Input { get; set; }
 
-        public event EventHandler<RawSizeEventArgs> Resized;
+        public Action<Rect, IPlatformHandle> Paint { get; set; }
+
+        public Action<Size> Resized { get; set; }
+
+        public void Invalidate(Rect rect)
+        {
+            this.inner.QueueDraw();
+        }
 
         public void SetOwner(Window window)
         {
@@ -68,6 +75,11 @@ namespace Perspex.Gtk
         public void Show()
         {
             this.inner.Show();
+        }
+
+        private IPlatformHandle GetHandle(Gdk.Window window)
+        {
+            return new PlatformHandle(window.Handle, "GdkWindow");
         }
     }
 }

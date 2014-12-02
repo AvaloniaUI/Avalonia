@@ -19,11 +19,6 @@ namespace Perspex.Cairo
     public class Renderer : IRenderer
     {
         /// <summary>
-        /// The handle of the window to draw to.
-        /// </summary>
-        private IPlatformHandle handle;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
         /// </summary>
         /// <param name="handle">The window handle.</param>
@@ -31,17 +26,16 @@ namespace Perspex.Cairo
         /// <param name="height">The height of the window.</param>
         public Renderer(IPlatformHandle handle, double width, double height)
         {
-            this.handle = handle;
         }
 
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(IVisual visual)
+        /// <param name="handle">A handle to the drawable.</param>
+        public void Render(IVisual visual, IPlatformHandle handle)
         {
-            using (var surface = CreateSurface(this.handle))
-            using (DrawingContext context = new DrawingContext(surface))
+            using (DrawingContext context = CreateContext(handle))
             {
                 this.Render(visual, context);
             }
@@ -54,7 +48,7 @@ namespace Perspex.Cairo
         /// <param name="height">The new height.</param>
         public void Resize(int width, int height)
         {
-            // Don't need to do anything here as we create a new Win32Surface on each render.
+            // Don't need to do anything here.
         }
 
         [DllImport("user32.dll")]
@@ -65,14 +59,16 @@ namespace Perspex.Cairo
         /// </summary>
         /// <param name="handle">The platform-specific handle.</param>
         /// <returns>A surface.</returns>
-        private static Surface CreateSurface(IPlatformHandle handle)
+        private static DrawingContext CreateContext(IPlatformHandle handle)
         {
             switch (handle.HandleDescriptor)
             {
                 case "HWND":
-                    return new Win32Surface(GetDC(handle.Handle));
+                    return new DrawingContext(new Win32Surface(GetDC(handle.Handle)));
                 case "HDC":
-                    return new Win32Surface(handle.Handle);
+                    return new DrawingContext(new Win32Surface(handle.Handle));
+                case "GdkWindow":
+                    return new DrawingContext(new Gdk.Window(handle.Handle));
                 default:
                     throw new NotSupportedException(string.Format(
                         "Don't know how to create a Cairo renderer from a '{0}' handle",

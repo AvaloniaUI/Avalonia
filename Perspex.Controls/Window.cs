@@ -63,10 +63,11 @@ namespace Perspex.Controls
             }
 
             this.impl.SetOwner(this);
-            this.impl.Activated += this.HandleActivated;
-            this.impl.Closed += this.HandleClosed;
-            this.impl.Input += this.HandleInput;
-            this.impl.Resized += this.HandleResized;
+            this.impl.Activated = this.HandleActivated;
+            this.impl.Closed = this.HandleClosed;
+            this.impl.Input = this.HandleInput;
+            this.impl.Paint = this.HandlePaint;
+            this.impl.Resized = this.HandleResized;
 
             Size clientSize = this.ClientSize = this.impl.ClientSize;
             this.dispatcher = Dispatcher.UIThread;
@@ -114,7 +115,7 @@ namespace Perspex.Controls
             this.LayoutPass();
         }
 
-        private void HandleActivated(object sender, EventArgs e)
+        private void HandleActivated()
         {
             if (this.Activated != null)
             {
@@ -122,7 +123,7 @@ namespace Perspex.Controls
             }
         }
 
-        private void HandleClosed(object sender, EventArgs e)
+        private void HandleClosed()
         {
             if (this.Closed != null)
             {
@@ -130,7 +131,7 @@ namespace Perspex.Controls
             }
         }
 
-        private void HandleInput(object sender, RawInputEventArgs e)
+        private void HandleInput(RawInputEventArgs e)
         {
             this.inputManager.Process(e);
         }
@@ -145,27 +146,31 @@ namespace Perspex.Controls
             this.dispatcher.InvokeAsync(this.RenderVisualTree, DispatcherPriority.Render);
         }
 
-        private void HandleResized(object sender, RawSizeEventArgs e)
+        private void HandlePaint(Rect rect, IPlatformHandle handle)
         {
-            this.ClientSize = e.Size;
-            this.renderer.Resize((int)e.Size.Width, (int)e.Size.Height);
+            this.renderer.Render(this, handle);
+            this.RenderManager.RenderFinished();
+        }
+
+        private void HandleResized(Size size)
+        {
+            this.ClientSize = size;
+            this.renderer.Resize((int)size.Width, (int)size.Height);
             this.LayoutManager.ExecuteLayoutPass();
-            this.RenderVisualTree();
+            this.impl.Invalidate(new Rect(this.ClientSize));
         }
 
         private void LayoutPass()
         {
             this.LayoutManager.ExecuteLayoutPass();
-            this.renderer.Render(this);
-            this.RenderManager.RenderFinished();
+            this.impl.Invalidate(new Rect(this.ClientSize));
         }
 
         private void RenderVisualTree()
         {
             if (!this.LayoutManager.LayoutQueued)
             {
-                this.renderer.Render(this);
-                this.RenderManager.RenderFinished();
+                this.impl.Invalidate(new Rect(this.ClientSize));
             }
         }
     }

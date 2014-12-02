@@ -12,17 +12,21 @@ namespace Perspex.Platform
 
     public interface IWindowImpl
     {
-        event EventHandler Activated;
-
-        event EventHandler Closed;
-
-        event EventHandler<RawInputEventArgs> Input;
-
-        event EventHandler<RawSizeEventArgs> Resized;
-
         Size ClientSize { get; }
 
         IPlatformHandle Handle { get; }
+
+        Action Activated { get; set; }
+
+        Action Closed { get; set; }
+
+        Action<RawInputEventArgs> Input { get; set; }
+
+        Action<Rect, IPlatformHandle> Paint { get; set; }
+
+        Action<Size> Resized { get; set; }
+
+        void Invalidate(Rect rect);
 
         void SetTitle(string title);
 

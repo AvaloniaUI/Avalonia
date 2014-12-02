@@ -9,20 +9,12 @@ namespace Perspex.Win32
     using System;
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
-    using System.Reactive.Linq;
     using System.Runtime.InteropServices;
     using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Diagnostics;
-    using Perspex.Input;
     using Perspex.Input.Raw;
-    using Perspex.Layout;
     using Perspex.Platform;
-    using Perspex.Rendering;
-    using Perspex.Threading;
     using Perspex.Win32.Input;
     using Perspex.Win32.Interop;
-    using Splat;
 
     public class WindowImpl : IWindowImpl
     {
@@ -39,13 +31,15 @@ namespace Perspex.Win32
             this.CreateWindow();
         }
 
-        public event EventHandler Activated;
+        public Action Activated { get; set; }
 
-        public event EventHandler Closed;
+        public Action Closed { get; set; }
 
-        public event EventHandler<RawInputEventArgs> Input;
+        public Action<RawInputEventArgs> Input { get; set; }
 
-        public event EventHandler<RawSizeEventArgs> Resized;
+        public Action<Rect, IPlatformHandle> Paint { get; set; }
+
+        public Action<Size> Resized { get; set; }
 
         public Size ClientSize
         {
@@ -61,6 +55,20 @@ namespace Perspex.Win32
         {
             get;
             private set;
+        }
+
+        public void Invalidate(Rect rect)
+        {
+            this.Paint(rect, this.Handle);
+            //var r = new UnmanagedMethods.RECT
+            //{
+            //    left = (int)rect.X,
+            //    top = (int)rect.Y,
+            //    right = (int)rect.Right,
+            //    bottom = (int)rect.Bottom,
+            //};
+
+            //UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
         }
 
         public void SetOwner(Window owner)
@@ -137,17 +145,11 @@ namespace Perspex.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    if (this.Activated != null)
-                    {
-                        this.Activated(this, EventArgs.Empty);
-                    }
+                    this.Activated();
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    if (this.Closed != null)
-                    {
-                        this.Closed(this, EventArgs.Empty);
-                    }
+                    this.Closed();
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
@@ -183,17 +185,25 @@ namespace Perspex.Win32
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
+                // TODO: For some reason WM_PAINT getting called continuously - investigate.
+
+                //case UnmanagedMethods.WindowsMessage.WM_PAINT:
+                //    UnmanagedMethods.RECT r;
+                //    UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
+                //    this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top));
+                //    return IntPtr.Zero;
+
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     if (this.Resized != null)
                     {
-                        this.Resized(this, new RawSizeEventArgs((int)lParam & 0xffff, (int)lParam >> 16));
+                        this.Resized(new Size((int)lParam & 0xffff, (int)lParam >> 16));
                     }
                     return IntPtr.Zero;
             }
 
             if (e != null && this.Input != null)
             {
-                this.Input(this, e);
+                this.Input(e);
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
