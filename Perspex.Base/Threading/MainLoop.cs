@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Application.cs" company="Steven Kirk">
+// <copyright file="MainLoop.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -33,11 +33,11 @@ namespace Perspex.Win32.Threading
                 Job job;
 
                 // TODO: Dispatch windows messages in preference to lower priority jobs.
-                while (queue.Count > 0)
+                while (this.queue.Count > 0)
                 {
                     lock (this.queue)
                     {
-                        job = queue.Dequeue();
+                        job = this.queue.Dequeue();
                     }
 
                     try
@@ -59,7 +59,7 @@ namespace Perspex.Win32.Threading
         {
             var job = new Job(action);
 
-            lock (queue)
+            lock (this.queue)
             {
                 this.queue.Add(job, priority);
             }

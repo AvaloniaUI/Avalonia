@@ -1,27 +1,30 @@
-﻿<Properties>
+﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Gtk/Perspex.Gtk/Window.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Perspex.Base/Threading/MainLoop.cs">
     <Files>
-      <File FileName="Gtk/Perspex.Gtk/GtkPlatform.cs" Line="17" Column="17" />
-      <File FileName="TestApplication/App.cs" Line="16" Column="16" />
-      <File FileName="Gtk/Perspex.Gtk/Window.cs" Line="9" Column="9" />
-      <File FileName="Windows/Perspex.Win32/Window.cs" Line="79" Column="79" />
+      <File FileName="Perspex.Base/Threading/MainLoop.cs" Line="18" Column="18" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="Gtk" expanded="True">
-            <Node name="Perspex.Gtk" expanded="True">
-              <Node name="References" selected="True" />
+          <Node name="Perspex.Base" expanded="True">
+            <Node name="Threading" expanded="True">
+              <Node name="MainLoop.cs" selected="True" />
             </Node>
           </Node>
           <Node name="TestApplication-Mono" expanded="True" />
         </State>
       </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/home/steven/projects/Perspex/Gtk/Perspex.Gtk/Window.cs" line="56" column="1" />
+      <Breakpoint file="/home/steven/projects/Perspex/Perspex.Base/Threading/MainLoop.cs" line="60" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
