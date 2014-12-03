@@ -693,17 +693,18 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
+            PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(this, property, oldValue, newValue);
+            property.NotifyChanged(e);
+
             if (this.PropertyChanged != null)
             {
-                PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(this, property, oldValue, newValue);
-                property.NotifyChanged(e);
                 this.PropertyChanged(this, e);
             }
 
             if (this.inpcChanged != null)
             {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(property.Name);
-                this.inpcChanged(this, e);
+                PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
+                this.inpcChanged(this, e2);
             }
         }
     }

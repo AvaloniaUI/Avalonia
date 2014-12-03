@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.UnitTests
 {
     using System;
@@ -82,8 +83,22 @@ namespace Perspex.UnitTests
             Assert.AreEqual("Bar", target.GetDefaultValue<Class2>());
         }
 
+        [TestMethod]
+        public void Changed_Observable_Fired()
+        {
+            var target = new Class1();
+            bool fired = false;
+
+            Class1.FooProperty.Changed.Subscribe(x => fired = true);
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.IsTrue(fired);
+        }
+
         private class Class1 : PerspexObject
         {
+            public static readonly PerspexProperty<string> FooProperty = 
+                PerspexProperty.Register<Class1, string>("Foo");
         }
 
         private class Class2 : Class1
