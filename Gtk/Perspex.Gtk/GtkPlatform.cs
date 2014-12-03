@@ -8,6 +8,7 @@ namespace Perspex.Gtk
 {
 	using System;
 	using System.Reactive.Disposables;
+    using Perspex.Input;
 	using Perspex.Platform;
 	using Splat;
 	using Gtk = global::Gtk;
@@ -25,7 +26,7 @@ namespace Perspex.Gtk
 		{
 			var locator = Locator.CurrentMutable;
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
-            //locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
+            locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
 		}
 

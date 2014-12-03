@@ -49,15 +49,20 @@ namespace Perspex.Cairo.Media
             var layout = this.CreateLayout(text);
             int result;
             int trailing;
-            layout.XyToIndex((int)point.X, (int)point.Y, out result, out trailing);
-            return result;
+            return layout.XyToIndex(
+                Pango.Units.FromDouble(point.X), 
+                Pango.Units.FromDouble(point.Y), 
+                out result, 
+                out trailing) ? result : text.Text.Length;
         }
 
         public Point GetCaretPosition(FormattedText text, int caretIndex, Size constraint)
         {
+            // TODO: Rather than have this and GetLineHeights, might be best to just return 
+            // the rect if that's also possible in Direct2D backend.
             var layout = this.CreateLayout(text);
             var rect = layout.IndexToPos(caretIndex);
-            return new Point(rect.X, rect.Y);
+            return new Point(Pango.Units.ToDouble(rect.X), Pango.Units.ToDouble(rect.Y));
         }
 
         public double[] GetLineHeights(FormattedText text, Size constraint)

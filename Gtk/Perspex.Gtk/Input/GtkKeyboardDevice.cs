@@ -3,8 +3,10 @@
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
+
 namespace Perspex.Gtk
 {
+    using System;
     using Perspex.Input;
 
     public class GtkKeyboardDevice : KeyboardDevice
@@ -32,7 +34,25 @@ namespace Perspex.Gtk
 
         public static Perspex.Input.Key ConvertKey(Gdk.Key key)
         {
-            return Key.X;
+            // TODO: Don't use reflection for this! My eyes!!!
+            if (key == Gdk.Key.BackSpace)
+            {
+                return Perspex.Input.Key.Back;
+            }
+            else
+            {
+                var s = Enum.GetName(typeof(Gdk.Key), key);
+                Perspex.Input.Key result;
+
+                if (Enum.TryParse(s, true, out result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return Perspex.Input.Key.None;
+                }
+            }
         }
     }
 }

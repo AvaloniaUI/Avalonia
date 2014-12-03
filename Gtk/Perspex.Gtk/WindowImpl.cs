@@ -111,7 +111,7 @@ namespace Perspex.Gtk
                 GtkKeyboardDevice.Instance,
                 RawKeyEventType.KeyDown,
                 GtkKeyboardDevice.ConvertKey(evnt.Key),
-                "X");
+                new string((char)Gdk.Keyval.ToUnicode((uint)evnt.Key), 1));
             this.Input(e);
             return true;
         }
