@@ -3,6 +3,8 @@
 
 ...a next generation WPF?
 
+![](Docs/screen.png)
+
 ## Background ##
 
 As everyone who's involved in client-side .NET development knows, the past half decade have been a 
