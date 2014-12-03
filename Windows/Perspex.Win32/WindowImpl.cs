@@ -59,16 +59,15 @@ namespace Perspex.Win32
 
         public void Invalidate(Rect rect)
         {
-            this.Paint(rect, this.Handle);
-            //var r = new UnmanagedMethods.RECT
-            //{
-            //    left = (int)rect.X,
-            //    top = (int)rect.Y,
-            //    right = (int)rect.Right,
-            //    bottom = (int)rect.Bottom,
-            //};
+            var r = new UnmanagedMethods.RECT
+            {
+                left = (int)rect.X,
+                top = (int)rect.Y,
+                right = (int)rect.Right,
+                bottom = (int)rect.Bottom,
+            };
 
-            //UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
+            UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
         }
 
         public void SetOwner(Window owner)
@@ -185,13 +184,14 @@ namespace Perspex.Win32
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
                     break;
 
-                // TODO: For some reason WM_PAINT getting called continuously - investigate.
-
-                //case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                //    UnmanagedMethods.RECT r;
-                //    UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
-                //    this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top));
-                //    return IntPtr.Zero;
+                case UnmanagedMethods.WindowsMessage.WM_PAINT:
+                    UnmanagedMethods.RECT r;
+                    UnmanagedMethods.PAINTSTRUCT ps;
+                    UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
+                    UnmanagedMethods.BeginPaint(this.hwnd, out ps);
+                    this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
+                    UnmanagedMethods.EndPaint(this.hwnd, ref ps);
+                    return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     if (this.Resized != null)

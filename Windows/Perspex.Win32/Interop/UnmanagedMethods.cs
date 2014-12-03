@@ -378,6 +378,9 @@ namespace Perspex.Win32.Interop
         public static extern bool DestroyWindow(IntPtr hwnd);
 
         [DllImport("user32.dll")]
+        public static extern bool EndPaint(IntPtr hWnd, ref PAINTSTRUCT lpPaint);
+
+        [DllImport("user32.dll")]
         public static extern uint GetCaretBlinkTime();
 
         [DllImport("user32.dll")]
