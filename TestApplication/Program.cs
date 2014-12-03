@@ -138,6 +138,8 @@ namespace TestApplication
                 },
             };
 
+            DevTools.Attach(window);
+
             window.Show();
             Application.Current.Run(window);
         }

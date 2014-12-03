@@ -10,6 +10,8 @@ namespace Perspex.Diagnostics
     using System.Reactive.Linq;
     using Perspex.Diagnostics.ViewModels;
     using System;
+    using Perspex.Input;
+    using System.Reactive.Disposables;
 
     public class DevTools : Decorator
     {
@@ -77,6 +79,28 @@ namespace Perspex.Diagnostics
         {
             get { return this.GetValue(RootProperty); }
             set { this.SetValue(RootProperty, value); }
+        }
+
+        public static IDisposable Attach(Window w)
+        {
+            w.PreviewKeyDown += WindowPreviewKeyDown;
+            return Disposable.Create(() => w.PreviewKeyDown -= WindowPreviewKeyDown);
+        }
+
+        private static void WindowPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F12)
+            {
+                Window window = new Window
+                {
+                    Content = new DevTools
+                    {
+                        Root = (Window)sender,
+                    },
+                };
+
+                window.Show();
+            }
         }
 
         private static Control CreateDetailsView(ControlDetails i)
