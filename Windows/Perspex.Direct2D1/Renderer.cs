@@ -18,9 +18,6 @@ namespace Perspex.Direct2D1
     using Matrix = Perspex.Matrix;
     using Point = Perspex.Point;
 
-    /// <summary>
-    /// Renders a <see cref="Canvas"/>.
-    /// </summary>
     public class Renderer : IRenderer
     {
         /// <summary>
@@ -88,7 +85,8 @@ namespace Perspex.Direct2D1
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(IVisual visual)
+        /// <param name="handle">Unused.</param>
+        public void Render(IVisual visual, IPlatformHandle handle)
         {
             using (DrawingContext context = new DrawingContext(this.renderTarget, this.DirectWriteFactory))
             {

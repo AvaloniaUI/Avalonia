@@ -7,6 +7,7 @@
 namespace Perspex.Win32
 {
     using System;
+    using System.Collections.Generic;
     using System.Reactive.Disposables;
     using System.Threading;
     using System.Threading.Tasks;
@@ -21,9 +22,12 @@ namespace Perspex.Win32
     {
         private static Win32Platform instance = new Win32Platform();
 
+        private List<Delegate> delegates = new List<Delegate>();
+
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
@@ -47,8 +51,12 @@ namespace Perspex.Win32
                 (uint)interval.TotalMilliseconds,
                 timerDelegate);
 
+            // Prevent timerDelegate being garbage collected.
+            this.delegates.Add(timerDelegate);
+
             return Disposable.Create(() =>
             {
+                this.delegates.Remove(timerDelegate);
                 UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
             });
         }

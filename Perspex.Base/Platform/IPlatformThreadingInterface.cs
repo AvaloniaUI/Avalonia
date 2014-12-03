@@ -11,6 +11,9 @@ namespace Perspex.Platform
     using System.Threading.Tasks;
     using Perspex.Threading;
 
+	/// <summary>
+	/// Provides platform-specific services relating to threading.
+	/// </summary>
     public interface IPlatformThreadingInterface
     {
         /// <summary>
@@ -22,9 +25,9 @@ namespace Perspex.Platform
         /// Starts a timer.
         /// </summary>
         /// <param name="interval">The interval.</param>
-        /// <param name="internalTick">The action to call on each tick.</param>
+        /// <param name="tick">The action to call on each tick.</param>
         /// <returns>An <see cref="IDisposable"/> used to stop the timer.</returns>
-        IDisposable StartTimer(TimeSpan interval, Action internalTick);
+        IDisposable StartTimer(TimeSpan interval, Action tick);
 
         /// <summary>
         /// Sends a message that causes <see cref="ProcessMessage"/> to exit.

@@ -1,0 +1,29 @@
+﻿<Properties GitUserInfo="UsingGIT">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Gtk" expanded="True">
+            <Node name="Perspex.Gtk" expanded="True">
+              <Node name="Input" expanded="True" />
+              <Node name="WindowImpl.cs" selected="True" />
+            </Node>
+          </Node>
+          <Node name="Perspex.Base" expanded="True" />
+          <Node name="Perspex.Input" expanded="True">
+            <Node name="Raw" expanded="True" />
+          </Node>
+          <Node name="TestApplication-Mono" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/home/steven/projects/Perspex/Gtk/Perspex.Gtk/Window.cs" line="56" column="1" />
+      <Catchpoint exceptionName="System.Exception" includeSubclasses="True" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

@@ -605,10 +605,10 @@ namespace Perspex.Controls
             // we need to count the number of stars instead.
             for (int i = start; i <= end; i++) 
             {
-                double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
+				double segmentSize = desiredSize ? (matrix[i, i].DesiredSize) : matrix[i, i].OfferedSize;
                 if (segmentSize < matrix[i, i].Max)
                 {
-                    count += type == GridUnitType.Star ? matrix[i, i].Stars : 1;
+					count += type == GridUnitType.Star ? (matrix[i, i].Stars) : 1;
                 }
             }
 
@@ -620,7 +620,7 @@ namespace Perspex.Controls
 
                 for (int i = start; i <= end; i++) 
                 {
-                    double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
+					double segmentSize = desiredSize ? (matrix[i, i].DesiredSize) : matrix[i, i].OfferedSize;
 
                     if (!(matrix[i, i].Type == type && segmentSize < matrix[i, i].Max))
                     {
@@ -628,7 +628,7 @@ namespace Perspex.Controls
                     }
 
                     double newsize = segmentSize;
-                    newsize += contribution * (type == GridUnitType.Star ? matrix[i, i].Stars : 1);
+					newsize += contribution * (type == GridUnitType.Star ? (matrix[i, i].Stars) : 1);
                     newsize = Math.Min(newsize, matrix[i, i].Max);
                     assigned |= newsize > segmentSize;
                     size -= newsize - segmentSize;

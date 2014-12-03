@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -70,10 +70,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="PriorityValueTests.cs" />
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
+    <Compile Include="PriorityValueTEsts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -14,7 +14,8 @@ namespace Perspex.Platform
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        void Render(IVisual visual);
+        /// <param name="handle">An optional platform-specific handle.</param>
+        void Render(IVisual visual, IPlatformHandle handle);
 
         /// <summary>
         /// Resizes the rendered viewport.

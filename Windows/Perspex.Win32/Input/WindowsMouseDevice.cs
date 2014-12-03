@@ -19,7 +19,7 @@ namespace Perspex.Win32.Input
             get { return instance; }
         }
 
-        public Window CurrentWindow
+        public WindowImpl CurrentWindow
         {
             get;
             set;
@@ -35,7 +35,7 @@ namespace Perspex.Win32.Input
         {
             UnmanagedMethods.POINT p;
             UnmanagedMethods.GetCursorPos(out p);
-            UnmanagedMethods.ScreenToClient(this.CurrentWindow.Handle, ref p);
+            UnmanagedMethods.ScreenToClient(this.CurrentWindow.Handle.Handle, ref p);
             return new Point(p.X, p.Y);
         }
     }
