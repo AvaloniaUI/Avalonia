@@ -185,12 +185,16 @@ namespace Perspex.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    UnmanagedMethods.RECT r;
                     UnmanagedMethods.PAINTSTRUCT ps;
-                    UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
-                    UnmanagedMethods.BeginPaint(this.hwnd, out ps);
-                    this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
-                    UnmanagedMethods.EndPaint(this.hwnd, ref ps);
+
+                    if (UnmanagedMethods.BeginPaint(this.hwnd, out ps) != IntPtr.Zero)
+                    {
+                        UnmanagedMethods.RECT r;
+                        UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
+                        this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
+                        UnmanagedMethods.EndPaint(this.hwnd, ref ps);
+                    }
+
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
