@@ -29,7 +29,7 @@ namespace Perspex.Cairo
 
         public ITextService TextService
         {
-            get { /*return textService;*/ throw new NotImplementedException(); }
+            get { return textService; }
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
@@ -51,13 +51,11 @@ namespace Perspex.Cairo
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
             throw new NotImplementedException();
-            //return new RenderTargetBitmapImpl(imagingFactory, d2d1Factory, width, height);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()
         {
-            throw new NotImplementedException();
-            //return new StreamGeometryImpl();
+            return new StreamGeometryImpl();
         }
 
         public IBitmapImpl LoadBitmap(string fileName)

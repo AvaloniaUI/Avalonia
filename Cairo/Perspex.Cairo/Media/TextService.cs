@@ -46,17 +46,31 @@ namespace Perspex.Cairo.Media
 
         public int GetCaretIndex(FormattedText text, Point point, Size constraint)
         {
-            throw new NotImplementedException();
+            var layout = this.CreateLayout(text);
+            int result;
+            int trailing;
+            layout.XyToIndex((int)point.X, (int)point.Y, out result, out trailing);
+            return result;
         }
 
         public Point GetCaretPosition(FormattedText text, int caretIndex, Size constraint)
         {
-            throw new NotImplementedException();
+            var layout = this.CreateLayout(text);
+            var rect = layout.IndexToPos(caretIndex);
+            return new Point(rect.X, rect.Y);
         }
 
         public double[] GetLineHeights(FormattedText text, Size constraint)
         {
-            throw new NotImplementedException();
+            var layout = this.CreateLayout(text);
+            var lines = layout.Lines;
+            return lines.Select(x =>
+            {
+                var inkRect = new Pango.Rectangle();
+                var logicalRect = new Pango.Rectangle();
+                x.GetExtents(ref inkRect, ref logicalRect);
+                return (double)logicalRect.Height;
+                }).ToArray();
         }
 
         public Size Measure(FormattedText text, Size constraint)

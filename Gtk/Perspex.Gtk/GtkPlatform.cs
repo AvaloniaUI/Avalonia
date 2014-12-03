@@ -34,9 +34,16 @@ namespace Perspex.Gtk
 			Gtk.Application.RunIteration();
 		}
 
-		public IDisposable StartTimer (TimeSpan interval, Action internalTick)
+		public IDisposable StartTimer (TimeSpan interval, Action tick)
 		{
-			return Disposable.Empty;
+            var result = true;
+            var handle = GLib.Timeout.Add((uint)interval.TotalMilliseconds, () =>
+            {
+                tick();
+                return result;
+            });
+
+            return Disposable.Create(() => result = false);
 		}
 
 		public void Wake ()

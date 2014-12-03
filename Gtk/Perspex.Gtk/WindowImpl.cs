@@ -129,11 +129,15 @@ namespace Perspex.Gtk
 
         protected override bool OnMotionNotifyEvent(Gdk.EventMotion evnt)
         {
+            var position = new Point(evnt.X, evnt.Y);
+
+            GtkMouseDevice.Instance.SetClientPosition(position);
+
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 this.owner,
                 RawMouseEventType.Move,
-                new Point(evnt.X, evnt.Y));
+                position);
             this.Input(e);
             return true;
         }

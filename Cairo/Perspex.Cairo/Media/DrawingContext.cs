@@ -44,6 +44,7 @@ namespace Perspex.Cairo.Media
             this.surface = surface;
             this.context = new Cairo.Context(surface);
             this.textService = Locator.Current.GetService<TextService>() as TextService;
+            this.CurrentTransform = Matrix.Identity;
         }
 
         /// <summary>
@@ -55,12 +56,13 @@ namespace Perspex.Cairo.Media
             this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
             this.textService = Locator.Current.GetService<ITextService>() as TextService;
+            this.CurrentTransform = Matrix.Identity;
         }
 
         public Matrix CurrentTransform
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get;
+            private set;
         }
 
         public Gdk.Drawable Drawable
@@ -85,9 +87,16 @@ namespace Perspex.Cairo.Media
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
             var impl = bitmap.PlatformImpl as BitmapImpl;
-            this.context.SetSourceSurface(impl.Surface, 0, 0);
+            var size = new Size(impl.PixelWidth, impl.PixelHeight);
+            var scaleX = destRect.Size.Width / sourceRect.Size.Width;
+            var scaleY = destRect.Size.Height / sourceRect.Size.Height;
+
+            this.context.Save();
+            this.context.Scale(scaleX, scaleY);
+            this.context.SetSourceSurface(impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
             this.context.Rectangle(destRect.ToCairo());
             this.context.Fill();
+            this.context.Restore();
         }
 
         /// <summary>
@@ -98,7 +107,11 @@ namespace Perspex.Cairo.Media
         /// <param name="p1">The second point of the line.</param>
         public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
         {
-            throw new NotImplementedException();
+            this.SetBrush(pen.Brush);
+            this.context.LineWidth = pen.Thickness;
+            this.context.MoveTo(p1.ToCairo());
+            this.context.LineTo(p2.ToCairo());
+            this.context.Stroke();
         }
 
         /// <summary>
@@ -109,7 +122,7 @@ namespace Perspex.Cairo.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
-            throw new NotImplementedException();
+            // TODO: Implement
         }
 
         /// <summary>
@@ -173,8 +186,13 @@ namespace Perspex.Cairo.Media
         {
             this.context.Save();
             this.context.Transform(matrix.ToCairo());
+            this.CurrentTransform *= matrix;
 
-            return Disposable.Create(() => this.context.Restore());
+            return Disposable.Create(() => 
+            {
+                this.context.Restore();
+                this.CurrentTransform *= matrix.Invert();
+            });
         }
 
         private void SetBrush(Brush brush)

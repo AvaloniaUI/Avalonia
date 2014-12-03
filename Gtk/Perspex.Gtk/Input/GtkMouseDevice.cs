@@ -11,6 +11,8 @@ namespace Perspex.Gtk
     {
         private static GtkMouseDevice instance;
 
+        private Point clientPosition;
+
         static GtkMouseDevice()
         {
             instance = new GtkMouseDevice();
@@ -25,9 +27,14 @@ namespace Perspex.Gtk
             get { return instance; }
         }
 
+        internal void SetClientPosition(Point p)
+        {
+            this.clientPosition = p;
+        }
+
         protected override Point GetClientPosition()
         {
-            throw new System.NotImplementedException();
+            return this.clientPosition;
         }
     }
 }
