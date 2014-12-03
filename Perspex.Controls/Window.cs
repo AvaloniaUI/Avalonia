@@ -18,7 +18,7 @@ namespace Perspex.Controls
     using Perspex.Threading;
     using Splat;
 
-    public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable
+    public class Window : ContentControl, ILayoutRoot, IRenderRoot, ICloseable, IFocusScope
     {
         public static readonly PerspexProperty<Size> ClientSizeProperty =
             PerspexProperty.Register<Window, Size>("ClientSize");
@@ -121,6 +121,8 @@ namespace Perspex.Controls
             {
                 this.Activated(this, EventArgs.Empty);
             }
+
+            FocusManager.Instance.SetFocusScope(this);
         }
 
         private void HandleClosed()

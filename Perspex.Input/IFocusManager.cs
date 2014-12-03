@@ -16,6 +16,18 @@ namespace Perspex.Input
     {
         IInputElement Current { get; }
 
+        IFocusScope Scope { get; }
+
         void Focus(IInputElement focusable);
+
+        /// <summary>
+        /// Notifies the focus manager of a change in focus scope.
+        /// </summary>
+        /// <param name="scope">The new focus scope.</param>
+        /// <remarks>
+        /// This should not be called by client code. It is called by an <see cref="IFocusScope"/>
+        /// when it activates, e.g. when a Window is activated.
+        /// </remarks>
+        void SetFocusScope(IFocusScope scope);
     }
 }
