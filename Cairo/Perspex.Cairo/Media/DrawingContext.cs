@@ -3,6 +3,7 @@
 // Copyright 2013 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
+using Perspex.Cairo.Media.Imaging;
 
 namespace Perspex.Cairo.Media
 {
@@ -83,7 +84,10 @@ namespace Perspex.Cairo.Media
 
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
-            throw new NotImplementedException();
+            var impl = bitmap.PlatformImpl as BitmapImpl;
+            this.context.SetSourceSurface(impl.Surface, 0, 0);
+            this.context.Rectangle(destRect.ToCairo());
+            this.context.Fill();
         }
 
         /// <summary>
@@ -116,7 +120,7 @@ namespace Perspex.Cairo.Media
         public void DrawRectange(Pen pen, Rect rect)
         {
             this.SetPen(pen);
-            this.context.Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+            this.context.Rectangle(rect.ToCairo());
             this.context.Stroke();
         }
 
@@ -142,7 +146,7 @@ namespace Perspex.Cairo.Media
         public void FillRectange(Perspex.Media.Brush brush, Rect rect)
         {
             this.SetBrush(brush);
-            this.context.Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+            this.context.Rectangle(rect.ToCairo());
             this.context.Fill();
         }
 
@@ -153,7 +157,11 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
-            return Disposable.Empty;
+            this.context.Save();
+            this.context.Rectangle(clip.ToCairo());
+            this.context.Clip();
+
+            return Disposable.Create(() => this.context.Restore());
         }
 
         /// <summary>
@@ -163,19 +171,10 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            var m = Convert(matrix);
-            this.context.Transform(m);
+            this.context.Save();
+            this.context.Transform(matrix.ToCairo());
 
-            return Disposable.Create(() =>
-            {
-                m.Invert();
-                this.context.Transform(m);
-            });
-        }
-
-        private static Cairo.Matrix Convert(Matrix m)
-        {
-            return new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
+            return Disposable.Create(() => this.context.Restore());
         }
 
         private void SetBrush(Brush brush)

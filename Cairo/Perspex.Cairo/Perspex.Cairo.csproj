@@ -70,6 +70,7 @@
     <Compile Include="Media\TextService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Renderer.cs" />
+    <Compile Include="CairoExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">

@@ -7,26 +7,31 @@
 namespace Perspex.Cairo.Media.Imaging
 {
     using System;
-    using global::Cairo;
     using Perspex.Platform;
+    using Cairo = global::Cairo;
 
     public class BitmapImpl : IBitmapImpl
     {
-        private ImageSurface surface;
 
-        public BitmapImpl(ImageSurface surface)
+        public BitmapImpl(Cairo.ImageSurface surface)
         {
-            this.surface = surface;
+            this.Surface = surface;
         }
 
         public int PixelWidth
         {
-            get { return this.surface.Width; }
+            get { return this.Surface.Width; }
         }
 
         public int PixelHeight
         {
-            get { return this.surface.Height; }
+            get { return this.Surface.Height; }
+        }
+
+        public Cairo.ImageSurface Surface
+        {
+            get;
+            private set;
         }
 
         public void Save(string fileName)
