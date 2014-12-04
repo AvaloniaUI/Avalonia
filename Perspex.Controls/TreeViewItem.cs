@@ -19,16 +19,16 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
-        TreeView treeView;
+        private TreeView treeView;
 
         static TreeViewItem()
         {
-            PseudoClass(IsSelectedProperty, ":selected");
+            Control.PseudoClass(IsSelectedProperty, ":selected");
         }
 
         public TreeViewItem()
         {
-            AffectsRender(IsSelectedProperty);
+            Control.AffectsRender(IsSelectedProperty);
         }
 
         public bool IsExpanded

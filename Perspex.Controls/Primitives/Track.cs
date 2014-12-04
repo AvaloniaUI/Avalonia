@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Thumb.cs" company="Steven Kirk">
+// <copyright file="Track.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -30,6 +30,14 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<Thumb> ThumbProperty =
             PerspexProperty.Register<Track, Thumb>("Thumb");
 
+        static Track()
+        {
+            Control.AffectsArrange(MinimumProperty);
+            Control.AffectsArrange(MaximumProperty);
+            Control.AffectsArrange(ValueProperty);
+            Control.AffectsMeasure(OrientationProperty);
+        }
+
         public Track()
         {
             this.GetObservableWithHistory(ThumbProperty).Subscribe(val =>
@@ -47,11 +55,6 @@ namespace Perspex.Controls.Primitives
                     this.AddVisualChild(val.Item2);
                 }
             });
-
-            AffectsArrange(MinimumProperty);
-            AffectsArrange(MaximumProperty);
-            AffectsArrange(ValueProperty);
-            AffectsMeasure(OrientationProperty);
         }
 
         public double Minimum

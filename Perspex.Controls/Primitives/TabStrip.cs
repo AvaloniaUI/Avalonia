@@ -37,7 +37,7 @@ namespace Perspex.Controls.Primitives
                 result = new TypedItemContainerGenerator<TabItem>(this);
             }
 
-            result.StateChanged += ItemsContainerGeneratorStateChanged;
+            result.StateChanged += this.ItemsContainerGeneratorStateChanged;
 
             return result;
         }

@@ -21,7 +21,7 @@ namespace Perspex.Controls.Primitives
         public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
             RoutedEvent.Register<Thumb, VectorEventArgs>("DragCompleted", RoutingStrategy.Bubble);
 
-        Point? lastPoint;
+        private Point? lastPoint;
 
         public Thumb()
         {

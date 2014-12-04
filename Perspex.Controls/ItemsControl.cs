@@ -15,14 +15,14 @@ namespace Perspex.Controls
 
     public class ItemsControl : TemplatedControl
     {
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Vertical });
-
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
 
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
+
+        private static readonly ItemsPanelTemplate DefaultPanel =
+            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Vertical });
 
         private ItemContainerGenerator itemContainerGenerator;
 
@@ -44,11 +44,6 @@ namespace Perspex.Controls
             }
         }
 
-        protected virtual ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator(this);
-        }
-
         public IEnumerable Items
         {
             get { return this.GetValue(ItemsProperty); }
@@ -61,13 +56,18 @@ namespace Perspex.Controls
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
+        protected virtual ItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator(this);
+        }
+
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)
         {
             INotifyPropertyChanged inpc = value.Item1 as INotifyPropertyChanged;
 
             if (inpc != null)
             {
-                inpc.PropertyChanged -= ItemsPropertyChanged;
+                inpc.PropertyChanged -= this.ItemsPropertyChanged;
             }
 
             if (value.Item2 == null || !value.Item2.OfType<object>().Any())
@@ -83,7 +83,7 @@ namespace Perspex.Controls
 
             if (inpc != null)
             {
-                inpc.PropertyChanged += ItemsPropertyChanged;
+                inpc.PropertyChanged += this.ItemsPropertyChanged;
             }
         }
 

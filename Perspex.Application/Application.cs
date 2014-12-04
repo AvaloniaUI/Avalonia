@@ -76,6 +76,13 @@ namespace Perspex
             private set;
         }
 
+        public void Run(ICloseable closable)
+        {
+            var source = new CancellationTokenSource();
+            closable.Closed += (s, e) => source.Cancel();
+            Dispatcher.UIThread.MainLoop(source.Token);
+        }
+
         protected virtual void RegisterServices()
         {
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
@@ -83,13 +90,6 @@ namespace Perspex
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
-        }
-
-        public void Run(ICloseable closable)
-        {
-            var source = new CancellationTokenSource();
-            closable.Closed += (s, e) => source.Cancel();
-            Dispatcher.UIThread.MainLoop(source.Token);
         }
     }
 }

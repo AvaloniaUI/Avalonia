@@ -34,10 +34,6 @@ namespace Perspex.Controls
 
         private IInputManager inputManager;
 
-        public event EventHandler Activated;
-
-        public event EventHandler Closed;
-
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
@@ -84,6 +80,10 @@ namespace Perspex.Controls
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
         }
+
+        public event EventHandler Activated;
+
+        public event EventHandler Closed;
 
         public Size ClientSize
         {

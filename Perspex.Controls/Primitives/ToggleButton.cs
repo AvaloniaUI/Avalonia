@@ -15,7 +15,7 @@ namespace Perspex.Controls.Primitives
 
         static ToggleButton()
         {
-            PseudoClass(IsCheckedProperty, ":checked");
+            Control.PseudoClass(IsCheckedProperty, ":checked");
         }
 
         public ToggleButton()

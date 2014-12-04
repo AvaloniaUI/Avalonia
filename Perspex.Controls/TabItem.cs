@@ -15,8 +15,8 @@ namespace Perspex.Controls
 
         static TabItem()
         {
-            AffectsRender(IsSelectedProperty);
-            PseudoClass(IsSelectedProperty, ":selected");
+            Control.AffectsRender(IsSelectedProperty);
+            Control.PseudoClass(IsSelectedProperty, ":selected");
         }
 
         public bool IsSelected

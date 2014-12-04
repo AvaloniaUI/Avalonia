@@ -27,7 +27,7 @@ namespace Perspex.Controls
 
         static TextBlock()
         {
-            AffectsMeasure(TextProperty);
+            Control.AffectsMeasure(TextProperty);
         }
 
         public string Text

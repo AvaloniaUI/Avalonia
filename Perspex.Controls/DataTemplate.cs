@@ -33,25 +33,25 @@ namespace Perspex.Controls
             this.Build = build;
         }
 
+        public Func<object, bool> Match { get; private set; }
+
+        public Func<object, Control> Build { get; private set; }
+
         public static bool IsInstance(object o, Type t)
         {
             return t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
         }
-
-        public Func<object, bool> Match { get; private set; }
-
-        public Func<object, Control> Build { get; private set; }
     }
 
     public class DataTemplate<T> : DataTemplate
     {
         public DataTemplate(Func<T, Control> build)
-            : base(typeof(T), Cast(build))
+            : base(typeof(T), DataTemplate<T>.Cast(build))
         {
         }
 
         public DataTemplate(Func<T, bool> match, Func<T, Control> build)
-            : base(CastMatch(match), Cast(build))
+            : base(CastMatch(match), DataTemplate<T>.Cast(build))
         {
         }
 

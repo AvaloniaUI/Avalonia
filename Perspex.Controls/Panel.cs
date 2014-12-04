@@ -24,7 +24,7 @@ namespace Perspex.Controls
                 if (this.children == null)
                 {
                     this.children = new Controls();
-                    this.children.CollectionChanged += ChildrenChanged;
+                    this.children.CollectionChanged += this.ChildrenChanged;
                 }
 
                 return this.children;
@@ -38,7 +38,7 @@ namespace Perspex.Controls
                 {
                     if (this.children != null)
                     {
-                        this.children.CollectionChanged -= ChildrenChanged;
+                        this.children.CollectionChanged -= this.ChildrenChanged;
                     }
 
                     this.children = value;
@@ -46,7 +46,7 @@ namespace Perspex.Controls
 
                     if (this.children != null)
                     {
-                        this.children.CollectionChanged += ChildrenChanged;
+                        this.children.CollectionChanged += this.ChildrenChanged;
                         this.AddVisualChildren(value);
                         this.InvalidateMeasure();
                     }

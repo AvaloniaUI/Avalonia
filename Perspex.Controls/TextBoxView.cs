@@ -61,14 +61,6 @@ namespace Perspex.Controls
             this.InvalidateMeasure();
         }
 
-        internal void CaretMoved()
-        {
-            this.caretBlink = true;
-            this.caretTimer.Stop();
-            this.caretTimer.Start();
-            this.InvalidateVisual();
-        }
-
         public override void Render(IDrawingContext context)
         {
             Rect rect = new Rect(this.ActualSize);
@@ -93,6 +85,14 @@ namespace Perspex.Controls
                         new Point(caretPos.X, caretPos.Y + lineHeights[0]));
                 }
             }
+        }
+
+        internal void CaretMoved()
+        {
+            this.caretBlink = true;
+            this.caretTimer.Stop();
+            this.caretTimer.Start();
+            this.InvalidateVisual();
         }
 
         protected override Size MeasureOverride(Size constraint)

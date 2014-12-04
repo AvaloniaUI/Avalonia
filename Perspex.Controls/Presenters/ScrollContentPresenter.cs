@@ -9,20 +9,20 @@ namespace Perspex.Controls.Presenters
     using System.Linq;
     using Perspex.Layout;
 
-    public class ScrollContentPresenter :  ContentPresenter
+    public class ScrollContentPresenter : ContentPresenter
     {
-        public static PerspexProperty<Size> ExtentProperty =
+        public static readonly PerspexProperty<Size> ExtentProperty =
             ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>();
 
-        public static PerspexProperty<Vector> OffsetProperty =
+        public static readonly PerspexProperty<Vector> OffsetProperty =
             ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>();
 
-        public static PerspexProperty<Size> ViewportProperty =
+        public static readonly PerspexProperty<Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>();
 
         public ScrollContentPresenter()
         {
-            AffectsRender(OffsetProperty);
+            Control.AffectsRender(OffsetProperty);
         }
 
         public Size Extent

@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ItemsControl.cs" company="Steven Kirk">
+// <copyright file="ItemsPresenter.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -51,8 +51,8 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            panel.Measure(availableSize);
-            return panel.DesiredSize.Value;
+            this.panel.Measure(availableSize);
+            return this.panel.DesiredSize.Value;
         }
 
         protected override Size ArrangeOverride(Size finalSize)

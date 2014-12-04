@@ -56,30 +56,6 @@ namespace Perspex.Controls
             }
         }
 
-        private static Vector CalculateScaling(Size availableSize, Size imageSize, Stretch stretch)
-        {
-            double scaleX = 1;
-            double scaleY = 1;
-
-            if (stretch != Stretch.None)
-            {
-                scaleX = availableSize.Width / imageSize.Width;
-                scaleY = availableSize.Height / imageSize.Height;
-
-                switch (stretch)
-                {
-                    case Stretch.Uniform:
-                        scaleX = scaleY = Math.Min(scaleX, scaleY);
-                        break;
-                    case Stretch.UniformToFill:
-                        scaleX = scaleY = Math.Max(scaleX, scaleY);
-                        break;
-                }
-            }
-
-            return new Vector(scaleX, scaleY);
-        }
-
         protected override Size MeasureOverride(Size availableSize)
         {
             double width = 0;
@@ -110,6 +86,30 @@ namespace Perspex.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             return finalSize;
+        }
+
+        private static Vector CalculateScaling(Size availableSize, Size imageSize, Stretch stretch)
+        {
+            double scaleX = 1;
+            double scaleY = 1;
+
+            if (stretch != Stretch.None)
+            {
+                scaleX = availableSize.Width / imageSize.Width;
+                scaleY = availableSize.Height / imageSize.Height;
+
+                switch (stretch)
+                {
+                    case Stretch.Uniform:
+                        scaleX = scaleY = Math.Min(scaleX, scaleY);
+                        break;
+                    case Stretch.UniformToFill:
+                        scaleX = scaleY = Math.Max(scaleX, scaleY);
+                        break;
+                }
+            }
+
+            return new Vector(scaleX, scaleY);
         }
     }
 }

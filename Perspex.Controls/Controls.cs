@@ -4,10 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace Perspex.Controls
 {
+    using System.Collections.Generic;
+
     public class Controls : PerspexList<Control>
     {
         public Controls()

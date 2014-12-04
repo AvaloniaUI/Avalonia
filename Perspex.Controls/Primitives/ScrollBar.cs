@@ -28,8 +28,8 @@ namespace Perspex.Controls.Primitives
 
         static ScrollBar()
         {
-            PseudoClass(OrientationProperty, x => x == Orientation.Horizontal, ":horizontal");
-            PseudoClass(OrientationProperty, x => x == Orientation.Vertical, ":vertical");
+            Control.PseudoClass(OrientationProperty, x => x == Orientation.Horizontal, ":horizontal");
+            Control.PseudoClass(OrientationProperty, x => x == Orientation.Vertical, ":vertical");
         }
 
         public double Minimum

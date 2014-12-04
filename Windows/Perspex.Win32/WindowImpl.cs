@@ -202,6 +202,7 @@ namespace Perspex.Win32
                     {
                         this.Resized(new Size((int)lParam & 0xffff, (int)lParam >> 16));
                     }
+
                     return IntPtr.Zero;
             }
 

@@ -18,10 +18,10 @@ namespace Perspex.Controls
         {
             int col = this.GetValue(Grid.ColumnProperty);
 
-            if (grid != null && col > 0)
+            if (this.grid != null && col > 0)
             {
-                grid.ColumnDefinitions[col - 1].Width = new GridLength(
-                    grid.ColumnDefinitions[col - 1].ActualWidth + e.Vector.X,
+                this.grid.ColumnDefinitions[col - 1].Width = new GridLength(
+                    this.grid.ColumnDefinitions[col - 1].ActualWidth + e.Vector.X,
                     GridUnitType.Pixel);
             }
         }

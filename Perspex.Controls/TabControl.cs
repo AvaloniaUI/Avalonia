@@ -37,7 +37,7 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             this.tabStrip = this.GetTemplateControls().OfType<TabStrip>().FirstOrDefault();
-            this.BindTwoWay(SelectedItemProperty, this.tabStrip, SelectedItemProperty);
+            this.BindTwoWay(TabControl.SelectedItemProperty, this.tabStrip, TabControl.SelectedItemProperty);
         }
     }
 }

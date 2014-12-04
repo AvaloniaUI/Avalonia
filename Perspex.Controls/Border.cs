@@ -15,8 +15,8 @@ namespace Perspex.Controls
     {
         static Border()
         {
-            AffectsRender(BackgroundProperty);
-            AffectsRender(BorderBrushProperty);
+            Control.AffectsRender(Border.BackgroundProperty);
+            Control.AffectsRender(Border.BorderBrushProperty);
         }
 
         public override void Render(IDrawingContext context)

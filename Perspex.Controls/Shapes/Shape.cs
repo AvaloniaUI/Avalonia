@@ -58,6 +58,14 @@ namespace Perspex.Controls.Shapes
             set { this.SetValue(StrokeThicknessProperty, value); }
         }
 
+        public override void Render(IDrawingContext context)
+        {
+            if (this.RenderedGeometry != null)
+            {
+                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.RenderedGeometry);
+            }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             Rect shapeBounds = this.RenderedGeometry.GetRenderBounds(this.StrokeThickness);
@@ -126,14 +134,6 @@ namespace Perspex.Controls.Shapes
             double finalX = (width > 0) ? width : shapeBounds.Right * sx;
             double finalY = (height > 0) ? height : shapeBounds.Bottom * sy;
             return new Size(finalX, finalY);
-        }
-
-        public override void Render(IDrawingContext context)
-        {
-            if (this.RenderedGeometry != null)
-            {
-                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.RenderedGeometry);
-            }
         }
     }
 }

@@ -1,24 +1,24 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DefinitionBase.cs" company="Steven Kirk">
+// <copyright file="ScrollViewer.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Reactive.Linq;
-using Perspex.Controls.Presenters;
-using Perspex.Controls.Primitives;
-
 namespace Perspex.Controls
 {
+    using System.Reactive.Linq;
+    using Perspex.Controls.Presenters;
+    using Perspex.Controls.Primitives;
+
     public class ScrollViewer : ContentControl
     {
-        public static PerspexProperty<Size> ExtentProperty =
+        public static readonly PerspexProperty<Size> ExtentProperty =
             PerspexProperty.Register<ScrollViewer, Size>("Extent");
 
-        public static PerspexProperty<Vector> OffsetProperty =
+        public static readonly PerspexProperty<Vector> OffsetProperty =
             PerspexProperty.Register<ScrollViewer, Vector>("Offset");
 
-        public static PerspexProperty<Size> ViewportProperty =
+        public static readonly PerspexProperty<Size> ViewportProperty =
             PerspexProperty.Register<ScrollViewer, Size>("Viewport");
 
         private ScrollContentPresenter presenter;
@@ -61,7 +61,7 @@ namespace Perspex.Controls
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
             this.horizontalScrollBar.Bind(
-                IsVisibleProperty,
+                Visual.IsVisibleProperty,
                 extentAndViewport.Select(x => x.Extent.Width > x.Viewport.Width));
 
             this.horizontalScrollBar.Bind(
@@ -73,7 +73,7 @@ namespace Perspex.Controls
                 extentAndViewport.Select(x => (x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width)));
 
             this.verticalScrollBar.Bind(
-                IsVisibleProperty,
+                Visual.IsVisibleProperty,
                 extentAndViewport.Select(x => x.Extent.Height > x.Viewport.Height));
 
             this.verticalScrollBar.Bind(

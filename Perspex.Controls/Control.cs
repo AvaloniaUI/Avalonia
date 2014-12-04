@@ -43,9 +43,9 @@ namespace Perspex.Controls
 
         static Control()
         {
-            AffectsMeasure(IsVisibleProperty);
-            PseudoClass(IsPointerOverProperty, ":pointerover");
-            PseudoClass(IsFocusedProperty, ":focus");
+            Control.AffectsMeasure(Control.IsVisibleProperty);
+            PseudoClass(Control.IsPointerOverProperty, ":pointerover");
+            PseudoClass(Control.IsFocusedProperty, ":focus");
         }
 
         public Brush Background

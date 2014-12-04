@@ -13,7 +13,7 @@ namespace Perspex.Controls
 
         static ListBoxItem()
         {
-            PseudoClass(IsSelectedProperty, ":selected");
+            Control.PseudoClass(IsSelectedProperty, ":selected");
         }
 
         public bool IsSelected

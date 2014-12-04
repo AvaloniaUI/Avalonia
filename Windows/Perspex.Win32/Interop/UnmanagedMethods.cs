@@ -42,18 +42,6 @@ namespace Perspex.Win32.Interop
             IDC_HELP = 32651
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct PAINTSTRUCT
-        {
-            public IntPtr hdc;
-            public bool fErase;
-            public RECT rcPaint;
-            public bool fRestore;
-            public bool fIncUpdate;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public byte[] rgbReserved;
-        }
-
         [Flags]
         public enum SetWindowPosFlags : uint
         {
@@ -469,7 +457,7 @@ namespace Perspex.Win32.Interop
            IntPtr lpParam);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern bool SetWindowText(IntPtr hwnd, String lpString);
+        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
         public struct MSG
         {
@@ -479,6 +467,18 @@ namespace Perspex.Win32.Interop
             public IntPtr lParam;
             public uint time;
             public POINT pt;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PAINTSTRUCT
+        {
+            public IntPtr hdc;
+            public bool fErase;
+            public RECT rcPaint;
+            public bool fRestore;
+            public bool fIncUpdate;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public byte[] rgbReserved;
         }
 
         public struct POINT

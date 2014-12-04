@@ -36,6 +36,7 @@ namespace Perspex.Controls
                             {
                                 this.SelectedItem = list[index - 1];
                             }
+
                             break;
                         }
 
@@ -48,6 +49,7 @@ namespace Perspex.Controls
                             {
                                 this.SelectedItem = list[index + 1];
                             }
+
                             break;
                         }
 
@@ -68,14 +70,14 @@ namespace Perspex.Controls
             }
         }
 
-        List<object> Flatten()
+        private List<object> Flatten()
         {
             var result = new List<object>();
             this.Flatten(this.Items, result);
             return result;
         }
 
-        void Flatten(IEnumerable items, List<object> result)
+        private void Flatten(IEnumerable items, List<object> result)
         {
             if (items != null)
             {
