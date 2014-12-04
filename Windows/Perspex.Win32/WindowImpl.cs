@@ -145,11 +145,11 @@ namespace Perspex.Win32
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
                     this.Activated();
-                    break;
+                    return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     this.Closed();
-                    break;
+                    return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                     WindowsKeyboardDevice.Instance.UpdateKeyStates();
@@ -209,6 +209,7 @@ namespace Perspex.Win32
             if (e != null && this.Input != null)
             {
                 this.Input(e);
+                return IntPtr.Zero;
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
