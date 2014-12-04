@@ -6,8 +6,8 @@
     <ProjectGuid>{2905FF23-53FB-45E6-AA49-6AF47A172056}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.UnitTests</RootNamespace>
-    <AssemblyName>Perspex.UnitTests</AssemblyName>
+    <RootNamespace>Perspex.Base.UnitTests</RootNamespace>
+    <AssemblyName>Perspex.Base.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -73,7 +73,7 @@
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PerspexObjectTests.cs" />
-    <Compile Include="PriorityValueTEsts.cs" />
+    <Compile Include="PriorityValueTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

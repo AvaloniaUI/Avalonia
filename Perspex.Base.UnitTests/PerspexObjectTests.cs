@@ -4,8 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace Perspex.UnitTests
+namespace Perspex.Base.UnitTests
 {
     using System;
     using System.Linq;
