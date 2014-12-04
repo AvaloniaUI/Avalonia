@@ -6,10 +6,6 @@
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public class HeaderedContentControl : ContentControl, IHeadered
     {
         public static readonly PerspexProperty<object> HeaderProperty =

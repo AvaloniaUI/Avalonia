@@ -53,8 +53,8 @@ namespace Perspex.Diagnostics
 
         public IFullLogger GetLogger(Type type)
         {
-            if ((type == typeof(PerspexObject) && LogPropertyMessages) ||
-                (type == typeof(Layoutable) && LogLayoutMessages))
+            if ((type == typeof(PerspexObject) && this.LogPropertyMessages) ||
+                (type == typeof(Layoutable) && this.LogLayoutMessages))
             {
                 return new WrappingFullLogger(this.Logger, type);
             }

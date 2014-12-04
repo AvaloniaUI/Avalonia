@@ -43,7 +43,7 @@ namespace Perspex.Direct2D1
 
         public int GetCaretIndex(FormattedText text, Point point, Size constraint)
         {
-            using (TextLayout layout = GetTextLayout(this.factory, text, constraint))
+            using (TextLayout layout = this.GetTextLayout(this.factory, text, constraint))
             {
                 SharpDX.Bool isTrailingHit;
                 SharpDX.Bool isInside;
@@ -60,7 +60,7 @@ namespace Perspex.Direct2D1
 
         public Point GetCaretPosition(FormattedText text, int caretIndex, Size constraint)
         {
-            using (TextLayout layout = GetTextLayout(this.factory, text, constraint))
+            using (TextLayout layout = this.GetTextLayout(this.factory, text, constraint))
             {
                 float x;
                 float y;
@@ -71,7 +71,7 @@ namespace Perspex.Direct2D1
 
         public double[] GetLineHeights(FormattedText text, Size constraint)
         {
-            using (TextLayout layout = GetTextLayout(this.factory, text, constraint))
+            using (TextLayout layout = this.GetTextLayout(this.factory, text, constraint))
             {
                 return layout.GetLineMetrics().Select(x => (double)x.Height).ToArray();
             }
@@ -79,7 +79,7 @@ namespace Perspex.Direct2D1
 
         public Size Measure(FormattedText text, Size constraint)
         {
-            using (TextLayout layout = GetTextLayout(this.factory, text, constraint))
+            using (TextLayout layout = this.GetTextLayout(this.factory, text, constraint))
             {
                 return new Size(
                     layout.Metrics.WidthIncludingTrailingWhitespace,

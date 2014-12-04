@@ -52,7 +52,7 @@ namespace Perspex.Cairo
         }
 
         [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hWnd);
+        private static extern IntPtr GetDC(IntPtr hwnd);
 
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.

@@ -20,6 +20,11 @@ namespace Perspex.Cairo
 
         private static TextService textService = new TextService();
 
+        public ITextService TextService
+        {
+            get { return textService; }
+        }
+
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
@@ -27,22 +32,17 @@ namespace Perspex.Cairo
             locator.Register(() => textService, typeof(ITextService));
         }
 
-        public ITextService TextService
-        {
-            get { return textService; }
-        }
-
         public IBitmapImpl CreateBitmap(int width, int height)
         {
             throw new NotImplementedException();
-            //return new BitmapImpl(imagingFactory, width, height);
+            ////return new BitmapImpl(imagingFactory, width, height);
         }
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
             if (textService.Context == null)
             {
-                textService.Context = GetPangoContext(handle);
+                textService.Context = this.GetPangoContext(handle);
             }
 
             return new Renderer(handle, width, height);

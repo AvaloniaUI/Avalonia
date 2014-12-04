@@ -76,7 +76,7 @@ namespace Perspex.Direct2D1.Media
 
             using (FileStream s = new FileStream(fileName, FileMode.Create))
             {
-                PngBitmapEncoder encoder = new PngBitmapEncoder(factory);
+                PngBitmapEncoder encoder = new PngBitmapEncoder(this.factory);
                 encoder.Initialize(s);
 
                 BitmapFrameEncode frame = new BitmapFrameEncode(encoder);

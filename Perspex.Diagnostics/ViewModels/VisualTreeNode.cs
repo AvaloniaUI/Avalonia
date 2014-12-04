@@ -37,7 +37,7 @@ namespace Perspex.Diagnostics.ViewModels
                     }
                     else
                     {
-                        this.Classes = "";
+                        this.Classes = string.Empty;
                     }
                 });
             }

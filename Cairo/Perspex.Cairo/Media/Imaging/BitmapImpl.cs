@@ -12,7 +12,6 @@ namespace Perspex.Cairo.Media.Imaging
 
     public class BitmapImpl : IBitmapImpl
     {
-
         public BitmapImpl(Cairo.ImageSurface surface)
         {
             this.Surface = surface;

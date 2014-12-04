@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Direct2DStreamGeometry.cs" company="Steven Kirk">
+// <copyright file="StreamGeometryImpl.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -25,17 +25,17 @@ namespace Perspex.Direct2D1.Media
 
         public override Rect Bounds
         {
-            get { return geometry.GetBounds().ToPerspex(); }
+            get { return this.geometry.GetBounds().ToPerspex(); }
         }
 
         public override Rect GetRenderBounds(double strokeThickness)
         {
-            return geometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
+            return this.geometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
         }
 
         public IStreamGeometryContextImpl Open()
         {
-            return new StreamGeometryContextImpl(geometry.Open());
+            return new StreamGeometryContextImpl(this.geometry.Open());
         }
     }
 }

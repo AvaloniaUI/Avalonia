@@ -3,12 +3,11 @@
 // Copyright 2013 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
-using Perspex.Cairo.Media.Imaging;
-
 namespace Perspex.Cairo.Media
 {
     using System;
     using System.Reactive.Disposables;
+    using Perspex.Cairo.Media.Imaging;
     using Perspex.Media;
     using Perspex.Platform;
     using Splat;

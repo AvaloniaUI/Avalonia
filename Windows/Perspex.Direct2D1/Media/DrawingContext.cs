@@ -46,8 +46,8 @@ namespace Perspex.Direct2D1.Media
 
         public Matrix CurrentTransform
         {
-            get { return Convert(this.renderTarget.Transform); }
-            set { this.renderTarget.Transform = Convert(value); }
+            get { return this.Convert(this.renderTarget.Transform); }
+            set { this.renderTarget.Transform = this.Convert(value); }
         }
 
         /// <summary>

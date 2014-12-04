@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Window.cs" company="Steven Kirk">
+// <copyright file="WindowImpl.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -13,16 +13,16 @@ namespace Perspex.Gtk
     using Gtk = global::Gtk;
 
     public class WindowImpl : Gtk.Window, IWindowImpl
-	{
+    {
         private Window owner;
 
         private IPlatformHandle windowHandle;
 
         private Size clientSize;
 
-		public WindowImpl()
+        public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
-		{
+        {
             this.DefaultSize = new Gdk.Size(640, 480);
             this.Events = Gdk.EventMask.PointerMotionMask | 
                           Gdk.EventMask.ButtonPressMask | 
@@ -94,7 +94,7 @@ namespace Perspex.Gtk
             if (newSize != this.clientSize)
             {
                 this.clientSize = newSize;
-                this.Resized(clientSize);
+                this.Resized(this.clientSize);
             }
 
             return true;
@@ -118,7 +118,7 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)
         {
-            this.Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
+            this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
             return true;
         }
 

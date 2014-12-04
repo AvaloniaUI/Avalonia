@@ -65,7 +65,7 @@ namespace Perspex.Diagnostics
 
         private static string Indent(int indent)
         {
-            return string.Join("", Enumerable.Repeat("    ", Math.Max(indent, 0)));
+            return string.Join(string.Empty, Enumerable.Repeat("    ", Math.Max(indent, 0)));
         }
     }
 }
