@@ -23,12 +23,6 @@ namespace Perspex.Controls.Primitives
             ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
         }
 
-        public TabStrip()
-        {
-            this.PointerPressed += this.OnPointerPressed;
-            this.GetObservable(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
-        }
-
         protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
             TabControl tabControl = this.TemplatedParent as TabControl;
@@ -58,32 +52,6 @@ namespace Perspex.Controls.Primitives
                     .ToList();
 
                 this.SelectedItem = tabs.FirstOrDefault(x => x.IsSelected) ?? tabs.FirstOrDefault();
-            }
-        }
-
-        private void OnPointerPressed(object sender, PointerEventArgs e)
-        {
-            IVisual source = (IVisual)e.Source;
-            ContentPresenter presenter = source.GetVisualAncestors()
-                .OfType<ContentPresenter>()
-                .FirstOrDefault();
-
-            if (presenter !=  null)
-            {
-                TabItem item = presenter.TemplatedParent as TabItem;
-
-                if (item != null)
-                {
-                    this.SelectedItem = item;
-                }
-            }
-        }
-
-        private void SelectedItemChanged(object selected)
-        {
-            foreach (TabItem item in this.ItemContainerGenerator.GetAll().Select(x => x.Item2))
-            {
-                item.IsSelected = selected == item;
             }
         }
     }

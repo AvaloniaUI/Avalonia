@@ -17,6 +17,8 @@ namespace Perspex.Themes.Default
             this.Add(new ContentControlStyle());
             this.Add(new GridSplitterStyle());
             this.Add(new ItemsControlStyle());
+            this.Add(new ListBoxStyle());
+            this.Add(new ListBoxItemStyle());
             this.Add(new ScrollBarStyle());
             this.Add(new ScrollViewerStyle());
             this.Add(new TabControlStyle());

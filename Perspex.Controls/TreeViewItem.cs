@@ -11,13 +11,13 @@ namespace Perspex.Controls
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
 
-    public class TreeViewItem : HeaderedItemsControl
+    public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
         public static readonly PerspexProperty<bool> IsExpandedProperty =
             PerspexProperty.Register<TreeViewItem, bool>("IsExpanded");
 
         public static readonly PerspexProperty<bool> IsSelectedProperty =
-            PerspexProperty.Register<TreeViewItem, bool>("IsSelected");
+            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         TreeView treeView;
 

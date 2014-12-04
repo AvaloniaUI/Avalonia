@@ -87,6 +87,13 @@ namespace TestApplication
             },
         };
 
+        private static PerspexList<Item> listBoxData = new PerspexList<Item>
+        {
+            new Item { Name = "Item 1", Value = "Item 1 Value" },
+            new Item { Name = "Item 2", Value = "Item 2 Value" },
+            new Item { Name = "Item 3", Value = "Item 3 Value" },
+        };
+
         static void Main(string[] args)
         {
             //LogManager.Enable(new TestLogger());
@@ -264,6 +271,22 @@ namespace TestApplication
                             Id = "treeView",
                             Items = treeData,
                         },
+                        new ListBox
+                        {
+                            DataTemplates = new DataTemplates
+                            {
+                                new DataTemplate<Item>(x =>
+                                    new StackPanel
+                                    {
+                                        Children = new Controls
+                                        {
+                                            new TextBlock { Text = x.Name, FontSize = 24 },
+                                            new TextBlock { Text = x.Value },
+                                        }
+                                    })
+                            },
+                            Items = listBoxData,
+                        }
                     }
                 },
             };

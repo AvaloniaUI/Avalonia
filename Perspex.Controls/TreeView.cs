@@ -15,38 +15,33 @@ namespace Perspex.Controls
 
     public class TreeView : SelectingItemsControl
     {
-        public TreeView()
-        {
-            this.PointerPressed += this.OnPointerPressed;
-        }
-
         protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TreeItemContainerGenerator<TreeViewItem>(this);
         }
 
-        private void OnPointerPressed(object sender, PointerEventArgs e)
-        {
-            IVisual source = (IVisual)e.Source;
-            ContentPresenter contentPresenter = source.GetVisualAncestors()
-                .OfType<ContentPresenter>()
-                .FirstOrDefault();
+        //protected override void OnPointerPressed(PointerEventArgs e)
+        //{
+        //    IVisual source = (IVisual)e.Source;
+        //    ContentPresenter contentPresenter = source.GetVisualAncestors()
+        //        .OfType<ContentPresenter>()
+        //        .FirstOrDefault();
 
-            if (contentPresenter != null)
-            {
-                TreeViewItem container = contentPresenter.TemplatedParent as TreeViewItem;
+        //    if (contentPresenter != null)
+        //    {
+        //        TreeViewItem container = contentPresenter.TemplatedParent as TreeViewItem;
 
-                if (container != null)
-                {
-                    foreach (var i in this.GetVisualDescendents().OfType<TreeViewItem>())
-                    {
-                        i.IsSelected = i == container;
-                    }
+        //        if (container != null)
+        //        {
+        //            foreach (var i in this.GetVisualDescendents().OfType<TreeViewItem>())
+        //            {
+        //                i.IsSelected = i == container;
+        //            }
 
-                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer(container);
-                }
-            }
+        //            this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer(container);
+        //        }
+        //    }
 
-        }
+        //}
     }
 }

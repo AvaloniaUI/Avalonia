@@ -41,6 +41,9 @@
     <Compile Include="ColumnDefinitions.cs" />
     <Compile Include="ContentControl.cs" />
     <Compile Include="GridSplitter.cs" />
+    <Compile Include="ISelectable.cs" />
+    <Compile Include="ListBoxItem.cs" />
+    <Compile Include="ListBox.cs" />
     <Compile Include="Platform\IWindowImpl.cs" />
     <Compile Include="Presenters\ScrollContentPresenter.cs" />
     <Compile Include="Presenters\ContentPresenter.cs" />

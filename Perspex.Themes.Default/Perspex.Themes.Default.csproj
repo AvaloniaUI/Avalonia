@@ -66,6 +66,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ListBoxStyle.cs" />
+    <Compile Include="ListBoxItemStyle.cs" />
     <Compile Include="WindowStyle.cs" />
     <Compile Include="ScrollViewerStyle.cs" />
     <Compile Include="ScrollBarStyle.cs" />
