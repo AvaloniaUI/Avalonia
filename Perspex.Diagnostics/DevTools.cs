@@ -6,12 +6,13 @@
 
 namespace Perspex.Diagnostics
 {
-    using Perspex.Controls;
-    using System.Reactive.Linq;
-    using Perspex.Diagnostics.ViewModels;
     using System;
-    using Perspex.Input;
     using System.Reactive.Disposables;
+    using System.Reactive.Linq;
+    using Perspex.Controls;
+    using Perspex.Diagnostics.ViewModels;
+    using Perspex.Input;
+    using ReactiveUI;
 
     public class DevTools : Decorator
     {
@@ -128,15 +129,23 @@ namespace Perspex.Diagnostics
 
         private static Control GetHeader(VisualTreeNode node)
         {
-            TextBlock result = new TextBlock();
-            result.Text = node.Type;
-
-            if (node.IsInTemplate)
+            return new StackPanel
             {
-                result.FontStyle = Media.FontStyle.Italic;
-            }
-
-            return result;
+                Orientation = Orientation.Horizontal,
+                Gap = 8,
+                Children = new Controls
+                {
+                    new TextBlock
+                    {
+                        Text = node.Type,
+                        FontStyle = node.IsInTemplate ? Media.FontStyle.Italic : Media.FontStyle.Normal,
+                    },
+                    new TextBlock
+                    {
+                        [!TextBlock.TextProperty] = node.WhenAnyValue(x => x.Classes),
+                    }
+                }
+            };
         }
     }
 }

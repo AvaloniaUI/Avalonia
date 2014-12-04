@@ -8,6 +8,7 @@ namespace Perspex.Diagnostics.ViewModels
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Styling;
     using ReactiveUI;
 
     internal class ControlDetails : ReactiveObject
@@ -22,6 +23,12 @@ namespace Perspex.Diagnostics.ViewModels
                     .Select(x => new PropertyDetails(x))
                     .OrderBy(x => x.Name);
             }
+        }
+
+        public IEnumerable<string> Classes
+        {
+            get;
+            private set;
         }
 
         public IEnumerable<PropertyDetails> Properties
