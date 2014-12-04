@@ -537,7 +537,7 @@ namespace Perspex.Controls
                 }
                 else
                 {
-                    width = Math.Max(availableSize.Width - this.colMatrix[i, i].OfferedSize, 0);
+                    width = Math.Max(width - this.colMatrix[i, i].OfferedSize, 0);
                 }
             }
 
@@ -572,7 +572,7 @@ namespace Perspex.Controls
                 }
                 else
                 {
-                    height = Math.Max(availableSize.Height - this.rowMatrix[i, i].OfferedSize, 0);
+                    height = Math.Max(height - this.rowMatrix[i, i].OfferedSize, 0);
                 }
             }
 
