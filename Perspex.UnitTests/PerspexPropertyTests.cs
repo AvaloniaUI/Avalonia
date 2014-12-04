@@ -84,21 +84,32 @@ namespace Perspex.UnitTests
         }
 
         [TestMethod]
+        public void Initialized_Observable_Fired()
+        {
+            string value = null;
+
+            Class1.FooProperty.Initialized.Subscribe(x => value = (string)x.NewValue);
+            var target = new Class1();
+
+            Assert.AreEqual("default", value);
+        }
+
+        [TestMethod]
         public void Changed_Observable_Fired()
         {
             var target = new Class1();
-            bool fired = false;
+            string value = null;
 
-            Class1.FooProperty.Changed.Subscribe(x => fired = true);
+            Class1.FooProperty.Changed.Subscribe(x => value = (string)x.NewValue);
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.IsTrue(fired);
+            Assert.AreEqual("newvalue", value);
         }
 
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty = 
-                PerspexProperty.Register<Class1, string>("Foo");
+                PerspexProperty.Register<Class1, string>("Foo", "default");
         }
 
         private class Class2 : Class1

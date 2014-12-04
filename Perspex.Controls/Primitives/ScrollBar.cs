@@ -26,21 +26,10 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<Orientation> OrientationProperty =
             PerspexProperty.Register<ScrollBar, Orientation>("Orientation");
 
-        public ScrollBar()
+        static ScrollBar()
         {
-            this.GetObservable(OrientationProperty).Subscribe(o =>
-            {
-                if (o == Orientation.Horizontal)
-                {
-                    this.Classes.Remove(":vertical");
-                    this.Classes.Add(":horizontal");
-                }
-                else
-                {
-                    this.Classes.Remove(":horizontal");
-                    this.Classes.Add(":vertical");
-                }
-            });
+            PseudoClass(OrientationProperty, x => x == Orientation.Horizontal, ":horizontal");
+            PseudoClass(OrientationProperty, x => x == Orientation.Vertical, ":vertical");
         }
 
         public double Minimum

@@ -33,7 +33,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
 
-        private Classes classes;
+        private Classes classes = new Classes();
 
         private DataTemplates dataTemplates;
 
@@ -44,13 +44,8 @@ namespace Perspex.Controls
         static Control()
         {
             AffectsMeasure(IsVisibleProperty);
-        }
-
-        public Control()
-        {
-            this.classes = new Classes();
-            this.AddPseudoClass(IsPointerOverProperty, ":pointerover");
-            this.AddPseudoClass(IsFocusedProperty, ":focus");
+            PseudoClass(IsPointerOverProperty, ":pointerover");
+            PseudoClass(IsFocusedProperty, ":focus");
         }
 
         public Brush Background
@@ -159,25 +154,44 @@ namespace Perspex.Controls
             internal set { this.SetValue(TemplatedParentProperty, value); }
         }
 
+        protected static void PseudoClass(PerspexProperty<bool> property, string className)
+        {
+            PseudoClass(property, x => x, className);
+        }
+
+        protected static void PseudoClass<T>(
+            PerspexProperty<T> property, 
+            Func<T, bool> selector, 
+            string className)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(selector != null);
+            Contract.Requires<ArgumentNullException>(className != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                throw new ArgumentException("Cannot supply an empty className.");
+            }
+
+            Observable.Merge(property.Changed, property.Initialized)
+                .Subscribe(e =>
+                {
+                    if (selector((T)e.NewValue))
+                    {
+                        ((Control)e.Sender).Classes.Add(className);
+                    }
+                    else
+                    {
+                        ((Control)e.Sender).Classes.Remove(className);
+                    }
+                });
+        }
+
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
-        }
-
-        protected void AddPseudoClass(PerspexProperty<bool> property, string className)
-        {
-            this.GetObservable(property).Subscribe(x =>
-            {
-                if (x)
-                {
-                    this.classes.Add(className);
-                }
-                else
-                {
-                    this.classes.Remove(className);
-                }
-            });
         }
     }
 }

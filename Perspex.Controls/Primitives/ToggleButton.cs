@@ -13,10 +13,14 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<bool> IsCheckedProperty =
             PerspexProperty.Register<ToggleButton, bool>("IsChecked");
 
+        static ToggleButton()
+        {
+            PseudoClass(IsCheckedProperty, ":checked");
+        }
+
         public ToggleButton()
         {
             this.Click += (s, e) => this.IsChecked = !this.IsChecked;
-            this.AddPseudoClass(IsCheckedProperty, ":checked");
         }
 
         public bool IsChecked

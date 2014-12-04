@@ -21,9 +21,13 @@ namespace Perspex.Controls
 
         TreeView treeView;
 
+        static TreeViewItem()
+        {
+            PseudoClass(IsSelectedProperty, ":selected");
+        }
+
         public TreeViewItem()
         {
-            this.AddPseudoClass(IsSelectedProperty, ":selected");
             AffectsRender(IsSelectedProperty);
         }
 

@@ -13,10 +13,10 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             PerspexProperty.Register<TabItem, bool>("IsSelected");
 
-        public TabItem()
+        static TabItem()
         {
-            this.AddPseudoClass(IsSelectedProperty, ":selected");
             AffectsRender(IsSelectedProperty);
+            PseudoClass(IsSelectedProperty, ":selected");
         }
 
         public bool IsSelected

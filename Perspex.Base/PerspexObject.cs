@@ -78,6 +78,23 @@ namespace Perspex
             new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexObject"/> class.
+        /// </summary>
+        public PerspexObject()
+        {
+            foreach (var p in this.GetAllValues())
+            {
+                var e = new PerspexPropertyChangedEventArgs(
+                    this, 
+                    p.Property, 
+                    PerspexProperty.UnsetValue, 
+                    p.CurrentValue);
+
+                p.Property.NotifyInitialized(e);
+            }
+        }
+
+        /// <summary>
         /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
         /// </summary>
         private PropertyChangedEventHandler inpcChanged;

@@ -32,6 +32,11 @@ namespace Perspex
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
+        private Subject<PerspexPropertyChangedEventArgs> initialized = new Subject<PerspexPropertyChangedEventArgs>();
+
+        /// <summary>
+        /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
+        /// </summary>
         private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
@@ -88,6 +93,21 @@ namespace Perspex
         /// </summary>
         /// <returns></returns>
         public BindingMode DefaultBindingMode { get; private set; }
+
+        /// <summary>
+        /// Gets an observable that is fired when this property is initialized on a
+        /// new <see cref="PerspexObject"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// This observable is fired each time a new <see cref="PerspexObject"/> is constructed
+        /// for all properties registered on the object's type. The default value of the property 
+        /// for the object is passed in the args' NewValue (OldValue will always be 
+        /// <see cref="UnsetValue"/>.
+        /// </remarks>
+        public IObservable<PerspexPropertyChangedEventArgs> Initialized
+        {
+            get { return this.initialized; }
+        }
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any 
@@ -268,6 +288,11 @@ namespace Perspex
         public override string ToString()
         {
             return this.Name;
+        }
+
+        internal void NotifyInitialized(PerspexPropertyChangedEventArgs e)
+        {
+            this.initialized.OnNext(e);
         }
 
         internal void NotifyChanged(PerspexPropertyChangedEventArgs e)
