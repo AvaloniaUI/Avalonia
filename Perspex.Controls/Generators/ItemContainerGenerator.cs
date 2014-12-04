@@ -33,7 +33,7 @@ namespace Perspex.Controls.Generators
                 return this.state;
             }
 
-            set
+            private set
             {
                 if (this.state != value)
                 {

@@ -7,6 +7,7 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
+    using System.Collections;
     using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Input;
@@ -19,6 +20,8 @@ namespace Perspex.Controls.Primitives
 
         static SelectingItemsControl()
         {
+            FocusableProperty.OverrideDefaultValue(typeof(SelectingItemsControl), true);
+
             SelectedItemProperty.Changed.Subscribe(x =>
             {
                 var control = x.Sender as SelectingItemsControl;
@@ -34,6 +37,81 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(SelectedItemProperty); }
             set { this.SetValue(SelectedItemProperty, value); }
+        }
+
+        protected static int GetIndexOfItem(IEnumerable items, object item)
+        {
+            if (items != null)
+            {
+                int index = 0;
+
+                foreach (var i in items)
+                {
+                    if (object.ReferenceEquals(i, item))
+                    {
+                        return index;
+                    }
+
+                    ++index;
+                }
+            }
+
+            return -1;
+        }
+
+        protected int GetIndexOfItem(object item)
+        {
+            return GetIndexOfItem(this.Items, item);
+        }
+
+        protected virtual void MoveSelection(FocusNavigationDirection direction)
+        {
+            if (this.SelectedItem != null)
+            {
+                int offset = 0;
+
+                switch (direction)
+                {
+                    case FocusNavigationDirection.Up:
+                        offset = -1;
+                        break;
+                    case FocusNavigationDirection.Down:
+                        offset = 1;
+                        break;
+                }
+
+                if (offset != 0)
+                {
+                    var currentIndex = GetIndexOfItem(this.SelectedItem);
+                    var index = currentIndex + offset;
+
+                    if (index >= 0 && index < this.Items.Cast<object>().Count())
+                    {
+                        this.SelectedItem = this.Items.Cast<object>().ElementAt(index);
+                    }
+                }
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Up:
+                    this.MoveSelection(FocusNavigationDirection.Up);
+                    break;
+                case Key.Down:
+                    this.MoveSelection(FocusNavigationDirection.Down);
+                    break;
+                case Key.Left:
+                    this.MoveSelection(FocusNavigationDirection.Left);
+                    break;
+                case Key.Right:
+                    this.MoveSelection(FocusNavigationDirection.Right);
+                    break;
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnPointerPressed(PointerEventArgs e)

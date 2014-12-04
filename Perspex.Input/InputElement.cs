@@ -135,12 +135,12 @@ namespace Perspex.Input
 
         public void Focus()
         {
-            Locator.Current.GetService<IFocusManager>().Focus(this);
+            FocusManager.Instance.Focus(this);
         }
 
         protected virtual void OnGotFocus(RoutedEventArgs e)
         {
-            this.IsFocused = true;
+            this.IsFocused = e.OriginalSource == this;
         }
 
         protected virtual void OnLostFocus(RoutedEventArgs e)
