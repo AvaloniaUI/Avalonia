@@ -26,8 +26,6 @@ So what can it do so far? Not a whole lot right now. Here's the demo application
 
 ![](screen.png)
 
-Ok, not so impressive visually right now, so lets go for a tour of the technical details instead.
-
 ## PerspexProperty ##
 
 PerspexProperty is the equivalent of WPF's DependencyProperty. 
@@ -175,10 +173,8 @@ different look-and-feel.
 
 ## XAML
 
-As you can see, all of the examples here are defined in code, and as yet there is no current 
-support for any type of markup such as XAML. That's not to rule out such a thing, but I don't think
-there's anyone out there who loves XAML and I'm sure a better markup is possible. However as XAML
-maps to .NET objects there should be no reason a XAML parser couldn't be written.
+As you can see, all of the examples here are defined in code - but a XAML implementation is being
+worked on (https://github.com/SuperJMN/Perspex/tree/xamlreader)
 
 ## That's all for now
 
