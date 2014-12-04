@@ -48,6 +48,9 @@ namespace Perspex.Input
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
 
+        public static readonly RoutedEvent<PointerEventArgs> PointerWheelChangedEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerWheelChanged", RoutingStrategy.Bubble);
+
         public InputElement()
         {
             this.GotFocus += (_, e) => this.OnGotFocus(e);
@@ -59,6 +62,7 @@ namespace Perspex.Input
             this.PointerMoved += (_, e) => this.OnPointerMoved(e);
             this.PointerPressed += (_, e) => this.OnPointerPressed(e);
             this.PointerReleased += (_, e) => this.OnPointerReleased(e);
+            this.PointerWheelChanged += (_, e) => this.OnPointerWheelChanged(e);
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus
@@ -113,6 +117,12 @@ namespace Perspex.Input
         {
             add { this.AddHandler(PointerReleasedEvent, value); }
             remove { this.RemoveHandler(PointerReleasedEvent, value); }
+        }
+
+        public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
+        {
+            add { this.AddHandler(PointerWheelChangedEvent, value); }
+            remove { this.RemoveHandler(PointerWheelChangedEvent, value); }
         }
 
         public bool Focusable
@@ -175,6 +185,10 @@ namespace Perspex.Input
         }
 
         protected virtual void OnPointerReleased(PointerEventArgs e)
+        {
+        }
+
+        protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
         }
     }

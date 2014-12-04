@@ -134,9 +134,18 @@ namespace Perspex.Win32
             this.Handle = new PlatformHandle(this.hwnd, "HWND");
         }
 
+        private Point ScreenToClient(uint x, uint y)
+        {
+            var p = new UnmanagedMethods.POINT { X = (int)x, Y = (int)y };
+            UnmanagedMethods.ScreenToClient(this.hwnd, ref p);
+            return new Point(p.X, p.Y);
+        }
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            const double WheelDelta = 120.0;
+
             RawInputEventArgs e = null;
 
             WindowsMouseDevice.Instance.CurrentWindow = this;
@@ -182,6 +191,14 @@ namespace Perspex.Win32
                         this.owner,
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                    break;
+
+                case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
+                    e = new RawMouseWheelEventArgs(
+                        WindowsMouseDevice.Instance,
+                        this.owner,
+                        this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
+                        new Vector(0, ((int)wParam >> 16) / WheelDelta));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:

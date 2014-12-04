@@ -76,6 +76,13 @@ namespace Perspex.Input
                 case RawMouseEventType.LeftButtonUp:
                     this.MouseUp((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
                     break;
+                case RawMouseEventType.Wheel:
+                    this.MouseWheel(
+                        (IMouseDevice)e.Device, 
+                        (IVisual)e.Root, 
+                        e.Position,
+                        ((RawMouseWheelEventArgs)e).Delta);
+                    break;
             }
         }
 
@@ -157,6 +164,28 @@ namespace Perspex.Input
                         RoutedEvent = InputElement.PointerReleasedEvent,
                         OriginalSource = source,
                         Source = source,
+                    });
+                }
+            }
+        }
+
+        private void MouseWheel(IMouseDevice device, IVisual visual, Point p,  Vector delta)
+        {
+            IVisual hit = visual.GetVisualAt(p);
+
+            if (hit != null)
+            {
+                IInteractive source = this.GetSource(hit);
+
+                if (source != null)
+                {
+                    source.RaiseEvent(new PointerWheelEventArgs
+                    {
+                        Device = this,
+                        RoutedEvent = InputElement.PointerWheelChangedEvent,
+                        OriginalSource = source,
+                        Source = source,
+                        Delta = delta,
                     });
                 }
             }

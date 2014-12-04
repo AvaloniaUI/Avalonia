@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using System.Reactive.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
@@ -88,6 +89,12 @@ namespace Perspex.Controls
                 this.horizontalScrollBar.GetObservable(ScrollBar.ValueProperty),
                 this.verticalScrollBar.GetObservable(ScrollBar.ValueProperty))
                 .Select(x => new Vector(x[0], x[1]));
+
+            this.presenter.GetObservable(ScrollContentPresenter.OffsetProperty).Subscribe(x =>
+            {
+                this.horizontalScrollBar.Value = x.X;
+                this.verticalScrollBar.Value = x.Y;
+            });
 
             this.Bind(OffsetProperty, offset);
         }

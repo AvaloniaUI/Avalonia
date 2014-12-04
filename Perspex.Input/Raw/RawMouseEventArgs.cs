@@ -14,6 +14,7 @@ namespace Perspex.Input.Raw
         Move,
         LeftButtonDown,
         LeftButtonUp,
+        Wheel,
     }
 
     public class RawMouseEventArgs : RawInputEventArgs

@@ -6,7 +6,9 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using System;
     using System.Linq;
+    using Perspex.Input;
     using Perspex.Layout;
 
     public class ScrollContentPresenter : ContentPresenter
@@ -20,9 +22,9 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>();
 
-        public ScrollContentPresenter()
+        static ScrollContentPresenter()
         {
-            Control.AffectsRender(OffsetProperty);
+            Control.AffectsArrange(OffsetProperty);
         }
 
         public Size Extent
@@ -73,6 +75,18 @@ namespace Perspex.Controls.Presenters
             }
 
             return new Size();
+        }
+
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            if (this.Extent.Height > this.Viewport.Height)
+            {
+                var y = this.Offset.Y + (-e.Delta.Y * 50);
+                y = Math.Max(y, 0);
+                y = Math.Min(y, Extent.Height - Viewport.Height);
+                this.Offset = new Vector(this.Offset.X, y);
+                e.Handled = true;
+            }
         }
     }
 }
