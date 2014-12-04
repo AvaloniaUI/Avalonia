@@ -9,20 +9,22 @@ namespace Perspex.Controls
     using System;
     using System.Collections;
     using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
 
     public class ItemsControl : TemplatedControl
     {
+        [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
+        private static readonly ItemsPanelTemplate DefaultPanel =
+            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Vertical });
+
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
 
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
-
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Vertical });
 
         private ItemContainerGenerator itemContainerGenerator;
 
