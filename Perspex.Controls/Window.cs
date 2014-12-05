@@ -48,6 +48,12 @@ namespace Perspex.Controls
             this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
             this.RenderManager = Locator.Current.GetService<IRenderManager>();
 
+            if (renderInterface == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not create an interface to the rendering subsystem: maybe no rendering subsystem was initialized?");
+            }
+
             if (this.impl == null)
             {
                 throw new InvalidOperationException(
@@ -85,7 +91,6 @@ namespace Perspex.Controls
 
             this.LayoutManager.Root = this;
             this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
-
             this.RenderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
 
             this.GetObservable(TitleProperty).Subscribe(s => this.impl.SetTitle(s));
