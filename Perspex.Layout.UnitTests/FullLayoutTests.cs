@@ -73,8 +73,8 @@ namespace Perspex.Layout.UnitTests
 
                 Assert.IsTrue(horzScroll.IsVisible);
                 Assert.IsTrue(vertScroll.IsVisible);
-                Assert.AreEqual(new Size(200, 10), horzScroll.ActualSize);
-                Assert.AreEqual(new Size(10, 200), vertScroll.ActualSize);
+                Assert.AreEqual(new Size(190, 10), horzScroll.ActualSize);
+                Assert.AreEqual(new Size(10, 190), vertScroll.ActualSize);
                 Assert.AreEqual(new Point(0, 190), Position(horzScroll));
                 Assert.AreEqual(new Point(190, 0), Position(vertScroll));
             }

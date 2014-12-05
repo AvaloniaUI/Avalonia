@@ -7,7 +7,6 @@
 namespace Perspex.Layout
 {
     using System;
-    using System.Linq;
     using System.Reactive;
     using System.Reactive.Subjects;
     using NGenerics.DataStructures.General;
@@ -157,14 +156,14 @@ namespace Perspex.Layout
                     {
                         if (!item.Control.IsMeasureValid)
                         {
-                            var control = item.Control;
+                            var parent = item.Control.GetVisualParent<ILayoutable>();
 
-                            while (!control.PreviousMeasure.HasValue)
+                            while (parent.PreviousMeasure == null)
                             {
-                                control = (ILayoutable)control.VisualParent;
+                                parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            control.Measure(control.PreviousMeasure.Value);
+                            parent.Measure(parent.PreviousMeasure.Value);
                         }
                     }
                 }
