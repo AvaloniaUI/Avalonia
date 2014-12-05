@@ -161,11 +161,12 @@ namespace Perspex.Layout
                 {
                     this.Root.Measure(this.Root.ClientSize);
                 }
-                else
+
+                foreach (var item in measure)
                 {
-                    foreach (var item in measure)
+                    if (!item.Control.IsMeasureValid)
                     {
-                        if (!item.Control.IsMeasureValid)
+                        if (item.Control != this.Root)
                         {
                             var parent = item.Control.GetVisualParent<ILayoutable>();
 

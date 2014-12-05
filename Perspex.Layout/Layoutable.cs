@@ -173,12 +173,12 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            if (force || this.previousMeasure != availableSize)
+            if (force || !this.IsMeasureValid || this.previousMeasure != availableSize)
             {
                 ++DebugMeasureCount;
 
-                this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
                 this.IsMeasureValid = true;
+                this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
                 this.previousMeasure = availableSize;
 
                 this.Log().Debug(
@@ -203,7 +203,7 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Arrange called before Measure.");
             }
 
-            if (force || this.previousArrange != rect)
+            if (force || !this.IsArrangeValid || this.previousArrange != rect)
             {
                 ++DebugArrangeCount;
 
@@ -213,53 +213,46 @@ namespace Perspex.Layout
                     this.GetHashCode(),
                     rect);
 
+                this.IsArrangeValid = true;
                 this.ArrangeCore(rect);
                 this.previousArrange = rect;
             }
-
-            this.IsArrangeValid = true;
         }
 
         public void InvalidateMeasure()
         {
-            if (this.IsMeasureValid)
+            var parent = this.GetVisualParent<ILayoutable>();
+
+            this.IsMeasureValid = false;
+            this.IsArrangeValid = false;
+            this.previousMeasure = null;
+            this.previousArrange = null;
+
+            if (parent != null && IsResizable(parent))
             {
-                var parent = this.GetVisualParent<ILayoutable>();
+                parent.InvalidateMeasure();
+            }
+            else
+            {
+                var root = this.GetLayoutRoot();
 
-                this.IsMeasureValid = false;
-                this.IsArrangeValid = false;
-                this.previousMeasure = null;
-                this.previousArrange = null;
-
-                if (parent != null && IsResizable(parent))
+                if (root != null && root.Item1.LayoutManager != null)
                 {
-                    parent.InvalidateMeasure();
-                }
-                else
-                {
-                    var root = this.GetLayoutRoot();
-
-                    if (root != null && root.Item1.LayoutManager != null)
-                    {
-                        root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
-                    }
+                    root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
                 }
             }
         }
 
         public void InvalidateArrange()
         {
-            if (this.IsArrangeValid)
+            var root = this.GetLayoutRoot();
+
+            this.IsArrangeValid = false;
+            this.previousArrange = null;
+
+            if (root != null && root.Item1.LayoutManager != null)
             {
-                var root = this.GetLayoutRoot();
-
-                this.IsArrangeValid = false;
-                this.previousArrange = null;
-
-                if (root != null && root.Item1.LayoutManager != null)
-                {
-                    root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
-                }
+                root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
             }
         }
 
