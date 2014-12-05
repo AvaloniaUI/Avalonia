@@ -56,7 +56,7 @@ namespace Perspex
 
         public IDisposable Subscribe(IObserver<object> observer)
         {
-            return this.Source.GetObservable(Property).Subscribe(observer);
+            return this.Source.GetObservable(this.Property).Subscribe(observer);
         }
 
         public Binding WithMode(BindingMode mode)

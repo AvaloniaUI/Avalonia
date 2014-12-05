@@ -187,7 +187,7 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>A <see cref="Binding"/> describing the binding.</returns>
-        public static Binding operator!(PerspexProperty property)
+        public static Binding operator !(PerspexProperty property)
         {
             return new Binding
             {
@@ -276,7 +276,6 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(type != null);
 
             // TODO: Ensure correct type.
-
             if (this.defaultValues.ContainsKey(type))
             {
                 throw new InvalidOperationException("Default value is already set for this property.");

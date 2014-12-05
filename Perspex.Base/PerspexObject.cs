@@ -78,6 +78,11 @@ namespace Perspex
             new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
+        /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
+        /// </summary>
+        private PropertyChangedEventHandler inpcChanged;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
@@ -93,11 +98,6 @@ namespace Perspex
                 p.Property.NotifyInitialized(e);
             }
         }
-
-        /// <summary>
-        /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
-        /// </summary>
-        private PropertyChangedEventHandler inpcChanged;
 
         /// <summary>
         /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
@@ -160,7 +160,6 @@ namespace Perspex
                 }
             }
         }
-
 
         /// <summary>
         /// Gets or sets the value of a <see cref="PerspexProperty"/>.
@@ -465,7 +464,7 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>True if the property is registered, otherwise false.</returns>
-        private bool IsRegistered(PerspexProperty property)
+        public bool IsRegistered(PerspexProperty property)
         {
             Type type = this.GetType();
 

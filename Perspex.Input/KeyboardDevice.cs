@@ -59,9 +59,9 @@ namespace Perspex.Input
                             OriginalSource = element,
                         };
 
-                        element.RaiseEvent(ev); ;
+                        element.RaiseEvent(ev);
                         ev.RoutedEvent = InputElement.KeyDownEvent;
-                        element.RaiseEvent(ev); ;
+                        element.RaiseEvent(ev);
                         break;
                 }
             }

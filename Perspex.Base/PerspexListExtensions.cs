@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Text;
-using System.Threading.Tasks;
+﻿// -----------------------------------------------------------------------
+// <copyright file="PerspexListExtensions.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace Perspex
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.ComponentModel;
+    using System.Reactive.Disposables;
+
     public static class PerspexListExtensions
     {
         public static IDisposable ForEachItem<T>(
@@ -25,6 +28,7 @@ namespace Perspex
                         {
                             added(i);
                         }
+
                         break;
 
                     case NotifyCollectionChangedAction.Replace:
@@ -45,6 +49,7 @@ namespace Perspex
                         {
                             removed(i);
                         }
+
                         break;
                 }
             };

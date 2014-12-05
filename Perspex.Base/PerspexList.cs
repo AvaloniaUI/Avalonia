@@ -31,6 +31,41 @@ namespace Perspex
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public int Count
+        {
+            get { return this.inner.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        bool IList.IsFixedSize
+        {
+            get { return false; }
+       }
+
+        bool IList.IsReadOnly
+        {
+            get { return false; }
+        }
+
+        int ICollection.Count
+        {
+            get { return this.inner.Count; }
+        }
+
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return null; }
+        }
+
         public T this[int index]
         {
             get
@@ -54,46 +89,11 @@ namespace Perspex
             }
         }
 
-        public int Count
-        {
-            get { return this.inner.Count; }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
-
-        bool IList.IsFixedSize
-        {
-            get { return false; }
-       }
-
-        bool IList.IsReadOnly
-        {
-            get { return false; }
-        }
-
         object IList.this[int index]
         {
             get { return this[index]; }
 
             set { this[index] = (T)value; }
-        }
-
-        int ICollection.Count
-        {
-            get { return this.inner.Count; }
-        }
-
-        bool ICollection.IsSynchronized
-        {
-            get { return false; }
-        }
-
-        object ICollection.SyncRoot
-        {
-            get { return null; }
         }
 
         public void Add(T item)

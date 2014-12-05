@@ -83,7 +83,7 @@ namespace Perspex.Controls.Presenters
             {
                 var y = this.Offset.Y + (-e.Delta.Y * 50);
                 y = Math.Max(y, 0);
-                y = Math.Min(y, Extent.Height - Viewport.Height);
+                y = Math.Min(y, this.Extent.Height - this.Viewport.Height);
                 this.Offset = new Vector(this.Offset.X, y);
                 e.Handled = true;
             }

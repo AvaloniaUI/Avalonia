@@ -95,8 +95,6 @@ namespace Perspex.Layout
         {
             this.LayoutQueued = false;
 
-            Layoutable.DebugMeasureCount = Layoutable.DebugArrangeCount = 0;
-
             if (this.measureNeeded)
             {
                 this.ExecuteMeasure();
@@ -104,8 +102,6 @@ namespace Perspex.Layout
             }
 
             this.ExecuteArrange();
-
-            System.Diagnostics.Debug.WriteLine(Environment.TickCount + " " + Layoutable.DebugMeasureCount + " " + Layoutable.DebugArrangeCount);
         }
 
         /// <summary>

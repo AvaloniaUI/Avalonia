@@ -11,9 +11,9 @@ namespace Perspex.Platform
     using System.Threading.Tasks;
     using Perspex.Threading;
 
-	/// <summary>
-	/// Provides platform-specific services relating to threading.
-	/// </summary>
+    /// <summary>
+    /// Provides platform-specific services relating to threading.
+    /// </summary>
     public interface IPlatformThreadingInterface
     {
         /// <summary>

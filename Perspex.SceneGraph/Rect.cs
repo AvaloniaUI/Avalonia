@@ -215,8 +215,8 @@ namespace Perspex
 
         public static Rect operator *(Rect rect, Vector scale)
         {
-            double centerX = rect.x + rect.width / 2;
-            double centerY = rect.y + rect.height / 2;
+            double centerX = rect.x + (rect.width / 2);
+            double centerY = rect.y + (rect.height / 2);
             double width = rect.width * scale.X;
             double height = rect.height * scale.Y;
             return new Rect(
@@ -228,8 +228,8 @@ namespace Perspex
 
         public static Rect operator /(Rect rect, Vector scale)
         {
-            double centerX = rect.x + rect.width / 2;
-            double centerY = rect.y + rect.height / 2;
+            double centerX = rect.x + (rect.width / 2);
+            double centerY = rect.y + (rect.height / 2);
             double width = rect.width / scale.X;
             double height = rect.height / scale.Y;
             return new Rect(

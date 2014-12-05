@@ -64,16 +64,16 @@ namespace Perspex.Layout
 
         static Layoutable()
         {
-            Layoutable.AffectsMeasure(IsVisibleProperty);
-            Layoutable.AffectsMeasure(WidthProperty);
-            Layoutable.AffectsMeasure(HeightProperty);
-            Layoutable.AffectsMeasure(MinWidthProperty);
-            Layoutable.AffectsMeasure(MaxWidthProperty);
-            Layoutable.AffectsMeasure(MinHeightProperty);
-            Layoutable.AffectsMeasure(MaxHeightProperty);
-            Layoutable.AffectsMeasure(MarginProperty);
-            Layoutable.AffectsMeasure(HorizontalAlignmentProperty);
-            Layoutable.AffectsMeasure(VerticalAlignmentProperty);
+            Layoutable.AffectsMeasure(Visual.IsVisibleProperty);
+            Layoutable.AffectsMeasure(Layoutable.WidthProperty);
+            Layoutable.AffectsMeasure(Layoutable.HeightProperty);
+            Layoutable.AffectsMeasure(Layoutable.MinWidthProperty);
+            Layoutable.AffectsMeasure(Layoutable.MaxWidthProperty);
+            Layoutable.AffectsMeasure(Layoutable.MinHeightProperty);
+            Layoutable.AffectsMeasure(Layoutable.MaxHeightProperty);
+            Layoutable.AffectsMeasure(Layoutable.MarginProperty);
+            Layoutable.AffectsMeasure(Layoutable.HorizontalAlignmentProperty);
+            Layoutable.AffectsMeasure(Layoutable.VerticalAlignmentProperty);
         }
 
         public double Width
@@ -163,9 +163,6 @@ namespace Perspex.Layout
             get { return this.previousArrange; }
         }
 
-        public static int DebugMeasureCount { get; set; }
-        public static int DebugArrangeCount { get; set; }
-
         public void Measure(Size availableSize, bool force = false)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
@@ -175,8 +172,6 @@ namespace Perspex.Layout
 
             if (force || !this.IsMeasureValid || this.previousMeasure != availableSize)
             {
-                ++DebugMeasureCount;
-
                 this.IsMeasureValid = true;
                 this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
                 this.previousMeasure = availableSize;
@@ -205,8 +200,6 @@ namespace Perspex.Layout
 
             if (force || !this.IsArrangeValid || this.previousArrange != rect)
             {
-                ++DebugArrangeCount;
-
                 this.Log().Debug(
                     "Arrange of {0} (#{1:x8}) gave {2} ",
                     this.GetType().Name,
@@ -376,7 +369,7 @@ namespace Perspex.Layout
             {
                 child.Measure(availableSize);
                 width = Math.Max(width, child.DesiredSize.Value.Width);
-                height= Math.Max(height, child.DesiredSize.Value.Height);
+                height = Math.Max(height, child.DesiredSize.Value.Height);
             }
 
             return new Size(width, height);
@@ -402,6 +395,11 @@ namespace Perspex.Layout
             }
         }
 
+        private static bool IsResizable(ILayoutable control)
+        {
+            return double.IsNaN(control.Width) || double.IsNaN(control.Height);
+        }
+
         private Tuple<ILayoutRoot, int> GetLayoutRoot()
         {
             var control = (IVisual)this;
@@ -414,11 +412,6 @@ namespace Perspex.Layout
             }
 
             return control != null ? Tuple.Create((ILayoutRoot)control, distance) : null;
-        }
-
-        private static bool IsResizable(ILayoutable control)
-        {
-            return double.IsNaN(control.Width) || double.IsNaN(control.Height);
         }
     }
 }

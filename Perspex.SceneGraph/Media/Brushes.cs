@@ -157,145 +157,285 @@ namespace Perspex.Media
         }
 
         public static SolidColorBrush AliceBlue { get; private set; }
+
         public static SolidColorBrush AntiqueWhite { get; private set; }
+
         public static SolidColorBrush Aqua { get; private set; }
+
         public static SolidColorBrush Aquamarine { get; private set; }
+
         public static SolidColorBrush Azure { get; private set; }
+
         public static SolidColorBrush Beige { get; private set; }
+
         public static SolidColorBrush Bisque { get; private set; }
+
         public static SolidColorBrush Black { get; private set; }
+
         public static SolidColorBrush BlanchedAlmond { get; private set; }
+
         public static SolidColorBrush Blue { get; private set; }
+
         public static SolidColorBrush BlueViolet { get; private set; }
+
         public static SolidColorBrush Brown { get; private set; }
+
         public static SolidColorBrush BurlyWood { get; private set; }
+
         public static SolidColorBrush CadetBlue { get; private set; }
+
         public static SolidColorBrush Chartreuse { get; private set; }
+
         public static SolidColorBrush Chocolate { get; private set; }
+
         public static SolidColorBrush Coral { get; private set; }
+
         public static SolidColorBrush CornflowerBlue { get; private set; }
+
         public static SolidColorBrush Cornsilk { get; private set; }
+
         public static SolidColorBrush Crimson { get; private set; }
+
         public static SolidColorBrush Cyan { get; private set; }
+
         public static SolidColorBrush DarkBlue { get; private set; }
+
         public static SolidColorBrush DarkCyan { get; private set; }
+
         public static SolidColorBrush DarkGoldenrod { get; private set; }
+
         public static SolidColorBrush DarkGray { get; private set; }
+
         public static SolidColorBrush DarkGreen { get; private set; }
+
         public static SolidColorBrush DarkKhaki { get; private set; }
+
         public static SolidColorBrush DarkMagenta { get; private set; }
+
         public static SolidColorBrush DarkOliveGreen { get; private set; }
+
         public static SolidColorBrush DarkOrange { get; private set; }
+
         public static SolidColorBrush DarkOrchid { get; private set; }
+
         public static SolidColorBrush DarkRed { get; private set; }
+
         public static SolidColorBrush DarkSalmon { get; private set; }
+
         public static SolidColorBrush DarkSeaGreen { get; private set; }
+
         public static SolidColorBrush DarkSlateBlue { get; private set; }
+
         public static SolidColorBrush DarkSlateGray { get; private set; }
+
         public static SolidColorBrush DarkTurquoise { get; private set; }
+
         public static SolidColorBrush DarkViolet { get; private set; }
+
         public static SolidColorBrush DeepPink { get; private set; }
+
         public static SolidColorBrush DeepSkyBlue { get; private set; }
+
         public static SolidColorBrush DimGray { get; private set; }
+
         public static SolidColorBrush DodgerBlue { get; private set; }
+
         public static SolidColorBrush Firebrick { get; private set; }
+
         public static SolidColorBrush FloralWhite { get; private set; }
+
         public static SolidColorBrush ForestGreen { get; private set; }
+
         public static SolidColorBrush Fuchsia { get; private set; }
+
         public static SolidColorBrush Gainsboro { get; private set; }
+
         public static SolidColorBrush GhostWhite { get; private set; }
+
         public static SolidColorBrush Gold { get; private set; }
+
         public static SolidColorBrush Goldenrod { get; private set; }
+
         public static SolidColorBrush Gray { get; private set; }
+
         public static SolidColorBrush Green { get; private set; }
+
         public static SolidColorBrush GreenYellow { get; private set; }
+
         public static SolidColorBrush Honeydew { get; private set; }
+
         public static SolidColorBrush HotPink { get; private set; }
+
         public static SolidColorBrush IndianRed { get; private set; }
+
         public static SolidColorBrush Indigo { get; private set; }
+
         public static SolidColorBrush Ivory { get; private set; }
+
         public static SolidColorBrush Khaki { get; private set; }
+
         public static SolidColorBrush Lavender { get; private set; }
+
         public static SolidColorBrush LavenderBlush { get; private set; }
+
         public static SolidColorBrush LawnGreen { get; private set; }
+
         public static SolidColorBrush LemonChiffon { get; private set; }
+
         public static SolidColorBrush LightBlue { get; private set; }
+
         public static SolidColorBrush LightCoral { get; private set; }
+
         public static SolidColorBrush LightCyan { get; private set; }
+
         public static SolidColorBrush LightGoldenrodYellow { get; private set; }
+
         public static SolidColorBrush LightGray { get; private set; }
+
         public static SolidColorBrush LightGreen { get; private set; }
+
         public static SolidColorBrush LightPink { get; private set; }
+
         public static SolidColorBrush LightSalmon { get; private set; }
+
         public static SolidColorBrush LightSeaGreen { get; private set; }
+
         public static SolidColorBrush LightSkyBlue { get; private set; }
+
         public static SolidColorBrush LightSlateGray { get; private set; }
+
         public static SolidColorBrush LightSteelBlue { get; private set; }
+
         public static SolidColorBrush LightYellow { get; private set; }
+
         public static SolidColorBrush Lime { get; private set; }
+
         public static SolidColorBrush LimeGreen { get; private set; }
+
         public static SolidColorBrush Linen { get; private set; }
+
         public static SolidColorBrush Magenta { get; private set; }
+
         public static SolidColorBrush Maroon { get; private set; }
+
         public static SolidColorBrush MediumAquamarine { get; private set; }
+
         public static SolidColorBrush MediumBlue { get; private set; }
+
         public static SolidColorBrush MediumOrchid { get; private set; }
+
         public static SolidColorBrush MediumPurple { get; private set; }
+
         public static SolidColorBrush MediumSeaGreen { get; private set; }
+
         public static SolidColorBrush MediumSlateBlue { get; private set; }
+
         public static SolidColorBrush MediumSpringGreen { get; private set; }
+
         public static SolidColorBrush MediumTurquoise { get; private set; }
+
         public static SolidColorBrush MediumVioletRed { get; private set; }
+
         public static SolidColorBrush MidnightBlue { get; private set; }
+
         public static SolidColorBrush MintCream { get; private set; }
+
         public static SolidColorBrush MistyRose { get; private set; }
+
         public static SolidColorBrush Moccasin { get; private set; }
+
         public static SolidColorBrush NavajoWhite { get; private set; }
+
         public static SolidColorBrush Navy { get; private set; }
+
         public static SolidColorBrush OldLace { get; private set; }
+
         public static SolidColorBrush Olive { get; private set; }
+
         public static SolidColorBrush OliveDrab { get; private set; }
+
         public static SolidColorBrush Orange { get; private set; }
+
         public static SolidColorBrush OrangeRed { get; private set; }
+
         public static SolidColorBrush Orchid { get; private set; }
+
         public static SolidColorBrush PaleGoldenrod { get; private set; }
+
         public static SolidColorBrush PaleGreen { get; private set; }
+
         public static SolidColorBrush PaleTurquoise { get; private set; }
+
         public static SolidColorBrush PaleVioletRed { get; private set; }
+
         public static SolidColorBrush PapayaWhip { get; private set; }
+
         public static SolidColorBrush PeachPuff { get; private set; }
+
         public static SolidColorBrush Peru { get; private set; }
+
         public static SolidColorBrush Pink { get; private set; }
+
         public static SolidColorBrush Plum { get; private set; }
+
         public static SolidColorBrush PowderBlue { get; private set; }
+
         public static SolidColorBrush Purple { get; private set; }
+
         public static SolidColorBrush Red { get; private set; }
+
         public static SolidColorBrush RosyBrown { get; private set; }
+
         public static SolidColorBrush RoyalBlue { get; private set; }
+
         public static SolidColorBrush SaddleBrown { get; private set; }
+
         public static SolidColorBrush Salmon { get; private set; }
+
         public static SolidColorBrush SandyBrown { get; private set; }
+
         public static SolidColorBrush SeaGreen { get; private set; }
+
         public static SolidColorBrush SeaShell { get; private set; }
+
         public static SolidColorBrush Sienna { get; private set; }
+
         public static SolidColorBrush Silver { get; private set; }
+
         public static SolidColorBrush SkyBlue { get; private set; }
+
         public static SolidColorBrush SlateBlue { get; private set; }
+
         public static SolidColorBrush SlateGray { get; private set; }
+
         public static SolidColorBrush Snow { get; private set; }
+
         public static SolidColorBrush SpringGreen { get; private set; }
+
         public static SolidColorBrush SteelBlue { get; private set; }
+
         public static SolidColorBrush Tan { get; private set; }
+
         public static SolidColorBrush Teal { get; private set; }
+
         public static SolidColorBrush Thistle { get; private set; }
+
         public static SolidColorBrush Tomato { get; private set; }
+
         public static SolidColorBrush Transparent { get; private set; }
+
         public static SolidColorBrush Turquoise { get; private set; }
+
         public static SolidColorBrush Violet { get; private set; }
+
         public static SolidColorBrush Wheat { get; private set; }
+
         public static SolidColorBrush White { get; private set; }
+
         public static SolidColorBrush WhiteSmoke { get; private set; }
+
         public static SolidColorBrush Yellow { get; private set; }
+
         public static SolidColorBrush YellowGreen { get; private set; }
     }
 }

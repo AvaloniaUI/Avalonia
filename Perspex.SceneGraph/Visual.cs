@@ -42,7 +42,7 @@ namespace Perspex
         public Visual()
         {
             this.visualChildren = new PerspexList<IVisual>();
-            this.visualChildren.CollectionChanged += VisualChildrenChanged;
+            this.visualChildren.CollectionChanged += this.VisualChildrenChanged;
         }
 
         public bool IsVisible
@@ -215,6 +215,7 @@ namespace Perspex
                         v.InheritanceParent = this;
                         v.SetVisualParent(this);
                     }
+
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -223,6 +224,7 @@ namespace Perspex
                         v.InheritanceParent = null;
                         v.SetVisualParent(null);
                     }
+
                     break;
             }
         }

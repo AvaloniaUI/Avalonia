@@ -37,7 +37,7 @@ namespace Perspex.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            AffectsMeasure(Window.ClientSizeProperty);
+            Window.AffectsMeasure(Window.ClientSizeProperty);
         }
 
         public Window()
