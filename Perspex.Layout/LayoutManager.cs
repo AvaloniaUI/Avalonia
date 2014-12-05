@@ -198,11 +198,12 @@ namespace Perspex.Layout
                 {
                     this.Root.Arrange(new Rect(this.Root.ClientSize));
                 }
-                else
+
+                foreach (var item in arrange)
                 {
-                    foreach (var item in arrange)
+                    if (!item.Control.IsArrangeValid)
                     {
-                        if (!item.Control.IsArrangeValid)
+                        if (item.Control != this.Root)
                         {
                             var control = item.Control;
 

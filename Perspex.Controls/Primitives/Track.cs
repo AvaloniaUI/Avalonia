@@ -133,6 +133,7 @@ namespace Perspex.Controls.Primitives
                 {
                     var width = Math.Max(finalSize.Width * thumbFraction, thumb.MinWidth);
                     var x = (finalSize.Width - width) * valueFraction;
+                    System.Diagnostics.Debug.WriteLine("" + this.Value + " " + x);
                     thumb.Arrange(new Rect(x, 0, width, finalSize.Height));
                 }
                 else
