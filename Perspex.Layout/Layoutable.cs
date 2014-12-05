@@ -166,27 +166,30 @@ namespace Perspex.Layout
         public static int DebugMeasureCount { get; set; }
         public static int DebugArrangeCount { get; set; }
 
-        public void Measure(Size availableSize)
+        public void Measure(Size availableSize, bool force = false)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
             {
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            ++DebugMeasureCount;
+            if (force || this.previousMeasure != availableSize)
+            {
+                ++DebugMeasureCount;
 
-            this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
-            this.IsMeasureValid = true;
-            this.previousMeasure = availableSize;
+                this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+                this.IsMeasureValid = true;
+                this.previousMeasure = availableSize;
 
-            this.Log().Debug(
-                "Measure of {0} (#{1:x8}) requested {2} ",
-                this.GetType().Name,
-                this.GetHashCode(),
-                this.DesiredSize);
+                this.Log().Debug(
+                    "Measure of {0} (#{1:x8}) requested {2} ",
+                    this.GetType().Name,
+                    this.GetHashCode(),
+                    this.DesiredSize);
+            }
         }
 
-        public void Arrange(Rect rect)
+        public void Arrange(Rect rect, bool force = false)
         {
             if (rect.Width < 0 || rect.Height < 0 ||
                 double.IsInfinity(rect.Width) || double.IsInfinity(rect.Height) ||
@@ -200,17 +203,21 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Arrange called before Measure.");
             }
 
-            ++DebugArrangeCount;
+            if (force || this.previousArrange != rect)
+            {
+                ++DebugArrangeCount;
 
-            this.Log().Debug(
-                "Arrange of {0} (#{1:x8}) gave {2} ",
-                this.GetType().Name,
-                this.GetHashCode(),
-                rect);
+                this.Log().Debug(
+                    "Arrange of {0} (#{1:x8}) gave {2} ",
+                    this.GetType().Name,
+                    this.GetHashCode(),
+                    rect);
 
-            this.ArrangeCore(rect);
+                this.ArrangeCore(rect);
+                this.previousArrange = rect;
+            }
+
             this.IsArrangeValid = true;
-            this.previousArrange = rect;
         }
 
         public void InvalidateMeasure()
@@ -219,6 +226,8 @@ namespace Perspex.Layout
 
             this.IsMeasureValid = false;
             this.IsArrangeValid = false;
+            this.previousMeasure = null;
+            this.previousArrange = null;
 
             if (root != null && root.Item1.LayoutManager != null)
             {
@@ -231,6 +240,7 @@ namespace Perspex.Layout
             var root = this.GetLayoutRoot();
 
             this.IsArrangeValid = false;
+            this.previousArrange = null;
 
             if (root != null && root.Item1.LayoutManager != null)
             {

@@ -35,9 +35,9 @@ namespace Perspex.Layout
 
         Rect? PreviousArrange { get; }
 
-        void Measure(Size availableSize);
+        void Measure(Size availableSize, bool force = false);
 
-        void Arrange(Rect rect);
+        void Arrange(Rect rect, bool force = false);
 
         void InvalidateMeasure();
 

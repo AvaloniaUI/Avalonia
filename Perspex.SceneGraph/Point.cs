@@ -50,6 +50,28 @@ namespace Perspex
             get { return this.y; }
         }
 
+        /// <summary>
+        /// Checks for equality between two <see cref="Point"/>s.
+        /// </summary>
+        /// <param name="left">The first point.</param>
+        /// <param name="right">The second point.</param>
+        /// <returns>True if the points are equal; otherwise false.</returns>
+        public static bool operator ==(Point left, Point right)
+        {
+            return left.X == right.X && left.Y == right.Y;
+        }
+
+        /// <summary>
+        /// Checks for unequality between two <see cref="Point"/>s.
+        /// </summary>
+        /// <param name="left">The first point.</param>
+        /// <param name="right">The second point.</param>
+        /// <returns>True if the points are unequal; otherwise false.</returns>
+        public static bool operator !=(Point left, Point right)
+        {
+            return !(left == right);
+        }
+
         public static Point operator +(Point a, Point b)
         {
             return new Point(a.x + b.x, a.y + b.y);
@@ -63,6 +85,28 @@ namespace Perspex
         public static implicit operator Vector(Point p)
         {
             return new Vector(p.x, p.y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Point)
+            {
+                var other = (Point)obj;
+                return this.X == other.X && this.Y == other.Y;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 23) + this.x.GetHashCode();
+                hash = (hash * 23) + this.y.GetHashCode();
+                return hash;
+            }
         }
 
         /// <summary>

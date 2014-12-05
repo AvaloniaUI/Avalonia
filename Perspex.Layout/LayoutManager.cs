@@ -174,7 +174,7 @@ namespace Perspex.Layout
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            parent.Measure(parent.PreviousMeasure.Value);
+                            parent.Measure(parent.PreviousMeasure.Value, true);
                         }
                     }
                 }
@@ -214,7 +214,7 @@ namespace Perspex.Layout
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            parent.Arrange(parent.PreviousArrange.Value);
+                            parent.Arrange(parent.PreviousArrange.Value, true);
                         }
                     }
                 }

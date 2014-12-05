@@ -120,6 +120,28 @@ namespace Perspex
                 Math.Max(0, this.height - thickness.Top - thickness.Bottom));
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Size)
+            {
+                var other = (Size)obj;
+                return this.Width == other.Width && this.Height == other.Height;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 23) + this.Width.GetHashCode();
+                hash = (hash * 23) + this.Height.GetHashCode();
+                return hash;
+            }
+        }
+
         /// <summary>
         /// Inflates the size by a <see cref="Thickness"/>.
         /// </summary>

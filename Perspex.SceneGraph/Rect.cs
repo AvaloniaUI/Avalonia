@@ -191,6 +191,28 @@ namespace Perspex
             get { return this.width == 0 && this.height == 0; }
         }
 
+        /// <summary>
+        /// Checks for equality between two <see cref="Rect"/>s.
+        /// </summary>
+        /// <param name="left">The first rect.</param>
+        /// <param name="right">The second rect.</param>
+        /// <returns>True if the rects are equal; otherwise false.</returns>
+        public static bool operator ==(Rect left, Rect right)
+        {
+            return left.Position == right.Position && left.Size == right.Size;
+        }
+
+        /// <summary>
+        /// Checks for unequality between two <see cref="Rect"/>s.
+        /// </summary>
+        /// <param name="left">The first rect.</param>
+        /// <param name="right">The second rect.</param>
+        /// <returns>True if the rects are unequal; otherwise false.</returns>
+        public static bool operator !=(Rect left, Rect right)
+        {
+            return !(left == right);
+        }
+
         public static Rect operator *(Rect rect, Vector scale)
         {
             double centerX = rect.x + rect.width / 2;
@@ -259,6 +281,33 @@ namespace Perspex
             return new Rect(
                 new Point(this.x + thickness.Left, this.y + thickness.Top),
                 this.Size.Deflate(thickness));
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Rect)
+            {
+                var other = (Rect)obj;
+                return this.X == other.X &&
+                       this.X == other.X &&
+                       this.Width == other.Width &&
+                       this.Height == other.Height;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 23) + this.X.GetHashCode();
+                hash = (hash * 23) + this.Y.GetHashCode();
+                hash = (hash * 23) + this.Width.GetHashCode();
+                hash = (hash * 23) + this.Height.GetHashCode();
+                return hash;
+            }
         }
 
         public Rect Intersect(Rect rect)
