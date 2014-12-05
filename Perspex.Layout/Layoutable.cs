@@ -209,6 +209,7 @@ namespace Perspex.Layout
                 rect);
 
             this.ArrangeCore(rect);
+            this.IsArrangeValid = true;
             this.previousArrange = rect;
         }
 
@@ -217,6 +218,7 @@ namespace Perspex.Layout
             var root = this.GetLayoutRoot();
 
             this.IsMeasureValid = false;
+            this.IsArrangeValid = false;
 
             if (root != null && root.Item1.LayoutManager != null)
             {
@@ -228,7 +230,6 @@ namespace Perspex.Layout
         {
             var root = this.GetLayoutRoot();
 
-            this.IsMeasureValid = false;
             this.IsArrangeValid = false;
 
             if (root != null && root.Item1.LayoutManager != null)

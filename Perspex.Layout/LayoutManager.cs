@@ -43,6 +43,11 @@ namespace Perspex.Layout
         private Heap<Item> toMeasure = new Heap<Item>(HeapType.Minimum);
 
         /// <summary>
+        /// The controls that need to be arranged, sorted by distance to layout root.
+        /// </summary>
+        private Heap<Item> toArrange = new Heap<Item>(HeapType.Minimum);
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LayoutManager"/> class.
         /// </summary>
         public LayoutManager()
@@ -98,7 +103,7 @@ namespace Perspex.Layout
                 this.measureNeeded = false;
             }
 
-            this.Root.Arrange(new Rect(this.Root.ClientSize));
+            this.ExecuteArrange();
 
             System.Diagnostics.Debug.WriteLine(Environment.TickCount + " " + Layoutable.DebugMeasureCount + " " + Layoutable.DebugArrangeCount);
         }
@@ -110,8 +115,11 @@ namespace Perspex.Layout
         /// <param name="distance">The control's distance from the layout root.</param>
         public void InvalidateMeasure(ILayoutable control, int distance)
         {
+            var item = new Item(control, distance);
+            this.toMeasure.Add(item);
+            this.toArrange.Add(item);
+
             this.measureNeeded = true;
-            this.toMeasure.Add(new Item(control, distance));
 
             if (!this.LayoutQueued)
             {
@@ -128,7 +136,7 @@ namespace Perspex.Layout
         /// <param name="distance">The control's distance from the layout root.</param>
         public void InvalidateArrange(ILayoutable control, int distance)
         {
-            //this.toArrange.Add(item);
+            this.toArrange.Add(new Item(control, distance));
 
             if (!this.LayoutQueued)
             {
@@ -138,6 +146,9 @@ namespace Perspex.Layout
             }
         }
 
+        /// <summary>
+        /// Executes the measure part of the layout pass.
+        /// </summary>
         private void ExecuteMeasure()
         {
             for (int i = 0; i < MaxTries; ++i)
@@ -169,6 +180,46 @@ namespace Perspex.Layout
                 }
 
                 if (this.toMeasure.Count == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes the arrange part of the layout pass.
+        /// </summary>
+        private void ExecuteArrange()
+        {
+            for (int i = 0; i < MaxTries; ++i)
+            {
+                var arrange = this.toArrange;
+
+                this.toArrange = new Heap<Item>(HeapType.Minimum);
+
+                if (!this.Root.IsArrangeValid)
+                {
+                    this.Root.Arrange(new Rect(this.Root.ClientSize));
+                }
+                else
+                {
+                    foreach (var item in arrange)
+                    {
+                        if (!item.Control.IsArrangeValid)
+                        {
+                            var parent = item.Control.GetVisualParent<ILayoutable>();
+
+                            while (parent.PreviousArrange == null)
+                            {
+                                parent = parent.GetVisualParent<ILayoutable>();
+                            }
+
+                            parent.Arrange(parent.PreviousArrange.Value);
+                        }
+                    }
+                }
+
+                if (this.toArrange.Count == 0)
                 {
                     break;
                 }
