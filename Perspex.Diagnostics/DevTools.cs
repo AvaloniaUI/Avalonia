@@ -25,7 +25,7 @@ namespace Perspex.Diagnostics
             {
                 DataTemplates = new DataTemplates
                 {
-                    new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children, x => true),
+                    new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
                 },
                 [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x =>
                 {
