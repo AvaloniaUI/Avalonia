@@ -207,14 +207,14 @@ namespace Perspex.Layout
                     {
                         if (!item.Control.IsArrangeValid)
                         {
-                            var parent = item.Control.GetVisualParent<ILayoutable>();
+                            var control = item.Control;
 
-                            while (parent.PreviousArrange == null)
+                            while (control.PreviousArrange == null)
                             {
-                                parent = parent.GetVisualParent<ILayoutable>();
+                                control = control.GetVisualParent<ILayoutable>();
                             }
 
-                            parent.Arrange(parent.PreviousArrange.Value, true);
+                            control.Arrange(control.PreviousArrange.Value, true);
                         }
                     }
                 }

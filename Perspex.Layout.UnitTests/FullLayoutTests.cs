@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Layout.UnitTests
 {
     using System.Linq;
@@ -25,6 +26,44 @@ namespace Perspex.Layout.UnitTests
     public class FullLayoutTests
     {
         [TestMethod]
+        public void Grandchild_Size_Changed()
+        {
+            using (var context = Locator.CurrentMutable.WithResolver())
+            {
+                this.RegisterServices();
+
+                Border border;
+                TextBlock textBlock;
+
+                var window = new Window()
+                {
+                    Content = (border = new Border
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Content = new Border
+                        {
+                            Content = (textBlock = new TextBlock
+                            {
+                                Width = 400,
+                                Height = 400,
+                                Text = "Hello World!",
+                            }),
+                        }
+                    })
+                };
+
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.AreEqual(new Size(400, 400), border.ActualSize);
+                textBlock.Width = 200;
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.AreEqual(new Size(200, 400), border.ActualSize);
+            }
+        }
+
+        [TestMethod]
         public void Test_ScrollViewer_With_TextBlock()
         {
             using (var context = Locator.CurrentMutable.WithResolver())
@@ -38,7 +77,6 @@ namespace Perspex.Layout.UnitTests
                 {
                     Content = (scrollViewer = new ScrollViewer
                     {
-                        Id = "scrollViewer",
                         Width = 200,
                         Height = 200,
                         HorizontalAlignment = HorizontalAlignment.Center,

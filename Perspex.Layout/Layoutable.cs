@@ -222,29 +222,44 @@ namespace Perspex.Layout
 
         public void InvalidateMeasure()
         {
-            var root = this.GetLayoutRoot();
-
-            this.IsMeasureValid = false;
-            this.IsArrangeValid = false;
-            this.previousMeasure = null;
-            this.previousArrange = null;
-
-            if (root != null && root.Item1.LayoutManager != null)
+            if (this.IsMeasureValid)
             {
-                root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
+                var parent = this.GetVisualParent<ILayoutable>();
+
+                this.IsMeasureValid = false;
+                this.IsArrangeValid = false;
+                this.previousMeasure = null;
+                this.previousArrange = null;
+
+                if (parent != null && IsResizable(parent))
+                {
+                    parent.InvalidateMeasure();
+                }
+                else
+                {
+                    var root = this.GetLayoutRoot();
+
+                    if (root != null && root.Item1.LayoutManager != null)
+                    {
+                        root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
+                    }
+                }
             }
         }
 
         public void InvalidateArrange()
         {
-            var root = this.GetLayoutRoot();
-
-            this.IsArrangeValid = false;
-            this.previousArrange = null;
-
-            if (root != null && root.Item1.LayoutManager != null)
+            if (this.IsArrangeValid)
             {
-                root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
+                var root = this.GetLayoutRoot();
+
+                this.IsArrangeValid = false;
+                this.previousArrange = null;
+
+                if (root != null && root.Item1.LayoutManager != null)
+                {
+                    root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
+                }
             }
         }
 
@@ -406,6 +421,11 @@ namespace Perspex.Layout
             }
 
             return control != null ? Tuple.Create((ILayoutRoot)control, distance) : null;
+        }
+
+        private static bool IsResizable(ILayoutable control)
+        {
+            return double.IsNaN(control.Width) || double.IsNaN(control.Height);
         }
     }
 }
