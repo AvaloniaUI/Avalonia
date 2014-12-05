@@ -24,7 +24,7 @@ namespace NGenerics.DataStructures.Trees
     /// </summary>
 	/// <typeparam name="T"></typeparam>
     //[Serializable]
-    internal abstract class BinarySearchTreeBase<T> : ISearchTree<T>
+    public abstract class BinarySearchTreeBase<T> : ISearchTree<T>
     {
 
         #region Globals

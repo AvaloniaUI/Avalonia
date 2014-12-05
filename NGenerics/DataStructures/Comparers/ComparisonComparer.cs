@@ -19,7 +19,7 @@ namespace NGenerics.Comparers
     /// </summary>
     /// <typeparam name="T">The type of the objects to compare.</typeparam>
     //[Serializable]
-    internal sealed class ComparisonComparer<T> : IComparer<T>
+    public sealed class ComparisonComparer<T> : IComparer<T>
 	{
 		#region Globals
 

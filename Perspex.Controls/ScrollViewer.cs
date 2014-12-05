@@ -46,6 +46,11 @@ namespace Perspex.Controls
             private set { this.SetValue(ViewportProperty, value); }
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(availableSize);
+        }
+
         protected override void OnTemplateApplied()
         {
             this.presenter = this.GetTemplateChild<ScrollContentPresenter>("presenter");

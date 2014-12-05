@@ -14,7 +14,7 @@ namespace Perspex.Diagnostics.ViewModels
         public PropertyDetails(PerspexPropertyValue value)
         {
             this.Name = value.Property.Name;
-            this.Value = value.CurrentValue;
+            this.Value = value.CurrentValue ?? "(null)";
             this.Priority = (value.PriorityValue != null) ?
                 Enum.GetName(typeof(BindingPriority), value.PriorityValue.ValuePriority) :
                 value.Property.Inherits ? "Inherited" : "Unset";

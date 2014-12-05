@@ -45,7 +45,9 @@ namespace Perspex.Controls
 
             set
             {
-                value = Math.Min(Math.Max(value, 0), this.Text.Length);
+                var text = this.Text ?? string.Empty;
+
+                value = Math.Min(Math.Max(value, 0), text.Length);
 
                 if (this.caretIndex != value)
                 {
@@ -80,7 +82,7 @@ namespace Perspex.Controls
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            string text = this.Text;
+            string text = this.Text ?? string.Empty;
 
             switch (e.Key)
             {

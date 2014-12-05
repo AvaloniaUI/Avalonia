@@ -23,7 +23,7 @@ namespace NGenerics.DataStructures.Trees
 	/// <typeparam name="T">The type of elements in the <see cref="BinaryTree{T}"/>.</typeparam>
     //[Serializable]
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    internal class BinaryTree<T> : ICollection<T>, ITree<T>
+    public class BinaryTree<T> : ICollection<T>, ITree<T>
     {
         #region Globals
 

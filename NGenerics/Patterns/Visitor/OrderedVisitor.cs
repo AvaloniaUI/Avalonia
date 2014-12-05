@@ -19,7 +19,7 @@ namespace NGenerics.Patterns.Visitor
     /// Used primarily as a base class for Visitors specializing in a specific order type.
     /// </summary>
     /// <typeparam name="T">The type of objects to be visited.</typeparam>
-    internal class OrderedVisitor<T> : IVisitor<T>
+    public class OrderedVisitor<T> : IVisitor<T>
     {
         #region Globals
 

@@ -18,7 +18,7 @@ namespace NGenerics.Patterns.Visitor
     /// data structures.
     /// </summary>
     /// <typeparam name="T">The type of objects to be visited.</typeparam>
-    internal sealed class TrackingVisitor<T> : IVisitor<T>
+    public sealed class TrackingVisitor<T> : IVisitor<T>
     {
         #region Globals
 

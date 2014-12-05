@@ -18,7 +18,7 @@ namespace NGenerics.Comparers {
     /// <typeparam name="TKey">The key type.</typeparam>
 	/// <typeparam name="TValue">The value type.</typeparam>
     //[Serializable]
-    internal class KeyValuePairComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>> {
+    public class KeyValuePairComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>> {
 
         #region Globals
 

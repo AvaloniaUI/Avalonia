@@ -15,7 +15,7 @@ namespace Perspex.Controls.Presenters
     public class ContentPresenter : Control, IVisual
     {
         public static readonly PerspexProperty<object> ContentProperty =
-            ContentControl.ContentProperty.AddOwner<Control>();
+            ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         private bool createdChild;
 

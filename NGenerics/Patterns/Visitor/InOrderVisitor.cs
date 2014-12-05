@@ -14,7 +14,7 @@ namespace NGenerics.Patterns.Visitor
     /// An in order implementation of the <see cref="OrderedVisitor{T}"/> class.
     /// </summary>
     /// <typeparam name="T">The type of objects to be visited.</typeparam>
-    internal sealed class InOrderVisitor<T> : OrderedVisitor<T>
+    public sealed class InOrderVisitor<T> : OrderedVisitor<T>
     {
         #region Construction
 

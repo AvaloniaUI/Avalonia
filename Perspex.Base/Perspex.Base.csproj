@@ -54,28 +54,6 @@
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
     <Compile Include="Threading\MainLoop.cs" />
-    <Compile Include="Threading\NGenerics\BinarySearchTreeBase.cs" />
-    <Compile Include="Threading\NGenerics\BinaryTree.cs" />
-    <Compile Include="Threading\NGenerics\ComparisonComparer.cs" />
-    <Compile Include="Threading\NGenerics\Constants.cs" />
-    <Compile Include="Threading\NGenerics\Guard.cs" />
-    <Compile Include="Threading\NGenerics\InOrderVisitor.cs" />
-    <Compile Include="Threading\NGenerics\IQueue.cs" />
-    <Compile Include="Threading\NGenerics\ISearchTree.cs" />
-    <Compile Include="Threading\NGenerics\ITree.cs" />
-    <Compile Include="Threading\NGenerics\IVisitor.cs" />
-    <Compile Include="Threading\NGenerics\KeyTrackingVisitor.cs" />
-    <Compile Include="Threading\NGenerics\KeyValuePairComparer.cs" />
-    <Compile Include="Threading\NGenerics\NodeColor.cs" />
-    <Compile Include="Threading\NGenerics\OrderedVisitor.cs" />
-    <Compile Include="Threading\NGenerics\PriorityQueue.cs" />
-    <Compile Include="Threading\NGenerics\PriorityQueueType.cs" />
-    <Compile Include="Threading\NGenerics\RedBlackTree.cs" />
-    <Compile Include="Threading\NGenerics\RedBlackTreeDictionary.cs" />
-    <Compile Include="Threading\NGenerics\RedBlackTreeList.cs" />
-    <Compile Include="Threading\NGenerics\RedBlackTreeNode.cs" />
-    <Compile Include="Threading\NGenerics\TrackingVisitor.cs" />
-    <Compile Include="Threading\NGenerics\ValueTrackingVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">
@@ -98,7 +76,12 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
+      <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
+      <Name>NGenerics</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -113,36 +113,49 @@ namespace TestApplication
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                Content = new Grid
+                Content = new ScrollViewer
                 {
-                    RowDefinitions = new RowDefinitions
+                    Width = 200,
+                    Height = 200,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Content = new Image
                     {
-                        new RowDefinition(1, GridUnitType.Star),
-                        new RowDefinition(GridLength.Auto),
+                        Source = new Bitmap("github_icon.png"),
+                        Width = 400,
+                        Height = 400,
                     },
-                    Children = new Controls
-                    {
-                        new TabControl
-                        {
-                            Items = new[]
-                            {
-                                ButtonsTab(),
-                                TextTab(),
-                                ImagesTab(),
-                                ListsTab(),
-                                SlidersTab(),
-                                LayoutTab(),
-                            }
-                        },
-                        new TextBlock
-                        {
-                            Text = "Press F12 for Dev Tools",
-                            HorizontalAlignment = HorizontalAlignment.Right,
-                            Margin = new Thickness(2),
-                            [Grid.RowProperty] = 1,
-                        }
-                    }
                 },
+                //Content = new Grid
+                //{
+                //    RowDefinitions = new RowDefinitions
+                //    {
+                //        new RowDefinition(1, GridUnitType.Star),
+                //        new RowDefinition(GridLength.Auto),
+                //    },
+                //    Children = new Controls
+                //    {
+                //        new TabControl
+                //        {
+                //            Items = new[]
+                //            {
+                //                ButtonsTab(),
+                //                TextTab(),
+                //                ImagesTab(),
+                //                ListsTab(),
+                //                SlidersTab(),
+                //                LayoutTab(),
+                //            }
+                //        },
+                //        new TextBlock
+                //        {
+                //            Text = "Press F12 for Dev Tools",
+                //            HorizontalAlignment = HorizontalAlignment.Right,
+                //            Margin = new Thickness(2),
+                //            [Grid.RowProperty] = 1,
+                //        }
+                //    }
+                //},
             };
 
             DevTools.Attach(window);

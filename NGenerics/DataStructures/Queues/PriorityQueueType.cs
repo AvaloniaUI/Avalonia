@@ -12,7 +12,7 @@ namespace NGenerics.DataStructures.Queues
     /// <summary>
     /// Specifies the Priority Queue type (min or max).
     /// </summary>
-    internal enum PriorityQueueType
+    public enum PriorityQueueType
     {
         /// <summary>
         /// Specify a Minimum <see cref="PriorityQueue{TValue, TPriority}"/>.

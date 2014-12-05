@@ -29,7 +29,7 @@ namespace NGenerics.DataStructures.Queues
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
 	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
     //[Serializable]
-    internal class PriorityQueue<TValue, TPriority> : ICollection<TValue>, IQueue<TValue> 
+    public class PriorityQueue<TValue, TPriority> : ICollection<TValue>, IQueue<TValue> 
     {
         #region Globals
 

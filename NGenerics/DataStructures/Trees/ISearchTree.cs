@@ -21,7 +21,7 @@ namespace NGenerics.DataStructures.Trees
     /// </summary>
     /// <typeparam name="T">The type of element to hold in the tree.</typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    internal interface ISearchTree<T> : ICollection<T>  {
+    public interface ISearchTree<T> : ICollection<T>  {
         /// <summary>
         /// Gets the largest item in the tree.
         /// </summary>

@@ -31,7 +31,7 @@ namespace NGenerics.DataStructures.Trees
 #if (!SILVERLIGHT && !WINDOWSPHONE)
     //[Serializable]
 #endif
-    internal class RedBlackTree<TKey, TValue> : RedBlackTree<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>  // BinarySearchTreeBase<TKey, TValue>
+    public class RedBlackTree<TKey, TValue> : RedBlackTree<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>  // BinarySearchTreeBase<TKey, TValue>
 	{
 		#region Construction
 		/// <inheritdoc />

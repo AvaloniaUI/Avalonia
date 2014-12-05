@@ -35,7 +35,7 @@ namespace Perspex.Direct2D1
         {
             return new TextLayout(
                 factory,
-                text.Text,
+                text.Text ?? string.Empty,
                 GetTextFormat(factory, text),
                 (float)constraint.Width,
                 (float)constraint.Height);

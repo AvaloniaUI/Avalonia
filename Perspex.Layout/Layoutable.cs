@@ -58,6 +58,24 @@ namespace Perspex.Layout
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Layoutable, VerticalAlignment>("VerticalAlignment");
 
+        private Size? previousMeasure;
+
+        private Rect? previousArrange;
+
+        static Layoutable()
+        {
+            Layoutable.AffectsMeasure(IsVisibleProperty);
+            Layoutable.AffectsMeasure(WidthProperty);
+            Layoutable.AffectsMeasure(HeightProperty);
+            Layoutable.AffectsMeasure(MinWidthProperty);
+            Layoutable.AffectsMeasure(MaxWidthProperty);
+            Layoutable.AffectsMeasure(MinHeightProperty);
+            Layoutable.AffectsMeasure(MaxHeightProperty);
+            Layoutable.AffectsMeasure(MarginProperty);
+            Layoutable.AffectsMeasure(HorizontalAlignmentProperty);
+            Layoutable.AffectsMeasure(VerticalAlignmentProperty);
+        }
+
         public double Width
         {
             get { return this.GetValue(WidthProperty); }
@@ -123,6 +141,31 @@ namespace Perspex.Layout
             set;
         }
 
+        public bool IsMeasureValid
+        {
+            get;
+            private set;
+        }
+
+        public bool IsArrangeValid
+        {
+            get;
+            private set;
+        }
+
+        Size? ILayoutable.PreviousMeasure
+        {
+            get { return this.previousMeasure; }
+        }
+
+        Rect? ILayoutable.PreviousArrange
+        {
+            get { return this.previousArrange; }
+        }
+
+        public static int DebugMeasureCount { get; set; }
+        public static int DebugArrangeCount { get; set; }
+
         public void Measure(Size availableSize)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
@@ -130,8 +173,11 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            availableSize = availableSize.Deflate(this.Margin);
+            ++DebugMeasureCount;
+
             this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+            this.IsMeasureValid = true;
+            this.previousMeasure = availableSize;
 
             this.Log().Debug(
                 "Measure of {0} (#{1:x8}) requested {2} ",
@@ -154,35 +200,40 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Arrange called before Measure.");
             }
 
+            ++DebugArrangeCount;
+
             this.Log().Debug(
                 "Arrange of {0} (#{1:x8}) gave {2} ",
                 this.GetType().Name,
                 this.GetHashCode(),
                 rect);
 
-            if (this.DesiredSize.HasValue)
-            {
-                this.ArrangeCore(rect);
-            }
+            this.ArrangeCore(rect);
+            this.previousArrange = rect;
         }
 
         public void InvalidateMeasure()
         {
-            ILayoutRoot root = this.GetLayoutRoot();
+            var root = this.GetLayoutRoot();
 
-            if (root != null && root.LayoutManager != null)
+            this.IsMeasureValid = false;
+
+            if (root != null && root.Item1.LayoutManager != null)
             {
-                root.LayoutManager.InvalidateMeasure(this);
+                root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
             }
         }
 
         public void InvalidateArrange()
         {
-            ILayoutRoot root = this.GetLayoutRoot();
+            var root = this.GetLayoutRoot();
 
-            if (root != null)
+            this.IsMeasureValid = false;
+            this.IsArrangeValid = false;
+
+            if (root != null && root.Item1.LayoutManager != null)
             {
-                root.LayoutManager.InvalidateArrange(this);
+                root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
             }
         }
 
@@ -265,7 +316,8 @@ namespace Perspex.Layout
             {
                 this.ApplyTemplate();
 
-                var constrained = LayoutHelper.ApplyLayoutConstraints(this, availableSize)
+                var constrained = LayoutHelper
+                    .ApplyLayoutConstraints(this, availableSize)
                     .Deflate(this.Margin);
 
                 var measured = this.MeasureOverride(constrained);
@@ -331,9 +383,18 @@ namespace Perspex.Layout
             }
         }
 
-        private ILayoutRoot GetLayoutRoot()
+        private Tuple<ILayoutRoot, int> GetLayoutRoot()
         {
-            return this.GetSelfAndVisualAncestors().OfType<ILayoutRoot>().FirstOrDefault();
+            var control = (IVisual)this;
+            var distance = 0;
+
+            while (control != null && !(control is ILayoutRoot))
+            {
+                control = control.GetVisualParent();
+                ++distance;
+            }
+
+            return control != null ? Tuple.Create((ILayoutRoot)control, distance) : null;
         }
     }
 }

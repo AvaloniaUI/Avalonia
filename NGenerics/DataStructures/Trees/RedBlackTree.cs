@@ -24,7 +24,7 @@ namespace NGenerics.DataStructures.Trees {
     /// <typeparam name="T">The type of element to keep in the tree.</typeparam>
 	[SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     //[Serializable]
-    internal class RedBlackTree<T> : BinarySearchTreeBase<T> {
+    public class RedBlackTree<T> : BinarySearchTreeBase<T> {
 
         #region Construction
         

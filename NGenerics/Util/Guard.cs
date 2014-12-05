@@ -15,7 +15,7 @@ namespace NGenerics.Util
     /// <summary>
     /// Performs common argument validation.
     /// </summary>
-    internal static class Guard
+    public static class Guard
     {
         #region Methods
 

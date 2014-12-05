@@ -10,6 +10,8 @@ namespace Perspex
     using System.Threading;
     using Perspex.Controls;
     using Perspex.Input;
+    using Perspex.Layout;
+    using Perspex.Rendering;
     using Perspex.Styling;
     using Perspex.Threading;
     using Splat;
@@ -90,6 +92,9 @@ namespace Perspex
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
+
+            Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
+            Locator.CurrentMutable.Register(() => new RenderManager(), typeof(IRenderManager));
         }
     }
 }

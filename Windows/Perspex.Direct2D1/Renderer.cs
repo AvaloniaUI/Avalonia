@@ -133,10 +133,20 @@ namespace Perspex.Direct2D1
 
                 transform *= Matrix.Translation(visual.Bounds.Position);
 
-                using (context.PushClip(visual.Bounds))
+                //using (context.PushClip(visual.Bounds))
                 using (context.PushTransform(transform))
                 {
                     visual.Render(context);
+
+                    context.DrawRectange(new Pen(Brushes.Red, 0.5), visual.Bounds);
+
+                    context.DrawText(Brushes.Red, visual.Bounds, new FormattedText
+                    {
+                        Text = visual.GetType().Name,
+                        FontFamilyName = "Seguo UI",
+                        FontSize = 16,
+                        FontStyle = FontStyle.Normal,
+                    });
 
                     foreach (var child in visual.VisualChildren)
                     {

@@ -45,6 +45,8 @@ namespace Perspex.Controls
 
             this.impl = Locator.Current.GetService<IWindowImpl>();
             this.inputManager = Locator.Current.GetService<IInputManager>();
+            this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
+            this.RenderManager = Locator.Current.GetService<IRenderManager>();
 
             if (this.impl == null)
             {
@@ -58,6 +60,18 @@ namespace Perspex.Controls
                     "Could not create input manager: maybe Application.RegisterServices() wasn't called?");
             }
 
+            if (this.LayoutManager == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not create layout manager: maybe Application.RegisterServices() wasn't called?");
+            }
+
+            if (this.RenderManager == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not create render manager: maybe Application.RegisterServices() wasn't called?");
+            }
+
             this.impl.SetOwner(this);
             this.impl.Activated = this.HandleActivated;
             this.impl.Closed = this.HandleClosed;
@@ -69,10 +83,9 @@ namespace Perspex.Controls
             this.dispatcher = Dispatcher.UIThread;
             this.renderer = renderInterface.CreateRenderer(this.impl.Handle, clientSize.Width, clientSize.Height);
 
-            this.LayoutManager = new LayoutManager(this);
+            this.LayoutManager.Root = this;
             this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
 
-            this.RenderManager = new RenderManager();
             this.RenderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
 
             this.GetObservable(TitleProperty).Subscribe(s => this.impl.SetTitle(s));

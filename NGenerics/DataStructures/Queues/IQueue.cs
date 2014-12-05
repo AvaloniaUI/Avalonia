@@ -18,7 +18,7 @@ namespace NGenerics.DataStructures.Queues
 	/// </summary>
 	/// <typeparam name="T">The type of the elements in the queue.</typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-    internal interface IQueue<T>
+    public interface IQueue<T>
 	{
 		/// <summary>
 		/// Enqueues the item at the back of the queue.

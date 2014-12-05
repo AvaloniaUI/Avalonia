@@ -26,11 +26,11 @@ namespace Perspex.Controls.Primitives
             set { this.SetValue(TemplateProperty, value); }
         }
 
-        public sealed override void Render(IDrawingContext context)
+        public override void Render(IDrawingContext context)
         {
         }
 
-        protected sealed override void ApplyTemplate()
+        protected override void ApplyTemplate()
         {
             if (!this.templateApplied)
             {

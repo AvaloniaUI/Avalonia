@@ -13,24 +13,25 @@ using System.Collections.Generic;
 namespace NGenerics.Patterns.Visitor
 {
     /// <summary>
-    /// A visitor that tracks (stores) keys from KeyValuePAirs in the order they were visited.
+    /// A visitor that tracks (stores) keys from KeyValuePairs in the order they were visited.
     /// </summary>
-    /// <typeparam name="TKey">The type of the keys for the items to be visited.</typeparam>
-    /// <typeparam name="TValue">The type of the values for the items to be visited.</typeparam>
-    internal sealed class KeyTrackingVisitor<TKey, TValue> : IVisitor<KeyValuePair<TKey, TValue>>
+    /// <typeparam name="TKey">The type of key of the KeyValuePair.</typeparam>
+    /// <typeparam name="TValue">The type of value of the KeyValuePair.</typeparam>
+    public sealed class ValueTrackingVisitor<TKey, TValue> : IVisitor<KeyValuePair<TKey, TValue>>
     {
         #region Globals
 
-        private readonly List<TKey> tracks;
+        private readonly List<TValue> tracks;
 
         #endregion
 
         #region Construction
 
+
         /// <inheritdoc/>
-        public KeyTrackingVisitor()
+        public ValueTrackingVisitor()
         {
-            tracks = new List<TKey>();
+            tracks = new List<TValue>();
         }
 
         #endregion
@@ -41,7 +42,7 @@ namespace NGenerics.Patterns.Visitor
         /// Gets the tracking list.
         /// </summary>
         /// <value>The tracking list.</value>
-        public IList<TKey> TrackingList
+        public IList<TValue> TrackingList
         {
             get
             {
@@ -57,7 +58,7 @@ namespace NGenerics.Patterns.Visitor
         /// <inheritdoc />
         public void Visit(KeyValuePair<TKey, TValue> obj)
         {
-            tracks.Add(obj.Key);
+            tracks.Add(obj.Value);
         }
 
         /// <inheritdoc />

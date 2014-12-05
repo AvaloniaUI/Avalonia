@@ -14,7 +14,7 @@ namespace NGenerics.DataStructures.Trees {
     /// An interface for the tree data structure
     /// </summary>
     /// <typeparam name="T">The type of elements in the tree.</typeparam>
-    internal interface ITree<T> {
+    public interface ITree<T> {
         /// <summary>
         /// Adds the specified child to the tree.
         /// </summary>

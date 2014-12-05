@@ -61,5 +61,10 @@ namespace Perspex.Controls.Primitives
             get { return this.GetValue(OrientationProperty); }
             set { this.SetValue(OrientationProperty, value); }
         }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(availableSize);
+        }
     }
 }

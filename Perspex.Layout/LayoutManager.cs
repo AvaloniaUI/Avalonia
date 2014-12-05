@@ -7,64 +7,191 @@
 namespace Perspex.Layout
 {
     using System;
+    using System.Linq;
     using System.Reactive;
     using System.Reactive.Subjects;
+    using NGenerics.DataStructures.General;
 
+    /// <summary>
+    /// Manages measuring and arranging of controls.
+    /// </summary>
+    /// <remarks>
+    /// Each layout root element such as a window has its own LayoutManager that is responsible
+    /// for laying out its child controls. When a layout is required the <see cref="LayoutNeeded"/>
+    /// observable will fire and the root element should respond by calling 
+    /// <see cref="ExecuteLayoutPass"/> at the earliest opportunity to carry out the layout.
+    /// </remarks>
     public class LayoutManager : ILayoutManager
     {
-        private ILayoutRoot root;
+        /// <summary>
+        /// The maximum number of times a measure/arrange loop can be retried.
+        /// </summary>
+        private const int MaxTries = 3;
 
+        /// <summary>
+        /// Called when a layout is needed.
+        /// </summary>
         private Subject<Unit> layoutNeeded;
 
-        public LayoutManager(ILayoutRoot root)
-        {
-            Contract.Requires<NullReferenceException>(root != null);
+        /// <summary>
+        /// Whether a measure is needed on the next layout pass.
+        /// </summary>
+        private bool measureNeeded = true;
 
-            this.root = root;
+        /// <summary>
+        /// The controls that need to be measured, sorted by distance to layout root.
+        /// </summary>
+        private Heap<Item> toMeasure = new Heap<Item>(HeapType.Minimum);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LayoutManager"/> class.
+        /// </summary>
+        public LayoutManager()
+        {
             this.layoutNeeded = new Subject<Unit>();
         }
 
+        /// <summary>
+        /// Gets or sets the root element that the manager is attached to.
+        /// </summary>
+        /// <remarks>
+        /// This must be set before the layout manager can be used.
+        /// </remarks>
+        public ILayoutRoot Root
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets an observable that is fired when a layout pass is needed.
+        /// </summary>
         public IObservable<Unit> LayoutNeeded
         {
             get { return this.layoutNeeded; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether a layout is queued.
+        /// </summary>
+        /// <remarks>
+        /// Returns true when <see cref="LayoutNeeded"/> has been fired, but 
+        /// <see cref="ExecuteLayoutPass"/> has not yet been called.
+        /// </remarks>
         public bool LayoutQueued
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Executes a layout pass.
+        /// </summary>
         public void ExecuteLayoutPass()
         {
             this.LayoutQueued = false;
-            this.root.Measure(this.root.ClientSize);
-            this.root.Arrange(new Rect(this.root.ClientSize));
+
+            Layoutable.DebugMeasureCount = Layoutable.DebugArrangeCount = 0;
+
+            if (this.measureNeeded)
+            {
+                this.ExecuteMeasure();
+                this.measureNeeded = false;
+            }
+
+            this.Root.Arrange(new Rect(this.Root.ClientSize));
+
+            System.Diagnostics.Debug.WriteLine(Environment.TickCount + " " + Layoutable.DebugMeasureCount + " " + Layoutable.DebugArrangeCount);
         }
 
-        public void InvalidateMeasure(ILayoutable item)
+        /// <summary>
+        /// Notifies the layout manager that a control requires a measure.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="distance">The control's distance from the layout root.</param>
+        public void InvalidateMeasure(ILayoutable control, int distance)
         {
+            this.measureNeeded = true;
+            this.toMeasure.Add(new Item(control, distance));
+
             if (!this.LayoutQueued)
             {
-                IVisual visual = item as IVisual;
+                IVisual visual = control as IVisual;
                 this.layoutNeeded.OnNext(Unit.Default);
                 this.LayoutQueued = true;
             }
         }
 
-        public void InvalidateArrange(ILayoutable item)
+        /// <summary>
+        /// Notifies the layout manager that a control requires an arrange.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="distance">The control's distance from the layout root.</param>
+        public void InvalidateArrange(ILayoutable control, int distance)
         {
+            //this.toArrange.Add(item);
+
             if (!this.LayoutQueued)
             {
-                IVisual visual = item as IVisual;
+                IVisual visual = control as IVisual;
                 this.layoutNeeded.OnNext(Unit.Default);
                 this.LayoutQueued = true;
             }
         }
 
-        public void LayoutFinished()
+        private void ExecuteMeasure()
         {
-            this.LayoutQueued = false;
+            for (int i = 0; i < MaxTries; ++i)
+            {
+                var measure = this.toMeasure;
+
+                this.toMeasure = new Heap<Item>(HeapType.Minimum);
+
+                if (!this.Root.IsMeasureValid)
+                {
+                    this.Root.Measure(this.Root.ClientSize);
+                }
+                else
+                {
+                    foreach (var item in measure)
+                    {
+                        if (!item.Control.IsMeasureValid)
+                        {
+                            var control = item.Control;
+
+                            while (!control.PreviousMeasure.HasValue)
+                            {
+                                control = (ILayoutable)control.VisualParent;
+                            }
+
+                            control.Measure(control.PreviousMeasure.Value);
+                        }
+                    }
+                }
+
+                if (this.toMeasure.Count == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        private class Item : IComparable<Item>
+        {
+            public Item(ILayoutable control, int distance)
+            {
+                this.Control = control;
+                this.Distance = distance;
+            }
+
+            public ILayoutable Control { get; private set; }
+
+            public int Distance { get; private set; }
+
+            public int CompareTo(Item other)
+            {
+                return this.Distance - other.Distance;
+            }
         }
     }
 }
