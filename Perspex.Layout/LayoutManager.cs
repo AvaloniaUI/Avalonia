@@ -95,13 +95,21 @@ namespace Perspex.Layout
         {
             this.LayoutQueued = false;
 
-            if (this.measureNeeded)
+            for (int i = 0; i < MaxTries; ++i)
             {
-                this.ExecuteMeasure();
-                this.measureNeeded = false;
-            }
+                if (this.measureNeeded)
+                {
+                    this.ExecuteMeasure();
+                    this.measureNeeded = false;
+                }
 
-            this.ExecuteArrange();
+                this.ExecuteArrange();
+
+                if (this.toMeasure.Count == 0)
+                {
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -199,6 +207,11 @@ namespace Perspex.Layout
                     this.Root.Arrange(new Rect(this.Root.ClientSize));
                 }
 
+                if (this.toMeasure.Count > 0)
+                {
+                    return;
+                }
+
                 foreach (var item in arrange)
                 {
                     if (!item.Control.IsArrangeValid)
@@ -213,6 +226,11 @@ namespace Perspex.Layout
                             }
 
                             control.Arrange(control.PreviousArrange.Value, true);
+
+                            if (this.toMeasure.Count > 0)
+                            {
+                                return;
+                            }
                         }
                     }
                 }
