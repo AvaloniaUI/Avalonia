@@ -185,6 +185,15 @@ namespace TestApplication
                             IsEnabled = false,
                             Background = new SolidColorBrush(0xcc119eda),
                         },
+                        new ToggleButton
+                        {
+                            Content = "Toggle",
+                        },
+                        new ToggleButton
+                        {
+                            Content = "Disabled",
+                            IsEnabled = false,
+                        },
                         new CheckBox
                         {
                             Content = "Checkbox",
