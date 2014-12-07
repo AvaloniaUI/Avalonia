@@ -30,7 +30,9 @@ namespace Perspex.Input
 
         public void SetPointerOver(IPointerDevice device, IVisual visual, Point p)
         {
-            IEnumerable<IInputElement> hits = visual.GetVisualsAt(p).OfType<IInputElement>();
+            IEnumerable<IInputElement> hits = visual.GetVisualsAt(p)
+                .OfType<IInputElement>()
+                .Where(x => x.IsEnabledCore);
 
             foreach (var control in this.pointerOvers.Except(hits).ToList())
             {

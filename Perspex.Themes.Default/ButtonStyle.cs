@@ -60,6 +60,13 @@ namespace Perspex.Themes.Default
                         new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
                     },
                 },
+                new Style(x => x.OfType<Button>().Class(":disabled").Template().Id("border"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff7f7f7f)),
+                    },
+                },
             });
         }
 

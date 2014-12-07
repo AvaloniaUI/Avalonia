@@ -174,6 +174,17 @@ namespace TestApplication
                             Content = "Button",
                             Background = new SolidColorBrush(0xcc119eda),
                         },
+                        new Button
+                        {
+                            Content = "Disabled",
+                            IsEnabled = false,
+                        },
+                        new Button
+                        {
+                            Content = "Disabled",
+                            IsEnabled = false,
+                            Background = new SolidColorBrush(0xcc119eda),
+                        },
                         new CheckBox
                         {
                             Content = "Checkbox",

@@ -28,7 +28,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<Control, double>("BorderThickness");
 
         public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), true);
+            PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
 
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
@@ -44,8 +44,9 @@ namespace Perspex.Controls
         static Control()
         {
             Control.AffectsMeasure(Control.IsVisibleProperty);
-            PseudoClass(Control.IsPointerOverProperty, ":pointerover");
-            PseudoClass(Control.IsFocusedProperty, ":focus");
+            PseudoClass(InputElement.IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass(InputElement.IsFocusedProperty, ":focus");
+            PseudoClass(InputElement.IsPointerOverProperty, ":pointerover");
         }
 
         public Brush Background
@@ -190,6 +191,8 @@ namespace Perspex.Controls
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
+            base.OnAttachedToVisualTree(root);
+
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
         }

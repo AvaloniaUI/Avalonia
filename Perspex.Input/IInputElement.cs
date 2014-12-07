@@ -27,10 +27,16 @@ namespace Perspex.Input
 
         bool Focusable { get; }
 
+        bool IsEnabled { get; }
+
+        bool IsEnabledCore { get; }
+
         bool IsFocused { get; }
 
         bool IsPointerOver { get; }
 
         void Focus();
+
+        IInputElement InputHitTest(Point p);
     }
 }

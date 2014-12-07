@@ -63,37 +63,35 @@ namespace Perspex.Input
 
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
+            var mouse = (IMouseDevice)e.Device;
+
             this.Position = e.Position;
 
             switch (e.Type)
             {
                 case RawMouseEventType.Move:
-                    this.MouseMove((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
+                    this.MouseMove(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonDown:
-                    this.MouseDown((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
+                    this.MouseDown(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonUp:
-                    this.MouseUp((IMouseDevice)e.Device, (IVisual)e.Root, e.Position);
+                    this.MouseUp(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.Wheel:
-                    this.MouseWheel(
-                        (IMouseDevice)e.Device, 
-                        (IVisual)e.Root, 
-                        e.Position,
-                        ((RawMouseWheelEventArgs)e).Delta);
+                    this.MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta);
                     break;
             }
         }
 
-        private void MouseMove(IMouseDevice device, IVisual visual, Point p)
+        private void MouseMove(IMouseDevice device, IInputElement root, Point p)
         {
             IInteractive source;
 
             if (this.Captured == null)
             {
-                this.InputManager.SetPointerOver(this, visual, p);
-                source = visual as IInteractive;
+                this.InputManager.SetPointerOver(this, root, p);
+                source = root as IInteractive;
             }
             else
             {
@@ -120,9 +118,9 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseDown(IMouseDevice device, IVisual visual, Point p)
+        private void MouseDown(IMouseDevice device, IInputElement root, Point p)
         {
-            IVisual hit = visual.GetVisualAt(p);
+            IVisual hit = root.InputHitTest(p);
 
             if (hit != null)
             {
@@ -148,9 +146,9 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseUp(IMouseDevice device, IVisual visual, Point p)
+        private void MouseUp(IMouseDevice device, IInputElement root, Point p)
         {
-            IVisual hit = visual.GetVisualAt(p);
+            IVisual hit = root.InputHitTest(p);
 
             if (hit != null)
             {
@@ -169,9 +167,9 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseWheel(IMouseDevice device, IVisual visual, Point p,  Vector delta)
+        private void MouseWheel(IMouseDevice device, IInputElement root, Point p,  Vector delta)
         {
-            IVisual hit = visual.GetVisualAt(p);
+            IVisual hit = root.InputHitTest(p);
 
             if (hit != null)
             {

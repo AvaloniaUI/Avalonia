@@ -21,7 +21,7 @@ namespace Perspex.Input.Raw
     {
         public RawMouseEventArgs(
             IInputDevice device,
-            ILayoutRoot root,
+            IInputElement root,
             RawMouseEventType type,
             Point position)
             : base(device)
@@ -34,8 +34,7 @@ namespace Perspex.Input.Raw
             this.Type = type;
         }
 
-        // TODO: This should probably be IInputRoot or something.
-        public ILayoutRoot Root { get; private set; }
+        public IInputElement Root { get; private set; }
 
         public Point Position { get; private set; }
 
