@@ -62,8 +62,10 @@
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\StreamGeometryContext.cs" />
     <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Origin.cs" />
+    <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
     <Compile Include="Platform\IPlatformRenderInterface.cs" />

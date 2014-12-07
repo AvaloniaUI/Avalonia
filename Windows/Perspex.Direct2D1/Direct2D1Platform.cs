@@ -33,10 +33,10 @@ namespace Perspex.Direct2D1
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => instance, typeof(IPlatformRenderInterface));
-            locator.Register(() => textService, typeof(ITextService));
             locator.Register(() => d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
             locator.Register(() => dwfactory, typeof(SharpDX.DirectWrite.Factory));
             locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
+            locator.Register(() => new FormattedTextImpl(), typeof(IFormattedTextImpl));
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)

@@ -6,8 +6,10 @@
 
 namespace Perspex.Platform
 {
+    using System;
     using Perspex.Media;
 
+    [Obsolete("Use methods on FormattedText instead.")]
     public interface ITextService
     {
         int GetCaretIndex(FormattedText text, Point point, Size constraint);

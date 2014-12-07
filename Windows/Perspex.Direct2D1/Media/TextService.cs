@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Direct2D1
+namespace Perspex.Direct2D1.Media
 {
     using System;
     using System.Linq;

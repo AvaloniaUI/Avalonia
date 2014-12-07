@@ -25,9 +25,27 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
-        static TextBlock()
+        private FormattedText formattedText = new FormattedText();
+
+        public TextBlock()
         {
-            Control.AffectsMeasure(TextProperty);
+            this.GetObservable(TextProperty).Subscribe(x =>
+            {
+                this.formattedText.Text = x;
+                this.InvalidateMeasure();
+            });
+
+            this.GetObservable(FontSizeProperty).Subscribe(x =>
+            {
+                this.formattedText.FontSize = x;
+                this.InvalidateMeasure();
+            });
+
+            this.GetObservable(FontStyleProperty).Subscribe(x =>
+            {
+                this.formattedText.FontStyle = x;
+                this.InvalidateMeasure();
+            });
         }
 
         public string Text
@@ -48,20 +66,6 @@ namespace Perspex.Controls
             set { this.SetValue(FontStyleProperty, value); }
         }
 
-        private FormattedText FormattedText
-        {
-            get
-            {
-                return new FormattedText
-                {
-                    FontFamilyName = "Segoe UI",
-                    FontSize = this.FontSize,
-                    FontStyle = this.FontStyle,
-                    Text = this.Text,
-                };
-            }
-        }
-
         public override void Render(IDrawingContext context)
         {
             Brush background = this.Background;
@@ -71,15 +75,18 @@ namespace Perspex.Controls
                 context.FillRectange(background, new Rect(this.ActualSize));
             }
 
-            context.DrawText(this.Foreground, new Rect(this.ActualSize), this.FormattedText);
+            context.DrawText(
+                this.Foreground, 
+                new Rect(this.ActualSize), 
+                this.formattedText);
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
             if (!string.IsNullOrEmpty(this.Text))
             {
-                ITextService textService = Locator.Current.GetService<ITextService>();
-                return textService.Measure(this.FormattedText, availableSize);
+                this.formattedText.Constraint = availableSize;
+                return this.formattedText.Measure();
             }
 
             return new Size();

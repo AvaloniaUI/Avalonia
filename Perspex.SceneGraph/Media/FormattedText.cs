@@ -6,6 +6,9 @@
 
 namespace Perspex.Media
 {
+    using Perspex.Platform;
+    using Splat;
+
     public enum FontStyle
     {
         Normal,
@@ -15,12 +18,56 @@ namespace Perspex.Media
 
     public class FormattedText
     {
-        public string FontFamilyName { get; set; }
+        private IFormattedTextImpl impl;
 
-        public double FontSize { get; set; }
+        public FormattedText()
+        {
+            this.impl = Locator.Current.GetService<IFormattedTextImpl>();
+        }
 
-        public FontStyle FontStyle { get; set; }
+        public Size Constraint
+        {
+            get { return this.impl.Constraint; }
+            set { this.impl.Constraint = value; }
+        }
 
-        public string Text { get; set; }
+        public string FontFamilyName
+        {
+            get { return this.impl.FontFamilyName; }
+            set { this.impl.FontFamilyName = value; }
+        }
+
+        public double FontSize
+        {
+            get { return this.impl.FontSize; }
+            set { this.impl.FontSize = value; }
+        }
+
+        public FontStyle FontStyle
+        {
+            get { return this.impl.FontStyle; }
+            set { this.impl.FontStyle = value; }
+        }
+
+        public string Text
+        {
+            get { return this.impl.Text; }
+            set { this.impl.Text = value; }
+        }
+
+        public TextHitTestResult HitTestPoint(Point point)
+        {
+            return this.impl.HitTestPoint(point);
+        }
+
+        public Rect HitTestTextPosition(int index)
+        {
+            return this.impl.HitTestTextPosition(index);
+        }
+
+        public Size Measure()
+        {
+            return this.impl.Measure();
+        }
     }
 }

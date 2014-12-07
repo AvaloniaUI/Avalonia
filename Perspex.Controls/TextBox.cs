@@ -95,7 +95,6 @@ namespace Perspex.Controls
             }
 
             textContainer.Content = this.textBoxView = new TextBoxView(this);
-            this.GetObservable(TextProperty).Subscribe(_ => this.textBoxView.InvalidateText());
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)

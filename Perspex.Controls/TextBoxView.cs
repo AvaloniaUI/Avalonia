@@ -24,6 +24,29 @@ namespace Perspex.Controls
 
         public TextBoxView(TextBox parent)
         {
+            this.FormattedText = new FormattedText();
+
+            // TODO: Implement TextBlock.FontFamilyName.
+            this.FormattedText.FontFamilyName = "Segoe UI";
+
+            parent.GetObservable(TextBox.TextProperty).Subscribe(x =>
+            {
+                this.FormattedText.Text = x;
+                this.InvalidateMeasure();
+            });
+
+            this.GetObservable(TextBlock.FontSizeProperty).Subscribe(x =>
+            {
+                this.FormattedText.FontSize = x;
+                this.InvalidateMeasure();
+            });
+
+            this.GetObservable(TextBlock.FontStyleProperty).Subscribe(x =>
+            {
+                this.FormattedText.FontStyle = x;
+                this.InvalidateMeasure();
+            });
+
             this.caretTimer = new DispatcherTimer();
             this.caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             this.caretTimer.Tick += this.CaretTimerTick;
@@ -32,15 +55,8 @@ namespace Perspex.Controls
 
         public FormattedText FormattedText
         {
-            get
-            {
-                if (this.formattedText == null)
-                {
-                    this.formattedText = this.CreateFormattedText();
-                }
-
-                return this.formattedText;
-            }
+            get;
+            private set;
         }
 
         public new void GotFocus()
@@ -55,12 +71,6 @@ namespace Perspex.Controls
             this.InvalidateVisual();
         }
 
-        public void InvalidateText()
-        {
-            this.formattedText = null;
-            this.InvalidateMeasure();
-        }
-
         public override void Render(IDrawingContext context)
         {
             Rect rect = new Rect(this.ActualSize);
@@ -69,20 +79,12 @@ namespace Perspex.Controls
 
             if (this.parent.IsFocused)
             {
-                ITextService textService = Locator.Current.GetService<ITextService>();
-                Point caretPos = textService.GetCaretPosition(
-                    this.formattedText, 
-                    this.parent.CaretIndex,
-                    this.ActualSize);
-                double[] lineHeights = textService.GetLineHeights(this.formattedText, this.ActualSize);
+                var charPos = this.FormattedText.HitTestTextPosition(this.parent.CaretIndex);
                 Brush caretBrush = Brushes.Black;
 
                 if (this.caretBlink)
                 {
-                    context.DrawLine(
-                        new Pen(caretBrush, 1),
-                        caretPos,
-                        new Point(caretPos.X, caretPos.Y + lineHeights[0]));
+                    context.DrawLine(new Pen(caretBrush, 1), charPos.TopLeft, charPos.BottomLeft);
                 }
             }
         }
@@ -99,22 +101,11 @@ namespace Perspex.Controls
         {
             if (!string.IsNullOrEmpty(this.parent.Text))
             {
-                ITextService textService = Locator.Current.GetService<ITextService>();
-                return textService.Measure(this.FormattedText, constraint);
+                this.FormattedText.Constraint = constraint;
+                return this.FormattedText.Measure();
             }
 
             return new Size();
-        }
-
-        private FormattedText CreateFormattedText()
-        {
-            return new FormattedText
-            {
-                FontFamilyName = "Segoe UI",
-                FontSize = this.GetValue(TextBlock.FontSizeProperty),
-                FontStyle = this.GetValue(TextBlock.FontStyleProperty),
-                Text = this.parent.Text,
-            };
         }
 
         private void CaretTimerTick(object sender, EventArgs e)
