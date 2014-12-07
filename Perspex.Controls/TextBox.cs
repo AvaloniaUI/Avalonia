@@ -16,6 +16,12 @@ namespace Perspex.Controls
 
     public class TextBox : TemplatedControl
     {
+        public static readonly PerspexProperty<bool> AcceptsReturnProperty =
+            PerspexProperty.Register<TextBox, bool>("AcceptsReturn");
+
+        public static readonly PerspexProperty<bool> AcceptsTabProperty =
+            PerspexProperty.Register<TextBox, bool>("AcceptsTab");
+
         public static readonly PerspexProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
 
@@ -34,6 +40,18 @@ namespace Perspex.Controls
             this.LostFocus += (s, e) => this.textBoxView.LostFocus();
             this.KeyDown += this.OnKeyDown;
             this.PointerPressed += this.OnPointerPressed;
+        }
+
+        public bool AcceptsReturn
+        {
+            get { return this.GetValue(AcceptsReturnProperty); }
+            set { this.SetValue(AcceptsReturnProperty, value); }
+        }
+
+        public bool AcceptsTab
+        {
+            get { return this.GetValue(AcceptsTabProperty); }
+            set { this.SetValue(AcceptsTabProperty, value); }
         }
 
         public int CaretIndex
@@ -107,6 +125,22 @@ namespace Perspex.Controls
                     if (this.caretIndex < text.Length)
                     {
                         this.Text = text.Substring(0, this.caretIndex) + text.Substring(this.caretIndex + 1);
+                    }
+
+                    break;
+
+                case Key.Enter:
+                    if (this.AcceptsReturn)
+                    {
+                        goto default;
+                    }
+
+                    break;
+
+                case Key.Tab:
+                    if (this.AcceptsTab)
+                    {
+                        goto default;
                     }
 
                     break;
