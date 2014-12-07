@@ -140,12 +140,13 @@ namespace Perspex.Direct2D1.Media
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
+                var impl = (FormattedTextImpl)text.PlatformImpl;
+
                 using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
-                using (SharpDX.DirectWrite.TextFormat format = TextService.GetTextFormat(this.directWriteFactory, text))
                 {
                     this.renderTarget.DrawText(
                         text.Text,
-                        format,
+                        impl.Layout,
                         this.Convert(rect),
                         brush);
                 }

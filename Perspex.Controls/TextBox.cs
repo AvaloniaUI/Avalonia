@@ -159,11 +159,9 @@ namespace Perspex.Controls
 
         private void OnPointerPressed(object sender, PointerEventArgs e)
         {
-            IPlatformRenderInterface platform = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.CaretIndex = platform.TextService.GetCaretIndex(
-                this.textBoxView.FormattedText,
-                e.GetPosition(this.textBoxView),
-                this.ActualSize);
+            var point = e.GetPosition(this.textBoxView);
+            var hit = this.textBoxView.FormattedText.HitTestPoint(point);
+            this.CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
         }
     }
 }

@@ -73,7 +73,6 @@
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
     <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
     <Compile Include="Platform\IStreamGeometryImpl.cs" />
-    <Compile Include="Platform\ITextService.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rect.cs" />

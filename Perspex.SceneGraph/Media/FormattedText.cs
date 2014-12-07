@@ -18,56 +18,60 @@ namespace Perspex.Media
 
     public class FormattedText
     {
-        private IFormattedTextImpl impl;
-
         public FormattedText()
         {
-            this.impl = Locator.Current.GetService<IFormattedTextImpl>();
+            this.PlatformImpl = Locator.Current.GetService<IFormattedTextImpl>();
         }
 
         public Size Constraint
         {
-            get { return this.impl.Constraint; }
-            set { this.impl.Constraint = value; }
+            get { return this.PlatformImpl.Constraint; }
+            set { this.PlatformImpl.Constraint = value; }
         }
 
         public string FontFamilyName
         {
-            get { return this.impl.FontFamilyName; }
-            set { this.impl.FontFamilyName = value; }
+            get { return this.PlatformImpl.FontFamilyName; }
+            set { this.PlatformImpl.FontFamilyName = value; }
         }
 
         public double FontSize
         {
-            get { return this.impl.FontSize; }
-            set { this.impl.FontSize = value; }
+            get { return this.PlatformImpl.FontSize; }
+            set { this.PlatformImpl.FontSize = value; }
         }
 
         public FontStyle FontStyle
         {
-            get { return this.impl.FontStyle; }
-            set { this.impl.FontStyle = value; }
+            get { return this.PlatformImpl.FontStyle; }
+            set { this.PlatformImpl.FontStyle = value; }
         }
 
         public string Text
         {
-            get { return this.impl.Text; }
-            set { this.impl.Text = value; }
+            get { return this.PlatformImpl.Text; }
+            set { this.PlatformImpl.Text = value; }
+        }
+
+        public IFormattedTextImpl PlatformImpl
+        {
+            get;
+            private set;
         }
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            return this.impl.HitTestPoint(point);
+            return this.PlatformImpl.HitTestPoint(point);
         }
 
         public Rect HitTestTextPosition(int index)
         {
-            return this.impl.HitTestTextPosition(index);
+            return this.PlatformImpl.HitTestTextPosition(index);
         }
 
         public Size Measure()
         {
-            return this.impl.Measure();
+            return this.PlatformImpl.Measure();
         }
     }
 }

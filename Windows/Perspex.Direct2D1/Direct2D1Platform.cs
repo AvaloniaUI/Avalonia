@@ -22,13 +22,6 @@ namespace Perspex.Direct2D1
 
         private static SharpDX.WIC.ImagingFactory imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        private static TextService textService = new TextService(dwfactory);
-
-        public ITextService TextService
-        {
-            get { return textService; }
-        }
-
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;

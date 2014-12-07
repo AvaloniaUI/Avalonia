@@ -18,18 +18,10 @@ namespace Perspex.Cairo
     {
         private static CairoPlatform instance = new CairoPlatform();
 
-        private static TextService textService = new TextService();
-
-        public ITextService TextService
-        {
-            get { return textService; }
-        }
-
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => instance, typeof(IPlatformRenderInterface));
-            locator.Register(() => textService, typeof(ITextService));
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
@@ -40,11 +32,6 @@ namespace Perspex.Cairo
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            if (textService.Context == null)
-            {
-                textService.Context = this.GetPangoContext(handle);
-            }
-
             return new Renderer(handle, width, height);
         }
 

@@ -11,8 +11,6 @@ namespace Perspex.Platform
 
     public interface IPlatformRenderInterface
     {
-        ITextService TextService { get; }
-
         IBitmapImpl CreateBitmap(int width, int height);
 
         IStreamGeometryImpl CreateStreamGeometry();

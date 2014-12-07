@@ -143,7 +143,7 @@ namespace Perspex.Layout.UnitTests
             l.RegisterConstant(new Styler(), typeof(IStyler));
             l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
             l.RegisterConstant(windowImpl.Object, typeof(IWindowImpl));
-            l.RegisterConstant(new Mock<ITextService>().Object, typeof(ITextService));
+            l.RegisterConstant(new Mock<IFormattedTextImpl>().Object, typeof(IFormattedTextImpl));
         }
     }
 }

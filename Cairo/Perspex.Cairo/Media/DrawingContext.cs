@@ -30,11 +30,6 @@ namespace Perspex.Cairo.Media
         private Cairo.Surface surface;
 
         /// <summary>
-        /// The text service.
-        /// </summary>
-        private TextService textService;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
@@ -42,7 +37,6 @@ namespace Perspex.Cairo.Media
         {
             this.surface = surface;
             this.context = new Cairo.Context(surface);
-            this.textService = Locator.Current.GetService<TextService>() as TextService;
             this.CurrentTransform = Matrix.Identity;
         }
 
@@ -54,7 +48,6 @@ namespace Perspex.Cairo.Media
         {
             this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
-            this.textService = Locator.Current.GetService<ITextService>() as TextService;
             this.CurrentTransform = Matrix.Identity;
         }
 
@@ -144,10 +137,10 @@ namespace Perspex.Cairo.Media
         /// <param name="text">The text.</param>
         public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
         {
-            var layout = this.textService.CreateLayout(text);
-            this.SetBrush(foreground);
-            this.context.MoveTo(rect.X, rect.Y);
-            Pango.CairoHelper.ShowLayout(this.context, layout);
+            ////var layout = this.textService.CreateLayout(text);
+            ////this.SetBrush(foreground);
+            ////this.context.MoveTo(rect.X, rect.Y);
+            ////Pango.CairoHelper.ShowLayout(this.context, layout);
         }
 
         /// <summary>
