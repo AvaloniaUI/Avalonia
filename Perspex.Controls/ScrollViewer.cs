@@ -17,7 +17,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<ScrollViewer, Size>("Extent");
 
         public static readonly PerspexProperty<Vector> OffsetProperty =
-            PerspexProperty.Register<ScrollViewer, Vector>("Offset");
+            PerspexProperty.Register<ScrollViewer, Vector>("Offset", coerce: CoerceOffset);
 
         public static readonly PerspexProperty<Size> ViewportProperty =
             PerspexProperty.Register<ScrollViewer, Size>("Viewport");
@@ -27,6 +27,12 @@ namespace Perspex.Controls
         private ScrollBar horizontalScrollBar;
 
         private ScrollBar verticalScrollBar;
+
+        static ScrollViewer()
+        {
+            AffectsCoercion(ExtentProperty, OffsetProperty);
+            AffectsCoercion(ViewportProperty, OffsetProperty);
+        }
 
         public Size Extent
         {
@@ -102,6 +108,29 @@ namespace Perspex.Controls
             });
 
             this.Bind(OffsetProperty, offset);
+        }
+
+        private static double Clamp(double value, double min, double max)
+        {
+            return (value < min) ? min : (value > max) ? max : value;
+        }
+
+        private static Vector CoerceOffset(PerspexObject o, Vector value)
+        {
+            ScrollViewer scrollViewer = o as ScrollViewer;
+
+            if (scrollViewer != null)
+            {
+                var extent = scrollViewer.Extent;
+                var viewport = scrollViewer.Viewport;
+                var maxX = Math.Max(extent.Width - viewport.Width, 0);
+                var maxY = Math.Max(extent.Height - viewport.Height, 0);
+                return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
+            }
+            else
+            {
+                return value;
+            }
         }
     }
 }

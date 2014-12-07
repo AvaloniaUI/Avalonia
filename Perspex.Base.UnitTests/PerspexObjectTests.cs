@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Base.UnitTests
 {
     using System;
@@ -29,7 +30,7 @@ namespace Perspex.Base.UnitTests
         {
             string[] names = PerspexObject.GetProperties(typeof(Class1)).Select(x => x.Name).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Foo", "Baz" }, names);
+            CollectionAssert.AreEqual(new[] { "Foo", "Baz", "Qux" }, names);
         }
 
         [TestMethod]
@@ -37,7 +38,7 @@ namespace Perspex.Base.UnitTests
         {
             string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Bar", "Foo", "Baz" }, names);
+            CollectionAssert.AreEqual(new[] { "Bar", "Foo", "Baz", "Qux" }, names);
         }
 
         [TestMethod]
@@ -167,6 +168,30 @@ namespace Perspex.Base.UnitTests
             Class1 target = new Class1();
 
             target.SetValue(Class1.FooProperty, 123);
+        }
+
+        [TestMethod]
+        public void SetValue_Causes_Coercion()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.QuxProperty, 5);
+            Assert.AreEqual(5, target.GetValue(Class1.QuxProperty));
+            target.SetValue(Class1.QuxProperty, -5);
+            Assert.AreEqual(0, target.GetValue(Class1.QuxProperty));
+            target.SetValue(Class1.QuxProperty, 15);
+            Assert.AreEqual(10, target.GetValue(Class1.QuxProperty));
+        }
+
+        [TestMethod]
+        public void CoerceValue_Causes_Recoercion()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.QuxProperty, 7);
+            Assert.AreEqual(7, target.GetValue(Class1.QuxProperty));
+            target.MaxQux = 5;
+            target.CoerceValue(Class1.QuxProperty);
         }
 
         [TestMethod]
@@ -503,6 +528,21 @@ namespace Perspex.Base.UnitTests
 
             public static readonly PerspexProperty<string> BazProperty =
                 PerspexProperty.Register<Class1, string>("Baz", "bazdefault", true);
+
+            public static readonly PerspexProperty<int> QuxProperty =
+                PerspexProperty.Register<Class1, int>("Qux", coerce: Coerce);
+
+            public int MaxQux { get; set; }
+
+            public Class1()
+            {
+                this.MaxQux = 10;
+            }
+
+            private static int Coerce(PerspexObject instance, int value)
+            {
+                return Math.Min(Math.Max(value, 0), ((Class1)instance).MaxQux);
+            }
         }
 
         private class Class2 : Class1

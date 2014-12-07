@@ -51,17 +51,21 @@ namespace Perspex
         /// </summary>
         private object value;
 
+        private Func<object, object> coerce;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The value type.</param>
-        public PriorityValue(string name, Type valueType)
+        /// <param name="coerce">An optional coercion function.</param>
+        public PriorityValue(string name, Type valueType, Func<object, object> coerce = null)
         {
             this.name = name;
             this.valueType = valueType;
             this.value = PerspexProperty.UnsetValue;
             this.ValuePriority = int.MaxValue;
+            this.coerce = coerce;
         }
 
         /// <summary>
@@ -239,6 +243,33 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Causes a re-coercion of the value.
+        /// </summary>
+        public void Coerce()
+        {
+            if (this.coerce != null)
+            {
+                this.SetValue(this.Value, this.ValuePriority);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if <paramref name="value"/> is invalid.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        private void VerifyValidValue(object value)
+        {
+            if (!IsValidValue(value, this.valueType))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Invalid value for Property '{0}': {1} ({2})",
+                    this.name,
+                    value,
+                    value.GetType().FullName));
+            }
+        }
+
+        /// <summary>
         /// Called when a binding's value changes.
         /// </summary>
         /// <param name="changed">The changed entry.</param>
@@ -266,13 +297,12 @@ namespace Perspex
         /// <param name="priority">The priority of the binding which produced the value.</param>
         private void SetValue(object value, int priority)
         {
-            if (!IsValidValue(value, this.valueType))
+            VerifyValidValue(value);
+
+            if (this.coerce != null)
             {
-                throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': {1} ({2})",
-                    this.name,
-                    value,
-                    value.GetType().FullName));
+                value = this.coerce(value);
+                VerifyValidValue(value);
             }
 
             object old = this.value;

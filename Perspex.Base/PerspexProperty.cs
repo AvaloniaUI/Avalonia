@@ -40,6 +40,11 @@ namespace Perspex
         private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
+        /// The coerce function.
+        /// </summary>
+        private Func<PerspexObject, object, object> coerce;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
@@ -48,13 +53,15 @@ namespace Perspex
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
         public PerspexProperty(
             string name,
             Type valueType,
             Type ownerType,
             object defaultValue,
             bool inherits,
-            BindingMode defaultBindingMode)
+            BindingMode defaultBindingMode,
+            Func<PerspexObject, object, object> coerce)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(valueType != null);
@@ -63,9 +70,10 @@ namespace Perspex
             this.Name = name;
             this.PropertyType = valueType;
             this.OwnerType = ownerType;
+            this.defaultValues.Add(ownerType, defaultValue);
             this.Inherits = inherits;
             this.DefaultBindingMode = defaultBindingMode;
-            this.defaultValues.Add(ownerType, defaultValue);
+            this.Coerce = coerce;
         }
 
         /// <summary>
@@ -93,6 +101,11 @@ namespace Perspex
         /// </summary>
         /// <returns></returns>
         public BindingMode DefaultBindingMode { get; private set; }
+
+        /// <summary>
+        /// Gets the property's coerce function.
+        /// </summary>
+        public Func<PerspexObject, object, object> Coerce { get; private set; }
 
         /// <summary>
         /// Gets an observable that is fired when this property is initialized on a
@@ -127,12 +140,14 @@ namespace Perspex
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
         /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static PerspexProperty<TValue> Register<TOwner, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<PerspexObject, TValue, TValue> coerce = null)
             where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -142,7 +157,8 @@ namespace Perspex
                 typeof(TOwner),
                 defaultValue,
                 inherits,
-                defaultBindingMode);
+                defaultBindingMode,
+                coerce);
 
             PerspexObject.Register(typeof(TOwner), result);
 
@@ -159,12 +175,14 @@ namespace Perspex
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
         /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static PerspexProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<PerspexObject, TValue, TValue> coerce = null)
             where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -174,7 +192,8 @@ namespace Perspex
                 typeof(TOwner),
                 defaultValue,
                 inherits,
-                defaultBindingMode);
+                defaultBindingMode,
+                coerce);
 
             PerspexObject.Register(typeof(THost), result);
 
@@ -321,13 +340,22 @@ namespace Perspex
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
         public PerspexProperty(
             string name,
             Type ownerType,
             TValue defaultValue,
             bool inherits,
-            BindingMode defaultBindingMode)
-            : base(name, typeof(TValue), ownerType, defaultValue, inherits, defaultBindingMode)
+            BindingMode defaultBindingMode,
+            Func<PerspexObject, TValue, TValue> coerce)
+            : base(
+                name, 
+                typeof(TValue), 
+                ownerType, 
+                defaultValue, 
+                inherits, 
+                defaultBindingMode,
+                Convert(coerce))
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
@@ -352,6 +380,16 @@ namespace Perspex
         public TValue GetDefaultValue<T>()
         {
             return (TValue)this.GetDefaultValue(typeof(T));
+        }
+
+        /// <summary>
+        /// Converts from a typed coercion function to an untyped.
+        /// </summary>
+        /// <param name="f">The typed coercion function.</param>
+        /// <returns>Te untyped coercion function.</returns>
+        private static Func<PerspexObject, object, object> Convert(Func<PerspexObject, TValue, TValue> f)
+        {
+            return f != null ? (o, v) => f(o, (TValue)v) : (Func<PerspexObject, object, object>)null;
         }
     }
 }

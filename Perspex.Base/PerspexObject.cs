@@ -634,9 +634,51 @@ namespace Perspex
             this.GetObservable(property).Subscribe(x => source.SetValue(sourceProperty, x));
         }
 
+        /// <summary>
+        /// Forces the specified property to be re-coerced.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public void CoerceValue(PerspexProperty property)
+        {
+            PriorityValue value;
+
+            if (this.values.TryGetValue(property, out value))
+            {
+                value.Coerce();
+            }
+        }
+
+        /// <summary>
+        /// Forces re-coercion of properties when a property value changes.
+        /// </summary>
+        /// <param name="property">The property to that affects coercion.</param>
+        /// <param name="affected">The affected properties.</param>
+        protected static void AffectsCoercion(PerspexProperty property, params PerspexProperty[] affected)
+        {
+            property.Changed.Subscribe(e =>
+            {
+                foreach (var p in affected)
+                {
+                    e.Sender.CoerceValue(p);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PriorityValue"/> for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="PriorityValue"/>.</returns>
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
-            PriorityValue result = new PriorityValue(property.Name, property.PropertyType);
+            Func<object, object> coerce = null;
+
+            if (property.Coerce != null)
+            {
+                coerce = v => property.Coerce(this, v);
+            }
+
+            PriorityValue result = new PriorityValue(property.Name, property.PropertyType, coerce);
 
             result.Changed.Subscribe(x =>
             {
