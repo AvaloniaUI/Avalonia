@@ -7,6 +7,8 @@
 namespace Perspex.Direct2D1.Media
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Perspex.Media;
     using Perspex.Platform;
     using Splat;
@@ -60,7 +62,7 @@ namespace Perspex.Direct2D1.Media
             SharpDX.Bool isTrailingHit;
             SharpDX.Bool isInside;
 
-            DWrite.HitTestMetrics result = this.TextLayout.HitTestPoint(
+            var result = this.TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
                 out isTrailingHit,
@@ -78,13 +80,24 @@ namespace Perspex.Direct2D1.Media
             float x;
             float y;
 
-            DWrite.HitTestMetrics result = this.TextLayout.HitTestTextPosition(
+            var result = this.TextLayout.HitTestTextPosition(
                 index, 
                 false, 
                 out x, 
                 out y);
 
             return new Rect(result.Left, result.Top, result.Width, result.Height);
+        }
+
+        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
+        {
+            var result = this.TextLayout.HitTestTextRange(
+                index, 
+                length, 
+                (float)origin.X, 
+                (float)origin.Y);
+
+            return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
         public Size Measure()

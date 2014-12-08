@@ -7,6 +7,7 @@
 namespace Perspex.Platform
 {
     using System;
+    using System.Collections.Generic;
     using Perspex.Media;
 
     public interface IFormattedTextImpl : IDisposable
@@ -16,6 +17,8 @@ namespace Perspex.Platform
         TextHitTestResult HitTestPoint(Point point);
 
         Rect HitTestTextPosition(int index);
+
+        IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin);
 
         Size Measure();
     }

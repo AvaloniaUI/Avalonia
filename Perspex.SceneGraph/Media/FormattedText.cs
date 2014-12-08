@@ -7,6 +7,7 @@
 namespace Perspex.Media
 {
     using System;
+    using System.Collections.Generic;
     using Perspex.Platform;
     using Splat;
 
@@ -76,6 +77,11 @@ namespace Perspex.Media
         public Rect HitTestTextPosition(int index)
         {
             return this.PlatformImpl.HitTestTextPosition(index);
+        }
+
+        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
+        {
+            return this.PlatformImpl.HitTestTextRange(index, length, origin);
         }
 
         public Size Measure()
