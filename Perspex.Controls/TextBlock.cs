@@ -7,12 +7,17 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Reactive;
+    using System.Reactive.Linq;
     using Perspex.Media;
     using Perspex.Platform;
     using Splat;
 
     public class TextBlock : Control
     {
+        public static readonly PerspexProperty<string> FontFamilyProperty =
+            PerspexProperty.Register<Control, string>("FontFamily", "Segoe UI", inherits: true);
+
         public static readonly PerspexProperty<double> FontSizeProperty =
             PerspexProperty.Register<Control, double>(
                 "FontSize",
@@ -25,33 +30,36 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
-        private FormattedText formattedText = new FormattedText();
+        private FormattedText formattedText;
 
         public TextBlock()
         {
-            this.GetObservable(TextProperty).Subscribe(x =>
-            {
-                this.formattedText.Text = x;
-                this.InvalidateMeasure();
-            });
+            Observable.Merge(
+                this.GetObservable(TextProperty).Select(_ => Unit.Default),
+                this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
+                this.GetObservable(FontStyleProperty).Select(_ => Unit.Default))
+                .Subscribe(_ =>
+                {
+                    if (this.formattedText != null)
+                    {
+                        this.formattedText.Dispose();
+                        this.formattedText = null;
+                    }
 
-            this.GetObservable(FontSizeProperty).Subscribe(x =>
-            {
-                this.formattedText.FontSize = x;
-                this.InvalidateMeasure();
-            });
-
-            this.GetObservable(FontStyleProperty).Subscribe(x =>
-            {
-                this.formattedText.FontStyle = x;
-                this.InvalidateMeasure();
-            });
+                    this.InvalidateMeasure();
+                });
         }
 
         public string Text
         {
             get { return this.GetValue(TextProperty); }
             set { this.SetValue(TextProperty, value); }
+        }
+
+        public string FontFamily
+        {
+            get { return this.GetValue(FontFamilyProperty); }
+            set { this.SetValue(FontFamilyProperty, value); }
         }
 
         public double FontSize
@@ -66,6 +74,24 @@ namespace Perspex.Controls
             set { this.SetValue(FontStyleProperty, value); }
         }
 
+        protected FormattedText FormattedText
+        {
+            get
+            {
+                if (this.formattedText == null)
+                {
+                    this.formattedText = new FormattedText(
+                        this.Text, 
+                        this.FontFamily, 
+                        this.FontSize, 
+                        this.FontStyle);
+                }
+
+                return this.formattedText;
+            }
+        }
+
+
         public override void Render(IDrawingContext context)
         {
             Brush background = this.Background;
@@ -75,18 +101,15 @@ namespace Perspex.Controls
                 context.FillRectange(background, new Rect(this.ActualSize));
             }
 
-            context.DrawText(
-                this.Foreground, 
-                new Rect(this.ActualSize), 
-                this.formattedText);
+            context.DrawText(this.Foreground,  new Point(), this.FormattedText);
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
             if (!string.IsNullOrEmpty(this.Text))
             {
-                this.formattedText.Constraint = availableSize;
-                return this.formattedText.Measure();
+                this.FormattedText.Constraint = availableSize;
+                return this.FormattedText.Measure();
             }
 
             return new Size();

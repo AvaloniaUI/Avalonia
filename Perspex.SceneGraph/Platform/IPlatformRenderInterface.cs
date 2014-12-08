@@ -6,12 +6,17 @@
 
 namespace Perspex.Platform
 {
-    using System;
-    using Perspex.Threading;
+    using Perspex.Media;
 
     public interface IPlatformRenderInterface
     {
         IBitmapImpl CreateBitmap(int width, int height);
+
+        IFormattedTextImpl CreateFormattedText(
+            string text, 
+            string fontFamily, 
+            double fontSize, 
+            FontStyle fontStyle);
 
         IStreamGeometryImpl CreateStreamGeometry();
 

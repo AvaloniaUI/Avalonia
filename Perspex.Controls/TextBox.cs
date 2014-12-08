@@ -10,9 +10,7 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
-    using Perspex.Platform;
     using Perspex.Styling;
-    using Splat;
 
     public class TextBox : TemplatedControl
     {
@@ -160,8 +158,7 @@ namespace Perspex.Controls
         private void OnPointerPressed(object sender, PointerEventArgs e)
         {
             var point = e.GetPosition(this.textBoxView);
-            var hit = this.textBoxView.FormattedText.HitTestPoint(point);
-            this.CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
+            this.CaretIndex = this.textBoxView.GetCaretIndex(point);
         }
     }
 }

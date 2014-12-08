@@ -45,9 +45,9 @@ namespace Perspex.Media
         /// Draws text.
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
-        /// <param name="rect">The bounding rectangle.</param>
+        /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        void DrawText(Brush foreground, Rect rect, FormattedText text);
+        void DrawText(Brush foreground, Point origin, FormattedText text);
 
         /// <summary>
         /// Draws a filled rectangle.

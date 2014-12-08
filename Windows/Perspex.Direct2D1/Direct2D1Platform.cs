@@ -8,6 +8,7 @@ namespace Perspex.Direct2D1
 {
     using System;
     using Perspex.Direct2D1.Media;
+    using Perspex.Media;
     using Perspex.Platform;
     using Perspex.Threading;
     using Splat;
@@ -29,12 +30,20 @@ namespace Perspex.Direct2D1
             locator.Register(() => d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
             locator.Register(() => dwfactory, typeof(SharpDX.DirectWrite.Factory));
             locator.Register(() => imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
-            locator.Register(() => new FormattedTextImpl(), typeof(IFormattedTextImpl));
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
             return new BitmapImpl(imagingFactory, width, height);
+        }
+
+        public IFormattedTextImpl CreateFormattedText(
+            string text, 
+            string fontFamily, 
+            double fontSize, 
+            FontStyle fontStyle)
+        {
+            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle);
         }
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)

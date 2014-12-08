@@ -6,19 +6,12 @@
 
 namespace Perspex.Platform
 {
+    using System;
     using Perspex.Media;
 
-    public interface IFormattedTextImpl
+    public interface IFormattedTextImpl : IDisposable
     {
         Size Constraint { get; set; }
-
-        string FontFamilyName { get; set; }
-
-        double FontSize { get; set; }
-
-        FontStyle FontStyle { get; set; }
-
-        string Text { get; set; }
 
         TextHitTestResult HitTestPoint(Point point);
 

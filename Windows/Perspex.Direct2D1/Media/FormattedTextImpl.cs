@@ -14,121 +14,45 @@ namespace Perspex.Direct2D1.Media
 
     public class FormattedTextImpl : IFormattedTextImpl
     {
-        private string text;
-
-        private string fontFamilyName = "Ariel";
-
-        private double fontSize = 10;
-
-        private FontStyle fontStyle;
-
-        private DWrite.Factory factory;
-
-        private DWrite.TextLayout layout;
-
-        public FormattedTextImpl()
+        public FormattedTextImpl(
+            string text,
+            string fontFamily,
+            double fontSize,
+            FontStyle fontStyle)
         {
-            this.factory = Locator.Current.GetService<DWrite.Factory>();
+            var factory = Locator.Current.GetService<DWrite.Factory>();
+
+            this.TextLayout = new DWrite.TextLayout(
+                factory,
+                text ?? string.Empty,
+                new DWrite.TextFormat(factory, fontFamily, (float)fontSize),
+                float.MaxValue,
+                float.MaxValue);
         }
 
         public Size Constraint
         {
             get
             {
-                return new Size(this.Layout.MaxWidth, this.Layout.MaxHeight);
+                return new Size(this.TextLayout.MaxWidth, this.TextLayout.MaxHeight);
             }
 
             set
             {
-                this.Layout.MaxWidth = (float)value.Width;
-                this.Layout.MaxHeight = (float)value.Height;
+                this.TextLayout.MaxWidth = (float)value.Width;
+                this.TextLayout.MaxHeight = (float)value.Height;
             }
         }
 
-        public string FontFamilyName
+        public DWrite.TextLayout TextLayout
         {
-            get
-            {
-                return this.fontFamilyName;
-            }
-
-            set
-            {
-                if (this.fontFamilyName != value)
-                {
-                    this.fontFamilyName = value;
-                    this.DisposeLayout();
-                }
-            }
+            get;
+            private set;
         }
 
-        public double FontSize
+        public void Dispose()
         {
-            get
-            {
-                return this.fontSize;
-            }
-
-            set
-            {
-                if (this.fontSize != value)
-                {
-                    this.fontSize = value;
-                    this.DisposeLayout();
-                }
-            }
-        }
-
-        public FontStyle FontStyle
-        {
-            get
-            {
-                return this.fontStyle;
-            }
-
-            set
-            {
-                if (this.fontStyle != value)
-                {
-                    this.fontStyle = value;
-                    this.DisposeLayout();
-                }
-            }
-        }
-
-        public string Text
-        {
-            get
-            {
-                return this.text;
-            }
-
-            set
-            {
-                if (this.text != value)
-                {
-                    this.text = value;
-                    this.DisposeLayout();
-                }
-            }
-        }
-
-        public DWrite.TextLayout Layout
-        {
-            get
-            {
-                if (this.layout == null)
-                {
-                    this.layout = new DWrite.TextLayout(
-                        this.factory,
-                        this.text ?? string.Empty,
-                        new DWrite.TextFormat(this.factory, this.fontFamilyName, (float)this.fontSize),
-                        float.MaxValue,
-                        float.MaxValue);
-                }
-
-                return this.layout;
-            }
+            this.TextLayout.Dispose();
         }
 
         public TextHitTestResult HitTestPoint(Point point)
@@ -136,7 +60,7 @@ namespace Perspex.Direct2D1.Media
             SharpDX.Bool isTrailingHit;
             SharpDX.Bool isInside;
 
-            DWrite.HitTestMetrics result = layout.HitTestPoint(
+            DWrite.HitTestMetrics result = this.TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
                 out isTrailingHit,
@@ -154,7 +78,7 @@ namespace Perspex.Direct2D1.Media
             float x;
             float y;
 
-            DWrite.HitTestMetrics result = layout.HitTestTextPosition(
+            DWrite.HitTestMetrics result = this.TextLayout.HitTestTextPosition(
                 index, 
                 false, 
                 out x, 
@@ -166,17 +90,8 @@ namespace Perspex.Direct2D1.Media
         public Size Measure()
         {
             return new Size(
-                layout.Metrics.WidthIncludingTrailingWhitespace,
-                layout.Metrics.Height);
-        }
-
-        private void DisposeLayout()
-        {
-            if (this.layout != null)
-            {
-                this.layout.Dispose();
-                this.layout = null;
-            }
+                this.TextLayout.Metrics.WidthIncludingTrailingWhitespace,
+                this.TextLayout.Metrics.Height);
         }
     }
 }

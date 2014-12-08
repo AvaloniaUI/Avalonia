@@ -6,21 +6,25 @@
 
 namespace Perspex.Media
 {
+    using System;
     using Perspex.Platform;
     using Splat;
 
-    public enum FontStyle
+    public class FormattedText : IDisposable
     {
-        Normal,
-        Oblique,
-        Italic,
-    }
-
-    public class FormattedText
-    {
-        public FormattedText()
+        public FormattedText(
+            string text,
+            string fontFamilyName,
+            double fontSize,
+            FontStyle fontStyle)
         {
-            this.PlatformImpl = Locator.Current.GetService<IFormattedTextImpl>();
+            this.Text = text;
+            this.FontFamilyName = fontFamilyName;
+            this.FontSize = fontSize;
+            this.FontStyle = fontStyle;
+
+            var platform = Locator.Current.GetService<IPlatformRenderInterface>();
+            this.PlatformImpl = platform.CreateFormattedText(text, fontFamilyName, fontSize, fontStyle);
         }
 
         public Size Constraint
@@ -31,32 +35,37 @@ namespace Perspex.Media
 
         public string FontFamilyName
         {
-            get { return this.PlatformImpl.FontFamilyName; }
-            set { this.PlatformImpl.FontFamilyName = value; }
+            get;
+            private set;
         }
 
         public double FontSize
         {
-            get { return this.PlatformImpl.FontSize; }
-            set { this.PlatformImpl.FontSize = value; }
+            get;
+            private set;
         }
 
         public FontStyle FontStyle
         {
-            get { return this.PlatformImpl.FontStyle; }
-            set { this.PlatformImpl.FontStyle = value; }
+            get;
+            private set;
         }
 
         public string Text
         {
-            get { return this.PlatformImpl.Text; }
-            set { this.PlatformImpl.Text = value; }
+            get;
+            private set;
         }
 
         public IFormattedTextImpl PlatformImpl
         {
             get;
             private set;
+        }
+
+        public void Dispose()
+        {
+            this.PlatformImpl.Dispose();
         }
 
         public TextHitTestResult HitTestPoint(Point point)

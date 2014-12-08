@@ -134,9 +134,9 @@ namespace Perspex.Direct2D1.Media
         /// Draws text.
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
-        /// <param name="rect">The output rectangle.</param>
+        /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
+        public void DrawText(Perspex.Media.Brush foreground, Perspex.Point origin, FormattedText text)
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
@@ -144,10 +144,9 @@ namespace Perspex.Direct2D1.Media
 
                 using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
                 {
-                    this.renderTarget.DrawText(
-                        text.Text,
-                        impl.Layout,
-                        this.Convert(rect),
+                    this.renderTarget.DrawTextLayout(
+                        origin.ToSharpDX(),
+                        impl.TextLayout,
                         brush);
                 }
             }
