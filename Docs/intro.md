@@ -109,6 +109,24 @@ Nice... Lets take this further:
 Yep, by putting a bang in front of the property name you can **bind** to a property (attached or 
 otherwise) from the object initializer.
 
+Binding to a property on another control? Easy:
+
+    var control = new Control
+	{
+		Property1 = "Foo",
+        [Attached.Property] = "Bar",
+		[!Property2] = anotherControl[!Property1],
+	}
+
+Two way binding? Just add two bangs:
+
+    var control = new Control
+	{
+		Property1 = "Foo",
+        [Attached.Property] = "Bar",
+		[!!Property2] = anotherControl[!!Property1],
+	}
+
 ## Visual and Logical trees
 
 Perspex uses the same visual/logical tree separation that is used by WPF (and to some extent HTML 
