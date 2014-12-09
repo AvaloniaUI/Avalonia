@@ -70,6 +70,7 @@ namespace Perspex.Direct2D1.Media
 
             return new TextHitTestResult
             {
+                IsInside = isInside,
                 TextPosition = result.TextPosition,
                 IsTrailing = isTrailingHit,
             };

@@ -29,7 +29,11 @@ namespace Perspex.Gtk
 
         public override ModifierKeys Modifiers
         {
-            get { throw new System.NotImplementedException(); }
+            get
+            {
+                // TODO: Implement.
+                return ModifierKeys.None;
+            }
         }
 
         public static Perspex.Input.Key ConvertKey(Gdk.Key key)

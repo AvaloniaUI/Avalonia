@@ -10,6 +10,7 @@ namespace Perspex.Cairo
     using global::Cairo;
     using Perspex.Cairo.Media;
     using Perspex.Cairo.Media.Imaging;
+    using Perspex.Media;
     using Perspex.Platform;
     using Perspex.Threading;
     using Splat;
@@ -30,8 +31,18 @@ namespace Perspex.Cairo
             ////return new BitmapImpl(imagingFactory, width, height);
         }
 
+        public IFormattedTextImpl CreateFormattedText(
+            string text, 
+            string fontFamily, 
+            double fontSize, 
+            FontStyle fontStyle)
+        {
+            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle);
+        }
+
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
+            Locator.CurrentMutable.RegisterConstant(this.GetPangoContext(handle), typeof(Pango.Context));
             return new Renderer(handle, width, height);
         }
 

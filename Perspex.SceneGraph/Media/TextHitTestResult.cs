@@ -8,6 +8,8 @@ namespace Perspex.Media
 {
     public class TextHitTestResult
     {
+        public bool IsInside { get; set; }
+
         public int TextPosition { get; set; }
 
         public bool IsTrailing { get; set; }

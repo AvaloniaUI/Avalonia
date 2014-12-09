@@ -133,14 +133,14 @@ namespace Perspex.Cairo.Media
         /// Draws text.
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
-        /// <param name="rect">The output rectangle.</param>
+        /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Perspex.Media.Brush foreground, Rect rect, FormattedText text)
+        public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
-            ////var layout = this.textService.CreateLayout(text);
-            ////this.SetBrush(foreground);
-            ////this.context.MoveTo(rect.X, rect.Y);
-            ////Pango.CairoHelper.ShowLayout(this.context, layout);
+            var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
+            this.SetBrush(foreground);
+            this.context.MoveTo(origin.X, origin.Y);
+            Pango.CairoHelper.ShowLayout(this.context, layout);
         }
 
         /// <summary>

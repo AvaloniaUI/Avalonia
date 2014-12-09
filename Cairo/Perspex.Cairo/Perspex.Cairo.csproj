@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="CairoPlatform.cs" />
     <Compile Include="Media\DrawingContext.cs" />
+    <Compile Include="Media\FormattedTextImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Renderer.cs" />
