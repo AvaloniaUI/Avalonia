@@ -139,6 +139,7 @@ namespace Perspex.Controls
 
         private void MoveHome(ModifierKeys modifiers)
         {
+            var text = this.Text ?? string.Empty;
             var caretIndex = this.CaretIndex;
 
             if ((modifiers & ModifierKeys.Control) != 0)
@@ -152,12 +153,56 @@ namespace Perspex.Controls
 
                 foreach (var line in lines)
                 {
-                    if (pos + line.Length > caretIndex)
+                    if (pos + line.Length > caretIndex || pos + line.Length == text.Length)
                     {
                         break;
                     }
 
                     pos += line.Length;
+                }
+
+                caretIndex = pos;
+            }
+
+            this.CaretIndex = caretIndex;
+
+            if ((modifiers & ModifierKeys.Shift) != 0)
+            {
+                this.SelectionEnd = caretIndex;
+            }
+            else
+            {
+                this.SelectionStart = this.SelectionEnd = caretIndex;
+            }
+        }
+
+        private void MoveEnd(ModifierKeys modifiers)
+        {
+            var text = this.Text ?? string.Empty;
+            var caretIndex = this.CaretIndex;
+
+            if ((modifiers & ModifierKeys.Control) != 0)
+            {
+                caretIndex = text.Length;
+            }
+            else
+            {
+                var lines = this.textBoxView.FormattedText.GetLines();
+                var pos = 0;
+
+                foreach (var line in lines)
+                {
+                    pos += line.Length;
+
+                    if (pos > caretIndex)
+                    {
+                        if (pos < text.Length)
+                        {
+                            --pos;
+                        }
+
+                        break;
+                    }
                 }
 
                 caretIndex = pos;
@@ -204,7 +249,7 @@ namespace Perspex.Controls
                     break;
 
                 case Key.End:
-                    this.CaretIndex = text.Length;
+                    this.MoveEnd(e.Device.Modifiers);
                     break;
 
                 case Key.Delete:
