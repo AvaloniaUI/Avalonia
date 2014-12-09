@@ -137,6 +137,44 @@ namespace Perspex.Controls
             }
         }
 
+        private void MoveHome(ModifierKeys modifiers)
+        {
+            var caretIndex = this.CaretIndex;
+
+            if ((modifiers & ModifierKeys.Control) != 0)
+            {
+                caretIndex = 0;
+            }
+            else
+            {
+                var lines = this.textBoxView.FormattedText.GetLines();
+                var pos = 0;
+
+                foreach (var line in lines)
+                {
+                    if (pos + line.Length > caretIndex)
+                    {
+                        break;
+                    }
+
+                    pos += line.Length;
+                }
+
+                caretIndex = pos;
+            }
+
+            this.CaretIndex = caretIndex;
+
+            if ((modifiers & ModifierKeys.Shift) != 0)
+            {
+                this.SelectionEnd = caretIndex;
+            }
+            else
+            {
+                this.SelectionStart = this.SelectionEnd = caretIndex;
+            }
+        }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
@@ -162,7 +200,7 @@ namespace Perspex.Controls
                     break;
 
                 case Key.Home:
-                    this.CaretIndex = 0;
+                    this.MoveHome(e.Device.Modifiers);
                     break;
 
                 case Key.End:
@@ -257,7 +295,8 @@ namespace Perspex.Controls
         private void OnPointerPressed(object sender, PointerEventArgs e)
         {
             var point = e.GetPosition(this.textBoxView);
-            this.CaretIndex = this.textBoxView.GetCaretIndex(point);
+            this.CaretIndex = this.SelectionStart = this.SelectionEnd = 
+                this.textBoxView.GetCaretIndex(point);
         }
     }
 }

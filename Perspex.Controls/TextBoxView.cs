@@ -36,6 +36,11 @@ namespace Perspex.Controls
             parent.GetObservable(TextBox.CaretIndexProperty).Subscribe(_ => this.CaretMoved());
         }
 
+        public new FormattedText FormattedText
+        {
+            get { return base.FormattedText; }
+        }
+
         public int GetCaretIndex(Point point)
         {
             var hit = this.FormattedText.HitTestPoint(point);

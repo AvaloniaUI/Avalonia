@@ -46,6 +46,7 @@
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\FontStyle.cs" />
+    <Compile Include="Media\FormattedTextLine.cs" />
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />

@@ -14,6 +14,8 @@ namespace Perspex.Platform
     {
         Size Constraint { get; set; }
 
+        IEnumerable<FormattedTextLine> GetLines();
+
         TextHitTestResult HitTestPoint(Point point);
 
         Rect HitTestTextPosition(int index);

@@ -57,6 +57,12 @@ namespace Perspex.Direct2D1.Media
             this.TextLayout.Dispose();
         }
 
+        public IEnumerable<FormattedTextLine> GetLines()
+        {
+            var result = this.TextLayout.GetLineMetrics();
+            return from line in result select new FormattedTextLine(line.Length, line.Height);
+        }
+
         public TextHitTestResult HitTestPoint(Point point)
         {
             SharpDX.Bool isTrailingHit;

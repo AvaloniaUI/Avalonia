@@ -56,6 +56,11 @@ namespace Perspex.Cairo.Media
             this.Layout.Dispose();
         }
 
+        public IEnumerable<FormattedTextLine> GetLines()
+        {
+            return new FormattedTextLine[0];
+        }
+
         public TextHitTestResult HitTestPoint(Point point)
         {
             int textPosition;

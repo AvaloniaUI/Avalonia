@@ -69,6 +69,11 @@ namespace Perspex.Media
             this.PlatformImpl.Dispose();
         }
 
+        public IEnumerable<FormattedTextLine> GetLines()
+        {
+            return this.PlatformImpl.GetLines();
+        }
+
         public TextHitTestResult HitTestPoint(Point point)
         {
             return this.PlatformImpl.HitTestPoint(point);
