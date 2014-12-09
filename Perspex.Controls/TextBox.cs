@@ -7,9 +7,11 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
+    using Perspex.Media;
     using Perspex.Styling;
 
     public class TextBox : TemplatedControl
@@ -126,14 +128,23 @@ namespace Perspex.Controls
             }
 
             this.CaretIndex = caretIndex += count;
-            
-            if ((modifiers & ModifierKeys.Shift) == 0)
+        }
+
+        private void MoveVertical(int count, ModifierKeys modifiers)
+        {
+            var formattedText = this.textBoxView.FormattedText;
+            var lines = formattedText.GetLines().ToList();
+            var caretIndex = this.CaretIndex;
+            var lineIndex = this.GetLine(caretIndex, lines) + count;
+
+            if (lineIndex >= 0 && lineIndex < lines.Count)
             {
-                this.SelectionStart = this.SelectionEnd = this.CaretIndex;
-            }
-            else
-            {
-                this.SelectionEnd = this.CaretIndex;
+                var line = lines[lineIndex];
+                var rect = formattedText.HitTestTextPosition(caretIndex);
+                var y = count < 0 ? rect.Y : rect.Bottom;
+                var point = new Point(rect.X, y + (count * (line.Height / 2)));
+                var hit = formattedText.HitTestPoint(point);
+                this.CaretIndex = caretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
             }
         }
 
@@ -165,15 +176,6 @@ namespace Perspex.Controls
             }
 
             this.CaretIndex = caretIndex;
-
-            if ((modifiers & ModifierKeys.Shift) != 0)
-            {
-                this.SelectionEnd = caretIndex;
-            }
-            else
-            {
-                this.SelectionStart = this.SelectionEnd = caretIndex;
-            }
         }
 
         private void MoveEnd(ModifierKeys modifiers)
@@ -209,30 +211,45 @@ namespace Perspex.Controls
             }
 
             this.CaretIndex = caretIndex;
-
-            if ((modifiers & ModifierKeys.Shift) != 0)
-            {
-                this.SelectionEnd = caretIndex;
-            }
-            else
-            {
-                this.SelectionStart = this.SelectionEnd = caretIndex;
-            }
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
-            var caretIndex = this.CaretIndex;
+            int caretIndex = this.CaretIndex;
+            bool movement = false;
+            var modifiers = e.Device.Modifiers;
 
             switch (e.Key)
             {
                 case Key.Left:
-                    this.MoveHorizontal(-1, e.Device.Modifiers);
+                    this.MoveHorizontal(-1, modifiers);
+                    movement = true;
                     break;
 
                 case Key.Right:
-                    this.MoveHorizontal(1, e.Device.Modifiers);
+                    this.MoveHorizontal(1, modifiers);
+                    movement = true;
+                    break;
+
+                case Key.Up:
+                    this.MoveVertical(-1, modifiers);
+                    movement = true;
+                    break;
+
+                case Key.Down:
+                    this.MoveVertical(1, modifiers);
+                    movement = true;
+                    break;
+
+                case Key.Home:
+                    this.MoveHome(modifiers);
+                    movement = true;
+                    break;
+
+                case Key.End:
+                    this.MoveEnd(modifiers);
+                    movement = true;
                     break;
 
                 case Key.Back:
@@ -242,14 +259,6 @@ namespace Perspex.Controls
                         --this.CaretIndex;
                     }
 
-                    break;
-
-                case Key.Home:
-                    this.MoveHome(e.Device.Modifiers);
-                    break;
-
-                case Key.End:
-                    this.MoveEnd(e.Device.Modifiers);
                     break;
 
                 case Key.Delete:
@@ -286,7 +295,35 @@ namespace Perspex.Controls
                     break;
             }
 
+            if (movement && ((modifiers & ModifierKeys.Shift) != 0))
+            {
+                this.SelectionEnd = this.CaretIndex;
+            }
+            else
+            {
+                this.SelectionStart = this.SelectionEnd = this.CaretIndex;
+            }
+
             e.Handled = true;
+        }
+
+        private int GetLine(int caretIndex, IList<FormattedTextLine> lines)
+        {
+            int pos = 0;
+            int i;
+
+            for (i = 0; i < lines.Count; ++i)
+            {
+                var line = lines[i];
+                pos += line.Length;
+
+                if (pos > caretIndex)
+                {
+                    break;
+                }
+            }
+
+            return i;
         }
 
         private int NextWord(string text, int direction, int caretIndex)
