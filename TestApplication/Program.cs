@@ -220,6 +220,7 @@ namespace TestApplication
                         new TextBlock
                         {
                             Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
+                            TextWrapping = TextWrapping.Wrap,
                         },
                         new TextBlock
                         {
@@ -228,7 +229,13 @@ namespace TestApplication
                         },
                         new TextBox
                         {
-                            Text = "Some example text",
+                            Text = "A non-wrapping text box. Lorem ipsum dolor sit amet.",
+                            TextWrapping = TextWrapping.NoWrap,
+                        },
+                        new TextBox
+                        {
+                            Text = "A wrapping text box. Lorem ipsum dolor sit amet.",
+                            TextWrapping = TextWrapping.Wrap,
                         },
                     }
                 },

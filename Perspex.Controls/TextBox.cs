@@ -32,6 +32,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
 
+        public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
+            TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+
         private TextBoxView textBoxView;
 
         static TextBox()
@@ -81,6 +84,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(TextProperty); }
             set { this.SetValue(TextProperty, value); }
+        }
+
+        public TextWrapping TextWrapping
+        {
+            get { return this.GetValue(TextWrappingProperty); }
+            set { this.SetValue(TextWrappingProperty, value); }
         }
 
         protected override void OnTemplateApplied()

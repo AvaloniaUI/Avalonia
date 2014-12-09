@@ -15,6 +15,11 @@ namespace Perspex
     public struct Size
     {
         /// <summary>
+        /// A size representing infinity.
+        /// </summary>
+        public static readonly Size Infinity = new Size(double.PositiveInfinity, double.PositiveInfinity);
+
+        /// <summary>
         /// The width.
         /// </summary>
         private double width;

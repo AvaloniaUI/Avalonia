@@ -30,6 +30,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
+        public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
+            PerspexProperty.Register<TextBlock, TextWrapping>("TextWrapping");
+
         private FormattedText formattedText;
 
         public TextBlock()
@@ -74,6 +77,12 @@ namespace Perspex.Controls
             set { this.SetValue(FontStyleProperty, value); }
         }
 
+        public TextWrapping TextWrapping
+        {
+            get { return this.GetValue(TextWrappingProperty); }
+            set { this.SetValue(TextWrappingProperty, value); }
+        }
+
         protected FormattedText FormattedText
         {
             get
@@ -108,7 +117,15 @@ namespace Perspex.Controls
         {
             if (!string.IsNullOrEmpty(this.Text))
             {
-                this.FormattedText.Constraint = availableSize;
+                if (this.TextWrapping == TextWrapping.Wrap)
+                {
+                    this.FormattedText.Constraint = new Size(availableSize.Width, double.PositiveInfinity);
+                }
+                else
+                {
+                    this.FormattedText.Constraint = Size.Infinity;
+                }
+
                 return this.FormattedText.Measure();
             }
 

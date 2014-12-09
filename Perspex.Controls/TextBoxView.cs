@@ -26,6 +26,7 @@ namespace Perspex.Controls
             this.caretTimer.Tick += this.CaretTimerTick;
             this.parent = parent;
             this[!TextProperty] = parent[!TextProperty];
+            this[!TextWrappingProperty] = parent[!TextWrappingProperty];
 
             Observable.Merge(
                 this.parent.GetObservable(TextBox.SelectionStartProperty),
