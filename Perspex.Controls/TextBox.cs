@@ -213,6 +213,26 @@ namespace Perspex.Controls
             this.CaretIndex = caretIndex;
         }
 
+        private bool DeleteSelection()
+        {
+            var selectionStart = this.SelectionStart;
+            var selectionEnd = this.SelectionEnd;
+
+            if (selectionStart != selectionEnd)
+            {
+                var start = Math.Min(selectionStart, selectionEnd);
+                var end = Math.Max(selectionStart, selectionEnd);
+                var text = this.Text;
+                this.Text = text.Substring(0, start) + text.Substring(end);
+                this.SelectionStart = this.SelectionEnd = this.CaretIndex = start;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
@@ -253,7 +273,7 @@ namespace Perspex.Controls
                     break;
 
                 case Key.Back:
-                    if (this.CaretIndex > 0)
+                    if (!this.DeleteSelection() && this.CaretIndex > 0)
                     {
                         this.Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
                         --this.CaretIndex;
@@ -262,7 +282,7 @@ namespace Perspex.Controls
                     break;
 
                 case Key.Delete:
-                    if (caretIndex < text.Length)
+                    if (!this.DeleteSelection() && caretIndex < text.Length)
                     {
                         this.Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
                     }
@@ -288,6 +308,9 @@ namespace Perspex.Controls
                 default:
                     if (!string.IsNullOrEmpty(e.Text))
                     {
+                        this.DeleteSelection();
+                        caretIndex = this.CaretIndex;
+                        text = this.Text;
                         this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
                         ++this.CaretIndex;
                     }
