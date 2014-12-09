@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Reactive.Linq;
     using Perspex.Media;
     using Perspex.Threading;
 
@@ -25,6 +26,13 @@ namespace Perspex.Controls
             this.caretTimer.Tick += this.CaretTimerTick;
             this.parent = parent;
             this[!TextProperty] = parent[!TextProperty];
+
+            Observable.Merge(
+                this.parent.GetObservable(TextBox.SelectionStartProperty),
+                this.parent.GetObservable(TextBox.SelectionEndProperty))
+                .Subscribe(_ => this.InvalidateVisual());
+
+            parent.GetObservable(TextBox.CaretIndexProperty).Subscribe(_ => this.CaretMoved());
         }
 
         public int GetCaretIndex(Point point)
@@ -47,6 +55,23 @@ namespace Perspex.Controls
 
         public override void Render(IDrawingContext context)
         {
+            var selectionStart = this.parent.SelectionStart;
+            var selectionEnd = this.parent.SelectionEnd;
+
+            if (selectionStart != selectionEnd)
+            {
+                var start = Math.Min(selectionStart, selectionEnd);
+                var length = Math.Max(selectionStart, selectionEnd) - start;
+                var rects = this.FormattedText.HitTestTextRange(start, length);
+
+                var brush = new SolidColorBrush(0xff086f9e);
+
+                foreach (var rect in rects)
+                {
+                    context.FillRectange(brush, rect);
+                }
+            }
+
             base.Render(context);
 
             if (this.parent.IsFocused)

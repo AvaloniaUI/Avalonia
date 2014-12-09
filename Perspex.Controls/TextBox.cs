@@ -20,10 +20,17 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> AcceptsTabProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
+        public static readonly PerspexProperty<int> CaretIndexProperty =
+            PerspexProperty.Register<TextBox, int>("CaretIndex", coerce: CoerceCaretIndex);
+
+        public static readonly PerspexProperty<int> SelectionStartProperty =
+            PerspexProperty.Register<TextBox, int>("SelectionStart", coerce: CoerceCaretIndex);
+
+        public static readonly PerspexProperty<int> SelectionEndProperty =
+            PerspexProperty.Register<TextBox, int>("SelectionEnd", coerce: CoerceCaretIndex);
+
         public static readonly PerspexProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
-
-        private int caretIndex;
 
         private TextBoxView textBoxView;
 
@@ -54,23 +61,20 @@ namespace Perspex.Controls
 
         public int CaretIndex
         {
-            get
-            {
-                return this.caretIndex;
-            }
+            get { return this.GetValue(CaretIndexProperty); }
+            set { this.SetValue(CaretIndexProperty, value); }
+        }
 
-            set
-            {
-                var text = this.Text ?? string.Empty;
+        public int SelectionStart
+        {
+            get { return this.GetValue(SelectionStartProperty); }
+            set { this.SetValue(SelectionStartProperty, value); }
+        }
 
-                value = Math.Min(Math.Max(value, 0), text.Length);
-
-                if (this.caretIndex != value)
-                {
-                    this.caretIndex = value;
-                    this.textBoxView.CaretMoved();
-                }
-            }
+        public int SelectionEnd
+        {
+            get { return this.GetValue(SelectionEndProperty); }
+            set { this.SetValue(SelectionEndProperty, value); }
         }
 
         public string Text
@@ -95,33 +99,54 @@ namespace Perspex.Controls
             textContainer.Content = this.textBoxView = new TextBoxView(this);
         }
 
+        private static int CoerceCaretIndex(PerspexObject o, int value)
+        {
+            var text = o.GetValue(TextProperty);
+            var length = (text != null) ? text.Length : 0;
+            return Math.Max(0, Math.Min(length, value));
+        }
+
+        private void MoveHorizontal(int count, ModifierKeys modifiers)
+        {
+            if (modifiers == ModifierKeys.None)
+            {
+                this.CaretIndex += count;
+                this.SelectionStart = this.SelectionEnd = this.CaretIndex;
+            }
+            else if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            {
+                this.SelectionEnd = (this.CaretIndex += count);
+            }
+        }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
+            var caretIndex = this.CaretIndex;
 
             switch (e.Key)
             {
                 case Key.Left:
-                    --this.CaretIndex;
+                    this.MoveHorizontal(-1, e.Device.Modifiers);
                     break;
 
                 case Key.Right:
-                    ++this.CaretIndex;
+                    this.MoveHorizontal(1, e.Device.Modifiers);
                     break;
 
                 case Key.Back:
-                    if (this.caretIndex > 0)
+                    if (this.CaretIndex > 0)
                     {
-                        this.Text = text.Substring(0, this.caretIndex - 1) + text.Substring(this.caretIndex);
+                        this.Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
                         --this.CaretIndex;
                     }
 
                     break;
 
                 case Key.Delete:
-                    if (this.caretIndex < text.Length)
+                    if (caretIndex < text.Length)
                     {
-                        this.Text = text.Substring(0, this.caretIndex) + text.Substring(this.caretIndex + 1);
+                        this.Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
                     }
 
                     break;
@@ -145,7 +170,7 @@ namespace Perspex.Controls
                 default:
                     if (!string.IsNullOrEmpty(e.Text))
                     {
-                        this.Text = text.Substring(0, this.caretIndex) + e.Text + text.Substring(this.caretIndex);
+                        this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
                         ++this.CaretIndex;
                     }
 

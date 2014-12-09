@@ -28,26 +28,22 @@ namespace Perspex.Win32.Input
             {
                 ModifierKeys result = 0;
 
-                if (this.GetKeyStates(Key.LeftAlt) == KeyStates.Down ||
-                    this.GetKeyStates(Key.RightAlt) == KeyStates.Down)
+                if (this.IsDown(Key.LeftAlt) || this.IsDown(Key.RightAlt))
                 {
                     result |= ModifierKeys.Alt;
                 }
 
-                if (this.GetKeyStates(Key.LeftCtrl) == KeyStates.Down ||
-                    this.GetKeyStates(Key.RightCtrl) == KeyStates.Down)
+                if (this.IsDown(Key.LeftCtrl) || this.IsDown(Key.RightCtrl))
                 {
                     result |= ModifierKeys.Control;
                 }
 
-                if (this.GetKeyStates(Key.LeftShift) == KeyStates.Down ||
-                    this.GetKeyStates(Key.RightShift) == KeyStates.Down)
+                if (this.IsDown(Key.LeftShift) || this.IsDown(Key.RightShift))
                 {
                     result |= ModifierKeys.Shift;
                 }
 
-                if (this.GetKeyStates(Key.LWin) == KeyStates.Down ||
-                    this.GetKeyStates(Key.RWin) == KeyStates.Down)
+                if (this.IsDown(Key.LWin) || this.IsDown(Key.RWin))
                 {
                     result |= ModifierKeys.Windows;
                 }
@@ -77,6 +73,11 @@ namespace Perspex.Win32.Input
         internal void UpdateKeyStates()
         {
             UnmanagedMethods.GetKeyboardState(this.keyStates);
+        }
+
+        private bool IsDown(Key key)
+        {
+            return (this.GetKeyStates(key) & KeyStates.Down) != 0;
         }
 
         private KeyStates GetKeyStates(Key key)

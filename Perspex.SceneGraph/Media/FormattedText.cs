@@ -79,7 +79,7 @@ namespace Perspex.Media
             return this.PlatformImpl.HitTestTextPosition(index);
         }
 
-        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
+        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin = default(Point))
         {
             return this.PlatformImpl.HitTestTextRange(index, length, origin);
         }
@@ -89,4 +89,4 @@ namespace Perspex.Media
             return this.PlatformImpl.Measure();
         }
     }
-}
+} 
