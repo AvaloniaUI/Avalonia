@@ -108,14 +108,23 @@ namespace Perspex.Controls
 
         private void MoveHorizontal(int count, ModifierKeys modifiers)
         {
-            if (modifiers == ModifierKeys.None)
+            var text = this.Text ?? string.Empty;
+            var caretIndex = this.CaretIndex;
+
+            if ((modifiers & ModifierKeys.Control) != 0)
             {
-                this.CaretIndex += count;
+                count = this.NextWord(text, count, caretIndex);
+            }
+
+            this.CaretIndex = caretIndex += count;
+            
+            if ((modifiers & ModifierKeys.Shift) == 0)
+            {
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
-            else if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            else
             {
-                this.SelectionEnd = (this.CaretIndex += count);
+                this.SelectionEnd = this.CaretIndex;
             }
         }
 
@@ -141,6 +150,14 @@ namespace Perspex.Controls
                         --this.CaretIndex;
                     }
 
+                    break;
+
+                case Key.Home:
+                    this.CaretIndex = 0;
+                    break;
+
+                case Key.End:
+                    this.CaretIndex = text.Length;
                     break;
 
                 case Key.Delete:
@@ -178,6 +195,54 @@ namespace Perspex.Controls
             }
 
             e.Handled = true;
+        }
+
+        private int NextWord(string text, int direction, int caretIndex)
+        {
+            int pos = caretIndex;
+            bool foundNonWhiteSpace = false;
+
+            for (; ;)
+            {
+                pos += direction;
+
+                if (direction < 0 && pos <= 0)
+                {
+                    pos = 0;
+                    break;
+                }
+                else if (direction > 0 && pos >= text.Length)
+                {
+                    pos = text.Length;
+                    break;
+                }
+                else if (char.IsWhiteSpace(text[pos]))
+                {
+                    if (foundNonWhiteSpace)
+                    {
+                        if (direction < 0)
+                        {
+                            ++pos;
+                            break;
+                        }
+                        else
+                        {
+                            while (pos < text.Length && char.IsWhiteSpace(text[pos]))
+                            {
+                                ++pos;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    foundNonWhiteSpace = true;
+                }
+            }
+
+            return pos - caretIndex;
         }
 
         private void OnPointerPressed(object sender, PointerEventArgs e)

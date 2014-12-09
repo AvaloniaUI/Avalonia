@@ -228,7 +228,7 @@ namespace TestApplication
                         },
                         new TextBox
                         {
-                            Text = "Text Box",
+                            Text = "Some example text",
                         },
                     }
                 },
