@@ -49,7 +49,6 @@ namespace Perspex.Controls
             this.GotFocus += (s, e) => this.textBoxView.GotFocus();
             this.LostFocus += (s, e) => this.textBoxView.LostFocus();
             this.KeyDown += this.OnKeyDown;
-            this.PointerPressed += this.OnPointerPressed;
         }
 
         public bool AcceptsReturn
@@ -92,6 +91,31 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(TextWrappingProperty); }
             set { this.SetValue(TextWrappingProperty, value); }
+        }
+
+        protected override void OnPointerPressed(PointerEventArgs e)
+        {
+            var point = e.GetPosition(this.textBoxView);
+            this.CaretIndex = this.SelectionStart = this.SelectionEnd =
+                this.textBoxView.GetCaretIndex(point);
+            e.Device.Capture(this);
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            if (e.Device.Captured == this)
+            {
+                var point = e.GetPosition(this.textBoxView);
+                this.CaretIndex = this.SelectionEnd = this.textBoxView.GetCaretIndex(point);
+            }
+        }
+
+        protected override void OnPointerReleased(PointerEventArgs e)
+        {
+            if (e.Device.Captured == this)
+            {
+                e.Device.Capture(null);
+            }
         }
 
         protected override void OnTemplateApplied()
@@ -397,13 +421,6 @@ namespace Perspex.Controls
             }
 
             return pos - caretIndex;
-        }
-
-        private void OnPointerPressed(object sender, PointerEventArgs e)
-        {
-            var point = e.GetPosition(this.textBoxView);
-            this.CaretIndex = this.SelectionStart = this.SelectionEnd = 
-                this.textBoxView.GetCaretIndex(point);
         }
     }
 }
