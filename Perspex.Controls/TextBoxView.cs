@@ -55,6 +55,9 @@ namespace Perspex.Controls
 
         public new void LostFocus()
         {
+            this.parent.SelectionStart = 0;
+            this.parent.SelectionEnd = 0;
+
             this.caretTimer.Stop();
             this.InvalidateVisual();
         }

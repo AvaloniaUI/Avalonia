@@ -256,7 +256,6 @@ namespace Perspex.Controls
                 return false;
             }
         }
-
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
@@ -267,6 +266,14 @@ namespace Perspex.Controls
 
             switch (e.Key)
             {
+                case Key.A:
+                    if (modifiers == ModifierKeys.Control)
+                    {
+                        this.SelectionStart = 0;
+                        this.SelectionEnd = this.Text.Length;
+                    }
+
+                    break;
                 case Key.Left:
                     this.MoveHorizontal(-1, modifiers);
                     movement = true;
