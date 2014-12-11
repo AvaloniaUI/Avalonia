@@ -13,10 +13,11 @@ namespace Perspex.Input.Raw
     {
         public RawMouseWheelEventArgs(
             IInputDevice device,
+            uint timestamp,
             IInputElement root,
             Point position,
             Vector delta)
-            : base(device, root, RawMouseEventType.Wheel, position)
+            : base(device, timestamp, root, RawMouseEventType.Wheel, position)
         {
             this.Delta = delta;
         }

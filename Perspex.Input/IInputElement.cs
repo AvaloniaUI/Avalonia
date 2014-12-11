@@ -21,7 +21,7 @@ namespace Perspex.Input
 
         event EventHandler<PointerEventArgs> PointerLeave;
 
-        event EventHandler<PointerEventArgs> PointerPressed;
+        event EventHandler<PointerPressEventArgs> PointerPressed;
 
         event EventHandler<PointerEventArgs> PointerReleased;
 

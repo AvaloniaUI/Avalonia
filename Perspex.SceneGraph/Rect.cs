@@ -260,6 +260,28 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Inflates the rectangle.
+        /// </summary>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The inflated rectangle.</returns>
+        public Rect Inflate(double thickness)
+        {
+            return this.Inflate(thickness);
+        }
+
+        /// <summary>
+        /// Inflates the rectangle.
+        /// </summary>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The inflated rectangle.</returns>
+        public Rect Inflate(Thickness thickness)
+        {
+            return new Rect(
+                new Point(this.x - thickness.Left, this.y - thickness.Top),
+                this.Size.Inflate(thickness));
+        }
+
+        /// <summary>
         /// Deflates the rectangle.
         /// </summary>
         /// <param name="thickness">The thickness.</param>

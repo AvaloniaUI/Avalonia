@@ -9,26 +9,39 @@ namespace Perspex.Win32
     using System;
     using System.Collections.Generic;
     using System.Reactive.Disposables;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Perspex.Input;
     using Perspex.Platform;
-    using Perspex.Threading;
     using Perspex.Win32.Input;
     using Perspex.Win32.Interop;
     using Splat;
 
-    public class Win32Platform : IPlatformThreadingInterface
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings
     {
         private static Win32Platform instance = new Win32Platform();
 
         private List<Delegate> delegates = new List<Delegate>();
+
+        public Size DoubleClickSize
+        {
+            get
+            {
+                return new Size(
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
+            }
+        }
+
+        public TimeSpan DoubleClickTime
+        {
+            get { return TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime()); }
+        }
 
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
+            locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
 

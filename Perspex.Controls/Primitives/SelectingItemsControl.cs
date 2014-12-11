@@ -114,7 +114,7 @@ namespace Perspex.Controls.Primitives
             e.Handled = true;
         }
 
-        protected override void OnPointerPressed(PointerEventArgs e)
+        protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             IVisual source = (IVisual)e.Source;
             var selectable = source.GetVisualAncestors()

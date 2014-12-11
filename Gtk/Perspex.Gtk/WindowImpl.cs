@@ -69,6 +69,7 @@ namespace Perspex.Gtk
         {
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
+                evnt.Time,
                 this.owner,
                 RawMouseEventType.LeftButtonDown,
                 new Point(evnt.X, evnt.Y));
@@ -80,6 +81,7 @@ namespace Perspex.Gtk
         {
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
+                evnt.Time,
                 this.owner,
                 RawMouseEventType.LeftButtonUp,
                 new Point(evnt.X, evnt.Y));
@@ -109,6 +111,7 @@ namespace Perspex.Gtk
         {
             var e = new RawKeyEventArgs(
                 GtkKeyboardDevice.Instance,
+                evnt.Time,
                 RawKeyEventType.KeyDown,
                 GtkKeyboardDevice.ConvertKey(evnt.Key),
                 new string((char)Gdk.Keyval.ToUnicode((uint)evnt.Key), 1));
@@ -135,6 +138,7 @@ namespace Perspex.Gtk
 
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
+                evnt.Time,
                 this.owner,
                 RawMouseEventType.Move,
                 position);

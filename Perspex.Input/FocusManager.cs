@@ -48,7 +48,7 @@ namespace Perspex.Input
                 .OfType<IFocusScope>()
                 .FirstOrDefault();
 
-            if (scope != null)
+            if (scope != null && control != current)
             {
                 this.focusScopes[scope] = control;
 

@@ -74,7 +74,7 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        protected override void OnPointerPressed(PointerEventArgs e)
+        protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             e.Device.Capture(this);
             this.lastPoint = e.GetPosition(this);

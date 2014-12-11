@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Utils;
     using Perspex.Input;
     using Perspex.Media;
     using Perspex.Styling;
@@ -93,11 +94,31 @@ namespace Perspex.Controls
             set { this.SetValue(TextWrappingProperty, value); }
         }
 
-        protected override void OnPointerPressed(PointerEventArgs e)
+        protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             var point = e.GetPosition(this.textBoxView);
-            this.CaretIndex = this.SelectionStart = this.SelectionEnd =
-                this.textBoxView.GetCaretIndex(point);
+            var index = this.CaretIndex = this.textBoxView.GetCaretIndex(point);
+            var text = this.Text;
+
+            switch (e.ClickCount)
+            {
+                case 1:
+                    this.SelectionStart = this.SelectionEnd = index;
+                    break;
+                case 2:
+                    if (!StringUtils.IsStartOfWord(text, index))
+                    {
+                        this.SelectionStart = StringUtils.PreviousWord(text, index, false);
+                    }
+
+                    this.SelectionEnd = StringUtils.NextWord(text, index, false);
+                    break;
+                case 3:
+                    this.SelectionStart = 0;
+                    this.SelectionEnd = text.Length;
+                    break;
+            }
+
             e.Device.Capture(this);
         }
 
@@ -148,7 +169,14 @@ namespace Perspex.Controls
 
             if ((modifiers & ModifierKeys.Control) != 0)
             {
-                count = this.NextWord(text, count, caretIndex);
+                if (count > 0)
+                {
+                    count = StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                }
+                else
+                {
+                    count = StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                }
             }
 
             this.CaretIndex = caretIndex += count;
@@ -256,6 +284,7 @@ namespace Perspex.Controls
                 return false;
             }
         }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
@@ -380,54 +409,6 @@ namespace Perspex.Controls
             }
 
             return i;
-        }
-
-        private int NextWord(string text, int direction, int caretIndex)
-        {
-            int pos = caretIndex;
-            bool foundNonWhiteSpace = false;
-
-            for (; ;)
-            {
-                pos += direction;
-
-                if (direction < 0 && pos <= 0)
-                {
-                    pos = 0;
-                    break;
-                }
-                else if (direction > 0 && pos >= text.Length)
-                {
-                    pos = text.Length;
-                    break;
-                }
-                else if (char.IsWhiteSpace(text[pos]))
-                {
-                    if (foundNonWhiteSpace)
-                    {
-                        if (direction < 0)
-                        {
-                            ++pos;
-                            break;
-                        }
-                        else
-                        {
-                            while (pos < text.Length && char.IsWhiteSpace(text[pos]))
-                            {
-                                ++pos;
-                            }
-
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    foundNonWhiteSpace = true;
-                }
-            }
-
-            return pos - caretIndex;
         }
     }
 }

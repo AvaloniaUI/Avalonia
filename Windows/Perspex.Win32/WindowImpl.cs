@@ -145,6 +145,7 @@ namespace Perspex.Win32
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double WheelDelta = 120.0;
+            uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
 
@@ -164,6 +165,7 @@ namespace Perspex.Win32
                     WindowsKeyboardDevice.Instance.UpdateKeyStates();
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
+                            timestamp,
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey((int)wParam),
                             WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
@@ -172,6 +174,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
+                        timestamp,
                         this.owner,
                         RawMouseEventType.LeftButtonDown,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -180,6 +183,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
+                        timestamp,
                         this.owner,
                         RawMouseEventType.LeftButtonUp,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -188,6 +192,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
+                        timestamp,
                         this.owner,
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
@@ -196,6 +201,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
                     e = new RawMouseWheelEventArgs(
                         WindowsMouseDevice.Instance,
+                        timestamp,
                         this.owner,
                         this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
                         new Vector(0, ((int)wParam >> 16) / WheelDelta));

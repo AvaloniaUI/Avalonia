@@ -11,10 +11,17 @@ namespace Perspex.Input
     using System.Reactive.Linq;
     using Perspex.Input.Raw;
     using Perspex.Interactivity;
+    using Perspex.Platform;
     using Splat;
 
     public abstract class MouseDevice : IMouseDevice
     {
+        private int clickCount;
+
+        private Rect lastClickRect;
+
+        private uint lastClickTime;
+
         public MouseDevice()
         {
             this.InputManager.RawEventReceived
@@ -73,7 +80,7 @@ namespace Perspex.Input
                     this.MouseMove(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonDown:
-                    this.MouseDown(mouse, e.Root, e.Position);
+                    this.MouseDown(mouse, e.Timestamp, e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonUp:
                     this.MouseUp(mouse, e.Root, e.Position);
@@ -118,7 +125,7 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseDown(IMouseDevice device, IInputElement root, Point p)
+        private void MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p)
         {
             IVisual hit = root.InputHitTest(p);
 
@@ -128,12 +135,26 @@ namespace Perspex.Input
 
                 if (source != null)
                 {
-                    source.RaiseEvent(new PointerEventArgs
+                    var settings = Locator.Current.GetService<IPlatformSettings>();
+                    var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
+
+                    if (!this.lastClickRect.Contains(p) || timestamp - this.lastClickTime > doubleClickTime)
+                    {
+                        this.clickCount = 0;
+                    }
+
+                    ++this.clickCount;
+                    this.lastClickTime = timestamp;
+                    this.lastClickRect = new Rect(p, new Size())
+                        .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+
+                    source.RaiseEvent(new PointerPressEventArgs
                     {
                         Device = this,
                         RoutedEvent = InputElement.PointerPressedEvent,
                         OriginalSource = source,
                         Source = source,
+                        ClickCount = this.clickCount,
                     });
                 }
 
