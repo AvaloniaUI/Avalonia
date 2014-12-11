@@ -7,6 +7,8 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Linq;
+    using Perspex.Layout;
     using Perspex.Styling;
 
     public class ControlTemplate

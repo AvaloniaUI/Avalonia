@@ -30,7 +30,7 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ContentProperty, value); }
         }
 
-        protected override sealed void ApplyTemplate()
+        public override sealed void ApplyTemplate()
         {
             if (!this.createdChild)
             {

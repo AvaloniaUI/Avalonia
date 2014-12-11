@@ -141,17 +141,7 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            Decorator textContainer = this.GetVisualDescendents()
-                .OfType<Decorator>()
-                .FirstOrDefault(x => x.Id == "textContainer");
-
-            if (textContainer == null)
-            {
-                throw new Exception(
-                    "TextBox template doesn't contain a textContainer " +
-                    "or textContainer is not a Decorator.");
-            }
-
+            Decorator textContainer = this.GetTemplateChild<Decorator>("textContainer");
             textContainer.Content = this.textBoxView = new TextBoxView(this);
         }
 

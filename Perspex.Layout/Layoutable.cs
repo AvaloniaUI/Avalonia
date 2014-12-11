@@ -163,6 +163,10 @@ namespace Perspex.Layout
             get { return this.previousArrange; }
         }
 
+        public virtual void ApplyTemplate()
+        {
+        }
+
         public void Measure(Size availableSize, bool force = false)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
@@ -257,10 +261,6 @@ namespace Perspex.Layout
         protected static void AffectsMeasure(PerspexProperty property)
         {
             property.Changed.Subscribe(AffectsMeasureInvalidate);
-        }
-
-        protected virtual void ApplyTemplate()
-        {
         }
 
         protected virtual void ArrangeCore(Rect finalRect)

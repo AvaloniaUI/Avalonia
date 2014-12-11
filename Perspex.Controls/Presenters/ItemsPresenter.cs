@@ -41,7 +41,7 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
-        protected override sealed void ApplyTemplate()
+        public override sealed void ApplyTemplate()
         {
             if (!this.createdPanel)
             {

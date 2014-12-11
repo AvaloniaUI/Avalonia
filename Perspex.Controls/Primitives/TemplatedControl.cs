@@ -20,6 +20,16 @@ namespace Perspex.Controls.Primitives
 
         private bool templateApplied;
 
+        static TemplatedControl()
+        {
+            TemplateProperty.Changed.Subscribe(e =>
+            {
+                var templatedControl = (TemplatedControl)e.Sender;
+                templatedControl.templateApplied = false;
+                templatedControl.InvalidateMeasure();
+            });
+        }
+
         public ControlTemplate Template
         {
             get { return this.GetValue(TemplateProperty); }
@@ -30,7 +40,7 @@ namespace Perspex.Controls.Primitives
         {
         }
 
-        protected override void ApplyTemplate()
+        public sealed override void ApplyTemplate()
         {
             if (!this.templateApplied)
             {
@@ -45,6 +55,17 @@ namespace Perspex.Controls.Primitives
 
                     var child = this.Template.Build(this);
                     this.AddVisualChild(child);
+
+                    var templateChildren = this.GetVisualDescendents()
+                        .OfType<Control>()
+                        .Where(x => x.TemplatedParent != null);
+
+                    foreach (var i in templateChildren)
+                    {
+                        i.ApplyTemplate();
+                    }
+
+
                     this.OnTemplateApplied();
                 }
 
@@ -82,7 +103,9 @@ namespace Perspex.Controls.Primitives
 
         protected T FindTemplateChild<T>(string id) where T : Control
         {
-            return this.GetTemplateControls().OfType<T>().FirstOrDefault(x => x.Id == id);
+            return this.GetTemplateControls()
+                .Where(x => x.TemplatedParent == this)
+                .OfType<T>().FirstOrDefault(x => x.Id == id);
         }
 
         protected T GetTemplateChild<T>(string id) where T : Control

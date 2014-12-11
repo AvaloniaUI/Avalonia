@@ -31,9 +31,9 @@ namespace Perspex.Controls
         {
             IVisual visual = parent as IVisual;
 
-            foreach (IVisual child in visual.VisualChildren.OfType<Control>().Where(x => x.TemplatedParent == templated))
+            foreach (var child in visual.VisualChildren.OfType<Control>().Where(x => x.TemplatedParent != null))
             {
-                yield return (Control)child;
+                yield return child;
 
                 foreach (IVisual grandchild in GetTemplateControls(templated, child))
                 {
