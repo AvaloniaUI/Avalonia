@@ -238,6 +238,7 @@ namespace Perspex.Controls
             string text = this.Text ?? string.Empty;
             int caretIndex = this.CaretIndex;
             bool movement = false;
+            bool textEntered = false;
             var modifiers = e.Device.Modifiers;
 
             switch (e.Key)
@@ -313,6 +314,7 @@ namespace Perspex.Controls
                         text = this.Text;
                         this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
                         ++this.CaretIndex;
+                        textEntered = true;
                     }
 
                     break;
@@ -322,7 +324,7 @@ namespace Perspex.Controls
             {
                 this.SelectionEnd = this.CaretIndex;
             }
-            else
+            else if (textEntered)
             {
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
