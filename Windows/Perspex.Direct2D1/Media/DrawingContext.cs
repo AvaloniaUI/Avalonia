@@ -46,8 +46,8 @@ namespace Perspex.Direct2D1.Media
 
         public Matrix CurrentTransform
         {
-            get { return this.Convert(this.renderTarget.Transform); }
-            set { this.renderTarget.Transform = this.Convert(value); }
+            get { return this.renderTarget.Transform.ToPerspex(); }
+            set { this.renderTarget.Transform = value.ToDirect2D(); }
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Perspex.Direct2D1.Media
         {
             if (pen != null)
             {
-                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(pen.Brush))
+                using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
                 {
                     this.renderTarget.DrawLine(p1.ToSharpDX(), p2.ToSharpDX(), d2dBrush);
                 }
@@ -97,7 +97,7 @@ namespace Perspex.Direct2D1.Media
         {
             if (brush != null)
             {
-                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(brush))
+                using (var d2dBrush = brush.ToDirect2D(this.renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
                     this.renderTarget.FillGeometry(impl.Geometry, d2dBrush);
@@ -106,7 +106,7 @@ namespace Perspex.Direct2D1.Media
 
             if (pen != null)
             {
-                using (SharpDX.Direct2D1.SolidColorBrush d2dBrush = this.Convert(pen.Brush))
+                using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
                     this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush, (float)pen.Thickness);
@@ -121,10 +121,10 @@ namespace Perspex.Direct2D1.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectange(Pen pen, Rect rect)
         {
-            using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(pen.Brush))
+            using (var brush = pen.Brush.ToDirect2D(this.renderTarget))
             {
                 this.renderTarget.DrawRectangle(
-                    this.Convert(rect),
+                    rect.ToDirect2D(),
                     brush,
                     (float)pen.Thickness);
             }
@@ -142,7 +142,7 @@ namespace Perspex.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (SharpDX.Direct2D1.SolidColorBrush brush = this.Convert(foreground))
+                using (var brush = foreground.ToDirect2D(this.renderTarget))
                 {
                     this.renderTarget.DrawTextLayout(
                         origin.ToSharpDX(),
@@ -159,7 +159,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect)
         {
-            using (SharpDX.Direct2D1.SolidColorBrush b = this.Convert(brush))
+            using (var b = brush.ToDirect2D(this.renderTarget))
             {
                 this.renderTarget.FillRectangle(
                     new RectangleF(
@@ -193,7 +193,7 @@ namespace Perspex.Direct2D1.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            Matrix3x2 m3x2 = this.Convert(matrix);
+            Matrix3x2 m3x2 = matrix.ToDirect2D();
             Matrix3x2 transform = this.renderTarget.Transform * m3x2;
             this.renderTarget.Transform = transform;
 
@@ -202,84 +202,6 @@ namespace Perspex.Direct2D1.Media
                 m3x2.Invert();
                 this.renderTarget.Transform = transform * m3x2;
             });
-        }
-
-        /// <summary>
-        /// Converts a brush to Direct2D.
-        /// </summary>
-        /// <param name="brush">The brush to convert.</param>
-        /// <returns>The Direct2D brush.</returns>
-        private SharpDX.Direct2D1.SolidColorBrush Convert(Perspex.Media.Brush brush)
-        {
-            Perspex.Media.SolidColorBrush solidColorBrush = brush as Perspex.Media.SolidColorBrush;
-
-            if (solidColorBrush != null)
-            {
-                return new SharpDX.Direct2D1.SolidColorBrush(
-                    this.renderTarget, 
-                    this.Convert(solidColorBrush.Color));
-            }
-            else
-            {
-                return new SharpDX.Direct2D1.SolidColorBrush(
-                    this.renderTarget,
-                    new Color4());
-            }
-        }
-
-        /// <summary>
-        /// Converts a color to Direct2D.
-        /// </summary>
-        /// <param name="color">The color to convert.</param>
-        /// <returns>The Direct2D color.</returns>
-        private Color4 Convert(Perspex.Media.Color color)
-        {
-            return new Color4(
-                (float)(color.R / 255.0),
-                (float)(color.G / 255.0),
-                (float)(color.B / 255.0),
-                (float)(color.A / 255.0));
-        }
-
-        /// <summary>
-        /// Converts a <see cref="Matrix"/> to a Direct2D <see cref="Matrix3x2"/>
-        /// </summary>
-        /// <param name="matrix">The <see cref="Matrix"/>.</param>
-        /// <returns>The <see cref="Matrix3x2"/>.</returns>
-        private Matrix3x2 Convert(Matrix matrix)
-        {
-            return new Matrix3x2(
-                (float)matrix.M11,
-                (float)matrix.M12,
-                (float)matrix.M21,
-                (float)matrix.M22,
-                (float)matrix.OffsetX,
-                (float)matrix.OffsetY);
-        }
-
-        private Matrix Convert(Matrix3x2 matrix)
-        {
-            return new Matrix(
-                matrix.M11,
-                matrix.M12,
-                matrix.M21,
-                matrix.M22,
-                matrix.M31,
-                matrix.M32);
-        }
-
-        /// <summary>
-        /// Converts a <see cref="Rect"/> to a <see cref="RectangleF"/>
-        /// </summary>
-        /// <param name="rect">The <see cref="Rect"/>.</param>
-        /// <returns>The <see cref="RectangleF"/>.</returns>
-        private RectangleF Convert(Rect rect)
-        {
-            return new RectangleF(
-                (float)rect.X,
-                (float)rect.Y,
-                (float)rect.Width,
-                (float)rect.Height);
         }
     }
 }
