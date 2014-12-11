@@ -348,7 +348,7 @@ namespace Perspex.Controls
             {
                 this.SelectionEnd = this.CaretIndex;
             }
-            else if (textEntered)
+            else if (movement || textEntered)
             {
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
