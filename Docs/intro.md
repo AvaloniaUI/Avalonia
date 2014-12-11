@@ -65,7 +65,7 @@ generics and default parameters we can at least make it look a bit nicer:
 
 What can we see here?
 
-- PerpexProperties are typed, so no more having to cast in the getter.
+- PerspexProperties are typed, so no more having to cast in the getter.
 - We pass the property type and owner class as a generic type to Register() so we don't have to 
 write typeof() twice.
 - We used default parameter values in Rigister() so that defaults don't have to be restated.
