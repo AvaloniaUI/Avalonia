@@ -47,9 +47,15 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],
-                Content = new Decorator
+                Content = new TextPresenter
                 {
-                    Id = "textContainer",
+                    [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
+                    [~TextPresenter.AcceptsTabProperty] = control[~TextBox.AcceptsTabProperty],
+                    [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
+                    [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
+                    [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
+                    [~TextPresenter.TextProperty] = control[~TextBox.TextProperty],
+                    [~TextPresenter.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
                 }
             };
 

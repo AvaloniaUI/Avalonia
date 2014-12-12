@@ -91,7 +91,7 @@
     <Compile Include="Primitives\TemplatedControl.cs" />
     <Compile Include="TextBlock.cs" />
     <Compile Include="TextBox.cs" />
-    <Compile Include="TextBoxView.cs" />
+    <Compile Include="Presenters\TextPresenter.cs" />
     <Compile Include="Primitives\ToggleButton.cs" />
     <Compile Include="TreeDataTemplate.cs" />
     <Compile Include="TreeView.cs" />
