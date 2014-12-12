@@ -83,7 +83,7 @@ namespace Perspex.Controls
 
             base.Render(context);
 
-            if (this.parent.IsFocused)
+            if (this.parent.IsFocused && selectionStart == selectionEnd)
             {
                 var charPos = this.FormattedText.HitTestTextPosition(this.parent.CaretIndex);
                 Brush caretBrush = Brushes.Black;
