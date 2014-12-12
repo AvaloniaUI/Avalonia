@@ -98,5 +98,10 @@ namespace Perspex.Cairo.Media
             this.Layout.GetPixelSize(out width, out height);
             return new Size(width, height);
         }
+
+        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        {
+            // TODO: Implement.
+        }
     }
 }

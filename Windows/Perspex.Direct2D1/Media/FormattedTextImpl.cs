@@ -113,5 +113,12 @@ namespace Perspex.Direct2D1.Media
                 this.TextLayout.Metrics.WidthIncludingTrailingWhitespace,
                 this.TextLayout.Metrics.Height);
         }
+
+        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        {
+            this.TextLayout.SetDrawingEffect(
+                new BrushWrapper(brush),
+                new DWrite.TextRange(startIndex, count));
+        }
     }
 }

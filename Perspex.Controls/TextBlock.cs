@@ -43,13 +43,7 @@ namespace Perspex.Controls
                 this.GetObservable(FontStyleProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
-                    if (this.formattedText != null)
-                    {
-                        this.formattedText.Dispose();
-                        this.formattedText = null;
-                    }
-
-                    this.InvalidateMeasure();
+                    this.InvalidateFormattedText();
                 });
         }
 
@@ -89,17 +83,12 @@ namespace Perspex.Controls
             {
                 if (this.formattedText == null)
                 {
-                    this.formattedText = new FormattedText(
-                        this.Text, 
-                        this.FontFamily, 
-                        this.FontSize, 
-                        this.FontStyle);
+                    this.formattedText = this.CreateFormattedText();
                 }
 
                 return this.formattedText;
             }
         }
-
 
         public override void Render(IDrawingContext context)
         {
@@ -111,6 +100,26 @@ namespace Perspex.Controls
             }
 
             context.DrawText(this.Foreground,  new Point(), this.FormattedText);
+        }
+
+        protected virtual FormattedText CreateFormattedText()
+        {
+            return new FormattedText(
+                this.Text,
+                this.FontFamily,
+                this.FontSize,
+                this.FontStyle);
+        }
+
+        protected void InvalidateFormattedText()
+        {
+            if (this.formattedText != null)
+            {
+                this.formattedText.Dispose();
+                this.formattedText = null;
+            }
+
+            this.InvalidateMeasure();
         }
 
         protected override Size MeasureOverride(Size availableSize)

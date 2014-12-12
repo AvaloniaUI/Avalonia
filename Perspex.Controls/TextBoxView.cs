@@ -31,7 +31,7 @@ namespace Perspex.Controls
             Observable.Merge(
                 this.parent.GetObservable(TextBox.SelectionStartProperty),
                 this.parent.GetObservable(TextBox.SelectionEndProperty))
-                .Subscribe(_ => this.InvalidateVisual());
+                .Subscribe(_ => this.InvalidateFormattedText());
 
             parent.GetObservable(TextBox.CaretIndexProperty).Subscribe(_ => this.CaretMoved());
         }
@@ -93,6 +93,21 @@ namespace Perspex.Controls
                     context.DrawLine(new Pen(caretBrush, 1), charPos.TopLeft, charPos.BottomLeft);
                 }
             }
+        }
+
+        protected override FormattedText CreateFormattedText()
+        {
+            var result = base.CreateFormattedText();
+            var selectionStart = this.parent.SelectionStart;
+            var selectionEnd = this.parent.SelectionEnd;
+            var start = Math.Min(selectionStart, selectionEnd);
+            var length = Math.Max(selectionStart, selectionEnd) - start;
+
+            if (length > 0)
+            {
+                result.SetForegroundBrush(Brushes.White, start, length);
+            }
+            return result;
         }
 
         internal void CaretMoved()

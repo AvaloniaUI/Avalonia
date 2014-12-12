@@ -8,7 +8,6 @@ namespace Perspex.Direct2D1.Media
 {
     using System;
     using System.Reactive.Disposables;
-    using Perspex.Direct2D1.Media;
     using Perspex.Media;
     using SharpDX;
     using SharpDX.Direct2D1;
@@ -142,12 +141,9 @@ namespace Perspex.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (var brush = foreground.ToDirect2D(this.renderTarget))
+                using (var renderer = new PerspexTextRenderer(this.renderTarget, foreground.ToDirect2D(this.renderTarget)))
                 {
-                    this.renderTarget.DrawTextLayout(
-                        origin.ToSharpDX(),
-                        impl.TextLayout,
-                        brush);
+                    impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
                 }
             }
         }

@@ -93,5 +93,10 @@ namespace Perspex.Media
         {
             return this.PlatformImpl.Measure();
         }
+
+        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        {
+            this.PlatformImpl.SetForegroundBrush(brush, startIndex, count);
+        }
     }
 } 

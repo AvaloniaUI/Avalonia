@@ -23,5 +23,7 @@ namespace Perspex.Platform
         IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin);
 
         Size Measure();
+
+        void SetForegroundBrush(Brush brush, int startIndex, int count);
     }
 }
