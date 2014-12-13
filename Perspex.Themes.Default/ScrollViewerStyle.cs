@@ -58,20 +58,20 @@ namespace Perspex.Themes.Default
                     {
                         Id = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
-                        [~ScrollBar.IsVisibleProperty] = control[~ScrollViewer.IsHorizontalScrollBarVisibleProperty],
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
                         [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
+                        [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
                     },
                     new ScrollBar
                     {
                         Id = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
-                        [~ScrollBar.IsVisibleProperty] = control[~ScrollViewer.IsVerticalScrollBarVisibleProperty],
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
                         [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
+                        [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
                     },
                 },

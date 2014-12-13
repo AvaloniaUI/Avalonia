@@ -36,8 +36,6 @@ namespace Perspex.Controls.Presenters
 
         public ScrollContentPresenter()
         {
-            this.GetObservable(ContentProperty).Subscribe(this.ContentChanged);
-
             this.AddHandler(
                 Control.RequestBringIntoViewEvent,
                 new EventHandler<RequestBringIntoViewEventArgs>(this.BringIntoViewRequested));
@@ -144,22 +142,6 @@ namespace Perspex.Controls.Presenters
             }
 
             this.Offset = offset;
-        }
-
-        private void ContentChanged(object content)
-        {
-            var scrollInfo = content as IScrollInfo;
-
-            if (this.contentBindings != null)
-            {
-                this.contentBindings.Dispose();
-                this.contentBindings = null;
-            }
-
-            if (scrollInfo != null)
-            {
-                this.contentBindings = this.Bind(CanScrollHorizontallyProperty, scrollInfo.CanScrollHorizontally);
-            }
         }
     }
 }

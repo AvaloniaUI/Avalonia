@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Reactive.Linq;
     using Perspex.Controls.Primitives;
 
     public class TextBox : TemplatedControl
@@ -31,6 +32,25 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+
+        public TextBox()
+        {
+            var canScrollHorizontally = this.GetObservable(AcceptsReturnProperty)
+                .Select(x => !x);
+
+            this.Bind(
+                ScrollViewer.CanScrollHorizontallyProperty,
+                canScrollHorizontally,
+                BindingPriority.Style);
+
+            var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
+                .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
+
+            this.Bind(
+                ScrollViewer.HorizontalScrollBarVisibilityProperty, 
+                horizontalScrollBarVisibility, 
+                BindingPriority.Style);
+        }
 
         public bool AcceptsReturn
         {

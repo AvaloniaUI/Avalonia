@@ -23,10 +23,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<ScrollViewer, Size>("Viewport");
 
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
-            PerspexProperty.Register<ScrollViewer, bool>("CanScrollHorizontally", false);
-
-        public static readonly PerspexProperty<bool> IsHorizontalScrollBarVisibleProperty =
-            PerspexProperty.Register<ScrollViewer, bool>("IsHorizontalScrollBarVisible");
+            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>("CanScrollHorizontally", false);
 
         public static readonly PerspexProperty<double> HorizontalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarMaximum");
@@ -37,8 +34,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> HorizontalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarViewportSize");
 
-        public static readonly PerspexProperty<bool> IsVerticalScrollBarVisibleProperty =
-            PerspexProperty.Register<ScrollViewer, bool>("IsVerticalScrollBarVisible");
+        public static readonly PerspexProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
+            PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>("HorizontalScrollBarVisibility", ScrollBarVisibility.Auto);
 
         public static readonly PerspexProperty<double> VerticalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarMaximum");
@@ -48,6 +45,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<double> VerticalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarViewportSize");
+
+        public static readonly PerspexProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
+            PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>("VerticalScrollBarVisibility", ScrollBarVisibility.Auto);
 
         private IDisposable contentBindings;
 
@@ -65,30 +65,20 @@ namespace Perspex.Controls
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
             this.Bind(
-                IsHorizontalScrollBarVisibleProperty,
-                extentAndViewport.Select(x => x.Extent.Width > x.Viewport.Width),
-                BindingPriority.Style);
-
-            this.Bind(
                 HorizontalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => x.Extent.Width - x.Viewport.Width));
+                extentAndViewport.Select(x => Math.Max(x.Extent.Width - x.Viewport.Width, 0)));
 
             this.Bind(
                 HorizontalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => (x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width)));
-
-            this.Bind(
-                IsVerticalScrollBarVisibleProperty,
-                extentAndViewport.Select(x => x.Extent.Height > x.Viewport.Height),
-                BindingPriority.Style);
+                extentAndViewport.Select(x => Math.Max((x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width), 0)));
 
             this.Bind(
                 VerticalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => x.Extent.Height - x.Viewport.Height));
+                extentAndViewport.Select(x => Math.Max(x.Extent.Height - x.Viewport.Height, 0)));
 
             this.Bind(
                 VerticalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => (x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height)));
+                extentAndViewport.Select(x => Math.Max((x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height), 0)));
 
             this.GetObservable(OffsetProperty).Subscribe(x =>
             {
@@ -101,8 +91,6 @@ namespace Perspex.Controls
                 this.GetObservable(VerticalScrollBarValueProperty))
                 .Select(x => new Vector(x[0], x[1]))
                 .Subscribe(x => this.Offset = x);
-
-            this.GetObservable(ContentProperty).Subscribe(this.ContentChanged);
         }
 
         public Size Extent
@@ -127,6 +115,18 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(CanScrollHorizontallyProperty); }
             set { this.SetValue(CanScrollHorizontallyProperty, value); }
+        }
+
+        public ScrollBarVisibility HorizontalScrollBarVisibility
+        {
+            get { return this.GetValue(HorizontalScrollBarVisibilityProperty); }
+            set { this.SetValue(HorizontalScrollBarVisibilityProperty, value); }
+        }
+
+        public ScrollBarVisibility VerticalScrollBarVisibility
+        {
+            get { return this.GetValue(VerticalScrollBarVisibilityProperty); }
+            set { this.SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -154,24 +154,6 @@ namespace Perspex.Controls
             else
             {
                 return value;
-            }
-        }
-
-        private void ContentChanged(object content)
-        {
-            var scrollInfo = content as IScrollInfo;
-
-            if (this.contentBindings != null)
-            {
-                this.contentBindings.Dispose();
-                this.contentBindings = null;
-            }
-
-            if (scrollInfo != null)
-            {
-                this.contentBindings = this.Bind(
-                    IsHorizontalScrollBarVisibleProperty, 
-                    scrollInfo.IsHorizontalScrollBarVisible);
             }
         }
     }

@@ -71,7 +71,7 @@
     <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="Presenters\ItemsPresenter.cs" />
     <Compile Include="Panel.cs" />
-    <Compile Include="Primitives\IScrollInfo.cs" />
+    <Compile Include="Primitives\ScrollBarVisibility.cs" />
     <Compile Include="Primitives\Track.cs" />
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />

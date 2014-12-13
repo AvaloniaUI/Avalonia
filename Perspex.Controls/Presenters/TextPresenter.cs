@@ -16,7 +16,7 @@ namespace Perspex.Controls
     using Perspex.Media;
     using Perspex.Threading;
 
-    public class TextPresenter : TextBlock, IScrollInfo
+    public class TextPresenter : TextBlock
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
             TextBox.AcceptsReturnProperty.AddOwner<TextPresenter>();
@@ -95,16 +95,6 @@ namespace Perspex.Controls
         public new FormattedText FormattedText
         {
             get { return base.FormattedText; }
-        }
-
-        IObservable<bool> IScrollInfo.CanScrollHorizontally
-        {
-            get { return this.canScrollHorizontally; }
-        }
-
-        IObservable<bool> IScrollInfo.IsHorizontalScrollBarVisible
-        {
-            get { return Observable.Never<bool>().StartWith(false); }
         }
 
         public int GetCaretIndex(Point point)

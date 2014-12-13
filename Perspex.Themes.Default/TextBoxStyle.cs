@@ -49,6 +49,9 @@ namespace Perspex.Themes.Default
                 [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],
                 Content = new ScrollViewer
                 {
+                    [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
+                    [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
+                    [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                     Content = new TextPresenter
                     {
                         [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
