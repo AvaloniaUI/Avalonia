@@ -11,13 +11,20 @@ namespace Perspex.Diagnostics.ViewModels
 
     internal class PropertyDetails : ReactiveObject
     {
+        private object value;
+
         public PropertyDetails(PerspexPropertyValue value)
         {
             this.Name = value.Property.Name;
-            this.Value = value.CurrentValue ?? "(null)";
+            this.value = value.CurrentValue ?? "(null)";
             this.Priority = (value.PriorityValue != null) ?
                 Enum.GetName(typeof(BindingPriority), value.PriorityValue.ValuePriority) :
                 value.Property.Inherits ? "Inherited" : "Unset";
+
+            if (value.PriorityValue != null)
+            {
+                value.PriorityValue.Changed.Subscribe(x => this.Value = x.Item2);
+            }
         }
 
         public string Name
@@ -28,8 +35,8 @@ namespace Perspex.Diagnostics.ViewModels
 
         public object Value
         {
-            get;
-            private set;
+            get { return this.value; }
+            private set { this.RaiseAndSetIfChanged(ref this.value, value); }
         }
 
         public string Priority

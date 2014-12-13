@@ -118,7 +118,7 @@ namespace Perspex.Diagnostics
                             Children = new Controls
                             {
                                 new TextBlock { Text = x.Name },
-                                new TextBlock { Text = Convert.ToString(x.Value) },
+                                new TextBlock { [!TextBlock.TextProperty] = x.WhenAnyValue(v => v.Value).Select(v => v.ToString()) },
                                 new TextBlock { Text = x.Priority },
                             },
                         }),
