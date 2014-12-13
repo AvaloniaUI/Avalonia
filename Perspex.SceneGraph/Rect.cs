@@ -226,6 +226,11 @@ namespace Perspex
                 height);
         }
 
+        public static Rect operator *(Rect rect, Matrix matrix)
+        {
+            return new Rect(rect.TopLeft * matrix, rect.BottomRight * matrix);
+        }
+
         public static Rect operator /(Rect rect, Vector scale)
         {
             double centerX = rect.x + (rect.width / 2);

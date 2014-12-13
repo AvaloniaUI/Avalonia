@@ -8,6 +8,8 @@ namespace Perspex.Controls.Presenters
 {
     using System;
     using System.Linq;
+    using System.Reactive.Disposables;
+    using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Layout;
 
@@ -22,9 +24,23 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>();
 
+        public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
+            PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
+
+        private IDisposable contentBindings;
+
         static ScrollContentPresenter()
         {
             Control.AffectsArrange(OffsetProperty);
+        }
+
+        public ScrollContentPresenter()
+        {
+            this.GetObservable(ContentProperty).Subscribe(this.ContentChanged);
+
+            this.AddHandler(
+                Control.RequestBringIntoViewEvent,
+                new EventHandler<RequestBringIntoViewEventArgs>(this.BringIntoViewRequested));
         }
 
         public Size Extent
@@ -45,13 +61,25 @@ namespace Perspex.Controls.Presenters
             private set { this.SetValue(ViewportProperty, value); }
         }
 
+        public bool CanScrollHorizontally
+        {
+            get { return this.GetValue(CanScrollHorizontallyProperty); }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var content = this.Content as ILayoutable;
 
             if (content != null)
             {
-                content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                var measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
+
+                if (!this.CanScrollHorizontally)
+                {
+                    measureSize = measureSize.WithWidth(availableSize.Width);
+                }
+
+                content.Measure(measureSize);
                 var size = content.DesiredSize.Value;
                 this.Extent = size;
                 return size.Constrain(availableSize);
@@ -86,6 +114,51 @@ namespace Perspex.Controls.Presenters
                 y = Math.Min(y, this.Extent.Height - this.Viewport.Height);
                 this.Offset = new Vector(this.Offset.X, y);
                 e.Handled = true;
+            }
+        }
+
+        private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
+        {
+            var transform = e.TargetObject.TransformToVisual(this.GetVisualChildren().Single());
+            var rect = e.TargetRect * transform;
+            var offset = this.Offset;
+
+            if (rect.Bottom > offset.Y + this.Viewport.Height)
+            {
+                offset = offset.WithY(rect.Bottom - this.Viewport.Height);
+            }
+
+            if (rect.Y < offset.Y)
+            {
+                offset = offset.WithY(rect.Y);
+            }
+
+            if (rect.Right > offset.X + this.Viewport.Width)
+            {
+                offset = offset.WithX(rect.Right - this.Viewport.Width);
+            }
+
+            if (rect.X < offset.X)
+            {
+                offset = offset.WithX(rect.X);
+            }
+
+            this.Offset = offset;
+        }
+
+        private void ContentChanged(object content)
+        {
+            var scrollInfo = content as IScrollInfo;
+
+            if (this.contentBindings != null)
+            {
+                this.contentBindings.Dispose();
+                this.contentBindings = null;
+            }
+
+            if (scrollInfo != null)
+            {
+                this.contentBindings = this.Bind(CanScrollHorizontallyProperty, scrollInfo.CanScrollHorizontally);
             }
         }
     }

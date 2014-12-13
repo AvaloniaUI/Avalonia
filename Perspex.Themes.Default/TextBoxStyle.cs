@@ -47,15 +47,18 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],
-                Content = new TextPresenter
+                Content = new ScrollViewer
                 {
-                    [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
-                    [~TextPresenter.AcceptsTabProperty] = control[~TextBox.AcceptsTabProperty],
-                    [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
-                    [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
-                    [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
-                    [~TextPresenter.TextProperty] = control[~TextBox.TextProperty],
-                    [~TextPresenter.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
+                    Content = new TextPresenter
+                    {
+                        [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
+                        [~TextPresenter.AcceptsTabProperty] = control[~TextBox.AcceptsTabProperty],
+                        [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
+                        [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
+                        [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
+                        [~TextPresenter.TextProperty] = control[~TextBox.TextProperty],
+                        [~TextPresenter.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
+                    }
                 }
             };
 

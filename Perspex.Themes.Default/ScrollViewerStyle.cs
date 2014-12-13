@@ -48,18 +48,30 @@ namespace Perspex.Themes.Default
                     new ScrollContentPresenter
                     {
                         Id = "presenter",
-                        [~ContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
+                        [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
+                        [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
+                        [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
+                        [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
+                        [~ScrollContentPresenter.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
                     },
                     new ScrollBar
                     {
                         Id = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
+                        [~ScrollBar.IsVisibleProperty] = control[~ScrollViewer.IsHorizontalScrollBarVisibleProperty],
+                        [~ScrollBar.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
+                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
+                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [Grid.RowProperty] = 1,
                     },
                     new ScrollBar
                     {
                         Id = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
+                        [~ScrollBar.IsVisibleProperty] = control[~ScrollViewer.IsVerticalScrollBarVisibleProperty],
+                        [~ScrollBar.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [Grid.ColumnProperty] = 1,
                     },
                 },

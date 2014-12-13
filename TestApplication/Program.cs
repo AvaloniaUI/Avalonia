@@ -234,8 +234,12 @@ namespace TestApplication
                         },
                         new TextBox
                         {
-                            Text = "A wrapping text box. Lorem ipsum dolor sit amet.",
+                            AcceptsReturn = true,
+                            Text = "A wrapping text box. " + 
+                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. " +
+                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
+                            MaxHeight = 100,
                         },
                     }
                 },
@@ -268,6 +272,7 @@ namespace TestApplication
                         {
                             Width = 200,
                             Height = 200,
+                            CanScrollHorizontally = true,
                             Content = new Image
                             {
                                 Source = new Bitmap("github_icon.png"),

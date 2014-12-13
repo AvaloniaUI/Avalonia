@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Input;
+    using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Rendering;
     using Perspex.Styling;
@@ -32,6 +33,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
+
+        public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
+            RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategy.Bubble);
 
         private Classes classes = new Classes();
 
@@ -153,6 +157,23 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(TemplatedParentProperty); }
             internal set { this.SetValue(TemplatedParentProperty, value); }
+        }
+
+        public void BringIntoView()
+        {
+            this.BringIntoView(new Rect(this.ActualSize));
+        }
+
+        public void BringIntoView(Rect rect)
+        {
+            var ev = new RequestBringIntoViewEventArgs
+            {
+                RoutedEvent = RequestBringIntoViewEvent,
+                TargetObject = this,
+                TargetRect = rect,
+            };
+
+            this.RaiseEvent(ev);
         }
 
         protected static void PseudoClass(PerspexProperty<bool> property, string className)

@@ -82,6 +82,13 @@ namespace Perspex
             return new Point(a.x - b.x, a.y - b.y);
         }
 
+        public static Point operator *(Point point, Matrix matrix)
+        {
+            return new Point(
+                (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.OffsetX,
+                (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.OffsetY);
+        }
+
         public static implicit operator Vector(Point p)
         {
             return new Vector(p.x, p.y);

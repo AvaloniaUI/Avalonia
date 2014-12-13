@@ -104,6 +104,13 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(context != null);
         }
 
+        public Matrix TransformToVisual(IVisual visual)
+        {
+            var thisOffset = GetOffsetFromRoot(this);
+            var thatOffset = GetOffsetFromRoot(visual);
+            return Matrix.Translation(-thisOffset) * Matrix.Translation(thatOffset);
+        }
+
         protected static void AffectsRender(PerspexProperty property)
         {
             property.Changed.Subscribe(AffectsRenderInvalidate);
@@ -175,6 +182,19 @@ namespace Perspex
             {
                 visual.InvalidateVisual();
             }
+        }
+
+        private static Vector GetOffsetFromRoot(IVisual v)
+        {
+            var result = new Vector();
+
+            while (!(v is IRenderRoot))
+            {
+                result = new Vector(result.X + v.Bounds.X, result.Y + v.Bounds.Y);
+                v = v.VisualParent;
+            }
+
+            return result;
         }
 
         private void SetVisualParent(Visual value)

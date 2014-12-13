@@ -6,6 +6,7 @@
 
 namespace Perspex
 {
+    using System;
     using System.Globalization;
 
     /// <summary>
@@ -77,6 +78,16 @@ namespace Perspex
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
+        }
+
+        public Vector WithX(double x)
+        {
+            return new Vector(x, this.y);
+        }
+
+        public Vector WithY(double y)
+        {
+            return new Vector(this.x, y);
         }
     }
 }

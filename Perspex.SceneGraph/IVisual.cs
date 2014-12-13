@@ -63,5 +63,13 @@ namespace Perspex
         /// </summary>
         /// <param name="context">The context.</param>
         void Render(IDrawingContext context);
+
+        /// <summary>
+        /// Returns a transform that transforms the visual's coordinates into the coordinates
+        /// of the specified <paramref name="visual"/>.
+        /// </summary>
+        /// <param name="visual"></param>
+        /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
+        Matrix TransformToVisual(IVisual visual);
     }
 }

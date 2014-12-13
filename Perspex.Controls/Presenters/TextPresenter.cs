@@ -10,12 +10,13 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
     using Perspex.Input;
     using Perspex.Media;
     using Perspex.Threading;
 
-    public class TextPresenter : TextBlock
+    public class TextPresenter : TextBlock, IScrollInfo
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
             TextBox.AcceptsReturnProperty.AddOwner<TextPresenter>();
@@ -36,6 +37,8 @@ namespace Perspex.Controls
 
         private bool caretBlink;
 
+        private IObservable<bool> canScrollHorizontally;
+
         static TextPresenter()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextPresenter), true);
@@ -47,13 +50,16 @@ namespace Perspex.Controls
             this.caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             this.caretTimer.Tick += this.CaretTimerTick;
 
+            this.canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+                .Select(x => x == TextWrapping.NoWrap);
+
             Observable.Merge(
                 this.GetObservable(SelectionStartProperty),
                 this.GetObservable(SelectionEndProperty))
                 .Subscribe(_ => this.InvalidateFormattedText());
 
-            this.GetObservable(TextBox.CaretIndexProperty)
-                .Subscribe(_ => this.CaretMoved());
+            this.GetObservable(TextPresenter.CaretIndexProperty)
+                .Subscribe(this.CaretIndexChanged);
         }
 
         public bool AcceptsReturn
@@ -89,6 +95,16 @@ namespace Perspex.Controls
         public new FormattedText FormattedText
         {
             get { return base.FormattedText; }
+        }
+
+        IObservable<bool> IScrollInfo.CanScrollHorizontally
+        {
+            get { return this.canScrollHorizontally; }
+        }
+
+        IObservable<bool> IScrollInfo.IsHorizontalScrollBarVisible
+        {
+            get { return Observable.Never<bool>().StartWith(false); }
         }
 
         public int GetCaretIndex(Point point)
@@ -312,12 +328,15 @@ namespace Perspex.Controls
             }
         }
 
-        internal void CaretMoved()
+        internal void CaretIndexChanged(int caretIndex)
         {
             this.caretBlink = true;
             this.caretTimer.Stop();
             this.caretTimer.Start();
             this.InvalidateVisual();
+
+            var rect = this.FormattedText.HitTestTextPosition(caretIndex);
+            this.BringIntoView(rect);
         }
 
         private void MoveHorizontal(int count, ModifierKeys modifiers)
