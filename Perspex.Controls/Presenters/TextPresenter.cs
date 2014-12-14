@@ -174,40 +174,21 @@ namespace Perspex.Controls
             bool textEntered = false;
             var modifiers = e.Device.Modifiers;
 
+            if (IsNavigational(e.Key))
+            {
+                var direction = TranslateToDirection(e.Key);
+                MoveCursor(direction, 1);
+                movement = true;
+            }
+
             switch (e.Key)
             {
                 case Key.A:
                     if (modifiers == ModifierKeys.Control)
                     {
-                        SelectAll();
-                        
+                        this.SelectAll();
                     }
-                    else
-                    {
-                        textEntered = true;
-                        goto default;
-                    }
-
-                    break;
-                case Key.Left:
-                    this.MoveHorizontal(-1, modifiers);
-                    movement = true;
-                    break;
-
-                case Key.Right:
-                    this.MoveHorizontal(1, modifiers);
-                    movement = true;
-                    break;
-
-                case Key.Up:
-                    this.MoveVertical(-1, modifiers);
-                    movement = true;
-                    break;
-
-                case Key.Down:
-                    this.MoveVertical(1, modifiers);
-                    movement = true;
-                    break;
+                    break;               
 
                 case Key.Home:
                     this.MoveHome(modifiers);
@@ -225,45 +206,23 @@ namespace Perspex.Controls
                         this.Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
                         --this.CaretIndex;
                     }
-
                     break;
-
                 case Key.Delete:
                     if (!this.DeleteSelection() && caretIndex < text.Length)
                     {
                         this.Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
                     }
-
                     break;
-
                 case Key.Enter:
-                    if (this.AcceptsReturn)
-                    {
-                        goto default;
-                    }
-
                     break;
-
-                case Key.Tab:
-                    if (this.AcceptsTab)
-                    {
-                        goto default;
-                    }
-
+                case Key.Tab:                  
                     break;
+            }
 
-                default:
-                    if (!string.IsNullOrEmpty(e.Text))
-                    {
-                        this.DeleteSelection();
-                        caretIndex = this.CaretIndex;
-                        text = this.Text;
-                        this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
-                        ++this.CaretIndex;
-                        textEntered = true;
-                    }
-
-                    break;
+            if (!string.IsNullOrEmpty(e.Text) && e.Key != Key.Back)
+            {
+                InsertText(e.Text);
+                textEntered = true;
             }
 
             if (movement && ((modifiers & ModifierKeys.Shift) != 0))
@@ -276,6 +235,66 @@ namespace Perspex.Controls
             }
 
             e.Handled = true;
+        }
+
+        private void InsertText(string textToInsert)
+        {
+            int caretIndex;
+            DeleteSelection();
+            caretIndex = this.CaretIndex;
+            var currentText = this.Text;
+            this.Text = currentText.Substring(0, caretIndex) + textToInsert + currentText.Substring(caretIndex);
+            ++this.CaretIndex;
+        }
+
+        private void MoveCursor(CursorMovementDirection direction, int stride)
+        {
+            switch (direction)
+            {
+                case CursorMovementDirection.Left:
+                    MoveHorizontal(-stride, new ModifierKeys());
+                    break;
+                case CursorMovementDirection.Right:
+                    MoveHorizontal(stride, new ModifierKeys());
+                    break;
+                case CursorMovementDirection.Up:
+                    MoveVertical(-stride, new ModifierKeys());
+                    break;
+                case CursorMovementDirection.Down:
+                    MoveVertical(stride, new ModifierKeys());
+                    break;
+            }
+        }
+
+        private static CursorMovementDirection TranslateToDirection(Key key)
+        {
+            switch (key)
+            {
+                case Key.Left:
+                    return CursorMovementDirection.Left;
+                case Key.Right:
+                    return CursorMovementDirection.Right;
+                case Key.Up:
+                    return CursorMovementDirection.Up;
+                case Key.Down:
+                    return CursorMovementDirection.Down;
+                default:
+                    throw new InvalidOperationException(string.Format("The key {0} cannot be traslated to a direction", key));
+            }
+        }
+
+        private static bool IsNavigational(Key key)
+        {
+            switch (key)
+            {
+                case Key.Left:
+                case Key.Right:
+                case Key.Up:
+                case Key.Down:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         private void SelectAll()

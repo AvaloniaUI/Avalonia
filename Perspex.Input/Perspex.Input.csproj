@@ -53,6 +53,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CursorMovementDirection.cs" />
     <Compile Include="FocusManager.cs" />
     <Compile Include="FocusNavigationDirection.cs" />
     <Compile Include="ICloseable.cs" />
