@@ -22,9 +22,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Size> ViewportProperty =
             PerspexProperty.Register<ScrollViewer, Size>("Viewport");
 
-        public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
-            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>("CanScrollHorizontally", false);
-
         public static readonly PerspexProperty<double> HorizontalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarMaximum");
 
@@ -34,9 +31,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> HorizontalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarViewportSize");
 
-        public static readonly PerspexProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
-            PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>("HorizontalScrollBarVisibility", ScrollBarVisibility.Auto);
-
         public static readonly PerspexProperty<double> VerticalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarMaximum");
 
@@ -45,6 +39,12 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<double> VerticalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarViewportSize");
+
+        public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
+            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>("CanScrollHorizontally", false);
+
+        public static readonly PerspexProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
+            PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>("HorizontalScrollBarVisibility", ScrollBarVisibility.Auto);
 
         public static readonly PerspexProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
             PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>("VerticalScrollBarVisibility", ScrollBarVisibility.Auto);
