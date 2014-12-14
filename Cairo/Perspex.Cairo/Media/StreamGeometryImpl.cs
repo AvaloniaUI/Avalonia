@@ -23,6 +23,19 @@ namespace Perspex.Cairo.Media
             get { return new Rect(); }
         }
 
+        // TODO: Implement
+        public Matrix Transform
+        {
+            get { return Matrix.Identity; }
+            set { }
+        }
+
+        public IStreamGeometryImpl Clone()
+        {
+            // TODO: Implement
+            return new StreamGeometryImpl();
+        }
+
         public Rect GetRenderBounds(double strokeThickness)
         {
             // TODO: Implement

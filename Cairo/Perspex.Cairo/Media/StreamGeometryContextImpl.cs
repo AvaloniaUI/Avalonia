@@ -20,6 +20,11 @@ namespace Perspex.Cairo.Media
             // TODO: Implement
         }
 
+        public void BezierTo(Point point1, Point point2, Point point3)
+        {
+            // TODO: Implement
+        }
+
         public void LineTo(Point point)
         {
             // TODO: Implement

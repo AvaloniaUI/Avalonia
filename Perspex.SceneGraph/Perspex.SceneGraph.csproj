@@ -59,6 +59,7 @@
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\RectangleGeometry.cs" />
+    <Compile Include="Media\MatrixTransform.cs" />
     <Compile Include="Media\RotateTransform.cs" />
     <Compile Include="Media\SolidColorBrush.cs" />
     <Compile Include="Media\StreamGeometry.cs" />

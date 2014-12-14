@@ -24,6 +24,8 @@ namespace Perspex.Controls.Shapes
         public static readonly PerspexProperty<double> StrokeThicknessProperty =
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
+        private Matrix transform = Matrix.Identity;
+
         public abstract Geometry DefiningGeometry
         {
             get;
@@ -37,7 +39,18 @@ namespace Perspex.Controls.Shapes
 
         public Geometry RenderedGeometry
         {
-            get { return this.DefiningGeometry; }
+            get
+            {
+                var result = this.DefiningGeometry;
+
+                if (result != null)
+                {
+                    result = result.Clone();
+                    result.Transform = new MatrixTransform(this.transform);
+                }
+
+                return result;
+            }
         }
 
         public Stretch Stretch
@@ -60,15 +73,19 @@ namespace Perspex.Controls.Shapes
 
         public override void Render(IDrawingContext context)
         {
-            if (this.RenderedGeometry != null)
+            var geometry = this.RenderedGeometry;
+
+            if (geometry != null)
             {
-                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), this.RenderedGeometry);
+                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), geometry);
             }
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            Rect shapeBounds = this.RenderedGeometry.GetRenderBounds(this.StrokeThickness);
+            Rect shapeBounds = this.DefiningGeometry.GetRenderBounds(this.StrokeThickness);
+            Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
+            Matrix translate = Matrix.Identity;
             double width = this.Width;
             double height = this.Height;
             double desiredX = availableSize.Width;
@@ -76,24 +93,30 @@ namespace Perspex.Controls.Shapes
             double sx = 0.0;
             double sy = 0.0;
 
+            if (this.Stretch != Stretch.None)
+            {
+                shapeSize = shapeBounds.Size;
+                translate = Matrix.Translation(-(Vector)shapeBounds.Position);
+            }
+
             if (double.IsInfinity(availableSize.Width))
             {
-                desiredX = shapeBounds.Right;
+                desiredX = shapeSize.Width;
             }
 
             if (double.IsInfinity(availableSize.Height))
             {
-                desiredY = shapeBounds.Bottom;
+                desiredY = shapeSize.Height;
             }
 
             if (shapeBounds.Width > 0)
             {
-                sx = desiredX / shapeBounds.Right;
+                sx = desiredX / shapeBounds.Width;
             }
 
             if (shapeBounds.Height > 0)
             {
-                sy = desiredY / shapeBounds.Bottom;
+                sy = desiredY / shapeBounds.Height;
             }
 
             if (double.IsInfinity(availableSize.Width))
@@ -131,8 +154,10 @@ namespace Perspex.Controls.Shapes
                     break;
             }
 
-            double finalX = (width > 0) ? width : shapeBounds.Right * sx;
-            double finalY = (height > 0) ? height : shapeBounds.Bottom * sy;
+            this.transform = translate * Matrix.Scaling(sx, sy);
+
+            double finalX = (width > 0) ? width : shapeSize.Width * sx;
+            double finalY = (height > 0) ? height : shapeSize.Width * sy;
             return new Size(finalX, finalY);
         }
     }

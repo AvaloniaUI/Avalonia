@@ -106,6 +106,16 @@ namespace Perspex
             return new Matrix(cos, sin, -sin, cos, 0, 0);
         }
 
+        public static Matrix Scaling(double x, double y)
+        {
+            return Scaling(new Vector(x, y));
+        }
+
+        public static Matrix Scaling(Vector scale)
+        {
+            return new Matrix(scale.X, 0, 0, scale.Y, 0, 0);
+        }
+
         public static Matrix Translation(Vector v)
         {
             return Translation(v.X, v.Y);

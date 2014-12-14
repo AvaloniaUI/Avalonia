@@ -12,6 +12,8 @@ namespace Perspex.Platform
     {
         void BeginFigure(Point startPoint, bool isFilled);
 
+        void BezierTo(Point point1, Point point2, Point point3);
+
         void LineTo(Point point);
 
         void EndFigure(bool isClosed);

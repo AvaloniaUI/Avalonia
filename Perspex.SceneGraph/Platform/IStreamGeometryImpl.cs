@@ -8,6 +8,8 @@ namespace Perspex.Platform
 {
     public interface IStreamGeometryImpl : IGeometryImpl
     {
+        IStreamGeometryImpl Clone();
+
         IStreamGeometryContextImpl Open();
     }
 }

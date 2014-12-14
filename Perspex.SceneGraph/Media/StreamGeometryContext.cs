@@ -23,6 +23,11 @@ namespace Perspex.Media
             this.impl.BeginFigure(startPoint, isFilled);
         }
 
+        public void BezierTo(Point point1, Point point2, Point point3)
+        {
+            this.impl.BezierTo(point1, point2, point3);
+        }
+
         public void LineTo(Point point)
         {
             this.impl.LineTo(point);

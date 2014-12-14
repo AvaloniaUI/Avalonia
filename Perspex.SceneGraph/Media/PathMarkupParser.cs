@@ -85,7 +85,15 @@ namespace Perspex.Media
                                 this.context.EndFigure(false);
                             }
 
-                            point = ReadPoint(reader);
+                            if (command == Command.Move)
+                            {
+                                point = ReadPoint(reader);
+                            }
+                            else
+                            {
+                                point = ReadRelativePoint(reader, point);
+                            }
+
                             this.context.BeginFigure(point, true);
                             openFigure = true;
                             break;
@@ -100,34 +108,34 @@ namespace Perspex.Media
                             this.context.LineTo(point);
                             break;
 
-                        ////case Command.HorizontalLine:
-                        ////    point.X = ReadDouble(reader);
-                        ////    this.context.LineTo(point, true, false);
-                        ////    break;
+                        case Command.HorizontalLine:
+                            point = point.WithX(ReadDouble(reader));
+                            this.context.LineTo(point);
+                            break;
 
-                        ////case Command.HorizontalLineRelative:
-                        ////    point.X += ReadDouble(reader);
-                        ////    this.context.LineTo(point, true, false);
-                        ////    break;
+                        case Command.HorizontalLineRelative:
+                            point = new Point(point.X + ReadDouble(reader), point.Y);
+                            this.context.LineTo(point);
+                            break;
 
-                        ////case Command.VerticalLine:
-                        ////    point.Y = ReadDouble(reader);
-                        ////    this.context.LineTo(point, true, false);
-                        ////    break;
+                        case Command.VerticalLine:
+                            point = point.WithY(ReadDouble(reader));
+                            this.context.LineTo(point);
+                            break;
 
-                        ////case Command.VerticalLineRelative:
-                        ////    point.Y += ReadDouble(reader);
-                        ////    this.context.LineTo(point, true, false);
-                        ////    break;
+                        case Command.VerticalLineRelative:
+                            point = new Point(point.X, point.Y + ReadDouble(reader));
+                            this.context.LineTo(point);
+                            break;
 
-                        ////case Command.CubicBezierCurve:
-                        ////{
-                        ////    Point point1 = ReadPoint(reader);
-                        ////    Point point2 = ReadPoint(reader);
-                        ////    point = ReadPoint(reader);
-                        ////    this.context.BezierTo(point1, point2, point, true, false);
-                        ////    break;
-                        ////}
+                        case Command.CubicBezierCurve:
+                            {
+                                Point point1 = ReadPoint(reader);
+                                Point point2 = ReadPoint(reader);
+                                point = ReadPoint(reader);
+                                this.context.BezierTo(point1, point2, point);
+                                break;
+                            }
 
                         case Command.Close:
                             this.context.EndFigure(true);

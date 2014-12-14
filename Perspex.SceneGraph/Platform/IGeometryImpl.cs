@@ -10,6 +10,8 @@ namespace Perspex.Platform
     {
         Rect Bounds { get; }
 
+        Matrix Transform { get; set; }
+
         Rect GetRenderBounds(double strokeThickness);
     }
 }

@@ -6,21 +6,57 @@
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using Perspex.Media;
     using Perspex.Platform;
+    using SharpDX.Direct2D1;
+    using Splat;
 
     public abstract class GeometryImpl : IGeometryImpl
     {
+        private TransformedGeometry transformed;
+
         public abstract Rect Bounds
         {
             get;
         }
 
-        public SharpDX.Direct2D1.Geometry Geometry
+        public abstract Geometry DefiningGeometry
         {
             get;
-            protected set;
+        }
+
+        public Geometry Geometry
+        {
+            get { return this.transformed ?? this.DefiningGeometry; }
+        }
+
+        public Matrix Transform
+        {
+            get
+            {
+                return this.transformed != null ?
+                    this.transformed.Transform.ToPerspex() :
+                    Matrix.Identity;
+            }
+
+            set
+            {
+                if (value != this.Transform)
+                {
+                    if (this.transformed != null)
+                    {
+                        this.transformed.Dispose();
+                    }
+
+                    if (!value.IsIdentity)
+                    {
+                        Factory factory = Locator.Current.GetService<Factory>();
+                        this.transformed = new TransformedGeometry(
+                            factory, 
+                            this.DefiningGeometry, 
+                            value.ToDirect2D());
+                    }
+                }
+            }
         }
 
         public abstract Rect GetRenderBounds(double strokeThickness);

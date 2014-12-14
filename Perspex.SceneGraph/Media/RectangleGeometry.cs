@@ -6,6 +6,7 @@
 
 namespace Perspex.Media
 {
+    using System;
     using Perspex.Platform;
     using Splat;
 
@@ -31,6 +32,11 @@ namespace Perspex.Media
         public override Rect Bounds
         {
             get { return this.PlatformImpl.Bounds; }
+        }
+
+        public override Geometry Clone()
+        {
+            return new RectangleGeometry(this.Bounds);
         }
     }
 }

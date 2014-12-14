@@ -124,5 +124,15 @@ namespace Perspex
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
         }
+
+        public Point WithX(double x)
+        {
+            return new Point(x, this.y);
+        }
+
+        public Point WithY(double y)
+        {
+            return new Point(this.x, y);
+        }
     }
 }
