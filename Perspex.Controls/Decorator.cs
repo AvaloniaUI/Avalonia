@@ -59,7 +59,16 @@ namespace Perspex.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            return LayoutHelper.MeasureDecorator(this, this.Content, availableSize, this.Padding);
+            var content = this.Content;
+            var padding = this.Padding;
+
+            if (content != null)
+            {
+                content.Measure(availableSize.Deflate(padding));
+                return content.DesiredSize.Value.Inflate(padding);
+            }
+
+            return new Size();
         }
     }
 }

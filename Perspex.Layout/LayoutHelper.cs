@@ -20,35 +20,5 @@ namespace Perspex.Layout
             height = Math.Max(height, control.MinHeight);
             return new Size(width, height);
         }
-        
-        public static Size MeasureDecorator(
-            ILayoutable decorator,
-            ILayoutable content,
-            Size availableSize, 
-            Thickness padding)
-        {
-            double width = 0;
-            double height = 0;
-
-            if (content != null)
-            {
-                content.Measure(availableSize.Deflate(padding));
-                Size s = content.DesiredSize.Value.Inflate(padding);
-                width = s.Width;
-                height = s.Height;
-            }
-
-            if (decorator.Width > 0)
-            {
-                width = decorator.Width;
-            }
-
-            if (decorator.Height > 0)
-            {
-                height = decorator.Height;
-            }
-
-            return new Size(width, height);
-        }
     }
 }
