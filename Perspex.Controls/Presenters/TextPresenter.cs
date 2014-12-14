@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Controls.Presenters;
+
 namespace Perspex.Controls
 {
     using System;
@@ -33,7 +35,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
-        private DispatcherTimer caretTimer;
+        private readonly DispatcherTimer caretTimer;
 
         private bool caretBlink;
 
@@ -165,114 +167,103 @@ namespace Perspex.Controls
         {
             string text = this.Text ?? string.Empty;
             int caretIndex = this.CaretIndex;
-            bool movement = false;
-            bool textEntered = false;
             var modifiers = e.Device.Modifiers;
+            var key = e.Key;
 
-            if (IsNavigational(e.Key))
+            if (IsNavigational(key))
             {
-                var direction = TranslateToDirection(e.Key);
-                MoveCursor(direction, 1);
-                movement = true;
+                MoveCursor(TranslateToDirection(key, modifiers), 1);
             }
 
-            switch (e.Key)
+            switch (key)
             {
                 case Key.A:
                     if (modifiers == ModifierKeys.Control)
                     {
                         this.SelectAll();
                     }
-                    break;               
 
-                case Key.Home:
-                    this.MoveHome(modifiers);
-                    movement = true;
                     break;
-
-                case Key.End:
-                    this.MoveEnd(modifiers);
-                    movement = true;
-                    break;
-
                 case Key.Back:
                     if (!this.DeleteSelection() && this.CaretIndex > 0)
                     {
                         this.Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
                         --this.CaretIndex;
                     }
+
                     break;
                 case Key.Delete:
                     if (!this.DeleteSelection() && caretIndex < text.Length)
                     {
                         this.Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
                     }
+
                     break;
                 case Key.Enter:
                     break;
-                case Key.Tab:                  
+                case Key.Tab:
                     break;
             }
 
-            if (!string.IsNullOrEmpty(e.Text) && e.Key != Key.Back)
+            if (IsTextInput(e, modifiers))
             {
                 InsertText(e.Text);
-                textEntered = true;
             }
 
-            if (movement && ((modifiers & ModifierKeys.Shift) != 0))
+            if (IsNavigational(key) && modifiers.IsPressed(ModifierKeys.Shift))
             {
                 this.SelectionEnd = this.CaretIndex;
             }
-            else if (movement || textEntered)
+            else if (IsNavigational(key) || IsTextInput(e, modifiers))
             {
-                this.SelectionStart = this.SelectionEnd = this.CaretIndex;
+                SelectionStart = SelectionEnd = CaretIndex;
             }
 
             e.Handled = true;
         }
 
-        private void InsertText(string textToInsert)
+        private void WarpMove(TextCursorMovementDirection translateToWarp)
         {
-            int caretIndex;
-            DeleteSelection();
-            caretIndex = this.CaretIndex;
-            var currentText = this.Text;
-            this.Text = currentText.Substring(0, caretIndex) + textToInsert + currentText.Substring(caretIndex);
-            ++this.CaretIndex;
-        }
-
-        private void MoveCursor(CursorMovementDirection direction, int stride)
-        {
-            switch (direction)
+            switch (translateToWarp)
             {
-                case CursorMovementDirection.Left:
-                    MoveHorizontal(-stride, new ModifierKeys());
+                case TextCursorMovementDirection.Begining:
+                    MoveToBeginning();
                     break;
-                case CursorMovementDirection.Right:
-                    MoveHorizontal(stride, new ModifierKeys());
+                case TextCursorMovementDirection.BeginingOfLine:
+                    MoveToBeginningOfLine();
                     break;
-                case CursorMovementDirection.Up:
-                    MoveVertical(-stride, new ModifierKeys());
+                case TextCursorMovementDirection.End:
+                    MoveToEnd();
                     break;
-                case CursorMovementDirection.Down:
-                    MoveVertical(stride, new ModifierKeys());
+                case TextCursorMovementDirection.EndOfLine:
+                    MoveToEndOfLine();
                     break;
             }
         }
 
-        private static CursorMovementDirection TranslateToDirection(Key key)
+        private static TextCursorMovementDirection TranslateToWarp(Key key, ModifierKeys modifier)
         {
+            var isControlPreshed = modifier.IsPressed(ModifierKeys.Control);
+
             switch (key)
             {
-                case Key.Left:
-                    return CursorMovementDirection.Left;
-                case Key.Right:
-                    return CursorMovementDirection.Right;
-                case Key.Up:
-                    return CursorMovementDirection.Up;
-                case Key.Down:
-                    return CursorMovementDirection.Down;
+                case Key.Home:
+                    if (isControlPreshed)
+                    {
+                        return TextCursorMovementDirection.Begining;
+                    }
+
+                    return TextCursorMovementDirection.BeginingOfLine;
+
+                case Key.End:
+
+                    if (isControlPreshed)
+                    {
+                        return TextCursorMovementDirection.End;
+                    }
+
+                    return TextCursorMovementDirection.EndOfLine;
+
                 default:
                     throw new InvalidOperationException(string.Format("The key {0} cannot be traslated to a direction", key));
             }
@@ -286,9 +277,97 @@ namespace Perspex.Controls
                 case Key.Right:
                 case Key.Up:
                 case Key.Down:
+                case Key.Home:
+                case Key.End:
                     return true;
                 default:
                     return false;
+            }
+        }
+
+        private static bool IsTextInput(KeyEventArgs e, ModifierKeys modifierKeys)
+        {
+            var isControlPressed = modifierKeys.IsPressed(ModifierKeys.Control);
+            var isShortcutKey = e.Key == Key.A;
+
+            var isShortCut = isShortcutKey && isControlPressed;
+            
+            return  !string.IsNullOrEmpty(e.Text) && !IsCharacterDeletionKey(e.Key) && !isShortCut;
+        }
+
+        private static bool IsCharacterDeletionKey(Key key)
+        {
+            return key == Key.Delete || key == Key.Back;
+        }
+
+        private void InsertText(string textToInsert)
+        {
+            int caretIndex;
+            DeleteSelection();
+            caretIndex = this.CaretIndex;
+            var currentText = this.Text;
+            this.Text = currentText.Substring(0, caretIndex) + textToInsert + currentText.Substring(caretIndex);
+            ++this.CaretIndex;
+        }
+
+        private void MoveCursor(TextCursorMovementDirection direction, int stride)
+        {
+            switch (direction)
+            {
+                case TextCursorMovementDirection.Left:
+                    MoveHorizontal(-stride, new ModifierKeys());
+                    break;
+                case TextCursorMovementDirection.Right:
+                    MoveHorizontal(stride, new ModifierKeys());
+                    break;
+                case TextCursorMovementDirection.Up:
+                    MoveVertical(-stride);
+                    break;
+                case TextCursorMovementDirection.Down:
+                    MoveVertical(stride);
+                    break;
+                case TextCursorMovementDirection.Beginning:
+                    MoveToBeginning();
+                    break;
+                case TextCursorMovementDirection.End:
+                    MoveToEnd();
+                    break;
+                case TextCursorMovementDirection.BeginingOfLine:
+                    MoveToBeginningOfLine();
+                    break;
+                case TextCursorMovementDirection.EndOfLine:
+                    MoveToEndOfLine();
+                    break;
+            }
+        }
+
+        private void MoveToEnd()
+        {
+            CaretIndex = Text.Length;
+        }
+
+        private void MoveToBeginning()
+        {
+            CaretIndex = 0;
+        }
+
+        private static TextCursorMovementDirection TranslateToDirection(Key key, ModifierKeys modifierKeys)
+        {
+            switch (key)
+            {
+                case Key.Left:
+                    return TextCursorMovementDirection.Left;
+                case Key.Right:
+                    return TextCursorMovementDirection.Right;
+                case Key.Up:
+                    return TextCursorMovementDirection.Up;
+                case Key.Down:
+                    return TextCursorMovementDirection.Down;
+                case Key.End:
+                case Key.Home:
+                    return TranslateToWarp(key, modifierKeys);
+                default:
+                    throw new InvalidOperationException(string.Format("The key {0} cannot be traslated to a direction", key));
             }
         }
 
@@ -359,7 +438,7 @@ namespace Perspex.Controls
             var text = this.Text ?? string.Empty;
             var caretIndex = this.CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
+            if (modifiers.IsPressed(ModifierKeys.Control))
             {
                 if (count > 0)
                 {
@@ -374,7 +453,7 @@ namespace Perspex.Controls
             this.CaretIndex = caretIndex += count;
         }
 
-        private void MoveVertical(int count, ModifierKeys modifiers)
+        private void MoveVertical(int count)
         {
             var formattedText = this.FormattedText;
             var lines = formattedText.GetLines().ToList();
@@ -388,71 +467,57 @@ namespace Perspex.Controls
                 var y = count < 0 ? rect.Y : rect.Bottom;
                 var point = new Point(rect.X, y + (count * (line.Height / 2)));
                 var hit = formattedText.HitTestPoint(point);
-                this.CaretIndex = caretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
+                this.CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
             }
         }
 
-        private void MoveHome(ModifierKeys modifiers)
+        private void MoveToBeginningOfLine()
         {
             var text = this.Text ?? string.Empty;
             var caretIndex = this.CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
-            {
-                caretIndex = 0;
-            }
-            else
-            {
-                var lines = this.FormattedText.GetLines();
-                var pos = 0;
+            var lines = this.FormattedText.GetLines();
+            var pos = 0;
 
-                foreach (var line in lines)
+            foreach (var line in lines)
+            {
+                if (pos + line.Length > caretIndex || pos + line.Length == text.Length)
                 {
-                    if (pos + line.Length > caretIndex || pos + line.Length == text.Length)
-                    {
-                        break;
-                    }
-
-                    pos += line.Length;
+                    break;
                 }
 
-                caretIndex = pos;
+                pos += line.Length;
             }
 
-            this.CaretIndex = caretIndex;
+            caretIndex = pos;
+
+            CaretIndex = caretIndex;
         }
 
-        private void MoveEnd(ModifierKeys modifiers)
+        private void MoveToEndOfLine()
         {
             var text = this.Text ?? string.Empty;
             var caretIndex = this.CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
-            {
-                caretIndex = text.Length;
-            }
-            else
-            {
-                var lines = this.FormattedText.GetLines();
-                var pos = 0;
+            var lines = this.FormattedText.GetLines();
+            var pos = 0;
 
-                foreach (var line in lines)
+            foreach (var line in lines)
+            {
+                pos += line.Length;
+
+                if (pos > caretIndex)
                 {
-                    pos += line.Length;
-
-                    if (pos > caretIndex)
+                    if (pos < text.Length)
                     {
-                        if (pos < text.Length)
-                        {
-                            --pos;
-                        }
-
-                        break;
+                        --pos;
                     }
-                }
 
-                caretIndex = pos;
+                    break;
+                }
             }
+
+            caretIndex = pos;
 
             this.CaretIndex = caretIndex;
         }

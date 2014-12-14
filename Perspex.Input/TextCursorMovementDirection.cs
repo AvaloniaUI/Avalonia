@@ -3,7 +3,7 @@
     /// <summary>
     /// Describes how focus should be moved.
     /// </summary>
-    public enum CursorMovementDirection
+    public enum TextCursorMovementDirection
     {      
         /// <summary>
         /// Moves the cursor to the left.
@@ -24,5 +24,19 @@
         /// Moves the cursor down.
         /// </summary>
         Down,
+
+        /// <summary>
+        /// Moves the cursor to the beginning.
+        /// </summary>
+        Beginning,
+
+        /// <summary>
+        /// Moves the the end.
+        /// </summary>
+        End,
+
+        EndOfLine,
+        BeginingOfLine,
+        Begining
     }
 }
