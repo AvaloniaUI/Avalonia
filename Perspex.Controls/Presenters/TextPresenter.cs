@@ -161,6 +161,28 @@ namespace Perspex.Controls
             return result;
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var text = this.Text;
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return base.MeasureOverride(availableSize);
+            }
+            else
+            {
+                // TODO: Pretty sure that measuring "X" isn't the right way to do this...
+                using (var formattedText = new FormattedText(
+                    "X",
+                    this.FontFamily,
+                    this.FontSize,
+                    this.FontStyle))
+                {
+                    return formattedText.Measure();
+                }
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
