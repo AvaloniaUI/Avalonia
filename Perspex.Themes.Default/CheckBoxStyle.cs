@@ -69,18 +69,21 @@ namespace Perspex.Themes.Default
                             VerticalAlignment = VerticalAlignment.Center,
                             [Grid.ColumnProperty] = 0,
                         },
-                        new Rectangle
+                        new Path
                         {
                             Id = "checkMark",
                             Fill = Brushes.Black,
-                            Width = 10,
+                            Width = 11,
                             Height = 10,
+                            Stretch = Stretch.Uniform,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
+                            Data = StreamGeometry.Parse("M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z"),
                             [Grid.ColumnProperty] = 0,
                         },
                         new ContentPresenter
                         {
+                            Margin = new Thickness(4, 0, 0, 0),
                             [~ContentPresenter.ContentProperty] = control[~CheckBox.ContentProperty],
                             [Grid.ColumnProperty] = 1,
                         },
