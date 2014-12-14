@@ -92,11 +92,6 @@ namespace Perspex.Controls
             set { this.SetValue(SelectionEndProperty, value); }
         }
 
-        public new FormattedText FormattedText
-        {
-            get { return base.FormattedText; }
-        }
-
         public int GetCaretIndex(Point point)
         {
             var hit = this.FormattedText.HitTestPoint(point);

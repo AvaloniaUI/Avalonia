@@ -10,8 +10,6 @@ namespace Perspex.Controls
     using System.Reactive;
     using System.Reactive.Linq;
     using Perspex.Media;
-    using Perspex.Platform;
-    using Splat;
 
     public class TextBlock : Control
     {
@@ -34,6 +32,8 @@ namespace Perspex.Controls
             PerspexProperty.Register<TextBlock, TextWrapping>("TextWrapping");
 
         private FormattedText formattedText;
+
+        private Size constraint;
 
         public TextBlock()
         {
@@ -104,17 +104,20 @@ namespace Perspex.Controls
 
         protected virtual FormattedText CreateFormattedText()
         {
-            return new FormattedText(
+            var result = new FormattedText(
                 this.Text,
                 this.FontFamily,
                 this.FontSize,
                 this.FontStyle);
+            result.Constraint = constraint;
+            return result;
         }
 
         protected void InvalidateFormattedText()
         {
             if (this.formattedText != null)
             {
+                this.constraint = this.formattedText.Constraint;
                 this.formattedText.Dispose();
                 this.formattedText = null;
             }
