@@ -45,6 +45,7 @@ namespace Perspex.Direct2D1.Media
                     if (this.transformed != null)
                     {
                         this.transformed.Dispose();
+                        this.transformed = null;
                     }
 
                     if (!value.IsIdentity)
