@@ -38,7 +38,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
-        public void Template_Gets_Executed_On_Reading_Visual_Children()
+        public void Template_Gets_Executed_On_Measure()
         {
             bool executed = false;
 
@@ -53,7 +53,7 @@ namespace Perspex.Controls.UnitTests
                 Template = template,
             };
 
-            var children = ((IVisual)target).VisualChildren.ToArray();
+            target.Measure(new Size(100, 100));
 
             Assert.IsTrue(executed);
         }
@@ -73,7 +73,8 @@ namespace Perspex.Controls.UnitTests
                 Template = template,
             };
 
-            var children = ((IVisual)target).VisualChildren.ToArray();
+            target.Measure(new Size(100, 100));
+            var children = target.GetVisualChildren().ToList();
 
             CollectionAssert.AreEqual(new[] { templateResult }, children);
         }
@@ -93,7 +94,7 @@ namespace Perspex.Controls.UnitTests
                 Template = template,
             };
 
-            var children = ((IVisual)target).VisualChildren.ToArray();
+            target.Measure(new Size(100, 100));
 
             Assert.AreEqual(target, templateResult.TemplatedParent);
         }
@@ -109,7 +110,7 @@ namespace Perspex.Controls.UnitTests
                 })
             };
 
-            var children = ((IVisual)target).VisualChildren.ToArray();
+            target.Measure(new Size(100, 100));
 
             Assert.IsTrue(target.OnTemplateAppliedCalled);
         }

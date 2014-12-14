@@ -13,7 +13,10 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Layout;
+    using Perspex.Platform;
     using Perspex.Styling;
+    using Ploeh.AutoFixture;
+    using Ploeh.AutoFixture.AutoMoq;
     using Splat;
 
     [TestClass]
@@ -22,22 +25,27 @@ namespace Perspex.Controls.UnitTests
         [TestMethod]
         public void Template_Should_Be_Instantiated()
         {
-            var target = new ContentControl();
-            target.Content = "Foo";
-            target.Template = this.GetTemplate();
+            using (var ctx = this.RegisterServices())
+            {
+                var target = new ContentControl();
+                target.Content = "Foo";
+                target.Template = this.GetTemplate();
 
-            var child = ((IVisual)target).VisualChildren.Single();
-            Assert.IsInstanceOfType(child, typeof(Border));
-            child = child.VisualChildren.Single();
-            Assert.IsInstanceOfType(child, typeof(ContentPresenter));
-            child = child.VisualChildren.Single();
-            Assert.IsInstanceOfType(child, typeof(TextBlock));
+                target.Measure(new Size(100, 100));
+
+                var child = ((IVisual)target).VisualChildren.Single();
+                Assert.IsInstanceOfType(child, typeof(Border));
+                child = child.VisualChildren.Single();
+                Assert.IsInstanceOfType(child, typeof(ContentPresenter));
+                child = child.VisualChildren.Single();
+                Assert.IsInstanceOfType(child, typeof(TextBlock));
+            }
         }
 
         [TestMethod]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (var ctx = this.RegisterServices())
             {
                 var root = new TestRoot();
                 var target = new ContentControl();
@@ -55,60 +63,6 @@ namespace Perspex.Controls.UnitTests
                 styler.Verify(x => x.ApplyStyles(It.IsAny<ContentPresenter>()), Times.Once());
                 styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
             }
-        }
-
-        [TestMethod]
-        public void Setting_Content_To_Control_Should_Set_Parent()
-        {
-            throw new NotImplementedException();
-            ////var target = new ContentControl();
-            ////var child = new Border();
-
-            ////target.Content = child;
-
-            ////Assert.AreEqual(child.Parent, target);
-            ////Assert.AreEqual(((IVisual)child).VisualParent, target);
-            ////Assert.AreEqual(((ILogical)child).LogicalParent, target);
-        }
-
-        [TestMethod]
-        public void Setting_Content_To_Control_Should_Set_Logical_Child()
-        {
-            throw new NotImplementedException();
-            ////var target = new ContentControl();
-            ////var child = new Border();
-
-            ////target.Content = child;
-
-            ////Assert.AreEqual(child, ((ILogical)target).LogicalChildren.Single());
-        }
-
-        [TestMethod]
-        public void Removing_Control_From_Content_Should_Clear_Parent()
-        {
-            throw new NotImplementedException();
-            ////var target = new ContentControl();
-            ////var child = new Border();
-
-            ////target.Content = child;
-            ////target.Content = "foo";
-
-            ////Assert.IsNull(child.Parent);
-            ////Assert.IsNull(((IVisual)child).VisualParent);
-            ////Assert.IsNull(((ILogical)child).LogicalParent);
-        }
-
-        [TestMethod]
-        public void Removing_Control_From_Content_Should_Clear_Logical_Child()
-        {
-            throw new NotImplementedException();
-            ////var target = new ContentControl();
-            ////var child = new Border();
-
-            ////target.Content = child;
-            ////target.Content = "foo";
-
-            ////Assert.IsFalse(((ILogical)target).LogicalChildren.Any());
         }
 
         [TestMethod]
@@ -138,9 +92,9 @@ namespace Perspex.Controls.UnitTests
             Assert.IsNull(child.TemplatedParent);
         }
 
-        private void ApplyTemplate(IVisual visual)
+        private void ApplyTemplate(ILayoutable control)
         {
-            var c = visual.GetVisualDescendents().ToList();
+            control.Measure(new Size(100, 100));
         }
 
         private ControlTemplate GetTemplate()
@@ -156,6 +110,15 @@ namespace Perspex.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        private IDisposable RegisterServices()
+        {
+            var result = Locator.CurrentMutable.WithResolver();
+            var fixture = new Fixture().Customize(new AutoMoqCustomization());
+            var renderInterface = fixture.Create<IPlatformRenderInterface>();
+            Locator.CurrentMutable.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
+            return result;
         }
     }
 }

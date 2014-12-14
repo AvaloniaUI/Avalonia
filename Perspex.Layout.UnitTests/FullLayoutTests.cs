@@ -79,6 +79,7 @@ namespace Perspex.Layout.UnitTests
                     {
                         Width = 200,
                         Height = 200,
+                        CanScrollHorizontally = true,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Content = (textBlock = new TextBlock
@@ -127,23 +128,25 @@ namespace Perspex.Layout.UnitTests
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             var l = Locator.CurrentMutable;
-            var windowImpl = new Mock<IWindowImpl>();
-            var renderManager = fixture.Create<IRenderManager>();
+
+            var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
+            var renderInterface = fixture.Create<IPlatformRenderInterface>();
+            var renderManager = fixture.Create<IRenderManager>();
             var theme = new DefaultTheme();
+            var windowImpl = new Mock<IWindowImpl>();
 
             globalStyles.Setup(x => x.Styles).Returns(theme);
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 600));
 
             l.RegisterConstant(new Mock<IInputManager>().Object, typeof(IInputManager));
+            l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
             l.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
-            l.RegisterConstant(new Mock<IPlatformRenderInterface>().Object, typeof(IPlatformRenderInterface));
+            l.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
             l.RegisterConstant(new Mock<IPlatformThreadingInterface>().Object, typeof(IPlatformThreadingInterface));
             l.RegisterConstant(renderManager, typeof(IRenderManager));
             l.RegisterConstant(new Styler(), typeof(IStyler));
-            l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
             l.RegisterConstant(windowImpl.Object, typeof(IWindowImpl));
-            l.RegisterConstant(new Mock<IFormattedTextImpl>().Object, typeof(IFormattedTextImpl));
         }
     }
 }

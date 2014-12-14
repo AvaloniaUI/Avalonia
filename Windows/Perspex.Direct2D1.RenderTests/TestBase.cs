@@ -22,7 +22,7 @@ namespace Perspex.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
-            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Direct2D1");
+            string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Direct2D1");
             this.OutputPath = Path.Combine(testFiles, outputPath);
         }
 
