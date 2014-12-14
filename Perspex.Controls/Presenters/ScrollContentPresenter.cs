@@ -124,21 +124,25 @@ namespace Perspex.Controls.Presenters
             if (rect.Bottom > offset.Y + this.Viewport.Height)
             {
                 offset = offset.WithY(rect.Bottom - this.Viewport.Height);
+                e.Handled = true;
             }
 
             if (rect.Y < offset.Y)
             {
                 offset = offset.WithY(rect.Y);
+                e.Handled = true;
             }
 
             if (rect.Right > offset.X + this.Viewport.Width)
             {
                 offset = offset.WithX(rect.Right - this.Viewport.Width);
+                e.Handled = true;
             }
 
             if (rect.X < offset.X)
             {
                 offset = offset.WithX(rect.X);
+                e.Handled = true;
             }
 
             this.Offset = offset;

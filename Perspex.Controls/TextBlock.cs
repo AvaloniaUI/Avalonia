@@ -35,6 +35,8 @@ namespace Perspex.Controls
 
         private FormattedText formattedText;
 
+        private Size constraint;
+
         public TextBlock()
         {
             Observable.Merge(
@@ -104,17 +106,20 @@ namespace Perspex.Controls
 
         protected virtual FormattedText CreateFormattedText()
         {
-            return new FormattedText(
+            var result = new FormattedText(
                 this.Text,
                 this.FontFamily,
                 this.FontSize,
                 this.FontStyle);
+            result.Constraint = constraint;
+            return result;
         }
 
         protected void InvalidateFormattedText()
         {
             if (this.formattedText != null)
             {
+                this.constraint = this.formattedText.Constraint;
                 this.formattedText.Dispose();
                 this.formattedText = null;
             }
