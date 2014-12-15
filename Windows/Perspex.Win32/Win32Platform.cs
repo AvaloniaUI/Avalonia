@@ -8,7 +8,10 @@ namespace Perspex.Win32
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reactive.Disposables;
+    using System.Runtime.InteropServices;
     using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Win32.Input;
@@ -19,7 +22,16 @@ namespace Perspex.Win32
     {
         private static Win32Platform instance = new Win32Platform();
 
+        private UnmanagedMethods.WndProc wndProcDelegate;
+
+        private IntPtr hwnd;
+
         private List<Delegate> delegates = new List<Delegate>();
+
+        public Win32Platform()
+        {
+            this.CreateMessageWindow();
+        }
 
         public Size DoubleClickSize
         {
@@ -77,10 +89,44 @@ namespace Perspex.Win32
         public void Wake()
         {
             UnmanagedMethods.PostMessage(
-                IntPtr.Zero,
+                this.hwnd,
                 (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 IntPtr.Zero,
                 IntPtr.Zero);
+        }
+
+        [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
+        private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private void CreateMessageWindow()
+        {
+            // Ensure that the delegate doesn't get garbage collected by storing it as a field.
+            this.wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+
+            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            {
+                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                lpfnWndProc = this.wndProcDelegate,
+                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
+                lpszClassName = "PerspexMessageWindow",
+            };
+
+            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+
+            if (atom == 0)
+            {
+                throw new Win32Exception();
+            }
+
+            this.hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+            if (this.hwnd == IntPtr.Zero)
+            {
+                throw new Win32Exception();
+            }
         }
     }
 }
