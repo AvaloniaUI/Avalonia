@@ -197,15 +197,14 @@ namespace Perspex.Controls
                     if (modifiers == ModifierKeys.Control)
                     {
                         SelectAll();
-                        
                     }
                     else
                     {
-                        textEntered = true;
                         goto default;
                     }
 
                     break;
+
                 case Key.Left:
                     this.MoveHorizontal(-1, modifiers);
                     movement = true;
