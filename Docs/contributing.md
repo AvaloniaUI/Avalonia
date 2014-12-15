@@ -19,6 +19,8 @@ If you're a few characters over then don't worry too much.
 Documentation comments should also be formatted to a 100 character length to help keep them 
 readable.
 
+**DO NOT USE #REGIONS** full stop.
+
 ## Pull requests ##
 
 A single pull request should be submitted for each change. If you're making more than one change,
