@@ -31,6 +31,7 @@ namespace Perspex.Controls.Presenters
 
         static ScrollContentPresenter()
         {
+            ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
             Control.AffectsArrange(OffsetProperty);
         }
 

@@ -6,6 +6,8 @@
 
 namespace Perspex.Media
 {
+    using System;
+
     public class RotateTransform : Transform
     {
         public static readonly PerspexProperty<double> AngleProperty =
@@ -13,9 +15,11 @@ namespace Perspex.Media
 
         public RotateTransform()
         {
+            this.GetObservable(AngleProperty).Subscribe(_ => this.RaiseChanged());
         }
 
         public RotateTransform(double angle)
+            : this()
         {
             this.Angle = angle;
         }

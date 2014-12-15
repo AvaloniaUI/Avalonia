@@ -133,7 +133,7 @@ namespace Perspex.Direct2D1
 
                 transform *= Matrix.Translation(visual.Bounds.Position);
 
-                using (context.PushClip(visual.Bounds))
+                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
                 using (context.PushTransform(transform))
                 {
                     visual.Render(context);

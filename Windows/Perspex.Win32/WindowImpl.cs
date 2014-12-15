@@ -103,8 +103,6 @@ namespace Perspex.Win32
                 lpszClassName = this.className,
             };
 
-            System.Diagnostics.Debug.WriteLine("Registered class " + this.className);
-
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
 
             if (atom == 0)

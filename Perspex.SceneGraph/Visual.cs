@@ -10,12 +10,16 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Linq;
+    using System.Reactive.Linq;
     using Perspex.Media;
     using Perspex.Rendering;
     using Splat;
 
     public class Visual : PerspexObject, IVisual
     {
+        public static readonly PerspexProperty<bool> ClipToBoundsProperty =
+            PerspexProperty.Register<Visual, bool>("ClipToBounds");
+
         public static readonly PerspexProperty<bool> IsVisibleProperty =
             PerspexProperty.Register<Visual, bool>("IsVisible", true);
 
@@ -37,12 +41,19 @@ namespace Perspex
         static Visual()
         {
             AffectsRender(IsVisibleProperty);
+            RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
         }
 
         public Visual()
         {
             this.visualChildren = new PerspexList<IVisual>();
             this.visualChildren.CollectionChanged += this.VisualChildrenChanged;
+        }
+
+        public bool ClipToBounds
+        {
+            get { return this.GetValue(ClipToBoundsProperty); }
+            set { this.SetValue(ClipToBoundsProperty, value); }
         }
 
         public bool IsVisible
@@ -195,6 +206,34 @@ namespace Perspex
             }
 
             return result;
+        }
+
+        private static void RenderTransformChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var sender = e.Sender as Visual;
+
+            if (sender != null)
+            {
+                var oldValue = e.OldValue as ITransform;
+                var newValue = e.NewValue as ITransform;
+
+                if (oldValue != null)
+                {
+                    oldValue.Changed -= sender.RenderTransformChanged;
+                }
+
+                if (newValue != null)
+                {
+                    newValue.Changed += sender.RenderTransformChanged;
+                }
+
+                sender.InvalidateVisual();
+            }
+        }
+
+        private void RenderTransformChanged(object sender, EventArgs e)
+        {
+            this.InvalidateVisual();
         }
 
         private void SetVisualParent(Visual value)

@@ -1,7 +1,9 @@
-﻿using System.Reactive.Linq;
+﻿using System;
+using System.Reactive.Linq;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
+using Perspex.Controls.Shapes;
 using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
@@ -132,6 +134,7 @@ namespace TestApplication
                                 ListsTab(),
                                 SlidersTab(),
                                 LayoutTab(),
+                                AnimationsTab(),
                             }
                         },
                         new TextBlock
@@ -430,5 +433,43 @@ namespace TestApplication
                 }
             };
         }
+
+        private static TabItem AnimationsTab()
+        {
+            Rectangle rect1;
+
+            var result = new TabItem
+            {
+                Header = "Animations",
+                Content = new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition(1, GridUnitType.Star),
+                    },
+                    Children = new Controls
+                    {
+                        (rect1 = new Rectangle
+                        {
+                            Width = 100,
+                            Height = 100,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Fill = Brushes.Crimson,
+                            RenderTransform = new RotateTransform(),
+                        }),
+                    },
+                },
+            };
+
+            Observable.Interval(TimeSpan.FromMilliseconds(10))
+                .Subscribe(x =>
+                {
+                    ((RotateTransform)rect1.RenderTransform).Angle = x;
+                });
+
+            return result;
+        }
+
     }
 }

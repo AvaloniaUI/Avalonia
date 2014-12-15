@@ -6,8 +6,20 @@
 
 namespace Perspex.Media
 {
+    using System;
+
     public abstract class Transform : PerspexObject, ITransform
     {
+        public event EventHandler Changed;
+
         public abstract Matrix Value { get; }
+
+        protected void RaiseChanged()
+        {
+            if (this.Changed != null)
+            {
+                this.Changed(this, EventArgs.Empty);
+            }
+        }
     }
 }

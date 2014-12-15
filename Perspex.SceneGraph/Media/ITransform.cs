@@ -6,8 +6,12 @@
 
 namespace Perspex.Media
 {
+    using System;
+
     public interface ITransform
     {
+        event EventHandler Changed;
+
         Matrix Value { get; }
     }
 }

@@ -164,7 +164,9 @@ namespace Perspex.Controls
 
         private void HandleRenderNeeded()
         {
-            this.dispatcher.InvokeAsync(this.RenderVisualTree, DispatcherPriority.Render);
+            this.dispatcher.InvokeAsync(
+                () => this.impl.Invalidate(new Rect(this.ClientSize)), 
+                DispatcherPriority.Render);
         }
 
         private void HandlePaint(Rect rect, IPlatformHandle handle)
@@ -185,14 +187,6 @@ namespace Perspex.Controls
         {
             this.LayoutManager.ExecuteLayoutPass();
             this.impl.Invalidate(new Rect(this.ClientSize));
-        }
-
-        private void RenderVisualTree()
-        {
-            if (!this.LayoutManager.LayoutQueued)
-            {
-                this.impl.Invalidate(new Rect(this.ClientSize));
-            }
         }
     }
 }

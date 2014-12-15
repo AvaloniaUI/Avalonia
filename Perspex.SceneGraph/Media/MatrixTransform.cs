@@ -6,6 +6,8 @@
 
 namespace Perspex.Media
 {
+    using System;
+
     public class MatrixTransform : Transform
     {
         public static readonly PerspexProperty<Matrix> MatrixProperty =
@@ -13,9 +15,11 @@ namespace Perspex.Media
 
         public MatrixTransform()
         {
+            this.GetObservable(MatrixProperty).Subscribe(_ => this.RaiseChanged());
         }
 
         public MatrixTransform(Matrix matrix)
+            : this()
         {
             this.Matrix = matrix;
         }

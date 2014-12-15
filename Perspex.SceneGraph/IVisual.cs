@@ -29,6 +29,11 @@ namespace Perspex
         Rect Bounds { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the scene graph node should be clipped to its bounds.
+        /// </summary>
+        bool ClipToBounds { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is visible.
         /// </summary>
         bool IsVisible { get; }
