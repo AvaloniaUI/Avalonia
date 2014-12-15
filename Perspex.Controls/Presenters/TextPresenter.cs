@@ -196,8 +196,13 @@ namespace Perspex.Controls
                 case Key.A:
                     if (modifiers == ModifierKeys.Control)
                     {
-                        this.SelectionStart = 0;
-                        this.SelectionEnd = this.Text.Length;
+                        SelectAll();
+                        
+                    }
+                    else
+                    {
+                        textEntered = true;
+                        goto default;
                     }
 
                     break;
@@ -288,6 +293,12 @@ namespace Perspex.Controls
             }
 
             e.Handled = true;
+        }
+
+        private void SelectAll()
+        {
+            this.SelectionStart = 0;
+            this.SelectionEnd = this.Text.Length;
         }
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
