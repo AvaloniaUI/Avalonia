@@ -7,6 +7,7 @@
 namespace Perspex.Threading
 {
     using System;
+    using System.Reactive.Disposables;
     using Perspex.Platform;
     using Splat;
 
@@ -103,6 +104,24 @@ namespace Perspex.Threading
         { 
             get; 
             set; 
+        }
+
+        public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            var timer = new DispatcherTimer(priority);
+
+            timer.Interval = interval;
+            timer.Tick += (s, e) =>
+            {
+                if (!action())
+                {
+                    timer.Stop();
+                }
+            };
+
+            timer.Start();
+
+            return Disposable.Create(() => timer.Stop());
         }
 
         public void Start()

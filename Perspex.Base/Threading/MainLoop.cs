@@ -30,14 +30,21 @@ namespace Perspex.Win32.Threading
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                Job job;
+                Job job = null;
 
-                // TODO: Dispatch windows messages in preference to lower priority jobs.
-                while (this.queue.Count > 0)
+                while (job != null || this.queue.Count > 0)
                 {
-                    lock (this.queue)
+                    if (job == null)
                     {
-                        job = this.queue.Dequeue();
+                        lock (this.queue)
+                        {
+                            job = this.queue.Dequeue();
+                        }
+                    }
+
+                    if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
+                    {
+                        break;
                     }
 
                     try
@@ -49,6 +56,8 @@ namespace Perspex.Win32.Threading
                     {
                         job.TaskCompletionSource.SetException(e);
                     }
+
+                    job = null;
                 }
 
                 platform.ProcessMessage();
@@ -57,7 +66,7 @@ namespace Perspex.Win32.Threading
 
         public Task InvokeAsync(Action action, DispatcherPriority priority)
         {
-            var job = new Job(action);
+            var job = new Job(action, priority);
 
             lock (this.queue)
             {
@@ -70,13 +79,16 @@ namespace Perspex.Win32.Threading
 
         private class Job
         {
-            public Job(Action action)
+            public Job(Action action, DispatcherPriority priority)
             {
                 this.Action = action;
+                this.Priority = priority;
                 this.TaskCompletionSource = new TaskCompletionSource<object>();
             }
 
             public Action Action { get; private set; }
+
+            public DispatcherPriority Priority { get; private set; }
 
             public TaskCompletionSource<object> TaskCompletionSource { get; set; }
         }

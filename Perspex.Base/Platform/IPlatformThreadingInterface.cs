@@ -16,6 +16,8 @@ namespace Perspex.Platform
     /// </summary>
     public interface IPlatformThreadingInterface
     {
+        bool HasMessages();
+
         /// <summary>
         /// Process a single message from the windowing system, blocking until one is available.
         /// </summary>

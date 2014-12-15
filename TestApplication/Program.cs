@@ -8,6 +8,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #else
@@ -462,7 +463,7 @@ namespace TestApplication
                 },
             };
 
-            Observable.Interval(TimeSpan.FromMilliseconds(10))
+            Observable.Interval(TimeSpan.FromMilliseconds(10), PerspexScheduler.Instance)
                 .Subscribe(x =>
                 {
                     ((RotateTransform)rect1.RenderTransform).Angle = x;

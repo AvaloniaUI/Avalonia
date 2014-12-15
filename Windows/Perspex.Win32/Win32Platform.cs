@@ -57,6 +57,12 @@ namespace Perspex.Win32
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
 
+        public bool HasMessages()
+        {
+            UnmanagedMethods.MSG msg;
+            return UnmanagedMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+        }
+
         public void ProcessMessage()
         {
             UnmanagedMethods.MSG msg;
@@ -88,11 +94,11 @@ namespace Perspex.Win32
 
         public void Wake()
         {
-            UnmanagedMethods.PostMessage(
-                this.hwnd,
-                (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
-                IntPtr.Zero,
-                IntPtr.Zero);
+            //UnmanagedMethods.PostMessage(
+            //    this.hwnd,
+            //    (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+            //    IntPtr.Zero,
+            //    IntPtr.Zero);
         }
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]

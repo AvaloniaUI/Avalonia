@@ -8,8 +8,6 @@ namespace Perspex.Controls.Presenters
 {
     using System;
     using System.Linq;
-    using System.Reactive.Disposables;
-    using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Layout;
 

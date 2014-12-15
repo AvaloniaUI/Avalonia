@@ -54,6 +54,7 @@
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
     <Compile Include="Threading\MainLoop.cs" />
+    <Compile Include="Threading\PerspexScheduler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">
