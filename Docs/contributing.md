@@ -6,8 +6,8 @@ The codebase uses StyleCop with default settings[1] to enforce coding style. Yes
 decisions it makes are downright bizarre, and are certainly not what I would've personally chosen 
 but the less time spent debating coding style the more time left for coding.
 
-StyleCop should run on each build and give warnings for any violations. So please, follow the style
-- you'll get used to it in the end (I know I have).
+StyleCop should run on each build and give warnings for any violations. So please, follow the style;
+you'll get used to it in the end (I know I have).
 
 If the .NET core team decide on a style and write an automatic checker/tidy tool for that style,
 I'll gladly adopt it! I'm certainly not tied to the current style, I'm just tired of endless coding
