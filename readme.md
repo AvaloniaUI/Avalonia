@@ -35,3 +35,7 @@ In order to build and use Perpex you need a compiler that supports the upcoming 
 
 - **Visual Studio 2013**: With the introduction of the new Roslyn compiler platform earlier this year Microsoft has released an *April End User Preview* which is a small extension that brings supports to Visual Studio 2013.<br/>
   **NOTE**: This extension is **out of date** and will **no longer be updated**, according to the [Roslyn CodePlex](https://roslyn.codeplex.com/) main page. However, if you don't want to use a Preview IDE feel free to download the extension [over here](https://connect.microsoft.com/VisualStudio/Downloads/DownloadDetails.aspx?DownloadID=52793). It must be noted that it is not guaranteed that future versions of Perplex will compile and run when using this extension.
+
+## Contributing ##
+
+Please read the [contribution guidelines](Docs/contributing.md) before submitting a pull request.
