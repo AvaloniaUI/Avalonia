@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Border.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
     <Compile Include="ColumnDefinition.cs" />
     <Compile Include="ColumnDefinitions.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Primitives\Track.cs" />
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
+    <Compile Include="Shapes\Ellipse.cs" />
     <Compile Include="TextWrapping.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="Window.cs" />

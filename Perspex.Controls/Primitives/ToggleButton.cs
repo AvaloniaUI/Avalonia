@@ -20,13 +20,18 @@ namespace Perspex.Controls.Primitives
 
         public ToggleButton()
         {
-            this.Click += (s, e) => this.IsChecked = !this.IsChecked;
+            this.Click += (s, e) => this.Toggle();
         }
 
         public bool IsChecked
         {
             get { return this.GetValue(IsCheckedProperty); }
             set { this.SetValue(IsCheckedProperty, value); }
+        }
+
+        protected virtual void Toggle()
+        {
+            this.IsChecked = !this.IsChecked;
         }
     }
 }

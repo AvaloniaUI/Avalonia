@@ -47,10 +47,10 @@ namespace Perspex.Controls
                 Vector scale = CalculateScaling(this.ActualSize, sourceSize, this.Stretch);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
-                    .Center(new Rect(scaledSize))
+                    .CenterIn(new Rect(scaledSize))
                     .Intersect(viewPort);
                 Rect sourceRect = new Rect(sourceSize)
-                    .Center(new Rect(destRect.Size / scale));
+                    .CenterIn(new Rect(destRect.Size / scale));
 
                 drawingContext.DrawImage(source, 1, sourceRect, destRect);
             }

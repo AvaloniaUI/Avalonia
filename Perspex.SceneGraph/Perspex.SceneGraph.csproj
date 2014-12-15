@@ -58,6 +58,7 @@
     <Compile Include="Media\ITransform.cs" />
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\Pen.cs" />
+    <Compile Include="Media\EllipseGeometry.cs" />
     <Compile Include="Media\RectangleGeometry.cs" />
     <Compile Include="Media\MatrixTransform.cs" />
     <Compile Include="Media\RotateTransform.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Media\StreamGeometry.cs" />
     <Compile Include="Media\StreamGeometryContext.cs" />
     <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Media\SweepDirection.cs" />
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Origin.cs" />

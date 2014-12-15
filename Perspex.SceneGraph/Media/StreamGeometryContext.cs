@@ -18,6 +18,11 @@ namespace Perspex.Media
             this.impl = impl;
         }
 
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+        {
+            this.impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+        }
+
         public void BeginFigure(Point startPoint, bool isFilled)
         {
             this.impl.BeginFigure(startPoint, isFilled);

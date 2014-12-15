@@ -18,6 +18,23 @@ namespace Perspex.Direct2D1.Media
             this.sink = sink;
         }
 
+        public void ArcTo(
+            Point point,
+            Size size,
+            double rotationAngle,
+            bool isLargeArc,
+            Perspex.Media.SweepDirection sweepDirection)
+        {
+            this.sink.AddArc(new ArcSegment
+            {
+                Point = point.ToSharpDX(),
+                Size = size.ToSharpDX(),
+                RotationAngle = (float)rotationAngle,
+                ArcSize = isLargeArc ? ArcSize.Large : ArcSize.Small,
+                SweepDirection = (SweepDirection)sweepDirection,
+            });
+        }
+
         public void BeginFigure(Point startPoint, bool isFilled)
         {
             this.sink.BeginFigure(startPoint.ToSharpDX(), isFilled ? FigureBegin.Filled : FigureBegin.Hollow);

@@ -7,9 +7,12 @@
 namespace Perspex.Platform
 {
     using System;
+    using Perspex.Media;
 
     public interface IStreamGeometryContextImpl : IDisposable
     {
+        void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection);
+
         void BeginFigure(Point startPoint, bool isFilled);
 
         void BezierTo(Point point1, Point point2, Point point3);

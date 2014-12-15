@@ -26,6 +26,11 @@ namespace Perspex.Direct2D1
             return new Vector2((float)p.X, (float)p.Y);
         }
 
+        public static Size2F ToSharpDX(this Perspex.Size p)
+        {
+            return new Size2F((float)p.Width, (float)p.Height);
+        }
+
         /// <summary>
         /// Converts a brush to Direct2D.
         /// </summary>

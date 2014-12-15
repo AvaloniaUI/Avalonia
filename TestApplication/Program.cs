@@ -198,6 +198,15 @@ namespace TestApplication
                         {
                             Content = "Checkbox",
                         },
+                        new RadioButton
+                        {
+                            Content = "RadioButton 1",
+                            IsChecked = true,
+                        },
+                        new RadioButton
+                        {
+                            Content = "RadioButton 2",
+                        },
                     }
                 },
             };

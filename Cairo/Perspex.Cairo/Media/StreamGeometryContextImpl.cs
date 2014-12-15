@@ -6,11 +6,17 @@
 
 namespace Perspex.Cairo.Media
 {
+    using Perspex.Media;
     using Perspex.Platform;
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
         public StreamGeometryContextImpl()
+        {
+            // TODO: Implement
+        }
+
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
             // TODO: Implement
         }

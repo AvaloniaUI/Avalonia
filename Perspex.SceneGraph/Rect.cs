@@ -184,6 +184,14 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the center point of the rectangle.
+        /// </summary>
+        public Point Center
+        {
+            get { return new Point(this.x + (this.width / 2), this.y + (this.height / 2)); }
+        }
+
+        /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
         public bool IsEmpty
@@ -255,7 +263,7 @@ namespace Perspex
                    p.Y >= this.y && p.Y < this.y + this.height;
         }
 
-        public Rect Center(Rect rect)
+        public Rect CenterIn(Rect rect)
         {
             return new Rect(
                 this.x + ((this.width - rect.width) / 2),
