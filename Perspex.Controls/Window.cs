@@ -30,6 +30,8 @@ namespace Perspex.Controls
 
         private Dispatcher dispatcher;
 
+        private IRenderManager renderManager;
+
         private IRenderer renderer;
 
         private IInputManager inputManager;
@@ -47,7 +49,7 @@ namespace Perspex.Controls
             this.impl = Locator.Current.GetService<IWindowImpl>();
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
-            this.RenderManager = Locator.Current.GetService<IRenderManager>();
+            this.renderManager = Locator.Current.GetService<IRenderManager>();
 
             if (renderInterface == null)
             {
@@ -73,7 +75,7 @@ namespace Perspex.Controls
                     "Could not create layout manager: maybe Application.RegisterServices() wasn't called?");
             }
 
-            if (this.RenderManager == null)
+            if (this.renderManager == null)
             {
                 throw new InvalidOperationException(
                     "Could not create render manager: maybe Application.RegisterServices() wasn't called?");
@@ -92,7 +94,7 @@ namespace Perspex.Controls
 
             this.LayoutManager.Root = this;
             this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
-            this.RenderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
+            this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
 
             this.GetObservable(TitleProperty).Subscribe(s => this.impl.SetTitle(s));
 
@@ -122,10 +124,14 @@ namespace Perspex.Controls
             private set;
         }
 
-        public IRenderManager RenderManager
+        IRenderer IRenderRoot.Renderer
         {
-            get;
-            private set;
+            get { return this.renderer; }
+        }
+
+        IRenderManager IRenderRoot.RenderManager
+        {
+            get { return this.renderManager; }
         }
 
         public void Show()
@@ -172,7 +178,7 @@ namespace Perspex.Controls
         private void HandlePaint(Rect rect, IPlatformHandle handle)
         {
             this.renderer.Render(this, handle);
-            this.RenderManager.RenderFinished();
+            this.renderManager.RenderFinished();
         }
 
         private void HandleResized(Size size)

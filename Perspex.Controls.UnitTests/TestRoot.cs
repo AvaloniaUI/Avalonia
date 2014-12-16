@@ -9,6 +9,7 @@ namespace Perspex.Controls.UnitTests
     using System;
     using Moq;
     using Perspex.Layout;
+    using Perspex.Platform;
     using Perspex.Rendering;
 
     internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot
@@ -21,6 +22,11 @@ namespace Perspex.Controls.UnitTests
         public ILayoutManager LayoutManager
         {
             get { return new Mock<ILayoutManager>().Object; }
+        }
+
+        public IRenderer Renderer
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public IRenderManager RenderManager

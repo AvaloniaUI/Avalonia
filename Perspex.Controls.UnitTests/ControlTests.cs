@@ -12,6 +12,7 @@ namespace Perspex.Controls.UnitTests
     using Moq;
     using Perspex.Controls;
     using Perspex.Layout;
+    using Perspex.Platform;
     using Perspex.Rendering;
     using Perspex.Styling;
     using Splat;
@@ -80,6 +81,11 @@ namespace Perspex.Controls.UnitTests
             public ILayoutManager LayoutManager
             {
                 get { throw new System.NotImplementedException(); }
+            }
+
+            public IRenderer Renderer
+            {
+                get { throw new NotImplementedException(); }
             }
 
             public IRenderManager RenderManager

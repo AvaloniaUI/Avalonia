@@ -11,6 +11,11 @@ namespace Perspex.Platform
     public interface IRenderer
     {
         /// <summary>
+        /// Gets the number of times <see cref="Render"/> has been called.
+        /// </summary>
+        int RenderCount { get; }
+
+        /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>

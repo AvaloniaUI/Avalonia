@@ -29,6 +29,15 @@ namespace Perspex.Cairo
         }
 
         /// <summary>
+        /// Gets the number of times <see cref="Render"/> has been called.
+        /// </summary>
+        public int RenderCount
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
@@ -39,6 +48,8 @@ namespace Perspex.Cairo
             {
                 this.Render(visual, context);
             }
+
+            ++this.RenderCount;
         }
 
         /// <summary>

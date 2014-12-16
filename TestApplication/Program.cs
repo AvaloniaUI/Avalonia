@@ -9,6 +9,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Rendering;
 using Perspex.Styling;
 using Perspex.Threading;
 #if PERSPEX_GTK
@@ -115,11 +116,18 @@ namespace TestApplication
                 },
             };
 
+            TextBlock fps;
+
             Window window = new Window
             {
                 Title = "Perspex Test Application",
                 Content = new Grid
                 {
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition(1, GridUnitType.Star),
+                        new ColumnDefinition(1, GridUnitType.Star),
+                    },
                     RowDefinitions = new RowDefinitions
                     {
                         new RowDefinition(1, GridUnitType.Star),
@@ -138,20 +146,37 @@ namespace TestApplication
                                 SlidersTab(),
                                 LayoutTab(),
                                 AnimationsTab(),
-                            }
+                            },
+                            [Grid.ColumnSpanProperty] = 2,
                         },
+                        (fps = new TextBlock
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            Margin = new Thickness(2),
+                            [Grid.RowProperty] = 1,
+                        }),
                         new TextBlock
                         {
                             Text = "Press F12 for Dev Tools",
                             HorizontalAlignment = HorizontalAlignment.Right,
                             Margin = new Thickness(2),
+                            [Grid.ColumnProperty] = 1,
                             [Grid.RowProperty] = 1,
-                        }
+                        },
                     }
                 },
             };
 
             DevTools.Attach(window);
+
+            var renderer = ((IRenderRoot)window).Renderer;
+            var last = renderer.RenderCount;
+            DispatcherTimer.Run(() =>
+            {
+                fps.Text = "FPS: " + (renderer.RenderCount - last);
+                last = renderer.RenderCount;
+                return true;
+            }, TimeSpan.FromSeconds(1));
 
             window.Show();
             Application.Current.Run(window);
@@ -508,11 +533,11 @@ namespace TestApplication
             };
 
             Animate.Property(
-                (PerspexObject)rect1.RenderTransform, 
-                RotateTransform.AngleProperty, 
-                0.0, 
-                360.0, 
-                new LinearDoubleEasing(), 
+                (PerspexObject)rect1.RenderTransform,
+                RotateTransform.AngleProperty,
+                0.0,
+                360.0,
+                new LinearDoubleEasing(),
                 TimeSpan.FromSeconds(4),
                 double.PositiveInfinity);
 

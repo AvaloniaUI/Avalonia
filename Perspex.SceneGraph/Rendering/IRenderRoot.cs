@@ -6,8 +6,12 @@
 
 namespace Perspex.Rendering
 {
+    using Perspex.Platform;
+
     public interface IRenderRoot
     {
+        IRenderer Renderer { get; }
+
         IRenderManager RenderManager { get; }
     }
 }
