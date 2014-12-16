@@ -504,7 +504,7 @@ namespace TestApplication
                             RenderTransform = new RotateTransform(),
                             PropertyTransitions = new PropertyTransitions
                             {
-                                Rectangle.WidthProperty.Transition(1000),
+                                Rectangle.WidthProperty.Transition(300),
                                 Rectangle.HeightProperty.Transition(1000),
                             },
                             [Grid.ColumnProperty] = 1,

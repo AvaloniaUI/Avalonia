@@ -45,6 +45,11 @@ namespace Perspex.Gtk
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }
 
+        public bool HasMessages()
+        {
+            return Gtk.Application.EventsPending();
+        }
+
         public void ProcessMessage()
         {
             Gtk.Application.RunIteration();
