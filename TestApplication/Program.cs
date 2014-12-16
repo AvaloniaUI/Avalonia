@@ -466,6 +466,7 @@ namespace TestApplication
         {
             Rectangle rect1;
             Rectangle rect2;
+            RotateTransform rotate;
             Button button1;
 
             var result = new TabItem
@@ -501,7 +502,13 @@ namespace TestApplication
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Fill = Brushes.Coral,
-                            RenderTransform = new RotateTransform(),
+                            RenderTransform = (rotate = new RotateTransform
+                            {
+                                PropertyTransitions = new PropertyTransitions
+                                {
+                                    RotateTransform.AngleProperty.Transition(500),
+                                }
+                            }),
                             PropertyTransitions = new PropertyTransitions
                             {
                                 Rectangle.WidthProperty.Transition(300),
@@ -525,10 +532,12 @@ namespace TestApplication
                 if (rect2.Width == 100)
                 {
                     rect2.Width = rect2.Height = 400;
+                    rotate.Angle = 180;
                 }
                 else
                 {
                     rect2.Width = rect2.Height = 100;
+                    rotate.Angle = 0;
                 }
             };
 

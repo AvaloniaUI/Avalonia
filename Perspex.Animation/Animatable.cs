@@ -8,9 +8,8 @@ namespace Perspex.Animation
 {
     using System.Linq;
     using System.Reactive.Linq;
-    using Perspex.Input;
 
-    public class Animatable : InputElement
+    public class Animatable : PerspexObject
     {
         private PropertyTransitions propertyTransitions;
 

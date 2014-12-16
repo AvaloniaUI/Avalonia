@@ -16,7 +16,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : Animatable, IStyleable, IStyleHost
+    public class Control : InputElement, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background");

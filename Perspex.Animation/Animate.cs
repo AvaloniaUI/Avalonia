@@ -9,7 +9,6 @@ namespace Perspex.Animation
     using System;
     using System.Linq;
     using System.Reactive.Linq;
-    using Perspex.Input;
     using Perspex.Threading;
 
     public static class Animate

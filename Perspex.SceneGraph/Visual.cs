@@ -11,11 +11,12 @@ namespace Perspex
     using System.Collections.Specialized;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Animation;
     using Perspex.Media;
     using Perspex.Rendering;
     using Splat;
 
-    public class Visual : PerspexObject, IVisual
+    public class Visual : Animatable, IVisual
     {
         public static readonly PerspexProperty<bool> ClipToBoundsProperty =
             PerspexProperty.Register<Visual, bool>("ClipToBounds");
