@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Linq;
 using Perspex;
+using Perspex.Animation;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
@@ -8,6 +9,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Styling;
 using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
@@ -438,6 +440,8 @@ namespace TestApplication
         private static TabItem AnimationsTab()
         {
             Rectangle rect1;
+            Rectangle rect2;
+            Button button1;
 
             var result = new TabItem
             {
@@ -447,6 +451,12 @@ namespace TestApplication
                     ColumnDefinitions = new ColumnDefinitions
                     {
                         new ColumnDefinition(1, GridUnitType.Star),
+                        new ColumnDefinition(1, GridUnitType.Star),
+                    },
+                    RowDefinitions = new RowDefinitions
+                    {
+                        new RowDefinition(1, GridUnitType.Star),
+                        new RowDefinition(GridLength.Auto),
                     },
                     Children = new Controls
                     {
@@ -459,15 +469,52 @@ namespace TestApplication
                             Fill = Brushes.Crimson,
                             RenderTransform = new RotateTransform(),
                         }),
+                        (rect2 = new Rectangle
+                        {
+                            Width = 100,
+                            Height = 100,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Fill = Brushes.Coral,
+                            RenderTransform = new RotateTransform(),
+                            PropertyTransitions = new PropertyTransitions
+                            {
+                                Rectangle.WidthProperty.Transition(1000),
+                                Rectangle.HeightProperty.Transition(1000),
+                            },
+                            [Grid.ColumnProperty] = 1,
+                        }),
+                        (button1 = new Button
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Content = "Animate",
+                            [Grid.ColumnProperty] = 1,
+                            [Grid.RowProperty] = 1,
+                        }),
                     },
                 },
             };
 
-            Observable.Interval(TimeSpan.FromMilliseconds(10), PerspexScheduler.Instance)
-                .Subscribe(x =>
+            button1.Click += (s, e) =>
+            {
+                if (rect2.Width == 100)
                 {
-                    ((RotateTransform)rect1.RenderTransform).Angle = x;
-                });
+                    rect2.Width = rect2.Height = 400;
+                }
+                else
+                {
+                    rect2.Width = rect2.Height = 100;
+                }
+            };
+
+            Animate.Property(
+                (PerspexObject)rect1.RenderTransform, 
+                RotateTransform.AngleProperty, 
+                0.0, 
+                360.0, 
+                new LinearDoubleEasing(), 
+                TimeSpan.FromSeconds(4),
+                double.PositiveInfinity);
 
             return result;
         }

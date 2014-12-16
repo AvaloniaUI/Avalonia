@@ -15,12 +15,14 @@ namespace Perspex
             PerspexObject sender,
             PerspexProperty property,
             object oldValue,
-            object newValue)
+            object newValue,
+            BindingPriority priority)
         {
             this.Sender = sender;
             this.Property = property;
             this.OldValue = oldValue;
             this.NewValue = newValue;
+            this.Priority = priority;
         }
 
         /// <summary>
@@ -43,5 +45,10 @@ namespace Perspex
         /// Gets the new value of the property.
         /// </summary>
         public object NewValue { get; private set; }
+
+        /// <summary>
+        /// Gets the priority of the binding that produced the value.
+        /// </summary>
+        public BindingPriority Priority { get; private set; }
     }
 }

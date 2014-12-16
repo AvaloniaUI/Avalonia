@@ -7,9 +7,8 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Animation;
     using Perspex.Input;
     using Perspex.Interactivity;
     using Perspex.Media;
@@ -17,7 +16,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : InputElement, IStyleable, IStyleHost
+    public class Control : Animatable, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Control, Brush>("Background");

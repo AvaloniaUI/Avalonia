@@ -21,6 +21,11 @@ namespace Perspex
     public enum BindingPriority
     {
         /// <summary>
+        /// A value that comes from an animation.
+        /// </summary>
+        Animation = -1,
+
+        /// <summary>
         /// A local value.
         /// </summary>
         LocalValue,
@@ -89,11 +94,16 @@ namespace Perspex
         {
             foreach (var p in this.GetAllValues())
             {
+                var priority = p.PriorityValue != null ? 
+                    (BindingPriority)p.PriorityValue.ValuePriority : 
+                    BindingPriority.LocalValue;
+
                 var e = new PerspexPropertyChangedEventArgs(
                     this, 
                     p.Property, 
                     PerspexProperty.UnsetValue, 
-                    p.CurrentValue);
+                    p.CurrentValue,
+                    priority);
 
                 p.Property.NotifyInitialized(e);
             }
@@ -149,7 +159,7 @@ namespace Perspex
 
                         if (!object.Equals(i.Value, newValue))
                         {
-                            this.RaisePropertyChanged(i.Property, i.Value, newValue);
+                            this.RaisePropertyChanged(i.Property, i.Value, newValue, BindingPriority.LocalValue);
                         }
                     }
 
@@ -665,6 +675,14 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Called when a perspex property changes on the object.
+        /// </summary>
+        /// <param name="e">The event arguments.</param>
+        protected virtual void OnPropertyChanged(PerspexPropertyChangedEventArgs e)
+        {
+        }
+
+        /// <summary>
         /// Creates a <see cref="PriorityValue"/> for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -691,7 +709,7 @@ namespace Perspex
 
                 if (!object.Equals(oldValue, newValue))
                 {
-                    this.RaisePropertyChanged(property, oldValue, newValue);
+                    this.RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
 
                     this.Log().Debug(
                         "Value of {0}.{1} (#{2:x8}) changed from {3} to {4}",
@@ -737,7 +755,7 @@ namespace Perspex
 
             if (e.Property.Inherits && !this.IsSet(e.Property))
             {
-                this.RaisePropertyChanged(e.Property, e.OldValue, e.NewValue);
+                this.RaisePropertyChanged(e.Property, e.OldValue, e.NewValue, BindingPriority.LocalValue);
             }
         }
 
@@ -747,11 +765,23 @@ namespace Perspex
         /// <param name="property">The property that has changed.</param>
         /// <param name="oldValue">The old property value.</param>
         /// <param name="newValue">The new property value.</param>
-        private void RaisePropertyChanged(PerspexProperty property, object oldValue, object newValue)
+        /// <param name="priority">The priority of the binding that produced the value.</param>
+        private void RaisePropertyChanged(
+            PerspexProperty property, 
+            object oldValue, 
+            object newValue, 
+            BindingPriority priority)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(this, property, oldValue, newValue);
+            PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
+                this, 
+                property, 
+                oldValue, 
+                newValue,
+                priority);
+
+            this.OnPropertyChanged(e);
             property.NotifyChanged(e);
 
             if (this.PropertyChanged != null)

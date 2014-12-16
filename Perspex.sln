@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGenerics", "NGenerics\NGen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Layout.UnitTests", "Perspex.Layout.UnitTests\Perspex.Layout.UnitTests.csproj", "{DB070A10-BF39-4752-8456-86E9D5928478}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Animation", "Perspex.Animation\Perspex.Animation.csproj", "{D211E587-D8BC-45B9-95A4-F297C8FA5200}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,6 +156,10 @@ Global
 		{DB070A10-BF39-4752-8456-86E9D5928478}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB070A10-BF39-4752-8456-86E9D5928478}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB070A10-BF39-4752-8456-86E9D5928478}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
