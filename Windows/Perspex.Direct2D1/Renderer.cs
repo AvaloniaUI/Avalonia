@@ -44,6 +44,7 @@ namespace Perspex.Direct2D1
             {
                 Hwnd = hwnd,
                 PixelSize = new Size2((int)width, (int)height),
+                PresentOptions = PresentOptions.Immediately,
             };
 
             this.renderTarget = new WindowRenderTarget(
