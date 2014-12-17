@@ -472,7 +472,6 @@ namespace TestApplication
             var result = new TabItem
             {
                 Header = "Animations",
-                IsSelected = true,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -508,13 +507,13 @@ namespace TestApplication
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Fill = Brushes.Coral,
-                            //RenderTransform = (rotate = new RotateTransform
-                            //{
-                            //    PropertyTransitions = new PropertyTransitions
-                            //    {
-                            //        RotateTransform.AngleProperty.Transition(500),
-                            //    }
-                            //}),
+                            RenderTransform = (rotate = new RotateTransform
+                            {
+                                PropertyTransitions = new PropertyTransitions
+                                {
+                                    RotateTransform.AngleProperty.Transition(500),
+                                }
+                            }),
                             PropertyTransitions = new PropertyTransitions
                             {
                                 Rectangle.WidthProperty.Transition(300),
@@ -538,12 +537,12 @@ namespace TestApplication
                 if (rect2.Width == 100)
                 {
                     rect2.Width = rect2.Height = 400;
-                    //rotate.Angle = 180;
+                    rotate.Angle = 180;
                 }
                 else
                 {
                     rect2.Width = rect2.Height = 100;
-                    //rotate.Angle = 0;
+                    rotate.Angle = 0;
                 }
             };
 
