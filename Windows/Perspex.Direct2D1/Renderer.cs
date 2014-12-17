@@ -100,7 +100,7 @@ namespace Perspex.Direct2D1
         {
             using (DrawingContext context = new DrawingContext(this.renderTarget, this.DirectWriteFactory))
             {
-                this.Render(visual, context);
+                this.Render(visual, context, Matrix.Identity, Matrix.Identity, new Vector());
             }
 
             ++this.RenderCount;
@@ -130,29 +130,39 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="context">The drawing context.</param>
-        private void Render(IVisual visual, DrawingContext context)
+        private void Render(IVisual visual, DrawingContext context, Matrix translation, Matrix transform, Vector transformOffset)
         {
             if (visual.IsVisible && visual.Opacity > 0)
             {
-                Matrix transform = Matrix.Identity;
+                if (!transform.IsIdentity)
+                {
+                    transformOffset += visual.Bounds.Position;
+                }
 
                 if (visual.RenderTransform != null)
                 {
-                    Matrix current = context.CurrentTransform;
-                    Matrix offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
-                    transform = -current * -offset * visual.RenderTransform.Value * offset * current;
+                    transform *= visual.RenderTransform.Value;
+                    transformOffset -= visual.TransformOrigin.ToPixels(visual.Bounds.Size);
                 }
 
-                transform *= Matrix.Translation(visual.Bounds.Position);
+                translation *= Matrix.Translation(visual.Bounds.Position);
 
-                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
-                using (context.PushTransform(transform))
+                Matrix m =
+                    Matrix.Translation(transformOffset) *
+                    transform *
+                    -Matrix.Translation(transformOffset) *
+                    translation;
+
+                using (visual.ClipToBounds ? context.PushClip(visual.Bounds * m) : null)
                 {
-                    visual.Render(context);
+                    using (context.PushTransform(m))
+                    {
+                        visual.Render(context);
+                    }
 
                     foreach (var child in visual.VisualChildren)
                     {
-                        this.Render(child, context);
+                        this.Render(child, context, translation, transform, transformOffset);
                     }
                 }
             }
