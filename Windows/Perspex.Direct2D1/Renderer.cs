@@ -100,7 +100,7 @@ namespace Perspex.Direct2D1
         {
             using (DrawingContext context = new DrawingContext(this.renderTarget, this.DirectWriteFactory))
             {
-                this.Render(visual, context, Matrix.Identity, Matrix.Identity, new Vector());
+                this.Render(visual, context, Matrix.Identity, Matrix.Identity);
             }
 
             ++this.RenderCount;
@@ -130,29 +130,26 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="context">The drawing context.</param>
-        private void Render(IVisual visual, DrawingContext context, Matrix translation, Matrix transform, Vector transformOffset)
+        private void Render(IVisual visual, DrawingContext context, Matrix translation, Matrix transform)
         {
             if (visual.IsVisible && visual.Opacity > 0)
             {
-                if (!transform.IsIdentity)
-                {
-                    transformOffset += visual.Bounds.Position;
-                }
+                // Translate an existing transform into this controls coordinate system.
+                Matrix offset = Matrix.Translation(visual.Bounds.Position);
+                transform = offset * transform * -offset;
 
-                if (visual.RenderTransform != null)
-                {
-                    transform *= visual.RenderTransform.Value;
-                    transformOffset -= visual.TransformOrigin.ToPixels(visual.Bounds.Size);
-                }
-
+                // Update the current offset.
                 translation *= Matrix.Translation(visual.Bounds.Position);
 
-                Matrix m =
-                    Matrix.Translation(transformOffset) *
-                    transform *
-                    -Matrix.Translation(transformOffset) *
-                    translation;
+                // Apply the control's render transform, if any.
+                if (visual.RenderTransform != null)
+                {
+                    offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
+                    transform *= -offset * visual.RenderTransform.Value * offset;
+                }
 
+                // Draw the control and its children.
+                Matrix m = transform * translation;
                 using (visual.ClipToBounds ? context.PushClip(visual.Bounds * m) : null)
                 {
                     using (context.PushTransform(m))
@@ -162,7 +159,7 @@ namespace Perspex.Direct2D1
 
                     foreach (var child in visual.VisualChildren)
                     {
-                        this.Render(child, context, translation, transform, transformOffset);
+                        this.Render(child, context, translation, transform);
                     }
                 }
             }
