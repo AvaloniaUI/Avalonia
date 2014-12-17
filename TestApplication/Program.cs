@@ -465,7 +465,7 @@ namespace TestApplication
         private static TabItem AnimationsTab()
         {
             Border border1;
-            Rectangle rect2;
+            Border border2;
             RotateTransform rotate;
             Button button1;
 
@@ -494,19 +494,27 @@ namespace TestApplication
                             VerticalAlignment = VerticalAlignment.Center,
                             Background = Brushes.Crimson,
                             RenderTransform = new RotateTransform(),
-                            Content = new Border
+                            Content = new TextBox
                             {
-                                Background = Brushes.Gainsboro,
-                                Margin = new Thickness(25),
-                            }
+                                Background = Brushes.White,
+                                Text = "Hello!",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            },
                         }),
-                        (rect2 = new Rectangle
+                        (border2 = new Border
                         {
                             Width = 100,
                             Height = 100,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Fill = Brushes.Coral,
+                            Background = Brushes.Coral,
+                            Content = new Image
+                            {
+                                Source = new Bitmap("github_icon.png"),
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            },
                             RenderTransform = (rotate = new RotateTransform
                             {
                                 PropertyTransitions = new PropertyTransitions
@@ -534,14 +542,14 @@ namespace TestApplication
 
             button1.Click += (s, e) =>
             {
-                if (rect2.Width == 100)
+                if (border2.Width == 100)
                 {
-                    rect2.Width = rect2.Height = 400;
+                    border2.Width = border2.Height = 400;
                     rotate.Angle = 180;
                 }
                 else
                 {
-                    rect2.Width = rect2.Height = 100;
+                    border2.Width = border2.Height = 100;
                     rotate.Angle = 0;
                 }
             };

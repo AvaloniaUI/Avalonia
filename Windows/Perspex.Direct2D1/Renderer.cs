@@ -134,7 +134,7 @@ namespace Perspex.Direct2D1
         {
             if (visual.IsVisible && visual.Opacity > 0)
             {
-                // Translate an existing transform into this controls coordinate system.
+                // Translate any existing transform into this controls coordinate system.
                 Matrix offset = Matrix.Translation(visual.Bounds.Position);
                 transform = offset * transform * -offset;
 
