@@ -31,11 +31,14 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(20, 8),
                 Width = 200,
                 Height = 200,
-                Content = new Image
+                Content = new Border
                 {
                     Background = Brushes.Red,
-                    Source = this.bitmap,
-                    Stretch = Stretch.None,
+                    Content = new Image
+                    {
+                        Source = this.bitmap,
+                        Stretch = Stretch.None,
+                    }
                 }
             };
 
@@ -51,11 +54,14 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(20, 8),
                 Width = 200,
                 Height = 200,
-                Content = new Image
+                Content = new Border
                 {
                     Background = Brushes.Red,
-                    Source = this.bitmap,
-                    Stretch = Stretch.Fill,
+                    Content = new Image
+                    {
+                        Source = this.bitmap,
+                        Stretch = Stretch.Fill,
+                    }
                 }
             };
 
@@ -71,11 +77,14 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(20, 8),
                 Width = 200,
                 Height = 200,
-                Content = new Image
+                Content = new Border
                 {
                     Background = Brushes.Red,
-                    Source = this.bitmap,
-                    Stretch = Stretch.Uniform,
+                    Content = new Image
+                    {
+                        Source = this.bitmap,
+                        Stretch = Stretch.Uniform,
+                    }
                 }
             };
 
@@ -91,11 +100,14 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(20, 8),
                 Width = 200,
                 Height = 200,
-                Content = new Image
+                Content = new Border
                 {
                     Background = Brushes.Red,
-                    Source = this.bitmap,
-                    Stretch = Stretch.UniformToFill,
+                    Content = new Image
+                    {
+                        Source = this.bitmap,
+                        Stretch = Stretch.UniformToFill,
+                    }
                 }
             };
 

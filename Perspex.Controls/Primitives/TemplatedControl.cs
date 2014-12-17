@@ -14,6 +14,18 @@ namespace Perspex.Controls.Primitives
 
     public class TemplatedControl : Control, ITemplatedControl
     {
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<TemplatedControl>();
+
+        public static readonly PerspexProperty<string> FontFamilyProperty =
+            TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
+
+        public static readonly PerspexProperty<double> FontSizeProperty =
+            TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
+
+        public static readonly PerspexProperty<FontStyle> FontStyleProperty =
+            TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
+
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
@@ -27,6 +39,30 @@ namespace Perspex.Controls.Primitives
                 templatedControl.templateApplied = false;
                 templatedControl.InvalidateMeasure();
             });
+        }
+
+        public Brush Background
+        {
+            get { return this.GetValue(BackgroundProperty); }
+            set { this.SetValue(BackgroundProperty, value); }
+        }
+
+        public string FontFamily
+        {
+            get { return this.GetValue(FontFamilyProperty); }
+            set { this.SetValue(FontFamilyProperty, value); }
+        }
+
+        public double FontSize
+        {
+            get { return this.GetValue(FontSizeProperty); }
+            set { this.SetValue(FontSizeProperty, value); }
+        }
+
+        public FontStyle FontStyle
+        {
+            get { return this.GetValue(FontStyleProperty); }
+            set { this.SetValue(FontStyleProperty, value); }
         }
 
         public ControlTemplate Template

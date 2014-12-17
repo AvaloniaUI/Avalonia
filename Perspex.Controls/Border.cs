@@ -13,10 +13,19 @@ namespace Perspex.Controls
 
     public class Border : Decorator
     {
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            PerspexProperty.Register<Border, Brush>("Background");
+
         static Border()
         {
             Control.AffectsRender(Border.BackgroundProperty);
             Control.AffectsRender(Border.BorderBrushProperty);
+        }
+
+        public Brush Background
+        {
+            get { return this.GetValue(BackgroundProperty); }
+            set { this.SetValue(BackgroundProperty, value); }
         }
 
         public override void Render(IDrawingContext context)

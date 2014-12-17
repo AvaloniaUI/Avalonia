@@ -32,13 +32,7 @@ namespace Perspex.Controls
 
         public override void Render(IDrawingContext drawingContext)
         {
-            Brush background = this.Background;
             Bitmap source = this.Source;
-
-            if (background != null)
-            {
-                drawingContext.FillRectange(background, new Rect(this.ActualSize));
-            }
 
             if (source != null)
             {

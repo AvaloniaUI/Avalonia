@@ -54,7 +54,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.RenderTransformProperty, new RotateTransform(90)),
+                        new Setter(ToggleButton.RenderTransformProperty, new RotateTransform(45)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Class(":empty").Template().OfType<ToggleButton>().Class("expander"))
@@ -90,7 +90,7 @@ namespace Perspex.Themes.Default
                             new Border
                             {
                                 Id = "header",
-                                [~ContentPresenter.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
+                                [~Border.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
                                 Content = new ContentPresenter
                                 {

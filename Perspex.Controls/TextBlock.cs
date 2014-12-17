@@ -13,6 +13,9 @@ namespace Perspex.Controls
 
     public class TextBlock : Control
     {
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<TextBlock>();
+
         public static readonly PerspexProperty<string> FontFamilyProperty =
             PerspexProperty.Register<Control, string>("FontFamily", "Segoe UI", inherits: true);
 
@@ -45,6 +48,12 @@ namespace Perspex.Controls
                 {
                     this.InvalidateFormattedText();
                 });
+        }
+
+        public Brush Background
+        {
+            get { return this.GetValue(BackgroundProperty); }
+            set { this.SetValue(BackgroundProperty, value); }
         }
 
         public string Text

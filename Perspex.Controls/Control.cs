@@ -18,9 +18,6 @@ namespace Perspex.Controls
 
     public class Control : InputElement, IStyleable, IStyleHost
     {
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
-            PerspexProperty.Register<Control, Brush>("Background");
-
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
             PerspexProperty.Register<Control, Brush>("BorderBrush");
 
@@ -50,12 +47,6 @@ namespace Perspex.Controls
             PseudoClass(InputElement.IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(InputElement.IsFocusedProperty, ":focus");
             PseudoClass(InputElement.IsPointerOverProperty, ":pointerover");
-        }
-
-        public Brush Background
-        {
-            get { return this.GetValue(BackgroundProperty); }
-            set { this.SetValue(BackgroundProperty, value); }
         }
 
         public Brush BorderBrush
