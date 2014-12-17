@@ -548,6 +548,9 @@ namespace Perspex.Win32.Interop
             int bufferSize, 
             uint flags);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool TrackMouseEvent(ref TRACKMOUSEEVENT lpEventTrack);
+
         [DllImport("user32.dll")]
         public static extern bool TranslateMessage(ref MSG lpMsg);
 
@@ -606,6 +609,14 @@ namespace Perspex.Win32.Interop
             public int top;
             public int right;
             public int bottom;
+        }
+
+        public struct TRACKMOUSEEVENT
+        {
+            public int cbSize;
+            public uint dwFlags;
+            public IntPtr hwndTrack;
+            public int dwHoverTime;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

@@ -23,6 +23,23 @@ namespace Perspex.Input
             get { return this.rawEventReceived; }
         }
 
+        public void ClearPointerOver(IPointerDevice device)
+        {
+            foreach (var control in this.pointerOvers.ToList())
+            {
+                PointerEventArgs e = new PointerEventArgs
+                {
+                    RoutedEvent = InputElement.PointerLeaveEvent,
+                    Device = device,
+                    OriginalSource = control,
+                    Source = control,
+                };
+
+                this.pointerOvers.Remove(control);
+                control.RaiseEvent(e);
+            }
+        }
+
         public void Process(RawInputEventArgs e)
         {
             this.rawEventReceived.OnNext(e);

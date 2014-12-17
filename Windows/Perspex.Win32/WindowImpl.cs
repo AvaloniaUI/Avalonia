@@ -26,6 +26,8 @@ namespace Perspex.Win32
 
         private Window owner;
 
+        private bool trackingMouse;
+
         public WindowImpl()
         {
             this.CreateWindow();
@@ -188,6 +190,19 @@ namespace Perspex.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
+                    if (!this.trackingMouse)
+                    {
+                        var tm = new UnmanagedMethods.TRACKMOUSEEVENT
+                        {
+                            cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.TRACKMOUSEEVENT)),
+                            dwFlags = 2,
+                            hwndTrack = this.hwnd,
+                            dwHoverTime = 0,
+                        };
+
+                        UnmanagedMethods.TrackMouseEvent(ref tm);
+                    }
+
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
@@ -203,6 +218,16 @@ namespace Perspex.Win32
                         this.owner,
                         this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
                         new Vector(0, ((int)wParam >> 16) / WheelDelta));
+                    break;
+
+                case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
+                    this.trackingMouse = false;
+                    e = new RawMouseEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        this.owner,
+                        RawMouseEventType.LeaveWindow,
+                        new Point());
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:

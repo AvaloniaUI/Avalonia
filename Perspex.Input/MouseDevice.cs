@@ -76,8 +76,8 @@ namespace Perspex.Input
 
             switch (e.Type)
             {
-                case RawMouseEventType.Move:
-                    this.MouseMove(mouse, e.Root, e.Position);
+                case RawMouseEventType.LeaveWindow:
+                    this.LeaveWindow(mouse, e.Root);
                     break;
                 case RawMouseEventType.LeftButtonDown:
                     this.MouseDown(mouse, e.Timestamp, e.Root, e.Position);
@@ -85,44 +85,18 @@ namespace Perspex.Input
                 case RawMouseEventType.LeftButtonUp:
                     this.MouseUp(mouse, e.Root, e.Position);
                     break;
+                case RawMouseEventType.Move:
+                    this.MouseMove(mouse, e.Root, e.Position);
+                    break;
                 case RawMouseEventType.Wheel:
                     this.MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta);
                     break;
             }
         }
 
-        private void MouseMove(IMouseDevice device, IInputElement root, Point p)
+        private void LeaveWindow(IMouseDevice device, IInputElement root)
         {
-            IInteractive source;
-
-            if (this.Captured == null)
-            {
-                this.InputManager.SetPointerOver(this, root, p);
-                source = root as IInteractive;
-            }
-            else
-            {
-                Point offset = new Point();
-
-                foreach (IVisual ancestor in this.Captured.GetVisualAncestors())
-                {
-                    offset += ancestor.Bounds.Position;
-                }
-
-                this.InputManager.SetPointerOver(this, this.Captured, p - offset);
-                source = this.Captured as IInteractive;
-            }
-
-            if (source != null)
-            {
-                source.RaiseEvent(new PointerEventArgs
-                {
-                    Device = this,
-                    RoutedEvent = InputElement.PointerMovedEvent,
-                    OriginalSource = source,
-                    Source = source,
-                });
-            }
+            this.InputManager.ClearPointerOver(this);
         }
 
         private void MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p)
@@ -164,6 +138,40 @@ namespace Perspex.Input
                 {
                     focusable.Focus();
                 }
+            }
+        }
+
+        private void MouseMove(IMouseDevice device, IInputElement root, Point p)
+        {
+            IInteractive source;
+
+            if (this.Captured == null)
+            {
+                this.InputManager.SetPointerOver(this, root, p);
+                source = root as IInteractive;
+            }
+            else
+            {
+                Point offset = new Point();
+
+                foreach (IVisual ancestor in this.Captured.GetVisualAncestors())
+                {
+                    offset += ancestor.Bounds.Position;
+                }
+
+                this.InputManager.SetPointerOver(this, this.Captured, p - offset);
+                source = this.Captured as IInteractive;
+            }
+
+            if (source != null)
+            {
+                source.RaiseEvent(new PointerEventArgs
+                {
+                    Device = this,
+                    RoutedEvent = InputElement.PointerMovedEvent,
+                    OriginalSource = source,
+                    Source = source,
+                });
             }
         }
 

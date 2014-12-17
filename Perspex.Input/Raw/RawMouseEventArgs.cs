@@ -7,13 +7,13 @@
 namespace Perspex.Input.Raw
 {
     using System;
-    using Perspex.Layout;
 
     public enum RawMouseEventType
     {
-        Move,
+        LeaveWindow,
         LeftButtonDown,
         LeftButtonUp,
+        Move,
         Wheel,
     }
 
