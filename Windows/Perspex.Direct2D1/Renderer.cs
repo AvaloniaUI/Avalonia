@@ -149,13 +149,13 @@ namespace Perspex.Direct2D1
                 }
 
                 // Draw the control and its children.
-                Matrix m = transform * translation;
-                using (visual.ClipToBounds ? context.PushClip(visual.Bounds * m) : null)
+                var m = transform * translation;
+                var d = context.PushTransform(m);
+
+                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
                 {
-                    using (context.PushTransform(m))
-                    {
-                        visual.Render(context);
-                    }
+                    visual.Render(context);
+                    d.Dispose();
 
                     foreach (var child in visual.VisualChildren)
                     {
