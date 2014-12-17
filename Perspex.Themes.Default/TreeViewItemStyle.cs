@@ -114,11 +114,13 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
+                Width = 12,
+                Height = 14,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
                 Content = new Path
                 {
                     Fill = Brushes.Black,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
