@@ -46,7 +46,7 @@ namespace Perspex
         /// <summary>
         /// Gets the render transform of the scene graph node.
         /// </summary>
-        ITransform RenderTransform { get; }
+        Transform RenderTransform { get; }
 
         /// <summary>
         /// Gets the transform origin of the scene graph node.

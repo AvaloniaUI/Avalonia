@@ -541,14 +541,20 @@ namespace TestApplication
                 }
             };
 
-            Animate.Property(
-                (PerspexObject)rect1.RenderTransform,
+            var start = Animate.Stopwatch.Elapsed;
+            var degrees = Animate.Timer
+                .Select(x =>
+                {
+                    var elapsed = (x - start).TotalSeconds;
+                    var cycles = elapsed / 4;
+                    var progress = cycles % 1;
+                    return 360.0 * progress;
+                });
+
+            rect1.RenderTransform.Bind(
                 RotateTransform.AngleProperty,
-                0.0,
-                360.0,
-                new LinearDoubleEasing(),
-                TimeSpan.FromSeconds(4),
-                double.PositiveInfinity);
+                degrees,
+                BindingPriority.Animation);
 
             return result;
         }

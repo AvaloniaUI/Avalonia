@@ -27,8 +27,8 @@ namespace Perspex
         public static readonly PerspexProperty<double> OpacityProperty =
             PerspexProperty.Register<Visual, double>("Opacity", 1);
 
-        public static readonly PerspexProperty<ITransform> RenderTransformProperty =
-            PerspexProperty.Register<Visual, ITransform>("RenderTransform");
+        public static readonly PerspexProperty<Transform> RenderTransformProperty =
+            PerspexProperty.Register<Visual, Transform>("RenderTransform");
 
         public static readonly PerspexProperty<Origin> TransformOriginProperty =
             PerspexProperty.Register<Visual, Origin>("TransformOrigin", defaultValue: Origin.Default);
@@ -69,7 +69,7 @@ namespace Perspex
             set { this.SetValue(OpacityProperty, value); }
         }
 
-        public ITransform RenderTransform
+        public Transform RenderTransform
         {
             get { return this.GetValue(RenderTransformProperty); }
             set { this.SetValue(RenderTransformProperty, value); }
@@ -215,8 +215,8 @@ namespace Perspex
 
             if (sender != null)
             {
-                var oldValue = e.OldValue as ITransform;
-                var newValue = e.NewValue as ITransform;
+                var oldValue = e.OldValue as Transform;
+                var newValue = e.NewValue as Transform;
 
                 if (oldValue != null)
                 {

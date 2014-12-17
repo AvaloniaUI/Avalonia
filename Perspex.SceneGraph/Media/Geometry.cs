@@ -11,14 +11,14 @@ namespace Perspex.Media
 
     public abstract class Geometry : PerspexObject
     {
-        public static readonly PerspexProperty<ITransform> TransformProperty =
-            PerspexProperty.Register<Geometry, ITransform>("Transform");
+        public static readonly PerspexProperty<Transform> TransformProperty =
+            PerspexProperty.Register<Geometry, Transform>("Transform");
 
         static Geometry()
         {
             TransformProperty.Changed.Subscribe(x =>
             {
-                ((Geometry)x.Sender).PlatformImpl.Transform = ((ITransform)x.NewValue).Value;
+                ((Geometry)x.Sender).PlatformImpl.Transform = ((Transform)x.NewValue).Value;
             });
         }
 
@@ -33,7 +33,7 @@ namespace Perspex.Media
             protected set;
         }
 
-        public ITransform Transform
+        public Transform Transform
         {
             get { return this.GetValue(TransformProperty); }
             set { this.SetValue(TransformProperty, value); }

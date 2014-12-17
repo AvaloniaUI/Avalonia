@@ -9,7 +9,7 @@ namespace Perspex.Media
     using System;
     using Perspex.Animation;
 
-    public abstract class Transform : Animatable, ITransform
+    public abstract class Transform : Animatable
     {
         public event EventHandler Changed;
 

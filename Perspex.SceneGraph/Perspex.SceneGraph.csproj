@@ -59,7 +59,6 @@
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
-    <Compile Include="Media\ITransform.cs" />
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\EllipseGeometry.cs" />
