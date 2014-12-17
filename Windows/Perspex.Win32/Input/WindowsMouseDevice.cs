@@ -8,6 +8,7 @@ namespace Perspex.Win32.Input
 {
     using System;
     using Perspex.Input;
+    using Perspex.Interactivity;
     using Perspex.Win32.Interop;
 
     public class WindowsMouseDevice : MouseDevice
@@ -29,6 +30,20 @@ namespace Perspex.Win32.Input
         {
             get { return base.Position; }
             internal set { base.Position = value; }
+        }
+
+        public override void Capture(IInputElement control)
+        {
+            base.Capture(control);
+
+            if (control != null)
+            {
+                UnmanagedMethods.SetCapture(this.CurrentWindow.Handle.Handle);
+            }
+            else
+            {
+                UnmanagedMethods.ReleaseCapture();
+            }
         }
 
         protected override Point GetClientPosition()

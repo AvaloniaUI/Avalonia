@@ -11,9 +11,9 @@ namespace Perspex.Input
 
     public interface IPointerDevice : IInputDevice
     {
-        IInteractive Captured { get; }
+        IInputElement Captured { get; }
 
-        void Capture(IInteractive control);
+        void Capture(IInputElement control);
 
         Point GetPosition(IVisual relativeTo);
     }

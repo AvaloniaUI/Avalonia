@@ -30,7 +30,7 @@ namespace Perspex.Input
                 .Subscribe(this.ProcessRawEvent);
         }
 
-        public IInteractive Captured
+        public IInputElement Captured
         {
             get;
             protected set;
@@ -47,7 +47,7 @@ namespace Perspex.Input
             protected set;
         }
 
-        public virtual void Capture(IInteractive control)
+        public virtual void Capture(IInputElement control)
         {
             this.Captured = control;
         }
@@ -127,7 +127,7 @@ namespace Perspex.Input
 
         private void MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p)
         {
-            IVisual hit = root.InputHitTest(p);
+            var hit = this.HitTest(root, p);
 
             if (hit != null)
             {
@@ -169,7 +169,7 @@ namespace Perspex.Input
 
         private void MouseUp(IMouseDevice device, IInputElement root, Point p)
         {
-            IVisual hit = root.InputHitTest(p);
+            var hit = this.HitTest(root, p);
 
             if (hit != null)
             {
@@ -190,7 +190,7 @@ namespace Perspex.Input
 
         private void MouseWheel(IMouseDevice device, IInputElement root, Point p,  Vector delta)
         {
-            IVisual hit = root.InputHitTest(p);
+            var hit = this.HitTest(root, p);
 
             if (hit != null)
             {
@@ -221,6 +221,11 @@ namespace Perspex.Input
             return this.Captured ?? 
                 (hit as IInteractive) ?? 
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
+        }
+
+        private IInputElement HitTest(IInputElement root, Point p)
+        {
+            return this.Captured ?? root.InputHitTest(p);
         }
     }
 }
