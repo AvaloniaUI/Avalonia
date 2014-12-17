@@ -65,5 +65,33 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [TestMethod]
+        public void Path_Expander_With_Border()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    BorderBrush = Brushes.Red,
+                    BorderThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Content = new Path
+                    {
+                        Fill = Brushes.Black,
+                        Stroke = Brushes.Black,
+                        StrokeThickness = 1,
+                        Stretch = Stretch.Uniform,
+                        Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }

@@ -44,11 +44,6 @@ namespace Perspex.Direct2D1.Media
             return new StreamGeometryImpl(result);
         }
 
-        public override Rect GetRenderBounds(double strokeThickness)
-        {
-            return this.path.GetWidenedBounds((float)strokeThickness).ToPerspex();
-        }
-
         public IStreamGeometryContextImpl Open()
         {
             return new StreamGeometryContextImpl(this.path.Open());

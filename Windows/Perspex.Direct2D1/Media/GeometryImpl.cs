@@ -60,6 +60,16 @@ namespace Perspex.Direct2D1.Media
             }
         }
 
-        public abstract Rect GetRenderBounds(double strokeThickness);
+        public Rect GetRenderBounds(double strokeThickness)
+        {
+            if (this.transformed != null)
+            {
+                return this.transformed.GetWidenedBounds((float)strokeThickness).ToPerspex();
+            }
+            else
+            {
+                return this.DefiningGeometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
+            }
+        }
     }
 }
