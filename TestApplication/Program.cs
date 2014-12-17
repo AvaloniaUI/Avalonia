@@ -464,7 +464,7 @@ namespace TestApplication
 
         private static TabItem AnimationsTab()
         {
-            Rectangle rect1;
+            Border border1;
             Rectangle rect2;
             RotateTransform rotate;
             Button button1;
@@ -472,6 +472,7 @@ namespace TestApplication
             var result = new TabItem
             {
                 Header = "Animations",
+                IsSelected = true,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -486,14 +487,19 @@ namespace TestApplication
                     },
                     Children = new Controls
                     {
-                        (rect1 = new Rectangle
+                        (border1 = new Border
                         {
                             Width = 100,
                             Height = 100,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Fill = Brushes.Crimson,
+                            Background = Brushes.Crimson,
                             RenderTransform = new RotateTransform(),
+                            Content = new Border
+                            {
+                                Background = Brushes.Gainsboro,
+                                Margin = new Thickness(25),
+                            }
                         }),
                         (rect2 = new Rectangle
                         {
@@ -502,13 +508,13 @@ namespace TestApplication
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Fill = Brushes.Coral,
-                            RenderTransform = (rotate = new RotateTransform
-                            {
-                                PropertyTransitions = new PropertyTransitions
-                                {
-                                    RotateTransform.AngleProperty.Transition(500),
-                                }
-                            }),
+                            //RenderTransform = (rotate = new RotateTransform
+                            //{
+                            //    PropertyTransitions = new PropertyTransitions
+                            //    {
+                            //        RotateTransform.AngleProperty.Transition(500),
+                            //    }
+                            //}),
                             PropertyTransitions = new PropertyTransitions
                             {
                                 Rectangle.WidthProperty.Transition(300),
@@ -532,12 +538,12 @@ namespace TestApplication
                 if (rect2.Width == 100)
                 {
                     rect2.Width = rect2.Height = 400;
-                    rotate.Angle = 180;
+                    //rotate.Angle = 180;
                 }
                 else
                 {
                     rect2.Width = rect2.Height = 100;
-                    rotate.Angle = 0;
+                    //rotate.Angle = 0;
                 }
             };
 
@@ -551,7 +557,7 @@ namespace TestApplication
                     return 360.0 * progress;
                 });
 
-            rect1.RenderTransform.Bind(
+            border1.RenderTransform.Bind(
                 RotateTransform.AngleProperty,
                 degrees,
                 BindingPriority.Animation);
