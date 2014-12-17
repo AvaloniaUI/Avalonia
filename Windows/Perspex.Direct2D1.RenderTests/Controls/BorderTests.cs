@@ -345,5 +345,33 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [TestMethod]
+        public void Border_Nested_Rotate()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    Background = Brushes.Coral,
+                    Width = 100,
+                    Height = 100,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Content = new Border
+                    {
+                        Margin = new Thickness(25),
+                        Background = Brushes.Chocolate,
+                    },
+                    RenderTransform = new RotateTransform(45),
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }
