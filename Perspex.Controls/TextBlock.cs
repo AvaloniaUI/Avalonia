@@ -17,16 +17,13 @@ namespace Perspex.Controls
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         public static readonly PerspexProperty<string> FontFamilyProperty =
-            PerspexProperty.Register<Control, string>("FontFamily", "Segoe UI", inherits: true);
+            PerspexProperty.Register<TextBlock, string>("FontFamily", inherits: true);
 
         public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.Register<Control, double>(
-                "FontSize",
-                defaultValue: 12.0,
-                inherits: true);
+            PerspexProperty.Register<TextBlock, double>("FontSize", inherits: true);
 
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
-            PerspexProperty.Register<Control, FontStyle>("FontStyle", inherits: true);
+            PerspexProperty.Register<TextBlock, FontStyle>("FontStyle", inherits: true);
 
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");

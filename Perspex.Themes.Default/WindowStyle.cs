@@ -23,6 +23,8 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(Window.TemplateProperty, ControlTemplate.Create<Window>(this.Template)),
+                        new Setter(Window.FontFamilyProperty, "Segoe UI"),
+                        new Setter(Window.FontSizeProperty, 12.0),
                     },
                 },
             });

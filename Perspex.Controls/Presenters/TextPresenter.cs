@@ -347,13 +347,16 @@ namespace Perspex.Controls
 
         internal void CaretIndexChanged(int caretIndex)
         {
-            this.caretBlink = true;
-            this.caretTimer.Stop();
-            this.caretTimer.Start();
-            this.InvalidateVisual();
+            if (this.GetVisualParent() != null)
+            {
+                this.caretBlink = true;
+                this.caretTimer.Stop();
+                this.caretTimer.Start();
+                this.InvalidateVisual();
 
-            var rect = this.FormattedText.HitTestTextPosition(caretIndex);
-            this.BringIntoView(rect);
+                var rect = this.FormattedText.HitTestTextPosition(caretIndex);
+                this.BringIntoView(rect);
+            }
         }
 
         private void MoveHorizontal(int count, ModifierKeys modifiers)
