@@ -10,7 +10,7 @@ namespace Perspex.Collections
     using System.Collections.Specialized;
     using System.ComponentModel;
 
-    public interface IReadOnlyPerspexList<T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    public interface IReadOnlyPerspexList<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
     }
 }
