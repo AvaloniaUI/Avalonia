@@ -162,6 +162,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Center,
                     }
                 }
@@ -187,6 +189,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Center,
                     }
                 }
@@ -212,6 +216,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                     }
                 }
@@ -237,6 +243,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Stretch,
                     }
                 }
@@ -262,6 +270,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Left,
                     }
                 }
@@ -287,6 +297,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Right,
                     }
                 }
@@ -312,6 +324,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Top,
                     }
                 }
@@ -337,6 +351,8 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
+                        FontFamily = "Segoe UI",
+                        FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Bottom,
                     }
                 }
