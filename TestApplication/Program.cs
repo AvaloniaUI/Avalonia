@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Perspex;
 using Perspex.Animation;
+using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;

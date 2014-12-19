@@ -9,11 +9,12 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Specialized;
     using System.Linq;
+    using Perspex.Collections;
 
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
-    public class Panel : Control
+    public class Panel : Control, ILogical
     {
         private Controls children;
 
@@ -54,6 +55,11 @@ namespace Perspex.Controls
             }
         }
 
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.children; }
+        }
+
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             // TODO: Handle Move and Replace.
@@ -61,10 +67,22 @@ namespace Perspex.Controls
             {
                 case NotifyCollectionChangedAction.Add:
                     this.AddVisualChildren(e.NewItems.OfType<Visual>());
+
+                    foreach (var child in e.NewItems.OfType<Control>())
+                    {
+                        child.Parent = this;
+                    }
+
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
+
+                    foreach (var child in e.OldItems.OfType<Control>())
+                    {
+                        child.Parent = null;
+                    }
+
                     break;
 
                 case NotifyCollectionChangedAction.Reset:

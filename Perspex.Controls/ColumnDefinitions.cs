@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Collections;
+
 namespace Perspex.Controls
 {
     public class ColumnDefinitions : PerspexList<ColumnDefinition>

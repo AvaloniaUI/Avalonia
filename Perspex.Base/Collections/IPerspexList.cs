@@ -1,16 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="IReadOnlyPerspexList.cs" company="Steven Kirk">
+// <copyright file="IPerspexList.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Collections
 {
+    using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
 
-    public interface IReadOnlyPerspexList<T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    public interface IPerspexList<T> : IList<T>, IList, IReadOnlyPerspexList<T>
     {
     }
 }

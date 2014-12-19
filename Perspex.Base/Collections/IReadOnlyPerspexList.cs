@@ -1,21 +1,16 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DataTemplates.cs" company="Steven Kirk">
+// <copyright file="IReadOnlyPerspexList.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Collections
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Subjects;
-    using Perspex.Collections;
+    using System.ComponentModel;
 
-    public class DataTemplates : PerspexList<DataTemplate>
+    public interface IReadOnlyPerspexList<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
     }
 }

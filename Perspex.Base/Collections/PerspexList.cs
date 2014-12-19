@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Collections
 {
     using System;
     using System.Collections;
@@ -13,7 +13,17 @@ namespace Perspex
     using System.ComponentModel;
     using System.Linq;
 
-    public class PerspexList<T> : IList<T>, IList, IReadOnlyPerspexList<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    /// <summary>
+    /// A notifying list.
+    /// </summary>
+    /// <typeparam name="T">The type of the list items.</typeparam>
+    /// <remarks>
+    /// PerspexList is similar to <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>
+    /// except that when the <see cref="Clear"/> method is called, it notifies with a
+    /// <see cref="NotifyCollectionChangedAction.Remove"/> action, passing the items that were 
+    /// removed.
+    /// </remarks>
+    public class PerspexList<T> : IPerspexList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         private List<T> inner;
 

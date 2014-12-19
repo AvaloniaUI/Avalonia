@@ -10,9 +10,10 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Collections;
     using Perspex.Layout;
 
-    public class Decorator : Control, IVisual
+    public class Decorator : Control, IVisual, ILogical
     {
         public static readonly PerspexProperty<Control> ContentProperty =
             PerspexProperty.Register<Decorator, Control>("Content");
@@ -20,16 +21,25 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Thickness> PaddingProperty =
             PerspexProperty.Register<Decorator, Thickness>("Padding");
 
+        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+
         public Decorator()
         {
-            this.GetObservable(ContentProperty).Subscribe(x =>
+            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
             {
-                this.ClearVisualChildren();
-
-                if (x != null)
+                if (x.Item1 != null)
                 {
-                    this.AddVisualChild(x);
+                    this.RemoveVisualChild(x.Item1);
+                    x.Item1.Parent = null;
                 }
+
+                if (x.Item2 != null)
+                {
+                    this.AddVisualChild(x.Item2);
+                    x.Item2.Parent = this;
+                }
+
+                this.logicalChild.SingleItem = x.Item2;
             });
         }
 
@@ -43,6 +53,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(PaddingProperty); }
             set { this.SetValue(PaddingProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         protected override Size ArrangeOverride(Size finalSize)

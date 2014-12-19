@@ -6,10 +6,12 @@
 
 namespace Perspex.Controls
 {
+    using System;
+    using Perspex.Collections;
     using Perspex.Controls.Primitives;
     using Perspex.Layout;
 
-    public class ContentControl : TemplatedControl
+    public class ContentControl : TemplatedControl, ILogical
     {
         public static readonly PerspexProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>("Content");
@@ -20,10 +22,38 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>("VerticalContentAlignment");
 
+        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+
+        public ContentControl()
+        {
+            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
+            {
+                var control1 = x.Item1 as Control;
+                var control2 = x.Item2 as Control;
+
+                if (control1 != null)
+                {
+                    control1.Parent = null;
+                }
+
+                if (control2 != null)
+                {
+                    control2.Parent = this;
+                }
+
+                this.logicalChild.SingleItem = control2;
+            });
+        }
+
         public object Content
         {
             get { return this.GetValue(ContentProperty); }
             set { this.SetValue(ContentProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         public HorizontalAlignment HorizontalContentAlignment
