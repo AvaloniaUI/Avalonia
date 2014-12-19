@@ -6,6 +6,8 @@
 
 namespace Perspex.Controls
 {
+    using Perspex.Collections;
+
     public class ColumnDefinitions : PerspexList<ColumnDefinition>
     {
     }

@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System.Collections.Generic;
+    using Perspex.Collections;
 
     public class Controls : PerspexList<Control>
     {

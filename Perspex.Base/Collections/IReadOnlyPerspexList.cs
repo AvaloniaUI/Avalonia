@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.Collections
 {
     using System.Collections.Generic;
     using System.Collections.Specialized;

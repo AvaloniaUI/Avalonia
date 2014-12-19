@@ -6,7 +6,7 @@
 
 namespace Perspex
 {
-    using System.Collections.Generic;
+    using Perspex.Collections;
     using Perspex.Media;
 
     /// <summary>

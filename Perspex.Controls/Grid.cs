@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Collections;
 
     public class Grid : Panel
     {

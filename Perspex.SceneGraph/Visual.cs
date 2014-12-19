@@ -12,6 +12,7 @@ namespace Perspex
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Animation;
+    using Perspex.Collections;
     using Perspex.Media;
     using Perspex.Rendering;
     using Splat;

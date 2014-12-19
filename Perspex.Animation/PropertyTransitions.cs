@@ -6,6 +6,8 @@
 
 namespace Perspex.Animation
 {
+    using Perspex.Collections;
+
     public class PropertyTransitions : PerspexList<PropertyTransition>
     {
     }
