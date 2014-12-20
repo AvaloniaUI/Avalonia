@@ -33,13 +33,12 @@ namespace Perspex.Styling
                 SelectorString = " ",
                 GetObservable = control =>
                 {
-                    // TODO: This needs to traverse the logical tree, not the visual.
-                    IVisual c = (IVisual)control;
+                    ILogical c = (ILogical)control;
                     List<IObservable<bool>> descendentMatches = new List<IObservable<bool>>();
 
                     while (c != null)
                     {
-                        c = c.VisualParent;
+                        c = c.LogicalParent;
 
                         if (c is IStyleable)
                         {

@@ -4,9 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex
 {
-    using System.Collections.Generic;
     using Perspex.Collections;
 
     /// <summary>

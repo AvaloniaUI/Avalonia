@@ -36,7 +36,6 @@
   <ItemGroup>
     <Compile Include="Border.cs" />
     <Compile Include="Button.cs" />
-    <Compile Include="ILogical.cs" />
     <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
     <Compile Include="ColumnDefinition.cs" />
