@@ -6,13 +6,6 @@
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Subjects;
     using Perspex.Collections;
 
     public class DataTemplates : PerspexList<DataTemplate>
