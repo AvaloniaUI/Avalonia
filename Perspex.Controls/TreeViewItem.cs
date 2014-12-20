@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
+    using Perspex.VisualTree;
 
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {

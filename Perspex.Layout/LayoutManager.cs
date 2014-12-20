@@ -10,6 +10,7 @@ namespace Perspex.Layout
     using System.Reactive;
     using System.Reactive.Subjects;
     using NGenerics.DataStructures.General;
+    using Perspex.VisualTree;
 
     /// <summary>
     /// Manages measuring and arranging of controls.

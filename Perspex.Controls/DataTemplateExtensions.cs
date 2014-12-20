@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System.Linq;
+    using Perspex.VisualTree;
     using Splat;
 
     public static class DataTemplateExtensions

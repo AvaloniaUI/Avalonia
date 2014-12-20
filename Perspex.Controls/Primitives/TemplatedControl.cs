@@ -10,6 +10,7 @@ namespace Perspex.Controls.Primitives
     using System.Linq;
     using Perspex.Media;
     using Perspex.Styling;
+    using Perspex.VisualTree;
     using Splat;
 
     public class TemplatedControl : Control, ITemplatedControl

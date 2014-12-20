@@ -12,6 +12,7 @@ namespace Perspex.Controls.Primitives
     using Perspex.Controls.Presenters;
     using Perspex.Input;
     using Perspex.Interactivity;
+    using Perspex.VisualTree;
 
     public class SelectingItemsControl : ItemsControl
     {

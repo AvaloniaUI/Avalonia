@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
+    using Perspex.VisualTree;
 
     public class GridSplitter : Thumb
     {

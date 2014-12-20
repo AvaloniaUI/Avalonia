@@ -10,6 +10,7 @@ namespace Perspex.Controls.Presenters
     using System.Linq;
     using Perspex.Input;
     using Perspex.Layout;
+    using Perspex.VisualTree;
 
     public class ScrollContentPresenter : ContentPresenter
     {

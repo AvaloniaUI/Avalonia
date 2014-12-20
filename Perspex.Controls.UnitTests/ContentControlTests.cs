@@ -16,6 +16,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Layout;
     using Perspex.Platform;
     using Perspex.Styling;
+    using Perspex.VisualTree;
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.AutoMoq;
     using Splat;

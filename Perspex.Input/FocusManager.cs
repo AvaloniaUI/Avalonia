@@ -10,6 +10,7 @@ namespace Perspex.Input
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Interactivity;
+    using Perspex.VisualTree;
     using Splat;
 
     public class FocusManager : IFocusManager

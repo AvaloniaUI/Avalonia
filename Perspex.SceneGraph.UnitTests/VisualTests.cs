@@ -8,6 +8,7 @@ namespace Perspex.SceneGraph.UnitTests
 {
     using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Perspex.VisualTree;
 
     [TestClass]
     public class VisualTests

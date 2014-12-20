@@ -12,6 +12,7 @@ namespace Perspex.Input
     using Perspex.Input.Raw;
     using Perspex.Interactivity;
     using Perspex.Platform;
+    using Perspex.VisualTree;
     using Splat;
 
     public abstract class MouseDevice : IMouseDevice

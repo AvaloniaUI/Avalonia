@@ -91,7 +91,7 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
-    <Compile Include="VisualExtensions.cs" />
+    <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat">
