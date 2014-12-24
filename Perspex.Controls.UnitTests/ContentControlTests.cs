@@ -125,9 +125,26 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Control();
 
+            target.Template = this.GetTemplate();
             target.Content = child;
+            target.ApplyTemplate();
 
             CollectionAssert.AreEqual(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
+        }
+
+        [TestMethod]
+        public void Setting_Content_To_String_Should_Make_TextBlock_Appear_In_LogicalChildren()
+        {
+            var target = new ContentControl();
+            var child = new Control();
+
+            target.Template = this.GetTemplate();
+            target.Content = "Foo";
+            target.ApplyTemplate();
+
+            var logical = (ILogical)target;
+            Assert.AreEqual(1, logical.LogicalChildren.Count);
+            Assert.IsInstanceOfType(logical.LogicalChildren[0], typeof(TextBlock));
         }
 
         [TestMethod]
@@ -152,7 +169,13 @@ namespace Perspex.Controls.UnitTests
             ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
+            contentControl.Template = this.GetTemplate();
             contentControl.Content = child;
+            contentControl.ApplyTemplate();
+
+            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
+            var presenter = contentControl.GetTemplateControls().Single(x => x.Id == "presenter");
+            presenter.ApplyTemplate();
 
             Assert.IsTrue(called);
         }
@@ -164,12 +187,18 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
+            contentControl.Template = this.GetTemplate();
             contentControl.Content = child;
+            ApplyTemplate(contentControl);
 
             ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
 
             contentControl.Content = null;
+
+            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
+            var presenter = contentControl.GetTemplateControls().Single(x => x.Id == "presenter");
+            presenter.ApplyTemplate();
 
             Assert.IsTrue(called);
         }
@@ -182,12 +211,18 @@ namespace Perspex.Controls.UnitTests
             var child2 = new Control();
             var called = false;
 
+            contentControl.Template = this.GetTemplate();
             contentControl.Content = child1;
+            contentControl.ApplyTemplate();
 
             ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Replace;
 
             contentControl.Content = child2;
+
+            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
+            var presenter = contentControl.GetTemplateControls().Single(x => x.Id == "presenter");
+            presenter.ApplyTemplate();
 
             Assert.IsTrue(called);
         }
@@ -206,6 +241,7 @@ namespace Perspex.Controls.UnitTests
                     Background = new Perspex.Media.SolidColorBrush(0xffffffff),
                     Content = new ContentPresenter
                     {
+                        Id = "presenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     }
                 };

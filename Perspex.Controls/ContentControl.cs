@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using Perspex.Collections;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Layout;
 
@@ -23,6 +24,10 @@ namespace Perspex.Controls
             PerspexProperty.Register<ContentControl, VerticalAlignment>("VerticalContentAlignment");
 
         private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+
+        private ContentPresenter presenter;
+
+        private IDisposable presenterSubscription;
 
         public ContentControl()
         {
@@ -40,8 +45,6 @@ namespace Perspex.Controls
                 {
                     control2.Parent = this;
                 }
-
-                this.logicalChild.SingleItem = control2;
             });
         }
 
@@ -66,6 +69,19 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalContentAlignmentProperty); }
             set { this.SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
+        protected override void OnTemplateApplied()
+        {
+            if (this.presenterSubscription != null)
+            {
+                this.presenterSubscription.Dispose();
+                this.presenterSubscription = null;
+            }
+
+            this.presenter = this.GetTemplateChild<ContentPresenter>("presenter");
+            this.presenterSubscription = this.presenter.ChildObservable
+                .Subscribe(x => this.logicalChild.SingleItem = x);
         }
     }
 }
