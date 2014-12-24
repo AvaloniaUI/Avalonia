@@ -79,9 +79,13 @@ namespace Perspex.Controls
                 this.presenterSubscription = null;
             }
 
-            this.presenter = this.GetTemplateChild<ContentPresenter>("presenter");
-            this.presenterSubscription = this.presenter.ChildObservable
-                .Subscribe(x => this.logicalChild.SingleItem = x);
+            this.presenter = this.FindTemplateChild<ContentPresenter>("presenter");
+
+            if (this.presenter != null)
+            {
+                this.presenterSubscription = this.presenter.ChildObservable
+                    .Subscribe(x => this.logicalChild.SingleItem = x);
+            }
         }
     }
 }

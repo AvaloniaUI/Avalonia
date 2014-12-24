@@ -78,6 +78,7 @@ namespace Perspex.Themes.Default
                 Padding = new Thickness(3),
                 Content = new ContentPresenter
                 {
+                    Id = "presenter",
                     [~ContentPresenter.ContentProperty] = control[~Button.ContentProperty],
                     [~ContentPresenter.HorizontalAlignmentProperty] = control[~Button.HorizontalContentAlignmentProperty],
                     [~ContentPresenter.VerticalAlignmentProperty] = control[~Button.VerticalContentAlignmentProperty],
