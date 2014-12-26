@@ -62,6 +62,13 @@ namespace Perspex.Controls
 
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            var logicalParent = (Control)this;
+
+            while (logicalParent.TemplatedParent != null)
+            {
+                logicalParent = (Control)logicalParent.TemplatedParent;
+            }
+
             // TODO: Handle Move and Replace.
             switch (e.Action)
             {
@@ -70,7 +77,7 @@ namespace Perspex.Controls
 
                     foreach (var child in e.NewItems.OfType<Control>())
                     {
-                        child.Parent = this;
+                        child.Parent = logicalParent;
                     }
 
                     break;
