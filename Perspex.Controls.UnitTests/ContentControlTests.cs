@@ -58,7 +58,7 @@ namespace Perspex.Controls.UnitTests
                 target.Template = this.GetTemplate();
                 root.Content = target;
 
-                this.ApplyTemplate(target);
+                target.ApplyTemplate();
 
                 styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
                 styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
@@ -75,7 +75,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Template = this.GetTemplate();
             target.Content = child;
-            this.ApplyTemplate(target);
+            target.ApplyTemplate();
 
             var contentPresenter = child.GetVisualParent<ContentPresenter>();
             Assert.AreEqual(target, contentPresenter.TemplatedParent);
@@ -89,7 +89,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Template = this.GetTemplate();
             target.Content = child;
-            this.ApplyTemplate(target);
+            target.ApplyTemplate();
 
             Assert.IsNull(child.TemplatedParent);
         }
@@ -189,7 +189,7 @@ namespace Perspex.Controls.UnitTests
 
             contentControl.Template = this.GetTemplate();
             contentControl.Content = child;
-            ApplyTemplate(contentControl);
+            contentControl.ApplyTemplate();
 
             ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
@@ -225,11 +225,6 @@ namespace Perspex.Controls.UnitTests
             presenter.ApplyTemplate();
 
             Assert.IsTrue(called);
-        }
-
-        private void ApplyTemplate(ILayoutable control)
-        {
-            control.Measure(new Size(100, 100));
         }
 
         private ControlTemplate GetTemplate()
