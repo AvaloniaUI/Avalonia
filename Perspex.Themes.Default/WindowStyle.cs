@@ -37,7 +37,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~Window.BackgroundProperty],
                 Content = new ContentPresenter
                 {
-                    Id = "presenter",
+                    Id = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],
                 }
             };

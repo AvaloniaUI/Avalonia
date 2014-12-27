@@ -275,7 +275,7 @@ namespace Perspex.Controls.UnitTests
                     Background = new Perspex.Media.SolidColorBrush(0xffffffff),
                     Content = new ItemsPresenter
                     {
-                        Id = "presenter",
+                        Id = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }
                 };

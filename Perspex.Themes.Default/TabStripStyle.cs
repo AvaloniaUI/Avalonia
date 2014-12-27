@@ -40,6 +40,7 @@ namespace Perspex.Themes.Default
         {
             return new ItemsPresenter
             {
+                Id = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
             };

@@ -6,55 +6,30 @@
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
     using Perspex.Controls;
-    using Perspex.Styling;
     using ReactiveUI;
 
-    internal class VisualTreeNode : ReactiveObject
+    internal class VisualTreeNode : TreeNode
     {
         private string classes;
 
         public VisualTreeNode(IVisual visual)
+            : base((Control)visual)
         {
             this.Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
-            this.Type = visual.GetType().Name;
-            this.Visual = visual;
 
-            Control control = visual as Control;
-
-            if (control != null)
+            if (this.Control != null)
             {
-                this.IsInTemplate = control.TemplatedParent != null;
-
-                control.Classes.Changed.Select(_ => Unit.Default).StartWith(Unit.Default).Subscribe(_ =>
-                {
-                    if (control.Classes.Count > 0)
-                    {
-                        this.Classes = "(" + string.Join(" ", control.Classes) + ")";
-                    }
-                    else
-                    {
-                        this.Classes = string.Empty;
-                    }
-                });
+                this.IsInTemplate = this.Control.TemplatedParent != null;
             }
-        }
-
-        public IReactiveDerivedList<VisualTreeNode> Children { get; private set; }
-
-        public string Classes
-        {
-            get { return this.classes; }
-            private set { this.RaiseAndSetIfChanged(ref this.classes, value); }
         }
 
         public bool IsInTemplate { get; private set; }
 
-        public string Type { get; private set; }
-
-        public IVisual Visual { get; private set; }
+        public static VisualTreeNode[] Create(object control)
+        {
+            var visual = control as IVisual;
+            return visual != null ? new[] { new VisualTreeNode(visual) } : null;
+        }
     }
 }

@@ -8,18 +8,16 @@ namespace Perspex.Diagnostics.ViewModels
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Styling;
+    using Perspex.Controls;
     using ReactiveUI;
 
     internal class ControlDetails : ReactiveObject
     {
-        public ControlDetails(IVisual visual)
+        public ControlDetails(Control control)
         {
-            PerspexObject po = visual as PerspexObject;
-
-            if (po != null)
+            if (control != null)
             {
-                this.Properties = po.GetAllValues()
+                this.Properties = control.GetAllValues()
                     .Select(x => new PropertyDetails(x))
                     .OrderBy(x => x.Name);
             }

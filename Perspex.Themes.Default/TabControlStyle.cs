@@ -46,6 +46,7 @@ namespace Perspex.Themes.Default
                     },
                     new ContentPresenter
                     {
+                        Id = "contentPresenter",
                         [~ContentPresenter.ContentProperty] = control[~TabControl.SelectedContentProperty],
                         [Grid.RowProperty] = 1,
                     }

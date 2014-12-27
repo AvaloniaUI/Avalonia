@@ -79,7 +79,7 @@ namespace Perspex.Controls
                 this.presenterSubscription = null;
             }
 
-            this.presenter = this.FindTemplateChild<ContentPresenter>("presenter");
+            this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
 
             if (this.presenter != null)
             {

@@ -93,9 +93,9 @@ namespace Perspex.Controls
                 this.logicalChildren = null;
             }
 
-            this.presenter = this.FindTemplateChild<ItemsPresenter>("presenter");
+            this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
 
-            if (presenter != null)
+            if (this.presenter != null)
             {
                 var panel = (IVisual)this.presenter.GetVisualChildren().Single();
                 this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(

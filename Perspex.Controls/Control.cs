@@ -32,6 +32,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
 
+        public static readonly PerspexProperty<object> TagProperty =
+            PerspexProperty.Register<Control, object>("Tag");
+
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
 
@@ -154,6 +157,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ParentProperty); }
             internal set { this.SetValue(ParentProperty, value); }
+        }
+
+        public object Tag
+        {
+            get { return this.GetValue(TagProperty); }
+            set { this.SetValue(TagProperty, value); }
         }
 
         public ITemplatedControl TemplatedParent
