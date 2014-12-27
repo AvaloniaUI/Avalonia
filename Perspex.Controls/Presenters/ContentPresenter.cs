@@ -32,7 +32,7 @@ namespace Perspex.Controls.Presenters
         {
             get
             {
-                return this.Child;
+                return this.child;
             }
 
             private set

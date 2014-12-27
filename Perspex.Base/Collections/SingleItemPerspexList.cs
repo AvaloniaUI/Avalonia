@@ -80,7 +80,7 @@ namespace Perspex.Collections
                 }
                 else
                 {
-                    e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, this.item);
+                    e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, this.item, 0);
                     this.item = value;
                 }
 
