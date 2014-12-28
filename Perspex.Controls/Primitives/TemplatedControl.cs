@@ -18,6 +18,12 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
+        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+            Border.BorderBrushProperty.AddOwner<TemplatedControl>();
+
+        public static readonly PerspexProperty<double> BorderThicknessProperty =
+            Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
+
         public static readonly PerspexProperty<string> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
 
@@ -26,6 +32,9 @@ namespace Perspex.Controls.Primitives
 
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
             TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
+
+        public static readonly PerspexProperty<Brush> ForegroundProperty =
+            TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
@@ -48,6 +57,18 @@ namespace Perspex.Controls.Primitives
             set { this.SetValue(BackgroundProperty, value); }
         }
 
+        public Brush BorderBrush
+        {
+            get { return this.GetValue(BorderBrushProperty); }
+            set { this.SetValue(BorderBrushProperty, value); }
+        }
+
+        public double BorderThickness
+        {
+            get { return this.GetValue(BorderThicknessProperty); }
+            set { this.SetValue(BorderThicknessProperty, value); }
+        }
+
         public string FontFamily
         {
             get { return this.GetValue(FontFamilyProperty); }
@@ -64,6 +85,12 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(FontStyleProperty); }
             set { this.SetValue(FontStyleProperty, value); }
+        }
+
+        public Brush Foreground
+        {
+            get { return this.GetValue(ForegroundProperty); }
+            set { this.SetValue(ForegroundProperty, value); }
         }
 
         public ControlTemplate Template

@@ -16,6 +16,12 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Border, Brush>("Background");
 
+        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+            PerspexProperty.Register<Border, Brush>("BorderBrush");
+
+        public static readonly PerspexProperty<double> BorderThicknessProperty =
+            PerspexProperty.Register<Border, double>("BorderThickness");
+
         static Border()
         {
             Control.AffectsRender(Border.BackgroundProperty);
@@ -26,6 +32,18 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(BackgroundProperty); }
             set { this.SetValue(BackgroundProperty, value); }
+        }
+
+        public Brush BorderBrush
+        {
+            get { return this.GetValue(BorderBrushProperty); }
+            set { this.SetValue(BorderBrushProperty, value); }
+        }
+
+        public double BorderThickness
+        {
+            get { return this.GetValue(BorderThicknessProperty); }
+            set { this.SetValue(BorderThicknessProperty, value); }
         }
 
         public override void Render(IDrawingContext context)

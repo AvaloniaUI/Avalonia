@@ -25,6 +25,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
             PerspexProperty.Register<TextBlock, FontStyle>("FontStyle", inherits: true);
 
+        public static readonly PerspexProperty<Brush> ForegroundProperty =
+            PerspexProperty.Register<TextBlock, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
+
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
 
@@ -75,6 +78,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(FontStyleProperty); }
             set { this.SetValue(FontStyleProperty, value); }
+        }
+
+        public Brush Foreground
+        {
+            get { return this.GetValue(ForegroundProperty); }
+            set { this.SetValue(ForegroundProperty, value); }
         }
 
         public TextWrapping TextWrapping

@@ -22,8 +22,8 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBlock.FontSizeProperty, 28.7),
-                        new Setter(Control.ForegroundProperty, Brushes.Gray),
+                        new Setter(TabItem.FontSizeProperty, 28.7),
+                        new Setter(TabItem.ForegroundProperty, Brushes.Gray),
                         new Setter(TabItem.TemplateProperty, ControlTemplate.Create<TabItem>(this.Template)),
                     },
                 },
@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Control.ForegroundProperty, Brushes.Black),
+                        new Setter(TabItem.ForegroundProperty, Brushes.Black),
                     },
                 },
             });

@@ -20,15 +20,6 @@ namespace Perspex.Controls
 
     public class Control : InputElement, ILogical, IStyleable, IStyleHost
     {
-        public static readonly PerspexProperty<Brush> BorderBrushProperty =
-            PerspexProperty.Register<Control, Brush>("BorderBrush");
-
-        public static readonly PerspexProperty<double> BorderThicknessProperty =
-            PerspexProperty.Register<Control, double>("BorderThickness");
-
-        public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
-
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
 
@@ -57,18 +48,6 @@ namespace Perspex.Controls
             PseudoClass(InputElement.IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(InputElement.IsFocusedProperty, ":focus");
             PseudoClass(InputElement.IsPointerOverProperty, ":pointerover");
-        }
-
-        public Brush BorderBrush
-        {
-            get { return this.GetValue(BorderBrushProperty); }
-            set { this.SetValue(BorderBrushProperty, value); }
-        }
-
-        public double BorderThickness
-        {
-            get { return this.GetValue(BorderThicknessProperty); }
-            set { this.SetValue(BorderThicknessProperty, value); }
         }
 
         public Classes Classes
@@ -104,12 +83,6 @@ namespace Perspex.Controls
             {
                 this.dataTemplates = value;
             }
-        }
-
-        public Brush Foreground
-        {
-            get { return this.GetValue(ForegroundProperty); }
-            set { this.SetValue(ForegroundProperty, value); }
         }
 
         public string Id
