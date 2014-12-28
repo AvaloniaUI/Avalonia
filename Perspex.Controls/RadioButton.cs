@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Linq;
     using Perspex.Controls.Primitives;
+    using Perspex.VisualTree;
 
     public class RadioButton : ToggleButton
     {

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+namespace Perspex.VisualTree
 {
     using System;
     using System.Collections.Generic;

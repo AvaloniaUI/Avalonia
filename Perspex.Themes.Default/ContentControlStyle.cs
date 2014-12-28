@@ -31,7 +31,8 @@ namespace Perspex.Themes.Default
         private Control Template(ContentControl control)
         {
             return new ContentPresenter
-            {
+            { 
+                Id = "contentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
         }

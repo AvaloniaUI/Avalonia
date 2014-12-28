@@ -10,6 +10,7 @@ namespace Perspex.Diagnostics
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using Perspex.Controls;
+    using Perspex.Controls.Primitives;
     using Perspex.Diagnostics.ViewModels;
     using Perspex.Input;
     using ReactiveUI;
@@ -21,23 +22,43 @@ namespace Perspex.Diagnostics
 
         public DevTools()
         {
-            var treeView = new TreeView
+            var treePane = new Grid
             {
-                DataTemplates = new DataTemplates
+                RowDefinitions = new RowDefinitions
                 {
-                    new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
+                    new RowDefinition(GridLength.Auto),
+                    new RowDefinition(new GridLength(1, GridUnitType.Star)),
                 },
-                [!TreeView.ItemsProperty] = this[!DevTools.RootProperty].Select(x =>
+                Children = new Controls
                 {
-                    if (x != null)
+                    (var tabStrip = new TabStrip
                     {
-                        return new[] { new VisualTreeNode((IVisual)x) };
-                    }
-                    else
+                        Items = new[]
+                        {
+                            new TabItem
+                            {
+                                Header = "Logical Tree",
+                                IsSelected = true,
+                                [!TabItem.TagProperty] = this[!RootProperty].Select(x => LogicalTreeNode.Create(x)),
+                            },
+                            new TabItem
+                            {
+                                Header = "Visual Tree",
+                                [!TabItem.TagProperty] = this[!RootProperty].Select(x => VisualTreeNode.Create(x)),
+                            }
+                        },
+                    }),
+                    (var treeView = new TreeView
                     {
-                        return null;
-                    }
-                }),
+                        DataTemplates = new DataTemplates
+                        {
+                            new TreeDataTemplate<LogicalTreeNode>(GetHeader, x => x.Children),
+                            new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
+                        },
+                        [!TreeView.ItemsProperty] = tabStrip.WhenAnyValue(x => x.SelectedTab.Tag),
+                        [Grid.RowProperty] = 1,
+                    })
+                }
             };
 
             var detailsView = new ContentControl
@@ -48,8 +69,8 @@ namespace Perspex.Diagnostics
                 },
                 [!ContentControl.ContentProperty] = treeView[!TreeView.SelectedItemProperty]
                     .Where(x => x != null)
-                    .Cast<VisualTreeNode>()
-                    .Select(x => new ControlDetails(x.Visual)),
+                    .Cast<TreeNode>()
+                    .Select(x => new ControlDetails(x.Control)),
                 [Grid.ColumnProperty] = 2,
             };
 
@@ -69,7 +90,7 @@ namespace Perspex.Diagnostics
                 },
                 Children = new Controls
                 {
-                    treeView,
+                    treePane,
                     splitter,
                     detailsView,
                 }
@@ -124,6 +145,26 @@ namespace Perspex.Diagnostics
                         }),
                 },
                 Items = i.Properties,
+            };
+        }
+
+        private static Control GetHeader(LogicalTreeNode node)
+        {
+            return new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Gap = 8,
+                Children = new Controls
+                {
+                    new TextBlock
+                    {
+                        Text = node.Type,
+                    },
+                    new TextBlock
+                    {
+                        [!TextBlock.TextProperty] = node.WhenAnyValue(x => x.Classes),
+                    }
+                }
             };
         }
 

@@ -8,6 +8,7 @@ namespace Perspex.Styling
 {
     using System;
     using System.Linq;
+    using Perspex.VisualTree;
     using Splat;
 
     public class Styler : IStyler

@@ -26,7 +26,7 @@ namespace Perspex.Controls.Presenters
 
         public ItemsPresenter()
         {
-            this.GetObservableWithHistory(ItemsProperty).Skip(1).Subscribe(this.ItemsChanged);
+            this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
         }
 
         public IEnumerable Items

@@ -11,6 +11,7 @@ namespace Perspex.Input
     using System.Linq;
     using System.Reactive.Subjects;
     using Perspex.Input.Raw;
+    using Perspex.VisualTree;
 
     public class InputManager : IInputManager
     {

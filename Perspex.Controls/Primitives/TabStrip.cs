@@ -7,20 +7,34 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
-    using System.Collections;
     using System.Linq;
+    using System.Reactive.Linq;
     using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
-    using Perspex.Input;
 
     public class TabStrip : SelectingItemsControl
     {
+        public static readonly PerspexProperty<TabItem> SelectedTabProperty =
+            TabControl.SelectedTabProperty.AddOwner<TabStrip>();
+
         private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
             () => new StackPanel());
 
         static TabStrip()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
+        }
+
+        public TabStrip()
+        {
+            this.Bind(
+                SelectedTabProperty,
+                this.GetObservable(SelectedItemProperty).Select(x => x as TabItem));
+        }
+
+        public TabItem SelectedTab
+        {
+            get { return this.GetValue(SelectedTabProperty); }
+            private set { this.SetValue(SelectedTabProperty, value); }
         }
 
         protected override ItemContainerGenerator CreateItemContainerGenerator()

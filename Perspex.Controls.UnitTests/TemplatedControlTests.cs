@@ -14,6 +14,7 @@ namespace Perspex.Controls.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Controls.Primitives;
+    using Perspex.VisualTree;
 
     [TestClass]
     public class TemplatedControlTests

@@ -15,6 +15,7 @@ namespace Perspex
     using Perspex.Collections;
     using Perspex.Media;
     using Perspex.Rendering;
+    using Perspex.VisualTree;
     using Splat;
 
     public class Visual : Animatable, IVisual

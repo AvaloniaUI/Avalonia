@@ -9,8 +9,8 @@ namespace Perspex.Controls.Presenters
     using System;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Reactive.Subjects;
     using Perspex.Controls.Primitives;
-    using Perspex.Layout;
 
     public class ContentPresenter : Control, IVisual
     {
@@ -19,9 +19,42 @@ namespace Perspex.Controls.Presenters
 
         private bool createdChild;
 
+        private Control child;
+
+        private BehaviorSubject<Control> childObservable = new BehaviorSubject<Control>(null);
+
         public ContentPresenter()
         {
             this.GetObservable(ContentProperty).Skip(1).Subscribe(this.ContentChanged);
+        }
+
+        public Control Child
+        {
+            get
+            {
+                return this.child;
+            }
+
+            private set
+            {
+                if (this.child != value)
+                {
+                    this.ClearVisualChildren();
+                    this.child = value;
+
+                    if (value != null)
+                    {
+                        this.AddVisualChild(value);
+                    }
+
+                    this.childObservable.OnNext(value);
+                }
+            }
+        }
+
+        public IObservable<Control> ChildObservable
+        {
+            get { return this.childObservable; }
         }
 
         public object Content
@@ -45,12 +78,10 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-            if (child != null)
+            if (this.child != null)
             {
-                child.Measure(availableSize);
-                return child.DesiredSize.Value;
+                this.child.Measure(availableSize);
+                return this.child.DesiredSize.Value;
             }
 
             return new Size();
@@ -64,13 +95,13 @@ namespace Perspex.Controls.Presenters
 
         private void CreateChild()
         {
+            Control result = null;
             object content = this.Content;
 
             this.ClearVisualChildren();
 
             if (content != null)
             {
-                Control result;
 
                 if (content is Control)
                 {
@@ -101,9 +132,9 @@ namespace Perspex.Controls.Presenters
                 }
 
                 result.TemplatedParent = foo;
-                this.AddVisualChild(result);
             }
 
+            this.Child = result;
             this.createdChild = true;
         }
     }

@@ -11,10 +11,13 @@ namespace Perspex.Controls
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using Perspex.Collections;
     using Perspex.Controls.Generators;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.VisualTree;
 
-    public class ItemsControl : TemplatedControl
+    public class ItemsControl : TemplatedControl, ILogical
     {
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
         private static readonly ItemsPanelTemplate DefaultPanel =
@@ -27,6 +30,10 @@ namespace Perspex.Controls
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
         private ItemContainerGenerator itemContainerGenerator;
+
+        private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren;
+
+        private ItemsPresenter presenter;
 
         public ItemsControl()
         {
@@ -58,9 +65,43 @@ namespace Perspex.Controls
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get
+            {
+                if (this.logicalChildren == null)
+                {
+                    this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
+                        new PerspexList<IVisual>(), 
+                        x => (ILogical)x);
+                }
+
+                return this.logicalChildren;
+            }
+        }
+
         protected virtual ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
+        }
+
+        protected override void OnTemplateApplied()
+        {
+            if (this.logicalChildren != null)
+            {
+                this.logicalChildren.Dispose();
+                this.logicalChildren = null;
+            }
+
+            this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
+
+            if (this.presenter != null)
+            {
+                var panel = (IVisual)this.presenter.GetVisualChildren().Single();
+                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
+                    panel.VisualChildren,
+                    x => (ILogical)x);
+            }
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Styling;
+    using Perspex.VisualTree;
 
     public static class ControlExtensions
     {

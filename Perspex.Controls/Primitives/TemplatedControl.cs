@@ -10,6 +10,7 @@ namespace Perspex.Controls.Primitives
     using System.Linq;
     using Perspex.Media;
     using Perspex.Styling;
+    using Perspex.VisualTree;
     using Splat;
 
     public class TemplatedControl : Control, ITemplatedControl
@@ -137,9 +138,7 @@ namespace Perspex.Controls.Primitives
 
         protected T FindTemplateChild<T>(string id) where T : Control
         {
-            return this.GetTemplateControls()
-                .Where(x => x.TemplatedParent == this)
-                .OfType<T>().FirstOrDefault(x => x.Id == id);
+            return (T)this.GetTemplateControls().SingleOrDefault(x => x.Id == id);
         }
 
         protected T GetTemplateChild<T>(string id) where T : Control

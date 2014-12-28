@@ -15,6 +15,7 @@ namespace Perspex.Controls
     using Perspex.Input;
     using Perspex.Media;
     using Perspex.Threading;
+    using Perspex.VisualTree;
 
     public class TextPresenter : TextBlock
     {

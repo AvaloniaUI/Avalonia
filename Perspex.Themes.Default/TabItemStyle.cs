@@ -41,6 +41,7 @@ namespace Perspex.Themes.Default
         {
             return new ContentPresenter
             {
+                Id = "headerPresenter",
                 [~ContentPresenter.ContentProperty] = control[~TabItem.HeaderProperty],
             };
         }

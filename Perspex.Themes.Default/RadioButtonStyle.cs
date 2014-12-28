@@ -82,6 +82,7 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
+                            Id = "contentPresenter",
                             Margin = new Thickness(4, 0, 0, 0),
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~RadioButton.ContentProperty],

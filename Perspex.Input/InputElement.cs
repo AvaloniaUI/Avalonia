@@ -10,6 +10,7 @@ namespace Perspex.Input
     using System.Linq;
     using Perspex.Interactivity;
     using Perspex.Rendering;
+    using Perspex.VisualTree;
 
     public class InputElement : Interactive, IInputElement
     {

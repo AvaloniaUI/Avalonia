@@ -8,6 +8,7 @@ namespace Perspex.Layout
 {
     using System;
     using System.Linq;
+    using Perspex.VisualTree;
     using Splat;
 
     public enum HorizontalAlignment

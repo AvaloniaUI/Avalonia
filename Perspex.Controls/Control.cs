@@ -7,8 +7,10 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reactive.Linq;
-    using Perspex.Animation;
+    using Perspex.Collections;
     using Perspex.Input;
     using Perspex.Interactivity;
     using Perspex.Media;
@@ -16,7 +18,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : InputElement, IStyleable, IStyleHost
+    public class Control : InputElement, ILogical, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
             PerspexProperty.Register<Control, Brush>("BorderBrush");
@@ -27,11 +29,19 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<Control, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
 
+        public static readonly PerspexProperty<Control> ParentProperty =
+            PerspexProperty.Register<Control, Control>("Parent");
+
+        public static readonly PerspexProperty<object> TagProperty =
+            PerspexProperty.Register<Control, object>("Tag");
+
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
 
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategy.Bubble);
+
+        private static readonly IReadOnlyPerspexList<ILogical> EmptyChildren = new SingleItemPerspexList<ILogical>();
 
         private Classes classes = new Classes();
 
@@ -143,10 +153,32 @@ namespace Perspex.Controls
             }
         }
 
+        public Control Parent
+        {
+            get { return this.GetValue(ParentProperty); }
+            internal set { this.SetValue(ParentProperty, value); }
+        }
+
+        public object Tag
+        {
+            get { return this.GetValue(TagProperty); }
+            set { this.SetValue(TagProperty, value); }
+        }
+
         public ITemplatedControl TemplatedParent
         {
             get { return this.GetValue(TemplatedParentProperty); }
             internal set { this.SetValue(TemplatedParentProperty, value); }
+        }
+
+        ILogical ILogical.LogicalParent
+        {
+            get { return this.Parent; }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return EmptyChildren; }
         }
 
         public void BringIntoView()

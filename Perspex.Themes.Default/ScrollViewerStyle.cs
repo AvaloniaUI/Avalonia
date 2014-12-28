@@ -47,7 +47,7 @@ namespace Perspex.Themes.Default
                 {
                     new ScrollContentPresenter
                     {
-                        Id = "presenter",
+                        Id = "contentPresenter",
                         [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
                         [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],

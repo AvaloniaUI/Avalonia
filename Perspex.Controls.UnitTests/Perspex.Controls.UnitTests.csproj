@@ -64,7 +64,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ItemsControlTests.cs" />
     <Compile Include="ContentControlTests.cs" />
+    <Compile Include="DecoratorTests.cs" />
+    <Compile Include="PanelTests.cs" />
     <Compile Include="ControlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TemplatedControlTests.cs" />

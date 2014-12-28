@@ -35,13 +35,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Binding.cs" />
+    <Compile Include="Collections\IPerspexList.cs" />
+    <Compile Include="Collections\PerspexReadOnlyListView.cs" />
+    <Compile Include="Collections\PerspexList.cs" />
+    <Compile Include="Collections\SingleItemPerspexList.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="Diagnostics\PerspexPropertyValue.cs" />
     <Compile Include="IDescription.cs" />
     <Compile Include="Collections\PerspexListExtensions.cs" />
     <Compile Include="IObservableDescription.cs" />
     <Compile Include="Collections\IReadOnlyPerspexList.cs" />
-    <Compile Include="Collections\PerspexList.cs" />
     <Compile Include="PerspexObject.cs" />
     <Compile Include="PerspexProperty.cs" />
     <Compile Include="PerspexPropertyChangedEventArgs.cs" />

@@ -6,10 +6,13 @@
 
 namespace Perspex.Controls
 {
+    using System;
+    using Perspex.Collections;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Layout;
 
-    public class ContentControl : TemplatedControl
+    public class ContentControl : TemplatedControl, ILogical
     {
         public static readonly PerspexProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>("Content");
@@ -20,10 +23,40 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>("VerticalContentAlignment");
 
+        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+
+        private ContentPresenter presenter;
+
+        private IDisposable presenterSubscription;
+
+        public ContentControl()
+        {
+            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
+            {
+                var control1 = x.Item1 as Control;
+                var control2 = x.Item2 as Control;
+
+                if (control1 != null)
+                {
+                    control1.Parent = null;
+                }
+
+                if (control2 != null)
+                {
+                    control2.Parent = this;
+                }
+            });
+        }
+
         public object Content
         {
             get { return this.GetValue(ContentProperty); }
             set { this.SetValue(ContentProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         public HorizontalAlignment HorizontalContentAlignment
@@ -36,6 +69,23 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalContentAlignmentProperty); }
             set { this.SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
+        protected override void OnTemplateApplied()
+        {
+            if (this.presenterSubscription != null)
+            {
+                this.presenterSubscription.Dispose();
+                this.presenterSubscription = null;
+            }
+
+            this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
+
+            if (this.presenter != null)
+            {
+                this.presenterSubscription = this.presenter.ChildObservable
+                    .Subscribe(x => this.logicalChild.SingleItem = x);
+            }
         }
     }
 }

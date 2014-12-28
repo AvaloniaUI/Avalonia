@@ -12,6 +12,7 @@ namespace Perspex.Interactivity
     using System.Reactive;
     using System.Reactive.Linq;
     using Perspex.Layout;
+    using Perspex.VisualTree;
 
     public class Interactive : Layoutable, IInteractive
     {
