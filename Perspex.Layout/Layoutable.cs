@@ -270,9 +270,10 @@ namespace Perspex.Layout
             {
                 double originX = finalRect.X + this.Margin.Left;
                 double originY = finalRect.Y + this.Margin.Top;
-                var size = new Size(
+                var sizeMinusMargins = new Size(
                     Math.Max(0, finalRect.Width - this.Margin.Left - this.Margin.Right),
                     Math.Max(0, finalRect.Height - this.Margin.Top - this.Margin.Bottom));
+                var size = sizeMinusMargins;
 
                 if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
                 {
@@ -290,20 +291,20 @@ namespace Perspex.Layout
                 switch (this.HorizontalAlignment)
                 {
                     case HorizontalAlignment.Center:
-                        originX += (finalRect.Width - size.Width) / 2;
+                        originX += (sizeMinusMargins.Width - size.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
-                        originX += finalRect.Width - size.Width;
+                        originX += sizeMinusMargins.Width - size.Width;
                         break;
                 }
 
                 switch (this.VerticalAlignment)
                 {
                     case VerticalAlignment.Center:
-                        originY += (finalRect.Height - size.Height) / 2;
+                        originY += (sizeMinusMargins.Height - size.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:
-                        originY += finalRect.Height - size.Height;
+                        originY += sizeMinusMargins.Height - size.Height;
                         break;
                 }
 

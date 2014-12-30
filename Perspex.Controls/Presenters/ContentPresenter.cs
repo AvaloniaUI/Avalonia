@@ -11,6 +11,7 @@ namespace Perspex.Controls.Presenters
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
     using Perspex.Controls.Primitives;
+    using Perspex.Media;
 
     public class ContentPresenter : Control, IVisual
     {
