@@ -36,6 +36,10 @@
   <ItemGroup>
     <Compile Include="Border.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="DropDown.cs" />
+    <Compile Include="IContentControl.cs" />
+    <Compile Include="Platform\IPopupImpl.cs" />
+    <Compile Include="Popup.cs" />
     <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
     <Compile Include="ColumnDefinition.cs" />

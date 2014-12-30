@@ -12,7 +12,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Primitives;
     using Perspex.Layout;
 
-    public class ContentControl : TemplatedControl, ILogical
+    public class ContentControl : TemplatedControl, IContentControl, ILogical
     {
         public static readonly PerspexProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>("Content");

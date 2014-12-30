@@ -25,18 +25,12 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.Template)),
-                        new Setter(ToggleButton.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
-                        new Setter(ToggleButton.VerticalContentAlignmentProperty, VerticalAlignment.Center),
-                    },
-                },
-                new Style(x => x.OfType<ToggleButton>().Template().Id("border"))
-                {
-                    Setters = new[]
-                    {
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(ToggleButton.BorderThicknessProperty, 2.0),
                         new Setter(ToggleButton.ForegroundProperty, new SolidColorBrush(0xff000000)),
+                        new Setter(ToggleButton.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
+                        new Setter(ToggleButton.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":checked").Template().Id("border"))
@@ -91,6 +85,9 @@ namespace Perspex.Themes.Default
             {
                 Id = "border",
                 Padding = new Thickness(3),
+                [~Border.BackgroundProperty] = control[~ToggleButton.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~ToggleButton.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~ToggleButton.BorderThicknessProperty],
                 Content = new ContentPresenter
                 {
                     Id = "contentPresenter",
@@ -98,7 +95,6 @@ namespace Perspex.Themes.Default
                     [~ContentPresenter.HorizontalAlignmentProperty] = control[~ToggleButton.HorizontalContentAlignmentProperty],
                     [~ContentPresenter.VerticalAlignmentProperty] = control[~ToggleButton.VerticalContentAlignmentProperty],
                 },
-                [~Border.BackgroundProperty] = control[~ToggleButton.BackgroundProperty],
             };
 
             return border;

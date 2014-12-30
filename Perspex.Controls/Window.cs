@@ -140,6 +140,11 @@ namespace Perspex.Controls
             this.LayoutPass();
         }
 
+        internal IPopupImpl CreatePopup()
+        {
+            return this.impl.CreatePopup();
+        }
+
         private void HandleActivated()
         {
             if (this.Activated != null)

@@ -59,6 +59,11 @@ namespace Perspex.Win32
             private set;
         }
 
+        public IPopupImpl CreatePopup()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Invalidate(Rect rect)
         {
             var r = new UnmanagedMethods.RECT

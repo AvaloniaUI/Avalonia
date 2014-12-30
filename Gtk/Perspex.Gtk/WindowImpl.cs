@@ -50,6 +50,11 @@ namespace Perspex.Gtk
 
         public Action<Size> Resized { get; set; }
 
+        public IPopupImpl CreatePopup()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Invalidate(Rect rect)
         {
             this.QueueDraw();

@@ -26,6 +26,8 @@ namespace Perspex.Platform
 
         Action<Size> Resized { get; set; }
 
+        IPopupImpl CreatePopup();
+
         void Invalidate(Rect rect);
 
         void SetTitle(string title);

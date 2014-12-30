@@ -70,6 +70,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DropDownStyle.cs" />
     <Compile Include="RadioButtonStyle.cs" />
     <Compile Include="ToggleButtonStyle.cs" />
     <Compile Include="ListBoxStyle.cs" />
