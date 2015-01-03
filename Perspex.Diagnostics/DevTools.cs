@@ -22,6 +22,9 @@ namespace Perspex.Diagnostics
 
         public DevTools()
         {
+            TabStrip tabStrip;
+            TreeView treeView;
+
             var treePane = new Grid
             {
                 RowDefinitions = new RowDefinitions
@@ -31,7 +34,7 @@ namespace Perspex.Diagnostics
                 },
                 Children = new Controls
                 {
-                    (var tabStrip = new TabStrip
+                    (tabStrip = new TabStrip
                     {
                         Items = new[]
                         {
@@ -48,7 +51,7 @@ namespace Perspex.Diagnostics
                             }
                         },
                     }),
-                    (var treeView = new TreeView
+                    (treeView = new TreeView
                     {
                         DataTemplates = new DataTemplates
                         {
