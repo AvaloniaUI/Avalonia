@@ -110,7 +110,7 @@ namespace Perspex.Controls.Presenters
                 }
                 else
                 {
-                    DataTemplate dataTemplate = this.FindDataTemplate(content);
+                    IDataTemplate dataTemplate = this.FindDataTemplate(content);
 
                     if (dataTemplate != null)
                     {

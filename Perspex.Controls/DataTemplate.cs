@@ -9,7 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Reflection;
 
-    public class DataTemplate
+    public class DataTemplate : IDataTemplate
     {
         public static readonly DataTemplate Default =
             new DataTemplate(typeof(object), o => new TextBlock { Text = o.ToString() });
@@ -40,6 +40,16 @@ namespace Perspex.Controls
         public static bool IsInstance(object o, Type t)
         {
             return t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+        }
+
+        bool IDataTemplate.Match(object data)
+        {
+            return this.Match(data);
+        }
+
+        Control IDataTemplate.Build(object data)
+        {
+            return this.Build(data);
         }
     }
 
