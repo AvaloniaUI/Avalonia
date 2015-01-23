@@ -92,6 +92,11 @@ namespace Perspex.Controls.UnitTests
             {
                 get { throw new NotImplementedException(); }
             }
+
+            public Point TranslatePointToScreen(Point p)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

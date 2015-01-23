@@ -111,6 +111,13 @@ namespace Perspex.Win32
             UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
         }
 
+        public Point PointToScreen(Point point)
+        {
+            var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
+            UnmanagedMethods.ClientToScreen(this.hwnd, ref p);
+            return new Point(p.X, p.Y);
+        }
+
         public void SetOwner(TopLevel owner)
         {
             this.owner = owner;

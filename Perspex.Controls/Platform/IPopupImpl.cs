@@ -12,6 +12,8 @@ namespace Perspex.Platform
 
     public interface IPopupImpl : ITopLevelImpl
     {
+        void SetPosition(Point p);
+
         void Show();
 
         void Hide();

@@ -131,7 +131,12 @@ namespace Perspex.Controls
         {
             get { return this.renderManager; }
         }
-        
+
+        Point IRenderRoot.TranslatePointToScreen(Point p)
+        {
+            return this.PlatformImpl.PointToScreen(p);
+        }
+
         protected IDisposable BeginAutoSizing()
         {
             this.autoSizing = true;

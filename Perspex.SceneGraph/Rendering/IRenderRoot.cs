@@ -13,5 +13,7 @@ namespace Perspex.Rendering
         IRenderer Renderer { get; }
 
         IRenderManager RenderManager { get; }
+
+        Point TranslatePointToScreen(Point p);
     }
 }

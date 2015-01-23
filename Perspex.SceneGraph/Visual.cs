@@ -14,6 +14,7 @@ namespace Perspex
     using Perspex.Animation;
     using Perspex.Collections;
     using Perspex.Media;
+    using Perspex.Platform;
     using Perspex.Rendering;
     using Perspex.VisualTree;
     using Splat;
@@ -118,10 +119,16 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(context != null);
         }
 
+        public Point PointToScreen(Point point)
+        {
+            var p = GetOffsetFromRoot(this);
+            return p.Item1.TranslatePointToScreen(point + p.Item2);
+        }
+
         public Matrix TransformToVisual(IVisual visual)
         {
-            var thisOffset = GetOffsetFromRoot(this);
-            var thatOffset = GetOffsetFromRoot(visual);
+            var thisOffset = GetOffsetFromRoot(this).Item2;
+            var thatOffset = GetOffsetFromRoot(visual).Item2;
             return Matrix.Translation(-thisOffset) * Matrix.Translation(thatOffset);
         }
 
@@ -198,7 +205,7 @@ namespace Perspex
             }
         }
 
-        private static Vector GetOffsetFromRoot(IVisual v)
+        private static Tuple<IRenderRoot, Vector> GetOffsetFromRoot(IVisual v)
         {
             var result = new Vector();
 
@@ -206,9 +213,14 @@ namespace Perspex
             {
                 result = new Vector(result.X + v.Bounds.X, result.Y + v.Bounds.Y);
                 v = v.VisualParent;
+
+                if (v == null)
+                {
+                    throw new InvalidOperationException("Control is not attached to visual tree.");
+                }
             }
 
-            return result;
+            return Tuple.Create((IRenderRoot)v, result);
         }
 
         private static void RenderTransformChanged(PerspexPropertyChangedEventArgs e)

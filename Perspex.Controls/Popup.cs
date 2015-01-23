@@ -18,6 +18,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsOpenProperty =
             PerspexProperty.Register<Popup, bool>("IsOpen");
 
+        public static readonly PerspexProperty<Control> PlacementTargetProperty =
+            PerspexProperty.Register<Popup, Control>("PlacementTarget");
+
         private PopupRoot root;
 
         private Window window;
@@ -54,6 +57,12 @@ namespace Perspex.Controls
             set { this.SetValue(IsOpenProperty, value); }
         }
 
+        public Control PlacementTarget
+        {
+            get { return this.GetValue(PlacementTargetProperty); }
+            set { this.SetValue(PlacementTargetProperty, value); }
+        }
+
         public void Open()
         {
             if (this.root == null)
@@ -62,6 +71,7 @@ namespace Perspex.Controls
                 this.root[~PopupRoot.ContentProperty] = this[~ChildProperty];
             }
 
+            this.root.SetPosition(this.GetPosition());
             this.root.Show();
         }
 
@@ -83,6 +93,18 @@ namespace Perspex.Controls
         {
             base.OnDetachedFromVisualTree(oldRoot);
             this.window = null;
+        }
+
+        private Point GetPosition()
+        {
+            if (this.PlacementTarget != null)
+            {
+                return this.PlacementTarget.PointToScreen(new Point(0, this.PlacementTarget.ActualSize.Height));
+            }
+            else
+            {
+                return new Point();
+            }
         }
     }
 }

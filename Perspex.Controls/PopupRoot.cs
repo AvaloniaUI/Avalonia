@@ -27,6 +27,11 @@ namespace Perspex.Controls
             get { return (IPopupImpl)base.PlatformImpl; }
         }
 
+        public void SetPosition(Point p)
+        {
+            this.PlatformImpl.SetPosition(p);
+        }
+
         public void Hide()
         {
             this.PlatformImpl.Hide();

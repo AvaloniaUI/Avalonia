@@ -77,9 +77,19 @@ namespace Perspex
             return new Point(a.x + b.x, a.y + b.y);
         }
 
+        public static Point operator +(Point a, Vector b)
+        {
+            return new Point(a.x + b.X, a.y + b.Y);
+        }
+
         public static Point operator -(Point a, Point b)
         {
             return new Point(a.x - b.x, a.y - b.y);
+        }
+
+        public static Point operator -(Point a, Vector b)
+        {
+            return new Point(a.x - b.X, a.y - b.Y);
         }
 
         public static Point operator *(Point point, Matrix matrix)
