@@ -24,7 +24,7 @@ namespace Perspex.Win32
 
         private IntPtr hwnd;
 
-        private Window owner;
+        private TopLevel owner;
 
         private bool trackingMouse;
 
@@ -51,6 +51,30 @@ namespace Perspex.Win32
                 UnmanagedMethods.GetClientRect(this.hwnd, out rect);
                 return new Size(rect.right, rect.bottom);
             }
+
+            set
+            {
+                if (value != this.ClientSize)
+                {
+                    var style = UnmanagedMethods.GetWindowLong(this.hwnd, -16);
+                    var exStyle = UnmanagedMethods.GetWindowLong(this.hwnd, -20);
+                    var padding = new UnmanagedMethods.RECT();
+
+                    if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
+                    {
+                        UnmanagedMethods.SetWindowPos(
+                            this.hwnd,
+                            IntPtr.Zero,
+                            0,
+                            0,
+                            -padding.left + padding.right + (int)value.Width,
+                            -padding.top + padding.bottom + (int)value.Height,
+                            UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("ClientSize = " + value);
+                }
+            }
         }
 
         public IPlatformHandle Handle
@@ -61,7 +85,17 @@ namespace Perspex.Win32
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl();
+        }
+
+        public void Dispose()
+        {
+            UnmanagedMethods.DestroyWindow(this.hwnd);
+        }
+
+        public void Hide()
+        {
+            UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
         public void Invalidate(Rect rect)
@@ -77,7 +111,7 @@ namespace Perspex.Win32
             UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
         }
 
-        public void SetOwner(Window owner)
+        public void SetOwner(TopLevel owner)
         {
             this.owner = owner;
         }
@@ -89,7 +123,24 @@ namespace Perspex.Win32
 
         public void Show()
         {
-            UnmanagedMethods.ShowWindow(this.hwnd, 1);
+            UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
+        }
+
+        protected virtual IntPtr CreateWindowOverride(ushort atom)
+        {
+            return UnmanagedMethods.CreateWindowEx(
+                0,
+                atom,
+                null,
+                (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
+                UnmanagedMethods.CW_USEDEFAULT,
+                UnmanagedMethods.CW_USEDEFAULT,
+                UnmanagedMethods.CW_USEDEFAULT,
+                UnmanagedMethods.CW_USEDEFAULT,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                IntPtr.Zero);
         }
 
         private void CreateWindow()
@@ -117,19 +168,7 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.hwnd = UnmanagedMethods.CreateWindowEx(
-                0,
-                atom,
-                null,
-                (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
-                UnmanagedMethods.CW_USEDEFAULT,
-                UnmanagedMethods.CW_USEDEFAULT,
-                UnmanagedMethods.CW_USEDEFAULT,
-                UnmanagedMethods.CW_USEDEFAULT,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero);
+            this.hwnd = this.CreateWindowOverride(atom);
 
             if (this.hwnd == IntPtr.Zero)
             {
@@ -159,11 +198,19 @@ namespace Perspex.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    this.Activated();
+                    if (this.Activated != null)
+                    {
+                        this.Activated();
+                    }
+
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    this.Closed();
+                    if (this.Closed != null)
+                    {
+                        this.Closed();
+                    }
+
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
@@ -236,22 +283,25 @@ namespace Perspex.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    UnmanagedMethods.PAINTSTRUCT ps;
-
-                    if (UnmanagedMethods.BeginPaint(this.hwnd, out ps) != IntPtr.Zero)
+                    if (this.Paint != null)
                     {
-                        UnmanagedMethods.RECT r;
-                        UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
-                        this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
-                        UnmanagedMethods.EndPaint(this.hwnd, ref ps);
-                    }
+                        UnmanagedMethods.PAINTSTRUCT ps;
 
+                        if (UnmanagedMethods.BeginPaint(this.hwnd, out ps) != IntPtr.Zero)
+                        {
+                            UnmanagedMethods.RECT r;
+                            UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
+                            this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
+                            UnmanagedMethods.EndPaint(this.hwnd, ref ps);
+                        }
+                    }
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     if (this.Resized != null)
-                    {
-                        this.Resized(new Size((int)lParam & 0xffff, (int)lParam >> 16));
+                    { 
+                        var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
+                        this.Resized(clientSize);
                     }
 
                     return IntPtr.Zero;

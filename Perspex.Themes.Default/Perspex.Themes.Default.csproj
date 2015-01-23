@@ -75,6 +75,7 @@
     <Compile Include="ToggleButtonStyle.cs" />
     <Compile Include="ListBoxStyle.cs" />
     <Compile Include="ListBoxItemStyle.cs" />
+    <Compile Include="PopupRootStyle.cs" />
     <Compile Include="WindowStyle.cs" />
     <Compile Include="ScrollViewerStyle.cs" />
     <Compile Include="ScrollBarStyle.cs" />

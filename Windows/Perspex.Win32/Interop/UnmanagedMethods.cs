@@ -64,6 +64,23 @@ namespace Perspex.Win32.Interop
             SWP_RESIZE = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER
         }
 
+        public enum ShowWindowCommand
+        {
+            Hide = 0,
+            Normal = 1,
+            ShowMinimized = 2,
+            Maximize = 3,
+            ShowMaximized = 3,
+            ShowNoActivate = 4,
+            Show = 5,
+            Minimize = 6,
+            ShowMinNoActive = 7,
+            ShowNA = 8,
+            Restore = 9,
+            ShowDefault = 10,
+            ForceMinimize = 11
+        }
+
         public enum SystemMetric
         {
             SM_CXSCREEN = 0,  // 0x00
@@ -451,11 +468,29 @@ namespace Perspex.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern Boolean AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
+
         [DllImport("user32.dll")]
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
         public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr CreateWindowEx(
+           int dwExStyle,
+           uint lpClassName,
+           string lpWindowName,
+           uint dwStyle,
+           int x,
+           int y,
+           int nWidth,
+           int nHeight,
+           IntPtr hWndParent,
+           IntPtr hMenu,
+           IntPtr hInstance,
+           IntPtr lpParam);
 
         [DllImport("user32.dll")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
@@ -495,6 +530,9 @@ namespace Perspex.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
@@ -536,7 +574,7 @@ namespace Perspex.Win32.Interop
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
 
         [DllImport("user32.dll")]
-        public static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
+        public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
         [DllImport("user32.dll")]
         public static extern int ToUnicode(
@@ -556,21 +594,6 @@ namespace Perspex.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr CreateWindowEx(
-           int dwExStyle,
-           uint lpClassName,
-           string lpWindowName,
-           int dwStyle,
-           int x,
-           int y,
-           int nWidth,
-           int nHeight,
-           IntPtr hWndParent,
-           IntPtr hMenu,
-           IntPtr hInstance,
-           IntPtr lpParam);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);

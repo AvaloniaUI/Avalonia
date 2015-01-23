@@ -10,12 +10,15 @@ namespace Perspex.Controls
     using Perspex.Platform;
     using Perspex.Rendering;
 
-    public class Popup : ContentControl
+    public class Popup : Control
     {
+        public static readonly PerspexProperty<Control> ChildProperty =
+            PerspexProperty.Register<Popup, Control>("Child");
+
         public static readonly PerspexProperty<bool> IsOpenProperty =
             PerspexProperty.Register<Popup, bool>("IsOpen");
 
-        private IPopupImpl impl;
+        private PopupRoot root;
 
         private Window window;
 
@@ -39,6 +42,12 @@ namespace Perspex.Controls
             });
         }
 
+        public Control Child
+        {
+            get { return this.GetValue(ChildProperty); }
+            set { this.SetValue(ChildProperty, value); }
+        }
+
         public bool IsOpen
         {
             get { return this.GetValue(IsOpenProperty); }
@@ -47,17 +56,20 @@ namespace Perspex.Controls
 
         public void Open()
         {
-            if (this.impl == null)
+            if (this.root == null)
             {
-                this.impl = this.window.CreatePopup();
+                this.root = new PopupRoot();
+                this.root[~PopupRoot.ContentProperty] = this[~ChildProperty];
             }
+
+            this.root.Show();
         }
 
         public void Close()
         {
-            if (this.impl != null)
+            if (this.root != null)
             {
-                this.impl.Dispose();
+                this.root.Hide();
             }
         }
 

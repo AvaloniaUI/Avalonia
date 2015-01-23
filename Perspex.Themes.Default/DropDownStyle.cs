@@ -79,6 +79,11 @@ namespace Perspex.Themes.Default
                             [~~ToggleButton.IsCheckedProperty] = control[~~DropDown.IsDropDownOpenProperty],
                             [Grid.ColumnProperty] = 1,
                         },
+                        new Popup
+                        {
+                            Child = new TextBlock { Text = "Hello World" },
+                            [~Popup.IsOpenProperty] = control[~DropDown.IsDropDownOpenProperty],
+                        }
                     },
                 },
             };

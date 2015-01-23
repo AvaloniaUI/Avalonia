@@ -164,7 +164,10 @@ namespace Perspex.Layout
 
                 if (!this.Root.IsMeasureValid)
                 {
-                    this.Root.Measure(this.Root.ClientSize);
+                    var size = new Size(
+                        double.IsNaN(this.Root.Width) ? double.PositiveInfinity : this.Root.Width,
+                        double.IsNaN(this.Root.Height) ? double.PositiveInfinity : this.Root.Height);
+                    this.Root.Measure(size);
                 }
 
                 foreach (var item in measure)

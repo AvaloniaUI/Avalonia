@@ -39,6 +39,7 @@
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
+    <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="Popup.cs" />
     <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
@@ -83,6 +84,8 @@
     <Compile Include="Shapes\Ellipse.cs" />
     <Compile Include="TextWrapping.cs" />
     <Compile Include="Utils\StringUtils.cs" />
+    <Compile Include="TopLevel.cs" />
+    <Compile Include="PopupRoot.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />

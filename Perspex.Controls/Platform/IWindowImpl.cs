@@ -6,34 +6,14 @@
 
 namespace Perspex.Platform
 {
-    using System;
     using Perspex.Controls;
-    using Perspex.Input.Raw;
 
-    public interface IWindowImpl
+    public interface IWindowImpl : ITopLevelImpl
     {
-        Size ClientSize { get; }
-
-        IPlatformHandle Handle { get; }
-
-        Action Activated { get; set; }
-
-        Action Closed { get; set; }
-
-        Action<RawInputEventArgs> Input { get; set; }
-
-        Action<Rect, IPlatformHandle> Paint { get; set; }
-
-        Action<Size> Resized { get; set; }
-
-        IPopupImpl CreatePopup();
-
-        void Invalidate(Rect rect);
-
         void SetTitle(string title);
 
-        void SetOwner(Window window);
-
         void Show();
+
+        void Hide();
     }
 }
