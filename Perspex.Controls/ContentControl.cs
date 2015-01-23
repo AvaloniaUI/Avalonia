@@ -31,32 +31,13 @@ namespace Perspex.Controls
 
         public ContentControl()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
-            {
-                var control1 = x.Item1 as Control;
-                var control2 = x.Item2 as Control;
-
-                if (control1 != null)
-                {
-                    control1.Parent = null;
-                }
-
-                if (control2 != null)
-                {
-                    control2.Parent = this;
-                }
-            });
+            this.GetObservableWithHistory(ContentProperty).Subscribe(this.SetContentParent);
         }
 
         public object Content
         {
             get { return this.GetValue(ContentProperty); }
             set { this.SetValue(ContentProperty, value); }
-        }
-
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.logicalChild; }
         }
 
         public HorizontalAlignment HorizontalContentAlignment
@@ -69,6 +50,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalContentAlignmentProperty); }
             set { this.SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         protected override void OnTemplateApplied()
@@ -85,6 +71,22 @@ namespace Perspex.Controls
             {
                 this.presenterSubscription = this.presenter.ChildObservable
                     .Subscribe(x => this.logicalChild.SingleItem = x);
+            }
+        }
+
+        private void SetContentParent(Tuple<object, object> change)
+        {
+            var control1 = change.Item1 as Control;
+            var control2 = change.Item2 as Control;
+
+            if (control1 != null)
+            {
+                control1.Parent = null;
+            }
+
+            if (control2 != null)
+            {
+                control2.Parent = this;
             }
         }
     }
