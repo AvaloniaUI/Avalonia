@@ -83,6 +83,7 @@ namespace Perspex.Controls.Generators
                 foreach (object item in items)
                 {
                     Control container = this.CreateContainerOverride(item);
+                    container.Parent = this.Owner;
                     container.TemplatedParent = null;
                     this.AddInternal(item, container);
                     result.Add(container);

@@ -44,7 +44,6 @@ namespace Perspex.Controls
                 }
             });
         }
-
         public Control Child
         {
             get { return this.GetValue(ChildProperty); }
@@ -68,6 +67,7 @@ namespace Perspex.Controls
             if (this.root == null)
             {
                 this.root = new PopupRoot();
+                this.root.Parent = this;
                 this.root[~PopupRoot.ContentProperty] = this[~ChildProperty];
             }
 

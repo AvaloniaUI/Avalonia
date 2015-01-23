@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Linq;
     using Perspex.Collections;
@@ -39,6 +40,7 @@ namespace Perspex.Controls
                 {
                     if (this.children != null)
                     {
+                        this.ClearLogicalParent(this.children);
                         this.children.CollectionChanged -= this.ChildrenChanged;
                     }
 
@@ -49,50 +51,59 @@ namespace Perspex.Controls
                     {
                         this.children.CollectionChanged += this.ChildrenChanged;
                         this.AddVisualChildren(value);
+                        this.SetLogicalParent(value);
                         this.InvalidateMeasure();
                     }
                 }
             }
         }
 
+        public bool IsLogicalParent { get; set; } = true;
+
         IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
         {
             get { return this.children; }
         }
 
+        private void ClearLogicalParent(IEnumerable<Control> controls)
+        {
+            if (this.IsLogicalParent)
+            {
+                foreach (var control in controls)
+                {
+                    control.Parent = null;
+                }
+            }
+        }
+
+        private void SetLogicalParent(IEnumerable<Control> controls)
+        {
+            if (this.IsLogicalParent)
+            {
+                foreach (var control in controls)
+                {
+                    control.Parent = this;
+                }
+            }
+        }
+
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var logicalParent = (Control)this;
-
-            while (logicalParent.TemplatedParent != null)
-            {
-                logicalParent = (Control)logicalParent.TemplatedParent;
-            }
-
-            // TODO: Handle Move and Replace.
+            // TODO: Handle Replace.
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     this.AddVisualChildren(e.NewItems.OfType<Visual>());
-
-                    foreach (var child in e.NewItems.OfType<Control>())
-                    {
-                        child.Parent = logicalParent;
-                    }
-
+                    this.SetLogicalParent(e.NewItems.OfType<Control>());
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
+                    this.ClearLogicalParent(e.OldItems.OfType<Control>());
                     this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
-
-                    foreach (var child in e.OldItems.OfType<Control>())
-                    {
-                        child.Parent = null;
-                    }
-
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
+                    this.ClearLogicalParent(e.OldItems.OfType<Control>());
                     this.ClearVisualChildren();
                     this.AddVisualChildren(this.children);
                     break;

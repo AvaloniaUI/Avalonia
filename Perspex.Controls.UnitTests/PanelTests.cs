@@ -25,6 +25,18 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
+        public void Setting_Controls_Should_Set_Child_Controls_Parent()
+        {
+            var panel = new Panel();
+            var child = new Control();
+
+            panel.Children = new Controls { child };
+
+            Assert.AreEqual(child.Parent, panel);
+            Assert.AreEqual(((ILogical)child).LogicalParent, panel);
+        }
+
+        [TestMethod]
         public void Removing_Control_From_Panel_Should_Clear_Child_Controls_Parent()
         {
             var panel = new Panel();
@@ -47,6 +59,23 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Add(child1);
             panel.Children.Add(child2);
             panel.Children.Clear();
+
+            Assert.IsNull(child1.Parent);
+            Assert.IsNull(((ILogical)child1).LogicalParent);
+            Assert.IsNull(child2.Parent);
+            Assert.IsNull(((ILogical)child2).LogicalParent);
+        }
+
+        [TestMethod]
+        public void Resetting_Panel_Children_Should_Clear_Child_Controls_Parent()
+        {
+            var panel = new Panel();
+            var child1 = new Control();
+            var child2 = new Control();
+
+            panel.Children.Add(child1);
+            panel.Children.Add(child2);
+            panel.Children = new Controls();
 
             Assert.IsNull(child1.Parent);
             Assert.IsNull(((ILogical)child1).LogicalParent);

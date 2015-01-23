@@ -118,6 +118,7 @@ namespace Perspex.Controls.Primitives
 
                     var child = this.Template.Build(this);
                     this.AddVisualChild(child);
+                    child.Parent = this;
 
                     var templateChildren = this.GetVisualDescendents()
                         .OfType<Control>()

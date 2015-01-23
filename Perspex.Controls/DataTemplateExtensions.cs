@@ -7,7 +7,7 @@
 namespace Perspex.Controls
 {
     using System.Linq;
-    using Perspex.VisualTree;
+    using Perspex.LogicalTree;
     using Splat;
 
     public static class DataTemplateExtensions
@@ -32,8 +32,7 @@ namespace Perspex.Controls
 
         public static IDataTemplate FindDataTemplate(this Control control, object data)
         {
-            // TODO: This needs to traverse the logical tree, not the visual.
-            foreach (var i in control.GetSelfAndVisualAncestors().OfType<Control>())
+            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<Control>())
             {
                 foreach (IDataTemplate dt in i.DataTemplates.Reverse())
                 {
