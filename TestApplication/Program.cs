@@ -333,6 +333,18 @@ namespace TestApplication
                 Header = "Lists",
                 Content = new StackPanel
                 {
+                    DataTemplates = new DataTemplates
+                    {
+                        new DataTemplate<Item>(x =>
+                            new StackPanel
+                            {
+                                Children = new Controls
+                                {
+                                    new TextBlock { Text = x.Name, FontSize = 24 },
+                                    new TextBlock { Text = x.Value },
+                                }
+                            })
+                    },
                     Orientation = Orientation.Horizontal,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -346,23 +358,12 @@ namespace TestApplication
                         },
                         new ListBox
                         {
-                            DataTemplates = new DataTemplates
-                            {
-                                new DataTemplate<Item>(x =>
-                                    new StackPanel
-                                    {
-                                        Children = new Controls
-                                        {
-                                            new TextBlock { Text = x.Name, FontSize = 24 },
-                                            new TextBlock { Text = x.Value },
-                                        }
-                                    })
-                            },
                             Items = listBoxData,
                         },
                         new DropDown
                         {
                             Content = "Dropdown",
+                            Items = listBoxData,
                             VerticalAlignment = VerticalAlignment.Center,
                         }
                     }

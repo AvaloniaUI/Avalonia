@@ -21,7 +21,13 @@ namespace Perspex.Win32
                 (int)p.Y, 
                 0,
                 0,
-                UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE);
+                UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+        }
+
+
+        public override void Show()
+        {
+            UnmanagedMethods.ShowWindow(this.Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)

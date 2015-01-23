@@ -81,7 +81,10 @@ namespace Perspex.Themes.Default
                         },
                         new Popup
                         {
-                            Child = new TextBlock { Text = "Hello World" },
+                            Child = new ItemsControl
+                            {
+                                [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
+                            },
                             PlacementTarget = control,
                             [~Popup.IsOpenProperty] = control[~DropDown.IsDropDownOpenProperty],
                         }

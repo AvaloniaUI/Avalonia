@@ -71,8 +71,6 @@ namespace Perspex.Win32
                             -padding.top + padding.bottom + (int)value.Height,
                             UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
                     }
-
-                    System.Diagnostics.Debug.WriteLine("ClientSize = " + value);
                 }
             }
         }
@@ -128,7 +126,7 @@ namespace Perspex.Win32
             UnmanagedMethods.SetWindowText(this.hwnd, title);
         }
 
-        public void Show()
+        public virtual void Show()
         {
             UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
         }
