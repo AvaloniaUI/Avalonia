@@ -14,7 +14,7 @@ namespace Perspex.Controls
     {
         public static Control ApplyDataTemplate(this Control control, object data)
         {
-            DataTemplate result = control.FindDataTemplate(data);
+            IDataTemplate result = control.FindDataTemplate(data);
 
             if (result != null)
             {
@@ -30,12 +30,12 @@ namespace Perspex.Controls
             }
         }
 
-        public static DataTemplate FindDataTemplate(this Control control, object data)
+        public static IDataTemplate FindDataTemplate(this Control control, object data)
         {
             // TODO: This needs to traverse the logical tree, not the visual.
             foreach (var i in control.GetSelfAndVisualAncestors().OfType<Control>())
             {
-                foreach (DataTemplate dt in i.DataTemplates.Reverse())
+                foreach (IDataTemplate dt in i.DataTemplates.Reverse())
                 {
                     if (dt.Match(data))
                     {
@@ -48,7 +48,7 @@ namespace Perspex.Controls
 
             if (global != null)
             {
-                foreach (DataTemplate dt in global.DataTemplates.Reverse())
+                foreach (IDataTemplate dt in global.DataTemplates.Reverse())
                 {
                     if (dt.Match(data))
                     {

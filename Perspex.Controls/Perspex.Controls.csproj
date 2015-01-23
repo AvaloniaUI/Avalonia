@@ -41,6 +41,7 @@
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="Popup.cs" />
+    <Compile Include="IDataTemplate.cs" />
     <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
     <Compile Include="ColumnDefinition.cs" />

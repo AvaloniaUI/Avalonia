@@ -52,7 +52,7 @@ namespace Perspex.Controls.Generators
 
         private TreeDataTemplate GetTreeDataTemplate(object item)
         {
-            DataTemplate template = this.Owner.FindDataTemplate(item);
+            IDataTemplate template = this.Owner.FindDataTemplate(item);
 
             if (template == null)
             {
