@@ -42,6 +42,14 @@ namespace Perspex.Win32.Interop
             IDC_HELP = 32651
         }
 
+        public enum MouseActivate : int
+        {
+            MA_ACTIVATE = 1,
+            MA_ACTIVATEANDEAT = 2,
+            MA_NOACTIVATE = 3,
+            MA_NOACTIVATEANDEAT = 4
+        }
+
         [Flags]
         public enum SetWindowPosFlags : uint
         {

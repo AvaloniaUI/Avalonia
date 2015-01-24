@@ -80,6 +80,7 @@ namespace Perspex.Controls
 
             this.PlatformImpl.SetOwner(this);
             this.PlatformImpl.Activated = this.HandleActivated;
+            this.PlatformImpl.Deactivated = this.HandleDeactivated;
             this.PlatformImpl.Closed = this.HandleClosed;
             this.PlatformImpl.Input = this.HandleInput;
             this.PlatformImpl.Paint = this.HandlePaint;
@@ -103,6 +104,8 @@ namespace Perspex.Controls
         public event EventHandler Activated;
 
         public event EventHandler Closed;
+
+        public event EventHandler Deactivated;
 
         public Size ClientSize
         {
@@ -172,6 +175,14 @@ namespace Perspex.Controls
             if (this.Closed != null)
             {
                 this.Closed(this, EventArgs.Empty);
+            }
+        }
+
+        private void HandleDeactivated()
+        {
+            if (this.Deactivated != null)
+            {
+                this.Deactivated(this, EventArgs.Empty);
             }
         }
 

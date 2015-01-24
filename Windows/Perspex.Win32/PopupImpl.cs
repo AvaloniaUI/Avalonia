@@ -38,8 +38,7 @@ namespace Perspex.Win32
 
             UnmanagedMethods.WindowStyles exStyle =
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
-                UnmanagedMethods.WindowStyles.WS_EX_TOPMOST |
-                UnmanagedMethods.WindowStyles.WS_EX_NOACTIVATE;
+                UnmanagedMethods.WindowStyles.WS_EX_TOPMOST;
 
             return UnmanagedMethods.CreateWindowEx(
                 (int)exStyle,
@@ -54,6 +53,17 @@ namespace Perspex.Win32
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+        }
+
+        protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            switch ((UnmanagedMethods.WindowsMessage)msg)
+            {
+                case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
+                    return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
+                default:
+                    return base.WndProc(hWnd, msg, wParam, lParam);
+            }
         }
     }
 }

@@ -21,6 +21,8 @@ namespace Perspex.Platform
 
         Action Closed { get; set; }
 
+        Action Deactivated { get; set; }
+
         Action<RawInputEventArgs> Input { get; set; }
 
         Action<Rect, IPlatformHandle> Paint { get; set; }

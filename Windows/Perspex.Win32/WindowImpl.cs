@@ -37,6 +37,8 @@ namespace Perspex.Win32
 
         public Action Closed { get; set; }
 
+        public Action Deactivated { get; set; }
+
         public Action<RawInputEventArgs> Input { get; set; }
 
         public Action<Rect, IPlatformHandle> Paint { get; set; }
@@ -148,50 +150,8 @@ namespace Perspex.Win32
                 IntPtr.Zero);
         }
 
-        private void CreateWindow()
-        {
-            // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            this.wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
-
-            this.className = Guid.NewGuid().ToString();
-
-            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
-            {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
-                style = 0,
-                lpfnWndProc = this.wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
-                hCursor = UnmanagedMethods.LoadCursor(IntPtr.Zero, (int)UnmanagedMethods.Cursor.IDC_ARROW),
-                hbrBackground = (IntPtr)5,
-                lpszClassName = this.className,
-            };
-
-            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
-
-            if (atom == 0)
-            {
-                throw new Win32Exception();
-            }
-
-            this.hwnd = this.CreateWindowOverride(atom);
-
-            if (this.hwnd == IntPtr.Zero)
-            {
-                throw new Win32Exception();
-            }
-
-            this.Handle = new PlatformHandle(this.hwnd, "HWND");
-        }
-
-        private Point ScreenToClient(uint x, uint y)
-        {
-            var p = new UnmanagedMethods.POINT { X = (int)x, Y = (int)y };
-            UnmanagedMethods.ScreenToClient(this.hwnd, ref p);
-            return new Point(p.X, p.Y);
-        }
-
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
-        private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        protected virtual IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double WheelDelta = 120.0;
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
@@ -203,9 +163,23 @@ namespace Perspex.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    if (this.Activated != null)
+                    switch ((int)lParam & 0xffff)
                     {
-                        this.Activated();
+                        case 1:
+                        case 2:
+                            if (this.Activated != null)
+                            {
+                                this.Activated();
+                            }
+
+                            break;
+                        case 0:
+                            if (this.Deactivated != null)
+                            {
+                                this.Deactivated();
+                            }
+
+                            break;
                     }
 
                     return IntPtr.Zero;
@@ -304,7 +278,7 @@ namespace Perspex.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
                     if (this.Resized != null)
-                    { 
+                    {
                         var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
                         this.Resized(clientSize);
                     }
@@ -319,6 +293,49 @@ namespace Perspex.Win32
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+
+        private void CreateWindow()
+        {
+            // Ensure that the delegate doesn't get garbage collected by storing it as a field.
+            this.wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+
+            this.className = Guid.NewGuid().ToString();
+
+            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            {
+                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                style = 0,
+                lpfnWndProc = this.wndProcDelegate,
+                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
+                hCursor = UnmanagedMethods.LoadCursor(IntPtr.Zero, (int)UnmanagedMethods.Cursor.IDC_ARROW),
+                hbrBackground = (IntPtr)5,
+                lpszClassName = this.className,
+            };
+
+            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+
+            if (atom == 0)
+            {
+                throw new Win32Exception();
+            }
+
+            this.hwnd = this.CreateWindowOverride(atom);
+
+            if (this.hwnd == IntPtr.Zero)
+            {
+                throw new Win32Exception();
+            }
+
+            this.Handle = new PlatformHandle(this.hwnd, "HWND");
+        }
+
+        private Point ScreenToClient(uint x, uint y)
+        {
+            var p = new UnmanagedMethods.POINT { X = (int)x, Y = (int)y };
+            UnmanagedMethods.ScreenToClient(this.hwnd, ref p);
+            return new Point(p.X, p.Y);
         }
     }
 }
