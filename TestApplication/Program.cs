@@ -170,14 +170,14 @@ namespace TestApplication
 
             DevTools.Attach(window);
 
-            //var renderer = ((IRenderRoot)window).Renderer;
-            //var last = renderer.RenderCount;
-            //DispatcherTimer.Run(() =>
-            //{
-            //    fps.Text = "FPS: " + (renderer.RenderCount - last);
-            //    last = renderer.RenderCount;
-            //    return true;
-            //}, TimeSpan.FromSeconds(1));
+            var renderer = ((IRenderRoot)window).Renderer;
+            var last = renderer.RenderCount;
+            DispatcherTimer.Run(() =>
+            {
+                fps.Text = "FPS: " + (renderer.RenderCount - last);
+                last = renderer.RenderCount;
+                return true;
+            }, TimeSpan.FromSeconds(1));
 
             window.Show();
             Application.Current.Run(window);
@@ -362,8 +362,8 @@ namespace TestApplication
                         },
                         new DropDown
                         {
-                            Content = "Dropdown",
                             Items = listBoxData,
+                            SelectedItem = listBoxData[0],
                             VerticalAlignment = VerticalAlignment.Center,
                         }
                     }

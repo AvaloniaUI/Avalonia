@@ -84,6 +84,7 @@ namespace Perspex.Themes.Default
                             Child = new ListBox
                             {
                                 [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
+                                [~~ListBox.SelectedItemProperty] = control[~~DropDown.SelectedItemProperty],
                             },
                             PlacementTarget = control,
                             [~Popup.IsOpenProperty] = control[~DropDown.IsDropDownOpenProperty],

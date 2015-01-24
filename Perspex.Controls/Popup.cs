@@ -21,6 +21,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Control> PlacementTargetProperty =
             PerspexProperty.Register<Popup, Control>("PlacementTarget");
 
+        public static readonly PerspexProperty<bool> StaysOpenProperty =
+            PerspexProperty.Register<Popup, bool>("StaysOpen", true);
+
         private PopupRoot root;
 
         private Window window;
@@ -62,6 +65,12 @@ namespace Perspex.Controls
             set { this.SetValue(PlacementTargetProperty, value); }
         }
 
+        public bool StaysOpen
+        {
+            get { return this.GetValue(StaysOpenProperty); }
+            set { this.SetValue(StaysOpenProperty, value); }
+        }
+
         public void Open()
         {
             if (this.root == null)
@@ -69,6 +78,7 @@ namespace Perspex.Controls
                 this.root = new PopupRoot();
                 this.root.Parent = this;
                 this.root[~PopupRoot.ContentProperty] = this[~ChildProperty];
+                this.root.Deactivated += this.RootDeactivated;
             }
 
             this.root.SetPosition(this.GetPosition());
@@ -104,6 +114,14 @@ namespace Perspex.Controls
             else
             {
                 return new Point();
+            }
+        }
+
+        private void RootDeactivated(object sender, EventArgs e)
+        {
+            if (!this.StaysOpen)
+            {
+                this.Close();
             }
         }
     }

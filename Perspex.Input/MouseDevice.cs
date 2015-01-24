@@ -31,6 +31,11 @@ namespace Perspex.Input
                 .Subscribe(this.ProcessRawEvent);
         }
 
+        public static IMouseDevice Instance
+        {
+            get { return Locator.Current.GetService<IMouseDevice>(); }
+        }
+
         public IInputElement Captured
         {
             get;

@@ -54,6 +54,7 @@ namespace Perspex.Win32
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
+            locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
         }

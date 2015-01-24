@@ -125,11 +125,11 @@ namespace Perspex.Controls.Primitives
 
             if (selectable != null)
             {
-                var container = this.ItemContainerGenerator.GetItemForContainer(selectable);
+                var item = this.ItemContainerGenerator.GetItemForContainer(selectable);
 
-                if (container != null)
+                if (item != null)
                 {
-                    this.SelectedItem = container;
+                    this.SelectedItem = item;
                 }
             }
         }

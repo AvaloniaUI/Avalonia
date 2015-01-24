@@ -35,6 +35,7 @@ namespace Perspex.Controls
         public DropDown()
         {
             this.GetObservableWithHistory(ContentProperty).Subscribe(this.SetContentParent);
+            this.Bind(ContentProperty, this.GetObservable(DropDown.SelectedItemProperty));
         }
 
         public object Content
@@ -53,6 +54,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(VerticalContentAlignmentProperty); }
             set { this.SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
+        public bool IsDropDownOpen
+        {
+            get { return this.GetValue(IsDropDownOpenProperty); }
+            set { this.SetValue(IsDropDownOpenProperty, value); }
         }
 
         IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
@@ -76,7 +83,7 @@ namespace Perspex.Controls
                     .Subscribe(x => this.logicalChild.SingleItem = x);
             }
         }
-
+        
         private void SetContentParent(Tuple<object, object> change)
         {
             var control1 = change.Item1 as Control;
