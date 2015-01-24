@@ -81,7 +81,7 @@ namespace Perspex.Themes.Default
                         },
                         new Popup
                         {
-                            Child = new ItemsControl
+                            Child = new ListBox
                             {
                                 [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
                             },

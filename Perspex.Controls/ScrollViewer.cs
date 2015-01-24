@@ -65,20 +65,20 @@ namespace Perspex.Controls
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
             this.Bind(
-                HorizontalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => Math.Max(x.Extent.Width - x.Viewport.Width, 0)));
+                VerticalScrollBarViewportSizeProperty,
+                extentAndViewport.Select(x => Max((x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height), 0)));
 
             this.Bind(
                 HorizontalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => Math.Max((x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width), 0)));
+                extentAndViewport.Select(x => Max((x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width), 0)));
+
+            this.Bind(
+                HorizontalScrollBarMaximumProperty,
+                extentAndViewport.Select(x => Max(x.Extent.Width - x.Viewport.Width, 0)));
 
             this.Bind(
                 VerticalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => Math.Max(x.Extent.Height - x.Viewport.Height, 0)));
-
-            this.Bind(
-                VerticalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => Math.Max((x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height), 0)));
+                extentAndViewport.Select(x => Max(x.Extent.Height - x.Viewport.Height, 0)));
 
             this.GetObservable(OffsetProperty).Subscribe(x =>
             {
@@ -137,6 +137,12 @@ namespace Perspex.Controls
         private static double Clamp(double value, double min, double max)
         {
             return (value < min) ? min : (value > max) ? max : value;
+        }
+
+        private static double Max(double x, double y)
+        {
+            var result = Math.Max(x, y);
+            return double.IsNaN(result) ? 0 : Math.Round(result);
         }
 
         private static Vector CoerceOffset(PerspexObject o, Vector value)

@@ -221,6 +221,14 @@ namespace Perspex.Layout
         {
             var parent = this.GetVisualParent<ILayoutable>();
 
+            if (this.IsMeasureValid)
+            {
+                this.Log().Debug(
+                    "Invalidated measure of {0} (#{1:x8})",
+                    this.GetType().Name,
+                    this.GetHashCode());
+            }
+
             this.IsMeasureValid = false;
             this.IsArrangeValid = false;
             this.previousMeasure = null;
@@ -244,6 +252,14 @@ namespace Perspex.Layout
         public void InvalidateArrange()
         {
             var root = this.GetLayoutRoot();
+
+            if (this.IsArrangeValid)
+            {
+                this.Log().Debug(
+                    "Invalidated arrange of {0} (#{1:x8})",
+                    this.GetType().Name,
+                    this.GetHashCode());
+            }
 
             this.IsArrangeValid = false;
             this.previousArrange = null;

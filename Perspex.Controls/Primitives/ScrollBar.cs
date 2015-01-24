@@ -100,7 +100,7 @@ namespace Perspex.Controls.Primitives
 
                 case ScrollBarVisibility.Auto:
                     var viewportSize = this.ViewportSize;
-                    return double.IsNaN(viewportSize) || viewportSize < this.Maximum - this.Minimum;
+                    return !double.IsNaN(viewportSize) && viewportSize < this.Maximum - this.Minimum;
 
                 default:
                     throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
