@@ -446,14 +446,11 @@ namespace Perspex
         /// <summary>
         /// Gets all of the <see cref="PerspexProperty"/> values explicitly set on this object.
         /// </summary>
-        public IEnumerable<Tuple<PerspexProperty, object, BindingPriority>> GetSetValues()
+        public IEnumerable<PerspexPropertyValue> GetSetValues()
         {
             foreach (var value in this.values)
             {
-                yield return Tuple.Create(
-                    value.Key,
-                    value.Value.Value,
-                    (BindingPriority)value.Value.ValuePriority);
+                yield return new PerspexPropertyValue(value.Key, value.Value);
             }
         }
 

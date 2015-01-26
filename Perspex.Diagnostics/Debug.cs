@@ -44,11 +44,11 @@ namespace Perspex.Diagnostics
                 {
                     builder.Append(Indent(indent));
                     builder.Append(" |  ");
-                    builder.Append(value.Item1.Name);
+                    builder.Append(value.Property.Name);
                     builder.Append(" = ");
-                    builder.Append(value.Item2 ?? "(null)");
+                    builder.Append(value.CurrentValue ?? "(null)");
                     builder.Append(" [");
-                    builder.Append(value.Item3);
+                    builder.Append(value.PriorityValue.ValuePriority);
                     builder.AppendLine("]");
                 }
             }
