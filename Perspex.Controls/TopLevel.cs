@@ -146,6 +146,12 @@ namespace Perspex.Controls
             return Disposable.Create(() => this.autoSizing = false);
         }
 
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            this.PlatformImpl.ClientSize = finalSize;
+            return base.ArrangeOverride(finalSize);
+        }
+
         protected void ExecuteLayoutPass()
         {
             this.LayoutManager.ExecuteLayoutPass();
