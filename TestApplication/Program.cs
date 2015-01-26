@@ -106,6 +106,10 @@ namespace TestApplication
             //LogManager.Enable(new TestLogger());
             //LogManager.Instance.LogLayoutMessages = true;
 
+            // The version of ReactiveUI currently included is for WPF and so expects a WPF
+            // dispatcher. This makes sure it's initialized.
+            System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+
             App application = new App
             {
                 DataTemplates = new DataTemplates
