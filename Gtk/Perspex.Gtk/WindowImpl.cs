@@ -14,7 +14,7 @@ namespace Perspex.Gtk
 
     public class WindowImpl : Gtk.Window, IWindowImpl
     {
-        private Window owner;
+        private TopLevel owner;
 
         private IPlatformHandle windowHandle;
 
@@ -33,9 +33,10 @@ namespace Perspex.Gtk
         public Size ClientSize
         {
             get { return this.clientSize; }
+            set { this.Resize((int)value.Width, (int)value.Height); }
         }
 
-        IPlatformHandle IWindowImpl.Handle
+        IPlatformHandle ITopLevelImpl.Handle
         {
             get { return this.windowHandle; }
         }
@@ -43,6 +44,8 @@ namespace Perspex.Gtk
         public Action Activated { get; set; }
 
         public Action Closed { get; set; }
+
+        public Action Deactivated { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 
@@ -60,9 +63,15 @@ namespace Perspex.Gtk
             this.QueueDraw();
         }
 
-        public void SetOwner(Window window)
+        public Point PointToScreen(Point point)
         {
-            this.owner = window;
+            // TODO: Implement.
+            return new Point();
+        }
+
+        public void SetOwner(TopLevel owner)
+        {
+            this.owner = owner;
         }
 
         public void SetTitle(string title)
