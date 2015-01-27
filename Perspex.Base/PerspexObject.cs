@@ -315,7 +315,6 @@ namespace Perspex
                 };
 
                 this.PropertyChanged += handler;
-                observer.OnNext(this.GetValue(property));
 
                 return () =>
                 {

@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Base.UnitTests
 {
     using System;
@@ -198,11 +197,17 @@ namespace Perspex.Base.UnitTests
         public void GetObservable_Returns_Initial_Value()
         {
             Class1 target = new Class1();
-            bool raised = false;
+            int raised = 0;
 
-            target.GetObservable(Class1.FooProperty).Subscribe(x => raised = x == "foodefault");
+            target.GetObservable(Class1.FooProperty).Subscribe(x =>
+            {
+                if (x == "foodefault")
+                {
+                    ++raised;
+                }
+            });
 
-            Assert.IsTrue(raised);
+            Assert.AreEqual(1, raised);
         }
 
         [TestMethod]
