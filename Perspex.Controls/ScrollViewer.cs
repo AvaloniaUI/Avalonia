@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Reactive.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Threading;
 
     public class ScrollViewer : ContentControl
     {
@@ -62,7 +63,8 @@ namespace Perspex.Controls
             var extentAndViewport = Observable.CombineLatest(
                 this.GetObservable(ExtentProperty),
                 this.GetObservable(ViewportProperty))
-                .Select(x => new { Extent = x[0], Viewport = x[1] });
+                .Select(x => new { Extent = x[0], Viewport = x[1] })
+                .Throttle(TimeSpan.FromMilliseconds(100), PerspexScheduler.Instance);
 
             this.Bind(
                 VerticalScrollBarViewportSizeProperty,

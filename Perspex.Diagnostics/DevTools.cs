@@ -118,10 +118,8 @@ namespace Perspex.Diagnostics
             {
                 Window window = new Window
                 {
-                    // HACK: Set width and height here as a quick fix as there's a problem with 
-                    // the dev tools window hanging when it's set to auto-size.
-                    Width = 800,
-                    Height = 600,
+                    Width = 1024,
+                    Height = 512,
                     Content = new DevTools
                     {
                         Root = (Window)sender,
