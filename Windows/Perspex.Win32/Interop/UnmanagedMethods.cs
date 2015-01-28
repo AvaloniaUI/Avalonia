@@ -190,6 +190,13 @@ namespace Perspex.Win32.Interop
             SM_SYSTEMDOCKED = 0x2004,
         }
 
+        public enum WindowActivate
+        {
+            WA_INACTIVE,
+            WA_ACTIVE,
+            WA_CLICKACTIVE,
+        }
+
         [Flags]
         public enum WindowStyles : uint
         {

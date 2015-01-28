@@ -163,17 +163,20 @@ namespace Perspex.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    switch ((int)lParam & 0xffff)
+                    var wa = (UnmanagedMethods.WindowActivate)((int)wParam & 0xffff);
+                    
+                    switch (wa)
                     {
-                        case 1:
-                        case 2:
+                        case UnmanagedMethods.WindowActivate.WA_ACTIVE:
+                        case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
                             if (this.Activated != null)
                             {
                                 this.Activated();
                             }
 
                             break;
-                        case 0:
+
+                        case UnmanagedMethods.WindowActivate.WA_INACTIVE:
                             if (this.Deactivated != null)
                             {
                                 this.Deactivated();
