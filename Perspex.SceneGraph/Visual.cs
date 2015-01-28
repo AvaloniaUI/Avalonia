@@ -153,12 +153,7 @@ namespace Perspex
 
         protected void ClearVisualChildren()
         {
-            // TODO: Just call visualChildren.Clear() when we have a PerspexList that notifies of 
-            // the removed items.
-            while (this.visualChildren.Count > 0)
-            {
-                this.visualChildren.RemoveAt(this.visualChildren.Count - 1);
-            }
+            this.visualChildren.Clear();
         }
 
         protected void RemoveVisualChild(Visual visual)
