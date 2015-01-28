@@ -206,9 +206,9 @@ namespace Perspex.Layout
 
                 this.toArrange = new Heap<Item>(HeapType.Minimum);
 
-                if (!this.Root.IsArrangeValid)
+                if (!this.Root.IsArrangeValid && this.Root.IsMeasureValid)
                 {
-                    this.Root.Arrange(new Rect(this.Root.ClientSize));
+                    this.Root.Arrange(new Rect(this.Root.DesiredSize.Value));
                 }
 
                 if (this.toMeasure.Count > 0)
