@@ -24,9 +24,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> StaysOpenProperty =
             PerspexProperty.Register<Popup, bool>("StaysOpen", true);
 
-        private PopupRoot root;
+        private PopupRoot popupRoot;
 
-        private Window window;
+        private TopLevel topLevel;
 
         static Popup()
         {
@@ -73,36 +73,43 @@ namespace Perspex.Controls
 
         public void Open()
         {
-            if (this.root == null)
+            if (this.popupRoot == null)
             {
-                this.root = new PopupRoot();
-                this.root.Parent = this;
-                this.root[~PopupRoot.ContentProperty] = this[~ChildProperty];
-                this.root.Deactivated += this.RootDeactivated;
+                this.popupRoot = new PopupRoot();
+                this.popupRoot.Parent = this;
+                this.popupRoot[~PopupRoot.ContentProperty] = this[~ChildProperty];
             }
 
-            this.root.SetPosition(this.GetPosition());
-            this.root.Show();
+            this.popupRoot.SetPosition(this.GetPosition());
+            this.popupRoot.PreviewPointerPressed += this.MaybeClose;
+            this.topLevel.PreviewPointerPressed += this.MaybeClose;
+            this.topLevel.Deactivated += this.MaybeClose;
+            this.popupRoot.Show();
         }
 
         public void Close()
         {
-            if (this.root != null)
+            if (this.popupRoot != null)
             {
-                this.root.Hide();
+                this.popupRoot.PreviewPointerPressed -= this.MaybeClose;
+                this.topLevel.PreviewPointerPressed -= this.MaybeClose;
+                this.topLevel.Deactivated -= this.MaybeClose;
+                this.popupRoot.Hide();
             }
+
+            this.IsOpen = false;
         }
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-            this.window = root as Window;
+            this.topLevel = root as TopLevel;
         }
 
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
             base.OnDetachedFromVisualTree(oldRoot);
-            this.window = null;
+            this.topLevel = null;
         }
 
         private Point GetPosition()
@@ -117,7 +124,7 @@ namespace Perspex.Controls
             }
         }
 
-        private void RootDeactivated(object sender, EventArgs e)
+        private void MaybeClose(object sender, EventArgs e)
         {
             if (!this.StaysOpen)
             {

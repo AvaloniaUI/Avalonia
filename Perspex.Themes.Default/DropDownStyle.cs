@@ -87,7 +87,8 @@ namespace Perspex.Themes.Default
                                 [~~ListBox.SelectedItemProperty] = control[~~DropDown.SelectedItemProperty],
                             },
                             PlacementTarget = control,
-                            [~Popup.IsOpenProperty] = control[~DropDown.IsDropDownOpenProperty],
+                            StaysOpen = false,
+                            [~~Popup.IsOpenProperty] = control[~~DropDown.IsDropDownOpenProperty],
                         }
                     },
                 },

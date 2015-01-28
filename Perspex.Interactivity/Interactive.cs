@@ -120,7 +120,7 @@ namespace Perspex.Interactivity
 
             if (this.eventHandlers.TryGetValue(e.RoutedEvent, out delegates))
             {
-                foreach (Delegate handler in delegates)
+                foreach (Delegate handler in delegates.ToList())
                 {
                     handler.DynamicInvoke(this, e);
                 }

@@ -128,14 +128,18 @@ namespace Perspex.Input
                     this.lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
 
-                    source.RaiseEvent(new PointerPressEventArgs
+                    var e = new PointerPressEventArgs
                     {
                         Device = this,
-                        RoutedEvent = InputElement.PointerPressedEvent,
+                        RoutedEvent = InputElement.PreviewPointerPressedEvent,
                         OriginalSource = source,
                         Source = source,
                         ClickCount = this.clickCount,
-                    });
+                    };
+
+                    source.RaiseEvent(e);
+                    e.RoutedEvent = InputElement.PointerPressedEvent;
+                    source.RaiseEvent(e);
                 }
 
                 IInputElement focusable = this.GetFocusable(hit);

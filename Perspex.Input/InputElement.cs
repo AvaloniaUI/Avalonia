@@ -41,6 +41,9 @@ namespace Perspex.Input
         public static readonly RoutedEvent<KeyEventArgs> PreviewKeyDownEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>("PreviewKeyDown", RoutingStrategy.Tunnel);
 
+        public static readonly RoutedEvent<PointerPressEventArgs> PreviewPointerPressedEvent =
+            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PreviewPointerPressed", RoutingStrategy.Tunnel);
+
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
 
@@ -97,6 +100,12 @@ namespace Perspex.Input
         {
             add { this.AddHandler(PreviewKeyDownEvent, value); }
             remove { this.RemoveHandler(PreviewKeyDownEvent, value); }
+        }
+
+        public event EventHandler<PointerPressEventArgs> PreviewPointerPressed
+        {
+            add { this.AddHandler(PreviewPointerPressedEvent, value); }
+            remove { this.RemoveHandler(PreviewPointerPressedEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerEnter
