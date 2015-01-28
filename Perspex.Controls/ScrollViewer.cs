@@ -49,8 +49,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
             PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>("VerticalScrollBarVisibility", ScrollBarVisibility.Auto);
 
-        private IDisposable contentBindings;
-
         static ScrollViewer()
         {
             AffectsCoercion(ExtentProperty, OffsetProperty);

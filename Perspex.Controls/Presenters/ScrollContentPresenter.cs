@@ -26,8 +26,6 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
-        private IDisposable contentBindings;
-
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);

@@ -11,8 +11,6 @@ namespace Perspex.Diagnostics.ViewModels
 
     internal class VisualTreeNode : TreeNode
     {
-        private string classes;
-
         public VisualTreeNode(IVisual visual)
             : base((Control)visual)
         {

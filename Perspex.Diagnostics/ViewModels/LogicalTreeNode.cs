@@ -12,8 +12,6 @@ namespace Perspex.Diagnostics.ViewModels
 
     internal class LogicalTreeNode : TreeNode
     {
-        private string classes;
-
         public LogicalTreeNode(ILogical logical)
             : base((Control)logical)
         {
