@@ -37,6 +37,8 @@ namespace Perspex.Interactivity
             this.RoutingStrategy = routingStrategy;
         }
 
+        public event EventHandler<RoutedEventArgs> Raised;
+
         public Type EventArgsType 
         { 
             get; 
@@ -60,8 +62,6 @@ namespace Perspex.Interactivity
             get; 
             private set; 
         }
-
-        public event EventHandler<RoutedEventArgs> Raised;
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,

@@ -51,8 +51,8 @@ namespace Perspex.Controls
 
         static ScrollViewer()
         {
-            AffectsCoercion(ExtentProperty, OffsetProperty);
-            AffectsCoercion(ViewportProperty, OffsetProperty);
+            PerspexObject.AffectsCoercion(ExtentProperty, OffsetProperty);
+            PerspexObject.AffectsCoercion(ViewportProperty, OffsetProperty);
         }
 
         public ScrollViewer()

@@ -50,7 +50,6 @@ namespace Perspex.Controls.Shapes
                         this.renderedGeometry = this.DefiningGeometry.Clone();
                         this.renderedGeometry.Transform = new MatrixTransform(this.transform);
                     }
-
                 }
 
                 return this.renderedGeometry;

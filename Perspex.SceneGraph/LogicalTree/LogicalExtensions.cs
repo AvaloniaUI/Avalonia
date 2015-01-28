@@ -35,7 +35,6 @@ namespace Perspex.LogicalTree
             }
         }
 
-       
         public static IEnumerable<ILogical> GetLogicalChildren(this ILogical logical)
         {
             return logical.LogicalChildren;

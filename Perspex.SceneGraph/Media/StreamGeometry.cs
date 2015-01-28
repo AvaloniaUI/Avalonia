@@ -35,6 +35,11 @@ namespace Perspex.Media
             }
         }
 
+        private StreamGeometry(IGeometryImpl impl)
+        {
+            this.PlatformImpl = impl;
+        }
+
         public override Geometry Clone()
         {
             return new StreamGeometry(((IStreamGeometryImpl)this.PlatformImpl).Clone());
@@ -43,11 +48,6 @@ namespace Perspex.Media
         public StreamGeometryContext Open()
         {
             return new StreamGeometryContext(((IStreamGeometryImpl)this.PlatformImpl).Open());
-        }
-
-        private StreamGeometry(IGeometryImpl impl)
-        {
-            this.PlatformImpl = impl;
         }
     }
 }

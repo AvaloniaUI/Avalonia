@@ -110,6 +110,5 @@ namespace Perspex.Direct2D1
                 (float)rect.Width,
                 (float)rect.Height);
         }
-
     }
 }

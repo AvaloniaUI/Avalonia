@@ -277,6 +277,7 @@ namespace Perspex.Win32
                             UnmanagedMethods.EndPaint(this.hwnd, ref ps);
                         }
                     }
+
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
@@ -297,7 +298,6 @@ namespace Perspex.Win32
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
-
 
         private void CreateWindow()
         {

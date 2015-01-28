@@ -124,7 +124,7 @@ namespace Perspex.Controls
                 this.FontFamily,
                 this.FontSize,
                 this.FontStyle);
-            result.Constraint = constraint;
+            result.Constraint = this.constraint;
             return result;
         }
 

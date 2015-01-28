@@ -24,6 +24,11 @@ namespace Perspex.Direct2D1.Media
             this.path = new PathGeometry(factory);
         }
 
+        protected StreamGeometryImpl(PathGeometry geometry)
+        {
+            this.path = geometry;
+        }
+
         public override Rect Bounds
         {
             get { return this.path.GetBounds().ToPerspex(); }
@@ -47,11 +52,6 @@ namespace Perspex.Direct2D1.Media
         public IStreamGeometryContextImpl Open()
         {
             return new StreamGeometryContextImpl(this.path.Open());
-        }
-
-        protected StreamGeometryImpl(PathGeometry geometry)
-        {
-            this.path = geometry;
         }
     }
 }

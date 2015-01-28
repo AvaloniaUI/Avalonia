@@ -44,7 +44,7 @@ namespace Perspex.Controls.Primitives
                 this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
                 this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
                 .Select(_ => this.CalculateIsVisible());
-            this.Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
+            this.Bind(ScrollBar.IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         public double Minimum

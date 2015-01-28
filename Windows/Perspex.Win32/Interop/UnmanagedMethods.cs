@@ -484,7 +484,7 @@ namespace Perspex.Win32.Interop
         }
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern Boolean AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
+        public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
 
         [DllImport("user32.dll")]
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);

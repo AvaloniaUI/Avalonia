@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ListBox.cs" company="Steven Kirk">
+// <copyright file="Popup.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -47,6 +47,7 @@ namespace Perspex.Controls
                 }
             });
         }
+
         public Control Child
         {
             get { return this.GetValue(ChildProperty); }

@@ -4,12 +4,19 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Globalization;
-
 namespace Perspex.Controls.Utils
 {
+    using System.Globalization;
+
     internal static class StringUtils
     {
+        private enum CharClass
+        {
+            CharClassUnknown,
+            CharClassWhitespace,
+            CharClassAlphaNumeric,
+        }
+
         public static bool IsEol(char c)
         {
             return c == '\r' || c == '\n';
@@ -38,8 +45,9 @@ namespace Perspex.Controls.Utils
                 case UnicodeCategory.CurrencySymbol:
                 case UnicodeCategory.MathSymbol:
                     return true;
+
                 // TODO: How do you do this in .NET?
-                //case UnicodeCategory.OtherPunctuation:
+                // case UnicodeCategory.OtherPunctuation:
                 //    // words cannot start with '.', but they can start with '&' or '*' (for example)
                 //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
                 default:
@@ -248,14 +256,6 @@ namespace Perspex.Controls.Utils
             }
 
             return cursor;
-        }
-
-
-        private enum CharClass
-        {
-            CharClassUnknown,
-            CharClassWhitespace,
-            CharClassAlphaNumeric,
         }
     }
 }

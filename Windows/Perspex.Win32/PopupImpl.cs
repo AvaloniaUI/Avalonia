@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="WindowImpl.cs" company="Steven Kirk">
+// <copyright file="PopupImpl.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -23,7 +23,6 @@ namespace Perspex.Win32
                 0,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
         }
-
 
         public override void Show()
         {

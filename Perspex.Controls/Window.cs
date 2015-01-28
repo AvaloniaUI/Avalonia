@@ -15,7 +15,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>("Title", "Window");
 
-
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);

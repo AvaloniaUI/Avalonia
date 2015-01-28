@@ -147,6 +147,20 @@ namespace Perspex.Controls
             }
         }
 
+        internal void CaretIndexChanged(int caretIndex)
+        {
+            if (this.GetVisualParent() != null)
+            {
+                this.caretBlink = true;
+                this.caretTimer.Stop();
+                this.caretTimer.Start();
+                this.InvalidateVisual();
+
+                var rect = this.FormattedText.HitTestTextPosition(caretIndex);
+                this.BringIntoView(rect);
+            }
+        }
+
         protected override FormattedText CreateFormattedText()
         {
             var result = base.CreateFormattedText();
@@ -159,6 +173,7 @@ namespace Perspex.Controls
             {
                 result.SetForegroundBrush(Brushes.White, start, length);
             }
+
             return result;
         }
 
@@ -197,7 +212,7 @@ namespace Perspex.Controls
                 case Key.A:
                     if (modifiers == ModifierKeys.Control)
                     {
-                        SelectAll();
+                        this.SelectAll();
                     }
                     else
                     {
@@ -295,12 +310,6 @@ namespace Perspex.Controls
             e.Handled = true;
         }
 
-        private void SelectAll()
-        {
-            this.SelectionStart = 0;
-            this.SelectionEnd = this.Text.Length;
-        }
-
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             var point = e.GetPosition(this);
@@ -343,20 +352,6 @@ namespace Perspex.Controls
             if (e.Device.Captured == this)
             {
                 e.Device.Capture(null);
-            }
-        }
-
-        internal void CaretIndexChanged(int caretIndex)
-        {
-            if (this.GetVisualParent() != null)
-            {
-                this.caretBlink = true;
-                this.caretTimer.Stop();
-                this.caretTimer.Start();
-                this.InvalidateVisual();
-
-                var rect = this.FormattedText.HitTestTextPosition(caretIndex);
-                this.BringIntoView(rect);
             }
         }
 
@@ -461,6 +456,12 @@ namespace Perspex.Controls
             }
 
             this.CaretIndex = caretIndex;
+        }
+
+        private void SelectAll()
+        {
+            this.SelectionStart = 0;
+            this.SelectionEnd = this.Text.Length;
         }
 
         private bool DeleteSelection()

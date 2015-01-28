@@ -103,7 +103,6 @@ namespace Perspex.Controls.Presenters
 
             if (content != null)
             {
-
                 if (content is Control)
                 {
                     result = (Control)content;
