@@ -28,7 +28,7 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(eventArgsType != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
             Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).GetTypeInfo().IsAssignableFrom(eventArgsType.GetTypeInfo()));
-            Contract.Requires<InvalidCastException>(typeof(Interactive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
+            Contract.Requires<InvalidCastException>(typeof(IInteractive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
 
             this.EventArgsType = eventArgsType;
             this.Name = name;
@@ -63,7 +63,7 @@ namespace Perspex.Interactivity
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,
             RoutingStrategy routingStrategy)
-                where TOwner : Interactive
+                where TOwner : IInteractive
                 where TEventArgs : RoutedEventArgs
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -91,7 +91,7 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
-            Contract.Requires<InvalidCastException>(typeof(Interactive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
+            Contract.Requires<InvalidCastException>(typeof(IInteractive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
         }
     }
 }
