@@ -23,11 +23,11 @@ namespace Perspex.Controls.Primitives
 
         private Point? lastPoint;
 
-        public Thumb()
+        static Thumb()
         {
-            this.DragStarted += (_, e) => this.OnDragStarted(e);
-            this.DragDelta += (_, e) => this.OnDragDelta(e);
-            this.DragCompleted += (_, e) => this.OnDragCompleted(e);
+            DragStartedEvent.AddClassHandler<Thumb>(x => x.OnDragStarted);
+            DragDeltaEvent.AddClassHandler<Thumb>(x => x.OnDragDelta);
+            DragCompletedEvent.AddClassHandler<Thumb>(x => x.OnDragCompleted);
         }
 
         public event EventHandler<VectorEventArgs> DragStarted

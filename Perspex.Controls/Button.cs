@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using Perspex.Input;
     using Perspex.Interactivity;
 
     public class Button : ContentControl
@@ -17,30 +18,6 @@ namespace Perspex.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
-        }
-
-        public Button()
-        {
-            this.PointerPressed += (s, e) =>
-            {
-                this.Classes.Add(":pressed");
-                e.Device.Capture(this);
-            };
-
-            this.PointerReleased += (s, e) =>
-            {
-                e.Device.Capture(null);
-                this.Classes.Remove(":pressed");
-
-                if (this.Classes.Contains(":pointerover"))
-                {
-                    RoutedEventArgs click = new RoutedEventArgs
-                    {
-                        RoutedEvent = ClickEvent,
-                    };
-                    this.RaiseEvent(click);
-                }
-            };
         }
 
         public event EventHandler<RoutedEventArgs> Click
@@ -57,6 +34,43 @@ namespace Perspex.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             return base.ArrangeOverride(finalSize);
+        }
+
+        protected virtual void OnClick()
+        {
+        }
+
+        protected override void OnPointerPressed(PointerPressEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            this.Classes.Add(":pressed");
+            e.Device.Capture(this);
+        }
+
+        protected override void OnPointerReleased(PointerEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            e.Device.Capture(null);
+            this.Classes.Remove(":pressed");
+
+            if (this.Classes.Contains(":pointerover"))
+            {
+                this.RaiseClickEvent();
+            }
+        }
+
+        private void RaiseClickEvent()
+        {
+            this.OnClick();
+
+            RoutedEventArgs click = new RoutedEventArgs
+            {
+                RoutedEvent = ClickEvent,
+            };
+
+            this.RaiseEvent(click);
         }
     }
 }

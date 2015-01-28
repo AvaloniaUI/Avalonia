@@ -56,26 +56,23 @@ namespace Perspex.Input
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
 
-        public static readonly RoutedEvent<PointerEventArgs> PointerWheelChangedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerWheelChanged", RoutingStrategy.Bubble);
+        public static readonly RoutedEvent<PointerWheelEventArgs> PointerWheelChangedEvent =
+            RoutedEvent.Register<InputElement, PointerWheelEventArgs>("PointerWheelChanged", RoutingStrategy.Bubble);
 
         static InputElement()
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
-        }
 
-        public InputElement()
-        {
-            this.GotFocus += (_, e) => this.OnGotFocus(e);
-            this.LostFocus += (_, e) => this.OnLostFocus(e);
-            this.KeyDown += (_, e) => this.OnKeyDown(e);
-            this.PreviewKeyDown += (_, e) => this.OnPreviewKeyDown(e);
-            this.PointerEnter += (_, e) => this.OnPointerEnter(e);
-            this.PointerLeave += (_, e) => this.OnPointerLeave(e);
-            this.PointerMoved += (_, e) => this.OnPointerMoved(e);
-            this.PointerPressed += (_, e) => this.OnPointerPressed(e);
-            this.PointerReleased += (_, e) => this.OnPointerReleased(e);
-            this.PointerWheelChanged += (_, e) => this.OnPointerWheelChanged(e);
+            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
+            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
+            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
+            PreviewKeyDownEvent.AddClassHandler<InputElement>(x => x.OnPreviewKeyDown);
+            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
+            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
+            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
+            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
+            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
+            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus

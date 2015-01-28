@@ -116,6 +116,8 @@ namespace Perspex.Interactivity
 
             List<Delegate> delegates;
 
+            e.RoutedEvent.InvokeRaised(this, e);
+
             if (this.eventHandlers.TryGetValue(e.RoutedEvent, out delegates))
             {
                 foreach (Delegate handler in delegates)

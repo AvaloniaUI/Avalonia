@@ -7,6 +7,7 @@
 namespace Perspex.Interactivity
 {
     using System;
+    using System.Linq.Expressions;
     using System.Reflection;
 
     public enum RoutingStrategy
@@ -60,6 +61,8 @@ namespace Perspex.Interactivity
             private set; 
         }
 
+        public event EventHandler<RoutedEventArgs> Raised;
+
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,
             RoutingStrategy routingStrategy)
@@ -81,6 +84,14 @@ namespace Perspex.Interactivity
 
             return new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
         }
+
+        internal void InvokeRaised(object sender, RoutedEventArgs e)
+        {
+            if (this.Raised != null)
+            {
+                this.Raised(sender, e);
+            }
+        }
     }
 
     public class RoutedEvent<TEventArgs> : RoutedEvent
@@ -92,6 +103,20 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
             Contract.Requires<InvalidCastException>(typeof(IInteractive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
+        }
+
+        public void AddClassHandler<TTarget>(Func<TTarget, Action<TEventArgs>> handler) where TTarget : class
+        {
+            this.Raised += (s, e) =>
+            {
+                var target = s as TTarget;
+                var args = e as TEventArgs;
+
+                if (target != null)
+                {
+                    handler(target)(args);
+                }
+            };
         }
     }
 }
