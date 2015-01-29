@@ -75,6 +75,8 @@ namespace Perspex.Layout.UnitTests
 
                 var window = new Window()
                 {
+                    Width = 800,
+                    Height = 600,
                     Content = (scrollViewer = new ScrollViewer
                     {
                         Width = 200,
@@ -137,7 +139,6 @@ namespace Perspex.Layout.UnitTests
             var windowImpl = new Mock<IWindowImpl>();
 
             globalStyles.Setup(x => x.Styles).Returns(theme);
-            windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 600));
 
             l.RegisterConstant(new Mock<IInputManager>().Object, typeof(IInputManager));
             l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
