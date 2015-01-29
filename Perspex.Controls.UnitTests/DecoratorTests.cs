@@ -8,12 +8,11 @@ namespace Perspex.Controls.UnitTests
 {
     using System.Collections.Specialized;
     using System.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class DecoratorTests
     {
-        [TestMethod]
+        [Fact]
         public void Setting_Content_Should_Set_Child_Controls_Parent()
         {
             var decorator = new Decorator();
@@ -21,11 +20,11 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Content = child;
 
-            Assert.AreEqual(child.Parent, decorator);
-            Assert.AreEqual(((ILogical)child).LogicalParent, decorator);
+            Assert.Equal(child.Parent, decorator);
+            Assert.Equal(((ILogical)child).LogicalParent, decorator);
         }
 
-        [TestMethod]
+        [Fact]
         public void Clearing_Content_Should_Clear_Child_Controls_Parent()
         {
             var decorator = new Decorator();
@@ -34,11 +33,11 @@ namespace Perspex.Controls.UnitTests
             decorator.Content = child;
             decorator.Content = null;
 
-            Assert.IsNull(child.Parent);
-            Assert.IsNull(((ILogical)child).LogicalParent);
+            Assert.Null(child.Parent);
+            Assert.Null(((ILogical)child).LogicalParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Content_Control_Should_Appear_In_LogicalChildren()
         {
             var decorator = new Decorator();
@@ -46,10 +45,10 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Content = child;
 
-            CollectionAssert.AreEqual(new[] { child }, ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, ((ILogical)decorator).LogicalChildren.ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void Clearing_Content_Should_Remove_From_LogicalChildren()
         {
             var decorator = new Decorator();
@@ -58,10 +57,10 @@ namespace Perspex.Controls.UnitTests
             decorator.Content = child;
             decorator.Content = null;
 
-            CollectionAssert.AreEqual(new ILogical[0], ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], ((ILogical)decorator).LogicalChildren.ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var decorator = new Decorator();
@@ -73,10 +72,10 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Content = child;
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Clearing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var decorator = new Decorator();
@@ -90,10 +89,10 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Content = null;
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Changing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var decorator = new Decorator();
@@ -108,7 +107,7 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Content = child2;
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
     }
 }

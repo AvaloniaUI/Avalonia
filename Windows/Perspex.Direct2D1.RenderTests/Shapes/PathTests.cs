@@ -6,13 +6,12 @@
 
 namespace Perspex.Direct2D1.RenderTests.Shapes
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Controls.Shapes;
+    using Xunit;
 
-    [TestClass]
     public class PathTests : TestBase
     {
         public PathTests()
@@ -20,7 +19,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void Path_100px_Triangle_Centered()
         {
             Decorator target = new Decorator
@@ -43,7 +42,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         }
 
 
-        [TestMethod]
+        [Fact]
         public void Path_Tick_Scaled()
         {
             Decorator target = new Decorator
@@ -66,7 +65,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Path_Expander_With_Border()
         {
             Decorator target = new Decorator

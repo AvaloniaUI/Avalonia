@@ -8,13 +8,12 @@ namespace Perspex.Styling.UnitTests
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Styling;
 
-    ////[TestClass]
+    ////[TestFixture]
     ////public class StyleTests
     ////{
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Style_With_Only_Type_Selector_Should_Update_Value()
     ////    {
     ////        Style style = new Style(x => x.OfType<Class1>())
@@ -29,10 +28,10 @@ namespace Perspex.Styling.UnitTests
 
     ////        style.Attach(target);
 
-    ////        Assert.AreEqual("Foo", target.Foo);
+    ////        Assert.Equal("Foo", target.Foo);
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Style_With_Class_Selector_Should_Update_And_Restore_Value()
     ////    {
     ////        Style style = new Style(x => x.OfType<Class1>().Class("foo"))
@@ -46,14 +45,14 @@ namespace Perspex.Styling.UnitTests
     ////        var target = new Class1();
 
     ////        style.Attach(target);
-    ////        Assert.AreEqual("foodefault", target.Foo);
+    ////        Assert.Equal("foodefault", target.Foo);
     ////        target.Classes.Add("foo");
-    ////        Assert.AreEqual("Foo", target.Foo);
+    ////        Assert.Equal("Foo", target.Foo);
     ////        target.Classes.Remove("foo");
-    ////        Assert.AreEqual("foodefault", target.Foo);
+    ////        Assert.Equal("foodefault", target.Foo);
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void LocalValue_Should_Override_Style()
     ////    {
     ////        Style style = new Style(x => x.OfType<Class1>())
@@ -70,10 +69,10 @@ namespace Perspex.Styling.UnitTests
     ////        };
 
     ////        style.Attach(target);
-    ////        Assert.AreEqual("Original", target.Foo);
+    ////        Assert.Equal("Original", target.Foo);
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Later_Styles_Should_Override_Earlier()
     ////    {
     ////        Styles styles = new Styles
@@ -104,7 +103,7 @@ namespace Perspex.Styling.UnitTests
     ////        target.Classes.Add("foo");
     ////        target.Classes.Remove("foo");
 
-    ////        CollectionAssert.AreEqual(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
+    ////        Assert.Equal(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
     ////    }
 
     ////    private class Class1 : Control

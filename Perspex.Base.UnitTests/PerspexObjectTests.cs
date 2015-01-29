@@ -10,13 +10,11 @@ namespace Perspex.Base.UnitTests
     using System.Linq;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class PerspexObjectTests
     {
-        [TestInitialize]
-        public void Initialize()
+        public PerspexObjectTests()
         {
             // Ensure properties are registered.
             PerspexProperty p;
@@ -24,49 +22,49 @@ namespace Perspex.Base.UnitTests
             p = Class2.BarProperty;
         }
 
-        [TestMethod]
+        [Fact]
         public void GetProperties_Returns_Registered_Properties()
         {
             string[] names = PerspexObject.GetProperties(typeof(Class1)).Select(x => x.Name).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Foo", "Baz", "Qux" }, names);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetProperties_Returns_Registered_Properties_For_Base_Types()
         {
             string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Bar", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Foo", "Baz", "Qux" }, names);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetValue_Returns_Default_Value()
         {
             Class1 target = new Class1();
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetValue_Returns_Overridden_Default_Value()
         {
             Class2 target = new Class2();
 
-            Assert.AreEqual("foooverride", target.GetValue(Class1.FooProperty));
+            Assert.Equal("foooverride", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetValue_Returns_Set_Value()
         {
             Class1 target = new Class1();
 
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetValue_Returns_Inherited_Value()
         {
             Class1 parent = new Class1();
@@ -74,10 +72,10 @@ namespace Perspex.Base.UnitTests
 
             parent.SetValue(Class1.BazProperty, "changed");
 
-            Assert.AreEqual("changed", child.GetValue(Class1.BazProperty));
+            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void ClearValue_Clears_Value()
         {
             Class1 target = new Class1();
@@ -85,20 +83,20 @@ namespace Perspex.Base.UnitTests
             target.SetValue(Class1.FooProperty, "newvalue");
             target.ClearValue(Class1.FooProperty);
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void SetValue_Sets_Value()
         {
             Class1 target = new Class1();
 
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void SetValue_Raises_PropertyChanged()
         {
             Class1 target = new Class1();
@@ -114,10 +112,10 @@ namespace Perspex.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.IsTrue(raised);
+            Assert.True(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void SetValue_Doesnt_Raise_PropertyChanged_If_Value_Not_Changed()
         {
             Class1 target = new Class1();
@@ -132,10 +130,10 @@ namespace Perspex.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "bar");
 
-            Assert.IsFalse(raised);
+            Assert.False(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void SetValue_Doesnt_Raise_PropertyChanged_If_Value_Not_Changed_From_Default()
         {
             Class1 target = new Class1();
@@ -148,52 +146,56 @@ namespace Perspex.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "foodefault");
 
-            Assert.IsFalse(raised);
+            Assert.False(raised);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [Fact]
         public void SetValue_Throws_Exception_For_Unregistered_Property()
         {
             Class1 target = new Class1();
 
-            target.SetValue(Class2.BarProperty, "invalid");
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.SetValue(Class2.BarProperty, "invalid");
+            });
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [Fact]
         public void SetValue_Throws_Exception_For_Invalid_Value_Type()
         {
             Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, 123);
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.SetValue(Class1.FooProperty, 123);
+            });
         }
 
-        [TestMethod]
+        [Fact]
         public void SetValue_Causes_Coercion()
         {
             Class1 target = new Class1();
 
             target.SetValue(Class1.QuxProperty, 5);
-            Assert.AreEqual(5, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(5, target.GetValue(Class1.QuxProperty));
             target.SetValue(Class1.QuxProperty, -5);
-            Assert.AreEqual(0, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(0, target.GetValue(Class1.QuxProperty));
             target.SetValue(Class1.QuxProperty, 15);
-            Assert.AreEqual(10, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(10, target.GetValue(Class1.QuxProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void CoerceValue_Causes_Recoercion()
         {
             Class1 target = new Class1();
 
             target.SetValue(Class1.QuxProperty, 7);
-            Assert.AreEqual(7, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(7, target.GetValue(Class1.QuxProperty));
             target.MaxQux = 5;
             target.CoerceValue(Class1.QuxProperty);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetObservable_Returns_Initial_Value()
         {
             Class1 target = new Class1();
@@ -207,10 +209,10 @@ namespace Perspex.Base.UnitTests
                 }
             });
 
-            Assert.AreEqual(1, raised);
+            Assert.Equal(1, raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetObservable_Returns_Property_Change()
         {
             Class1 target = new Class1();
@@ -220,10 +222,10 @@ namespace Perspex.Base.UnitTests
             raised = false;
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.IsTrue(raised);
+            Assert.True(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetObservable_Returns_Property_Change_Only_For_Correct_Property()
         {
             Class2 target = new Class2();
@@ -233,10 +235,10 @@ namespace Perspex.Base.UnitTests
             raised = false;
             target.SetValue(Class2.BarProperty, "newvalue");
 
-            Assert.IsFalse(raised);
+            Assert.False(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetObservable_Dispose_Stops_Property_Changes()
         {
             Class1 target = new Class1();
@@ -248,10 +250,10 @@ namespace Perspex.Base.UnitTests
             raised = false;
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.IsFalse(raised);
+            Assert.False(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_InheritanceParent_Raises_PropertyChanged_When_Value_Changed_In_Parent()
         {
             bool raised = false;
@@ -268,10 +270,10 @@ namespace Perspex.Base.UnitTests
 
             child.Parent = parent;
 
-            Assert.IsTrue(raised);
+            Assert.True(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_InheritanceParent_Doesnt_Raise_PropertyChanged_When_Local_Value_Set()
         {
             bool raised = false;
@@ -285,10 +287,10 @@ namespace Perspex.Base.UnitTests
 
             child.Parent = parent;
 
-            Assert.IsFalse(raised);
+            Assert.False(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_Value_In_InheritanceParent_Raises_PropertyChanged()
         {
             bool raised = false;
@@ -305,10 +307,10 @@ namespace Perspex.Base.UnitTests
 
             parent.SetValue(Class1.BazProperty, "changed");
 
-            Assert.IsTrue(raised);
+            Assert.True(raised);
         }
 
-        [TestMethod]
+        [Fact]
         public void Bind_Sets_Current_Value()
         {
             Class1 target = new Class1();
@@ -317,10 +319,10 @@ namespace Perspex.Base.UnitTests
             source.SetValue(Class1.FooProperty, "initial");
             target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
 
-            Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
+            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void Bind_NonGeneric_Sets_Current_Value()
         {
             Class1 target = new Class1();
@@ -329,10 +331,10 @@ namespace Perspex.Base.UnitTests
             source.SetValue(Class1.FooProperty, "initial");
             target.Bind((PerspexProperty)Class1.FooProperty, source.GetObservable(Class1.FooProperty));
 
-            Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
+            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void Bind_Sets_Subsequent_Value()
         {
             Class1 target = new Class1();
@@ -342,10 +344,10 @@ namespace Perspex.Base.UnitTests
             target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
             source.SetValue(Class1.FooProperty, "subsequent");
 
-            Assert.AreEqual("subsequent", target.GetValue(Class1.FooProperty));
+            Assert.Equal("subsequent", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void Binding_Doesnt_Set_Value_After_Clear()
         {
             Class1 target = new Class1();
@@ -356,10 +358,10 @@ namespace Perspex.Base.UnitTests
             target.ClearValue(Class1.FooProperty);
             source.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void Bind_Doesnt_Set_Value_After_Reset()
         {
             Class1 target = new Class1();
@@ -370,19 +372,21 @@ namespace Perspex.Base.UnitTests
             target.SetValue(Class1.FooProperty, "reset");
             source.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("reset", target.GetValue(Class1.FooProperty));
+            Assert.Equal("reset", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [Fact]
         public void Bind_Throws_Exception_For_Invalid_Value_Type()
         {
             Class1 target = new Class1();
 
-            target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
+            });
         }
 
-        [TestMethod]
+        [Fact]
         public void BindTwoWay_Gets_Initial_Value_From_Source()
         {
             Class1 source = new Class1();
@@ -391,10 +395,10 @@ namespace Perspex.Base.UnitTests
             source.SetValue(Class1.FooProperty, "initial");
             target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
 
-            Assert.AreEqual("initial", target.GetValue(Class1.FooProperty));
+            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void BindTwoWay_Updates_Values()
         {
             Class1 source = new Class1();
@@ -403,14 +407,14 @@ namespace Perspex.Base.UnitTests
             source.SetValue(Class1.FooProperty, "first");
             target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
 
-            Assert.AreEqual("first", target.GetValue(Class1.FooProperty));
+            Assert.Equal("first", target.GetValue(Class1.FooProperty));
             source.SetValue(Class1.FooProperty, "second");
-            Assert.AreEqual("second", target.GetValue(Class1.FooProperty));
+            Assert.Equal("second", target.GetValue(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "third");
-            Assert.AreEqual("third", source.GetValue(Class1.FooProperty));
+            Assert.Equal("third", source.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             Class1 target = new Class1();
@@ -418,20 +422,20 @@ namespace Perspex.Base.UnitTests
             target.SetValue(Class1.FooProperty, "newvalue");
             target.SetValue(Class1.FooProperty, PerspexProperty.UnsetValue);
 
-            Assert.AreEqual("foodefault", target.GetValue(Class1.FooProperty));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void StyleBinding_Overrides_Default_Value()
         {
             Class1 target = new Class1();
 
             target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
 
-            Assert.AreEqual("stylevalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("stylevalue", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void StyleBinding_Doesnt_Override_Local_Value()
         {
             Class1 target = new Class1();
@@ -439,39 +443,41 @@ namespace Perspex.Base.UnitTests
             target.SetValue(Class1.FooProperty, "newvalue");
             target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
 
-            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void this_Operator_Returns_Value_Property()
         {
             Class1 target = new Class1();
 
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("newvalue", target[Class1.FooProperty]);
+            Assert.Equal("newvalue", target[Class1.FooProperty]);
         }
 
-        [TestMethod]
+        [Fact]
         public void this_Operator_Sets_Value_Property()
         {
             Class1 target = new Class1();
 
             target[Class1.FooProperty] = "newvalue";
 
-            Assert.AreEqual("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [Fact]
         public void this_Operator_Doesnt_Accept_Observable()
         {
             Class1 target = new Class1();
 
-            target[Class1.FooProperty] = Observable.Return("newvalue");
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target[Class1.FooProperty] = Observable.Return("newvalue");
+            });
         }
 
-        [TestMethod]
+        [Fact]
         public void this_Operator_Binds_One_Way()
         {
             Class1 target1 = new Class1();
@@ -482,10 +488,10 @@ namespace Perspex.Base.UnitTests
             target2[binding] = target1[!Class1.FooProperty];
             target1.SetValue(Class1.FooProperty, "second");
 
-            Assert.AreEqual("second", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("second", target2.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void this_Operator_Binds_Two_Way()
         {
             Class1 target1 = new Class1();
@@ -494,14 +500,14 @@ namespace Perspex.Base.UnitTests
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
-            Assert.AreEqual("first", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("first", target2.GetValue(Class1.FooProperty));
             target1.SetValue(Class1.FooProperty, "second");
-            Assert.AreEqual("second", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("second", target2.GetValue(Class1.FooProperty));
             target2.SetValue(Class1.FooProperty, "third");
-            Assert.AreEqual("third", target1.GetValue(Class1.FooProperty));
+            Assert.Equal("third", target1.GetValue(Class1.FooProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void this_Operator_Binds_One_Time()
         {
             Class1 target1 = new Class1();
@@ -512,7 +518,7 @@ namespace Perspex.Base.UnitTests
             target2[binding] = target1[!Class1.FooProperty];
             target1.SetValue(Class1.FooProperty, "second");
 
-            Assert.AreEqual("first", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("first", target2.GetValue(Class1.FooProperty));
         }
 
         /// <summary>

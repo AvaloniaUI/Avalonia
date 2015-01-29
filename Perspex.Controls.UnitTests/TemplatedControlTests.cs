@@ -4,15 +4,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Controls.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
@@ -20,11 +14,11 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Styling;
     using Perspex.VisualTree;
     using Splat;
+    using Xunit;
 
-    [TestClass]
     public class TemplatedControlTests
     {
-        [TestMethod]
+        [Fact]
         public void Template_Doesnt_Get_Executed_On_Set()
         {
             bool executed = false;
@@ -40,10 +34,10 @@ namespace Perspex.Controls.UnitTests
                 Template = template,
             };
 
-            Assert.IsFalse(executed);
+            Assert.False(executed);
         }
 
-        [TestMethod]
+        [Fact]
         public void Template_Gets_Executed_On_Measure()
         {
             bool executed = false;
@@ -61,10 +55,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Measure(new Size(100, 100));
 
-            Assert.IsTrue(executed);
+            Assert.True(executed);
         }
 
-        [TestMethod]
+        [Fact]
         public void Template_Result_Becomes_Visual_Child()
         {
             Control templateResult = new Control();
@@ -82,10 +76,10 @@ namespace Perspex.Controls.UnitTests
             target.Measure(new Size(100, 100));
             var children = target.GetVisualChildren().ToList();
 
-            CollectionAssert.AreEqual(new[] { templateResult }, children);
+            Assert.Equal(new[] { templateResult }, children);
         }
 
-        [TestMethod]
+        [Fact]
         public void TemplatedParent_Is_Set_On_Generated_Template()
         {
             Control templateResult = new Control();
@@ -102,10 +96,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Measure(new Size(100, 100));
 
-            Assert.AreEqual(target, templateResult.TemplatedParent);
+            Assert.Equal(target, templateResult.TemplatedParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void OnTemplateApplied_Is_Called()
         {
             var target = new TestTemplatedControl
@@ -118,10 +112,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Measure(new Size(100, 100));
 
-            Assert.IsTrue(target.OnTemplateAppliedCalled);
+            Assert.True(target.OnTemplateAppliedCalled);
         }
 
-        [TestMethod]
+        [Fact]
         public void Template_Should_Be_Instantated()
         {
             var target = new TestTemplatedControl
@@ -143,12 +137,12 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             var child = target.GetVisualChildren().Single();
-            Assert.IsInstanceOfType(child, typeof(StackPanel));
+            Assert.IsType<StackPanel>(child);
             child = child.VisualChildren.Single();
-            Assert.IsInstanceOfType(child, typeof(TextBlock));
+            Assert.IsType<TextBlock>(child);
         }
 
-        [TestMethod]
+        [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
             using (Locator.Current.WithResolver())
@@ -186,7 +180,7 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Templated_Children_Should_Have_TemplatedParent_Set()
         {
             var target = new TestTemplatedControl
@@ -210,11 +204,11 @@ namespace Perspex.Controls.UnitTests
             var panel = target.GetTemplateControls().OfType<StackPanel>().Single();
             var textBlock = target.GetTemplateControls().OfType<TextBlock>().Single();
 
-            Assert.AreEqual(target, panel.TemplatedParent);
-            Assert.AreEqual(target, textBlock.TemplatedParent);
+            Assert.Equal(target, panel.TemplatedParent);
+            Assert.Equal(target, textBlock.TemplatedParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Presenter_Children_Should_Not_Have_TemplatedParent_Set()
         {
             var target = new TestTemplatedControl
@@ -235,11 +229,11 @@ namespace Perspex.Controls.UnitTests
             var presenter = target.GetTemplateControls().OfType<ContentPresenter>().Single();
             var textBlock = (TextBlock)presenter.Child;
 
-            Assert.AreEqual(target, presenter.TemplatedParent);
-            Assert.IsNull(textBlock.TemplatedParent);
+            Assert.Equal(target, presenter.TemplatedParent);
+            Assert.Null(textBlock.TemplatedParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Nested_Templated_Controls_Have_Correct_TemplatedParent()
         {
             var target = new TestTemplatedControl
@@ -272,10 +266,10 @@ namespace Perspex.Controls.UnitTests
             var presenter = contentControl.GetTemplateControls().OfType<ContentPresenter>().Single();
             var textBlock = (TextBlock)presenter.Content;
 
-            Assert.AreEqual(target, contentControl.TemplatedParent);
-            Assert.AreEqual(contentControl, border.TemplatedParent);
-            Assert.AreEqual(contentControl, presenter.TemplatedParent);
-            Assert.AreEqual(target, textBlock.TemplatedParent);
+            Assert.Equal(target, contentControl.TemplatedParent);
+            Assert.Equal(contentControl, border.TemplatedParent);
+            Assert.Equal(contentControl, presenter.TemplatedParent);
+            Assert.Equal(target, textBlock.TemplatedParent);
         }
     }
 }

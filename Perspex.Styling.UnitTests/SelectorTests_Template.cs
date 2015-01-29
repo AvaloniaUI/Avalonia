@@ -8,14 +8,13 @@ namespace Perspex.Styling.UnitTests
 {
     using System.Linq;
     using System.Reactive.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Styling;
 
-    ////[TestClass]
+    ////[TestFixture]
     ////public class SelectorTests_Template
     ////{
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Control_In_Template_Is_Matched_With_Template_Selector()
     ////    {
     ////        var templatedControl = new Mock<ITemplatedControl>();
@@ -26,10 +25,10 @@ namespace Perspex.Styling.UnitTests
 
     ////        var selector = new Selector().Template().OfType<Border>();
 
-    ////        Assert.IsTrue(ActivatorValue(selector, border));
+    ////        Assert.True(ActivatorValue(selector, border));
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Nested_Control_In_Template_Is_Matched_With_Template_Selector()
     ////    {
     ////        var templatedControl = new Mock<ITemplatedControl>();
@@ -40,10 +39,10 @@ namespace Perspex.Styling.UnitTests
 
     ////        var selector = new Selector().Template().OfType<TextBlock>();
 
-    ////        Assert.IsTrue(ActivatorValue(selector, textBlock));
+    ////        Assert.True(ActivatorValue(selector, textBlock));
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Control_In_Template_Is_Matched_With_TypeOf_TemplatedControl()
     ////    {
     ////        var templatedControl = new Mock<TestTemplatedControl>();
@@ -53,10 +52,10 @@ namespace Perspex.Styling.UnitTests
 
     ////        var selector = new Selector().OfType(templatedControl.Object.GetType()).Template().OfType<Border>();
 
-    ////        Assert.IsTrue(ActivatorValue(selector,border));
+    ////        Assert.True(ActivatorValue(selector,border));
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Control_In_Template_Is_Matched_With_Correct_TypeOf_And_Class_Of_TemplatedControl()
     ////    {
     ////        var templatedControl = new Mock<TestTemplatedControl>();
@@ -67,10 +66,10 @@ namespace Perspex.Styling.UnitTests
 
     ////        var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
 
-    ////        Assert.IsTrue(ActivatorValue(selector, border));
+    ////        Assert.True(ActivatorValue(selector, border));
     ////    }
 
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Control_In_Template_Is_Not_Matched_With_Correct_TypeOf_And_Wrong_Class_Of_TemplatedControl()
     ////    {
     ////        var templatedControl = new Mock<TestTemplatedControl>();
@@ -81,7 +80,7 @@ namespace Perspex.Styling.UnitTests
 
     ////        var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
 
-    ////        Assert.IsFalse(ActivatorValue(selector, border));
+    ////        Assert.False(ActivatorValue(selector, border));
     ////    }
 
     ////    private static bool ActivatorValue(Selector selector, IStyleable control)

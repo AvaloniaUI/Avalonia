@@ -7,8 +7,6 @@
 namespace Perspex.Controls.UnitTests
 {
     using System;
-    using System.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Controls;
     using Perspex.Layout;
@@ -16,19 +14,19 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Rendering;
     using Perspex.Styling;
     using Splat;
+    using Xunit;
 
-    [TestClass]
     public class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void Classes_Should_Initially_Be_Empty()
         {
             var target = new Control();
 
-            Assert.AreEqual(0, target.Classes.Count);
+            Assert.Equal(0, target.Classes.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void Adding_Control_To_IRenderRoot_Should_Style_Control()
         {
             using (Locator.CurrentMutable.WithResolver())
@@ -45,7 +43,7 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Adding_Tree_To_ILayoutRoot_Should_Style_Controls()
         {
             using (Locator.CurrentMutable.WithResolver())

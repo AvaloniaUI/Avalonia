@@ -9,15 +9,14 @@ namespace Perspex.Styling.UnitTests
     using System;
     using System.Linq;
     using System.Reactive.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Collections;
     using Perspex.Styling;
+    using Xunit;
 
-    [TestClass]
     public class SelectorTests_Descendent
     {
-        [TestMethod]
+        [Fact]
         public void Descendent_Matches_Control_When_It_Is_Child_OfType()
         {
             var parent = new Mock<TestLogical1>();
@@ -28,10 +27,10 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType(parent.Object.GetType()).Descendent().OfType(child.Object.GetType());
 
-            Assert.IsTrue(ActivatorValue(selector, childStyleable.Object));
+            Assert.True(ActivatorValue(selector, childStyleable.Object));
         }
 
-        [TestMethod]
+        [Fact]
         public void Descendent_Matches_Control_When_It_Is_Descendent_OfType()
         {
             var grandparent = new Mock<TestLogical1>();
@@ -43,10 +42,10 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType(grandparent.Object.GetType()).Descendent().OfType(child.Object.GetType());
 
-            Assert.IsTrue(ActivatorValue(selector, child.Object));
+            Assert.True(ActivatorValue(selector, child.Object));
         }
 
-        [TestMethod]
+        [Fact]
         public void Descendent_Matches_Control_When_It_Is_Descendent_OfType_And_Class()
         {
             var grandparent = new Mock<TestLogical1>();
@@ -60,10 +59,10 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType(grandparent.Object.GetType()).Class("foo").Descendent().OfType(child.Object.GetType());
 
-            Assert.IsTrue(ActivatorValue(selector, child.Object));
+            Assert.True(ActivatorValue(selector, child.Object));
         }
 
-        [TestMethod]
+        [Fact]
         public void Descendent_Doesnt_Match_Control_When_It_Is_Descendent_OfType_But_Wrong_Class()
         {
             var grandparent = new Mock<TestLogical1>();
@@ -77,7 +76,7 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
 
-            Assert.IsFalse(ActivatorValue(selector, child.Object));
+            Assert.False(ActivatorValue(selector, child.Object));
         }
 
         private static bool ActivatorValue(Selector selector, IStyleable control)

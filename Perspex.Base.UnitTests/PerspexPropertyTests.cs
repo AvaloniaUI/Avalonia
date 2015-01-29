@@ -7,12 +7,11 @@
 namespace Perspex.Base.UnitTests
 {
     using System;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class PerspexPropertyTests
     {
-        [TestMethod]
+        [Fact]
         public void Constructor_Sets_Properties()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(
@@ -23,13 +22,13 @@ namespace Perspex.Base.UnitTests
                 BindingMode.OneWay,
                 null);
 
-            Assert.AreEqual("test", target.Name);
-            Assert.AreEqual(typeof(string), target.PropertyType);
-            Assert.AreEqual(typeof(Class1), target.OwnerType);
-            Assert.AreEqual(false, target.Inherits);
+            Assert.Equal("test", target.Name);
+            Assert.Equal(typeof(string), target.PropertyType);
+            Assert.Equal(typeof(Class1), target.OwnerType);
+            Assert.Equal(false, target.Inherits);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetDefaultValue_Returns_Registered_Value()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(
@@ -40,10 +39,10 @@ namespace Perspex.Base.UnitTests
                 BindingMode.OneWay,
                 null);
 
-            Assert.AreEqual("Foo", target.GetDefaultValue<Class1>());
+            Assert.Equal("Foo", target.GetDefaultValue<Class1>());
         }
 
-        [TestMethod]
+        [Fact]
         public void GetDefaultValue_Returns_Registered_Value_For_Not_Overridden_Class()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(
@@ -54,10 +53,10 @@ namespace Perspex.Base.UnitTests
                 BindingMode.OneWay,
                 null);
 
-            Assert.AreEqual("Foo", target.GetDefaultValue<Class2>());
+            Assert.Equal("Foo", target.GetDefaultValue<Class2>());
         }
 
-        [TestMethod]
+        [Fact]
         public void GetDefaultValue_Returns_Registered_Value_For_Unrelated_Class()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(
@@ -68,10 +67,10 @@ namespace Perspex.Base.UnitTests
                 BindingMode.OneWay,
                 null);
 
-            Assert.AreEqual("Foo", target.GetDefaultValue<Class2>());
+            Assert.Equal("Foo", target.GetDefaultValue<Class2>());
         }
 
-        [TestMethod]
+        [Fact]
         public void GetDefaultValue_Returns_Overridden_Value()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(
@@ -84,10 +83,10 @@ namespace Perspex.Base.UnitTests
 
             target.OverrideDefaultValue(typeof(Class2), "Bar");
 
-            Assert.AreEqual("Bar", target.GetDefaultValue<Class2>());
+            Assert.Equal("Bar", target.GetDefaultValue<Class2>());
         }
 
-        [TestMethod]
+        [Fact]
         public void Initialized_Observable_Fired()
         {
             string value = null;
@@ -95,10 +94,10 @@ namespace Perspex.Base.UnitTests
             Class1.FooProperty.Initialized.Subscribe(x => value = (string)x.NewValue);
             var target = new Class1();
 
-            Assert.AreEqual("default", value);
+            Assert.Equal("default", value);
         }
 
-        [TestMethod]
+        [Fact]
         public void Changed_Observable_Fired()
         {
             var target = new Class1();
@@ -107,7 +106,7 @@ namespace Perspex.Base.UnitTests
             Class1.FooProperty.Changed.Subscribe(x => value = (string)x.NewValue);
             target.SetValue(Class1.FooProperty, "newvalue");
 
-            Assert.AreEqual("newvalue", value);
+            Assert.Equal("newvalue", value);
         }
 
         private class Class1 : PerspexObject

@@ -9,9 +9,9 @@ namespace Perspex.Direct2D1.RenderTests
     using System.IO;
     using System.Runtime.CompilerServices;
     using ImageMagick;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Media.Imaging;
+    using Xunit;
 
     public class TestBase
     {
@@ -59,11 +59,11 @@ namespace Perspex.Direct2D1.RenderTests
             {
                 if (error.NormalizedMaximumError > 0.15)
                 {
-                    Assert.Fail("NormalizedMaximumError = " + error.NormalizedMaximumError);
+                    Assert.True(false, "NormalizedMaximumError = " + error.NormalizedMaximumError);
                 }
                 else
                 {
-                    Assert.Inconclusive("Close but no cigar. NormalizedMaximumError = " + error.NormalizedMaximumError);
+                    Assert.True(false,  "Close but no cigar. NormalizedMaximumError = " + error.NormalizedMaximumError);
                 }
             }
         }

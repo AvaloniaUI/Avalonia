@@ -6,12 +6,11 @@
 
 namespace Perspex.Direct2D1.RenderTests.Shapes
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Media;
     using Perspex.Controls.Shapes;
+    using Xunit;
 
-    [TestClass]
     public class EllipseTests : TestBase
     {
         public EllipseTests()
@@ -19,7 +18,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void Circle_1px_Stroke()
         {
             Decorator target = new Decorator

@@ -7,12 +7,11 @@
 namespace Perspex.Direct2D1.RenderTests.Controls
 {
     using System.IO;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Media;
     using Perspex.Media.Imaging;
+    using Xunit;
 
-    [TestClass]
     public class ImageTests : TestBase
     {
         private Bitmap bitmap;
@@ -23,7 +22,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.bitmap = new Bitmap(Path.Combine(this.OutputPath, "test.png"));
         }
 
-        [TestMethod]
+        [Fact]
         public void Image_Stretch_None()
         {
             Decorator target = new Decorator
@@ -46,7 +45,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Image_Stretch_Fill()
         {
             Decorator target = new Decorator
@@ -69,7 +68,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Image_Stretch_Uniform()
         {
             Decorator target = new Decorator
@@ -92,7 +91,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Image_Stretch_UniformToFill()
         {
             Decorator target = new Decorator

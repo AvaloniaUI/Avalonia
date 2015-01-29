@@ -9,13 +9,12 @@ namespace Perspex.Styling.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Styling;
 
-    ////[TestClass]
+    ////[TestFixture]
     ////public class SelectorTests_Multiple
     ////{
-    ////    [TestMethod]
+    ////    [Fact]
     ////    public void Template_Child_Of_Control_With_Two_Classes()
     ////    {
     ////        var template = new ControlTemplate(parent =>
@@ -44,11 +43,11 @@ namespace Perspex.Styling.UnitTests
 
     ////        activator.Subscribe(x => values.Add(x));
 
-    ////        CollectionAssert.AreEqual(new[] { false }, values);
+    ////        Assert.Equal(new[] { false }, values);
     ////        control.Classes.Add("foo", "bar");
-    ////        CollectionAssert.AreEqual(new[] { false, true }, values);
+    ////        Assert.Equal(new[] { false, true }, values);
     ////        control.Classes.Remove("foo");
-    ////        CollectionAssert.AreEqual(new[] { false, true, false }, values);
+    ////        Assert.Equal(new[] { false, true, false }, values);
     ////    }
     ////}
 }

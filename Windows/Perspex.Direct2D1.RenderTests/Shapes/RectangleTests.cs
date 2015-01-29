@@ -6,12 +6,11 @@
 
 namespace Perspex.Direct2D1.RenderTests.Shapes
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Media;
     using Perspex.Controls.Shapes;
+    using Xunit;
 
-    [TestClass]
     public class RectangleTests : TestBase
     {
         public RectangleTests()
@@ -19,7 +18,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void Rectangle_1px_Stroke()
         {
             Decorator target = new Decorator
@@ -38,7 +37,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Rectangle_2px_Stroke()
         {
             Decorator target = new Decorator
@@ -57,7 +56,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Rectangle_Stroke_Fill()
         {
             Decorator target = new Decorator

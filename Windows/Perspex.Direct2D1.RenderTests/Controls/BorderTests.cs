@@ -6,12 +6,11 @@
 
 namespace Perspex.Direct2D1.RenderTests.Controls
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Controls;
     using Perspex.Layout;
     using Perspex.Media;
+    using Xunit;
 
-    [TestClass]
     public class BorderTests : TestBase
     {
         public BorderTests()
@@ -19,7 +18,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_1px_Border()
         {
             Decorator target = new Decorator
@@ -38,7 +37,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_2px_Border()
         {
             Decorator target = new Decorator
@@ -57,7 +56,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Fill()
         {
             Decorator target = new Decorator
@@ -75,7 +74,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Brush_Offsets_Content()
         {
             Decorator target = new Decorator
@@ -98,7 +97,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Padding_Offsets_Content()
         {
             Decorator target = new Decorator
@@ -122,7 +121,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Margin_Offsets_Content()
         {
             Decorator target = new Decorator
@@ -146,7 +145,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Centers_Content_Horizontally()
         {
             Decorator target = new Decorator
@@ -173,7 +172,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Centers_Content_Vertically()
         {
             Decorator target = new Decorator
@@ -200,7 +199,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Stretches_Content_Horizontally()
         {
             Decorator target = new Decorator
@@ -227,7 +226,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Stretches_Content_Vertically()
         {
             Decorator target = new Decorator
@@ -254,7 +253,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Left_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -281,7 +280,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Right_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -308,7 +307,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Top_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -335,7 +334,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Bottom_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -362,7 +361,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
             this.CompareImages();
         }
 
-        [TestMethod]
+        [Fact]
         public void Border_Nested_Rotate()
         {
             Decorator target = new Decorator

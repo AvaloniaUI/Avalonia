@@ -9,7 +9,6 @@ namespace Perspex.Controls.UnitTests
     using System;
     using System.Collections.Specialized;
     using System.Linq;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
@@ -19,11 +18,11 @@ namespace Perspex.Controls.UnitTests
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.AutoMoq;
     using Splat;
+    using Xunit;
 
-    [TestClass]
     public class ItemsControlTests
     {
-        [TestMethod]
+        [Fact]
         public void Panel_Should_Have_TemplatedParent_Set_To_ItemsPresenter()
         {
             var target = new ItemsControl();
@@ -35,10 +34,10 @@ namespace Perspex.Controls.UnitTests
             var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
             var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
 
-            Assert.AreEqual(presenter, panel.TemplatedParent);
+            Assert.Equal(presenter, panel.TemplatedParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Item_Should_Have_TemplatedParent_Set_To_Null()
         {
             var target = new ItemsControl();
@@ -51,10 +50,10 @@ namespace Perspex.Controls.UnitTests
             var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
             var item = (TextBlock)panel.GetVisualChildren().First();
 
-            Assert.IsNull(item.TemplatedParent);
+            Assert.Null(item.TemplatedParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Control_Item_Should_Have_Parent_Set()
         {
             var target = new ItemsControl();
@@ -64,11 +63,11 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { child };
             target.ApplyTemplate();
 
-            Assert.AreEqual(target, child.Parent);
-            Assert.AreEqual(target, ((ILogical)child).LogicalParent);
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, ((ILogical)child).LogicalParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Clearing_Control_Item_Should_Clear_Child_Controls_Parent()
         {
             var target = new ItemsControl();
@@ -79,11 +78,11 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
             target.Items = null;
 
-            Assert.IsNull(child.Parent);
-            Assert.IsNull(((ILogical)child).LogicalParent);
+            Assert.Null(child.Parent);
+            Assert.Null(((ILogical)child).LogicalParent);
         }
 
-        [TestMethod]
+        [Fact]
         public void Adding_Control_Item_Should_Make_Control_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
@@ -93,10 +92,10 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { child };
             target.ApplyTemplate();
 
-            CollectionAssert.AreEqual(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
@@ -107,11 +106,11 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             var logical = (ILogical)target;
-            Assert.AreEqual(1, logical.LogicalChildren.Count);
-            Assert.IsInstanceOfType(logical.LogicalChildren[0], typeof(TextBlock));
+            Assert.Equal(1, logical.LogicalChildren.Count);
+            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_Items_To_Null_Should_Remove_LogicalChildren()
         {
             var target = new ItemsControl();
@@ -122,10 +121,10 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
             target.Items = null;
 
-            CollectionAssert.AreEqual(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -140,10 +139,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Items = new[] { child };
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Setting_Items_To_Null_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -159,10 +158,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Items = null;
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Changing_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -177,10 +176,10 @@ namespace Perspex.Controls.UnitTests
 
             target.Items = new[] { "Foo" };
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -196,10 +195,10 @@ namespace Perspex.Controls.UnitTests
 
             items.Add("Bar");
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
-        [TestMethod]
+        [Fact]
         public void Removing_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -215,7 +214,7 @@ namespace Perspex.Controls.UnitTests
 
             items.Remove("Bar");
 
-            Assert.IsTrue(called);
+            Assert.True(called);
         }
 
         private ControlTemplate GetTemplate()
