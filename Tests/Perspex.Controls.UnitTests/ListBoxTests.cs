@@ -21,7 +21,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(x => this.CreateListBoxTemplate(x)),
+                Template = new ControlTemplate(this.CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -39,7 +39,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate(x => this.CreateScrollViewerTemplate(x)),
+                Template = new ControlTemplate(this.CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
                     Id = "itemsPresenter",

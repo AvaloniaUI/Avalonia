@@ -14,19 +14,13 @@ namespace Perspex.Controls
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
 
-    public class TabControl : SelectingItemsControl, ILogical
+    public class TabControl : SelectingItemsControl
     {
         public static readonly PerspexProperty<object> SelectedContentProperty =
             PerspexProperty.Register<TabControl, object>("SelectedContent");
 
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
-
-        private TabStrip tabStrip;
-
-        private ContentPresenter presenter;
-
-        private IDisposable presenterSubscription;
 
         private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
 
@@ -39,9 +33,7 @@ namespace Perspex.Controls
                 this.SetValue(SelectedContentProperty, content);
             });
 
-            this.Bind(
-                SelectedTabProperty, 
-                this.GetObservable(SelectedItemProperty).Select(x => x as TabItem));
+            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
         }
 
         public object SelectedContent
@@ -53,37 +45,12 @@ namespace Perspex.Controls
         public TabItem SelectedTab
         {
             get { return this.GetValue(SelectedTabProperty); }
-            private set { this.SetValue(SelectedTabProperty, value); }
-        }
-
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.logicalChild; }
+            set { this.SetValue(SelectedTabProperty, value); }
         }
 
         protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TypedItemContainerGenerator<TabItem>(this);
-        }
-
-        protected override void OnTemplateApplied()
-        {
-            if (this.presenterSubscription != null)
-            {
-                this.presenterSubscription.Dispose();
-                this.presenterSubscription = null;
-            }
-
-            this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
-
-            if (this.presenter != null)
-            {
-                this.presenterSubscription = this.presenter.ChildObservable
-                    .Subscribe(x => this.logicalChild.SingleItem = x);
-            }
-
-            this.tabStrip = this.GetTemplateControls().OfType<TabStrip>().FirstOrDefault();
-            this.BindTwoWay(TabControl.SelectedItemProperty, this.tabStrip, TabControl.SelectedItemProperty);
         }
     }
 }

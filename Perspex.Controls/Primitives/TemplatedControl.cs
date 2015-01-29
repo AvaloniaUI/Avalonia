@@ -164,7 +164,37 @@ namespace Perspex.Controls.Primitives
 
         protected T FindTemplateChild<T>(string id) where T : Control
         {
-            return (T)this.GetTemplateControls().SingleOrDefault(x => x.Id == id);
+            var matches = this.GetTemplateControls()
+                .OfType<T>()
+                .Where(x => x.Id == id)
+                .ToList();
+
+            if (matches.Count == 1)
+            {
+                return matches[0];
+            }
+            else if (matches.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                // If there are multiple matches, try filtering out nested matches.
+                matches = matches.Where(x => x.TemplatedParent == this).ToList();
+                
+                if (matches.Count > 1)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Found multiple template children '{0}' of type '{1}' in template for '{2}'.",
+                        id,
+                        typeof(T).FullName,
+                        this.GetType().FullName));
+                }
+                else
+                {
+                    return matches.FirstOrDefault();
+                }
+            }
         }
 
         protected T GetTemplateChild<T>(string id) where T : Control
@@ -174,8 +204,9 @@ namespace Perspex.Controls.Primitives
             if (result == null)
             {
                 throw new InvalidOperationException(string.Format(
-                    "Could not find template child '{0}' in template for '{1}'.",
+                    "Could not find template child '{0}' of type '{1}' in template for '{2}'.",
                     id,
+                    typeof(T).FullName,
                     this.GetType().FullName));
             }
 

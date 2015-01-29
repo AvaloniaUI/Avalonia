@@ -130,6 +130,8 @@ namespace Perspex.Controls.Primitives
                     this.SelectedItem = item;
                 }
             }
+
+            e.Handled = true;
         }
 
         private void SelectedItemChanged(object selected)

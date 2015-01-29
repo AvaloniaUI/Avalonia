@@ -87,21 +87,10 @@ namespace Perspex.Controls
                 this.logicalChildren = null;
             }
 
-            this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
-
-            if (this.presenter != null)
-            {
-                var panel = (IVisual)this.presenter.GetVisualChildren().Single();
-                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
-                    panel.VisualChildren,
-                    x => (ILogical)x);
-            }
-            else
-            {
-                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
-                    new PerspexList<IVisual>(),
-                    x => (ILogical)x);
-            }
+            this.presenter = this.GetTemplateChild<ItemsPresenter>("itemsPresenter");
+            this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
+                ((IVisual)presenter.Panel).VisualChildren,
+                x => (ILogical)x);
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

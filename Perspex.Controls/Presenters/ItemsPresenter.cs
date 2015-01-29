@@ -21,8 +21,6 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        private Panel panel;
-
         private bool createdPanel;
 
         public ItemsPresenter()
@@ -42,6 +40,12 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
+        public Panel Panel
+        {
+            get;
+            private set;
+        }
+
         public override sealed void ApplyTemplate()
         {
             if (!this.createdPanel)
@@ -52,23 +56,23 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            this.panel.Measure(availableSize);
-            return this.panel.DesiredSize.Value;
+            this.Panel.Measure(availableSize);
+            return this.Panel.DesiredSize.Value;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            this.panel.Arrange(new Rect(finalSize));
+            this.Panel.Arrange(new Rect(finalSize));
             return finalSize;
         }
 
         private void CreatePanel()
         {
             this.ClearVisualChildren();
-            this.panel = this.ItemsPanel.Build();
-            this.panel.TemplatedParent = this;
-            ((IItemsPanel)this.panel).ChildLogicalParent = this.TemplatedParent as ILogical;
-            this.AddVisualChild(this.panel);
+            this.Panel = this.ItemsPanel.Build();
+            this.Panel.TemplatedParent = this;
+            ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
+            this.AddVisualChild(this.Panel);
             this.createdPanel = true;
             this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
         }
@@ -93,7 +97,7 @@ namespace Perspex.Controls.Presenters
 
                 if (value.Item1 != null)
                 {
-                    this.panel.Children.RemoveAll(generator.Remove(value.Item1));
+                    this.Panel.Children.RemoveAll(generator.Remove(value.Item1));
 
                     INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
 
@@ -103,11 +107,11 @@ namespace Perspex.Controls.Presenters
                     }
                 }
 
-                if (this.panel != null)
+                if (this.Panel != null)
                 {
                     if (value.Item2 != null)
                     {
-                        this.panel.Children.AddRange(generator.Generate(this.Items));
+                        this.Panel.Children.AddRange(generator.Generate(this.Items));
 
                         INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
 
@@ -130,11 +134,11 @@ namespace Perspex.Controls.Presenters
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        this.panel.Children.AddRange(generator.Generate(e.NewItems));
+                        this.Panel.Children.AddRange(generator.Generate(e.NewItems));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        this.panel.Children.RemoveAll(generator.Remove(e.OldItems));
+                        this.Panel.Children.RemoveAll(generator.Remove(e.OldItems));
                         break;
                 }
 

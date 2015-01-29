@@ -26,15 +26,13 @@ namespace Perspex.Controls.Primitives
 
         public TabStrip()
         {
-            this.Bind(
-                SelectedTabProperty,
-                this.GetObservable(SelectedItemProperty).Select(x => x as TabItem));
+            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
         }
 
         public TabItem SelectedTab
         {
             get { return this.GetValue(SelectedTabProperty); }
-            private set { this.SetValue(SelectedTabProperty, value); }
+            set { this.SetValue(SelectedTabProperty, value); }
         }
 
         protected override ItemContainerGenerator CreateItemContainerGenerator()

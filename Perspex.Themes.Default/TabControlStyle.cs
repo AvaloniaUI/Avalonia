@@ -42,7 +42,9 @@ namespace Perspex.Themes.Default
                 {
                     new TabStrip
                     {
+                        Id = "tabStrip",
                         [~TabStrip.ItemsProperty] = control[~TabControl.ItemsProperty],
+                        [~~TabStrip.SelectedTabProperty] = control[~~TabControl.SelectedTabProperty],
                     },
                     new ContentPresenter
                     {

@@ -65,10 +65,13 @@
   </Choose>
   <ItemGroup>
     <Compile Include="DropDownTests.cs" />
+    <Compile Include="SelectingItemsControlTests.cs" />
     <Compile Include="ListBoxTests.cs" />
     <Compile Include="ItemsControlTests.cs" />
     <Compile Include="ContentControlTests.cs" />
     <Compile Include="DecoratorTests.cs" />
+    <Compile Include="TabStripTests.cs" />
+    <Compile Include="TabControlTests.cs" />
     <Compile Include="PanelTests.cs" />
     <Compile Include="ControlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

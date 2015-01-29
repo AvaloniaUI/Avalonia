@@ -42,6 +42,7 @@ namespace Perspex.Themes.Default
                 {
                     Content = new ItemsPresenter
                     {
+                        Id = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
                     }

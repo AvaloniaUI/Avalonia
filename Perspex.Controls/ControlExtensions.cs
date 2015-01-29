@@ -31,7 +31,7 @@ namespace Perspex.Controls
             {
                 return visual.GetVisualDescendents()
                     .OfType<Control>()
-                    .Where(x => x.TemplatedParent == control);
+                    .Where(x => x.TemplatedParent != null);
             }
             else
             {
