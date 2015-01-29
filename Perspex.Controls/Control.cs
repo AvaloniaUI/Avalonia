@@ -27,7 +27,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<Control, object>("Tag");
 
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
-            PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent", inherits: true);
+            PerspexProperty.Register<Control, ITemplatedControl>("TemplatedParent");
 
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategy.Bubble);

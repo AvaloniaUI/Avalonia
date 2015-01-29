@@ -10,11 +10,9 @@ namespace Perspex.Controls.UnitTests
     using System.Collections.Specialized;
     using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
-    using Perspex.Layout;
     using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -26,6 +24,21 @@ namespace Perspex.Controls.UnitTests
     public class ItemsControlTests
     {
         [TestMethod]
+        public void Panel_Should_Have_TemplatedParent_Set_To_ItemsPresenter()
+        {
+            var target = new ItemsControl();
+
+            target.Template = this.GetTemplate();
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+
+            var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
+            var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
+
+            Assert.AreEqual(presenter, panel.TemplatedParent);
+        }
+
+        [TestMethod]
         public void Item_Should_Have_TemplatedParent_Set_To_Null()
         {
             var target = new ItemsControl();
@@ -34,7 +47,8 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
-            var panel = target.GetTemplateControls().OfType<StackPanel>().Single();
+            var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
+            var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
             var item = (TextBlock)panel.GetVisualChildren().First();
 
             Assert.IsNull(item.TemplatedParent);

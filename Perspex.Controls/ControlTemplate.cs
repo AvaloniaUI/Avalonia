@@ -7,8 +7,6 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Linq;
-    using Perspex.Layout;
     using Perspex.Styling;
 
     public class ControlTemplate
@@ -34,8 +32,7 @@ namespace Perspex.Controls
         {
             Contract.Requires<NullReferenceException>(templatedParent != null);
 
-            Control root = this.build(templatedParent);
-            root.TemplatedParent = templatedParent;
+            var root = this.build(templatedParent);
             return root;
         }
     }

@@ -12,7 +12,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Layout;
     using Perspex.VisualTree;
 
-    public class ScrollContentPresenter : ContentPresenter
+    public class ScrollContentPresenter : ContentPresenter, IPresenter
     {
         public static readonly PerspexProperty<Size> ExtentProperty =
             ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>();

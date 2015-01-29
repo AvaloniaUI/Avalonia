@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Controls.Presenters
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Perspex.Controls
     using Perspex.Threading;
     using Perspex.VisualTree;
 
-    public class TextPresenter : TextBlock
+    public class TextPresenter : TextBlock, IPresenter
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
             TextBox.AcceptsReturnProperty.AddOwner<TextPresenter>();

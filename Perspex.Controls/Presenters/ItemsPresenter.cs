@@ -11,8 +11,9 @@ namespace Perspex.Controls.Presenters
     using System.Collections.Specialized;
     using System.Reactive.Linq;
     using Perspex.Controls.Generators;
+    using Perspex.Styling;
 
-    public class ItemsPresenter : Control, IVisual
+    public class ItemsPresenter : Control, IVisual, IPresenter, ITemplatedControl
     {
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
@@ -65,6 +66,7 @@ namespace Perspex.Controls.Presenters
         {
             this.ClearVisualChildren();
             this.panel = this.ItemsPanel.Build();
+            this.panel.TemplatedParent = this;
             ((IItemsPanel)this.panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.panel);
             this.createdPanel = true;

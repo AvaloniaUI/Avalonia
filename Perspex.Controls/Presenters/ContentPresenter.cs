@@ -13,7 +13,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Controls.Primitives;
     using Perspex.Media;
 
-    public class ContentPresenter : Control, IVisual
+    public class ContentPresenter : Control, IVisual, IPresenter
     {
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();

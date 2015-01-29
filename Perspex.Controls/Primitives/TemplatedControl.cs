@@ -8,6 +8,7 @@ namespace Perspex.Controls.Primitives
 {
     using System;
     using System.Linq;
+    using Perspex.Controls.Presenters;
     using Perspex.Media;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -117,6 +118,7 @@ namespace Perspex.Controls.Primitives
                         this.GetHashCode());
 
                     var child = this.Template.Build(this);
+                    this.SetTemplatedParent(child);
                     this.AddVisualChild(child);
                     child.Parent = this;
 
@@ -186,6 +188,19 @@ namespace Perspex.Controls.Primitives
 
         protected virtual void OnTemplateApplied()
         {
+        }
+
+        private void SetTemplatedParent(Control control)
+        {
+            control.TemplatedParent = this;
+
+            if (!(control is IPresenter))
+            {
+                foreach (var child in control.GetVisualChildren().OfType<Control>())
+                {
+                    this.SetTemplatedParent(child);
+                }
+            }
         }
     }
 }

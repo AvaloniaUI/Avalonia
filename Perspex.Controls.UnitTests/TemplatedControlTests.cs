@@ -15,6 +15,7 @@ namespace Perspex.Controls.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Perspex.Controls;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -213,6 +214,69 @@ namespace Perspex.Controls.UnitTests
             Assert.AreEqual(target, textBlock.TemplatedParent);
         }
 
+        [TestMethod]
+        public void Presenter_Children_Should_Not_Have_TemplatedParent_Set()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new ControlTemplate(_ =>
+                {
+                    return new ContentPresenter
+                    {
+                        Content =  new TextBlock
+                        {
+                        }
+                    };
+                }),
+            };
+
+            target.ApplyTemplate();
+
+            var presenter = target.GetTemplateControls().OfType<ContentPresenter>().Single();
+            var textBlock = (TextBlock)presenter.Child;
+
+            Assert.AreEqual(target, presenter.TemplatedParent);
+            Assert.IsNull(textBlock.TemplatedParent);
+        }
+
+        [TestMethod]
+        public void Nested_Templated_Controls_Have_Correct_TemplatedParent()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new ControlTemplate(_ =>
+                {
+                    return new ContentControl
+                    {
+                        Template = new ControlTemplate(parent =>
+                        {
+                            return new Border
+                            {
+                                Content = new ContentPresenter
+                                {
+                                    [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
+                                }
+                            };
+                        }),
+                        Content = new TextBlock
+                        {
+                        }
+                    };
+                }),
+            };
+
+            target.ApplyTemplate();
+
+            var contentControl = target.GetTemplateControls().OfType<ContentControl>().Single();
+            var border = contentControl.GetTemplateControls().OfType<Border>().Single();
+            var presenter = contentControl.GetTemplateControls().OfType<ContentPresenter>().Single();
+            var textBlock = (TextBlock)presenter.Content;
+
+            Assert.AreEqual(target, contentControl.TemplatedParent);
+            Assert.AreEqual(contentControl, border.TemplatedParent);
+            Assert.AreEqual(contentControl, presenter.TemplatedParent);
+            Assert.AreEqual(target, textBlock.TemplatedParent);
+        }
     }
 }
 
