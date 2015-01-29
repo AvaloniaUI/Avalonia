@@ -26,68 +26,6 @@ namespace Perspex.Controls.UnitTests
     public class ItemsControlTests
     {
         [TestMethod]
-        public void Template_Should_Be_Instantiated()
-        {
-            using (var ctx = this.RegisterServices())
-            {
-                var target = new ItemsControl();
-                target.Items = new[] { "Foo" };
-                target.Template = this.GetTemplate();
-
-                target.Measure(new Size(100, 100));
-
-                var child = ((IVisual)target).VisualChildren.Single();
-                Assert.IsInstanceOfType(child, typeof(Border));
-                child = child.VisualChildren.Single();
-                Assert.IsInstanceOfType(child, typeof(ItemsPresenter));
-                child = child.VisualChildren.Single();
-                Assert.IsInstanceOfType(child, typeof(StackPanel));
-                child = child.VisualChildren.Single();
-                Assert.IsInstanceOfType(child, typeof(TextBlock));
-            }
-        }
-
-        [TestMethod]
-        public void Templated_Children_Should_Be_Styled()
-        {
-            using (var ctx = this.RegisterServices())
-            {
-                var root = new TestRoot();
-                var target = new ItemsControl();
-                var styler = new Mock<IStyler>();
-
-                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
-                target.Items = new[] { "Foo" };
-                target.Template = this.GetTemplate();
-                root.Content = target;
-
-                target.ApplyTemplate();
-
-                styler.Verify(x => x.ApplyStyles(It.IsAny<ItemsControl>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<ItemsPresenter>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
-            }
-        }
-
-        [TestMethod]
-        public void ItemsPresenter_And_Panel_Should_Have_TemplatedParent_Set()
-        {
-            var target = new ItemsControl();
-
-            target.Template = this.GetTemplate();
-            target.Items = new[] { "Foo" };
-            target.ApplyTemplate();
-
-            var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
-            var panel = target.GetTemplateControls().OfType<StackPanel>().Single();
-
-            Assert.AreEqual(target, presenter.TemplatedParent);
-            Assert.AreEqual(target, panel.TemplatedParent);
-        }
-
-        [TestMethod]
         public void Item_Should_Have_TemplatedParent_Set_To_Null()
         {
             var target = new ItemsControl();
@@ -103,7 +41,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
-        public void Control_Item_Should_Set_Control_Parent()
+        public void Control_Item_Should_Have_Parent_Set()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -132,7 +70,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
-        public void Control_Item_Should_Make_Control_Appear_In_LogicalChildren()
+        public void Adding_Control_Item_Should_Make_Control_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -145,7 +83,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [TestMethod]
-        public void String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();

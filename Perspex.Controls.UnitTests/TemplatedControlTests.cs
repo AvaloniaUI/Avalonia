@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Perspex.Controls.UnitTests
 {
     using System;
@@ -12,9 +13,12 @@ namespace Perspex.Controls.UnitTests
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
     using Perspex.Controls;
     using Perspex.Controls.Primitives;
+    using Perspex.Styling;
     using Perspex.VisualTree;
+    using Splat;
 
     [TestClass]
     public class TemplatedControlTests
@@ -115,6 +119,100 @@ namespace Perspex.Controls.UnitTests
 
             Assert.IsTrue(target.OnTemplateAppliedCalled);
         }
+
+        [TestMethod]
+        public void Template_Should_Be_Instantated()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new ControlTemplate(_ =>
+                {
+                    return new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new TextBlock
+                            {
+                            }
+                        }
+                    };
+                }),
+            };
+
+            target.ApplyTemplate();
+
+            var child = target.GetVisualChildren().Single();
+            Assert.IsInstanceOfType(child, typeof(StackPanel));
+            child = child.VisualChildren.Single();
+            Assert.IsInstanceOfType(child, typeof(TextBlock));
+        }
+
+        [TestMethod]
+        public void Templated_Children_Should_Be_Styled()
+        {
+            using (Locator.Current.WithResolver())
+            {
+                var styler = new Mock<IStyler>();
+                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
+
+                TestTemplatedControl target;
+
+                var root = new TestRoot
+                {
+                    Content = (target = new TestTemplatedControl
+                    {
+                        Template = new ControlTemplate(_ =>
+                        {
+                            return new StackPanel
+                            {
+                                Children = new Controls
+                            {
+                                new TextBlock
+                                {
+                                }
+                            }
+                            };
+                        }),
+                    })
+                };
+
+
+                target.ApplyTemplate();
+
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
+            }
+        }
+
+        [TestMethod]
+        public void Templated_Children_Should_Have_TemplatedParent_Set()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new ControlTemplate(_ =>
+                {
+                    return new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new TextBlock
+                            {
+                            }
+                        }
+                    };
+                }),
+            };
+
+            target.ApplyTemplate();
+
+            var panel = target.GetTemplateControls().OfType<StackPanel>().Single();
+            var textBlock = target.GetTemplateControls().OfType<TextBlock>().Single();
+
+            Assert.AreEqual(target, panel.TemplatedParent);
+            Assert.AreEqual(target, textBlock.TemplatedParent);
+        }
+
     }
 }
 
