@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{DABFD304-D6A4-4752-8123-C2CCF7AC7831}</ProjectGuid>
+    <ProjectGuid>{2905FF23-53FB-45E6-AA49-6AF47A172056}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.Direct2D1.RenderTests</RootNamespace>
-    <AssemblyName>Perspex.Direct2D1.RenderTests</AssemblyName>
+    <RootNamespace>Perspex.Base.UnitTests</RootNamespace>
+    <AssemblyName>Perspex.Base.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -16,7 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <NuGetPackageImportStamp>a4c4bf26</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>d6a0929f</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,16 +36,27 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Magick.NET-x86, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
+    <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Magick.NET-Q16-x86.7.0.0.0007\lib\net40-client\Magick.NET-x86.dll</HintPath>
+      <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
     </Reference>
     <Reference Include="Splat, Version=1.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Drawing" />
+    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="xunit">
       <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
@@ -59,51 +70,10 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Controls\ImageTests.cs" />
-    <Compile Include="Controls\BorderTests.cs" />
-    <Compile Include="Shapes\PathTests.cs" />
-    <Compile Include="Shapes\EllipseTests.cs" />
-    <Compile Include="Shapes\RectangleTests.cs" />
-    <Compile Include="TestBase.cs" />
+    <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
-      <Name>Perspex.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
-      <Name>Perspex.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Perspex.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
-      <Name>Perspex.Direct2D1</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Perspex.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Interactivity\Perspex.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Perspex.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Perspex.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Perspex.SceneGraph</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Perspex.Styling</Name>
-    </ProjectReference>
+    <Compile Include="PerspexObjectTests.cs" />
+    <Compile Include="PriorityValueTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -111,6 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

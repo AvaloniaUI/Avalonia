@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props')" />
+  <Import Project="..\..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{76716382-3159-460E-BDA6-C5715CF606D7}</ProjectGuid>
+    <ProjectGuid>{47ECDF59-DEF8-4C53-87B1-2098A3429059}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.SceneGraph.UnitTests</RootNamespace>
-    <AssemblyName>Perspex.SceneGraph.UnitTests</AssemblyName>
+    <RootNamespace>Perspex.Styling.UnitTests</RootNamespace>
+    <AssemblyName>Perspex.Styling.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -16,7 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <NuGetPackageImportStamp>404e5813</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>3ac3f42c</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,13 +36,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Splat, Version=1.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
+      <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
     <Reference Include="xunit">
-      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>
@@ -54,23 +70,34 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="TestRoot.cs" />
-    <Compile Include="TestVisual.cs" />
-    <Compile Include="VisualTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectorTests_Class.cs" />
+    <Compile Include="SelectorTests_Descendent.cs" />
+    <Compile Include="SelectorTests_Id.cs" />
+    <Compile Include="SelectorTests_Multiple.cs" />
+    <Compile Include="SelectorTests_OfType.cs" />
+    <Compile Include="SelectorTests_Template.cs" />
+    <Compile Include="StyleActivatorTests.cs" />
+    <Compile Include="StyleTests.cs" />
+    <Compile Include="TestControlBase.cs" />
+    <Compile Include="TestObservable.cs" />
+    <Compile Include="TestObserver.cs" />
+    <Compile Include="TestSelectors.cs" />
+    <Compile Include="TestSubject.cs" />
+    <Compile Include="TestTemplatedControl.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
-      <Name>Perspex.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -104,7 +131,7 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props'))" />
+    <Error Condition="!Exists('..\..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.runner.visualstudio.2.0.0-rc1-build1030\build\net20\xunit.runner.visualstudio.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
