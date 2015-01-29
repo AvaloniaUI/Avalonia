@@ -69,13 +69,7 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.logicalChildren == null)
-                {
-                    this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
-                        new PerspexList<IVisual>(), 
-                        x => (ILogical)x);
-                }
-
+                this.ApplyTemplate();
                 return this.logicalChildren;
             }
         }

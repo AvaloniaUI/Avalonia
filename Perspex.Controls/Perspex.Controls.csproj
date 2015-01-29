@@ -38,6 +38,7 @@
     <Compile Include="Button.cs" />
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
+    <Compile Include="IItemsPanel.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="Popup.cs" />

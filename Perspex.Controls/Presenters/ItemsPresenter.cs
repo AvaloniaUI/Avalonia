@@ -65,7 +65,7 @@ namespace Perspex.Controls.Presenters
         {
             this.ClearVisualChildren();
             this.panel = this.ItemsPanel.Build();
-            this.panel.IsLogicalParent = false;
+            ((IItemsPanel)this.panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.panel);
             this.createdPanel = true;
             this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));

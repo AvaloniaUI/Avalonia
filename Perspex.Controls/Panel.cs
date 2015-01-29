@@ -15,9 +15,16 @@ namespace Perspex.Controls
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
-    public class Panel : Control, ILogical
+    public class Panel : Control, ILogical, IItemsPanel
     {
         private Controls children;
+
+        private ILogical childLogicalParent;
+
+        public Panel()
+        {
+            this.childLogicalParent = this;
+        }
 
         public Controls Children
         {
@@ -58,32 +65,30 @@ namespace Perspex.Controls
             }
         }
 
-        public bool IsLogicalParent { get; set; } = true;
-
         IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
         {
             get { return this.children; }
         }
 
+        ILogical IItemsPanel.ChildLogicalParent
+        {
+            get { return this.childLogicalParent; }
+            set { this.childLogicalParent = value; }
+        }
+
         private void ClearLogicalParent(IEnumerable<Control> controls)
         {
-            if (this.IsLogicalParent)
+            foreach (var control in controls)
             {
-                foreach (var control in controls)
-                {
-                    control.Parent = null;
-                }
+                control.Parent = null;
             }
         }
 
         private void SetLogicalParent(IEnumerable<Control> controls)
         {
-            if (this.IsLogicalParent)
+            foreach (var control in controls)
             {
-                foreach (var control in controls)
-                {
-                    control.Parent = this;
-                }
+                control.Parent = this.childLogicalParent as Control;
             }
         }
 
