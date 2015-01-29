@@ -7,6 +7,7 @@
 namespace Perspex.Themes.Default
 {
     using System.Linq;
+    using System.Reactive.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
@@ -89,6 +90,7 @@ namespace Perspex.Themes.Default
                             PlacementTarget = control,
                             StaysOpen = false,
                             [~~Popup.IsOpenProperty] = control[~~DropDown.IsDropDownOpenProperty],
+                            [~Popup.MinWidthProperty] = control[~DropDown.ActualSizeProperty].Cast<Size>().Select(x => (object)x.Width),
                         }
                     },
                 },

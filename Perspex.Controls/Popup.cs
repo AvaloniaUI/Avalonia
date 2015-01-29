@@ -76,9 +76,17 @@ namespace Perspex.Controls
         {
             if (this.popupRoot == null)
             {
-                this.popupRoot = new PopupRoot();
-                this.popupRoot.Parent = this;
-                this.popupRoot[~PopupRoot.ContentProperty] = this[~ChildProperty];
+                this.popupRoot = new PopupRoot()
+                {
+                    Parent = this,
+                    [~PopupRoot.ContentProperty] = this[~ChildProperty],
+                    [~PopupRoot.WidthProperty] = this[~WidthProperty],
+                    [~PopupRoot.HeightProperty] = this[~HeightProperty],
+                    [~PopupRoot.MinWidthProperty] = this[~MinWidthProperty],
+                    [~PopupRoot.MaxWidthProperty] = this[~MaxWidthProperty],
+                    [~PopupRoot.MinHeightProperty] = this[~MinHeightProperty],
+                    [~PopupRoot.MaxHeightProperty] = this[~MaxHeightProperty],
+                };
             }
 
             this.popupRoot.SetPosition(this.GetPosition());
@@ -99,6 +107,11 @@ namespace Perspex.Controls
             }
 
             this.IsOpen = false;
+        }
+
+        protected override Size MeasureCore(Size availableSize)
+        {
+            return new Size();
         }
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)
