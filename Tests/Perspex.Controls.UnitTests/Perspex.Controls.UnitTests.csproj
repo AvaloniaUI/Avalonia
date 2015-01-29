@@ -65,6 +65,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="DropDownTests.cs" />
+    <Compile Include="ListBoxTests.cs" />
     <Compile Include="ItemsControlTests.cs" />
     <Compile Include="ContentControlTests.cs" />
     <Compile Include="DecoratorTests.cs" />

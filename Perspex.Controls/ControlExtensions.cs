@@ -25,21 +25,18 @@ namespace Perspex.Controls
 
         public static IEnumerable<Control> GetTemplateControls(this ITemplatedControl control)
         {
-            return GetTemplateControls(control, (IVisual)control);
-        }
+            var visual = control as IVisual;
 
-        private static IEnumerable<Control> GetTemplateControls(ITemplatedControl templated, IVisual parent)
-        {
-            IVisual visual = parent as IVisual;
-
-            foreach (var child in visual.VisualChildren.OfType<Control>().Where(x => x.TemplatedParent == templated))
+            if (visual != null)
             {
-                yield return child;
-
-                foreach (IVisual grandchild in GetTemplateControls(templated, child))
-                {
-                    yield return (Control)grandchild;
-                }
+                return visual.GetVisualDescendents()
+                    .OfType<Control>()
+                    .TakeWhile(x => x.TemplatedParent != null)
+                    .Where(x => x.TemplatedParent == control);
+            }
+            else
+            {
+                return Enumerable.Empty<Control>();
             }
         }
     }
