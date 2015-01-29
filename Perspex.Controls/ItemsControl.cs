@@ -96,6 +96,12 @@ namespace Perspex.Controls
                     panel.VisualChildren,
                     x => (ILogical)x);
             }
+            else
+            {
+                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
+                    new PerspexList<IVisual>(),
+                    x => (ILogical)x);
+            }
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

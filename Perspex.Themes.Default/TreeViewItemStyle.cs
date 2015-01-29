@@ -101,6 +101,7 @@ namespace Perspex.Themes.Default
                     },
                     new ItemsPresenter
                     {
+                        Id = "itemsPresenter",
                         Margin = new Thickness(24, 0, 0, 0),
                         [~ItemsPresenter.ItemsProperty] = control[~TreeViewItem.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeViewItem.ItemsPanelProperty],
