@@ -10,15 +10,15 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.LogicalTree;
     using Perspex.Styling;
     using Perspex.VisualTree;
 
     public static class ControlExtensions
     {
-        // TODO: This needs to traverse the logical tree, not the visual.
         public static T FindControl<T>(this Control control, string id) where T : Control
         {
-            return control.GetVisualDescendents()
+            return control.GetLogicalDescendents()
                 .OfType<T>()
                 .FirstOrDefault(x => x.Id == id);
         }
