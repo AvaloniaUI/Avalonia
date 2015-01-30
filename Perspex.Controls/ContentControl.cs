@@ -65,6 +65,9 @@ namespace Perspex.Controls
                 this.presenterSubscription = null;
             }
 
+            // We allow ContentControls without ContentPresenters in the template. This can be
+            // useful for e.g. a simple ToggleButton that displays an image. There's no need to
+            // have a ContentPresenter in the visual tree for that.
             this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
 
             if (this.presenter != null)
