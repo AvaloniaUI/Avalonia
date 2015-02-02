@@ -198,7 +198,7 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Invalid Arrange rectangle.");
             }
 
-            // If the measure was invalidated during an arrange pass, wait for the arrange pass to 
+            // If the measure was invalidated during an arrange pass, wait for the measure pass to 
             // be re-run.
             if (!this.IsMeasureValid)
             {
