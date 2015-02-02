@@ -22,21 +22,5 @@ namespace Perspex.Controls
                 .OfType<T>()
                 .FirstOrDefault(x => x.Id == id);
         }
-
-        public static IEnumerable<Control> GetTemplateControls(this ITemplatedControl control)
-        {
-            var visual = control as IVisual;
-
-            if (visual != null)
-            {
-                return visual.GetVisualDescendents()
-                    .OfType<Control>()
-                    .Where(x => x.TemplatedParent != null);
-            }
-            else
-            {
-                return Enumerable.Empty<Control>();
-            }
-        }
     }
 }

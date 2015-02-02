@@ -11,6 +11,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
     using Perspex.VisualTree;
     using Splat;
@@ -201,8 +202,8 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var panel = target.GetTemplateControls().OfType<StackPanel>().Single();
-            var textBlock = target.GetTemplateControls().OfType<TextBlock>().Single();
+            var panel = target.GetTemplateChildren().OfType<StackPanel>().Single();
+            var textBlock = target.GetTemplateChildren().OfType<TextBlock>().Single();
 
             Assert.Equal(target, panel.TemplatedParent);
             Assert.Equal(target, textBlock.TemplatedParent);
@@ -226,7 +227,7 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateControls().OfType<ContentPresenter>().Single();
+            var presenter = target.GetTemplateChildren().OfType<ContentPresenter>().Single();
             var textBlock = (TextBlock)presenter.Child;
 
             Assert.Equal(target, presenter.TemplatedParent);
@@ -261,9 +262,9 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var contentControl = target.GetTemplateControls().OfType<ContentControl>().Single();
-            var border = contentControl.GetTemplateControls().OfType<Border>().Single();
-            var presenter = contentControl.GetTemplateControls().OfType<ContentPresenter>().Single();
+            var contentControl = target.GetTemplateChildren().OfType<ContentControl>().Single();
+            var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
+            var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
             var textBlock = (TextBlock)presenter.Content;
 
             Assert.Equal(target, contentControl.TemplatedParent);

@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using Perspex.Collections;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
 
     public class ContentControl : TemplatedControl, IContentControl, ILogical

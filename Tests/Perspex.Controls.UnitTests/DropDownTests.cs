@@ -12,6 +12,7 @@ namespace Perspex.Controls.UnitTests
     using Moq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -172,7 +173,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = target.GetTemplateControls().Single(x => x.Id == "contentPresenter");
+            var presenter = target.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);
@@ -195,7 +196,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = null;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = target.GetTemplateControls().Single(x => x.Id == "contentPresenter");
+            var presenter = target.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);
@@ -219,7 +220,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = child2;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = target.GetTemplateControls().Single(x => x.Id == "contentPresenter");
+            var presenter = target.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);

@@ -15,6 +15,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.VisualTree;
 
     public class ItemsControl : TemplatedControl, ILogical
@@ -87,10 +88,14 @@ namespace Perspex.Controls
                 this.logicalChildren = null;
             }
 
-            this.presenter = this.GetTemplateChild<ItemsPresenter>("itemsPresenter");
-            this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
-                ((IVisual)presenter.Panel).VisualChildren,
-                x => (ILogical)x);
+            this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
+
+            if (this.presenter != null)
+            {
+                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
+                    ((IVisual)presenter.Panel).VisualChildren,
+                    x => (ILogical)x);
+            }
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

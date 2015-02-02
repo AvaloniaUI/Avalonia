@@ -11,6 +11,7 @@ namespace Perspex.Layout.UnitTests
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Platform;
     using Perspex.Rendering;
@@ -98,8 +99,8 @@ namespace Perspex.Layout.UnitTests
                 Assert.Equal(new Point(300, 200), Position(scrollViewer));
                 Assert.Equal(new Size(400, 400), textBlock.ActualSize);
 
-                var scrollBars = scrollViewer.GetTemplateControls().OfType<ScrollBar>().ToList();
-                var presenters = scrollViewer.GetTemplateControls().OfType<ScrollContentPresenter>().ToList();
+                var scrollBars = scrollViewer.GetTemplateChildren().OfType<ScrollBar>().ToList();
+                var presenters = scrollViewer.GetTemplateChildren().OfType<ScrollContentPresenter>().ToList();
 
                 Assert.Equal(2, scrollBars.Count);
                 Assert.Equal(1, presenters.Count);

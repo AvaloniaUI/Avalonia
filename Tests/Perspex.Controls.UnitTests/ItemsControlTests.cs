@@ -12,6 +12,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -31,8 +32,8 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
-            var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
+            var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
+            var panel = presenter.GetTemplateChildren().OfType<StackPanel>().Single();
 
             Assert.Equal(presenter, panel.TemplatedParent);
         }
@@ -46,8 +47,8 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateControls().OfType<ItemsPresenter>().Single();
-            var panel = presenter.GetTemplateControls().OfType<StackPanel>().Single();
+            var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
+            var panel = presenter.GetTemplateChildren().OfType<StackPanel>().Single();
             var item = (TextBlock)panel.GetVisualChildren().First();
 
             Assert.Null(item.TemplatedParent);

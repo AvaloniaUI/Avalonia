@@ -9,6 +9,7 @@ namespace Perspex.Controls.Primitives
     using System;
     using System.Linq;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -122,7 +123,7 @@ namespace Perspex.Controls.Primitives
                     this.AddVisualChild(child);
                     child.Parent = this;
 
-                    foreach (var i in this.GetTemplateControls())
+                    foreach (var i in this.GetTemplateChildren())
                     {
                         i.ApplyTemplate();
                     }
@@ -160,57 +161,6 @@ namespace Perspex.Controls.Primitives
             }
 
             return new Size();
-        }
-
-        protected T FindTemplateChild<T>(string id) where T : Control
-        {
-            var matches = this.GetTemplateControls()
-                .OfType<T>()
-                .Where(x => x.Id == id)
-                .ToList();
-
-            if (matches.Count == 1)
-            {
-                return matches[0];
-            }
-            else if (matches.Count == 0)
-            {
-                return null;
-            }
-            else
-            {
-                // If there are multiple matches, try filtering out nested matches.
-                matches = matches.Where(x => x.TemplatedParent == this).ToList();
-                
-                if (matches.Count > 1)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        "Found multiple template children '{0}' of type '{1}' in template for '{2}'.",
-                        id,
-                        typeof(T).FullName,
-                        this.GetType().FullName));
-                }
-                else
-                {
-                    return matches.FirstOrDefault();
-                }
-            }
-        }
-
-        protected T GetTemplateChild<T>(string id) where T : Control
-        {
-            var result = this.FindTemplateChild<T>(id);
-
-            if (result == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Could not find template child '{0}' of type '{1}' in template for '{2}'.",
-                    id,
-                    typeof(T).FullName,
-                    this.GetType().FullName));
-            }
-
-            return result;
         }
 
         protected virtual void OnTemplateApplied()
