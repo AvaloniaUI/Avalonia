@@ -115,6 +115,8 @@ namespace Perspex.Collections
 
         public void AddRange(IEnumerable<T> items)
         {
+            Contract.Requires<ArgumentNullException>(items != null);
+
             int index = this.inner.Count;
             this.inner.AddRange(items);
             this.NotifyAdd((items as IList) ?? items.ToList(), index);
@@ -155,6 +157,8 @@ namespace Perspex.Collections
 
         public void InsertRange(int index, IEnumerable<T> items)
         {
+            Contract.Requires<ArgumentNullException>(items != null);
+
             this.inner.InsertRange(index, items);
             this.NotifyAdd((items as IList) ?? items.ToList(), index);
         }
@@ -175,6 +179,8 @@ namespace Perspex.Collections
 
         public void RemoveAll(IEnumerable<T> items)
         {
+            Contract.Requires<ArgumentNullException>(items != null);
+
             List<T> removed = new List<T>();
 
             foreach (var i in items)
