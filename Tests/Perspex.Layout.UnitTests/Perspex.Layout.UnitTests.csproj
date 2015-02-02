@@ -67,6 +67,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NGenerics\NGenerics.csproj">
+      <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
+      <Name>NGenerics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
@@ -78,6 +82,10 @@
     <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
+      <Name>Perspex.Diagnostics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>

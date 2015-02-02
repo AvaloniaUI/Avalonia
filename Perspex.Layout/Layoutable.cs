@@ -198,9 +198,11 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Invalid Arrange rectangle.");
             }
 
-            if (!this.DesiredSize.HasValue)
+            // If the measure was invalidated during an arrange pass, wait for the arrange pass to 
+            // be re-run.
+            if (!this.IsMeasureValid)
             {
-                throw new InvalidOperationException("Arrange called before Measure.");
+                return;
             }
 
             if (force || !this.IsArrangeValid || this.previousArrange != rect)
@@ -233,6 +235,7 @@ namespace Perspex.Layout
             this.IsArrangeValid = false;
             this.previousMeasure = null;
             this.previousArrange = null;
+            this.DesiredSize = null;
 
             if (parent != null && IsResizable(parent))
             {
