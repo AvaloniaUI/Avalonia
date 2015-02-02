@@ -87,7 +87,7 @@ namespace Perspex.Controls
 
             if (this.presenter != null)
             {
-                this.logicalChildren.Source = ((IVisual)this.presenter).VisualChildren;
+                this.logicalChildren.Source = ((IVisual)this.presenter.Panel).VisualChildren;
             }
         }
 
