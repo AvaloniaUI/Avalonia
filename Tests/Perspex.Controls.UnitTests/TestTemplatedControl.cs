@@ -12,6 +12,11 @@ namespace Perspex.Controls.UnitTests
     {
         public bool OnTemplateAppliedCalled { get; private set; }
 
+        public new void AddVisualChild(Visual visual)
+        {
+            base.AddVisualChild(visual);
+        }
+
         protected override void OnTemplateApplied()
         {
             this.OnTemplateAppliedCalled = true;
