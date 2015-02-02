@@ -26,6 +26,8 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
+        private Size measuredExtent;
+
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
@@ -77,7 +79,7 @@ namespace Perspex.Controls.Presenters
 
                 content.Measure(measureSize);
                 var size = content.DesiredSize.Value;
-                this.Extent = size;
+                this.measuredExtent = size;
                 return size.Constrain(availableSize);
             }
             else
@@ -91,6 +93,7 @@ namespace Perspex.Controls.Presenters
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
 
             this.Viewport = finalSize;
+            this.Extent = this.measuredExtent;
 
             if (child != null)
             {
