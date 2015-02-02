@@ -13,29 +13,74 @@ namespace Perspex.Collections
     using System.ComponentModel;
     using System.Linq;
 
-    public class PerspexReadOnlyListView<TIn, TOut> : IReadOnlyPerspexList<TOut>, IDisposable
+    public class PerspexReadOnlyListView<T> : IReadOnlyPerspexList<T>, IDisposable
     {
-        private IReadOnlyPerspexList<TIn> inner;
+        private IReadOnlyPerspexList<T> source;
 
-        private Func<TIn, TOut> convert;
-
-        public PerspexReadOnlyListView(
-            IReadOnlyPerspexList<TIn> inner,
-            Func<TIn, TOut> convert)
+        public PerspexReadOnlyListView()
+            : this(null)
         {
-            this.inner = inner;
-            this.convert = convert;
-            this.inner.CollectionChanged += this.InnerCollectionChanged;
         }
 
-        public TOut this[int index]
+        public PerspexReadOnlyListView(IReadOnlyPerspexList<T> source)
         {
-            get { return this.convert(this.inner[index]); }
+            this.source = source;
+
+            if (source != null)
+            {
+                this.source.CollectionChanged += this.SourceCollectionChanged;
+            }
+        }
+
+        public T this[int index]
+        {
+            get { return this.source[index]; }
         }
 
         public int Count
         {
-            get { return this.inner.Count; }
+            get { return this.source.Count; }
+        }
+
+        public IReadOnlyPerspexList<T> Source
+        {
+            get
+            {
+                return this.source;
+            }
+
+            set
+            {
+                if (this.source != null)
+                {
+                    this.source.CollectionChanged -= this.SourceCollectionChanged;
+
+                    if (this.CollectionChanged != null)
+                    {
+                        var ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Remove,
+                            this.source,
+                            0);
+                        this.CollectionChanged(this, ev);
+                    }
+                }
+
+                this.source = value;
+
+                if (this.source != null)
+                {
+                    this.source.CollectionChanged += this.SourceCollectionChanged;
+
+                    if (this.CollectionChanged != null)
+                    {
+                        var ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            this.source,
+                            0);
+                        this.CollectionChanged(this, ev);
+                    }
+                }
+            }
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
@@ -44,12 +89,12 @@ namespace Perspex.Collections
 
         public void Dispose()
         {
-            this.inner.CollectionChanged -= this.InnerCollectionChanged;
+            this.source.CollectionChanged -= this.SourceCollectionChanged;
         }
 
-        public IEnumerator<TOut> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
-            return this.inner.Select(convert).GetEnumerator();
+            return this.source.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -57,12 +102,156 @@ namespace Perspex.Collections
             return this.GetEnumerator();
         }
 
-        private IList<TOut> ConvertList(IList list)
+        private void SourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (this.CollectionChanged != null)
+            {
+                NotifyCollectionChangedEventArgs ev;
+
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            e.NewItems,
+                            e.NewStartingIndex);
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Remove,
+                            e.OldItems,
+                            e.NewStartingIndex);
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Replace,
+                            e.NewItems,
+                            e.OldItems,
+                            e.OldStartingIndex);
+                        break;
+
+                    default:
+                        throw new NotSupportedException("Action not yet implemented.");
+                }
+
+                this.CollectionChanged(this, ev);
+            }
+        }
+    }
+
+    public class PerspexReadOnlyListView<TIn, TOut> : IReadOnlyPerspexList<TOut>, IDisposable
+    {
+        private IReadOnlyPerspexList<TIn> source;
+
+        private Func<TIn, TOut> convert;
+
+        public PerspexReadOnlyListView(Func<TIn, TOut> convert)
+            : this(null, convert)
+        {
+        }
+
+        public PerspexReadOnlyListView(IReadOnlyPerspexList<TIn> source, Func<TIn, TOut> convert)
+        {
+            this.source = source;
+            this.convert = convert;
+
+            if (source != null)
+            {
+                this.source.CollectionChanged += this.SourceCollectionChanged;
+            }
+        }
+
+        public TOut this[int index]
+        {
+            get
+            {
+                return (this.convert != null) ?
+                    this.convert(this.source[index]) :
+                    (TOut)(object)this.source[index];
+            }
+        }
+
+        public int Count
+        {
+            get { return this.source.Count; }
+        }
+
+        public IReadOnlyPerspexList<TIn> Source
+        {
+            get
+            {
+                return this.source;
+            }
+
+            set
+            {
+                if (this.source != null)
+                {
+                    this.source.CollectionChanged -= this.SourceCollectionChanged;
+
+                    if (this.CollectionChanged != null)
+                    {
+                        var ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Remove,
+                            this.ConvertList(this.source),
+                            0);
+                        this.CollectionChanged(this, ev);
+                    }
+                }
+
+                this.source = value;
+
+                if (this.source != null)
+                {
+                    this.source.CollectionChanged += this.SourceCollectionChanged;
+
+                    if (this.CollectionChanged != null)
+                    {
+                        var ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            this.ConvertList(this.source),
+                            0);
+                        this.CollectionChanged(this, ev);
+                    }
+                }
+            }
+        }
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void Dispose()
+        {
+            if (this.source != null)
+            {
+                this.source.CollectionChanged -= this.SourceCollectionChanged;
+            }
+        }
+
+        public IEnumerator<TOut> GetEnumerator()
+        {
+            if (this.source != null)
+            {
+                return this.source.Select(this.convert).GetEnumerator();
+            }
+            else
+            {
+                return Enumerable.Empty<TOut>().GetEnumerator();
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        private IList<TOut> ConvertList(IEnumerable list)
         {
             return list.Cast<TIn>().Select(this.convert).ToList();
         }
 
-        private void InnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void SourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (this.CollectionChanged != null)
             {
@@ -82,6 +271,14 @@ namespace Perspex.Collections
                             this.ConvertList(e.OldItems),
                             e.NewStartingIndex);
                         break;
+                    case NotifyCollectionChangedAction.Replace:
+                        ev = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Replace,
+                            this.ConvertList(e.NewItems),
+                            this.ConvertList(e.OldItems),
+                            e.OldStartingIndex);
+                        break;
+
                     default:
                         throw new NotSupportedException("Action not yet implemented.");
                 }
@@ -90,4 +287,5 @@ namespace Perspex.Collections
             }
         }
     }
+
 }

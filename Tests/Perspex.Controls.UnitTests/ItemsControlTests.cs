@@ -218,6 +218,26 @@ namespace Perspex.Controls.UnitTests
             Assert.True(called);
         }
 
+        [Fact]
+        public void LogicalChildren_Should_Not_Change_Instance_When_Template_Changed()
+        {
+            var target = new ItemsControl()
+            {
+                Template = this.GetTemplate(),
+            };
+
+            var before = ((ILogical)target).LogicalChildren;
+
+            target.Template = null;
+            target.Template = this.GetTemplate();
+
+            var after = ((ILogical)target).LogicalChildren;
+
+            Assert.NotNull(before);
+            Assert.NotNull(after);
+            Assert.Same(before, after);
+        }
+
         private ControlTemplate GetTemplate()
         {
             return ControlTemplate.Create<ItemsControl>(parent =>

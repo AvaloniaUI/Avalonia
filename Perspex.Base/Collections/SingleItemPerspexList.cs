@@ -66,7 +66,7 @@ namespace Perspex.Collections
                 NotifyCollectionChangedEventArgs e = null;
                 bool countChanged = false;
 
-                if (value == null && this.item != null )
+                if (value == null && this.item != null)
                 {
                     e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this.item, 0);
                     this.item = null;

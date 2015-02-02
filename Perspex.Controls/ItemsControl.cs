@@ -32,7 +32,8 @@ namespace Perspex.Controls
 
         private ItemContainerGenerator itemContainerGenerator;
 
-        private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren;
+        private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
+            new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
 
         private ItemsPresenter presenter;
 
@@ -82,19 +83,11 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            if (this.logicalChildren != null)
-            {
-                this.logicalChildren.Dispose();
-                this.logicalChildren = null;
-            }
-
             this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
 
             if (this.presenter != null)
             {
-                this.logicalChildren = new PerspexReadOnlyListView<IVisual, ILogical>(
-                    ((IVisual)presenter.Panel).VisualChildren,
-                    x => (ILogical)x);
+                this.logicalChildren.Source = ((IVisual)this.presenter).VisualChildren;
             }
         }
 
