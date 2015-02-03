@@ -154,6 +154,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Content = child;
             target.Content = null;
+            target.ApplyTemplate();
 
             Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
         }

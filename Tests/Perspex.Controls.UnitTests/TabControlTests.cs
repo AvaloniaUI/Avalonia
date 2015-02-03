@@ -136,7 +136,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             Assert.Equal(1, target.GetLogicalChildren().Count());
-            Assert.Equal("Foo", ((TabItem)target.GetLogicalChildren().First()).Id);
+            Assert.Equal("Foo", ((TextBlock)target.GetLogicalChildren().First()).Id);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)

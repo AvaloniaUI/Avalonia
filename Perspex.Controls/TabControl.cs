@@ -15,7 +15,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
 
-    public class TabControl : SelectingItemsControl
+    public class TabControl : SelectingItemsControl, ILogical
     {
         public static readonly PerspexProperty<object> SelectedContentProperty =
             PerspexProperty.Register<TabControl, object>("SelectedContent");
@@ -48,6 +48,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(SelectedTabProperty); }
             set { this.SetValue(SelectedTabProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChildren; }
         }
 
         protected override void OnTemplateApplied()

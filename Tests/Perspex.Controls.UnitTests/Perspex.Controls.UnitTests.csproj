@@ -79,6 +79,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="DropDownTests.cs" />
     <Compile Include="ScrollContentPresenterTests.cs" />
     <Compile Include="ScrollViewerTests.cs" />

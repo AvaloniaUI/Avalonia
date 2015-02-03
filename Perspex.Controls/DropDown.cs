@@ -27,11 +27,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
 
-        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
-
-        private ContentPresenter presenter;
-
-        private IDisposable presenterSubscription;
+        private PerspexReadOnlyListView<ILogical> logicalChildren = new PerspexReadOnlyListView<ILogical>();
 
         public DropDown()
         {
@@ -65,26 +61,23 @@ namespace Perspex.Controls
 
         IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
         {
-            get { return this.logicalChild; }
+            get { return this.logicalChildren; }
         }
 
         protected override void OnTemplateApplied()
         {
-            if (this.presenterSubscription != null)
+            var presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
+
+            if (presenter != null)
             {
-                this.presenterSubscription.Dispose();
-                this.presenterSubscription = null;
+                this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
             }
-
-            this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
-
-            if (this.presenter != null)
+            else
             {
-                this.presenterSubscription = this.presenter.ChildObservable
-                    .Subscribe(x => this.logicalChild.SingleItem = x);
+                this.logicalChildren.Source = null;
             }
         }
-        
+
         private void SetContentParent(Tuple<object, object> change)
         {
             var control1 = change.Item1 as Control;

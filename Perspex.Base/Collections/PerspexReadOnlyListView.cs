@@ -94,7 +94,9 @@ namespace Perspex.Collections
 
         public IEnumerator<T> GetEnumerator()
         {
-            return this.source.GetEnumerator();
+            return (this.source != null) ? 
+                this.source.GetEnumerator() : 
+                Enumerable.Empty<T>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

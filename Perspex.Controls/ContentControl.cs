@@ -24,11 +24,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>("VerticalContentAlignment");
 
-        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
-
-        private ContentPresenter presenter;
-
-        private IDisposable presenterSubscription;
+        private PerspexReadOnlyListView<ILogical> logicalChildren = new PerspexReadOnlyListView<ILogical>();
 
         public ContentControl()
         {
@@ -55,26 +51,23 @@ namespace Perspex.Controls
 
         IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
         {
-            get { return this.logicalChild; }
+            get { return this.logicalChildren; }
         }
 
         protected override void OnTemplateApplied()
         {
-            if (this.presenterSubscription != null)
-            {
-                this.presenterSubscription.Dispose();
-                this.presenterSubscription = null;
-            }
-
             // We allow ContentControls without ContentPresenters in the template. This can be
             // useful for e.g. a simple ToggleButton that displays an image. There's no need to
             // have a ContentPresenter in the visual tree for that.
-            this.presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
+            var presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
 
-            if (this.presenter != null)
+            if (presenter != null)
             {
-                this.presenterSubscription = this.presenter.ChildObservable
-                    .Subscribe(x => this.logicalChild.SingleItem = x);
+                this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
+            }
+            else
+            {
+                this.logicalChildren.Source = null;
             }
         }
 

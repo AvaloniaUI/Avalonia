@@ -10,19 +10,18 @@ namespace Perspex.Controls.Presenters
     using System.Linq;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using Perspex.Collections;
     using Perspex.Controls.Primitives;
     using Perspex.Media;
 
-    public class ContentPresenter : Control, IVisual, IPresenter
+    public class ContentPresenter : Control, IVisual, ILogical, IPresenter
     {
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         private bool createdChild;
 
-        private Control child;
-
-        private BehaviorSubject<Control> childObservable = new BehaviorSubject<Control>(null);
+        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
 
         public ContentPresenter()
         {
@@ -31,37 +30,18 @@ namespace Perspex.Controls.Presenters
 
         public Control Child
         {
-            get
-            {
-                return this.child;
-            }
-
-            private set
-            {
-                if (this.child != value)
-                {
-                    this.ClearVisualChildren();
-                    this.child = value;
-
-                    if (value != null)
-                    {
-                        this.AddVisualChild(value);
-                    }
-
-                    this.childObservable.OnNext(value);
-                }
-            }
-        }
-
-        public IObservable<Control> ChildObservable
-        {
-            get { return this.childObservable; }
+            get { return (Control)this.logicalChild.SingleItem; }
         }
 
         public object Content
         {
             get { return this.GetValue(ContentProperty); }
             set { this.SetValue(ContentProperty, value); }
+        }
+
+        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         public override sealed void ApplyTemplate()
@@ -79,10 +59,12 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (this.child != null)
+            var child = this.Child;
+
+            if (child != null)
             {
-                this.child.Measure(availableSize);
-                return this.child.DesiredSize.Value;
+                child.Measure(availableSize);
+                return child.DesiredSize.Value;
             }
 
             return new Size();
@@ -124,17 +106,18 @@ namespace Perspex.Controls.Presenters
                     }
                 }
 
-                var foo = this.TemplatedParent as TemplatedControl;
+                var templatedParent = this.TemplatedParent as TemplatedControl;
 
-                if (foo != null)
+                if (templatedParent != null)
                 {
-                    foo = foo.TemplatedParent as TemplatedControl;
+                    templatedParent = templatedParent.TemplatedParent as TemplatedControl;
                 }
 
-                result.TemplatedParent = foo;
+                result.TemplatedParent = templatedParent;
+                this.AddVisualChild(result);
             }
 
-            this.Child = result;
+            this.logicalChild.SingleItem = result;
             this.createdChild = true;
         }
     }

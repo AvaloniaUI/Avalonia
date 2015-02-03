@@ -150,13 +150,20 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Clearing_Content_Should_Remove_From_LogicalChildren()
         {
-            var contentControl = new ContentControl();
+            var target = new ContentControl();
             var child = new Control();
 
-            contentControl.Content = child;
-            contentControl.Content = null;
+            target.Template = this.GetTemplate();
+            target.Content = child;
+            target.ApplyTemplate();
 
-            Assert.Equal(new ILogical[0], ((ILogical)contentControl).LogicalChildren.ToList());
+            target.Content = null;
+
+            // Need to call ApplyTemplate on presenter for LogocalChildren to be updated.
+            var presenter = target.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
+            presenter.ApplyTemplate();
+
+            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
         }
 
         [Fact]
