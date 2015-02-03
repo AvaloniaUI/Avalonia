@@ -65,39 +65,12 @@ namespace Perspex.Layout.UnitTests
             }
         }
 
-        class TestLogger : ILogger
-        {
-
-            StreamWriter s;
-
-            public TestLogger()
-            {
-                s = new StreamWriter(new FileStream(@"D:\temp\layout.txt", FileMode.Create, FileAccess.ReadWrite));
-            }
-
-            public LogLevel Level
-            {
-                get;
-                set;
-            }
-
-            public void Write(string message, LogLevel logLevel)
-            {
-                if ((int)logLevel < (int)Level) return;
-                s.WriteLine(message);
-                s.Flush();
-            }
-        }
-
         [Fact]
         public void Test_ScrollViewer_With_TextBlock()
         {
             using (var context = Locator.CurrentMutable.WithResolver())
             {
                 this.RegisterServices();
-
-                LogManager.Enable(new TestLogger());
-                LogManager.Instance.LogLayoutMessages = true;
 
                 ScrollViewer scrollViewer;
                 TextBlock textBlock;
