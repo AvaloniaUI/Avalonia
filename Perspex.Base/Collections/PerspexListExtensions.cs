@@ -15,7 +15,7 @@ namespace Perspex.Collections
     public static class PerspexListExtensions
     {
         public static IDisposable ForEachItem<T>(
-            this IReadOnlyPerspexList<T> collection,
+            this IPerspexReadOnlyList<T> collection,
             Action<T> added,
             Action<T> removed)
         {
@@ -65,7 +65,7 @@ namespace Perspex.Collections
         }
 
         public static IDisposable TrackItemPropertyChanged<T>(
-            this IReadOnlyPerspexList<T> collection,
+            this IPerspexReadOnlyList<T> collection,
             Action<Tuple<object, PropertyChangedEventArgs>> callback)
         {
             List<INotifyPropertyChanged> tracked = new List<INotifyPropertyChanged>();

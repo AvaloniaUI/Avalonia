@@ -49,7 +49,7 @@ namespace Perspex.Controls
             set { this.SetValue(VerticalContentAlignmentProperty, value); }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChildren; }
         }

@@ -13,16 +13,16 @@ namespace Perspex.Collections
     using System.ComponentModel;
     using System.Linq;
 
-    public class PerspexReadOnlyListView<T> : IReadOnlyPerspexList<T>, IDisposable
+    public class PerspexReadOnlyListView<T> : IPerspexReadOnlyList<T>, IDisposable
     {
-        private IReadOnlyPerspexList<T> source;
+        private IPerspexReadOnlyList<T> source;
 
         public PerspexReadOnlyListView()
             : this(null)
         {
         }
 
-        public PerspexReadOnlyListView(IReadOnlyPerspexList<T> source)
+        public PerspexReadOnlyListView(IPerspexReadOnlyList<T> source)
         {
             this.source = source;
 
@@ -42,7 +42,7 @@ namespace Perspex.Collections
             get { return this.source.Count; }
         }
 
-        public IReadOnlyPerspexList<T> Source
+        public IPerspexReadOnlyList<T> Source
         {
             get
             {
@@ -141,9 +141,9 @@ namespace Perspex.Collections
         }
     }
 
-    public class PerspexReadOnlyListView<TIn, TOut> : IReadOnlyPerspexList<TOut>, IDisposable
+    public class PerspexReadOnlyListView<TIn, TOut> : IPerspexReadOnlyList<TOut>, IDisposable
     {
-        private IReadOnlyPerspexList<TIn> source;
+        private IPerspexReadOnlyList<TIn> source;
 
         private Func<TIn, TOut> convert;
 
@@ -152,7 +152,7 @@ namespace Perspex.Collections
         {
         }
 
-        public PerspexReadOnlyListView(IReadOnlyPerspexList<TIn> source, Func<TIn, TOut> convert)
+        public PerspexReadOnlyListView(IPerspexReadOnlyList<TIn> source, Func<TIn, TOut> convert)
         {
             this.source = source;
             this.convert = convert;
@@ -178,7 +178,7 @@ namespace Perspex.Collections
             get { return this.source.Count; }
         }
 
-        public IReadOnlyPerspexList<TIn> Source
+        public IPerspexReadOnlyList<TIn> Source
         {
             get
             {

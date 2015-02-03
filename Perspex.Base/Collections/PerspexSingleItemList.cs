@@ -14,24 +14,24 @@ namespace Perspex.Collections
     using System.Linq;
 
     /// <summary>
-    /// Implements the <see cref="IReadOnlyPerspexList{T}"/> interface for single items.
+    /// Implements the <see cref="IPerspexReadOnlyList{T}"/> interface for single items.
     /// </summary>
     /// <typeparam name="T">The type of the single item.</typeparam>
     /// <remarks>
     /// Classes such as Border can only ever have a single logical child, but they need to 
     /// implement a list of logical children in their ILogical.LogicalChildren property using the
-    /// <see cref="IReadOnlyPerspexList{T}"/> interface. This class facilitates that 
+    /// <see cref="IPerspexReadOnlyList{T}"/> interface. This class facilitates that 
     /// without creating an actual <see cref="PerspexList{T}"/>.
     /// </remarks>
-    public class SingleItemPerspexList<T> : IReadOnlyPerspexList<T> where T : class
+    public class PerspexSingleItemList<T> : IPerspexReadOnlyList<T> where T : class
     {
         private T item;
 
-        public SingleItemPerspexList()
+        public PerspexSingleItemList()
         {
         }
 
-        public SingleItemPerspexList(T item)
+        public PerspexSingleItemList(T item)
         {
             this.item = item;
         }

@@ -21,7 +21,7 @@ namespace Perspex.Controls.Presenters
 
         private bool createdChild;
 
-        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+        private PerspexSingleItemList<ILogical> logicalChild = new PerspexSingleItemList<ILogical>();
 
         public ContentPresenter()
         {
@@ -39,7 +39,7 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(ContentProperty, value); }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChild; }
         }

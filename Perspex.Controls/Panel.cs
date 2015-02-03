@@ -65,7 +65,7 @@ namespace Perspex.Controls
             }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.children; }
         }

@@ -56,7 +56,7 @@ namespace Perspex
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
-        IReadOnlyPerspexList<IVisual> VisualChildren { get; }
+        IPerspexReadOnlyList<IVisual> VisualChildren { get; }
 
         /// <summary>
         /// Gets the scene graph node's parent node.

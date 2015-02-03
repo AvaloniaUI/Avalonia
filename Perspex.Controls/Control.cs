@@ -32,7 +32,7 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategy.Bubble);
 
-        private static readonly IReadOnlyPerspexList<ILogical> EmptyChildren = new SingleItemPerspexList<ILogical>();
+        private static readonly IPerspexReadOnlyList<ILogical> EmptyChildren = new PerspexSingleItemList<ILogical>();
 
         private Classes classes = new Classes();
 
@@ -149,7 +149,7 @@ namespace Perspex.Controls
             get { return this.Parent; }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return EmptyChildren; }
         }

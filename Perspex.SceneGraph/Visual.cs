@@ -89,7 +89,7 @@ namespace Perspex
             get { return this.bounds; }
         }
 
-        IReadOnlyPerspexList<IVisual> IVisual.VisualChildren
+        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren
         {
             get { return this.visualChildren; }
         }

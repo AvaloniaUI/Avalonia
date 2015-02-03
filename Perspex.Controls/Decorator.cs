@@ -21,7 +21,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Thickness> PaddingProperty =
             PerspexProperty.Register<Decorator, Thickness>("Padding");
 
-        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+        private PerspexSingleItemList<ILogical> logicalChild = new PerspexSingleItemList<ILogical>();
 
         public Decorator()
         {
@@ -55,7 +55,7 @@ namespace Perspex.Controls
             set { this.SetValue(PaddingProperty, value); }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChild; }
         }

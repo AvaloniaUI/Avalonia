@@ -67,7 +67,7 @@ namespace Perspex.Controls
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
-        IReadOnlyPerspexList<ILogical> ILogical.LogicalChildren
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get
             {

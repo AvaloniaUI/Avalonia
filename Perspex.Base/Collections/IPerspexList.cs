@@ -9,7 +9,7 @@ namespace Perspex.Collections
     using System.Collections;
     using System.Collections.Generic;
 
-    public interface IPerspexList<T> : IList<T>, IList, IReadOnlyPerspexList<T>
+    public interface IPerspexList<T> : IList<T>, IList, IPerspexReadOnlyList<T>
     {
     }
 }

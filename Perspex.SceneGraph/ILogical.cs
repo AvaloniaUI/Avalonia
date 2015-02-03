@@ -21,6 +21,6 @@ namespace Perspex
         /// <summary>
         /// Gets the logical children.
         /// </summary>
-        IReadOnlyPerspexList<ILogical> LogicalChildren { get;  }
+        IPerspexReadOnlyList<ILogical> LogicalChildren { get;  }
     }
 }
