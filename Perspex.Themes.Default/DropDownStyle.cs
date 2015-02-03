@@ -33,6 +33,13 @@ namespace Perspex.Themes.Default
                         new Setter(DropDown.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
                 },
+                new Style(x => x.OfType<DropDown>().Descendent().OfType<ListBoxItem>().Class(":pointerover"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xffbee6fd))
+                    }
+                }
             });
         }
 
