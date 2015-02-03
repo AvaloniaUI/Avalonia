@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using Perspex.Interactivity;
     using Perspex.Platform;
     using Perspex.Rendering;
 
@@ -142,6 +143,13 @@ namespace Perspex.Controls
         {
             if (!this.StaysOpen)
             {
+                var routed = e as RoutedEventArgs;
+
+                if (routed != null)
+                {
+                    routed.Handled = true;
+                }
+
                 this.Close();
             }
         }

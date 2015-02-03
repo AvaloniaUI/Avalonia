@@ -73,6 +73,7 @@ namespace Perspex.Themes.Default
                             Id = "toggle",
                             BorderThickness = 0,
                             Background = Brushes.Transparent,
+                            ClickMode = ClickMode.Press,
                             Content = new Path
                             {
                                 Id = "checkMark",

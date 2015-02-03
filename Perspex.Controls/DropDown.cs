@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
+    using Perspex.Input;
     using Perspex.Layout;
 
     public class DropDown : SelectingItemsControl, IContentControl, ILogical
@@ -62,6 +63,11 @@ namespace Perspex.Controls
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChildren; }
+        }
+
+        protected override void OnPointerPressed(PointerPressEventArgs e)
+        {
+            this.IsDropDownOpen = !this.IsDropDownOpen;
         }
 
         protected override void OnTemplateApplied()
