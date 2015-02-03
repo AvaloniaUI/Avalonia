@@ -13,6 +13,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
 
     public class TabControl : SelectingItemsControl
     {
@@ -22,14 +23,15 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
 
-        private SingleItemPerspexList<ILogical> logicalChild = new SingleItemPerspexList<ILogical>();
+        private PerspexReadOnlyListView<ILogical> logicalChildren = 
+            new PerspexReadOnlyListView<ILogical>();
 
         public TabControl()
         {
             this.GetObservable(SelectedItemProperty).Subscribe(x =>
             {
                 ContentControl c = x as ContentControl;
-                object content = (c != null) ? c.Content : null;
+                object content = (c != null) ? c.Content : c;
                 this.SetValue(SelectedContentProperty, content);
             });
 
@@ -48,9 +50,10 @@ namespace Perspex.Controls
             set { this.SetValue(SelectedTabProperty, value); }
         }
 
-        protected override ItemContainerGenerator CreateItemContainerGenerator()
+        protected override void OnTemplateApplied()
         {
-            return new TypedItemContainerGenerator<TabItem>(this);
+            var presenter = this.GetTemplateChild<ContentPresenter>("contentPresenter");
+            this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
         }
     }
 }

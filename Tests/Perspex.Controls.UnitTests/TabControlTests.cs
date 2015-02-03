@@ -115,17 +115,28 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
-        public void Logical_Children_Should_Be_TabItems()
+        public void Logical_Child_Should_Be_SelectedContent()
         {
             var target = new TabControl
             {
                 Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
-                Items = new[] { "Foo", "Bar" },
+                Items = new[]
+                {
+                    new TabItem
+                    {
+                        Content = new TextBlock { Id = "Foo" }
+                    },
+                    new TabItem
+                    {
+                        Content = new TextBlock { Id = "Foo" }
+                    },
+                },
             };
 
             target.ApplyTemplate();
 
-            Assert.Equal(2, target.GetLogicalChildren().Count());
+            Assert.Equal(1, target.GetLogicalChildren().Count());
+            Assert.Equal("Foo", ((TabItem)target.GetLogicalChildren().First()).Id);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)
@@ -144,6 +155,7 @@ namespace Perspex.Controls.UnitTests
                     new ContentPresenter
                     {
                         Id = "contentPresenter",
+                        [~ContentPresenter.ContentProperty] = parent[~TabControl.SelectedContentProperty],
                     }
                 }
             };
