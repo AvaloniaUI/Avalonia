@@ -98,8 +98,8 @@ namespace Perspex.Controls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    this.AddVisualChildren(e.NewItems.OfType<Visual>());
                     this.SetLogicalParent(e.NewItems.OfType<Control>());
+                    this.AddVisualChildren(e.NewItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
