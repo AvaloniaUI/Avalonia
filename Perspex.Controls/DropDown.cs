@@ -66,16 +66,9 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            var presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
-
-            if (presenter != null)
-            {
-                this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
-            }
-            else
-            {
-                this.logicalChildren.Source = null;
-            }
+            var container = this.GetTemplateChild<Panel>("container");
+            ((IItemsPanel)container).ChildLogicalParent = this;
+            this.logicalChildren.Source = ((ILogical)container).LogicalChildren;
         }
 
         private void SetContentParent(Tuple<object, object> change)

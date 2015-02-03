@@ -45,6 +45,7 @@ namespace Perspex.Themes.Default
                 [~Border.BorderThicknessProperty] = control[~DropDown.BorderThicknessProperty],
                 Content = new Grid
                 {
+                    Id = "container",
                     ColumnDefinitions = new ColumnDefinitions
                     {
                         new ColumnDefinition(new GridLength(1, GridUnitType.Star)),
@@ -52,13 +53,13 @@ namespace Perspex.Themes.Default
                     },
                     Children = new Controls
                     {
-                        new ContentPresenter
+                        new ContentControl
                         {
-                            Id = "contentPresenter",
+                            Id = "contentControl",
                             Margin = new Thickness(3),
-                            [~ContentPresenter.ContentProperty] = control[~DropDown.ContentProperty],
-                            [~ContentPresenter.HorizontalAlignmentProperty] = control[~DropDown.HorizontalContentAlignmentProperty],
-                            [~ContentPresenter.VerticalAlignmentProperty] = control[~DropDown.VerticalContentAlignmentProperty],
+                            [~ContentControl.ContentProperty] = control[~DropDown.ContentProperty],
+                            [~ContentControl.HorizontalAlignmentProperty] = control[~DropDown.HorizontalContentAlignmentProperty],
+                            [~ContentControl.VerticalAlignmentProperty] = control[~DropDown.VerticalContentAlignmentProperty],
                         },
                         new ToggleButton
                         {
