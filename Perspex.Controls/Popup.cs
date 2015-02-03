@@ -91,7 +91,7 @@ namespace Perspex.Controls
             }
 
             this.popupRoot.SetPosition(this.GetPosition());
-            this.popupRoot.PreviewPointerPressed += this.MaybeClose;
+            this.popupRoot.PointerPressed += this.MaybeClose;
             this.topLevel.PreviewPointerPressed += this.MaybeClose;
             this.topLevel.Deactivated += this.MaybeClose;
             this.popupRoot.Show();
@@ -101,7 +101,7 @@ namespace Perspex.Controls
         {
             if (this.popupRoot != null)
             {
-                this.popupRoot.PreviewPointerPressed -= this.MaybeClose;
+                this.popupRoot.PointerPressed -= this.MaybeClose;
                 this.topLevel.PreviewPointerPressed -= this.MaybeClose;
                 this.topLevel.Deactivated -= this.MaybeClose;
                 this.popupRoot.Hide();
