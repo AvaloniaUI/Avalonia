@@ -1,6 +1,6 @@
 # Perspex Architecture
 
-At the highest level, perspex is split up into a "core" and two "subsystems.
+At the highest level, perspex is split up into a "core" and two "subsystems".
 
 * The core is a set of Portable Class Libraries that can run anywhere.
 * The Windowing subsystem is responsible for creating windows, handling input and scheduling timers.
@@ -20,10 +20,10 @@ There are currently two Windowing and two Rendering subsystems:
 
 ## Core
 
-The Perspex core is split up into several assemblies. These assemblies are not separate because
-you will want to use them separately - they are separate to maintain separation of concerns and a
-layered architecture. It is fully possible that they will be ILMerged into a single assembly for
-distribution.
+The Perspex core is split up into several assemblies. Note that they're not separated like this 
+because you will want to use them separately; they are separate to maintain separation of concerns 
+and a layered architecture. It is fully possible that they will be ILMerged into a single assembly 
+for distribution.
 
 The assemblies are as follows, from lowest to highest level:
 
