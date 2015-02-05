@@ -73,23 +73,20 @@ namespace Perspex.Interactivity
             e.Source = e.Source ?? this;
             e.OriginalSource = e.OriginalSource ?? this;
 
-            if (!e.Handled)
+            if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
-                if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
-                {
-                    e.Route = RoutingStrategies.Direct;
-                    this.RaiseEventImpl(e);
-                }
+                e.Route = RoutingStrategies.Direct;
+                this.RaiseEventImpl(e);
+            }
 
-                if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
-                {
-                    this.TunnelEvent(e);
-                }
+            if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
+            {
+                this.TunnelEvent(e);
+            }
 
-                if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
-                {
-                    this.BubbleEvent(e);
-                }
+            if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
+            {
+                this.BubbleEvent(e);
             }
         }
 
@@ -102,11 +99,6 @@ namespace Perspex.Interactivity
             foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>())
             {
                 target.RaiseEventImpl(e);
-
-                if (e.Handled)
-                {
-                    break;
-                }
             }
         }
 
@@ -119,11 +111,6 @@ namespace Perspex.Interactivity
             foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>().Reverse())
             {
                 target.RaiseEventImpl(e);
-
-                if (e.Handled)
-                {
-                    break;
-                }
             }
         }
 
@@ -133,17 +120,16 @@ namespace Perspex.Interactivity
 
             List<Subscription> subscriptions;
 
-            e.RoutedEvent.InvokeRaised(this, e);
-
             if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
                 foreach (var sub in subscriptions)
                 {
-                    bool invoke =
+                    bool correctRoute =
                         (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||
                         (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0);
+                    bool notFinished = !e.Handled || sub.AlsoIfHandled;
 
-                    if (invoke)
+                    if (correctRoute && notFinished)
                     {
                         sub.Handler.DynamicInvoke(this, e);
                     }

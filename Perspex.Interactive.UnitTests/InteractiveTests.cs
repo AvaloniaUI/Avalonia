@@ -192,10 +192,35 @@ namespace Perspex.Interactive.UnitTests
             Assert.Equal(2, count);
         }
 
+        [Fact]
+        public void Event_Should_Should_Keep_Propogating_To_HandedEventsToo_Handlers()
+        {
+            var ev = new RoutedEvent(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
+                typeof(TestInteractive));
+            var invoked = new List<string>();
+
+            EventHandler<RoutedEventArgs> handler = (s, e) =>
+            {
+                invoked.Add(((TestInteractive)s).Id);
+                e.Handled = true;
+            };
+
+            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, true);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "1", "2b", "2b", "1" }, invoked);
+        }
+
         private TestInteractive CreateTree(
             RoutedEvent ev, 
             EventHandler<RoutedEventArgs> handler,
-            RoutingStrategies handlerRoutes)
+            RoutingStrategies handlerRoutes,
+            bool handledEventsToo = false)
         {
             TestInteractive target;
 
@@ -224,7 +249,7 @@ namespace Perspex.Interactive.UnitTests
 
             foreach (var i in tree.GetSelfAndVisualDescendents().Cast<Interactive>())
             {
-                i.AddHandler(ev, handler, handlerRoutes, false);
+                i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
             }
             
             return target;
