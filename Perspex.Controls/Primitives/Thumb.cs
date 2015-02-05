@@ -25,9 +25,9 @@ namespace Perspex.Controls.Primitives
 
         static Thumb()
         {
-            DragStartedEvent.AddClassHandler<Thumb>(x => x.OnDragStarted);
-            DragDeltaEvent.AddClassHandler<Thumb>(x => x.OnDragDelta);
-            DragCompletedEvent.AddClassHandler<Thumb>(x => x.OnDragCompleted);
+            DragStartedEvent.AddClassHandler<Thumb>(x => x.OnDragStarted, RoutingStrategies.Bubble);
+            DragDeltaEvent.AddClassHandler<Thumb>(x => x.OnDragDelta, RoutingStrategies.Bubble);
+            DragCompletedEvent.AddClassHandler<Thumb>(x => x.OnDragCompleted, RoutingStrategies.Bubble);
         }
 
         public event EventHandler<VectorEventArgs> DragStarted

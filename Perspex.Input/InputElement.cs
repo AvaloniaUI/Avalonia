@@ -66,16 +66,16 @@ namespace Perspex.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
-            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
-            PreviewKeyDownEvent.AddClassHandler<InputElement>(x => x.OnPreviewKeyDown);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
-            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
-            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
-            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
-            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
+            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus, RoutingStrategies.Bubble);
+            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus, RoutingStrategies.Bubble);
+            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown, RoutingStrategies.Bubble);
+            PreviewKeyDownEvent.AddClassHandler<InputElement>(x => x.OnPreviewKeyDown, RoutingStrategies.Tunnel);
+            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter, RoutingStrategies.Direct);
+            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave, RoutingStrategies.Direct);
+            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved, RoutingStrategies.Bubble);
+            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed, RoutingStrategies.Bubble);
+            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased, RoutingStrategies.Bubble);
+            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged, RoutingStrategies.Bubble);
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus

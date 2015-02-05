@@ -16,8 +16,8 @@ namespace Perspex.Interactivity
 
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<Subscription>> eventHandlers = 
-            new Dictionary<RoutedEvent, List<Subscription>>();
+        private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers = 
+            new Dictionary<RoutedEvent, List<EventSubscription>>();
 
         public void AddHandler(
             RoutedEvent routedEvent, 
@@ -28,15 +28,15 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(routedEvent != null);
             Contract.Requires<NullReferenceException>(handler != null);
 
-            List<Subscription> subscriptions;
+            List<EventSubscription> subscriptions;
 
             if (!this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
-                subscriptions = new List<Subscription>();
+                subscriptions = new List<EventSubscription>();
                 this.eventHandlers.Add(routedEvent, subscriptions);
             }
 
-            subscriptions.Add(new Subscription
+            subscriptions.Add(new EventSubscription
             {
                 Handler = handler,
                 Routes = routes,
@@ -58,7 +58,7 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(routedEvent != null);
             Contract.Requires<NullReferenceException>(handler != null);
 
-            List<Subscription> subscriptions;
+            List<EventSubscription> subscriptions;
 
             if (this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
@@ -76,6 +76,7 @@ namespace Perspex.Interactivity
             if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
                 e.Route = RoutingStrategies.Direct;
+                e.RoutedEvent.InvokeClassHandlers(this, e);
                 this.RaiseEventImpl(e);
             }
 
@@ -118,7 +119,9 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(e != null);
 
-            List<Subscription> subscriptions;
+            e.RoutedEvent.InvokeClassHandlers(this, e);
+
+            List<EventSubscription> subscriptions;
 
             if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
@@ -135,15 +138,6 @@ namespace Perspex.Interactivity
                     }
                 }
             }
-        }
-
-        private class Subscription
-        {
-            public Delegate Handler { get; set; }
-
-            public RoutingStrategies Routes { get; set; }
-
-            public bool AlsoIfHandled { get; set; }
         }
     }
 }

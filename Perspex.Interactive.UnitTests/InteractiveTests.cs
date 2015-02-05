@@ -216,6 +216,88 @@ namespace Perspex.Interactive.UnitTests
             Assert.Equal(new[] { "1", "2b", "2b", "1" }, invoked);
         }
 
+        [Fact]
+        public void Direct_Class_Handlers_Should_Be_Called()
+        {
+            var ev = new RoutedEvent(
+                "test",
+                RoutingStrategies.Direct,
+                typeof(RoutedEventArgs),
+                typeof(TestInteractive));
+            var invoked = new List<string>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+
+            var target = this.CreateTree(ev, null, 0);
+
+            ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Direct);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "2b" }, invoked);
+        }
+
+        [Fact]
+        public void Tunneling_Class_Handlers_Should_Be_Called()
+        {
+            var ev = new RoutedEvent(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
+                typeof(TestInteractive));
+            var invoked = new List<string>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+
+            var target = this.CreateTree(ev, null, 0);
+
+            ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Tunnel);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "1", "2b" }, invoked);
+        }
+
+        [Fact]
+        public void Bubbling_Class_Handlers_Should_Be_Called()
+        {
+            var ev = new RoutedEvent(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
+                typeof(TestInteractive));
+            var invoked = new List<string>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+
+            var target = this.CreateTree(ev, null, 0);
+
+            ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Bubble);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "2b", "1" }, invoked);
+        }
+
+        [Fact]
+        public void Typed_Class_Handlers_Should_Be_Called()
+        {
+            var ev = new RoutedEvent<RoutedEventArgs>(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(TestInteractive));
+
+            var target = this.CreateTree(ev, null, 0);
+
+            ev.AddClassHandler<TestInteractive>(x => x.ClassHandler, RoutingStrategies.Bubble);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.True(target.ClassHandlerInvoked);
+            Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
+        }
+
         private TestInteractive CreateTree(
             RoutedEvent ev, 
             EventHandler<RoutedEventArgs> handler,
@@ -247,9 +329,12 @@ namespace Perspex.Interactive.UnitTests
                 }
             };
 
-            foreach (var i in tree.GetSelfAndVisualDescendents().Cast<Interactive>())
+            if (handler != null)
             {
-                i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
+                foreach (var i in tree.GetSelfAndVisualDescendents().Cast<Interactive>())
+                {
+                    i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
+                }
             }
             
             return target;
@@ -258,6 +343,8 @@ namespace Perspex.Interactive.UnitTests
         private class TestInteractive : Interactive
         {
             public string Id { get; set; }
+
+            public bool ClassHandlerInvoked { get; private set; }
 
             public IEnumerable<IVisual> Children
             {
@@ -270,6 +357,11 @@ namespace Perspex.Interactive.UnitTests
                 {
                     this.AddVisualChildren(value.Cast<Visual>());
                 }
+            }
+
+            public void ClassHandler(RoutedEventArgs e)
+            {
+                this.ClassHandlerInvoked = true;
             }
         }
     }

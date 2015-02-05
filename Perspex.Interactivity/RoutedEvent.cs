@@ -7,6 +7,7 @@
 namespace Perspex.Interactivity
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Reflection;
 
@@ -20,6 +21,8 @@ namespace Perspex.Interactivity
 
     public class RoutedEvent
     {
+        private List<ClassEventSubscription> subscriptions = new List<ClassEventSubscription>();
+
         public RoutedEvent(
             string name, 
             RoutingStrategies routingStrategies,
@@ -86,12 +89,32 @@ namespace Perspex.Interactivity
             return new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
         }
 
-        internal void InvokeRaised(object sender, RoutedEventArgs e)
+        public void AddClassHandler(Type type, EventHandler<RoutedEventArgs> handler, RoutingStrategies routes)
         {
-            if (this.Raised != null)
+            this.subscriptions.Add(new ClassEventSubscription
             {
-                this.Raised(sender, e);
+                TargetType = type,
+                Handler = handler,
+                Routes = routes,
+            });
+        }
+
+        internal void InvokeClassHandlers(object sender, RoutedEventArgs e)
+        {
+            foreach (var sub in this.subscriptions)
+            {
+                if (sub.TargetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
+                    (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||
+                    (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0))
+                {
+                    sub.Handler.DynamicInvoke(sender, e);
+                }
             }
+        }
+
+        private class ClassEventSubscription : EventSubscription
+        {
+            public Type TargetType { get; set; }
         }
     }
 
@@ -106,18 +129,12 @@ namespace Perspex.Interactivity
             Contract.Requires<InvalidCastException>(typeof(IInteractive).GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()));
         }
 
-        public void AddClassHandler<TTarget>(Func<TTarget, Action<TEventArgs>> handler) where TTarget : class
+        public void AddClassHandler<TTarget>(
+            Func<TTarget, Action<TEventArgs>> handler,
+            RoutingStrategies routes) where TTarget : class
         {
-            this.Raised += (s, e) =>
-            {
-                var target = s as TTarget;
-                var args = e as TEventArgs;
-
-                if (target != null)
-                {
-                    handler(target)(args);
-                }
-            };
+            var adaptor = (EventHandler<RoutedEventArgs>)((s, e) => handler((TTarget)s)((TEventArgs)e));
+            this.AddClassHandler(typeof(TTarget), adaptor, routes);
         }
     }
 }
