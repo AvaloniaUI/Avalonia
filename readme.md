@@ -26,7 +26,11 @@ binding throughout a framework. *I'm writing this only to see if the idea of exp
 appeals to anyone else.*
 
 ## Documentation
-As mentioned above this is really an early version of Perspex and we're working hard on improving the code base and the documentation at the same time. Please feel free to have a look at our [introduction document](Docs/intro.md) to get things started real quick. Contributions are always welcome!
+As mentioned above this is really an early version of Perspex and we're working hard on improving the code base and the documentation at the same time. Please feel free to have a look at our [introduction document](Docs/intro.md) to get things started real quick. 
+
+There's also a high-level [architecture document](Docs/architecture.md).
+
+Contributions are always welcome!
 
 ## Building and Using
 In order to build and use Perpex you need a compiler that supports the upcoming C# 6 features.
