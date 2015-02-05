@@ -83,6 +83,16 @@ namespace Perspex.VisualTree
             }
         }
 
+        public static IEnumerable<IVisual> GetSelfAndVisualDescendents(this IVisual visual)
+        {
+            yield return visual;
+
+            foreach (var ancestor in visual.GetVisualDescendents())
+            {
+                yield return ancestor;
+            }
+        }
+
         public static IVisual GetVisualParent(this IVisual visual)
         {
             return visual.VisualParent;

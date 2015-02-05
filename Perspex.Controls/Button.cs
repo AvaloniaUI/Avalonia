@@ -22,7 +22,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<Button, ClickMode>("ClickMode");
 
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategy.Bubble);
+            RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
 
         static Button()
         {

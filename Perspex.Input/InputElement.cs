@@ -30,37 +30,37 @@ namespace Perspex.Input
             PerspexProperty.Register<InputElement, bool>("IsPointerOver");
 
         public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
-            RoutedEvent.Register<InputElement, RoutedEventArgs>("GotFocus", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, RoutedEventArgs>("GotFocus", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
-            RoutedEvent.Register<InputElement, RoutedEventArgs>("LostFocus", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, RoutedEventArgs>("LostFocus", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
-            RoutedEvent.Register<InputElement, KeyEventArgs>("KeyDown", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, KeyEventArgs>("KeyDown", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<KeyEventArgs> PreviewKeyDownEvent =
-            RoutedEvent.Register<InputElement, KeyEventArgs>("PreviewKeyDown", RoutingStrategy.Tunnel);
+            RoutedEvent.Register<InputElement, KeyEventArgs>("PreviewKeyDown", RoutingStrategies.Tunnel);
 
         public static readonly RoutedEvent<PointerPressEventArgs> PreviewPointerPressedEvent =
-            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PreviewPointerPressed", RoutingStrategy.Tunnel);
+            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PreviewPointerPressed", RoutingStrategies.Tunnel);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerEnter", RoutingStrategy.Direct);
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerEnter", RoutingStrategies.Direct);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerLeave", RoutingStrategy.Direct);
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerLeave", RoutingStrategies.Direct);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerMove", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerMove", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerPressEventArgs> PointerPressedEvent =
-            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PointerPressed", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PointerPressed", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerReleased", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerReleased", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerWheelEventArgs> PointerWheelChangedEvent =
-            RoutedEvent.Register<InputElement, PointerWheelEventArgs>("PointerWheelChanged", RoutingStrategy.Bubble);
+            RoutedEvent.Register<InputElement, PointerWheelEventArgs>("PointerWheelChanged", RoutingStrategies.Bubble);
 
         static InputElement()
         {

@@ -10,18 +10,19 @@ namespace Perspex.Interactivity
     using System.Linq.Expressions;
     using System.Reflection;
 
-    public enum RoutingStrategy
+    [Flags]
+    public enum RoutingStrategies
     {
-        Tunnel,
-        Bubble,
-        Direct,
+        Direct = 0,
+        Tunnel = 1,
+        Bubble = 2,
     }
 
     public class RoutedEvent
     {
         public RoutedEvent(
             string name, 
-            RoutingStrategy routingStrategy,
+            RoutingStrategies routingStrategies,
             Type eventArgsType,
             Type ownerType)
         {
@@ -34,7 +35,7 @@ namespace Perspex.Interactivity
             this.EventArgsType = eventArgsType;
             this.Name = name;
             this.OwnerType = ownerType;
-            this.RoutingStrategy = routingStrategy;
+            this.RoutingStrategies = routingStrategies;
         }
 
         public event EventHandler<RoutedEventArgs> Raised;
@@ -57,7 +58,7 @@ namespace Perspex.Interactivity
             private set; 
         }
 
-        public RoutingStrategy RoutingStrategy 
+        public RoutingStrategies RoutingStrategies 
         { 
             get; 
             private set; 
@@ -65,7 +66,7 @@ namespace Perspex.Interactivity
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,
-            RoutingStrategy routingStrategy)
+            RoutingStrategies routingStrategy)
                 where TOwner : IInteractive
                 where TEventArgs : RoutedEventArgs
         {
@@ -76,7 +77,7 @@ namespace Perspex.Interactivity
 
         public static RoutedEvent<TEventArgs> Register<TEventArgs>(
             string name,
-            RoutingStrategy routingStrategy,
+            RoutingStrategies routingStrategy,
             Type ownerType) 
                 where TEventArgs : RoutedEventArgs
         {
@@ -97,8 +98,8 @@ namespace Perspex.Interactivity
     public class RoutedEvent<TEventArgs> : RoutedEvent
         where TEventArgs : RoutedEventArgs
     {
-        public RoutedEvent(string name, RoutingStrategy routingStrategy, Type ownerType)
-            : base(name, routingStrategy, typeof(TEventArgs), ownerType)
+        public RoutedEvent(string name, RoutingStrategies routingStrategies, Type ownerType)
+            : base(name, routingStrategies, typeof(TEventArgs), ownerType)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);

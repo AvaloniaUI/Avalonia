@@ -16,22 +16,32 @@ namespace Perspex.Interactivity
 
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<Delegate>> eventHandlers = new Dictionary<RoutedEvent, List<Delegate>>();
+        private Dictionary<RoutedEvent, List<Subscription>> eventHandlers = 
+            new Dictionary<RoutedEvent, List<Subscription>>();
 
-        public void AddHandler(RoutedEvent routedEvent, Delegate handler)
+        public void AddHandler(
+            RoutedEvent routedEvent, 
+            Delegate handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false)
         {
             Contract.Requires<NullReferenceException>(routedEvent != null);
             Contract.Requires<NullReferenceException>(handler != null);
 
-            List<Delegate> delegates;
+            List<Subscription> subscriptions;
 
-            if (!this.eventHandlers.TryGetValue(routedEvent, out delegates))
+            if (!this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
-                delegates = new List<Delegate>();
-                this.eventHandlers.Add(routedEvent, delegates);
+                subscriptions = new List<Subscription>();
+                this.eventHandlers.Add(routedEvent, subscriptions);
             }
 
-            delegates.Add(handler);
+            subscriptions.Add(new Subscription
+            {
+                Handler = handler,
+                Routes = routes,
+                AlsoIfHandled = handledEventsToo,
+            });
         }
 
         public IObservable<EventPattern<T>> GetObservable<T>(RoutedEvent<T> routedEvent) where T : RoutedEventArgs
@@ -48,11 +58,11 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(routedEvent != null);
             Contract.Requires<NullReferenceException>(handler != null);
 
-            List<Delegate> delegates;
+            List<Subscription> subscriptions;
 
-            if (this.eventHandlers.TryGetValue(routedEvent, out delegates))
+            if (this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
-                delegates.Remove(handler);
+                subscriptions.RemoveAll(x => x.Handler == handler);
             }
         }
 
@@ -65,17 +75,20 @@ namespace Perspex.Interactivity
 
             if (!e.Handled)
             {
-                switch (e.RoutedEvent.RoutingStrategy)
+                if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
                 {
-                    case RoutingStrategy.Bubble:
-                        this.BubbleEvent(e);
-                        break;
-                    case RoutingStrategy.Direct:
-                        this.RaiseEventImpl(e);
-                        break;
-                    case RoutingStrategy.Tunnel:
-                        this.TunnelEvent(e);
-                        break;
+                    e.Route = RoutingStrategies.Direct;
+                    this.RaiseEventImpl(e);
+                }
+
+                if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
+                {
+                    this.TunnelEvent(e);
+                }
+
+                if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
+                {
+                    this.BubbleEvent(e);
                 }
             }
         }
@@ -83,6 +96,8 @@ namespace Perspex.Interactivity
         private void BubbleEvent(RoutedEventArgs e)
         {
             Contract.Requires<NullReferenceException>(e != null);
+
+            e.Route = RoutingStrategies.Bubble;
 
             foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>())
             {
@@ -99,6 +114,8 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(e != null);
 
+            e.Route = RoutingStrategies.Tunnel;
+
             foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>().Reverse())
             {
                 target.RaiseEventImpl(e);
@@ -114,17 +131,33 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<NullReferenceException>(e != null);
 
-            List<Delegate> delegates;
+            List<Subscription> subscriptions;
 
             e.RoutedEvent.InvokeRaised(this, e);
 
-            if (this.eventHandlers.TryGetValue(e.RoutedEvent, out delegates))
+            if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
-                foreach (Delegate handler in delegates.ToList())
+                foreach (var sub in subscriptions)
                 {
-                    handler.DynamicInvoke(this, e);
+                    bool invoke =
+                        (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||
+                        (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0);
+
+                    if (invoke)
+                    {
+                        sub.Handler.DynamicInvoke(this, e);
+                    }
                 }
             }
+        }
+
+        private class Subscription
+        {
+            public Delegate Handler { get; set; }
+
+            public RoutingStrategies Routes { get; set; }
+
+            public bool AlsoIfHandled { get; set; }
         }
     }
 }
