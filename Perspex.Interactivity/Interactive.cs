@@ -81,7 +81,6 @@ namespace Perspex.Interactivity
             if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
                 e.Route = RoutingStrategies.Direct;
-                e.RoutedEvent.InvokeClassHandlers(this, e);
                 this.RaiseEventImpl(e);
             }
 
