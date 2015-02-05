@@ -49,6 +49,15 @@ namespace Perspex.Interactivity
             return Disposable.Create(() => subscriptions.Remove(sub));
         }
 
+        public IDisposable AddHandler<TEventArgs>(
+            RoutedEvent<TEventArgs> routedEvent,
+            EventHandler<TEventArgs> handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
+        {
+            return this.AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+        }
+
         public IObservable<EventPattern<T>> GetObservable<T>(RoutedEvent<T> routedEvent) where T : RoutedEventArgs
         {
             Contract.Requires<NullReferenceException>(routedEvent != null);
@@ -69,6 +78,12 @@ namespace Perspex.Interactivity
             {
                 subscriptions.RemoveAll(x => x.Handler == handler);
             }
+        }
+
+        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler) 
+            where TEventArgs : RoutedEventArgs
+        {
+            this.RemoveHandler(routedEvent, (Delegate)handler);
         }
 
         public void RaiseEvent(RoutedEventArgs e)

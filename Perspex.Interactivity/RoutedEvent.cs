@@ -104,8 +104,7 @@ namespace Perspex.Interactivity
             foreach (var sub in this.subscriptions)
             {
                 if (sub.TargetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
-                    (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||
-                    (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0))
+                    (e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0)
                 {
                     sub.Handler.DynamicInvoke(sender, e);
                 }
@@ -131,7 +130,8 @@ namespace Perspex.Interactivity
 
         public void AddClassHandler<TTarget>(
             Func<TTarget, Action<TEventArgs>> handler,
-            RoutingStrategies routes) where TTarget : class
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble) 
+            where TTarget : class
         {
             var adaptor = (EventHandler<RoutedEventArgs>)((s, e) => handler((TTarget)s)((TEventArgs)e));
             this.AddClassHandler(typeof(TTarget), adaptor, routes);

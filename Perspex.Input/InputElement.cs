@@ -70,15 +70,15 @@ namespace Perspex.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus, RoutingStrategies.Bubble);
-            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus, RoutingStrategies.Bubble);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown, RoutingStrategies.Bubble);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter, RoutingStrategies.Direct);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave, RoutingStrategies.Direct);
-            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved, RoutingStrategies.Bubble);
-            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed, RoutingStrategies.Bubble);
-            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased, RoutingStrategies.Bubble);
-            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged, RoutingStrategies.Bubble);
+            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
+            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
+            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
+            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
+            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
+            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
+            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
+            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
+            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
         }
 
         public event EventHandler<RoutedEventArgs> GotFocus

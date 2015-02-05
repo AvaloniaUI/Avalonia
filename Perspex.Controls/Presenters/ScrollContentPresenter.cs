@@ -36,9 +36,7 @@ namespace Perspex.Controls.Presenters
 
         public ScrollContentPresenter()
         {
-            this.AddHandler(
-                Control.RequestBringIntoViewEvent,
-                new EventHandler<RequestBringIntoViewEventArgs>(this.BringIntoViewRequested));
+            this.AddHandler(Control.RequestBringIntoViewEvent, this.BringIntoViewRequested);
         }
 
         public Size Extent
