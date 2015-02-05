@@ -131,14 +131,12 @@ namespace Perspex.Input
                     var e = new PointerPressEventArgs
                     {
                         Device = this,
-                        RoutedEvent = InputElement.PreviewPointerPressedEvent,
+                        RoutedEvent = InputElement.PointerPressedEvent,
                         OriginalSource = source,
                         Source = source,
                         ClickCount = this.clickCount,
                     };
 
-                    source.RaiseEvent(e);
-                    e.RoutedEvent = InputElement.PointerPressedEvent;
                     source.RaiseEvent(e);
                 }
 

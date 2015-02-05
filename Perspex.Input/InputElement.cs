@@ -36,13 +36,9 @@ namespace Perspex.Input
             RoutedEvent.Register<InputElement, RoutedEventArgs>("LostFocus", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
-            RoutedEvent.Register<InputElement, KeyEventArgs>("KeyDown", RoutingStrategies.Bubble);
-
-        public static readonly RoutedEvent<KeyEventArgs> PreviewKeyDownEvent =
-            RoutedEvent.Register<InputElement, KeyEventArgs>("PreviewKeyDown", RoutingStrategies.Tunnel);
-
-        public static readonly RoutedEvent<PointerPressEventArgs> PreviewPointerPressedEvent =
-            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PreviewPointerPressed", RoutingStrategies.Tunnel);
+            RoutedEvent.Register<InputElement, KeyEventArgs>(
+                "KeyDown", 
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerEnter", RoutingStrategies.Direct);
@@ -51,16 +47,24 @@ namespace Perspex.Input
             RoutedEvent.Register<InputElement, PointerEventArgs>("PointerLeave", RoutingStrategies.Direct);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerMove", RoutingStrategies.Bubble);
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                "PointerMove", 
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerPressEventArgs> PointerPressedEvent =
-            RoutedEvent.Register<InputElement, PointerPressEventArgs>("PointerPressed", RoutingStrategies.Bubble);
+            RoutedEvent.Register<InputElement, PointerPressEventArgs>(
+                "PointerPressed", 
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>("PointerReleased", RoutingStrategies.Bubble);
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                "PointerReleased", 
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerWheelEventArgs> PointerWheelChangedEvent =
-            RoutedEvent.Register<InputElement, PointerWheelEventArgs>("PointerWheelChanged", RoutingStrategies.Bubble);
+            RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
+                "PointerWheelChanged", 
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         static InputElement()
         {
@@ -69,7 +73,6 @@ namespace Perspex.Input
             GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus, RoutingStrategies.Bubble);
             LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus, RoutingStrategies.Bubble);
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown, RoutingStrategies.Bubble);
-            PreviewKeyDownEvent.AddClassHandler<InputElement>(x => x.OnPreviewKeyDown, RoutingStrategies.Tunnel);
             PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter, RoutingStrategies.Direct);
             PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave, RoutingStrategies.Direct);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved, RoutingStrategies.Bubble);
@@ -94,18 +97,6 @@ namespace Perspex.Input
         {
             add { this.AddHandler(KeyDownEvent, value); }
             remove { this.RemoveHandler(KeyDownEvent, value); }
-        }
-
-        public event EventHandler<KeyEventArgs> PreviewKeyDown
-        {
-            add { this.AddHandler(PreviewKeyDownEvent, value); }
-            remove { this.RemoveHandler(PreviewKeyDownEvent, value); }
-        }
-
-        public event EventHandler<PointerPressEventArgs> PreviewPointerPressed
-        {
-            add { this.AddHandler(PreviewPointerPressedEvent, value); }
-            remove { this.RemoveHandler(PreviewPointerPressedEvent, value); }
         }
 
         public event EventHandler<PointerEventArgs> PointerEnter
@@ -208,10 +199,6 @@ namespace Perspex.Input
         }
 
         protected virtual void OnKeyDown(KeyEventArgs e)
-        {
-        }
-
-        protected virtual void OnPreviewKeyDown(KeyEventArgs e)
         {
         }
 

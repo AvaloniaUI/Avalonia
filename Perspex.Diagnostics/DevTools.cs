@@ -108,8 +108,10 @@ namespace Perspex.Diagnostics
 
         public static IDisposable Attach(Window w)
         {
-            w.PreviewKeyDown += WindowPreviewKeyDown;
-            return Disposable.Create(() => w.PreviewKeyDown -= WindowPreviewKeyDown);
+            return w.AddHandler(
+                Window.KeyDownEvent, 
+                (EventHandler<KeyEventArgs>)WindowPreviewKeyDown, 
+                Interactivity.RoutingStrategies.Tunnel);
         }
 
         private static void WindowPreviewKeyDown(object sender, KeyEventArgs e)

@@ -92,8 +92,13 @@ namespace Perspex.Controls
 
             this.popupRoot.SetPosition(this.GetPosition());
             this.popupRoot.PointerPressed += this.MaybeClose;
-            this.topLevel.PreviewPointerPressed += this.MaybeClose;
             this.topLevel.Deactivated += this.MaybeClose;
+
+            this.topLevel.AddHandler(
+                TopLevel.PointerPressedEvent,
+                (EventHandler<RoutedEventArgs>)this.MaybeClose,
+                RoutingStrategies.Tunnel);
+
             this.popupRoot.Show();
         }
 
@@ -102,7 +107,7 @@ namespace Perspex.Controls
             if (this.popupRoot != null)
             {
                 this.popupRoot.PointerPressed -= this.MaybeClose;
-                this.topLevel.PreviewPointerPressed -= this.MaybeClose;
+                this.topLevel.RemoveHandler(TopLevel.PointerPressedEvent, (EventHandler<RoutedEventArgs>)this.MaybeClose);
                 this.topLevel.Deactivated -= this.MaybeClose;
                 this.popupRoot.Hide();
             }

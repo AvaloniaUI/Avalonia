@@ -10,6 +10,7 @@ namespace Perspex.Interactivity
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive;
+    using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using Perspex.Layout;
     using Perspex.VisualTree;
@@ -19,7 +20,7 @@ namespace Perspex.Interactivity
         private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers = 
             new Dictionary<RoutedEvent, List<EventSubscription>>();
 
-        public void AddHandler(
+        public IDisposable AddHandler(
             RoutedEvent routedEvent, 
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -36,12 +37,16 @@ namespace Perspex.Interactivity
                 this.eventHandlers.Add(routedEvent, subscriptions);
             }
 
-            subscriptions.Add(new EventSubscription
+            var sub = new EventSubscription
             {
                 Handler = handler,
                 Routes = routes,
                 AlsoIfHandled = handledEventsToo,
-            });
+            };
+
+            subscriptions.Add(sub);
+
+            return Disposable.Create(() => subscriptions.Remove(sub));
         }
 
         public IObservable<EventPattern<T>> GetObservable<T>(RoutedEvent<T> routedEvent) where T : RoutedEventArgs
@@ -125,7 +130,7 @@ namespace Perspex.Interactivity
 
             if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
-                foreach (var sub in subscriptions)
+                foreach (var sub in subscriptions.ToList())
                 {
                     bool correctRoute =
                         (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||

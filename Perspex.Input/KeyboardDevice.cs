@@ -51,7 +51,7 @@ namespace Perspex.Input
                     case RawKeyEventType.KeyDown:
                         KeyEventArgs ev = new KeyEventArgs
                         {
-                            RoutedEvent = InputElement.PreviewKeyDownEvent,
+                            RoutedEvent = InputElement.KeyDownEvent,
                             Device = this,
                             Key = e.Key,
                             Text = e.Text,
@@ -59,8 +59,6 @@ namespace Perspex.Input
                             OriginalSource = element,
                         };
 
-                        element.RaiseEvent(ev);
-                        ev.RoutedEvent = InputElement.KeyDownEvent;
                         element.RaiseEvent(ev);
                         break;
                 }
