@@ -171,6 +171,18 @@ namespace Perspex
             throw new NotImplementedException();
         }
 
+        public override string ToString()
+        {
+            return string.Format(
+                "{0},{1} {2},{3} {4},{5}",
+                this.m11,
+                this.m12,
+                this.m21,
+                this.m22,
+                this.offsetX,
+                this.offsetY);
+        }
+
         public Matrix Invert()
         {
             if (!this.HasInverse)
