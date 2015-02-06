@@ -7,18 +7,16 @@
 namespace Perspex.Direct2D1
 {
     using System;
-    using System.Linq;
     using Perspex.Direct2D1.Media;
     using Perspex.Media;
     using Perspex.Platform;
+    using Perspex.Rendering;
     using SharpDX;
     using SharpDX.Direct2D1;
     using Splat;
     using DwFactory = SharpDX.DirectWrite.Factory;
-    using Matrix = Perspex.Matrix;
-    using Point = Perspex.Point;
 
-    public class Renderer : IRenderer
+    public class Renderer : RendererBase
     {
         /// <summary>
         /// The render target.
@@ -83,35 +81,11 @@ namespace Perspex.Direct2D1
         }
 
         /// <summary>
-        /// Gets the number of times <see cref="Render"/> has been called.
-        /// </summary>
-        public int RenderCount
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Renders the specified visual.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">Unused.</param>
-        public void Render(IVisual visual, IPlatformHandle handle)
-        {
-            using (DrawingContext context = new DrawingContext(this.renderTarget, this.DirectWriteFactory))
-            {
-                this.Render(visual, context, Matrix.Identity, Matrix.Identity);
-            }
-
-            ++this.RenderCount;
-        }
-
-        /// <summary>
         /// Resizes the renderer.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public void Resize(int width, int height)
+        public override void Resize(int width, int height)
         {
             WindowRenderTarget window = this.renderTarget as WindowRenderTarget;
 
@@ -126,43 +100,13 @@ namespace Perspex.Direct2D1
         }
 
         /// <summary>
-        /// Renders the specified visual.
+        /// Creates a drawing context for a rendering session.
         /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="context">The drawing context.</param>
-        private void Render(IVisual visual, DrawingContext context, Matrix translation, Matrix transform)
+        /// <param name="handle">The platform handle. Unused.</param>
+        /// <returns>An <see cref="IDrawingContext"/>.</returns>
+        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
-            if (visual.IsVisible && visual.Opacity > 0)
-            {
-                // Translate any existing transform into this controls coordinate system.
-                Matrix offset = Matrix.Translation(visual.Bounds.Position);
-                transform = offset * transform * -offset;
-
-                // Update the current offset.
-                translation *= Matrix.Translation(visual.Bounds.Position);
-
-                // Apply the control's render transform, if any.
-                if (visual.RenderTransform != null)
-                {
-                    offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
-                    transform *= -offset * visual.RenderTransform.Value * offset;
-                }
-
-                // Draw the control and its children.
-                var m = transform * translation;
-                var d = context.PushTransform(m);
-
-                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
-                {
-                    visual.Render(context);
-                    d.Dispose();
-
-                    foreach (var child in visual.VisualChildren)
-                    {
-                        this.Render(child, context, translation, transform);
-                    }
-                }
-            }
+            return new DrawingContext(this.renderTarget, this.DirectWriteFactory);
         }
     }
 }

@@ -87,6 +87,7 @@
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
     <Compile Include="Rendering\IRenderManager.cs" />
+    <Compile Include="Rendering\RendererBase.cs" />
     <Compile Include="Rendering\RenderManager.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />

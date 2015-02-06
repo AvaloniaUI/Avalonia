@@ -10,13 +10,15 @@ namespace Perspex.Cairo
     using System.Runtime.InteropServices;
     using global::Cairo;
     using Perspex.Cairo.Media;
+    using Perspex.Media;
     using Perspex.Platform;
+    using Perspex.Rendering;
     using Matrix = Perspex.Matrix;
 
     /// <summary>
     /// A cairo renderer.
     /// </summary>
-    public class Renderer : IRenderer
+    public class Renderer : RendererBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -29,48 +31,21 @@ namespace Perspex.Cairo
         }
 
         /// <summary>
-        /// Gets the number of times <see cref="Render"/> has been called.
-        /// </summary>
-        public int RenderCount
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Renders the specified visual.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">A handle to the drawable.</param>
-        public void Render(IVisual visual, IPlatformHandle handle)
-        {
-            using (DrawingContext context = CreateContext(handle))
-            {
-                this.Render(visual, context);
-            }
-
-            ++this.RenderCount;
-        }
-
-        /// <summary>
         /// Resizes the renderer.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public void Resize(int width, int height)
+        public override void Resize(int width, int height)
         {
             // Don't need to do anything here.
         }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hwnd);
 
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
         /// <param name="handle">The platform-specific handle.</param>
-        /// <returns>A surface.</returns>
-        private static DrawingContext CreateContext(IPlatformHandle handle)
+        /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
+        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
             switch (handle.HandleDescriptor)
             {
@@ -87,37 +62,7 @@ namespace Perspex.Cairo
             }
         }
 
-        /// <summary>
-        /// Renders the specified visual.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="context">The drawing context.</param>
-        private void Render(IVisual visual, DrawingContext context)
-        {
-            if (visual.IsVisible && visual.Opacity > 0)
-            {
-                Matrix transform = Matrix.Identity;
-
-                if (visual.RenderTransform != null)
-                {
-                    Matrix current = context.CurrentTransform;
-                    Matrix offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
-                    transform = -current * -offset * visual.RenderTransform.Value * offset * current;
-                }
-
-                transform *= Matrix.Translation(visual.Bounds.Position);
-
-                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
-                using (context.PushTransform(transform))
-                {
-                    visual.Render(context);
-
-                    foreach (var child in visual.VisualChildren)
-                    {
-                        this.Render(child, context);
-                    }
-                }
-            }
-        }
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hwnd);
     }
 }
