@@ -91,9 +91,8 @@ namespace Perspex.Controls
             }
 
             this.popupRoot.SetPosition(this.GetPosition());
-            this.popupRoot.PointerPressed += this.MaybeClose;
             this.topLevel.Deactivated += this.MaybeClose;
-
+            this.popupRoot.AddHandler(PopupRoot.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Bubble, true);
             this.topLevel.AddHandler(TopLevel.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Tunnel);
 
             this.popupRoot.Show();

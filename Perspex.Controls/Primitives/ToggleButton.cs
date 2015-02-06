@@ -7,6 +7,7 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
+    using Perspex.Interactivity;
 
     public class ToggleButton : Button
     {
@@ -28,7 +29,7 @@ namespace Perspex.Controls.Primitives
             set { this.SetValue(IsCheckedProperty, value); }
         }
 
-        protected override void OnClick()
+        protected override void OnClick(RoutedEventArgs e)
         {
             this.Toggle();
         }

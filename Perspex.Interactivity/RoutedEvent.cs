@@ -133,8 +133,21 @@ namespace Perspex.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble) 
             where TTarget : class
         {
-            var adaptor = (EventHandler<RoutedEventArgs>)((s, e) => handler((TTarget)s)((TEventArgs)e));
-            this.AddClassHandler(typeof(TTarget), adaptor, routes);
+            this.AddClassHandler(typeof(TTarget), (s, e) => ClassHandlerAdapter<TTarget>(s, e, handler), routes);
+        }
+
+        private static void ClassHandlerAdapter<TTarget>(
+            object sender, 
+            RoutedEventArgs e, 
+            Func<TTarget, Action<TEventArgs>> handler) where TTarget : class
+        {
+            var target = sender as TTarget;
+            var args = e as TEventArgs;
+
+            if (target != null && args != null)
+            {
+                handler(target)(args);
+            }
         }
     }
 }

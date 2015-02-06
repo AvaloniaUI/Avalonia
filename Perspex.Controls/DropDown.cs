@@ -67,7 +67,10 @@ namespace Perspex.Controls
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
-            this.IsDropDownOpen = !this.IsDropDownOpen;
+            if (!this.IsDropDownOpen)
+            {
+                this.IsDropDownOpen = true;
+            }
         }
 
         protected override void OnTemplateApplied()

@@ -27,6 +27,7 @@ namespace Perspex.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
+            ClickEvent.AddClassHandler<Button>(x => x.OnClick);
         }
 
         public event EventHandler<RoutedEventArgs> Click
@@ -51,7 +52,7 @@ namespace Perspex.Controls
             return base.ArrangeOverride(finalSize);
         }
 
-        protected virtual void OnClick()
+        protected virtual void OnClick(RoutedEventArgs e)
         {
         }
 
@@ -85,8 +86,6 @@ namespace Perspex.Controls
 
         private void RaiseClickEvent()
         {
-            this.OnClick();
-
             RoutedEventArgs click = new RoutedEventArgs
             {
                 RoutedEvent = ClickEvent,
