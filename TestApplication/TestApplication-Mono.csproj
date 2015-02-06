@@ -18,6 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug-Mono\</OutputPath>
+    <BaseIntermediateOutputPath>obj\Debug-Mono</BaseIntermediateOutputPath>
     <DefineConstants>TRACE;DEBUG;PERSPEX_CAIRO;PERSPEX_GTK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,6 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release-Mono\</OutputPath>
+    <BaseIntermediateOutputPath>obj\Release-Mono</BaseIntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
