@@ -21,6 +21,12 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ClickMode> ClickModeProperty =
             PerspexProperty.Register<Button, ClickMode>("ClickMode");
 
+        public static readonly PerspexProperty<ICommand> CommandProperty =
+            PerspexProperty.Register<Button, ICommand>("Command");
+
+        public static readonly PerspexProperty<object> CommandParameterProperty =
+            PerspexProperty.Register<Button, object>("CommandParameter");
+
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
 
@@ -28,6 +34,7 @@ namespace Perspex.Controls
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             ClickEvent.AddClassHandler<Button>(x => x.OnClick);
+            CommandProperty.Changed.Subscribe(CommandChanged);
         }
 
         public event EventHandler<RoutedEventArgs> Click
@@ -42,6 +49,18 @@ namespace Perspex.Controls
             set { this.SetValue(ClickModeProperty, value); }
         }
 
+        public ICommand Command
+        {
+            get { return this.GetValue(CommandProperty); }
+            set { this.SetValue(CommandProperty, value); }
+        }
+
+        public object CommandParameter
+        {
+            get { return this.GetValue(CommandParameterProperty); }
+            set { this.SetValue(CommandParameterProperty, value); }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(availableSize);
@@ -54,6 +73,10 @@ namespace Perspex.Controls
 
         protected virtual void OnClick(RoutedEventArgs e)
         {
+            if (this.Command != null)
+            {
+                this.Command.Execute(this.CommandParameter);
+            }
         }
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
@@ -82,6 +105,36 @@ namespace Perspex.Controls
             {
                 this.RaiseClickEvent();
             }
+        }
+
+        private static void CommandChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var button = e.Sender as Button;
+
+            if (button != null)
+            {
+                var oldCommand = e.OldValue as ICommand;
+                var newCommand = e.NewValue as ICommand;
+
+                if (oldCommand != null)
+                {
+                    oldCommand.CanExecuteChanged -= button.CanExecuteChanged;
+                }
+
+                if (newCommand != null)
+                {
+                    newCommand.CanExecuteChanged -= button.CanExecuteChanged;
+                }
+
+                button.CanExecuteChanged(button, EventArgs.Empty);
+            }
+        }
+
+        private void CanExecuteChanged(object sender, EventArgs e)
+        {
+            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to 
+            // use IsEnabledCore etc. but it will do for now.
+            this.IsEnabled = this.Command == null || this.Command.CanExecute(this.CommandParameter);
         }
 
         private void RaiseClickEvent()
