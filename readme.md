@@ -30,6 +30,8 @@ As mentioned above this is really an early version of Perspex and we're working 
 
 There's also a high-level [architecture document](Docs/architecture.md).
 
+I've also started writing blog posts on Perspex at http://grokys.github.io/.
+
 Contributions are always welcome!
 
 ## Building and Using
