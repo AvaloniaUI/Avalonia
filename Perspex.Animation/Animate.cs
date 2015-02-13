@@ -34,7 +34,10 @@ namespace Perspex.Animation
         {
             Stopwatch = new Stopwatch();
             Stopwatch.Start();
-            Timer = Observable.Interval(Tick, PerspexScheduler.Instance).Select(_ => Stopwatch.Elapsed);
+            Timer = Observable.Interval(Tick, PerspexScheduler.Instance)
+                .Select(_ => Stopwatch.Elapsed)
+                .Publish()
+                .RefCount();
         }
 
         /// <summary>
