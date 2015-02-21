@@ -6,11 +6,13 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using Perspex.Media;
     using Perspex.Platform;
+    using Perspex.Styling;
     using Splat;
 
-    public class Window : TopLevel
+    public class Window : TopLevel, IStyleable
     {
         public static readonly PerspexProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>("Title", "Window");
@@ -34,6 +36,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(TitleProperty); }
             set { this.SetValue(TitleProperty, value); }
+        }
+
+        Type IStyleable.StyleKey
+        {
+            get { return typeof(Window); }
         }
 
         public void Hide()

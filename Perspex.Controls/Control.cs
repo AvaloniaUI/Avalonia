@@ -154,6 +154,11 @@ namespace Perspex.Controls
             get { return EmptyChildren; }
         }
 
+        Type IStyleable.StyleKey
+        {
+            get { return this.GetType(); }
+        }
+
         public void BringIntoView()
         {
             this.BringIntoView(new Rect(this.ActualSize));

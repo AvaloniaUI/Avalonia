@@ -64,12 +64,15 @@ namespace Perspex.Styling.UnitTests
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
+            var styleKey = templatedControl.Object.GetType();
+            
             this.BuildVisualTree(target);
 
+            styleable.Setup(x => x.StyleKey).Returns(styleKey);
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
 
-            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
+            var selector = new Selector().OfType(styleKey).Class("foo").Template().OfType<Border>();
 
             Assert.True(ActivatorValue(selector, border));
         }

@@ -24,6 +24,11 @@ namespace Perspex.Styling
         string Id { get; }
 
         /// <summary>
+        /// Gets the type by which the control is styled.
+        /// </summary>
+        Type StyleKey { get; }
+
+        /// <summary>
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
         ITemplatedControl TemplatedParent { get; }

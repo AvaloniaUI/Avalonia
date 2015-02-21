@@ -21,6 +21,11 @@ namespace Perspex.Styling.UnitTests
 
         public virtual Classes Classes { get; set; }
 
+        public Type StyleKey
+        {
+            get { return this.GetType(); }
+        }
+
         public TestObservable SubscribeCheckObservable { get; private set; }
 
         public ITemplatedControl TemplatedParent

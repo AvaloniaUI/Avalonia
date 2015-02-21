@@ -22,6 +22,11 @@ namespace Perspex.Styling.UnitTests
             get;
         }
 
+        public abstract Type StyleKey
+        {
+            get;
+        }
+
         public abstract ITemplatedControl TemplatedParent
         {
             get;
