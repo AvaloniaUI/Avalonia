@@ -7,6 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Windows.Input;
     using Perspex.Input;
     using Perspex.Interactivity;
 

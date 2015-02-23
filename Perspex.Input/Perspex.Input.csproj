@@ -60,7 +60,6 @@
     <Compile Include="FocusManager.cs" />
     <Compile Include="FocusNavigationDirection.cs" />
     <Compile Include="ICloseable.cs" />
-    <Compile Include="ICommand.cs" />
     <Compile Include="IFocusManager.cs" />
     <Compile Include="IFocusScope.cs" />
     <Compile Include="IInputDevice.cs" />
