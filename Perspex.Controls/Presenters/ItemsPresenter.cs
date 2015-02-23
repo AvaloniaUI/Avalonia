@@ -97,7 +97,7 @@ namespace Perspex.Controls.Presenters
 
                 if (value.Item1 != null)
                 {
-                    this.Panel.Children.RemoveAll(generator.Remove(value.Item1));
+                    this.Panel.Children.Clear();
 
                     INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
 
