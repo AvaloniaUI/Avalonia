@@ -100,8 +100,8 @@ Attached properties are set just like in WPF, using `SetValue()`. But what about
 ```csharp
 var control = new Control
 {
-	Property1 = "Foo",
-[Attached.Property] = "Bar",
+    Property1 = "Foo",
+    [Attached.Property] = "Bar",
 }
 ```
 
@@ -111,9 +111,9 @@ Nice... Lets take this further:
 ```csharp
 var control = new Control
 {
-	Property1 = "Foo",
-[Attached.Property] = "Bar",
-	[!Property2] = something.SomeObservable,
+    Property1 = "Foo",
+    [Attached.Property] = "Bar",
+    [!Property2] = something.SomeObservable,
 }
 ```
 
@@ -125,9 +125,9 @@ Binding to a property on another control? Easy:
 ```csharp
 var control = new Control
 {
-	Property1 = "Foo",
-[Attached.Property] = "Bar",
-	[!Property2] = anotherControl[!Property1],
+    Property1 = "Foo",
+    [Attached.Property] = "Bar",
+    [!Property2] = anotherControl[!Property1],
 }
 ```
 
@@ -136,9 +136,9 @@ Two way binding? Just add two bangs:
 ```csharp
 var control = new Control
 {
-	Property1 = "Foo",
-[Attached.Property] = "Bar",
-	[!!Property2] = anotherControl[!!Property1],
+    Property1 = "Foo",
+    [Attached.Property] = "Bar",
+    [!!Property2] = anotherControl[!!Property1],
 }
 ```
 
