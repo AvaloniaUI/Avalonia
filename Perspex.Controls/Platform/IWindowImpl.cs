@@ -6,13 +6,16 @@
 
 namespace Perspex.Platform
 {
-    using Perspex.Controls;
+    using System;
+    using System.Threading.Tasks;
 
     public interface IWindowImpl : ITopLevelImpl
     {
         void SetTitle(string title);
 
         void Show();
+
+        IDisposable ShowDialog();
 
         void Hide();
     }

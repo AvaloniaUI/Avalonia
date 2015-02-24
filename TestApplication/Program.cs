@@ -11,12 +11,11 @@ using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.Rendering;
-using Perspex.Styling;
 using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #else
-using Perspex.Win32;
+using ReactiveUI;
 #endif
 using Splat;
 
@@ -189,7 +188,10 @@ namespace TestApplication
 
         private static TabItem ButtonsTab()
         {
-            return new TabItem
+            var showDialog = ReactiveCommand.Create();
+            Button showDialogButton;
+            
+            var result = new TabItem
             {
                 Header = "Buttons",
                 Content = new StackPanel
@@ -201,10 +203,11 @@ namespace TestApplication
                     MinWidth = 120,
                     Children = new Controls
                     {
-                        new Button
+                        (showDialogButton = new Button
                         {
                             Content = "Button",
-                        },
+                            Command = showDialog,
+                        }),
                         new Button
                         {
                             Content = "Button",
@@ -246,6 +249,31 @@ namespace TestApplication
                     }
                 },
             };
+
+            showDialog.Subscribe(async _ =>
+            {
+                var close = ReactiveCommand.Create();
+
+                var dialog = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls
+                        {
+                            new Button { Content = "Yes", Command = close, CommandParameter = "Yes" },
+                            new Button { Content = "No", Command = close, CommandParameter = "No" },
+                        }
+                    }
+                };
+
+                close.Subscribe(x => dialog.Close(x));
+
+                showDialogButton.Content =  await dialog.ShowDialog<string>();
+            });
+
+            return result;
         }
 
         private static TabItem TextTab()
@@ -582,6 +610,5 @@ namespace TestApplication
 
             return result;
         }
-
     }
 }

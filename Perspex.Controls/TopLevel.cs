@@ -24,6 +24,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<Size> ClientSizeProperty =
             PerspexProperty.Register<TopLevel, Size>("ClientSize");
 
+        public static readonly PerspexProperty<bool> IsActiveProperty =
+            PerspexProperty.Register<Window, bool>("IsActive");
+
         private Dispatcher dispatcher;
 
         private IRenderManager renderManager;
@@ -113,6 +116,12 @@ namespace Perspex.Controls
             set { this.SetValue(ClientSizeProperty, value); }
         }
 
+        public bool IsActive
+        {
+            get { return this.GetValue(IsActiveProperty); }
+            private set { this.SetValue(IsActiveProperty, value); }
+        }
+
         public ILayoutManager LayoutManager
         {
             get;
@@ -138,6 +147,11 @@ namespace Perspex.Controls
         Point IRenderRoot.TranslatePointToScreen(Point p)
         {
             return this.PlatformImpl.PointToScreen(p);
+        }
+
+        public void Activate()
+        {
+            this.PlatformImpl.Activate();
         }
 
         protected IDisposable BeginAutoSizing()
@@ -174,6 +188,7 @@ namespace Perspex.Controls
             }
 
             FocusManager.Instance.SetFocusScope(this);
+            this.IsActive = true;
         }
 
         private void HandleClosed()
@@ -186,6 +201,8 @@ namespace Perspex.Controls
 
         private void HandleDeactivated()
         {
+            this.IsActive = false;
+
             if (this.Deactivated != null)
             {
                 this.Deactivated(this, EventArgs.Empty);

@@ -7,9 +7,14 @@
 namespace Perspex.Win32
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
     using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using Perspex.Controls;
     using Perspex.Input.Raw;
     using Perspex.Platform;
@@ -18,6 +23,8 @@ namespace Perspex.Win32
 
     public class WindowImpl : IWindowImpl
     {
+        private static List<WindowImpl> instances = new List<WindowImpl>();
+
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
@@ -31,6 +38,7 @@ namespace Perspex.Win32
         public WindowImpl()
         {
             this.CreateWindow();
+            instances.Add(this);
         }
 
         public Action Activated { get; set; }
@@ -83,6 +91,17 @@ namespace Perspex.Win32
             private set;
         }
 
+        public bool IsEnabled
+        {
+            get { return UnmanagedMethods.IsWindowEnabled(this.hwnd); }
+            set { UnmanagedMethods.EnableWindow(this.hwnd, value); }
+        }
+
+        public void Activate()
+        {
+            UnmanagedMethods.SetActiveWindow(this.hwnd);
+        }
+
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
@@ -90,6 +109,7 @@ namespace Perspex.Win32
 
         public void Dispose()
         {
+            instances.Remove(this);
             UnmanagedMethods.DestroyWindow(this.hwnd);
         }
 
@@ -131,6 +151,37 @@ namespace Perspex.Win32
         public virtual void Show()
         {
             UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
+        }
+
+        public virtual IDisposable ShowDialog()
+        {
+            var disabled = instances.Where(x => x != this && x.IsEnabled).ToList();
+            TopLevel activated = null;
+
+            foreach (var window in disabled)
+            {
+                if (window.owner.IsActive)
+                {
+                    activated = window.owner;
+                }
+
+                window.IsEnabled = false;
+            }
+
+            this.Show();
+
+            return Disposable.Create(() =>
+            {
+                foreach (var window in disabled)
+                {
+                    window.IsEnabled = true;
+                }
+
+                if (activated != null)
+                {
+                    activated.Activate();
+                }
+            });
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)

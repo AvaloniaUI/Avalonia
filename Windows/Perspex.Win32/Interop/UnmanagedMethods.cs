@@ -517,6 +517,9 @@ namespace Perspex.Win32.Interop
         public static extern bool DestroyWindow(IntPtr hwnd);
 
         [DllImport("user32.dll")]
+        public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+
+        [DllImport("user32.dll")]
         public static extern bool EndPaint(IntPtr hWnd, ref PAINTSTRUCT lpPaint);
 
         [DllImport("user32.dll")]
@@ -559,6 +562,9 @@ namespace Perspex.Win32.Interop
         public static extern bool InvalidateRect(IntPtr hWnd, ref RECT lpRect, bool bErase);
 
         [DllImport("user32.dll")]
+        public static extern bool IsWindowEnabled(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
         [DllImport("user32.dll")]
@@ -578,6 +584,9 @@ namespace Perspex.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetCapture(IntPtr hWnd);

@@ -7,6 +7,7 @@
 namespace Perspex.Gtk
 {
     using System;
+    using System.Threading.Tasks;
     using Perspex.Controls;
     using Perspex.Input.Raw;
     using Perspex.Platform;
@@ -77,6 +78,16 @@ namespace Perspex.Gtk
         public void SetTitle(string title)
         {
             this.Title = title;
+        }
+
+        public IDisposable ShowDialog()
+        {
+            throw new NotImplementedException();
+        }
+
+        void ITopLevelImpl.Activate()
+        {
+            this.Activate();
         }
 
         protected override bool OnButtonPressEvent(Gdk.EventButton evnt)

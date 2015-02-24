@@ -29,6 +29,8 @@ namespace Perspex.Platform
 
         Action<Size> Resized { get; set; }
 
+        void Activate();
+
         void Invalidate(Rect rect);
 
         void SetOwner(TopLevel owner);
