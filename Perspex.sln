@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22512.0
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Win32", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
@@ -58,8 +58,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Layout.UnitTests", "Tests\Perspex.Layout.UnitTests\Perspex.Layout.UnitTests.csproj", "{DB070A10-BF39-4752-8456-86E9D5928478}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Animation", "Perspex.Animation\Perspex.Animation.csproj", "{D211E587-D8BC-45B9-95A4-F297C8FA5200}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{596AF748-EAA9-4698-A78C-98724783AFC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}"
 EndProject
