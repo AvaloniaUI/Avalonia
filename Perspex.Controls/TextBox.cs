@@ -8,7 +8,11 @@ namespace Perspex.Controls
 {
     using System;
     using System.Reactive.Linq;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
+    using Perspex.Input;
+    using Perspex.Interactivity;
 
     public class TextBox : TemplatedControl
     {
@@ -32,6 +36,13 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+
+        private TextPresenter presenter;
+
+        static TextBox()
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+        }
 
         public TextBox()
         {
@@ -99,6 +110,18 @@ namespace Perspex.Controls
             var text = o.GetValue(TextProperty);
             var length = (text != null) ? text.Length : 0;
             return Math.Max(0, Math.Min(length, value));
+        }
+
+        protected override void OnTemplateApplied()
+        {
+            this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
+        }
+
+        protected override void OnGotFocus(RoutedEventArgs e)
+        {
+            // TODO: There needs to be a better way of setting focus to a templated child.
+            base.OnGotFocus(e);
+            FocusManager.Instance.Focus(this.presenter);
         }
     }
 }

@@ -55,6 +55,7 @@ namespace Perspex.Themes.Default
                     [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                     Content = new TextPresenter
                     {
+                        Id = "textPresenter",
                         [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
                         [~TextPresenter.AcceptsTabProperty] = control[~TextBox.AcceptsTabProperty],
                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
