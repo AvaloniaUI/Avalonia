@@ -289,7 +289,7 @@ namespace Perspex.Controls.Presenters
                     {
                         this.DeleteSelection();
                         caretIndex = this.CaretIndex;
-                        text = this.Text;
+                        text = this.Text ?? string.Empty;
                         this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
                         ++this.CaretIndex;
                         textEntered = true;
