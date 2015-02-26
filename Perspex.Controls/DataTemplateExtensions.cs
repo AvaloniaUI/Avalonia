@@ -12,22 +12,27 @@ namespace Perspex.Controls
 
     public static class DataTemplateExtensions
     {
-        public static Control ApplyDataTemplate(this Control control, object data)
+        public static Control MaterializeDataTemplate(this Control control, object data)
         {
-            IDataTemplate result = control.FindDataTemplate(data);
+            IDataTemplate template = control.FindDataTemplate(data);
+            Control result;
 
-            if (result != null)
+            if (template != null)
             {
-                return result.Build(data);
+                result = template.Build(data);
             }
             else if (data is Control)
             {
-                return (Control)data;
+                result = (Control)data;
             }
             else
             {
-                return DataTemplate.Default.Build(data);
+                result = DataTemplate.Default.Build(data);
             }
+
+            result.DataContext = data;
+
+            return result;
         }
 
         public static IDataTemplate FindDataTemplate(this Control control, object data)

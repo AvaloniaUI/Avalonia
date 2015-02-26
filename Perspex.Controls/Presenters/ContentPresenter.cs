@@ -85,27 +85,7 @@ namespace Perspex.Controls.Presenters
 
             if (content != null)
             {
-                if (content is Control)
-                {
-                    result = (Control)content;
-                }
-                else
-                {
-                    IDataTemplate dataTemplate = this.FindDataTemplate(content);
-
-                    if (dataTemplate != null)
-                    {
-                        result = dataTemplate.Build(content);
-                    }
-                    else
-                    {
-                        result = new TextBlock
-                        {
-                            Text = content.ToString(),
-                        };
-                    }
-                }
-
+                result = this.MaterializeDataTemplate(content);
                 var templatedParent = this.TemplatedParent as TemplatedControl;
 
                 if (templatedParent != null)

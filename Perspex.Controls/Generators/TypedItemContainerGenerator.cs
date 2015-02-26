@@ -20,7 +20,7 @@ namespace Perspex.Controls.Generators
             if (result == null)
             {
                 result = new T();
-                result.Content = this.Owner.ApplyDataTemplate(item);
+                result.Content = this.Owner.MaterializeDataTemplate(item);
             }
 
             return result;

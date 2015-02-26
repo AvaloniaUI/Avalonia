@@ -116,7 +116,7 @@ namespace Perspex.Controls.Generators
 
         protected virtual Control CreateContainerOverride(object item)
         {
-            return this.Owner.ApplyDataTemplate(item);
+            return this.Owner.MaterializeDataTemplate(item);
         }
 
         protected void AddInternal(object item, Control container)
