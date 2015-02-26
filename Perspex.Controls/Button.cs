@@ -124,7 +124,7 @@ namespace Perspex.Controls
 
                 if (newCommand != null)
                 {
-                    newCommand.CanExecuteChanged -= button.CanExecuteChanged;
+                    newCommand.CanExecuteChanged += button.CanExecuteChanged;
                 }
 
                 button.CanExecuteChanged(button, EventArgs.Empty);
