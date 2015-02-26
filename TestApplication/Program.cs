@@ -302,7 +302,7 @@ namespace TestApplication
                         },
                         new TextBox
                         {
-                            Text = "A non-wrapping text box. Lorem ipsum dolor sit amet.",
+                            //Text = "A non-wrapping text box. Lorem ipsum dolor sit amet.",
                             TextWrapping = TextWrapping.NoWrap,
                         },
                         new TextBox

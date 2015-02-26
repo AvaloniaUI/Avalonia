@@ -13,6 +13,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
     using Perspex.Input;
+    using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Threading;
     using Perspex.VisualTree;
@@ -99,21 +100,6 @@ namespace Perspex.Controls.Presenters
             return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
         }
 
-        public new void GotFocus()
-        {
-            this.caretBlink = true;
-            this.caretTimer.Start();
-        }
-
-        public new void LostFocus()
-        {
-            this.SelectionStart = 0;
-            this.SelectionEnd = 0;
-
-            this.caretTimer.Stop();
-            this.InvalidateVisual();
-        }
-
         public override void Render(IDrawingContext context)
         {
             var selectionStart = this.SelectionStart;
@@ -197,6 +183,25 @@ namespace Perspex.Controls.Presenters
                     return formattedText.Measure();
                 }
             }
+        }
+
+        protected override void OnGotFocus(RoutedEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            this.caretBlink = true;
+            this.caretTimer.Start();
+            this.InvalidateVisual();
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            this.SelectionStart = 0;
+            this.SelectionEnd = 0;
+            this.caretTimer.Stop();
+            this.InvalidateVisual();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
