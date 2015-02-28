@@ -38,6 +38,9 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
+        public static readonly PerspexProperty<Thickness> PaddingProperty =
+            Decorator.PaddingProperty.AddOwner<TemplatedControl>();
+
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
@@ -93,6 +96,12 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(ForegroundProperty); }
             set { this.SetValue(ForegroundProperty, value); }
+        }
+
+        public Thickness Padding
+        {
+            get { return this.GetValue(PaddingProperty); }
+            set { this.SetValue(PaddingProperty, value); }
         }
 
         public ControlTemplate Template
