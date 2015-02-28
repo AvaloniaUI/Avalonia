@@ -60,7 +60,7 @@
     <Compile Include="ControlExtensions.cs" />
     <Compile Include="Controls.cs" />
     <Compile Include="ControlTemplate.cs" />
-    <Compile Include="DataTemplateExtensions.cs" />
+    <Compile Include="Templates\DataTemplateExtensions.cs" />
     <Compile Include="DataTemplate.cs" />
     <Compile Include="Generators\TreeItemContainerGenerator.cs" />
     <Compile Include="Generators\TypedItemContainerGenerator.cs" />

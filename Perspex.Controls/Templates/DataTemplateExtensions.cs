@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Controls.Templates
 {
     using System.Linq;
     using Perspex.LogicalTree;

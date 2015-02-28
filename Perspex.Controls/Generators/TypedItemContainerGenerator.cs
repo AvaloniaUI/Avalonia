@@ -6,6 +6,8 @@
 
 namespace Perspex.Controls.Generators
 {
+    using Perspex.Controls.Templates;
+
     public class TypedItemContainerGenerator<T> : ItemContainerGenerator where T : ContentControl, new()
     {
         public TypedItemContainerGenerator(ItemsControl owner)

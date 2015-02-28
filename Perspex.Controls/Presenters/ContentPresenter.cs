@@ -12,6 +12,7 @@ namespace Perspex.Controls.Presenters
     using System.Reactive.Subjects;
     using Perspex.Collections;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
 
     public class ContentPresenter : Control, IVisual, ILogical, IPresenter

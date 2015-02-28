@@ -10,6 +10,7 @@ namespace Perspex.Controls.Generators
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Controls.Templates;
 
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator, IItemContainerGenerator where T : TreeViewItem, new()
     {
