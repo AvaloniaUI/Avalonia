@@ -30,8 +30,6 @@ namespace Perspex.Controls.Templates
                 result = DataTemplate.Default.Build(data);
             }
 
-            result.DataContext = data;
-
             return result;
         }
 
