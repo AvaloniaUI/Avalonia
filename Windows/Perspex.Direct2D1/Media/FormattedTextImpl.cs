@@ -27,7 +27,7 @@ namespace Perspex.Direct2D1.Media
             this.TextLayout = new DWrite.TextLayout(
                 factory,
                 text ?? string.Empty,
-                new DWrite.TextFormat(factory, fontFamily, (float)fontSize),
+                new DWrite.TextFormat(factory, fontFamily, DWrite.FontWeight.Normal, (DWrite.FontStyle)fontStyle, (float)fontSize),
                 float.MaxValue,
                 float.MaxValue);
         }
