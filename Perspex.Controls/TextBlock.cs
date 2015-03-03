@@ -25,6 +25,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
             PerspexProperty.Register<TextBlock, FontStyle>("FontStyle", inherits: true);
 
+        public static readonly PerspexProperty<FontWeight> FontWeightProperty =
+            PerspexProperty.Register<TextBlock, FontWeight>("FontWeight", inherits: true, defaultValue: FontWeight.Normal);
+
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             PerspexProperty.Register<TextBlock, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
 
@@ -80,6 +83,12 @@ namespace Perspex.Controls
             set { this.SetValue(FontStyleProperty, value); }
         }
 
+        public FontWeight FontWeight
+        {
+            get { return this.GetValue(FontWeightProperty); }
+            set { this.SetValue(FontWeightProperty, value); }
+        }
+
         public Brush Foreground
         {
             get { return this.GetValue(ForegroundProperty); }
@@ -123,7 +132,8 @@ namespace Perspex.Controls
                 this.Text,
                 this.FontFamily,
                 this.FontSize,
-                this.FontStyle);
+                this.FontStyle,
+                this.FontWeight);
             result.Constraint = this.constraint;
             return result;
         }

@@ -20,14 +20,22 @@ namespace Perspex.Direct2D1.Media
             string text,
             string fontFamily,
             double fontSize,
-            FontStyle fontStyle)
+            FontStyle fontStyle,
+            FontWeight fontWeight)
         {
             var factory = Locator.Current.GetService<DWrite.Factory>();
+
+            var format = new DWrite.TextFormat(
+                factory,
+                fontFamily,
+                (DWrite.FontWeight)fontWeight,
+                (DWrite.FontStyle)fontStyle,
+                (float)fontSize);
 
             this.TextLayout = new DWrite.TextLayout(
                 factory,
                 text ?? string.Empty,
-                new DWrite.TextFormat(factory, fontFamily, DWrite.FontWeight.Normal, (DWrite.FontStyle)fontStyle, (float)fontSize),
+                format,
                 float.MaxValue,
                 float.MaxValue);
         }

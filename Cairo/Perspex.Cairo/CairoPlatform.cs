@@ -35,9 +35,10 @@ namespace Perspex.Cairo
             string text, 
             string fontFamily, 
             double fontSize, 
-            FontStyle fontStyle)
+            FontStyle fontStyle,
+            Perspex.Media.FontWeight fontWeight)
         {
-            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle);
+            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, fontWeight);
         }
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)

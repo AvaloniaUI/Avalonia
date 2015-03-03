@@ -178,7 +178,8 @@ namespace Perspex.Controls.Presenters
                     "X",
                     this.FontFamily,
                     this.FontSize,
-                    this.FontStyle))
+                    this.FontStyle,
+                    this.FontWeight))
                 {
                     return formattedText.Measure();
                 }

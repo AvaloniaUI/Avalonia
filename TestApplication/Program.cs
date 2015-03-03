@@ -300,6 +300,11 @@ namespace TestApplication
                             Text = "Italic text.",
                             FontStyle = FontStyle.Italic,
                         },
+                        new TextBlock
+                        {
+                            Text = "Bold text.",
+                            FontWeight = FontWeight.Bold,
+                        },
                         new TextBox
                         {
                             Text = "A non-wrapping text box. Lorem ipsum dolor sit amet.",

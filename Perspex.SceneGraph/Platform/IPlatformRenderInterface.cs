@@ -16,7 +16,8 @@ namespace Perspex.Platform
             string text, 
             string fontFamily, 
             double fontSize, 
-            FontStyle fontStyle);
+            FontStyle fontStyle,
+            FontWeight fontWeight);
 
         IStreamGeometryImpl CreateStreamGeometry();
 

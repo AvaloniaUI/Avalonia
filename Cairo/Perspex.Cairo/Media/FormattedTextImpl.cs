@@ -19,7 +19,8 @@ namespace Perspex.Cairo.Media
             string text,
             string fontFamily,
             double fontSize,
-            FontStyle fontStyle)
+            FontStyle fontStyle,
+            FontWeight fontWeight)
         {
             var context = Locator.Current.GetService<Pango.Context>();
             this.Layout = new Pango.Layout(context);

@@ -50,6 +50,7 @@
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
     <Compile Include="Media\FormattedTextLine.cs" />
     <Compile Include="Media\FormattedText.cs" />
