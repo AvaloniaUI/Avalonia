@@ -14,9 +14,8 @@ using Perspex.Rendering;
 using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
-#else
-using ReactiveUI;
 #endif
+using ReactiveUI;
 using Splat;
 
 namespace TestApplication
@@ -189,6 +188,7 @@ namespace TestApplication
         private static TabItem ButtonsTab()
         {
             Button defaultButton;
+
             var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
             
