@@ -188,6 +188,7 @@ namespace TestApplication
 
         private static TabItem ButtonsTab()
         {
+            Button defaultButton;
             var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
             
@@ -213,6 +214,11 @@ namespace TestApplication
                             Content = "Button",
                             Background = new SolidColorBrush(0xcc119eda),
                         },
+                        (defaultButton = new Button
+                        {
+                            Content = "Default",
+                            IsDefault = true,
+                        }),
                         new Button
                         {
                             Content = "Disabled",
@@ -248,6 +254,11 @@ namespace TestApplication
                         },
                     }
                 },
+            };
+
+            defaultButton.Click += (s, e) =>
+            {
+                defaultButton.Content = ((string)defaultButton.Content == "Default") ? "Clicked" : "Default";
             };
 
             showDialog.Subscribe(async _ =>
