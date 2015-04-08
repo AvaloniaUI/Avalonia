@@ -287,16 +287,6 @@ namespace Perspex.Controls.Presenters
                     {
                         goto default;
                     }
-                    else if ((modifiers & ModifierKeys.Shift) == 0)
-                    {
-                        // TODO: Keyboard navigation should be moved to InputElement. This is just a 
-                        // hack to get TextBox tab navigation working.
-                        KeyboardNavigation.MoveNext((IInputElement)this.TemplatedParent);
-                    }
-                    else
-                    {
-                        KeyboardNavigation.MovePrevious((IInputElement)this.TemplatedParent);
-                    }
 
                     break;
 

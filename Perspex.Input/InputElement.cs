@@ -9,7 +9,6 @@ namespace Perspex.Input
     using System;
     using System.Linq;
     using Perspex.Interactivity;
-    using Perspex.Rendering;
     using Perspex.VisualTree;
 
     public class InputElement : Interactive, IInputElement
@@ -200,6 +199,19 @@ namespace Perspex.Input
 
         protected virtual void OnKeyDown(KeyEventArgs e)
         {
+            if (e.Key == Key.Tab)
+            {
+                var modifiers = e.Device.Modifiers;
+
+                if ((modifiers & ModifierKeys.Shift) == 0)
+                {
+                    KeyboardNavigation.MoveNext(this);
+                }
+                else
+                {
+                    KeyboardNavigation.MovePrevious(this);
+                }
+            }
         }
 
         protected virtual void OnPointerEnter(PointerEventArgs e)
