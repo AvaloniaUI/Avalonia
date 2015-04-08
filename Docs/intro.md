@@ -215,7 +215,7 @@ different look-and-feel.
 ## XAML
 
 As you can see, all of the examples here are defined in code - but a XAML implementation is being
-worked on. The current progress can be reviewed at https://github.com/SuperJMN/Perspex/tree/fuent-api.
+worked on. The current progress can be reviewed at https://github.com/SuperJMN/Perspex.
 
 ## That's all for now
 
