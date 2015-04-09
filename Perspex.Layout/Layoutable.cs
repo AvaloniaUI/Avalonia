@@ -29,9 +29,6 @@ namespace Perspex.Layout
 
     public class Layoutable : Visual, ILayoutable, IEnableLogger
     {
-        public static readonly PerspexProperty<Size> ActualSizeProperty =
-            PerspexProperty.Register<Layoutable, Size>("ActualSize");
-
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Layoutable, double>("Width", double.NaN);
 
@@ -129,11 +126,6 @@ namespace Perspex.Layout
         {
             get { return this.GetValue(VerticalAlignmentProperty); }
             set { this.SetValue(VerticalAlignmentProperty, value); }
-        }
-
-        public Size ActualSize
-        {
-            get { return this.GetValue(ActualSizeProperty); }
         }
 
         public Size? DesiredSize
@@ -327,9 +319,7 @@ namespace Perspex.Layout
                         break;
                 }
 
-                var bounds = new Rect(originX, originY, size.Width, size.Height);
-                this.SetVisualBounds(bounds);
-                this.SetValue(ActualSizeProperty, bounds.Size);
+                this.Bounds = new Rect(originX, originY, size.Width, size.Height);
             }
         }
 

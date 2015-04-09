@@ -170,7 +170,7 @@ namespace Perspex.Controls
 
         public void BringIntoView()
         {
-            this.BringIntoView(new Rect(this.ActualSize));
+            this.BringIntoView(new Rect(this.Bounds.Size));
         }
 
         public void BringIntoView(Rect rect)

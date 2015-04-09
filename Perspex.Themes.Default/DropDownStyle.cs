@@ -99,7 +99,7 @@ namespace Perspex.Themes.Default
                             PlacementTarget = control,
                             StaysOpen = false,
                             [~~Popup.IsOpenProperty] = control[~~DropDown.IsDropDownOpenProperty],
-                            [~Popup.MinWidthProperty] = control[~DropDown.ActualSizeProperty].Cast<Size>().Select(x => (object)x.Width),
+                            [~Popup.MinWidthProperty] = control[~DropDown.BoundsProperty].Cast<Rect>().Select(x => (object)x.Width),
                         }
                     },
                 },

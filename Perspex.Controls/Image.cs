@@ -36,9 +36,9 @@ namespace Perspex.Controls
 
             if (source != null)
             {
-                Rect viewPort = new Rect(this.ActualSize);
+                Rect viewPort = new Rect(this.Bounds.Size);
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-                Vector scale = CalculateScaling(this.ActualSize, sourceSize, this.Stretch);
+                Vector scale = CalculateScaling(this.Bounds.Size, sourceSize, this.Stretch);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterIn(new Rect(scaledSize))

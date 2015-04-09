@@ -151,7 +151,7 @@ namespace Perspex.Controls.Primitives
             if (child != null)
             {
                 child.Arrange(new Rect(finalSize));
-                return child.ActualSize;
+                return child.Bounds.Size;
             }
             else
             {

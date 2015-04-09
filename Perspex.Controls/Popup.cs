@@ -132,7 +132,7 @@ namespace Perspex.Controls
         {
             if (this.PlacementTarget != null)
             {
-                return this.PlacementTarget.PointToScreen(new Point(0, this.PlacementTarget.ActualSize.Height));
+                return this.PlacementTarget.PointToScreen(new Point(0, this.PlacementTarget.Bounds.Size.Height));
             }
             else
             {

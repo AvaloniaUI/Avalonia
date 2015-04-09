@@ -21,6 +21,9 @@ namespace Perspex
 
     public class Visual : Animatable, IVisual
     {
+        public static readonly PerspexProperty<Rect> BoundsProperty =
+            PerspexProperty.Register<Visual, Rect>("Bounds");
+
         public static readonly PerspexProperty<bool> ClipToBoundsProperty =
             PerspexProperty.Register<Visual, bool>("ClipToBounds");
 
@@ -36,8 +39,6 @@ namespace Perspex
         public static readonly PerspexProperty<Origin> TransformOriginProperty =
             PerspexProperty.Register<Visual, Origin>("TransformOrigin", defaultValue: Origin.Default);
 
-        private Rect bounds;
-
         private PerspexList<IVisual> visualChildren;
 
         private Visual visualParent;
@@ -52,6 +53,12 @@ namespace Perspex
         {
             this.visualChildren = new PerspexList<IVisual>();
             this.visualChildren.CollectionChanged += this.VisualChildrenChanged;
+        }
+
+        public Rect Bounds
+        {
+            get { return this.GetValue(BoundsProperty); }
+            protected set { this.SetValue(BoundsProperty, value); }
         }
 
         public bool ClipToBounds
@@ -82,11 +89,6 @@ namespace Perspex
         {
             get { return this.GetValue(TransformOriginProperty); }
             set { this.SetValue(TransformOriginProperty, value); }
-        }
-
-        Rect IVisual.Bounds
-        {
-            get { return this.bounds; }
         }
 
         IPerspexReadOnlyList<IVisual> IVisual.VisualChildren
@@ -171,11 +173,6 @@ namespace Perspex
             {
                 this.visualChildren.Remove(v);
             }
-        }
-
-        protected void SetVisualBounds(Rect bounds)
-        {
-            this.bounds = bounds;
         }
 
         protected virtual void OnAttachedToVisualTree(IRenderRoot root)

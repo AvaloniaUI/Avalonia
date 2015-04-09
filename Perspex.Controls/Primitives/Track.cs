@@ -154,11 +154,11 @@ namespace Perspex.Controls.Primitives
 
             if (this.Orientation == Orientation.Horizontal)
             {
-                offset = e.Vector.X / ((this.ActualSize.Width - this.Thumb.ActualSize.Width) / range);
+                offset = e.Vector.X / ((this.Bounds.Size.Width - this.Thumb.Bounds.Size.Width) / range);
             }
             else
             {
-                offset = e.Vector.Y * (range / (this.ActualSize.Height - this.Thumb.ActualSize.Height));
+                offset = e.Vector.Y * (range / (this.Bounds.Size.Height - this.Thumb.Bounds.Size.Height));
             }
 
             if (!double.IsNaN(offset) && !double.IsInfinity(offset))

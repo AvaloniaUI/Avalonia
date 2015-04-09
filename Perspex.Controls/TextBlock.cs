@@ -120,7 +120,7 @@ namespace Perspex.Controls
 
             if (background != null)
             {
-                context.FillRectange(background, new Rect(this.ActualSize));
+                context.FillRectange(background, new Rect(this.Bounds.Size));
             }
 
             context.DrawText(this.Foreground,  new Point(), this.FormattedText);

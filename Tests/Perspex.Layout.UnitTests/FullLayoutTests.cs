@@ -57,11 +57,11 @@ namespace Perspex.Layout.UnitTests
 
                 window.LayoutManager.ExecuteLayoutPass();
 
-                Assert.Equal(new Size(400, 400), border.ActualSize);
+                Assert.Equal(new Size(400, 400), border.Bounds.Size);
                 textBlock.Width = 200;
                 window.LayoutManager.ExecuteLayoutPass();
 
-                Assert.Equal(new Size(200, 400), border.ActualSize);
+                Assert.Equal(new Size(200, 400), border.Bounds.Size);
             }
         }
 
@@ -97,10 +97,10 @@ namespace Perspex.Layout.UnitTests
 
                 window.LayoutManager.ExecuteLayoutPass();
 
-                Assert.Equal(new Size(800, 600), window.ActualSize);
-                Assert.Equal(new Size(200, 200), scrollViewer.ActualSize);
+                Assert.Equal(new Size(800, 600), window.Bounds.Size);
+                Assert.Equal(new Size(200, 200), scrollViewer.Bounds.Size);
                 Assert.Equal(new Point(300, 200), Position(scrollViewer));
-                Assert.Equal(new Size(400, 400), textBlock.ActualSize);
+                Assert.Equal(new Size(400, 400), textBlock.Bounds.Size);
 
                 var scrollBars = scrollViewer.GetTemplateChildren().OfType<ScrollBar>().ToList();
                 var presenters = scrollViewer.GetTemplateChildren().OfType<ScrollContentPresenter>().ToList();
@@ -109,15 +109,15 @@ namespace Perspex.Layout.UnitTests
                 Assert.Equal(1, presenters.Count);
 
                 var presenter = presenters[0];
-                Assert.Equal(new Size(190, 190), presenter.ActualSize);
+                Assert.Equal(new Size(190, 190), presenter.Bounds.Size);
 
                 var horzScroll = scrollBars.Single(x => x.Orientation == Orientation.Horizontal);
                 var vertScroll = scrollBars.Single(x => x.Orientation == Orientation.Vertical);
 
                 Assert.True(horzScroll.IsVisible);
                 Assert.True(vertScroll.IsVisible);
-                Assert.Equal(new Size(190, 10), horzScroll.ActualSize);
-                Assert.Equal(new Size(10, 190), vertScroll.ActualSize);
+                Assert.Equal(new Size(190, 10), horzScroll.Bounds.Size);
+                Assert.Equal(new Size(10, 190), vertScroll.Bounds.Size);
                 Assert.Equal(new Point(0, 190), Position(horzScroll));
                 Assert.Equal(new Point(190, 0), Position(vertScroll));
             }

@@ -18,10 +18,10 @@ namespace Perspex.Controls.Shapes
         {
             get
             {
-                if (this.geometry == null || this.geometrySize != this.ActualSize)
+                if (this.geometry == null || this.geometrySize != this.Bounds.Size)
                 {
-                    this.geometry = new RectangleGeometry(new Rect(0, 0, this.ActualSize.Width, this.ActualSize.Height));
-                    this.geometrySize = this.ActualSize;
+                    this.geometry = new RectangleGeometry(new Rect(0, 0, this.Bounds.Size.Width, this.Bounds.Size.Height));
+                    this.geometrySize = this.Bounds.Size;
                 }
 
                 return this.geometry;
