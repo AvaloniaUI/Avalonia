@@ -322,11 +322,7 @@ namespace Perspex
         {
             if (obj is Rect)
             {
-                var other = (Rect)obj;
-                return this.X == other.X &&
-                       this.X == other.X &&
-                       this.Width == other.Width &&
-                       this.Height == other.Height;
+                return this == (Rect)obj;
             }
 
             return false;
