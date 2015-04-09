@@ -41,8 +41,6 @@ namespace Perspex.Interactivity
             this.RoutingStrategies = routingStrategies;
         }
 
-        public event EventHandler<RoutedEventArgs> Raised;
-
         public Type EventArgsType 
         { 
             get; 
@@ -104,7 +102,8 @@ namespace Perspex.Interactivity
             foreach (var sub in this.subscriptions)
             {
                 if (sub.TargetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
-                    (e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0)
+                    ((e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0) &&
+                    (!e.Handled || sub.AlsoIfHandled))
                 {
                     sub.Handler.DynamicInvoke(sender, e);
                 }

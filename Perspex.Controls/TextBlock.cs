@@ -95,13 +95,7 @@ namespace Perspex.Controls
             set { this.SetValue(ForegroundProperty, value); }
         }
 
-        public TextWrapping TextWrapping
-        {
-            get { return this.GetValue(TextWrappingProperty); }
-            set { this.SetValue(TextWrappingProperty, value); }
-        }
-
-        protected FormattedText FormattedText
+        public FormattedText FormattedText
         {
             get
             {
@@ -112,6 +106,12 @@ namespace Perspex.Controls
 
                 return this.formattedText;
             }
+        }
+
+        public TextWrapping TextWrapping
+        {
+            get { return this.GetValue(TextWrappingProperty); }
+            set { this.SetValue(TextWrappingProperty, value); }
         }
 
         public override void Render(IDrawingContext context)

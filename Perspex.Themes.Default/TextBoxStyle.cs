@@ -56,8 +56,6 @@ namespace Perspex.Themes.Default
                     Content = new TextPresenter
                     {
                         Id = "textPresenter",
-                        [~TextPresenter.AcceptsReturnProperty] = control[~TextBox.AcceptsReturnProperty],
-                        [~TextPresenter.AcceptsTabProperty] = control[~TextBox.AcceptsTabProperty],
                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
                         [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
                         [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],

@@ -228,8 +228,18 @@ namespace Perspex.Input
 
         private IInputElement GetFocusable(IVisual hit)
         {
-            return this.Captured as IInputElement ?? 
-                hit.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(x => x.Focusable);
+            var inputFocus = this.Captured as IInputElement;
+
+            if (inputFocus != null && inputFocus.Focusable)
+            {
+                return inputFocus;
+            }
+            else
+            {
+                return hit.GetSelfAndVisualAncestors()
+                    .OfType<IInputElement>()
+                    .FirstOrDefault(x => x.Focusable);
+            }
         }
 
         private IInteractive GetSource(IVisual hit)
