@@ -39,6 +39,9 @@ namespace Perspex
         public static readonly PerspexProperty<Origin> TransformOriginProperty =
             PerspexProperty.Register<Visual, Origin>("TransformOrigin", defaultValue: Origin.Default);
 
+        public static readonly PerspexProperty<int> ZIndexProperty =
+            PerspexProperty.Register<Visual, int>("ZIndex");
+
         private PerspexList<IVisual> visualChildren;
 
         private Visual visualParent;
@@ -91,6 +94,12 @@ namespace Perspex
             set { this.SetValue(TransformOriginProperty, value); }
         }
 
+        public int ZIndex
+        {
+            get { return this.GetValue(ZIndexProperty); }
+            set { this.SetValue(ZIndexProperty, value); }
+        }
+
         IPerspexReadOnlyList<IVisual> IVisual.VisualChildren
         {
             get { return this.visualChildren; }
@@ -103,6 +112,7 @@ namespace Perspex
                 return this.visualParent;
             }
         }
+
 
         public void InvalidateVisual()
         {

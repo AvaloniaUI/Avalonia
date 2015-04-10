@@ -6,6 +6,7 @@
 
 namespace Perspex.Rendering
 {
+    using System.Linq;
     using Perspex.Media;
     using Perspex.Platform;
 
@@ -88,7 +89,7 @@ namespace Perspex.Rendering
                     visual.Render(context);
                     d.Dispose();
 
-                    foreach (var child in visual.VisualChildren)
+                    foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
                         this.Render(child, context, translation, transform);
                     }

@@ -64,6 +64,11 @@ namespace Perspex
         IVisual VisualParent { get; }
 
         /// <summary>
+        /// Gets the Z index of the node.
+        /// </summary>
+        int ZIndex { get; }
+
+        /// <summary>
         /// Renders the scene graph node to a <see cref="IDrawingContext"/>.
         /// </summary>
         /// <param name="context">The context.</param>
