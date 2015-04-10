@@ -68,6 +68,7 @@
     <Compile Include="IKeyboardDevice.cs" />
     <Compile Include="IMouseDevice.cs" />
     <Compile Include="InputElement.cs" />
+    <Compile Include="InputExtensions.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="IPointerDevice.cs" />
     <Compile Include="Key.cs" />

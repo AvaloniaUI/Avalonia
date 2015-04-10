@@ -33,6 +33,8 @@ namespace Perspex.Input
 
         bool IsFocused { get; }
 
+        bool IsHitTestVisible { get; }
+
         bool IsPointerOver { get; }
 
         void Focus();

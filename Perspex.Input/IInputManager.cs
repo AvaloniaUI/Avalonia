@@ -18,6 +18,6 @@ namespace Perspex.Input
 
         void Process(RawInputEventArgs e);
 
-        void SetPointerOver(IPointerDevice device, IVisual visual, Point p);
+        void SetPointerOver(IPointerDevice device, IInputElement element, Point p);
     }
 }

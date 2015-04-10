@@ -25,6 +25,9 @@ namespace Perspex.Input
         public static readonly PerspexProperty<bool> IsFocusedProperty =
             PerspexProperty.Register<InputElement, bool>("IsFocused", false);
 
+        public static readonly PerspexProperty<bool> IsHitTestVisibleProperty =
+            PerspexProperty.Register<InputElement, bool>("IsHitTestVisible", true);
+
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
             PerspexProperty.Register<InputElement, bool>("IsPointerOver");
 
@@ -152,6 +155,12 @@ namespace Perspex.Input
             private set { this.SetValue(IsFocusedProperty, value); }
         }
 
+        public bool IsHitTestVisible
+        {
+            get { return this.GetValue(IsHitTestVisibleProperty); }
+            set { this.SetValue(IsHitTestVisibleProperty, value); }
+        }
+
         public bool IsPointerOver
         {
             get { return this.GetValue(IsPointerOverProperty); }
@@ -171,10 +180,7 @@ namespace Perspex.Input
 
         public IInputElement InputHitTest(Point p)
         {
-            return this.GetVisualsAt(p)
-                .OfType<IInputElement>()
-                .Where(x => x.IsEnabledCore)
-                .FirstOrDefault();
+            return this.GetInputElementsAt(p).FirstOrDefault();
         }
 
         public void Focus()

@@ -46,11 +46,9 @@ namespace Perspex.Input
             this.rawEventReceived.OnNext(e);
         }
 
-        public void SetPointerOver(IPointerDevice device, IVisual visual, Point p)
+        public void SetPointerOver(IPointerDevice device, IInputElement element, Point p)
         {
-            IEnumerable<IInputElement> hits = visual.GetVisualsAt(p)
-                .OfType<IInputElement>()
-                .Where(x => x.IsEnabledCore);
+            IEnumerable<IInputElement> hits = element.GetInputElementsAt(p);
 
             foreach (var control in this.pointerOvers.Except(hits).ToList())
             {
