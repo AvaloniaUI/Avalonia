@@ -11,14 +11,20 @@ namespace Perspex.Diagnostics
     using System.Reactive.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Shapes;
     using Perspex.Diagnostics.ViewModels;
     using Perspex.Input;
+    using Perspex.Interactivity;
+    using Perspex.Layout;
+    using Perspex.Media;
     using ReactiveUI;
 
     public class DevTools : Decorator
     {
         public static readonly PerspexProperty<Control> RootProperty =
             PerspexProperty.Register<DevTools, Control>("Root");
+
+        private Control adorner;
 
         public DevTools()
         {
@@ -55,8 +61,8 @@ namespace Perspex.Diagnostics
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<LogicalTreeNode>(GetHeader, x => x.Children),
-                            new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
+                            new TreeDataTemplate<LogicalTreeNode>(this.GetHeader, x => x.Children),
+                            new TreeDataTemplate<VisualTreeNode>(this.GetHeader, x => x.Children),
                         },
                         [!TreeView.ItemsProperty] = tabStrip.WhenAnyValue(x => x.SelectedTab.Tag),
                         [Grid.RowProperty] = 1,
@@ -152,9 +158,9 @@ namespace Perspex.Diagnostics
             };
         }
 
-        private static Control GetHeader(LogicalTreeNode node)
+        private Control GetHeader(LogicalTreeNode node)
         {
-            return new StackPanel
+            var result = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 Gap = 8,
@@ -170,11 +176,16 @@ namespace Perspex.Diagnostics
                     }
                 }
             };
+
+            result.PointerEnter += this.AddAdorner;
+            result.PointerLeave += this.RemoveAdorner;
+
+            return result;
         }
 
-        private static Control GetHeader(VisualTreeNode node)
+        private Control GetHeader(VisualTreeNode node)
         {
-            return new StackPanel
+            var result = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 Gap = 8,
@@ -191,6 +202,41 @@ namespace Perspex.Diagnostics
                     }
                 }
             };
+
+            result.PointerEnter += this.AddAdorner;
+            result.PointerLeave += this.RemoveAdorner;
+
+            return result;
+        }
+
+        private void AddAdorner(object sender, PointerEventArgs e)
+        {
+            var node = (TreeNode)((Control)sender).DataContext;
+            var layer = AdornerLayer.GetAdornerLayer(node.Control);
+
+            if (layer != null)
+            {
+                var size = node.Control.GetObservable(Visual.BoundsProperty).Select(x => x.Size);
+
+                this.adorner = new Rectangle
+                {
+                    Fill = new SolidColorBrush(0x80a0c5e8),
+                    [!Layoutable.WidthProperty] = size.Select(x => (object)x.Width),
+                    [!Layoutable.HeightProperty] = size.Select(x => (object)x.Height),
+                    [AdornerLayer.AdornedElementProperty] = node.Control,
+                };
+
+                layer.Children.Add(this.adorner);
+            }
+        }
+
+        private void RemoveAdorner(object sender, PointerEventArgs e)
+        {
+            if (this.adorner != null)
+            {
+                ((Panel)this.adorner.Parent).Children.Remove(this.adorner);
+                this.adorner = null;
+            }
         }
     }
 }

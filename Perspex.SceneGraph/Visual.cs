@@ -131,7 +131,7 @@ namespace Perspex
         {
             var thisOffset = GetOffsetFromRoot(this).Item2;
             var thatOffset = GetOffsetFromRoot(visual).Item2;
-            return Matrix.Translation(-thisOffset) * Matrix.Translation(thatOffset);
+            return Matrix.Translation(-thatOffset) * Matrix.Translation(thisOffset);
         }
 
         protected static void AffectsRender(PerspexProperty property)

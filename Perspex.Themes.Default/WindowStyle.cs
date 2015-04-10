@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Primitives;
     using Perspex.Media;
     using Perspex.Styling;
 
@@ -35,10 +36,13 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 [~Border.BackgroundProperty] = control[~Window.BackgroundProperty],
-                Content = new ContentPresenter
+                Content = new AdornerDecorator
                 {
-                    Id = "contentPresenter",
-                    [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],
+                    Content = new ContentPresenter
+                    {
+                        Id = "contentPresenter",
+                        [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],
+                    }
                 }
             };
         }

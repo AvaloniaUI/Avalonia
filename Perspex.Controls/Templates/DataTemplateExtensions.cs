@@ -20,6 +20,7 @@ namespace Perspex.Controls.Templates
             if (template != null)
             {
                 result = template.Build(data);
+                result.DataContext = data;
             }
             else if (data is Control)
             {

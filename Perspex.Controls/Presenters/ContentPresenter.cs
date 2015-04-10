@@ -94,7 +94,6 @@ namespace Perspex.Controls.Presenters
                     templatedParent = templatedParent.TemplatedParent as TemplatedControl;
                 }
 
-                result.DataContext = content;
                 result.TemplatedParent = templatedParent;
                 this.AddVisualChild(result);
             }

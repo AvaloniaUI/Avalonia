@@ -14,9 +14,9 @@ namespace Perspex.Interactivity
     [Flags]
     public enum RoutingStrategies
     {
-        Direct = 0,
-        Tunnel = 1,
-        Bubble = 2,
+        Direct = 0x01,
+        Tunnel = 0x02,
+        Bubble = 0x04,
     }
 
     public class RoutedEvent

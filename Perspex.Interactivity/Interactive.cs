@@ -147,7 +147,7 @@ namespace Perspex.Interactivity
                 foreach (var sub in subscriptions.ToList())
                 {
                     bool correctRoute =
-                        (e.Route == RoutingStrategies.Direct && sub.Routes == RoutingStrategies.Direct) ||
+                        (e.Route == RoutingStrategies.Direct && (sub.Routes & RoutingStrategies.Direct) != 0) ||
                         (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0);
                     bool notFinished = !e.Handled || sub.AlsoIfHandled;
 

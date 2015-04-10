@@ -76,6 +76,14 @@ namespace Perspex.Controls
             set { this.childLogicalParent = value; }
         }
 
+        protected virtual void OnChildrenAdded(IEnumerable<Control> child)
+        {
+        }
+
+        protected virtual void OnChildrenRemoved(IEnumerable<Control> child)
+        {
+        }
+
         private void ClearLogicalParent(IEnumerable<Control> controls)
         {
             foreach (var control in controls)
@@ -94,23 +102,31 @@ namespace Perspex.Controls
 
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            List<Control> controls;
+
             // TODO: Handle Replace.
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    this.SetLogicalParent(e.NewItems.OfType<Control>());
+                    controls = e.NewItems.OfType<Control>().ToList();
+                    this.SetLogicalParent(controls);
                     this.AddVisualChildren(e.NewItems.OfType<Visual>());
+                    this.OnChildrenAdded(controls);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
+                    controls = e.OldItems.OfType<Control>().ToList();
                     this.ClearLogicalParent(e.OldItems.OfType<Control>());
                     this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
+                    this.OnChildrenRemoved(controls);
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    this.ClearLogicalParent(e.OldItems.OfType<Control>());
+                    controls = e.OldItems.OfType<Control>().ToList();
+                    this.ClearLogicalParent(controls);
                     this.ClearVisualChildren();
                     this.AddVisualChildren(this.children);
+                    this.OnChildrenAdded(controls);
                     break;
             }
 
