@@ -7,6 +7,7 @@
 namespace Perspex.Controls.Shapes
 {
     using System;
+    using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Media;
 
@@ -21,12 +22,24 @@ namespace Perspex.Controls.Shapes
         public static readonly PerspexProperty<Brush> StrokeProperty =
             PerspexProperty.Register<Shape, Brush>("Stroke");
 
+        public static readonly PerspexProperty<PerspexList<double>> StrokeDashArrayProperty =
+            PerspexProperty.Register<Shape, PerspexList<double>>("StrokeDashArray");
+
         public static readonly PerspexProperty<double> StrokeThicknessProperty =
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
         private Matrix transform = Matrix.Identity;
 
         private Geometry renderedGeometry;
+
+        static Shape()
+        {
+            Control.AffectsRender(FillProperty);
+            Control.AffectsMeasure(StretchProperty);
+            Control.AffectsRender(StrokeProperty);
+            Control.AffectsRender(StrokeDashArrayProperty);
+            Control.AffectsMeasure(StrokeThicknessProperty);
+        }
 
         public abstract Geometry DefiningGeometry
         {
@@ -68,6 +81,12 @@ namespace Perspex.Controls.Shapes
             set { this.SetValue(StrokeProperty, value); }
         }
 
+        public PerspexList<double> StrokeDashArray
+        {
+            get { return this.GetValue(StrokeDashArrayProperty); }
+            set { this.SetValue(StrokeDashArrayProperty, value); }
+        }
+
         public double StrokeThickness
         {
             get { return this.GetValue(StrokeThicknessProperty); }
@@ -80,7 +99,8 @@ namespace Perspex.Controls.Shapes
 
             if (geometry != null)
             {
-                context.DrawGeometry(this.Fill, new Pen(this.Stroke, this.StrokeThickness), geometry);
+                var pen = new Pen(this.Stroke, this.StrokeThickness, this.StrokeDashArray);
+                context.DrawGeometry(this.Fill, pen, geometry);
             }
         }
 

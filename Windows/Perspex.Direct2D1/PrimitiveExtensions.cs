@@ -6,6 +6,7 @@
 
 namespace Perspex.Direct2D1
 {
+    using System.Linq;
     using SharpDX;
     using SharpDX.Direct2D1;
 
@@ -48,6 +49,23 @@ namespace Perspex.Direct2D1
             {
                 // TODO: Implement other brushes.
                 return new SharpDX.Direct2D1.SolidColorBrush(target, new Color4());
+            }
+        }
+
+        public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, RenderTarget target)
+        {
+            if (pen.DashArray != null && pen.DashArray.Count > 0)
+            {
+                var properties = new StrokeStyleProperties
+                {
+                    DashStyle = DashStyle.Custom,
+                };
+
+                return new StrokeStyle(target.Factory, properties, pen.DashArray.Select(x => (float)x).ToArray());
+            }
+            else
+            {
+                return null;
             }
         }
 

@@ -80,8 +80,14 @@ namespace Perspex.Direct2D1.Media
             if (pen != null)
             {
                 using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
-                    this.renderTarget.DrawLine(p1.ToSharpDX(), p2.ToSharpDX(), d2dBrush);
+                    this.renderTarget.DrawLine(
+                        p1.ToSharpDX(),
+                        p2.ToSharpDX(),
+                        d2dBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
                 }
             }
         }
@@ -106,9 +112,10 @@ namespace Perspex.Direct2D1.Media
             if (pen != null)
             {
                 using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush, (float)pen.Thickness);
+                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush, (float)pen.Thickness, d2dStroke);
                 }
             }
         }
@@ -121,11 +128,13 @@ namespace Perspex.Direct2D1.Media
         public void DrawRectange(Pen pen, Rect rect)
         {
             using (var brush = pen.Brush.ToDirect2D(this.renderTarget))
+            using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
                 this.renderTarget.DrawRectangle(
                     rect.ToDirect2D(),
                     brush,
-                    (float)pen.Thickness);
+                    (float)pen.Thickness,
+                    d2dStroke);
             }
         }
 

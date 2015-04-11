@@ -6,6 +6,8 @@
 
 namespace Perspex.Media
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
@@ -16,10 +18,12 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="brush">The brush used to draw.</param>
         /// <param name="thickness">The stroke thickness.</param>
-        public Pen(Brush brush, double thickness)
+        /// <param name="dashArray">The length of alternating dashes and gaps.</param>
+        public Pen(Brush brush, double thickness, IReadOnlyList<double> dashArray = null)
         {
             this.Brush = brush;
             this.Thickness = thickness;
+            this.DashArray = dashArray;
         }
 
         /// <summary>
@@ -27,20 +31,27 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="color">The stroke color.</param>
         /// <param name="thickness">The stroke thickness.</param>
-        public Pen(uint color, double thickness)
+        /// <param name="dashArray">The length of alternating dashes and gaps.</param>
+        public Pen(uint color, double thickness, IReadOnlyList<double> dashArray = null)
         {
             this.Brush = new SolidColorBrush(color);
             this.Thickness = thickness;
+            this.DashArray = dashArray;
         }
 
         /// <summary>
         /// Gets the brush used to draw the stroke.
         /// </summary>
-        public Brush Brush { get; private set; }
+        public Brush Brush { get; }
+
+        /// <summary>
+        /// Gets the length of alternating dashes and gaps.
+        /// </summary>
+        public IReadOnlyList<double> DashArray { get; }
 
         /// <summary>
         /// Gets the stroke thickness.
         /// </summary>
-        public double Thickness { get; private set; }
+        public double Thickness { get; }
     }
 }
