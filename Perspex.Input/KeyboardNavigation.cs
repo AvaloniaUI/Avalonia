@@ -67,7 +67,7 @@ namespace Perspex.Input
             {
                 var previous = parent.GetVisualChildren()
                     .OfType<IInputElement>()
-                    .Where(x => x.Focusable)
+                    .Where(x => x.Focusable && x.IsEnabledCore)
                     .Reverse()
                     .SkipWhile(x => x != element)
                     .Skip(1)
