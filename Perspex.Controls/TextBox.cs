@@ -134,6 +134,7 @@ namespace Perspex.Controls
             int caretIndex = this.CaretIndex;
             bool movement = false;
             bool textEntered = false;
+            bool handled = true;
             var modifiers = e.Device.Modifiers;
 
             switch (e.Key)
@@ -213,6 +214,7 @@ namespace Perspex.Controls
                     else
                     {
                         base.OnKeyDown(e);
+                        handled = false;
                     }
 
                     break;
@@ -240,7 +242,10 @@ namespace Perspex.Controls
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
 
-            e.Handled = true;
+            if (handled)
+            {
+                e.Handled = true;
+            }
         }
 
         protected override void OnPointerPressed(PointerPressEventArgs e)

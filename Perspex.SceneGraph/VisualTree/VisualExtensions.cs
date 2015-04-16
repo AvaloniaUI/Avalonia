@@ -102,18 +102,5 @@ namespace Perspex.VisualTree
         {
             return visual.VisualParent as T;
         }
-
-        public static IEnumerable<IVisual> GetVisualSiblings(this IVisual visual)
-        {
-            IVisual parent = visual.VisualParent;
-
-            if (parent != null)
-            {
-                foreach (IVisual sibling in parent.VisualChildren)
-                {
-                    yield return sibling;
-                }
-            }
-        }
     }
 }

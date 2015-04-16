@@ -31,8 +31,6 @@ namespace Perspex
 
             Current = this;
             this.Styles = theme;
-            this.FocusManager = new FocusManager();
-            this.InputManager = new InputManager();
             this.RegisterServices();
         }
 
@@ -72,6 +70,12 @@ namespace Perspex
             private set;
         }
 
+        public KeyboardNavigation KeyboardNavigation
+        {
+            get;
+            private set;
+        }
+
         public Styles Styles
         {
             get;
@@ -87,10 +91,15 @@ namespace Perspex
 
         protected virtual void RegisterServices()
         {
+            this.FocusManager = new FocusManager();
+            this.InputManager = new InputManager();
+            this.KeyboardNavigation = new KeyboardNavigation();
+
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
+            Locator.CurrentMutable.Register(() => this.KeyboardNavigation, typeof(IKeyboardNavigation));
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
 
             Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));

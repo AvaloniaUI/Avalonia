@@ -26,6 +26,11 @@ namespace Perspex.Controls
         private PerspexReadOnlyListView<ILogical> logicalChildren = 
             new PerspexReadOnlyListView<ILogical>();
 
+        static TabControl()
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(TabControl), false);
+        }
+
         public TabControl()
         {
             this.GetObservable(SelectedItemProperty).Subscribe(x =>

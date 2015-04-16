@@ -21,6 +21,7 @@ namespace Perspex.Controls.Primitives
 
         static TabStrip()
         {
+            FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
             ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
         }
 

@@ -221,11 +221,17 @@ namespace Perspex.Input
 
                 if ((modifiers & ModifierKeys.Shift) == 0)
                 {
-                    KeyboardNavigation.MoveNext(this);
+                    if (KeyboardNavigation.Instance.MoveNext(this))
+                    {
+                        e.Handled = true;
+                    }
                 }
                 else
                 {
-                    KeyboardNavigation.MovePrevious(this);
+                    if (KeyboardNavigation.Instance.MovePrevious(this))
+                    {
+                        e.Handled = true;
+                    }
                 }
             }
         }

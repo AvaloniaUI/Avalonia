@@ -8,42 +8,79 @@ namespace Perspex.Input
 {
     using System.Linq;
     using Perspex.VisualTree;
+    using Splat;
 
-    /// <summary>
-    /// TODO: This class is a temporary stop-gap just to add tab handling. Should be replaced 
-    /// with something better thought out and testable etc.
-    /// </summary>
-    public static class KeyboardNavigation
+    public class KeyboardNavigation : IKeyboardNavigation
     {
-        public static void MoveNext(IInputElement element)
+        public static IKeyboardNavigation Instance
         {
-            var siblings = element.GetVisualSiblings().OfType<IInputElement>()
-                .Where(x => x.Focusable)
-                .SkipWhile(x => x != element)
-                .Skip(1);
-
-            var next = siblings.FirstOrDefault();
-
-            if (next != null)
-            {
-                FocusManager.Instance.Focus(next, true);
-            }
+            get { return Locator.Current.GetService<IKeyboardNavigation>(); }
         }
 
-        public static void MovePrevious(IInputElement element)
+        public bool MoveNext(IInputElement element)
         {
-            var siblings = element.GetVisualSiblings().OfType<IInputElement>()
-                .Where(x => x.Focusable)
-                .Reverse()
-                .SkipWhile(x => x != element)
-                .Skip(1);
+            var parent = element.GetVisualParent();
+            var descendent = element.GetVisualDescendents()
+                .OfType<IInputElement>()
+                .Where(x => x.Focusable && x.IsEnabledCore)
+                .FirstOrDefault();
 
-            var next = siblings.FirstOrDefault();
-
-            if (next != null)
+            if (descendent != null)
             {
-                FocusManager.Instance.Focus(next, true);
+                FocusManager.Instance.Focus(descendent, true);
+                return true;
             }
+            else if (parent != null)
+            {
+                var sibling = parent.GetVisualChildren()
+                    .OfType<IInputElement>()
+                    .Where(x => x.Focusable && x.IsEnabledCore)
+                    .SkipWhile(x => x != element)
+                    .Skip(1)
+                    .FirstOrDefault();
+
+                if (sibling != null)
+                {
+                    FocusManager.Instance.Focus(sibling, true);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool MovePrevious(IInputElement element)
+        {
+            var parent = element.GetVisualParent();
+            var descendent = element.GetVisualDescendents()
+                .OfType<IInputElement>()
+                .Where(x => x.Focusable && x.IsEnabledCore)
+                .Reverse()
+                .FirstOrDefault();
+
+            if (descendent != null)
+            {
+                FocusManager.Instance.Focus(descendent, true);
+                return true;
+            }
+            else if (parent != null)
+            {
+                var previous = parent.GetVisualChildren()
+                    .OfType<IInputElement>()
+                    .Where(x => x.Focusable)
+                    .Reverse()
+                    .SkipWhile(x => x != element)
+                    .Skip(1)
+                    .FirstOrDefault();
+
+                if (previous != null)
+                {
+                    FocusManager.Instance.Focus(previous, true);
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
