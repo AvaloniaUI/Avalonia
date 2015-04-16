@@ -75,6 +75,17 @@ namespace Perspex.Styling
             };
         }
 
+        public static Selector Is<T>(this Selector previous) where T : IStyleable
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+
+            return new Selector(previous)
+            {
+                GetObservable = control => Observable.Return(control is T),
+                SelectorString = ":is(" + typeof(T).Name + ")",
+            };
+        }
+
         public static Selector OfType(this Selector previous, Type type)
         {
             Contract.Requires<ArgumentNullException>(previous != null);

@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Border.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="AdornerTemplate.cs" />
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="IItemsPanel.cs" />

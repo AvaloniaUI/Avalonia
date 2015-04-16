@@ -16,6 +16,7 @@ namespace Perspex.Themes.Default
             this.Add(new CheckBoxStyle());
             this.Add(new ContentControlStyle());
             this.Add(new DropDownStyle());
+            this.Add(new FocusAdornerStyle());
             this.Add(new GridSplitterStyle());
             this.Add(new ItemsControlStyle());
             this.Add(new ListBoxStyle());

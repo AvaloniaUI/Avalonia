@@ -25,6 +25,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<object> DataContextProperty =
             PerspexProperty.Register<Control, object>("DataContext", inherits: true);
 
+        public static readonly PerspexProperty<AdornerTemplate> FocusAdornerProperty =
+            PerspexProperty.Register<Control, AdornerTemplate>("FocusAdorner");
+
         public static readonly PerspexProperty<Control> ParentProperty =
             PerspexProperty.Register<Control, Control>("Parent");
 
@@ -43,7 +46,7 @@ namespace Perspex.Controls
 
         private DataTemplates dataTemplates;
 
-        private Rectangle focusAdorner;
+        private Control focusAdorner;
 
         private string id;
 
@@ -199,15 +202,21 @@ namespace Perspex.Controls
 
                 if (adornerLayer != null)
                 {
-                    this.focusAdorner = new Rectangle
+                    if (this.focusAdorner == null)
                     {
-                        Stroke = Brushes.Black,
-                        StrokeThickness = 1,
-                        StrokeDashArray = new PerspexList<double>(1, 2),
-                        Margin = new Thickness(3),
-                    };
-                    AdornerLayer.SetAdornedElement(this.focusAdorner, this);
-                    adornerLayer.Children.Add(this.focusAdorner);
+                        var template = this.GetValue(FocusAdornerProperty);
+
+                        if (template != null)
+                        {
+                            this.focusAdorner = template.Build();
+                        }
+                    }
+
+                    if (this.focusAdorner != null)
+                    {
+                        AdornerLayer.SetAdornedElement(this.focusAdorner, this);
+                        adornerLayer.Children.Add(this.focusAdorner);
+                    }
                 }
             }
         }
