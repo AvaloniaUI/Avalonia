@@ -114,7 +114,7 @@ namespace Perspex.Controls
             this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
         }
 
-        protected override void OnGotFocus(RoutedEventArgs e)
+        protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
             this.presenter.ShowCaret();

@@ -74,6 +74,7 @@
     <Compile Include="Key.cs" />
     <Compile Include="KeyboardDevice.cs" />
     <Compile Include="KeyboardNavigation.cs" />
+    <Compile Include="GotFocusEventArgs.cs" />
     <Compile Include="Platform\IPlatformSettings.cs" />
     <Compile Include="PointerPressEventArgs.cs" />
     <Compile Include="PointerWheelEventArgs.cs" />

@@ -51,7 +51,7 @@ namespace Perspex.Controls.Primitives
                 {
                     var transform = adorned.TransformToVisual(parent);
                     var position = new Point(0, 0) * transform;
-                    child.Arrange(new Rect(position, child.DesiredSize.Value));
+                    child.Arrange(new Rect(position, adorned.Bounds.Size));
                 }
                 else
                 {

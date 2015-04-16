@@ -39,7 +39,10 @@ namespace Perspex.Input
         /// Focuses a control.
         /// </summary>
         /// <param name="control">The control to focus.</param>
-        public void Focus(IInputElement control)
+        /// <param name="keyboardNavigated">
+        /// Whether the control was focused by a keypress (e.g. the Tab key).
+        /// </param>
+        public void Focus(IInputElement control, bool keyboardNavigated = false)
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
@@ -74,11 +77,12 @@ namespace Perspex.Input
 
                 if (next != null)
                 {
-                    next.RaiseEvent(new RoutedEventArgs
+                    next.RaiseEvent(new GotFocusEventArgs
                     {
                         RoutedEvent = InputElement.GotFocusEvent,
                         Source = next,
                         OriginalSource = next,
+                        KeyboardNavigated = keyboardNavigated,
                     });
                 }
             }

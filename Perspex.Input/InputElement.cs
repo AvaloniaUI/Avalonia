@@ -23,7 +23,7 @@ namespace Perspex.Input
             PerspexProperty.Register<InputElement, bool>("IsEnabledCore", true);
 
         public static readonly PerspexProperty<bool> IsFocusedProperty =
-            PerspexProperty.Register<InputElement, bool>("IsFocused", false);
+            PerspexProperty.Register<InputElement, bool>("IsFocused");
 
         public static readonly PerspexProperty<bool> IsHitTestVisibleProperty =
             PerspexProperty.Register<InputElement, bool>("IsHitTestVisible", true);
@@ -31,8 +31,11 @@ namespace Perspex.Input
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
             PerspexProperty.Register<InputElement, bool>("IsPointerOver");
 
-        public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
-            RoutedEvent.Register<InputElement, RoutedEventArgs>("GotFocus", RoutingStrategies.Bubble);
+        public static readonly PerspexProperty<bool> IsTabFocusedProperty =
+            PerspexProperty.Register<InputElement, bool>("IsTabFocused");
+
+        public static readonly RoutedEvent<GotFocusEventArgs> GotFocusEvent =
+            RoutedEvent.Register<InputElement, GotFocusEventArgs>("GotFocus", RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>("LostFocus", RoutingStrategies.Bubble);
@@ -172,6 +175,11 @@ namespace Perspex.Input
             get { return this.IsEnabledCore; }
         }
 
+        bool IInputElement.IsTabFocused
+        {
+            get { return this.GetValue(IsTabFocusedProperty); }
+        }
+
         protected bool IsEnabledCore
         {
             get { return this.GetValue(IsEnabledCoreProperty); }
@@ -193,14 +201,16 @@ namespace Perspex.Input
             this.UpdateIsEnabledCore();
         }
 
-        protected virtual void OnGotFocus(RoutedEventArgs e)
+        protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
             this.IsFocused = e.OriginalSource == this;
+            this.SetValue(IsTabFocusedProperty, e.KeyboardNavigated);
         }
 
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
             this.IsFocused = false;
+            this.SetValue(IsTabFocusedProperty, false);
         }
 
         protected virtual void OnKeyDown(KeyEventArgs e)

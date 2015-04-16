@@ -37,6 +37,11 @@ namespace Perspex.Collections
             this.inner = new List<T>(items);
         }
 
+        public PerspexList(params T[] items)
+        {
+            this.inner = new List<T>(items);
+        }
+
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;

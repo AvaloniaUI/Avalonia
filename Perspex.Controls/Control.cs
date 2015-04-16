@@ -11,6 +11,8 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Collections;
+    using Perspex.Controls.Primitives;
+    using Perspex.Controls.Shapes;
     using Perspex.Input;
     using Perspex.Interactivity;
     using Perspex.Media;
@@ -40,6 +42,8 @@ namespace Perspex.Controls
         private Classes classes = new Classes();
 
         private DataTemplates dataTemplates;
+
+        private Rectangle focusAdorner;
 
         private string id;
 
@@ -183,6 +187,41 @@ namespace Perspex.Controls
             };
 
             this.RaiseEvent(ev);
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (this.IsFocused && e.KeyboardNavigated)
+            {
+                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+
+                if (adornerLayer != null)
+                {
+                    this.focusAdorner = new Rectangle
+                    {
+                        Stroke = Brushes.Black,
+                        StrokeThickness = 1,
+                        StrokeDashArray = new PerspexList<double>(1, 2),
+                        Margin = new Thickness(3),
+                    };
+                    AdornerLayer.SetAdornedElement(this.focusAdorner, this);
+                    adornerLayer.Children.Add(this.focusAdorner);
+                }
+            }
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            
+            if (this.focusAdorner != null)
+            {
+                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                adornerLayer.Children.Remove(this.focusAdorner);
+                this.focusAdorner = null;
+            }
         }
 
         protected static void PseudoClass(PerspexProperty<bool> property, string className)

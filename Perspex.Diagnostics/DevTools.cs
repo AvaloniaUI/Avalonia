@@ -216,13 +216,9 @@ namespace Perspex.Diagnostics
 
             if (layer != null)
             {
-                var size = node.Control.GetObservable(Visual.BoundsProperty).Select(x => x.Size);
-
                 this.adorner = new Rectangle
                 {
                     Fill = new SolidColorBrush(0x80a0c5e8),
-                    [!Layoutable.WidthProperty] = size.Select(x => (object)x.Width),
-                    [!Layoutable.HeightProperty] = size.Select(x => (object)x.Height),
                     [AdornerLayer.AdornedElementProperty] = node.Control,
                 };
 

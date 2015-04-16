@@ -37,6 +37,8 @@ namespace Perspex.Input
 
         bool IsPointerOver { get; }
 
+        bool IsTabFocused { get; }
+
         void Focus();
 
         IInputElement InputHitTest(Point p);

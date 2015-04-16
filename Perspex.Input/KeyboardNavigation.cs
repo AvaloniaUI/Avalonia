@@ -26,7 +26,7 @@ namespace Perspex.Input
 
             if (next != null)
             {
-                FocusManager.Instance.Focus(next);
+                FocusManager.Instance.Focus(next, true);
             }
         }
 
@@ -42,7 +42,7 @@ namespace Perspex.Input
 
             if (next != null)
             {
-                FocusManager.Instance.Focus(next);
+                FocusManager.Instance.Focus(next, true);
             }
         }
     }
