@@ -113,7 +113,6 @@ namespace Perspex
             }
         }
 
-
         public void InvalidateVisual()
         {
             IRenderRoot root = this.GetSelfAndVisualAncestors()

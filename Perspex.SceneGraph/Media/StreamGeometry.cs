@@ -18,6 +18,11 @@ namespace Perspex.Media
             this.PlatformImpl = factory.CreateStreamGeometry();
         }
 
+        private StreamGeometry(IGeometryImpl impl)
+        {
+            this.PlatformImpl = impl;
+        }
+
         public override Rect Bounds
         {
             get { return this.PlatformImpl.Bounds; }
@@ -33,11 +38,6 @@ namespace Perspex.Media
                 parser.Parse(s);
                 return result;
             }
-        }
-
-        private StreamGeometry(IGeometryImpl impl)
-        {
-            this.PlatformImpl = impl;
         }
 
         public override Geometry Clone()
