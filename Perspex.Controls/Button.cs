@@ -102,6 +102,8 @@ namespace Perspex.Controls
 
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
+            base.OnDetachedFromVisualTree(oldRoot);
+
             if (this.IsDefault)
             {
                 var inputElement = oldRoot as IInputElement;

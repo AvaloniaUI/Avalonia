@@ -218,7 +218,7 @@ namespace Perspex.Controls
             
             if (this.focusAdorner != null)
             {
-                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                var adornerLayer = this.focusAdorner.Parent as Panel;
                 adornerLayer.Children.Remove(this.focusAdorner);
                 this.focusAdorner = null;
             }

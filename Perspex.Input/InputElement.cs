@@ -9,6 +9,7 @@ namespace Perspex.Input
     using System;
     using System.Linq;
     using Perspex.Interactivity;
+    using Perspex.Rendering;
     using Perspex.VisualTree;
 
     public class InputElement : Interactive, IInputElement
@@ -194,6 +195,16 @@ namespace Perspex.Input
         public void Focus()
         {
             FocusManager.Instance.Focus(this);
+        }
+
+        protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
+        {
+            base.OnDetachedFromVisualTree(oldRoot);
+
+            if (this.IsFocused)
+            {
+                FocusManager.Instance.Focus(null);
+            }
         }
 
         protected override void OnVisualParentChanged(Visual oldParent)

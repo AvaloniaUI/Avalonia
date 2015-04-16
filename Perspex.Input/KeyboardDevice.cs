@@ -22,6 +22,11 @@ namespace Perspex.Input
                 .Subscribe(this.ProcessRawEvent);
         }
 
+        public static IKeyboardDevice Instance
+        {
+            get { return Locator.Current.GetService<IKeyboardDevice>(); }
+        }
+
         public IInputManager InputManager
         {
             get { return Locator.Current.GetService<IInputManager>(); }
