@@ -8,8 +8,9 @@ namespace Perspex.Media.Imaging
 {
     using Perspex.Platform;
     using Splat;
+    using System;
 
-    public class RenderTargetBitmap : Bitmap
+    public class RenderTargetBitmap : Bitmap, IDisposable
     {
         public RenderTargetBitmap(int width, int height)
             : base(CreateImpl(width, height))
@@ -30,6 +31,11 @@ namespace Perspex.Media.Imaging
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(width, height);
+        }
+
+        public void Dispose()
+        {
+            this.PlatformImpl.Dispose();
         }
     }
 }

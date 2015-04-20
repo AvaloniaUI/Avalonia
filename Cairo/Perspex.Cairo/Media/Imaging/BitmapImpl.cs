@@ -35,7 +35,7 @@ namespace Perspex.Cairo.Media.Imaging
 
         public void Save(string fileName)
         {
-            throw new NotImplementedException();
+            this.Surface.WriteToPng(fileName);
         }
     }
 }
