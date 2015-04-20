@@ -30,6 +30,12 @@ namespace Perspex.Cairo
         {
         }
 
+        private ImageSurface surface;
+        public Renderer(ImageSurface surface)
+        {
+            this.surface = surface;
+        }
+
         /// <summary>
         /// Resizes the renderer.
         /// </summary>
@@ -51,6 +57,8 @@ namespace Perspex.Cairo
             {
                 case "HWND":
                     return new DrawingContext(new Win32Surface(GetDC(handle.Handle)));
+                case "RTB":
+                    return new DrawingContext(this.surface);
                 case "HDC":
                     return new DrawingContext(new Win32Surface(handle.Handle));
                 case "GdkWindow":

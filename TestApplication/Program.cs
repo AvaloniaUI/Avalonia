@@ -15,26 +15,9 @@ using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #endif
-using ReactiveUI;
-using Splat;
 
 namespace TestApplication
 {
-    class TestLogger : ILogger
-    {
-        public LogLevel Level
-        {
-            get;
-            set;
-        }
-
-        public void Write(string message, LogLevel logLevel)
-        {
-            if ((int)logLevel < (int)Level) return;
-            System.Diagnostics.Debug.WriteLine(message);
-        }
-    }
-
     class Item
     {
         public string Name { get; set; }
@@ -188,8 +171,6 @@ namespace TestApplication
         private static TabItem ButtonsTab()
         {
             Button defaultButton;
-
-            var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
             
             var result = new TabItem
@@ -204,11 +185,6 @@ namespace TestApplication
                     MinWidth = 120,
                     Children = new Controls
                     {
-                        (showDialogButton = new Button
-                        {
-                            Content = "Button",
-                            Command = showDialog,
-                        }),
                         new Button
                         {
                             Content = "Button",
@@ -260,29 +236,6 @@ namespace TestApplication
             {
                 defaultButton.Content = ((string)defaultButton.Content == "Default") ? "Clicked" : "Default";
             };
-
-            showDialog.Subscribe(async _ =>
-            {
-                var close = ReactiveCommand.Create();
-
-                var dialog = new Window
-                {
-                    Content = new StackPanel
-                    {
-                        Width = 200,
-                        Height = 200,
-                        Children = new Controls
-                        {
-                            new Button { Content = "Yes", Command = close, CommandParameter = "Yes" },
-                            new Button { Content = "No", Command = close, CommandParameter = "No" },
-                        }
-                    }
-                };
-
-                close.Subscribe(x => dialog.Close(x));
-
-                showDialogButton.Content =  await dialog.ShowDialog<string>();
-            });
 
             return result;
         }
