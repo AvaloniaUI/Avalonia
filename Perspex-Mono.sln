@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Base", "Perspex.Base\Perspex.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -52,6 +52,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{596AF748-EAA9-4698-A78C-98724783AFC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Cairo.RenderTests", "Tests\Perspex.RenderTests\Perspex.Cairo.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +141,10 @@ Global
 		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D211E587-D8BC-45B9-95A4-F297C8FA5200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,5 +158,6 @@ Global
 		{2905FF23-53FB-45E6-AA49-6AF47A172056} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{415E048E-4611-4815-9CF2-D774E29079AC} = {2BAFBE53-7FA4-4BB9-976F-9AFCC4F9847D}
 		{DB070A10-BF39-4752-8456-86E9D5928478} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{DABFD304-D6A4-4752-8123-C2CCF7AC7831} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 EndGlobal

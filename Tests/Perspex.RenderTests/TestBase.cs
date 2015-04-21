@@ -3,7 +3,6 @@
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
-
 namespace Perspex.Direct2D1.RenderTests
 {
     using System.IO;
@@ -13,16 +12,30 @@ namespace Perspex.Direct2D1.RenderTests
     using Perspex.Media.Imaging;
     using Xunit;
 
+#if PERSPEX_CAIRO
+	using Perspex.Cairo;
+#else
+    using Perspex.Direct2D1;
+#endif
+
     public class TestBase
     {
         static TestBase()
         {
+#if PERSPEX_CAIRO
+            CairoPlatform.Initialize();
+#else
             Direct2D1Platform.Initialize();
+#endif
         }
 
         public TestBase(string outputPath)
         {
+#if PERSPEX_CAIRO
+            string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Cairo");
+#else
             string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Direct2D1");
+#endif
             this.OutputPath = Path.Combine(testFiles, outputPath);
         }
 
