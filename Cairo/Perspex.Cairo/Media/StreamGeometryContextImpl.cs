@@ -13,11 +13,9 @@ namespace Perspex.Cairo.Media
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        private Queue<GeometryOp> ops;
         private StreamGeometryImpl impl;
-        public StreamGeometryContextImpl(Queue<GeometryOp> ops, StreamGeometryImpl imp)
+        public StreamGeometryContextImpl(StreamGeometryImpl imp)
         {
-            this.ops = ops;
             this.impl = imp;
             points = new List<Point>();
         }
@@ -34,14 +32,14 @@ namespace Perspex.Cairo.Media
         public void BeginFigure(Point startPoint, bool isFilled)
         {
             System.Diagnostics.Debug.WriteLine("IS filled {0}", isFilled);
-            ops.Enqueue(new BeginOp { Point = startPoint, IsFilled = isFilled });
+            this.impl.Operations.Enqueue(new BeginOp { Point = startPoint, IsFilled = isFilled });
             points.Add(startPoint);
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
             // TODO: Implement
-            ops.Enqueue(new CurveToOp { Point = point1, Point2 = point2, Point3 = point3 });
+            this.impl.Operations.Enqueue(new CurveToOp { Point = point1, Point2 = point2, Point3 = point3 });
             points.Add(point1);
             points.Add(point2);
             points.Add(point3);
@@ -49,13 +47,13 @@ namespace Perspex.Cairo.Media
 
         public void LineTo(Point point)
         {
-            ops.Enqueue(new LineToOp { Point = point });
+            this.impl.Operations.Enqueue(new LineToOp { Point = point });
             points.Add(point);
         }
 
         public void EndFigure(bool isClosed)
         {
-            this.ops.Enqueue(new EndOp { IsClosed = isClosed });
+            this.impl.Operations.Enqueue(new EndOp { IsClosed = isClosed });
 
             double maxX = 0;
             double maxY = 0;
@@ -67,9 +65,10 @@ namespace Perspex.Cairo.Media
             }
 
             var context = new Cairo.Context(new Cairo.ImageSurface(Cairo.Format.Argb32, (int)maxX, (int)maxY));
-            var clone = new Queue<GeometryOp>(this.ops);
-            bool useFill = false;
-            
+            var clone = new Queue<GeometryOp>(this.impl.Operations);
+
+            context.LineWidth = 2;
+
             while (clone.Count > 0)
             {
                 var current = clone.Dequeue();

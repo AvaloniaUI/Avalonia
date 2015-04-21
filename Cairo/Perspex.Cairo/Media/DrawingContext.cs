@@ -116,19 +116,16 @@ namespace Perspex.Cairo.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
-            // TODO: Implement
-            System.Diagnostics.Debug.WriteLine("Geometry {0}", geometry.GetType());
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
             var clone = new Queue<GeometryOp>(impl.Operations);
             bool useFill = false;
-
-            //this.context.Save();
+            
             var pop = this.PushTransform(impl.Transform);
+
+            this.SetPen(pen);
 
             while (clone.Count > 0)
             {
-              //  this.SetBrush(brush);
-                this.SetPen(new Pen(brush, 0.5));
 
                 var current = clone.Dequeue();
 
@@ -192,6 +189,7 @@ namespace Perspex.Cairo.Media
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             this.SetBrush(foreground);
+            
             this.context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(this.context, layout);
         }
@@ -203,6 +201,7 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect)
         {
+            
             this.SetBrush(brush);
             this.context.Rectangle(rect.ToCairo());
             this.context.Fill();

@@ -76,7 +76,7 @@ namespace Perspex.Cairo.Media
         private Matrix transform = Matrix.Identity;
         public Matrix Transform
         {
-            get { return transform; }
+            get { return this.transform; }
             set
             {
                 if (value != this.Transform)
@@ -91,20 +91,17 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryImpl Clone()
         {
-            // TODO: Implement
             return new StreamGeometryImpl(this.Operations);
         }
 
         public Rect GetRenderBounds(double strokeThickness)
         {
-            // TODO: Implement
             return this.Bounds;
         }
 
         public IStreamGeometryContextImpl Open()
         {
-            // TODO: Implement
-            return new StreamGeometryContextImpl(this.Operations, this);
+            return new StreamGeometryContextImpl(this);
         }
     }
 }
