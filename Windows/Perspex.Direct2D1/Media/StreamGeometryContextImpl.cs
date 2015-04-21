@@ -37,6 +37,7 @@ namespace Perspex.Direct2D1.Media
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
+            System.Diagnostics.Debug.WriteLine("IS FILLED {0}", isFilled);
             this.sink.BeginFigure(startPoint.ToSharpDX(), isFilled ? FigureBegin.Filled : FigureBegin.Hollow);
         }
 

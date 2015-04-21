@@ -13,6 +13,8 @@ namespace Perspex.Cairo.Media
     using Splat;
     using Cairo = global::Cairo;
     using IBitmap = Perspex.Media.Imaging.IBitmap;
+    using System.Collections.Generic;
+
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -115,6 +117,57 @@ namespace Perspex.Cairo.Media
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
             // TODO: Implement
+            System.Diagnostics.Debug.WriteLine("Geometry {0}", geometry.GetType());
+            var impl = geometry.PlatformImpl as StreamGeometryImpl;
+            var clone = new Queue<GeometryOp>(impl.Operations);
+            bool useFill = false;
+
+            //this.context.Save();
+            var pop = this.PushTransform(impl.Transform);
+
+            while (clone.Count > 0)
+            {
+              //  this.SetBrush(brush);
+                this.SetPen(new Pen(brush, 0.5));
+
+                var current = clone.Dequeue();
+
+                if (current is BeginOp)
+                {
+                    var bo = current as BeginOp;
+                    this.context.MoveTo(bo.Point.ToCairo());
+
+                    useFill = bo.IsFilled;
+                }
+                else if (current is LineToOp)
+                {
+                    var lto = current as LineToOp;
+                    this.context.LineTo(lto.Point.ToCairo());
+                }
+                else if (current is EndOp)
+                {
+                    if (((EndOp)current).IsClosed)
+                        this.context.ClosePath();
+                }
+                else if (current is CurveToOp)
+                {
+                    var cto = current as CurveToOp;
+                    this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
+                }
+             
+            }
+
+            if (useFill)
+            {
+                this.context.StrokePreserve();
+                this.context.Fill();
+            }
+            else
+            {
+                this.context.Stroke();
+            }
+
+            pop.Dispose();
         }
 
         /// <summary>

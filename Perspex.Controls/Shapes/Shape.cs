@@ -39,6 +39,8 @@ namespace Perspex.Controls.Shapes
             Control.AffectsRender(StrokeProperty);
             Control.AffectsRender(StrokeDashArrayProperty);
             Control.AffectsMeasure(StrokeThicknessProperty);
+
+           
         }
 
         public abstract Geometry DefiningGeometry
