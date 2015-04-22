@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{DABFD304-D6A4-4752-8123-C2CCF7AC7831}</ProjectGuid>
+    <ProjectGuid>{E106CF37-4066-4615-B684-172A6D30B058}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Perspex.Direct2D1.RenderTests</RootNamespace>
