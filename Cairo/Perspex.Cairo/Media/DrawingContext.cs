@@ -162,11 +162,10 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
-            this.context.Save();
             this.context.Rectangle(clip.ToCairo());
             this.context.Clip();
 
-            return Disposable.Create(() => this.context.Restore());
+            return Disposable.Create(() => this.context.ResetClip());
         }
 
         /// <summary>
