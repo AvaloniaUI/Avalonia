@@ -214,11 +214,10 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
-            this.context.Save();
             this.context.Rectangle(clip.ToCairo());
             this.context.Clip();
 
-            return Disposable.Create(() => this.context.Restore());
+            return Disposable.Create(() => this.context.ResetClip());
         }
 
         /// <summary>
@@ -228,14 +227,11 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            this.context.Save();
             this.context.Transform(matrix.ToCairo());
-            this.CurrentTransform *= matrix;
 
-            return Disposable.Create(() => 
+            return Disposable.Create(() =>
             {
-                this.context.Restore();
-                this.CurrentTransform *= matrix.Invert();
+                this.context.Transform(matrix.Invert().ToCairo());
             });
         }
 
