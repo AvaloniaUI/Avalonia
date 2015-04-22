@@ -12,4 +12,11 @@ namespace Perspex.Media
         Oblique,
         Italic,
     }
+
+    public enum TextAlignment
+    {
+        Left,
+        Centered,
+        Right,
+    }
 }

@@ -56,5 +56,16 @@ namespace Perspex.Cairo
 
             return Pango.Weight.Ultralight;
         }
+
+        public static Pango.Alignment ToCairo(this Perspex.Media.TextAlignment alignment)
+        {
+            if (alignment == Perspex.Media.TextAlignment.Left)
+                return Pango.Alignment.Left;
+
+            if (alignment == Perspex.Media.TextAlignment.Centered)
+                return Pango.Alignment.Center;
+
+            return Pango.Alignment.Right;
+        }
     }
 }

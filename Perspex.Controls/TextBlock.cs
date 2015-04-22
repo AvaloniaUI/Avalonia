@@ -37,6 +37,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             PerspexProperty.Register<TextBlock, TextWrapping>("TextWrapping");
 
+        public static readonly PerspexProperty<TextAlignment> TextAlignmentProperty =
+            PerspexProperty.Register<TextBlock, TextAlignment>("TextAlignment");
+
         private FormattedText formattedText;
 
         private Size constraint;
@@ -45,6 +48,7 @@ namespace Perspex.Controls
         {
             Observable.Merge(
                 this.GetObservable(TextProperty).Select(_ => Unit.Default),
+                this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontStyleProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
@@ -114,6 +118,12 @@ namespace Perspex.Controls
             set { this.SetValue(TextWrappingProperty, value); }
         }
 
+        public TextAlignment TextAlignment
+        {
+            get { return this.GetValue(TextAlignmentProperty); }
+            set { this.SetValue(TextAlignmentProperty, value); }
+        }
+
         public override void Render(IDrawingContext context)
         {
             Brush background = this.Background;
@@ -133,6 +143,7 @@ namespace Perspex.Controls
                 this.FontFamily,
                 this.FontSize,
                 this.FontStyle,
+                this.TextAlignment,
                 this.FontWeight);
             result.Constraint = this.constraint;
             return result;

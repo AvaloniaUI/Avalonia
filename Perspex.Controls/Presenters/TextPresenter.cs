@@ -165,6 +165,7 @@ namespace Perspex.Controls.Presenters
                     this.FontFamily,
                     this.FontSize,
                     this.FontStyle,
+                    TextAlignment.Left,
                     this.FontWeight))
                 {
                     return formattedText.Measure();
