@@ -70,7 +70,7 @@ namespace Perspex.Cairo.Media
         {
             this.context.Dispose();
 
-            if (this.surface != null)
+            if (this.surface is Cairo.Win32Surface)
             {
                 this.surface.Dispose();
             }

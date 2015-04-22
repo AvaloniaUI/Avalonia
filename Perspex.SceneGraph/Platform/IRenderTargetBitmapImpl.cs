@@ -4,9 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
+
 namespace Perspex.Platform
 {
-    public interface IRenderTargetBitmapImpl : IBitmapImpl
+    public interface IRenderTargetBitmapImpl : IBitmapImpl, IDisposable
     {
         void Render(IVisual visual);
     }

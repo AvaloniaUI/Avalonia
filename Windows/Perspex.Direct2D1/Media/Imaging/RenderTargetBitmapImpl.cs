@@ -11,7 +11,7 @@ namespace Perspex.Direct2D1.Media
     using SharpDX.Direct2D1;
     using SharpDX.WIC;
 
-    public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl
+    public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl, IDisposable
     {
         private WicRenderTarget target;
 
@@ -30,6 +30,11 @@ namespace Perspex.Direct2D1.Media
                     DpiX = 96,
                     DpiY = 96,
                 });
+        }
+
+        public void Dispose()
+        {
+            // TODO:
         }
 
         public void Render(IVisual visual)
