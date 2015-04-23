@@ -305,16 +305,19 @@ namespace TestApplication
                         {
                             Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
+                            TextAlignment = TextAlignment.Centered,
                         },
                         new TextBlock
                         {
                             Text = "Italic text.",
                             FontStyle = FontStyle.Italic,
+                            TextAlignment = TextAlignment.Left,
                         },
                         new TextBlock
                         {
                             Text = "Bold text.",
                             FontWeight = FontWeight.Bold,
+                            TextAlignment = TextAlignment.Right,
                         },
                         new TextBox
                         {
