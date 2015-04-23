@@ -9,6 +9,7 @@ namespace Perspex.Direct2D1
     using System.Linq;
     using SharpDX;
     using SharpDX.Direct2D1;
+    using DWrite = SharpDX.DirectWrite;
 
     public static class PrimitiveExtensions
     {
@@ -127,6 +128,17 @@ namespace Perspex.Direct2D1
                 (float)rect.Y,
                 (float)rect.Width,
                 (float)rect.Height);
+        }
+
+        public static DWrite.TextAlignment ToDirect2D(this Perspex.Media.TextAlignment alignment)
+        {
+            if (alignment == Perspex.Media.TextAlignment.Left)
+                return DWrite.TextAlignment.Leading;
+
+            if (alignment == Perspex.Media.TextAlignment.Centered)
+                return DWrite.TextAlignment.Center;
+
+            return DWrite.TextAlignment.Trailing;
         }
     }
 }

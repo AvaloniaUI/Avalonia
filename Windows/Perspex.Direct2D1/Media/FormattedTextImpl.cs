@@ -21,6 +21,7 @@ namespace Perspex.Direct2D1.Media
             string fontFamily,
             double fontSize,
             FontStyle fontStyle,
+            TextAlignment textAlignment,
             FontWeight fontWeight)
         {
             var factory = Locator.Current.GetService<DWrite.Factory>();
@@ -38,6 +39,8 @@ namespace Perspex.Direct2D1.Media
                 format,
                 float.MaxValue,
                 float.MaxValue);
+
+            this.TextLayout.TextAlignment = textAlignment.ToDirect2D();
         }
 
         public Size Constraint

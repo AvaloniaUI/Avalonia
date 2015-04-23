@@ -20,6 +20,7 @@ namespace Perspex.Cairo.Media
             string fontFamily,
             double fontSize,
             FontStyle fontStyle,
+            TextAlignment textAlignment,
             FontWeight fontWeight)
         {
             var context = Locator.Current.GetService<Pango.Context>();
@@ -32,6 +33,8 @@ namespace Perspex.Cairo.Media
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };
+
+            this.Layout.Alignment = textAlignment.ToCairo();
         }
 
         public Size Constraint
@@ -43,6 +46,7 @@ namespace Perspex.Cairo.Media
 
             set
             {
+
                 this.Layout.Width = Pango.Units.FromDouble(value.Width);
             }
         }
@@ -98,6 +102,12 @@ namespace Perspex.Cairo.Media
             int width;
             int height;
             this.Layout.GetPixelSize(out width, out height);
+        
+            if (this.Layout.Alignment == Pango.Alignment.Right)
+            {
+                return new Size(width, height);
+            }
+
             return new Size(width, height);
         }
 

@@ -18,6 +18,7 @@ namespace Perspex.Media
             string fontFamilyName,
             double fontSize,
             FontStyle fontStyle,
+            TextAlignment textAlignment,
             FontWeight fontWeight)
         {
             this.Text = text;
@@ -32,6 +33,7 @@ namespace Perspex.Media
                 fontFamilyName, 
                 fontSize, 
                 fontStyle, 
+                textAlignment,
                 fontWeight);
         }
 
