@@ -170,7 +170,17 @@ namespace Perspex.Layout
             if (force || !this.IsMeasureValid || this.previousMeasure != availableSize)
             {
                 this.IsMeasureValid = true;
-                this.DesiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+
+                var desiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
+
+                if (desiredSize.Width < 0 || desiredSize.Height < 0 ||
+                    double.IsInfinity(desiredSize.Width) || double.IsInfinity(desiredSize.Height) ||
+                    double.IsNaN(desiredSize.Width) || double.IsNaN(desiredSize.Height))
+                {
+                    throw new InvalidOperationException("Invalid size returned for Measure.");
+                }
+
+                this.DesiredSize = desiredSize;
                 this.previousMeasure = availableSize;
 
                 this.Log().Debug(
