@@ -120,9 +120,15 @@ namespace Perspex.Direct2D1.Media
 
         public Size Measure()
         {
-            return new Size(
-                this.TextLayout.Metrics.WidthIncludingTrailingWhitespace,
-                this.TextLayout.Metrics.Height);
+            var metrics = this.TextLayout.Metrics;
+            var width = metrics.WidthIncludingTrailingWhitespace;
+
+            if (float.IsNaN(width))
+            {
+                width = metrics.Width;
+            }
+
+            return new Size(width, this.TextLayout.Metrics.Height);
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int count)
