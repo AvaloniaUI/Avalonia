@@ -35,8 +35,6 @@ namespace Perspex.Controls
         private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
             new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
 
-        private ItemsPresenter presenter;
-
         public ItemsControl()
         {
             this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
@@ -76,6 +74,12 @@ namespace Perspex.Controls
             }
         }
 
+        protected ItemsPresenter Presenter
+        {
+            get;
+            private set;
+        }
+
         protected virtual ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
@@ -83,11 +87,11 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            this.presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
+            this.Presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
 
-            if (this.presenter != null)
+            if (this.Presenter != null)
             {
-                this.logicalChildren.Source = ((IVisual)this.presenter.Panel).VisualChildren;
+                this.logicalChildren.Source = ((IVisual)this.Presenter.Panel).VisualChildren;
             }
         }
 

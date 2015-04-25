@@ -226,24 +226,20 @@ namespace Perspex.Input
 
         protected virtual void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Tab)
+            if (e.Key == Key.Tab && !e.Handled)
             {
-                var modifiers = e.Device.Modifiers;
+                var shift = (e.Device.Modifiers & ModifierKeys.Shift) != 0;
 
-                if ((modifiers & ModifierKeys.Shift) == 0)
+                if (!shift)
                 {
-                    if (KeyboardNavigation.Instance.MoveNext(this))
-                    {
-                        e.Handled = true;
-                    }
+                    KeyboardNavigation.Instance.TabNext(this);
                 }
                 else
                 {
-                    if (KeyboardNavigation.Instance.MovePrevious(this))
-                    {
-                        e.Handled = true;
-                    }
+                    KeyboardNavigation.Instance.TabPrevious(this);
                 }
+
+                e.Handled = true;
             }
         }
 

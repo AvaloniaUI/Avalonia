@@ -81,6 +81,7 @@
     <Compile Include="PointerWheelEventArgs.cs" />
     <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
     <Compile Include="Raw\RawSizeEventArgs.cs" />
+    <Compile Include="KeyboardNavigationMode.cs" />
     <Compile Include="VectorEventArgs.cs" />
     <Compile Include="KeyEventArgs.cs" />
     <Compile Include="MouseDevice.cs" />

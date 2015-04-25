@@ -40,11 +40,6 @@ namespace Perspex
         private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
-        /// The coerce function.
-        /// </summary>
-        private Func<PerspexObject, object, object> coerce;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
@@ -183,7 +178,6 @@ namespace Perspex
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<PerspexObject, TValue, TValue> coerce = null)
-            where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
 

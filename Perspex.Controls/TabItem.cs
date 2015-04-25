@@ -15,6 +15,7 @@ namespace Perspex.Controls
 
         static TabItem()
         {
+            FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             Control.AffectsRender(IsSelectedProperty);
             Control.PseudoClass(IsSelectedProperty, ":selected");
         }

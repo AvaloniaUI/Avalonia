@@ -10,6 +10,7 @@ namespace Perspex.Input
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Input.Raw;
+    using Perspex.Interactivity;
     using Splat;
 
     public abstract class KeyboardDevice : IKeyboardDevice
@@ -40,10 +41,35 @@ namespace Perspex.Input
         public IInputElement FocusedElement
         {
             get;
-            set;
+            private set;
         }
 
         public abstract ModifierKeys Modifiers { get; }
+
+        public void SetFocusedElement(IInputElement element, bool keyboardNavigated)
+        {
+            var interactive = this.FocusedElement as IInteractive;
+
+            if (interactive != null)
+            {
+                interactive.RaiseEvent(new RoutedEventArgs
+                {
+                    RoutedEvent = InputElement.LostFocusEvent,
+                });
+            }
+
+            this.FocusedElement = element;
+            interactive = element as IInteractive;
+
+            if (interactive != null)
+            {
+                interactive.RaiseEvent(new GotFocusEventArgs
+                {
+                    RoutedEvent = InputElement.GotFocusEvent,
+                    KeyboardNavigated = keyboardNavigated,
+                });
+            }
+        }
 
         private void ProcessRawEvent(RawKeyEventArgs e)
         {

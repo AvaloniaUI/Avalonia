@@ -25,8 +25,7 @@ namespace Perspex.Input
 
         public IInputElement Current
         {
-            get;
-            private set;
+            get { return KeyboardDevice.Instance.FocusedElement; }
         }
 
         public IFocusScope Scope
@@ -84,29 +83,7 @@ namespace Perspex.Input
 
             if (this.Scope == scope)
             {
-                var interactive = this.Current as IInteractive;
-
-                if (interactive != null)
-                {
-                    interactive.RaiseEvent(new RoutedEventArgs
-                    {
-                        RoutedEvent = InputElement.LostFocusEvent,
-                    });
-                }
-
-                this.Current = element;
-                KeyboardDevice.Instance.FocusedElement = element;
-
-                interactive = element as IInteractive;
-
-                if (interactive != null)
-                {
-                    interactive.RaiseEvent(new GotFocusEventArgs
-                    {
-                        RoutedEvent = InputElement.GotFocusEvent,
-                        KeyboardNavigated = keyboardNavigated,
-                    });
-                }
+                KeyboardDevice.Instance.SetFocusedElement(element, keyboardNavigated);
             }
         }
 

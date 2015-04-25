@@ -72,9 +72,11 @@ namespace Perspex.Controls.Primitives
                 switch (direction)
                 {
                     case FocusNavigationDirection.Up:
+                    case FocusNavigationDirection.Left:
                         offset = -1;
                         break;
                     case FocusNavigationDirection.Down:
+                    case FocusNavigationDirection.Right:
                         offset = 1;
                         break;
                 }
@@ -94,6 +96,8 @@ namespace Perspex.Controls.Primitives
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            base.OnKeyDown(e);
+
             switch (e.Key)
             {
                 case Key.Up:
@@ -142,6 +146,11 @@ namespace Perspex.Controls.Primitives
             var selectedContainer = (selected != null) ?
                 this.ItemContainerGenerator.GetContainerForItem(selected) :
                 null;
+
+            if (this.Presenter != null && this.Presenter.Panel != null)
+            {
+                KeyboardNavigation.SetTabOnceActiveElement(this.Presenter.Panel, selectedContainer);
+            }
 
             foreach (var item in containers)
             {
