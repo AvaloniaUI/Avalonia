@@ -65,32 +65,24 @@ namespace Perspex.Controls.Primitives
 
         protected virtual void MoveSelection(FocusNavigationDirection direction)
         {
-            if (this.SelectedItem != null)
+            var panel = this.Presenter?.Panel as INavigablePanel;
+            var selected = this.SelectedItem;
+            var container = selected != null ?
+                this.ItemContainerGenerator.GetContainerForItem(selected) :
+                null;
+
+            if (panel != null)
             {
-                int offset = 0;
+                var next = panel.GetControl(direction, container);
 
-                switch (direction)
+                if (next != null)
                 {
-                    case FocusNavigationDirection.Up:
-                    case FocusNavigationDirection.Left:
-                        offset = -1;
-                        break;
-                    case FocusNavigationDirection.Down:
-                    case FocusNavigationDirection.Right:
-                        offset = 1;
-                        break;
+                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer(next);
                 }
-
-                if (offset != 0)
-                {
-                    var currentIndex = GetIndexOfItem(this.SelectedItem);
-                    var index = currentIndex + offset;
-
-                    if (index >= 0 && index < this.Items.Cast<object>().Count())
-                    {
-                        this.SelectedItem = this.Items.Cast<object>().ElementAt(index);
-                    }
-                }
+            }
+            else
+            {
+                // TODO: Try doing a visual search?
             }
         }
 
