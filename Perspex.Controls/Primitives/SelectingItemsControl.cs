@@ -104,6 +104,8 @@ namespace Perspex.Controls.Primitives
                 case Key.Right:
                     this.MoveSelection(FocusNavigationDirection.Right);
                     break;
+                default:
+                    return;
             }
 
             var selected = this.SelectedItem;
