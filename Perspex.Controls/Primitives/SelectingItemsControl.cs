@@ -118,6 +118,7 @@ namespace Perspex.Controls.Primitives
 
                     if (container != null)
                     {
+                        container.BringIntoView();
                         FocusManager.Instance.Focus(container, true);
                     }
                 }
@@ -141,6 +142,7 @@ namespace Perspex.Controls.Primitives
                 if (item != null)
                 {
                     this.SelectedItem = item;
+                    selectable.BringIntoView();
                     FocusManager.Instance.Focus(selectable);
                 }
             }

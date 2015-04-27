@@ -97,6 +97,11 @@ namespace TestApplication
             new Item { Name = "Item 1", Value = "Item 1 Value" },
             new Item { Name = "Item 2", Value = "Item 2 Value" },
             new Item { Name = "Item 3", Value = "Item 3 Value" },
+            new Item { Name = "Item 4", Value = "Item 4 Value" },
+            new Item { Name = "Item 5", Value = "Item 5 Value" },
+            new Item { Name = "Item 6", Value = "Item 6 Value" },
+            new Item { Name = "Item 7", Value = "Item 7 Value" },
+            new Item { Name = "Item 8", Value = "Item 8 Value" },
         };
 
         static void Main(string[] args)
@@ -410,6 +415,7 @@ namespace TestApplication
                         new ListBox
                         {
                             Items = listBoxData,
+                            MaxHeight = 300,
                         },
                         new DropDown
                         {
