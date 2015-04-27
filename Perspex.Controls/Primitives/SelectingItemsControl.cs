@@ -106,6 +106,18 @@ namespace Perspex.Controls.Primitives
                     break;
             }
 
+            var selected = this.SelectedItem;
+
+            if (selected != null)
+            {
+                var container = this.ItemContainerGenerator.GetContainerForItem(selected);
+
+                if (container != null)
+                {
+                    FocusManager.Instance.Focus(container, true);
+                }
+            }
+
             e.Handled = true;
         }
 
@@ -124,6 +136,7 @@ namespace Perspex.Controls.Primitives
                 if (item != null)
                 {
                     this.SelectedItem = item;
+                    FocusManager.Instance.Focus(selectable);
                 }
             }
 
