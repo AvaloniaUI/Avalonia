@@ -27,6 +27,7 @@ namespace Perspex.Themes.Default
                         new Setter(TextBox.TemplateProperty, ControlTemplate.Create<TextBox>(this.Template)),
                         new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(TextBox.BorderThicknessProperty, 2.0),
+                        new Setter(TextBox.FocusAdornerProperty, null),
                     },
                 },
                 new Style(x => x.OfType<TextBox>().Class(":focus").Template().Id("border"))

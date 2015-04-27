@@ -7,8 +7,10 @@
 namespace Perspex.Themes.Default
 {
     using System.Linq;
+    using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Shapes;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
@@ -23,6 +25,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
+                        new Setter(Button.FocusAdornerProperty, new AdornerTemplate(FocusAdornerTemplate)),
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
                         new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
@@ -68,6 +71,17 @@ namespace Perspex.Themes.Default
                     },
                 },
             });
+        }
+
+        public static Control FocusAdornerTemplate()
+        {
+            return new Rectangle
+            {
+                Stroke = Brushes.Black,
+                StrokeThickness = 1,
+                StrokeDashArray = new PerspexList<double>(1, 2),
+                Margin = new Thickness(3.5),
+            };
         }
 
         private Control Template(Button control)

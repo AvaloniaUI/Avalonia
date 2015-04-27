@@ -12,11 +12,12 @@ namespace Perspex.Themes.Default
     {
         public DefaultTheme()
         {
+            this.Add(new FocusAdornerStyle());
+
             this.Add(new ButtonStyle());
             this.Add(new CheckBoxStyle());
             this.Add(new ContentControlStyle());
             this.Add(new DropDownStyle());
-            this.Add(new FocusAdornerStyle());
             this.Add(new GridSplitterStyle());
             this.Add(new ItemsControlStyle());
             this.Add(new ListBoxStyle());

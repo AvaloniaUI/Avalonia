@@ -35,7 +35,6 @@ namespace Perspex.Themes.Default
                 Stroke = Brushes.Black,
                 StrokeThickness = 1,
                 StrokeDashArray = new PerspexList<double>(1, 2),
-                Margin = new Thickness(3),
             };
         }
     }
