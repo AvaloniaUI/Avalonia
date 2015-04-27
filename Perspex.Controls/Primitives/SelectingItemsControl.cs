@@ -90,37 +90,40 @@ namespace Perspex.Controls.Primitives
         {
             base.OnKeyDown(e);
 
-            switch (e.Key)
+            if (!e.Handled)
             {
-                case Key.Up:
-                    this.MoveSelection(FocusNavigationDirection.Up);
-                    break;
-                case Key.Down:
-                    this.MoveSelection(FocusNavigationDirection.Down);
-                    break;
-                case Key.Left:
-                    this.MoveSelection(FocusNavigationDirection.Left);
-                    break;
-                case Key.Right:
-                    this.MoveSelection(FocusNavigationDirection.Right);
-                    break;
-                default:
-                    return;
-            }
-
-            var selected = this.SelectedItem;
-
-            if (selected != null)
-            {
-                var container = this.ItemContainerGenerator.GetContainerForItem(selected);
-
-                if (container != null)
+                switch (e.Key)
                 {
-                    FocusManager.Instance.Focus(container, true);
+                    case Key.Up:
+                        this.MoveSelection(FocusNavigationDirection.Up);
+                        break;
+                    case Key.Down:
+                        this.MoveSelection(FocusNavigationDirection.Down);
+                        break;
+                    case Key.Left:
+                        this.MoveSelection(FocusNavigationDirection.Left);
+                        break;
+                    case Key.Right:
+                        this.MoveSelection(FocusNavigationDirection.Right);
+                        break;
+                    default:
+                        return;
                 }
-            }
 
-            e.Handled = true;
+                var selected = this.SelectedItem;
+
+                if (selected != null)
+                {
+                    var container = this.ItemContainerGenerator.GetContainerForItem(selected);
+
+                    if (container != null)
+                    {
+                        FocusManager.Instance.Focus(container, true);
+                    }
+                }
+
+                e.Handled = true;
+            }
         }
 
         protected override void OnPointerPressed(PointerPressEventArgs e)

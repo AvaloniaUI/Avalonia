@@ -14,6 +14,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
+    using Perspex.Input;
 
     public class TabControl : SelectingItemsControl, ILogical
     {
@@ -58,6 +59,11 @@ namespace Perspex.Controls
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChildren; }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            // Don't handle keypresses.
         }
 
         protected override void OnTemplateApplied()
