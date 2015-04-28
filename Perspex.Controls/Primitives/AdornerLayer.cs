@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Primitives
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.VisualTree;
@@ -16,8 +17,14 @@ namespace Perspex.Controls.Primitives
         public static PerspexProperty<Visual> AdornedElementProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
+        private static PerspexProperty<AdornedElementInfo> AdornedElementInfoProperty =
+            PerspexProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
+
+        private BoundsTracker tracker = new BoundsTracker();
+
         static AdornerLayer()
         {
+            AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
             IsHitTestVisibleProperty.OverrideDefaultValue(typeof(AdornerLayer), false);
         }
 
@@ -45,13 +52,11 @@ namespace Perspex.Controls.Primitives
 
             foreach (var child in this.Children)
             {
-                var adorned = GetAdornedElement(child);
+                var info = child.GetValue(AdornedElementInfoProperty);
 
-                if (adorned != null)
+                if (info != null)
                 {
-                    var transform = adorned.TransformToVisual(parent);
-                    var position = new Point(0, 0) * transform;
-                    child.Arrange(new Rect(position, adorned.Bounds.Size));
+                    child.Arrange(info.Bounds.Bounds);
                 }
                 else
                 {
@@ -62,14 +67,68 @@ namespace Perspex.Controls.Primitives
             return finalSize;
         }
 
-        protected override void OnChildrenAdded(IEnumerable<Control> child)
+        protected override void OnChildrenAdded(IEnumerable<Control> children)
         {
+            foreach (var i in children)
+            {
+                this.UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+            }
+
             this.InvalidateArrange();
         }
 
         protected override void OnChildrenRemoved(IEnumerable<Control> child)
         {
             this.InvalidateArrange();
+        }
+
+        private void UpdateAdornedElement(Visual adorner, Visual adorned)
+        {
+            var info = adorner.GetValue(AdornedElementInfoProperty);
+
+            if (info != null)
+            {
+                info.Subscription.Dispose();
+
+                if (adorned == null)
+                {
+                    adorner.ClearValue(AdornedElementInfoProperty);
+                }
+            }
+
+            if (adorned != null)
+            {
+                if (info == null)
+                {
+                    info = new AdornedElementInfo();
+                    adorner.SetValue(AdornedElementInfoProperty, info);
+                }
+
+                info.Subscription = this.tracker.Track(adorned).Subscribe(x =>
+                {
+                    info.Bounds = x;
+                    this.InvalidateArrange();
+                });
+            }
+        }
+
+        private static void AdornedElementChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var adorner = (Visual)e.Sender;
+            var adorned = (Visual)e.NewValue;
+            var layer = adorner.GetVisualParent<AdornerLayer>();
+
+            if (layer != null)
+            {
+                layer.UpdateAdornedElement(adorner, adorned);
+            }
+        }
+
+        private class AdornedElementInfo
+        {
+            public IDisposable Subscription { get; set; }
+
+            public TransformedBounds Bounds { get; set; }
         }
     }
 }

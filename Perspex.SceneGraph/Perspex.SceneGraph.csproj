@@ -95,6 +95,8 @@
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
+    <Compile Include="VisualTree\TransformedBounds.cs" />
+    <Compile Include="VisualTree\BoundsTracker.cs" />
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

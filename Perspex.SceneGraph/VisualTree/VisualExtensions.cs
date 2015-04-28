@@ -102,5 +102,20 @@ namespace Perspex.VisualTree
         {
             return visual.VisualParent as T;
         }
+
+        public static IVisual GetVisualRoot(this IVisual visual)
+        {
+            Contract.Requires<NullReferenceException>(visual != null);
+
+            var parent = visual.VisualParent;
+
+            while (parent != null)
+            {
+                visual = parent;
+                parent = visual.VisualParent;
+            }
+
+            return visual;
+        }
     }
 }
