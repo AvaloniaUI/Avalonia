@@ -228,7 +228,7 @@ namespace Perspex.Controls.Primitives
             {
                 if (value != null && (control.Items == null || control.Items.IndexOf(value) == -1))
                 {
-                    return -1;
+                    return null;
                 }
             }
 
