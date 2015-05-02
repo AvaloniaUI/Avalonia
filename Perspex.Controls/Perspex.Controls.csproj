@@ -92,6 +92,7 @@
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
     <Compile Include="TextWrapping.cs" />
+    <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
     <Compile Include="PopupRoot.cs" />

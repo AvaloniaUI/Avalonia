@@ -6,12 +6,11 @@
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections;
-    using System.Linq;
+    using Perspex.Controls.Utils;
     using Perspex.Input;
     using Perspex.VisualTree;
-    using System.Collections.Generic;
+    using System;
+    using System.Linq;
 
     public abstract class SelectingItemsControl : ItemsControl
     {
@@ -31,7 +30,7 @@ namespace Perspex.Controls.Primitives
 
                 if (control != null)
                 {
-                    control.SelectedItem = control.GetItemAt((int)x.NewValue);
+                    control.SelectedItem = control.Items.ElementAt((int)x.NewValue);
                 }
             });
 
@@ -56,58 +55,6 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(SelectedItemProperty); }
             set { this.SetValue(SelectedItemProperty, value); }
-        }
-
-        protected static int GetIndexOfItem(IEnumerable items, object item)
-        {
-            var list = items as IList;
-
-            if (list != null)
-            {
-                return list.IndexOf(item);
-            }
-            else if (items != null)
-            {
-                int index = 0;
-
-                foreach (var i in items)
-                {
-                    if (object.ReferenceEquals(i, item))
-                    {
-                        return index;
-                    }
-
-                    ++index;
-                }
-            }
-
-            return -1;
-        }
-
-        protected static object GetItemAt(IEnumerable items, int index)
-        {
-            var list = items as IList;
-
-            if (list != null)
-            {
-                return list[index];
-            }
-            else if (items != null)
-            {
-                return items.Cast<object>().ElementAt(index);
-            }
-
-            return -1;
-        }
-
-        protected int GetIndexOfItem(object item)
-        {
-            return GetIndexOfItem(this.Items, item);
-        }
-
-        protected object GetItemAt(int index)
-        {
-            return GetItemAt(this.Items, index);
         }
 
         protected virtual void MoveSelection(FocusNavigationDirection direction)
@@ -209,7 +156,7 @@ namespace Perspex.Controls.Primitives
                 }
                 else if (value > -1)
                 {
-                    var count = control.Items.Cast<object>().Count();
+                    var count = control.Items.Count();
                     return Math.Min(value, count - 1);
                 }
             }
@@ -242,7 +189,7 @@ namespace Perspex.Controls.Primitives
             }
             else
             {
-                this.SelectedIndex = GetIndexOfItem(selected);
+                this.SelectedIndex = this.Items.IndexOf(selected);
             }
         }
     }
