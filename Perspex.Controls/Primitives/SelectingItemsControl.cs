@@ -191,6 +191,12 @@ namespace Perspex.Controls.Primitives
             e.Handled = true;
         }
 
+        protected override void OnTemplateApplied()
+        {
+            base.OnTemplateApplied();
+            this.SelectedItemChanged(this.SelectedItem);
+        }
+
         private static int CoerceSelectedIndex(PerspexObject o, int value)
         {
             var control = o as SelectingItemsControl;
