@@ -12,7 +12,7 @@ namespace Perspex.Controls.Primitives
     using Perspex.Input;
     using Perspex.VisualTree;
 
-    public class SelectingItemsControl : ItemsControl
+    public abstract class SelectingItemsControl : ItemsControl
     {
         public static readonly PerspexProperty<object> SelectedItemProperty =
             PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem");

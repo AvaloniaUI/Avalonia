@@ -8,7 +8,6 @@ namespace Perspex.Controls.UnitTests
 {
     using Perspex.Controls.Primitives;
     using Perspex.Input;
-    using Perspex.Interactivity;
     using Xunit;
 
     public class SelectingItemsControlTests
@@ -16,7 +15,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void PointerPressed_Event_Should_Be_Handled()
         {
-            var target = new SelectingItemsControl();
+            var target = new Target();
 
             var e = new PointerPressEventArgs
             {
@@ -26,6 +25,10 @@ namespace Perspex.Controls.UnitTests
             target.RaiseEvent(e);
 
             Assert.True(e.Handled);
+        }
+
+        private class Target : SelectingItemsControl
+        {
         }
     }
 }
