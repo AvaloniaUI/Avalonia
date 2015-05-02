@@ -238,6 +238,43 @@ namespace Perspex.Controls.UnitTests
             Assert.Same(before, after);
         }
 
+        [Fact]
+        public void Empty_Class_Should_Initially_Be_Applied()
+        {
+            var target = new ItemsControl()
+            {
+                Template = this.GetTemplate(),
+            };
+
+            Assert.True(target.Classes.Contains(":empty"));
+        }
+
+        [Fact]
+        public void Empty_Class_Should_Be_Cleared_When_Items_Added()
+        {
+            var target = new ItemsControl()
+            {
+                Template = this.GetTemplate(),
+                Items = new[] { 1, 2, 3 },
+            };
+
+            Assert.False(target.Classes.Contains(":empty"));
+        }
+
+        [Fact]
+        public void Empty_Class_Should_Be_Set_When_Empty_Collection_Set()
+        {
+            var target = new ItemsControl()
+            {
+                Template = this.GetTemplate(),
+                Items = new[] { 1, 2, 3 },
+            };
+
+            target.Items = new int[0];
+
+            Assert.True(target.Classes.Contains(":empty"));
+        }
+
         private ControlTemplate GetTemplate()
         {
             return ControlTemplate.Create<ItemsControl>(parent =>

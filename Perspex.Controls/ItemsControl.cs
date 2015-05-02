@@ -6,17 +6,17 @@
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
     using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
-    using Perspex.VisualTree;
+    using Perspex.Controls.Utils;
+    using System;
+    using System.Collections;
+    using System.Collections.Specialized;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
 
     public class ItemsControl : TemplatedControl, ILogical
     {
@@ -35,9 +35,18 @@ namespace Perspex.Controls
         private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
             new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
 
+        static ItemsControl()
+        {
+            ItemsProperty.Changed.Subscribe(e =>
+            {
+                var control = e.Sender as ItemsControl;
+                control?.ItemsChanged((IEnumerable)e.OldValue, (IEnumerable)e.NewValue);
+            });
+        }
+
         public ItemsControl()
         {
-            this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
+            this.ItemsChanged(null, null);
         }
 
         public ItemContainerGenerator ItemContainerGenerator
@@ -95,16 +104,16 @@ namespace Perspex.Controls
             }
         }
 
-        private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)
+        protected virtual void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
         {
-            INotifyPropertyChanged inpc = value.Item1 as INotifyPropertyChanged;
+            var incc = oldValue as INotifyCollectionChanged;
 
-            if (inpc != null)
+            if (incc != null)
             {
-                inpc.PropertyChanged -= this.ItemsPropertyChanged;
+                incc.CollectionChanged += this.ItemsCollectionChanged;
             }
 
-            if (value.Item2 == null || !value.Item2.OfType<object>().Any())
+            if (newValue == null || newValue.Count() == 0)
             {
                 this.Classes.Add(":empty");
             }
@@ -113,26 +122,25 @@ namespace Perspex.Controls
                 this.Classes.Remove(":empty");
             }
 
-            inpc = value.Item2 as INotifyPropertyChanged;
+            incc = newValue as INotifyCollectionChanged;
 
-            if (inpc != null)
+            if (incc != null)
             {
-                inpc.PropertyChanged += this.ItemsPropertyChanged;
+                incc.CollectionChanged -= this.ItemsCollectionChanged;
             }
         }
 
-        private void ItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.PropertyName == "Count")
+            var collection = sender as ICollection;
+
+            if (collection.Count == 0)
             {
-                if (((IList)sender).Count == 0)
-                {
-                    this.Classes.Add(":empty");
-                }
-                else
-                {
-                    this.Classes.Remove(":empty");
-                }
+                this.Classes.Add(":empty");
+            }
+            else
+            {
+                this.Classes.Remove(":empty");
             }
         }
     }
