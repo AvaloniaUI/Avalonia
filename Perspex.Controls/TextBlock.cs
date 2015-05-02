@@ -133,6 +133,7 @@ namespace Perspex.Controls
                 context.FillRectange(background, new Rect(this.Bounds.Size));
             }
 
+            this.FormattedText.Constraint = this.Bounds.Size;
             context.DrawText(this.Foreground,  new Point(), this.FormattedText);
         }
 
