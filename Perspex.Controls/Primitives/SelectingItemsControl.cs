@@ -17,7 +17,7 @@ namespace Perspex.Controls.Primitives
     public abstract class SelectingItemsControl : ItemsControl
     {
         public static readonly PerspexProperty<int> SelectedIndexProperty =
-            PerspexProperty.Register<SelectingItemsControl, int>("SelectedIndex", coerce: CoerceSelectedIndex);
+            PerspexProperty.Register<SelectingItemsControl, int>("SelectedIndex", defaultValue: -1, coerce: CoerceSelectedIndex);
 
         public static readonly PerspexProperty<object> SelectedItemProperty =
             PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem", coerce: CoerceSelectedItem);
