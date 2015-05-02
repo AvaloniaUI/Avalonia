@@ -6,6 +6,7 @@
 
 namespace Perspex.Direct2D1
 {
+    using System;
     using System.Linq;
     using SharpDX;
     using SharpDX.Direct2D1;
@@ -132,13 +133,17 @@ namespace Perspex.Direct2D1
 
         public static DWrite.TextAlignment ToDirect2D(this Perspex.Media.TextAlignment alignment)
         {
-            if (alignment == Perspex.Media.TextAlignment.Left)
-                return DWrite.TextAlignment.Leading;
-
-            if (alignment == Perspex.Media.TextAlignment.Centered)
-                return DWrite.TextAlignment.Center;
-
-            return DWrite.TextAlignment.Trailing;
+            switch (alignment)
+            {
+                case Perspex.Media.TextAlignment.Left:
+                    return DWrite.TextAlignment.Leading;
+                case Perspex.Media.TextAlignment.Centered:
+                    return DWrite.TextAlignment.Center;
+                case Perspex.Media.TextAlignment.Right:
+                    return DWrite.TextAlignment.Trailing;
+                default:
+                    throw new InvalidOperationException("Invalid TextAlignment");
+            }
         }
     }
 }
