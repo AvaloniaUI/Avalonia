@@ -25,7 +25,10 @@ namespace Perspex.Controls.Primitives.UnitTests
             var target = new Target
             {
                 Items = items,
+                Template = this.Template(),
             };
+
+            target.ApplyTemplate();
 
             Assert.False(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
@@ -43,9 +46,9 @@ namespace Perspex.Controls.Primitives.UnitTests
             var target = new Target
             {
                 Items = items,
+                Template = this.Template(),
             };
 
-            target.Template = this.Template();
             target.ApplyTemplate();
             target.SelectedItem = items[1];
 
@@ -65,13 +68,41 @@ namespace Perspex.Controls.Primitives.UnitTests
             var target = new Target
             {
                 Items = items,
+                Template = this.Template(),
             };
 
-            target.Template = this.Template();
             target.ApplyTemplate();
             target.SelectedItem = items[1];
 
+            Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_To_Not_Present_Item_Should_Clear_Selection()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[1];
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedItem = new Item();
+
+            Assert.Equal(null, target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]
@@ -86,9 +117,9 @@ namespace Perspex.Controls.Primitives.UnitTests
             var target = new Target
             {
                 Items = items,
+                Template = this.Template(),
             };
 
-            target.Template = this.Template();
             target.ApplyTemplate();
             target.SelectedIndex = 1;
 
@@ -107,13 +138,39 @@ namespace Perspex.Controls.Primitives.UnitTests
             var target = new Target
             {
                 Items = items,
+                Template = this.Template(),
             };
 
-            target.Template = this.Template();
             target.ApplyTemplate();
             target.SelectedIndex = 2;
 
             Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_With_No_Items_Should_Not_Throw_Exception()
+        {
+            var target = new Target
+            {
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_With_No_Items_Should_Not_Throw_Exception()
+        {
+            var target = new Target
+            {
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = new Item();
         }
 
         [Fact]

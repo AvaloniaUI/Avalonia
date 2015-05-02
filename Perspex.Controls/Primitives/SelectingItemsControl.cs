@@ -18,7 +18,7 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.Register<SelectingItemsControl, int>("SelectedIndex", coerce: CoerceSelectedIndex);
 
         public static readonly PerspexProperty<object> SelectedItemProperty =
-            PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem");
+            PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem", coerce: CoerceSelectedItem);
 
         static SelectingItemsControl()
         {
@@ -30,7 +30,16 @@ namespace Perspex.Controls.Primitives
 
                 if (control != null)
                 {
-                    control.SelectedItem = control.Items.ElementAt((int)x.NewValue);
+                    var index = (int)x.NewValue;
+
+                    if (index == -1)
+                    {
+                        control.SelectedItem = null;
+                    }
+                    else
+                    {
+                        control.SelectedItem = control.Items.ElementAt((int)x.NewValue);
+                    }
                 }
             });
 
@@ -156,8 +165,32 @@ namespace Perspex.Controls.Primitives
                 }
                 else if (value > -1)
                 {
-                    var count = control.Items.Count();
-                    return Math.Min(value, count - 1);
+                    var items = control.Items;
+
+                    if (items != null)
+                    {
+                        var count = items.Count();
+                        return Math.Min(value, count - 1);
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        private static object CoerceSelectedItem(PerspexObject o, object value)
+        {
+            var control = o as SelectingItemsControl;
+
+            if (control != null)
+            {
+                if (value != null && (control.Items == null || control.Items.IndexOf(value) == -1))
+                {
+                    return -1;
                 }
             }
 
@@ -189,7 +222,12 @@ namespace Perspex.Controls.Primitives
             }
             else
             {
-                this.SelectedIndex = this.Items.IndexOf(selected);
+                var items = this.Items;
+
+                if (items != null)
+                {
+                    this.SelectedIndex = items.IndexOf(selected);
+                }
             }
         }
     }
