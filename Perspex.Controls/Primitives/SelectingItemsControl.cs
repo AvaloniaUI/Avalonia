@@ -11,6 +11,8 @@ namespace Perspex.Controls.Primitives
     using Perspex.VisualTree;
     using System;
     using System.Linq;
+    using System.Collections;
+    using System.Collections.Specialized;
 
     public abstract class SelectingItemsControl : ItemsControl
     {
@@ -64,6 +66,42 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(SelectedItemProperty); }
             set { this.SetValue(SelectedItemProperty, value); }
+        }
+
+        protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
+        {
+            base.ItemsChanged(oldValue, newValue);
+
+            var selected = this.SelectedItem;
+
+            if (selected != null)
+            {
+                if (newValue == null || !newValue.Contains(selected))
+                {
+                    this.SelectedItem = null;
+                }
+            }
+        }
+
+        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.ItemsCollectionChanged(sender, e);
+
+            var selected = this.SelectedItem;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Reset:
+                    if (e.OldItems.Contains(selected))
+                    {
+                        this.SelectedItem = null;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    this.SelectedItem = this.Items.IndexOf(selected);
+                    break;
+            }
         }
 
         protected virtual void MoveSelection(FocusNavigationDirection direction)

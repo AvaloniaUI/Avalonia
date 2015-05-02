@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Primitives.UnitTests
 {
+    using Perspex.Collections;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
@@ -171,6 +172,60 @@ namespace Perspex.Controls.Primitives.UnitTests
 
             target.ApplyTemplate();
             target.SelectedItem = new Item();
+        }
+
+        [Fact]
+        public void Clearing_Items_Should_Clear_Selection()
+        {
+            var items = new PerspexList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.Items = null;
+
+            Assert.Equal(null, target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item_Should_Clear_Selection()
+        {
+            var items = new PerspexList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            items.RemoveAt(1);
+
+            Assert.Equal(null, target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]

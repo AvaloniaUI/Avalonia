@@ -13,6 +13,11 @@ namespace Perspex.Controls.Utils
 
     internal static class IEnumerableUtils
     {
+        public static bool Contains(this IEnumerable items, object item)
+        {
+            return items.IndexOf(item) != -1;
+        }
+
         public static int Count(this IEnumerable items)
         {
             Contract.Requires<ArgumentNullException>(items != null);

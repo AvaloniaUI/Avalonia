@@ -126,7 +126,7 @@ namespace Perspex.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged -= this.ItemsCollectionChanged;
+                incc.CollectionChanged += this.ItemsCollectionChanged;
             }
         }
 
