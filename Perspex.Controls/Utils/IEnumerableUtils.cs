@@ -30,7 +30,7 @@ namespace Perspex.Controls.Utils
             }
             else
             {
-                return items.Cast<object>().Count();
+                return Enumerable.Count(items.Cast<object>());
             }
         }
 
