@@ -11,15 +11,29 @@ namespace Perspex.Controls.Primitives
     using System.Linq;
     using Perspex.Input;
     using Perspex.VisualTree;
+    using System.Collections.Generic;
 
     public abstract class SelectingItemsControl : ItemsControl
     {
+        public static readonly PerspexProperty<int> SelectedIndexProperty =
+            PerspexProperty.Register<SelectingItemsControl, int>("SelectedIndex", coerce: CoerceSelectedIndex);
+
         public static readonly PerspexProperty<object> SelectedItemProperty =
             PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem");
 
         static SelectingItemsControl()
         {
             FocusableProperty.OverrideDefaultValue(typeof(SelectingItemsControl), true);
+
+            SelectedIndexProperty.Changed.Subscribe(x =>
+            {
+                var control = x.Sender as SelectingItemsControl;
+
+                if (control != null)
+                {
+                    control.SelectedItem = control.GetItemAt((int)x.NewValue);
+                }
+            });
 
             SelectedItemProperty.Changed.Subscribe(x =>
             {
@@ -32,6 +46,12 @@ namespace Perspex.Controls.Primitives
             });
         }
 
+        public int SelectedIndex
+        {
+            get { return this.GetValue(SelectedIndexProperty); }
+            set { this.SetValue(SelectedIndexProperty, value); }
+        }
+
         public object SelectedItem
         {
             get { return this.GetValue(SelectedItemProperty); }
@@ -40,7 +60,13 @@ namespace Perspex.Controls.Primitives
 
         protected static int GetIndexOfItem(IEnumerable items, object item)
         {
-            if (items != null)
+            var list = items as IList;
+
+            if (list != null)
+            {
+                return list.IndexOf(item);
+            }
+            else if (items != null)
             {
                 int index = 0;
 
@@ -58,9 +84,30 @@ namespace Perspex.Controls.Primitives
             return -1;
         }
 
+        protected static object GetItemAt(IEnumerable items, int index)
+        {
+            var list = items as IList;
+
+            if (list != null)
+            {
+                return list[index];
+            }
+            else if (items != null)
+            {
+                return items.Cast<object>().ElementAt(index);
+            }
+
+            return -1;
+        }
+
         protected int GetIndexOfItem(object item)
         {
             return GetIndexOfItem(this.Items, item);
+        }
+
+        protected object GetItemAt(int index)
+        {
+            return GetItemAt(this.Items, index);
         }
 
         protected virtual void MoveSelection(FocusNavigationDirection direction)
@@ -150,6 +197,26 @@ namespace Perspex.Controls.Primitives
             e.Handled = true;
         }
 
+        private static int CoerceSelectedIndex(PerspexObject o, int value)
+        {
+            var control = o as SelectingItemsControl;
+
+            if (control != null)
+            {
+                if (value < -1)
+                {
+                    return -1;
+                }
+                else if (value > -1)
+                {
+                    var count = control.Items.Cast<object>().Count();
+                    return Math.Min(value, count - 1);
+                }
+            }
+
+            return value;
+        }
+
         private void SelectedItemChanged(object selected)
         {
             var containers = this.ItemContainerGenerator.GetAll()
@@ -167,6 +234,15 @@ namespace Perspex.Controls.Primitives
             foreach (var item in containers)
             {
                 item.IsSelected = item == selectedContainer;
+            }
+
+            if (selected == null)
+            {
+                this.SelectedIndex = -1;
+            }
+            else
+            {
+                this.SelectedIndex = GetIndexOfItem(selected);
             }
         }
     }

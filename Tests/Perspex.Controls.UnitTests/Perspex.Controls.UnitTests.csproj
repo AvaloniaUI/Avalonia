@@ -92,7 +92,7 @@
     <Compile Include="DropDownTests.cs" />
     <Compile Include="ScrollContentPresenterTests.cs" />
     <Compile Include="ScrollViewerTests.cs" />
-    <Compile Include="SelectingItemsControlTests.cs" />
+    <Compile Include="Primitives\SelectingItemsControlTests.cs" />
     <Compile Include="ListBoxTests.cs" />
     <Compile Include="ItemsControlTests.cs" />
     <Compile Include="ContentControlTests.cs" />
