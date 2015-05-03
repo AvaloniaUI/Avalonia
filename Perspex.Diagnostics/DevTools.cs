@@ -70,16 +70,19 @@ namespace Perspex.Diagnostics
                 }
             };
 
-            var detailsView = new ContentControl
+            var detailsView = new ScrollViewer
             {
-                DataTemplates = new DataTemplates
+                Content = new ContentControl
                 {
-                    new DataTemplate<ControlDetails>(CreateDetailsView),
-                },
-                [!ContentControl.ContentProperty] = treeView[!TreeView.SelectedItemProperty]
+                    DataTemplates = new DataTemplates
+                    {
+                        new DataTemplate<ControlDetails>(CreateDetailsView),
+                    },
+                    [!ContentControl.ContentProperty] = treeView[!TreeView.SelectedItemProperty]
                     .Where(x => x != null)
                     .Cast<TreeNode>()
                     .Select(x => new ControlDetails(x.Control)),
+                },
                 [Grid.ColumnProperty] = 2,
             };
 
