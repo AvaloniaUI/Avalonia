@@ -75,7 +75,7 @@ namespace Perspex.Collections
                     {
                         var ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            this.source,
+                            this.source.ToList(),
                             0);
                         this.CollectionChanged(this, ev);
                     }
