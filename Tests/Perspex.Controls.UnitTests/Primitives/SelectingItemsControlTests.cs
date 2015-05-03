@@ -15,6 +15,24 @@ namespace Perspex.Controls.Primitives.UnitTests
     public class SelectingItemsControlTests
     {
         [Fact]
+        public void SelectedIndex_Should_Initially_Be_Minus_1()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Item_IsSelected_Should_Initially_Be_False()
         {
             var items = new[]

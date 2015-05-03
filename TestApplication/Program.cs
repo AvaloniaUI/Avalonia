@@ -106,8 +106,9 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            //LogManager.Enable(new TestLogger());
+            LogManager.Enable(new TestLogger());
             //LogManager.Instance.LogLayoutMessages = true;
+            LogManager.Instance.LogPropertyMessages = true;
 
             // The version of ReactiveUI currently included is for WPF and so expects a WPF
             // dispatcher. This makes sure it's initialized.
@@ -176,14 +177,14 @@ namespace TestApplication
 
             DevTools.Attach(window);
 
-            var renderer = ((IRenderRoot)window).Renderer;
-            var last = renderer.RenderCount;
-            DispatcherTimer.Run(() =>
-            {
-                fps.Text = "FPS: " + (renderer.RenderCount - last);
-                last = renderer.RenderCount;
-                return true;
-            }, TimeSpan.FromSeconds(1));
+            //var renderer = ((IRenderRoot)window).Renderer;
+            //var last = renderer.RenderCount;
+            //DispatcherTimer.Run(() =>
+            //{
+            //    fps.Text = "FPS: " + (renderer.RenderCount - last);
+            //    last = renderer.RenderCount;
+            //    return true;
+            //}, TimeSpan.FromSeconds(1));
 
             window.Show();
             Application.Current.Run(window);
@@ -383,6 +384,8 @@ namespace TestApplication
 
         private static TabItem ListsTab()
         {
+            ListBox listBox;
+
             return new TabItem
             {
                 Header = "Lists",
@@ -411,10 +414,16 @@ namespace TestApplication
                             Id = "treeView",
                             Items = treeData,
                         },
-                        new ListBox
+                        (listBox = new ListBox
                         {
                             Items = listBoxData,
+                            SelectedIndex = 0,
                             MaxHeight = 300,
+                        }),
+                        new Deck
+                        {
+                            Items = listBoxData,
+                            [!Deck.SelectedItemProperty] = listBox[!ListBox.SelectedItemProperty],
                         },
                         new DropDown
                         {
@@ -565,20 +574,20 @@ namespace TestApplication
                 }
             };
 
-            var start = Animate.Stopwatch.Elapsed;
-            var degrees = Animate.Timer
-                .Select(x =>
-                {
-                    var elapsed = (x - start).TotalSeconds;
-                    var cycles = elapsed / 4;
-                    var progress = cycles % 1;
-                    return 360.0 * progress;
-                });
+            //var start = Animate.Stopwatch.Elapsed;
+            //var degrees = Animate.Timer
+            //    .Select(x =>
+            //    {
+            //        var elapsed = (x - start).TotalSeconds;
+            //        var cycles = elapsed / 4;
+            //        var progress = cycles % 1;
+            //        return 360.0 * progress;
+            //    });
 
-            border1.RenderTransform.Bind(
-                RotateTransform.AngleProperty,
-                degrees,
-                BindingPriority.Animation);
+            //border1.RenderTransform.Bind(
+            //    RotateTransform.AngleProperty,
+            //    degrees,
+            //    BindingPriority.Animation);
 
             return result;
         }

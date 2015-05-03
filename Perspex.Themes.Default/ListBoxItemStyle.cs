@@ -6,14 +6,11 @@
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
     using Perspex.Controls;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Controls.Shapes;
-    using Perspex.Styling;
     using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
+    using Perspex.Media;
+    using Perspex.Styling;
+    using System.Linq;
 
     public class ListBoxItemStyle : Styles
     {
