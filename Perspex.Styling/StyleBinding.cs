@@ -7,7 +7,7 @@
 namespace Perspex.Styling
 {
     using System;
-    using System.Reactive.Subjects;
+    using System.Reactive;
 
     /// <summary>
     /// Provides an observable for a style.
@@ -17,7 +17,7 @@ namespace Perspex.Styling
     /// a bool. When the activator produces true, this observable will produce <see cref="Value"/>.
     /// When the activator produces false it will produce <see cref="PerspexProperty.UnsetValue"/>.
     /// </remarks>
-    internal class StyleBinding : IObservable<object>, IObservableDescription
+    internal class StyleBinding : ObservableBase<object>, IDescription
     {
         /// <summary>
         /// The activator.
@@ -63,7 +63,7 @@ namespace Perspex.Styling
         /// </summary>
         /// <param name="observer">The observer.</param>
         /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
-        public IDisposable Subscribe(IObserver<object> observer)
+        protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
             Contract.Requires<NullReferenceException>(observer != null);
             return this.activator.Subscribe(
