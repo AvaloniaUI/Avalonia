@@ -6,9 +6,10 @@
 
 namespace Perspex
 {
+    using Perspex.Diagnostics;
     using System;
     using System.Collections.Generic;
-    using System.Reactive.Disposables;
+    using System.Linq;
     using System.Reactive.Subjects;
     using System.Reflection;
 
@@ -21,8 +22,8 @@ namespace Perspex
     /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
-    /// has a higher priority. Each time the value changes to a distinct new value, the
-    /// <see cref="Changed"/> observable is fired with the old and new values.
+    /// has a higher priority. Each time the value changes, the <see cref="Changed"/> observable is 
+    /// fired with the old and new values.
     /// </remarks>
     public class PriorityValue
     {
@@ -37,9 +38,9 @@ namespace Perspex
         private Type valueType;
 
         /// <summary>
-        /// The currently registered binding entries.
+        /// The currently registered bindings organised by priority.
         /// </summary>
-        private LinkedList<BindingEntry> bindings = new LinkedList<BindingEntry>();
+        private Dictionary<int, PriorityLevel> levels = new Dictionary<int, PriorityLevel>();
 
         /// <summary>
         /// The changed observable.
@@ -51,6 +52,9 @@ namespace Perspex
         /// </summary>
         private object value;
 
+        /// <summary>
+        /// The function used to coerce the value, if any.
+        /// </summary>
         private Func<object, object> coerce;
 
         /// <summary>
@@ -69,8 +73,11 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Fired whenever the current <see cref="Value"/> changes to a new distinct value.
+        /// Fired whenever the current <see cref="Value"/> changes.
         /// </summary>
+        /// <remarks>
+        /// The old and new values may be the same, this class does not check for distinct values.
+        /// </remarks>
         public IObservable<Tuple<object, object>> Changed
         {
             get { return this.changed; }
@@ -136,110 +143,37 @@ namespace Perspex
         /// </returns>
         public IDisposable Add(IObservable<object> binding, int priority)
         {
-            BindingEntry entry = new BindingEntry();
-            LinkedListNode<BindingEntry> insert = this.bindings.First;
-
-            while (insert != null && insert.Value.Priority < priority)
-            {
-                insert = insert.Next;
-            }
-
-            if (insert == null)
-            {
-                this.bindings.AddLast(entry);
-            }
-            else
-            {
-                this.bindings.AddBefore(insert, entry);
-            }
-
-            entry.Start(binding, priority, this.EntryChanged, this.EntryCompleted);
-
-            return Disposable.Create(() =>
-            {
-                this.Remove(entry);
-            });
+            return this.GetLevel(priority).Add(binding);
         }
 
         /// <summary>
-        /// Adds a new binding, replacing all those of the same priority.
+        /// Sets the direct value for a specified priority.
         /// </summary>
-        /// <param name="binding">The binding.</param>
-        /// <param name="priority">The binding priority.</param>
-        /// <returns>
-        /// A disposable that will remove the binding.
-        /// </returns>
-        public IDisposable Replace(IObservable<object> binding, int priority)
+        /// <param name="value">The value.</param>
+        /// <param name="priority">The priority</param>
+        public void SetDirectValue(object value, int priority)
         {
-            BindingEntry entry = new BindingEntry();
-            LinkedListNode<BindingEntry> insert = this.bindings.First;
-
-            while (insert != null && insert.Value.Priority < priority)
-            {
-                insert = insert.Next;
-            }
-
-            while (insert != null && insert.Value.Priority == priority)
-            {
-                LinkedListNode<BindingEntry> next = insert.Next;
-                insert.Value.Dispose();
-                this.bindings.Remove(insert);
-                insert = next;
-            }
-
-            if (insert == null)
-            {
-                this.bindings.AddLast(entry);
-            }
-            else
-            {
-                this.bindings.AddBefore(insert, entry);
-            }
-
-            entry.Start(binding, priority, this.EntryChanged, this.EntryCompleted);
-
-            return Disposable.Create(() =>
-            {
-                this.Remove(entry);
-            });
-        }
-
-        /// <summary>
-        /// Removes all bindings with the specified priority.
-        /// </summary>
-        /// <param name="priority">The priority.</param>
-        public void Clear(int priority)
-        {
-            LinkedListNode<BindingEntry> item = this.bindings.First;
-            bool removed = false;
-
-            while (item != null && item.Value.Priority <= priority)
-            {
-                LinkedListNode<BindingEntry> next = item.Next;
-
-                if (item.Value.Priority == priority)
-                {
-                    item.Value.Dispose();
-                    this.bindings.Remove(item);
-                    removed = true;
-                }
-
-                item = next;
-            }
-
-            if (removed && priority <= this.ValuePriority)
-            {
-                this.UpdateValue();
-            }
+            this.GetLevel(priority).DirectValue = value;
         }
 
         /// <summary>
         /// Gets the currently active bindings on this object.
         /// </summary>
         /// <returns>An enumerable collection of bindings.</returns>
-        public IEnumerable<BindingEntry> GetBindings()
+        public IEnumerable<IPerspexPropertyBinding> GetBindings()
         {
-            return this.bindings;
+            foreach (var level in this.levels)
+            {
+                foreach (var binding in level.Value.Bindings)
+                {
+                    yield return new PerspexPropertyBinding
+                    {
+                        Description = binding.Description,
+                        Priority = level.Key,
+                        Value = binding.Value,
+                    };
+                }
+            }
         }
 
         /// <summary>
@@ -249,8 +183,53 @@ namespace Perspex
         {
             if (this.coerce != null)
             {
-                this.SetValue(this.Value, this.ValuePriority);
+                PriorityLevel level;
+
+                if (this.levels.TryGetValue(this.ValuePriority, out level))
+                {
+                    this.UpdateValue(level.Value, level.Priority);
+                }
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="PriorityLevel"/> with the specified priority, creating it if it
+        /// doesn't already exist.
+        /// </summary>
+        /// <param name="priority">The priority.</param>
+        /// <returns>The priority level.</returns>
+        private PriorityLevel GetLevel(int priority)
+        {
+            PriorityLevel result;
+
+            if (!this.levels.TryGetValue(priority, out result))
+            {
+                result = new PriorityLevel(priority, this.ValueChanged);
+                this.levels.Add(priority, result);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Updates the current <see cref="Value"/> and notifies all subscibers.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
+        /// <param name="priority">The priority level that the value came from.</param>
+        private void UpdateValue(object value, int priority)
+        {
+            this.VerifyValidValue(value);
+
+            var old = this.value;
+
+            if (this.coerce != null)
+            {
+                value = this.coerce(value);
+            }
+
+            this.ValuePriority = priority;
+            this.value = value;
+            this.changed.OnNext(Tuple.Create(old, this.value));
         }
 
         /// <summary>
@@ -270,164 +249,29 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Called when a binding's value changes.
+        /// Called when the value for a priority level changes.
         /// </summary>
         /// <param name="changed">The changed entry.</param>
-        private void EntryChanged(BindingEntry changed)
+        private void ValueChanged(PriorityLevel level)
         {
-            if (changed.Priority <= this.ValuePriority)
+            if (level.Priority <= this.ValuePriority)
             {
-                this.UpdateValue();
-            }
-        }
-
-        /// <summary>
-        /// Called when a binding completes.
-        /// </summary>
-        /// <param name="changed">The completed entry.</param>
-        private void EntryCompleted(BindingEntry entry)
-        {
-            this.Remove(entry);
-        }
-
-        /// <summary>
-        /// Sets the current value and notifies all observers.
-        /// </summary>
-        /// <param name="value">The new value.</param>
-        /// <param name="priority">The priority of the binding which produced the value.</param>
-        private void SetValue(object value, int priority)
-        {
-            VerifyValidValue(value);
-
-            if (this.coerce != null)
-            {
-                value = this.coerce(value);
-                VerifyValidValue(value);
-            }
-
-            object old = this.value;
-
-            this.ValuePriority = priority;
-
-            if (!EqualityComparer<object>.Default.Equals(old, value))
-            {
-                this.value = value;
-                this.changed.OnNext(Tuple.Create(old, value));
-            }
-        }
-
-        /// <summary>
-        /// Removes the specified binding entry and updates the current value.
-        /// </summary>
-        /// <param name="entry">The binding entry to remove.</param>
-        private void Remove(BindingEntry entry)
-        {
-            entry.Dispose();
-            this.bindings.Remove(entry);
-            this.UpdateValue();
-        }
-
-        /// <summary>
-        /// Updates the current value.
-        /// </summary>
-        private void UpdateValue()
-        {
-            foreach (BindingEntry entry in this.bindings)
-            {
-                if (entry.Value != PerspexProperty.UnsetValue)
+                if (level.Value != PerspexProperty.UnsetValue)
                 {
-                    this.SetValue(entry.Value, entry.Priority);
-                    return;
+                    this.UpdateValue(level.Value, level.Priority);
                 }
-            }
-
-            this.SetValue(PerspexProperty.UnsetValue, int.MaxValue);
-        }
-
-        /// <summary>
-        /// A registered binding.
-        /// </summary>
-        public class BindingEntry : IDisposable
-        {
-            /// <summary>
-            /// The binding subscription.
-            /// </summary>
-            private IDisposable subscription;
-
-            /// <summary>
-            /// Gets a description of the binding.
-            /// </summary>
-            public string Description
-            {
-                get;
-                private set;
-            }
-
-            /// <summary>
-            /// The priority of the binding.
-            /// </summary>
-            public int Priority
-            {
-                get;
-                private set;
-            }
-
-            /// <summary>
-            /// The current value of the binding.
-            /// </summary>
-            public object Value
-            {
-                get;
-                private set;
-            }
-
-            /// <summary>
-            /// Starts listening to the specified binding.
-            /// </summary>
-            /// <param name="binding">The binding.</param>
-            /// <param name="priority">The binding priority.</param>
-            /// <param name="changed">Called when the binding changes.</param>
-            /// <param name="completed">Called when the binding completes.</param>
-            public void Start(
-                IObservable<object> binding,
-                int priority,
-                Action<BindingEntry> changed,
-                Action<BindingEntry> completed)
-            {
-                Contract.Requires<ArgumentNullException>(binding != null);
-                Contract.Requires<ArgumentNullException>(changed != null);
-                Contract.Requires<ArgumentNullException>(completed != null);
-
-                if (this.subscription != null)
+                else
                 {
-                    throw new Exception("PriorityValue.Entry.Start() called more than once.");
-                }
-
-                this.Priority = priority;
-                this.Value = PerspexProperty.UnsetValue;
-
-                if (binding is IDescription)
-                {
-                    this.Description = ((IDescription)binding).Description;
-                }
-
-                this.subscription = binding.Subscribe(
-                    value =>
+                    foreach (var i in this.levels.Values.OrderBy(x => x.Priority))
                     {
-                        this.Value = value;
-                        changed(this);
-                    },
-                    () => completed(this));
-            }
+                        if (i.Value != PerspexProperty.UnsetValue)
+                        {
+                            this.UpdateValue(i.Value, i.Priority);
+                            return;
+                        }
+                    }
 
-            /// <summary>
-            /// Ends the binding subscription.
-            /// </summary>
-            public void Dispose()
-            {
-                if (this.subscription != null)
-                {
-                    this.subscription.Dispose();
+                    this.UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
                 }
             }
         }

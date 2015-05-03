@@ -35,6 +35,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Binding.cs" />
+    <Compile Include="Diagnostics\PerspexPropertyBinding.cs" />
+    <Compile Include="Diagnostics\IPerspexPropertyBinding.cs" />
+    <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IPerspexList.cs" />
     <Compile Include="Collections\PerspexReadOnlyListView.cs" />
     <Compile Include="Collections\PerspexList.cs" />
@@ -51,6 +54,7 @@
     <Compile Include="Platform\IPlatformHandle.cs" />
     <Compile Include="Platform\IPlatformThreadingInterface.cs" />
     <Compile Include="Platform\PlatformHandle.cs" />
+    <Compile Include="PriorityLevel.cs" />
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\Dispatcher.cs" />

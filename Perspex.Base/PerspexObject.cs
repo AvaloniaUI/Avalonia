@@ -14,6 +14,8 @@ namespace Perspex
     using System.Reflection;
     using Perspex.Diagnostics;
     using Splat;
+    using System.Reactive.Disposables;
+
 
     /// <summary>
     /// The priority of a binding.
@@ -497,11 +499,14 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        public void SetValue(PerspexProperty property, object value)
+        /// <param name="priority">The priority of the value.</param>
+        public void SetValue(
+            PerspexProperty property, 
+            object value, 
+            BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            const int Priority = (int)BindingPriority.LocalValue;
             PriorityValue v;
 
             if (!this.IsRegistered(property))
@@ -539,7 +544,7 @@ namespace Perspex
                 this.GetHashCode(),
                 value);
 
-            v.Replace(Observable.Never<object>().StartWith(value), Priority);
+            v.SetDirectValue(value, (int)priority);
         }
 
         /// <summary>
@@ -548,11 +553,15 @@ namespace Perspex
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        public void SetValue<T>(PerspexProperty<T> property, T value)
+        /// <param name="priority">The priority of the value.</param>
+        public void SetValue<T>(
+            PerspexProperty<T> property, 
+            T value, 
+            BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.SetValue((PerspexProperty)property, value);
+            this.SetValue((PerspexProperty)property, value, priority);
         }
 
         /// <summary>
@@ -588,14 +597,7 @@ namespace Perspex
                 this.GetHashCode(),
                 description != null ? description.Description : "[Anonymous]");
 
-            if (priority == BindingPriority.LocalValue)
-            {
-                return v.Replace(source, (int)priority);
-            }
-            else
-            {
-                return v.Add(source, (int)priority);
-            }
+            return v.Add(source, (int)priority);
         }
 
         /// <summary>
@@ -624,20 +626,22 @@ namespace Perspex
         /// <param name="property">The property on this object.</param>
         /// <param name="source">The source object.</param>
         /// <param name="sourceProperty">The property on the source object.</param>
+        /// <param name="priority">The priority of the binding.</param>
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         /// <remarks>
-        /// The binding is first carried out from <paramref name="source"/> to this. Two-way 
-        /// bindings are always at the LocalValue priority.
+        /// The binding is first carried out from <paramref name="source"/> to this.
         /// </remarks>
-        public void BindTwoWay(
+        public IDisposable BindTwoWay(
             PerspexProperty property, 
             PerspexObject source, 
-            PerspexProperty sourceProperty)
+            PerspexProperty sourceProperty,
+            BindingPriority priority = BindingPriority.LocalValue)
         {
-            source.GetObservable(sourceProperty).Subscribe(x => this.SetValue(property, x));
-            this.GetObservable(property).Subscribe(x => source.SetValue(sourceProperty, x));
+            return new CompositeDisposable(
+                this.Bind(property, source.GetObservable(sourceProperty)),
+                source.Bind(sourceProperty, this.GetObservable(property)));
         }
 
         /// <summary>

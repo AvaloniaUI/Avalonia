@@ -45,6 +45,63 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Setting_Direct_Value_Should_Override_Binding()
+        {
+            var target = new PriorityValue("Test", typeof(string));
+
+            target.Add(this.Single("foo"), 0);
+            target.SetDirectValue("bar", 0);
+
+            Assert.Equal("bar", target.Value);
+        }
+
+        [Fact]
+        public void Binding_Firing_Should_Override_Direct_Value()
+        {
+            var target = new PriorityValue("Test", typeof(string));
+            var source = new BehaviorSubject<object>("initial");
+
+            target.Add(source, 0);
+            Assert.Equal("initial", target.Value);
+            target.SetDirectValue("first", 0);
+            Assert.Equal("first", target.Value);
+            source.OnNext("second");
+            Assert.Equal("second", target.Value);
+        }
+
+        [Fact]
+        public void Non_Active_Binding_Firing_Should_Not_Override_Direct_Value()
+        {
+            var target = new PriorityValue("Test", typeof(string));
+            var nonActive = new BehaviorSubject<object>("na");
+            var source = new BehaviorSubject<object>("initial");
+
+            target.Add(nonActive, 0);
+            target.Add(source, 0);
+            Assert.Equal("initial", target.Value);
+            target.SetDirectValue("first", 0);
+            Assert.Equal("first", target.Value);
+            nonActive.OnNext("second");
+            Assert.Equal("first", target.Value);
+        }
+
+        [Fact]
+        public void Binding_Completing_Should_Revert_To_Direct_Value()
+        {
+            var target = new PriorityValue("Test", typeof(string));
+            var source = new BehaviorSubject<object>("initial");
+
+            target.Add(source, 0);
+            Assert.Equal("initial", target.Value);
+            target.SetDirectValue("first", 0);
+            Assert.Equal("first", target.Value);
+            source.OnNext("second");
+            Assert.Equal("second", target.Value);
+            source.OnCompleted();
+            Assert.Equal("first", target.Value);
+        }
+
+        [Fact]
         public void Binding_With_Lower_Priority_Has_Precedence()
         {
             var target = new PriorityValue("Test", typeof(string));
@@ -151,16 +208,30 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Completing_A_Binding_Should_Revert_To_Next_Value()
+        public void Completing_A_Binding_Should_Revert_To_Previous_Binding()
         {
             var target = new PriorityValue("Test", typeof(string));
-            var subject = new BehaviorSubject<object>("bar");
+            var source = new BehaviorSubject<object>("bar");
 
             target.Add(this.Single("foo"), 0);
-            target.Add(subject, 0);
+            target.Add(source, 0);
 
             Assert.Equal("bar", target.Value);
-            subject.OnCompleted();
+            source.OnCompleted();
+            Assert.Equal("foo", target.Value);
+        }
+
+        [Fact]
+        public void Completing_A_Binding_Should_Revert_To_Lower_Priority()
+        {
+            var target = new PriorityValue("Test", typeof(string));
+            var source = new BehaviorSubject<object>("bar");
+
+            target.Add(this.Single("foo"), 1);
+            target.Add(source, 0);
+
+            Assert.Equal("bar", target.Value);
+            source.OnCompleted();
             Assert.Equal("foo", target.Value);
         }
 
@@ -176,6 +247,47 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(2, target.GetBindings().Count());
             subject.OnCompleted();
             Assert.Equal(1, target.GetBindings().Count());
+        }
+
+        [Fact]
+        public void Direct_Value_Should_Be_Coerced()
+        {
+            var target = new PriorityValue("Test", typeof(int), x => Math.Min((int)x, 10));
+
+            target.SetDirectValue(5, 0);
+            Assert.Equal(5, target.Value);
+            target.SetDirectValue(15, 0);
+            Assert.Equal(10, target.Value);
+        }
+
+        [Fact]
+        public void Bound_Value_Should_Be_Coerced()
+        {
+            var target = new PriorityValue("Test", typeof(int), x => Math.Min((int)x, 10));
+            var source = new Subject<object>();
+
+            target.Add(source, 0);
+            source.OnNext(5);
+            Assert.Equal(5, target.Value);
+            source.OnNext(15);
+            Assert.Equal(10, target.Value);
+        }
+
+        [Fact]
+        public void Coerce_Should_ReCoerce_Value()
+        {
+            var max = 10;
+            var target = new PriorityValue("Test", typeof(int), x => Math.Min((int)x, max));
+            var source = new Subject<object>();
+
+            target.Add(source, 0);
+            source.OnNext(5);
+            Assert.Equal(5, target.Value);
+            source.OnNext(15);
+            Assert.Equal(10, target.Value);
+            max = 12;
+            target.Coerce();
+            Assert.Equal(12, target.Value);
         }
 
         /// <summary>
