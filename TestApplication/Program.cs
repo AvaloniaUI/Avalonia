@@ -155,7 +155,7 @@ namespace TestApplication
                                 LayoutTab(),
                                 AnimationsTab(),
                             },
-                            Transition = new CrossFadeTransition(TimeSpan.FromSeconds(0.25)),
+                            Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
                             [Grid.ColumnSpanProperty] = 2,
                         },
                         (fps = new TextBlock
@@ -178,14 +178,14 @@ namespace TestApplication
 
             DevTools.Attach(window);
 
-            //var renderer = ((IRenderRoot)window).Renderer;
-            //var last = renderer.RenderCount;
-            //DispatcherTimer.Run(() =>
-            //{
-            //    fps.Text = "FPS: " + (renderer.RenderCount - last);
-            //    last = renderer.RenderCount;
-            //    return true;
-            //}, TimeSpan.FromSeconds(1));
+            var renderer = ((IRenderRoot)window).Renderer;
+            var last = renderer.RenderCount;
+            DispatcherTimer.Run(() =>
+            {
+                fps.Text = "FPS: " + (renderer.RenderCount - last);
+                last = renderer.RenderCount;
+                return true;
+            }, TimeSpan.FromSeconds(1));
 
             window.Show();
             Application.Current.Run(window);

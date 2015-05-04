@@ -25,7 +25,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
 
-        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
+        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<TabControl>();
 
         private PerspexReadOnlyListView<ILogical> logicalChildren = 
@@ -60,7 +60,7 @@ namespace Perspex.Controls
             set { this.SetValue(SelectedTabProperty, value); }
         }
 
-        public IVisibilityTransition Transition
+        public IPageTransition Transition
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }

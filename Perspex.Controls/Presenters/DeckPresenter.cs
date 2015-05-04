@@ -9,6 +9,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Animation;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Utils;
     using Perspex.Input;
     using Perspex.Styling;
     using System;
@@ -29,7 +30,7 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<object> SelectedItemProperty =
             SelectingItemsControl.SelectedItemProperty.AddOwner<DeckPresenter>();
 
-        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
+        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<DeckPresenter>();
 
         private bool createdPanel;
@@ -69,7 +70,7 @@ namespace Perspex.Controls.Presenters
             private set;
         }
 
-        public IVisibilityTransition Transition
+        public IPageTransition Transition
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }
@@ -125,21 +126,25 @@ namespace Perspex.Controls.Presenters
                 var generator = this.GetGenerator();
                 Control from = null;
                 Control to = null;
+                int fromIndex = -1;
+                int toIndex = -1;
 
                 if (value.Item1 != null)
                 {
                     from = generator.GetContainerForItem(value.Item1);
+                    fromIndex = this.Items.IndexOf(value.Item1);
                 }
 
                 if (value.Item2 != null)
                 {
                     to = generator.Generate(new[] { value.Item2 }).Single();
                     this.Panel.Children.Add(to);
+                    toIndex = this.Items.IndexOf(value.Item2);
                 }
 
                 if (this.Transition != null)
                 {
-                    await this.Transition.Start(from, to);
+                    await this.Transition.Start(from, to, fromIndex < toIndex);
                 }
 
                 if (from != null)

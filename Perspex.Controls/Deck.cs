@@ -18,8 +18,8 @@ namespace Perspex.Controls
     /// </summary>
     public class Deck : SelectingItemsControl
     {
-        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
-            PerspexProperty.Register<Deck, IVisibilityTransition>("Transition");
+        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
+            PerspexProperty.Register<Deck, IPageTransition>("Transition");
 
         private static readonly ItemsPanelTemplate PanelTemplate = 
             new ItemsPanelTemplate(() => new Panel());
@@ -29,7 +29,7 @@ namespace Perspex.Controls
             ItemsPanelProperty.OverrideDefaultValue(typeof(Deck), PanelTemplate);
         }
 
-        public IVisibilityTransition Transition
+        public IPageTransition Transition
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }

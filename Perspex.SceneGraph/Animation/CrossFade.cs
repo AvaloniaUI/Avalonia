@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="CrossFadeTransition.cs" company="Steven Kirk">
+// <copyright file="CrossFade.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -8,20 +8,19 @@ namespace Perspex.Animation
 {
     using System;
     using System.Collections.Generic;
-    using System.Reactive.Linq;
     using System.Reactive.Threading.Tasks;
     using System.Threading.Tasks;
 
-    public class CrossFadeTransition : IVisibilityTransition
+    public class CrossFade : IPageTransition
     {
-        public CrossFadeTransition(TimeSpan duration)
+        public CrossFade(TimeSpan duration)
         {
             this.Duration = duration;
         }
 
         public TimeSpan Duration { get; }
 
-        public async Task Start(Visual from, Visual to)
+        public async Task Start(Visual from, Visual to, bool forward)
         {
             var tasks = new List<Task>();
 

@@ -45,8 +45,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Animation\CrossFadeTransition.cs" />
-    <Compile Include="Animation\IVisibilityTransition.cs" />
+    <Compile Include="Animation\PageSlide.cs" />
+    <Compile Include="Animation\CrossFade.cs" />
+    <Compile Include="Animation\IPageTransition.cs" />
     <Compile Include="ILogical.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Media\TranslateTransform.cs" />
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\EllipseGeometry.cs" />
