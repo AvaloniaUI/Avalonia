@@ -169,6 +169,16 @@ namespace Perspex.Cairo.Media
         }
 
         /// <summary>
+        /// Pushes an opacity value.
+        /// </summary>
+        /// <param name="opacity">The opacity.</param>
+        /// <returns>A disposable used to undo the opacity.</returns>
+        public IDisposable PushOpacity(double opacity)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
