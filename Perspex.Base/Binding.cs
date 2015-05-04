@@ -44,7 +44,7 @@ namespace Perspex
             set;
         }
 
-        public string Description => string.Format("{0}.{1}", this.Source.GetType().Name, this.Property.Name);
+        public string Description => string.Format("{0}.{1}", this.Source?.GetType().Name, this.Property.Name);
 
         public static Binding operator !(Binding binding)
         {
