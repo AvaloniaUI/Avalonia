@@ -112,20 +112,8 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
-        }
-
-        protected override void OnGotFocus(GotFocusEventArgs e)
-        {
-            base.OnGotFocus(e);
-            this.presenter.ShowCaret();
-        }
-
-        protected override void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-            this.SelectionStart = 0;
-            this.SelectionEnd = 0;
-            this.presenter.HideCaret();
+            this.presenter.GotFocus += PresenterGotFocus;
+            this.presenter.LostFocus += PresenterLostFocus;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -450,6 +438,18 @@ namespace Perspex.Controls
             }
 
             return i;
+        }
+
+        private void PresenterGotFocus(object sender, RoutedEventArgs e)
+        {
+            this.presenter.ShowCaret();
+        }
+
+        private void PresenterLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SelectionStart = 0;
+            this.SelectionEnd = 0;
+            this.presenter.HideCaret();
         }
     }
 }
