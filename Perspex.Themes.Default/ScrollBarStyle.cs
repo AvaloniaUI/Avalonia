@@ -66,9 +66,9 @@ namespace Perspex.Themes.Default
                 Background = Brushes.Silver,
                 Content = new Track
                 {
+                    Id = "track",
                     [~Track.MinimumProperty] = control[~ScrollBar.MinimumProperty],
                     [~Track.MaximumProperty] = control[~ScrollBar.MaximumProperty],
-                    [~~Track.ValueProperty] = control[~ScrollBar.ValueProperty],
                     [~Track.ViewportSizeProperty] = control[~ScrollBar.ViewportSizeProperty],
                     [~Track.OrientationProperty] = control[~ScrollBar.OrientationProperty],
                     Thumb = new Thumb

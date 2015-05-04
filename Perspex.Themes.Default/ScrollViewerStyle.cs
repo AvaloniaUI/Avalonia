@@ -31,7 +31,9 @@ namespace Perspex.Themes.Default
 
         private Control Template(ScrollViewer control)
         {
-            return new Grid
+            ScrollBar vert;
+
+            var result = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions
                 {
@@ -59,23 +61,27 @@ namespace Perspex.Themes.Default
                         Id = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
+                        //[~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
                     },
-                    new ScrollBar
+                    (vert = new ScrollBar
                     {
                         Id = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        //[~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
-                    },
+                    }),
                 },
             };
+
+            vert[~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty];
+
+            return result;
         }
     }
 }
