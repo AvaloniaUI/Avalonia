@@ -48,6 +48,7 @@
     <Compile Include="Popup.cs" />
     <Compile Include="IDataTemplate.cs" />
     <Compile Include="Presenters\IPresenter.cs" />
+    <Compile Include="Presenters\DeckPresenter.cs" />
     <Compile Include="Primitives\AdornerDecorator.cs" />
     <Compile Include="Primitives\AdornerLayer.cs" />
     <Compile Include="RadioButton.cs" />

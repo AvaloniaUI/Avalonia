@@ -24,30 +24,17 @@ namespace Perspex.Themes.Default
                         new Setter(Deck.TemplateProperty, ControlTemplate.Create<Deck>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<Deck>().Descendent().Is<DeckItem>())
-                {
-                    Setters = new[]
-                    {
-                        new Setter(Control.IsVisibleProperty, false),
-                    },
-                },
-                new Style(x => x.OfType<Deck>().Descendent().Is<DeckItem>().Class(":selected"))
-                {
-                    Setters = new[]
-                    {
-                        new Setter(Control.IsVisibleProperty, true),
-                    },
-                }
             });
         }
 
         private Control Template(Deck control)
         {
-            return new ItemsPresenter
+            return new DeckPresenter
             {
                 Id = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
+                [~DeckPresenter.SelectedItemProperty] = control[~Deck.SelectedItemProperty],
             };
         }
     }
