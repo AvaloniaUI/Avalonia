@@ -48,26 +48,29 @@ namespace Perspex.Input
 
         public void SetFocusedElement(IInputElement element, bool keyboardNavigated)
         {
-            var interactive = this.FocusedElement as IInteractive;
-
-            if (interactive != null)
+            if (element != this.FocusedElement)
             {
-                interactive.RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = InputElement.LostFocusEvent,
-                });
-            }
+                var interactive = this.FocusedElement as IInteractive;
 
-            this.FocusedElement = element;
-            interactive = element as IInteractive;
-
-            if (interactive != null)
-            {
-                interactive.RaiseEvent(new GotFocusEventArgs
+                if (interactive != null)
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
-                    KeyboardNavigated = keyboardNavigated,
-                });
+                    interactive.RaiseEvent(new RoutedEventArgs
+                    {
+                        RoutedEvent = InputElement.LostFocusEvent,
+                    });
+                }
+
+                this.FocusedElement = element;
+                interactive = element as IInteractive;
+
+                if (interactive != null)
+                {
+                    interactive.RaiseEvent(new GotFocusEventArgs
+                    {
+                        RoutedEvent = InputElement.GotFocusEvent,
+                        KeyboardNavigated = keyboardNavigated,
+                    });
+                }
             }
         }
 
