@@ -316,13 +316,15 @@ namespace Perspex
                     }
                 };
 
+                observer.OnNext(this.GetValue(property));
+
                 this.PropertyChanged += handler;
 
                 return Disposable.Create(() =>
                 {
                     this.PropertyChanged -= handler;
                 });
-            }, this.GetObservableDescription(property)).StartWith(this.GetValue(property));
+            }, this.GetObservableDescription(property));
         }
 
         /// <summary>
