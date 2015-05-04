@@ -29,6 +29,12 @@ namespace Perspex.Controls.Presenters
             this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
         }
 
+        public ItemContainerGenerator ItemContainerGenerator
+        {
+            get;
+            private set;
+        }
+
         public IEnumerable Items
         {
             get { return this.GetValue(ItemsProperty); }
@@ -81,14 +87,13 @@ namespace Perspex.Controls.Presenters
 
         private IItemContainerGenerator GetGenerator()
         {
-            ItemsControl i = this.TemplatedParent as ItemsControl;
-
-            if (i == null)
+            if (this.ItemContainerGenerator == null)
             {
-                throw new InvalidOperationException("ItemsPresenter must be part of an ItemsControl template.");
+                ItemsControl i = this.TemplatedParent as ItemsControl;
+                this.ItemContainerGenerator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
             }
 
-            return i.ItemContainerGenerator;
+            return this.ItemContainerGenerator;
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

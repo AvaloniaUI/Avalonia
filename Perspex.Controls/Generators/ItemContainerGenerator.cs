@@ -20,7 +20,7 @@ namespace Perspex.Controls.Generators
 
         private ItemContainerGeneratorState state;
 
-        public ItemContainerGenerator(ItemsControl owner)
+        public ItemContainerGenerator(Control owner)
         {
             this.Owner = owner;
         }
@@ -48,7 +48,7 @@ namespace Perspex.Controls.Generators
             }
         }
 
-        protected ItemsControl Owner
+        protected Control Owner
         {
             get;
             private set;

@@ -90,6 +90,7 @@
   <ItemGroup>
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="DropDownTests.cs" />
+    <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="ScrollContentPresenterTests.cs" />
     <Compile Include="ScrollViewerTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests.cs" />
