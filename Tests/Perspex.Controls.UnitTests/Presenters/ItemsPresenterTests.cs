@@ -72,6 +72,32 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             Assert.Equal(2, target.Panel.GetVisualChildren().Count());
         }
+
+        [Fact]
+        public void MemberSelector_Should_Be_Applied_To_Items()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] 
+                {
+                    new Item { Name = "foo" },
+                    new Item { Name = "bar" },
+                },
+                MemberSelector = x => ((Item)x).Name,
+            };
+
+            target.ApplyTemplate();
+
+            var itemText = target.ItemContainerGenerator.GetAll()
+                .Select(x => ((TextBlock)x.Item2).Text)
+                .ToList();
+
+            Assert.Equal(new[] { "foo", "bar" }, itemText);
+        }
+
+        private class Item
+        {
+            public string Name { get; set; }
+        }
     }
 }
-

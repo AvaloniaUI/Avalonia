@@ -68,8 +68,10 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            var presenter = this.GetTemplateChild<ContentPresenter>("contentPresenter");
-            this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
+            base.OnTemplateApplied();
+
+            var deck = this.GetTemplateChild<Deck>("deck");
+            this.logicalChildren.Source = ((ILogical)deck).LogicalChildren;
         }
     }
 }

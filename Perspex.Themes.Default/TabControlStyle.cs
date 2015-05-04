@@ -12,6 +12,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Styling;
+    using Perspex.Controls.Templates;
 
     public class TabControlStyle : Styles
     {
@@ -46,10 +47,15 @@ namespace Perspex.Themes.Default
                         [~TabStrip.ItemsProperty] = control[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedItemProperty] = control[~~TabControl.SelectedItemProperty],
                     },
-                    new ContentPresenter
+                    new Deck
                     {
-                        Id = "contentPresenter",
-                        [~ContentPresenter.ContentProperty] = control[~TabControl.SelectedContentProperty],
+                        Id = "deck",
+                        DataTemplates = new DataTemplates
+                        {
+                            new DataTemplate<TabItem>(x => control.MaterializeDataTemplate(x.Content)),
+                        },
+                        [~Deck.ItemsProperty] = control[~TabControl.ItemsProperty],
+                        [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],
                         [Grid.RowProperty] = 1,
                     }
                 }

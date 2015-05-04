@@ -16,7 +16,10 @@ namespace Perspex.Input
         {
             Contract.Requires<NullReferenceException>(element != null);
 
-            if (element.Bounds.Contains(p) && element.IsHitTestVisible && element.IsEnabledCore)
+            if (element.Bounds.Contains(p) && 
+                element.IsVisible &&
+                element.IsHitTestVisible && 
+                element.IsEnabledCore)
             {
                 p -= element.Bounds.Position;
 

@@ -13,6 +13,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Controls.Generators;
     using Perspex.Input;
     using Perspex.Styling;
+    using Perspex.Controls.Templates;
 
     public class ItemsPresenter : Control, IVisual, IPresenter, ITemplatedControl
     {
@@ -22,11 +23,17 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
+        public static readonly PerspexProperty<Func<object, object>> MemberSelectorProperty =
+            ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenter>();
+
         private bool createdPanel;
+
+        private DataTemplate memberSelectorTemplate;
 
         public ItemsPresenter()
         {
             this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
+            this.GetObservable(MemberSelectorProperty).Subscribe(this.MemberSelectorChanged);
         }
 
         public ItemContainerGenerator ItemContainerGenerator
@@ -45,6 +52,12 @@ namespace Perspex.Controls.Presenters
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
+        }
+
+        public Func<object, object> MemberSelector
+        {
+            get { return this.GetValue(MemberSelectorProperty); }
+            set { this.SetValue(MemberSelectorProperty, value); }
         }
 
         public Panel Panel
@@ -151,6 +164,25 @@ namespace Perspex.Controls.Presenters
                 }
 
                 this.InvalidateMeasure();
+            }
+        }
+
+        private void MemberSelectorChanged(Func<object, object> selector)
+        {
+            if (this.memberSelectorTemplate != null)
+            {
+                this.DataTemplates.Remove(this.memberSelectorTemplate);
+                this.memberSelectorTemplate = null;
+            }
+
+            if (selector != null)
+            {
+                var templatedParent = this.TemplatedParent as Control;
+
+                this.memberSelectorTemplate = new DataTemplate(o => 
+                    templatedParent?.MaterializeDataTemplate(selector(o)) ??
+                    DataTemplate.Default.Build(selector(o)));
+                this.DataTemplates.Add(this.memberSelectorTemplate);
             }
         }
     }

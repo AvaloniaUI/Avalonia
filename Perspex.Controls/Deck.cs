@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
+    using Perspex.Input;
 
     /// <summary>
     /// A selecting items control that displays a single item that fills the control.
@@ -39,6 +40,16 @@ namespace Perspex.Controls
             {
                 this.SelectedIndex = 0;
             }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            // Ignore key presses.
+        }
+
+        protected override void OnPointerPressed(PointerPressEventArgs e)
+        {
+            // Ignore pointer presses.
         }
     }
 }
