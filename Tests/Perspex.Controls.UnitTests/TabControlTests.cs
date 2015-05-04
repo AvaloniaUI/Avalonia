@@ -152,10 +152,11 @@ namespace Perspex.Controls.UnitTests
                         [~TabStrip.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedTabProperty] = parent[~~TabControl.SelectedTabProperty]
                     },
-                    new ContentPresenter
+                    new Deck
                     {
-                        Id = "contentPresenter",
-                        [~ContentPresenter.ContentProperty] = parent[~TabControl.SelectedContentProperty],
+                        Id = "deck",
+                        [~Deck.ItemsProperty] = parent[~TabControl.ItemsProperty],
+                        [!Deck.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
                     }
                 }
             };
