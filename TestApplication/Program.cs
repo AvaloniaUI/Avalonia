@@ -155,6 +155,7 @@ namespace TestApplication
                                 LayoutTab(),
                                 AnimationsTab(),
                             },
+                            Transition = new CrossFadeTransition(TimeSpan.FromSeconds(0.25)),
                             [Grid.ColumnSpanProperty] = 2,
                         },
                         (fps = new TextBlock

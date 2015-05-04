@@ -13,6 +13,8 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Primitives;
     using Perspex.Styling;
     using Perspex.Controls.Templates;
+    using Perspex.Animation;
+    using System;
 
     public class TabControlStyle : Styles
     {
@@ -56,6 +58,7 @@ namespace Perspex.Themes.Default
                         },
                         [~Deck.ItemsProperty] = control[~TabControl.ItemsProperty],
                         [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],
+                        [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [Grid.RowProperty] = 1,
                     }
                 }

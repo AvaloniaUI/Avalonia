@@ -35,6 +35,7 @@ namespace Perspex.Themes.Default
                 [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
                 [~DeckPresenter.SelectedItemProperty] = control[~Deck.SelectedItemProperty],
+                [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }
     }

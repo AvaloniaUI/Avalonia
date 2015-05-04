@@ -41,6 +41,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Animation.cs" />
     <Compile Include="Animate.cs" />
     <Compile Include="Animatable.cs" />
     <Compile Include="AnimationExtensions.cs" />

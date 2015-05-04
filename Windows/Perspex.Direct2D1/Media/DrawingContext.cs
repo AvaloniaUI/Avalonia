@@ -192,6 +192,37 @@ namespace Perspex.Direct2D1.Media
         }
 
         /// <summary>
+        /// Pushes an opacity value.
+        /// </summary>
+        /// <param name="opacity">The opacity.</param>
+        /// <returns>A disposable used to undo the opacity.</returns>
+        public IDisposable PushOpacity(double opacity)
+        {
+            if (opacity < 1)
+            {
+                var parameters = new LayerParameters
+                {
+                    ContentBounds = RectangleF.Infinite,
+                    MaskTransform = Matrix3x2.Identity,
+                    Opacity = (float)opacity,
+                };
+
+                var layer = new Layer(this.renderTarget);
+
+                this.renderTarget.PushLayer(ref parameters, layer);
+
+                return Disposable.Create(() =>
+                {
+                    this.renderTarget.PopLayer();
+                });
+            }
+            else
+            {
+                return Disposable.Empty;
+            }
+        }
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>

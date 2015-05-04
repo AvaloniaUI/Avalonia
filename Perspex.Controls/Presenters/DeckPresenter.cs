@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using Perspex.Animation;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
@@ -13,7 +14,9 @@ namespace Perspex.Controls.Presenters
     using System;
     using System.Collections;
     using System.Collections.Specialized;
+    using System.Linq;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     public class DeckPresenter : Control, IVisual, IPresenter, ITemplatedControl
     {
@@ -25,6 +28,9 @@ namespace Perspex.Controls.Presenters
 
         public static readonly PerspexProperty<object> SelectedItemProperty =
             SelectingItemsControl.SelectedItemProperty.AddOwner<DeckPresenter>();
+
+        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
+            Deck.TransitionProperty.AddOwner<DeckPresenter>();
 
         private bool createdPanel;
 
@@ -61,6 +67,12 @@ namespace Perspex.Controls.Presenters
         {
             get;
             private set;
+        }
+
+        public IVisibilityTransition Transition
+        {
+            get { return this.GetValue(TransitionProperty); }
+            set { this.SetValue(TransitionProperty, value); }
         }
 
         public override sealed void ApplyTemplate()
@@ -106,21 +118,34 @@ namespace Perspex.Controls.Presenters
             return this.ItemContainerGenerator;
         }
 
-        private void SelectedItemChanged(Tuple<object, object> value)
+        private async void SelectedItemChanged(Tuple<object, object> value)
         {
             if (this.createdPanel)
             {
                 var generator = this.GetGenerator();
+                Control from = null;
+                Control to = null;
 
                 if (value.Item1 != null)
                 {
-                    generator.RemoveAll();
-                    this.Panel.Children.Clear();
+                    from = generator.GetContainerForItem(value.Item1);
                 }
 
                 if (value.Item2 != null)
                 {
-                    this.Panel.Children.AddRange(generator.Generate(new[] { value.Item2 }));
+                    to = generator.Generate(new[] { value.Item2 }).Single();
+                    this.Panel.Children.Add(to);
+                }
+
+                if (this.Transition != null)
+                {
+                    await this.Transition.Start(from, to);
+                }
+
+                if (from != null)
+                {
+                    this.Panel.Children.Remove(from);
+                    generator.Remove(new[] { value.Item1 });
                 }
             }
         }

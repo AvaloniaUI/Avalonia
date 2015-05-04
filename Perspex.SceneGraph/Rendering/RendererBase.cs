@@ -64,7 +64,9 @@ namespace Perspex.Rendering
         /// <param name="context">The drawing context.</param>
         protected virtual void Render(IVisual visual, IDrawingContext context, Matrix translation, Matrix transform)
         {
-            if (visual.IsVisible && visual.Opacity > 0)
+            var opacity = visual.Opacity;
+
+            if (visual.IsVisible && opacity > 0)
             {
                 // Translate any existing transform into this controls coordinate system.
                 Matrix offset = Matrix.Translation(visual.Bounds.Position);
@@ -84,6 +86,7 @@ namespace Perspex.Rendering
                 var m = transform * translation;
                 var d = context.PushTransform(m);
 
+                using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
                 {
                     visual.Render(context);

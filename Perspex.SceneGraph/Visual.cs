@@ -49,6 +49,7 @@ namespace Perspex
         static Visual()
         {
             AffectsRender(IsVisibleProperty);
+            AffectsRender(OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
         }
 

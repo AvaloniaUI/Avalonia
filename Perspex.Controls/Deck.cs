@@ -11,18 +11,28 @@ namespace Perspex.Controls
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
     using Perspex.Input;
+    using Perspex.Animation;
 
     /// <summary>
     /// A selecting items control that displays a single item that fills the control.
     /// </summary>
     public class Deck : SelectingItemsControl
     {
+        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
+            PerspexProperty.Register<Deck, IVisibilityTransition>("Transition");
+
         private static readonly ItemsPanelTemplate PanelTemplate = 
             new ItemsPanelTemplate(() => new Panel());
 
         static Deck()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Deck), PanelTemplate);
+        }
+
+        public IVisibilityTransition Transition
+        {
+            get { return this.GetValue(TransitionProperty); }
+            set { this.SetValue(TransitionProperty, value); }
         }
 
         protected override ItemContainerGenerator CreateItemContainerGenerator()

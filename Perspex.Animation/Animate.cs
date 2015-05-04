@@ -96,8 +96,8 @@ namespace Perspex.Animation
         /// <param name="finish">The value of the property at the end of the animation.</param>
         /// <param name="easing">The easing function to use.</param>
         /// <param name="duration">The duration of the animation.</param>
-        /// <returns>An <see cref="IDisposable"/> that can be used to stop the animation.</returns>
-        public static IDisposable Property(
+        /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
+        public static Animation Property(
             PerspexObject target,
             PerspexProperty property,
             object start,
@@ -106,7 +106,7 @@ namespace Perspex.Animation
             TimeSpan duration)
         {
             var o = GetTimer(duration).Select(progress => easing.Ease(progress, start, finish));
-            return target.Bind(property, o, BindingPriority.Animation);
+            return new Animation(o, target.Bind(property, o, BindingPriority.Animation));
         }
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace Perspex.Animation
         /// <param name="finish">The value of the property at the end of the animation.</param>
         /// <param name="easing">The easing function to use.</param>
         /// <param name="duration">The duration of the animation.</param>
-        /// <returns>An <see cref="IDisposable"/> that can be used to stop the animation.</returns>
-        public static IDisposable Property<T>(
+        /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
+        public static Animation<T> Property<T>(
             PerspexObject target,
             PerspexProperty<T> property, 
             T start, 
@@ -129,7 +129,7 @@ namespace Perspex.Animation
             TimeSpan duration)
         {
             var o = GetTimer(duration).Select(progress => easing.Ease(progress, start, finish));
-            return target.Bind(property, o, BindingPriority.Animation);
+            return new Animation<T>(o, target.Bind(property, o, BindingPriority.Animation));
         }
     }
 }

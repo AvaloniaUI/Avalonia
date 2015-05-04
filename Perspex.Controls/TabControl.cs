@@ -15,6 +15,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.Input;
+    using Perspex.Animation;
 
     public class TabControl : SelectingItemsControl, ILogical
     {
@@ -23,6 +24,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
+
+        public static readonly PerspexProperty<IVisibilityTransition> TransitionProperty =
+            Deck.TransitionProperty.AddOwner<TabControl>();
 
         private PerspexReadOnlyListView<ILogical> logicalChildren = 
             new PerspexReadOnlyListView<ILogical>();
@@ -54,6 +58,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(SelectedTabProperty); }
             set { this.SetValue(SelectedTabProperty, value); }
+        }
+
+        public IVisibilityTransition Transition
+        {
+            get { return this.GetValue(TransitionProperty); }
+            set { this.SetValue(TransitionProperty, value); }
         }
 
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
