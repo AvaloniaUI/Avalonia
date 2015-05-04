@@ -112,8 +112,8 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
-            this.presenter.GotFocus += PresenterGotFocus;
-            this.presenter.LostFocus += PresenterLostFocus;
+            this.presenter.GotFocus += this.PresenterGotFocus;
+            this.presenter.LostFocus += this.PresenterLostFocus;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
