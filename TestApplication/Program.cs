@@ -569,20 +569,20 @@ namespace TestApplication
                 }
             };
 
-            //var start = Animate.Stopwatch.Elapsed;
-            //var degrees = Animate.Timer
-            //    .Select(x =>
-            //    {
-            //        var elapsed = (x - start).TotalSeconds;
-            //        var cycles = elapsed / 4;
-            //        var progress = cycles % 1;
-            //        return 360.0 * progress;
-            //    });
+            var start = Animate.Stopwatch.Elapsed;
+            var degrees = Animate.Timer
+                .Select(x =>
+                {
+                    var elapsed = (x - start).TotalSeconds;
+                    var cycles = elapsed / 4;
+                    var progress = cycles % 1;
+                    return 360.0 * progress;
+                });
 
-            //border1.RenderTransform.Bind(
-            //    RotateTransform.AngleProperty,
-            //    degrees,
-            //    BindingPriority.Animation);
+            border1.RenderTransform.Bind(
+                RotateTransform.AngleProperty,
+                degrees,
+                BindingPriority.Animation);
 
             return result;
         }
