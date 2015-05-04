@@ -45,7 +45,6 @@ namespace Perspex.Themes.Default
                         Id = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
-                        [~ItemsPresenter.MemberSelectorProperty] = control[~ListBox.MemberSelectorProperty],
                     }
                 }
             };

@@ -420,11 +420,6 @@ namespace TestApplication
                             SelectedIndex = 0,
                             MaxHeight = 300,
                         }),
-                        new Deck
-                        {
-                            Items = listBoxData,
-                            [!Deck.SelectedItemProperty] = listBox[!ListBox.SelectedItemProperty],
-                        },
                         new DropDown
                         {
                             Items = listBoxData,

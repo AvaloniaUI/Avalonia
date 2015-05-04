@@ -30,9 +30,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
-        public static readonly PerspexProperty<Func<object, object>> MemberSelectorProperty =
-            PerspexProperty.Register<ItemsControl, Func<object, object>>("MemberSelector");
-
         private ItemContainerGenerator itemContainerGenerator;
 
         private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
@@ -75,12 +72,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
-        }
-
-        public Func<object, object> MemberSelector
-        {
-            get { return this.GetValue(MemberSelectorProperty); }
-            set { this.SetValue(MemberSelectorProperty, value); }
         }
 
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
