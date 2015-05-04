@@ -219,7 +219,7 @@ namespace Perspex
                         this.Bind(binding.Property, value, binding.Priority);
                         break;
                     case BindingMode.OneTime:
-                        this.SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property));
+                        this.SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
                         break;
                     case BindingMode.OneWayToSource:
                         sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
