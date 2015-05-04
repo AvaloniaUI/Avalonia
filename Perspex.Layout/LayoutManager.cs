@@ -183,7 +183,10 @@ namespace Perspex.Layout
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            parent.Measure(parent.PreviousMeasure.Value, true);
+                            if (parent.GetVisualRoot() == this.Root)
+                            {
+                                parent.Measure(parent.PreviousMeasure.Value, true);
+                            }
                         }
                     }
                 }
@@ -229,7 +232,10 @@ namespace Perspex.Layout
                                 control = control.GetVisualParent<ILayoutable>();
                             }
 
-                            control.Arrange(control.PreviousArrange.Value, true);
+                            if (control.GetVisualRoot() == this.Root)
+                            {
+                                control.Arrange(control.PreviousArrange.Value, true);
+                            }
 
                             if (this.toMeasure.Count > 0)
                             {
