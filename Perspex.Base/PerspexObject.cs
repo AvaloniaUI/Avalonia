@@ -15,7 +15,7 @@ namespace Perspex
     using Perspex.Diagnostics;
     using Splat;
     using System.Reactive.Disposables;
-
+    using Perspex.Reactive;
 
     /// <summary>
     /// The priority of a binding.
@@ -306,7 +306,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return Observable.Create<object>(observer =>
+            return new PerspexObservable<object>(observer =>
             {
                 EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
                 {
@@ -316,21 +316,23 @@ namespace Perspex
                     }
                 };
 
+                observer.OnNext(this.GetValue(property));
+
                 this.PropertyChanged += handler;
 
-                return () =>
+                return Disposable.Create(() =>
                 {
                     this.PropertyChanged -= handler;
-                };
-            }).StartWith(this.GetValue(property));
+                });
+            }, this.GetObservableDescription(property));
         }
 
         /// <summary>
         /// Gets an observable for a <see cref="PerspexProperty"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The property type.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <returns>An observable.</returns>
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
         {
             Contract.Requires<NullReferenceException>(property != null);
@@ -346,7 +348,7 @@ namespace Perspex
         /// <returns></returns>
         public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
         {
-            return Observable.Create<Tuple<T, T>>(observer =>
+            return new PerspexObservable<Tuple<T, T>>(observer =>
             {
                 EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
                 {
@@ -358,11 +360,11 @@ namespace Perspex
 
                 this.PropertyChanged += handler;
 
-                return () =>
+                return Disposable.Create(() =>
                 {
                     this.PropertyChanged -= handler;
-                };
-            });
+                });
+            }, this.GetObservableDescription(property));
         }
 
         /// <summary>
@@ -757,6 +759,16 @@ namespace Perspex
             {
                 this.RaisePropertyChanged(e.Property, e.OldValue, e.NewValue, BindingPriority.LocalValue);
             }
+        }
+
+        /// <summary>
+        /// Gets a description of a property that van be used in observables.
+        /// </summary>
+        /// <param name="property">The property</param>
+        /// <returns>The description.</returns>
+        private string GetObservableDescription(PerspexProperty property)
+        {
+            return string.Format("{0}.{1}", this.GetType().Name, property.Name);
         }
 
         /// <summary>

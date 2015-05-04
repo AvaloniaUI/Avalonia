@@ -24,6 +24,8 @@ namespace Perspex
             this.Index = index;
         }
 
+        public IObservable<object> Observable { get; private set; }
+
         /// <summary>
         /// Gets a description of the binding.
         /// </summary>
@@ -67,6 +69,7 @@ namespace Perspex
                 throw new Exception("PriorityValue.Entry.Start() called more than once.");
             }
 
+            this.Observable = binding;
             this.Value = PerspexProperty.UnsetValue;
 
             if (binding is IDescription)
