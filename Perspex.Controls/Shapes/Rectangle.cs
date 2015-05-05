@@ -20,7 +20,8 @@ namespace Perspex.Controls.Shapes
             {
                 if (this.geometry == null || this.geometrySize != this.Bounds.Size)
                 {
-                    this.geometry = new RectangleGeometry(new Rect(0, 0, this.Bounds.Size.Width, this.Bounds.Size.Height));
+                    var rect = new Rect(this.Bounds.Size).Deflate(this.StrokeThickness);
+                    this.geometry = new RectangleGeometry(rect);
                     this.geometrySize = this.Bounds.Size;
                 }
 

@@ -51,7 +51,7 @@ namespace Perspex.Controls
             Brush background = this.Background;
             Brush borderBrush = this.BorderBrush;
             double borderThickness = this.BorderThickness;
-            Rect rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness / 2);
+            Rect rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness);
 
             if (background != null)
             {
