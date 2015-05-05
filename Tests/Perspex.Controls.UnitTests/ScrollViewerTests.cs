@@ -13,6 +13,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Controls.Templates;
     using Perspex.VisualTree;
     using Xunit;
+    using Perspex.Layout;
 
     public class ScrollViewerTests
     {

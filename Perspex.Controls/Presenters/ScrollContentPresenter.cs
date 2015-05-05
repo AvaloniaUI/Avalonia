@@ -95,7 +95,7 @@ namespace Perspex.Controls.Presenters
 
             if (child != null)
             {
-                child.Arrange(new Rect((Point)(-this.Offset), child.DesiredSize));
+                child.Arrange(new Rect((Point)(-this.Offset), finalSize));
                 return finalSize;
             }
 
