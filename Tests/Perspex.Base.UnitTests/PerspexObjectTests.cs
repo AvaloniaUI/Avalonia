@@ -172,6 +172,14 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Of_Integer_On_Double_Property_Works()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue(Class2.FlobProperty, 4);
+        }
+
+        [Fact]
         public void SetValue_Causes_Coercion()
         {
             Class1 target = new Class1();
@@ -614,6 +622,9 @@ namespace Perspex.Base.UnitTests
         {
             public static readonly PerspexProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar", "bardefault");
+
+            public static readonly PerspexProperty<double> FlobProperty =
+                PerspexProperty.Register<Class2, double>("Flob");
 
             static Class2()
             {
