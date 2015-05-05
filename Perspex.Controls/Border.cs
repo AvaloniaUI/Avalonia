@@ -87,8 +87,10 @@ namespace Perspex.Controls
                 content.Measure(availableSize.Deflate(padding));
                 return content.DesiredSize.Inflate(padding);
             }
-
-            return new Size();
+            else
+            {
+                return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DecoratorTests.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// <copyright file="BorderTests.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -10,28 +10,28 @@ namespace Perspex.Controls.UnitTests
     using System.Linq;
     using Xunit;
 
-    public class DecoratorTests
+    public class BorderTests
     {
         [Fact]
         public void Setting_Content_Should_Set_Child_Controls_Parent()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
 
-            decorator.Content = child;
+            target.Content = child;
 
-            Assert.Equal(child.Parent, decorator);
-            Assert.Equal(((ILogical)child).LogicalParent, decorator);
+            Assert.Equal(child.Parent, target);
+            Assert.Equal(((ILogical)child).LogicalParent, target);
         }
 
         [Fact]
         public void Clearing_Content_Should_Clear_Child_Controls_Parent()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
 
-            decorator.Content = child;
-            decorator.Content = null;
+            target.Content = child;
+            target.Content = null;
 
             Assert.Null(child.Parent);
             Assert.Null(((ILogical)child).LogicalParent);
@@ -40,37 +40,37 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Content_Control_Should_Appear_In_LogicalChildren()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
 
-            decorator.Content = child;
+            target.Content = child;
 
-            Assert.Equal(new[] { child }, ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
         }
 
         [Fact]
         public void Clearing_Content_Should_Remove_From_LogicalChildren()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
 
-            decorator.Content = child;
-            decorator.Content = null;
+            target.Content = child;
+            target.Content = null;
 
-            Assert.Equal(new ILogical[0], ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
         }
 
         [Fact]
         public void Setting_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
             var called = false;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => 
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => 
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            decorator.Content = child;
+            target.Content = child;
 
             Assert.True(called);
         }
@@ -78,16 +78,16 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Clearing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child = new Control();
             var called = false;
 
-            decorator.Content = child;
+            target.Content = child;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
 
-            decorator.Content = null;
+            target.Content = null;
 
             Assert.True(called);
         }
@@ -95,32 +95,33 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Changing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var decorator = new Decorator();
+            var target = new Border();
             var child1 = new Control();
             var child2 = new Control();
             var called = false;
 
-            decorator.Content = child1;
+            target.Content = child1;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Replace;
 
-            decorator.Content = child2;
+            target.Content = child2;
 
             Assert.True(called);
         }
 
         [Fact]
-        public void Measure_Should_Return_Padding_When_No_Child_Present()
+        public void Measure_Should_Return_BorderThickness_Plus_Padding_When_No_Child_Present()
         {
-            var target = new Decorator
+            var target = new Border
             {
-                Padding = new Thickness(8),
+                Padding = new Thickness(6),
+                BorderThickness = 4,
             };
 
             target.Measure(new Size(100, 100));
 
-            Assert.Equal(new Size(16, 16), target.DesiredSize);
+            Assert.Equal(new Size(20, 20), target.DesiredSize);
         }
     }
 }

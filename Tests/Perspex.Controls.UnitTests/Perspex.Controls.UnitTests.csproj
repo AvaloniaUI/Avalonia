@@ -89,6 +89,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ContentPresenterTests.cs" />
+    <Compile Include="BorderTests.cs" />
     <Compile Include="DropDownTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="ScrollContentPresenterTests.cs" />
