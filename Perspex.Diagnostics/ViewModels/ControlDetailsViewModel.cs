@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ControlDetails.cs" company="Steven Kirk">
+// <copyright file="ControlDetailsViewModel.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -11,9 +11,9 @@ namespace Perspex.Diagnostics.ViewModels
     using Perspex.Controls;
     using ReactiveUI;
 
-    internal class ControlDetails : ReactiveObject
+    internal class ControlDetailsViewModel : ReactiveObject
     {
-        public ControlDetails(Control control)
+        public ControlDetailsViewModel(Control control)
         {
             if (control != null)
             {

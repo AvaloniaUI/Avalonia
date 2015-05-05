@@ -74,11 +74,19 @@
     <Compile Include="DevTools.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewLocator.cs" />
+    <Compile Include="ViewModels\DevToolsViewModel.cs" />
+    <Compile Include="ViewModels\VisualTreeViewModel.cs" />
+    <Compile Include="ViewModels\LogicalTreeViewModel.cs" />
     <Compile Include="ViewModels\PropertyDetails.cs" />
-    <Compile Include="ViewModels\ControlDetails.cs" />
+    <Compile Include="ViewModels\ControlDetailsViewModel.cs" />
     <Compile Include="ViewModels\LogicalTreeNode.cs" />
     <Compile Include="ViewModels\TreeNode.cs" />
     <Compile Include="ViewModels\VisualTreeNode.cs" />
+    <Compile Include="Views\ControlDetailsView.cs" />
+    <Compile Include="Views\VisualTreeView.cs" />
+    <Compile Include="Views\LogicalTreeView.cs" />
+    <Compile Include="Views\TreePage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ReactiveUI">

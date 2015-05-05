@@ -21,7 +21,7 @@ namespace Perspex.Controls.Templates
             {
                 result = template.Build(data);
 
-                if (result != null)
+                if (result != null && result.DataContext == null)
                 {
                     result.DataContext = data;
                 }
