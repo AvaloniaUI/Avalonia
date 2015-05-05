@@ -17,7 +17,7 @@ namespace Perspex.Controls.Presenters
     using System.Linq;
     using System.Reactive.Linq;
 
-    public class DeckPresenter : Control, IVisual, IPresenter, ITemplatedControl
+    public class DeckPresenter : Control, IItemsPresenter, ITemplatedControl
     {
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<DeckPresenter>();

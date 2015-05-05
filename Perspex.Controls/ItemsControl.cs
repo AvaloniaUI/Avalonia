@@ -83,7 +83,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected ItemsPresenter Presenter
+        protected IItemsPresenter Presenter
         {
             get;
             private set;
@@ -96,7 +96,7 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            this.Presenter = this.FindTemplateChild<ItemsPresenter>("itemsPresenter");
+            this.Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
 
             if (this.Presenter != null)
             {

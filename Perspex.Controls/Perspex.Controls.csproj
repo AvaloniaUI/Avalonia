@@ -42,12 +42,14 @@
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="IItemsPanel.cs" />
+    <Compile Include="INamed.cs" />
     <Compile Include="INavigablePanel.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="Popup.cs" />
     <Compile Include="IDataTemplate.cs" />
+    <Compile Include="Presenters\IItemsPresenter.cs" />
     <Compile Include="Presenters\IPresenter.cs" />
     <Compile Include="Presenters\DeckPresenter.cs" />
     <Compile Include="Primitives\AdornerDecorator.cs" />

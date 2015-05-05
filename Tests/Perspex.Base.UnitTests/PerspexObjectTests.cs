@@ -35,7 +35,7 @@ namespace Perspex.Base.UnitTests
         {
             string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Bar", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Foo", "Baz", "Qux" }, names);
         }
 
         [Fact]

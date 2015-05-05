@@ -20,7 +20,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : InputElement, ILogical, IStyleable, IStyleHost
+    public class Control : InputElement, INamed, ILogical, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<object> DataContextProperty =
             PerspexProperty.Register<Control, object>("DataContext", inherits: true);
