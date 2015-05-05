@@ -175,7 +175,8 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the opacity.</returns>
         public IDisposable PushOpacity(double opacity)
         {
-            throw new NotImplementedException();
+            // TODO: Implement
+            return Disposable.Empty;
         }
 
         /// <summary>
