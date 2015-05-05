@@ -409,6 +409,12 @@ namespace Perspex
             return (T)this.GetValue((PerspexProperty)property);
         }
 
+        /// <summary>
+        /// Gets the value of of all properties that are registered on this object.
+        /// </summary>
+        /// <returns>
+        /// A collection of <see cref="PerspexPropertyValue"/> objects.
+        /// </returns>
         public IEnumerable<PerspexPropertyValue> GetAllValues()
         {
             foreach (PerspexProperty property in this.GetRegisteredProperties())
@@ -426,6 +432,12 @@ namespace Perspex
             }
         }
 
+        /// <summary>
+        /// Gets all properties that are registered on this object.
+        /// </summary>
+        /// <returns>
+        /// A collection of <see cref="PerspexProperty"/> objects.
+        /// </returns>
         public IEnumerable<PerspexProperty> GetRegisteredProperties()
         {
             Type type = this.GetType();
