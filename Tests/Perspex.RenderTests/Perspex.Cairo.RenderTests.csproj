@@ -75,10 +75,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Cairo\Perspex.Cairo\Perspex.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
-      <Name>Perspex.Cairo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
