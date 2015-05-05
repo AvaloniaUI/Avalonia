@@ -100,7 +100,14 @@ namespace Perspex.Controls.Presenters
 
                 if (this.caretBlink)
                 {
-                    context.DrawLine(new Pen(caretBrush, 1), charPos.TopLeft, charPos.BottomLeft);
+                    var x = Math.Floor(charPos.X) + 0.5;
+                    var y = Math.Floor(charPos.Y) + 0.5;
+                    var b = Math.Ceiling(charPos.Bottom) - 0.5;
+
+                    context.DrawLine(
+                        new Pen(caretBrush, 1), 
+                        new Point(x, y), 
+                        new Point(x, b));
                 }
             }
         }
