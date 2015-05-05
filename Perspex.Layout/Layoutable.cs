@@ -56,6 +56,9 @@ namespace Perspex.Layout
         public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Layoutable, VerticalAlignment>("VerticalAlignment");
 
+        public static readonly PerspexProperty<bool> UseLayoutRoundingProperty =
+            PerspexProperty.Register<Layoutable, bool>("UseLayoutRounding", defaultValue: true, inherits: true);
+
         private Size? previousMeasure;
 
         private Rect? previousArrange;
@@ -144,6 +147,12 @@ namespace Perspex.Layout
         {
             get;
             private set;
+        }
+
+        public bool UseLayoutRounding
+        {
+            get { return this.GetValue(UseLayoutRoundingProperty); }
+            set { this.SetValue(UseLayoutRoundingProperty, value); }
         }
 
         Size? ILayoutable.PreviousMeasure
@@ -307,6 +316,12 @@ namespace Perspex.Layout
                 }
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
+
+                if (this.UseLayoutRounding)
+                {
+                    size = new Size(Math.Ceiling(size.Width), Math.Ceiling(size.Height));
+                }
+
                 size = this.ArrangeOverride(size).Constrain(size);
 
                 switch (this.HorizontalAlignment)
@@ -327,6 +342,13 @@ namespace Perspex.Layout
                     case VerticalAlignment.Bottom:
                         originY += sizeMinusMargins.Height - size.Height;
                         break;
+                }
+
+                if (this.UseLayoutRounding)
+                {
+                    originX = Math.Floor(originX);
+                    originY = Math.Floor(originY);
+                    size = this.ArrangeOverride(size).Constrain(size);
                 }
 
                 this.Bounds = new Rect(originX, originY, size.Width, size.Height);
