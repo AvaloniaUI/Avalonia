@@ -18,25 +18,25 @@ namespace Perspex.Styling.UnitTests
         public void Id_Priority_Is_Style()
         {
             var control = new Control1();
-            var target = new Selector().Id("foo");
+            var target = new Selector().Name("foo");
 
             Assert.Equal(BindingPriority.Style, target.Priority);
         }
 
         [Fact]
-        public void Id_Matches_Control_With_Correct_Id()
+        public void Id_Matches_Control_With_Correct_Name()
         {
-            var control = new Control1 { Id = "foo" };
-            var target = new Selector().Id("foo");
+            var control = new Control1 { Name = "foo" };
+            var target = new Selector().Name("foo");
 
             Assert.True(ActivatorValue(target, control));
         }
 
         [Fact]
-        public void Id_Doesnt_Match_Control_Of_Wrong_Id()
+        public void Id_Doesnt_Match_Control_Of_Wrong_Name()
         {
-            var control = new Control1 { Id = "foo" };
-            var target = new Selector().Id("bar");
+            var control = new Control1 { Name = "foo" };
+            var target = new Selector().Name("bar");
 
             Assert.False(ActivatorValue(target, control));
         }
@@ -45,7 +45,7 @@ namespace Perspex.Styling.UnitTests
         public void Id_Doesnt_Match_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
-            var target = new Selector().Id("foo");
+            var target = new Selector().Name("foo");
 
             Assert.False(ActivatorValue(target, control));
         }
@@ -53,8 +53,8 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void When_Id_Matches_Control_Other_Selectors_Are_Subscribed()
         {
-            var control = new Control1 { Id = "foo" };
-            var target = new Selector().Id("foo").SubscribeCheck();
+            var control = new Control1 { Name = "foo" };
+            var target = new Selector().Name("foo").SubscribeCheck();
 
             var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 
@@ -64,8 +64,8 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void When_Id_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
         {
-            var control = new Control1 { Id = "foo" };
-            var target = new Selector().Id("bar").SubscribeCheck();
+            var control = new Control1 { Name = "foo" };
+            var target = new Selector().Name("bar").SubscribeCheck();
 
             var result = target.GetActivator(control).ToEnumerable().Take(1).ToArray();
 

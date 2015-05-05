@@ -23,12 +23,12 @@ namespace Perspex.Controls.Templates.UnitTests
         public void GetTemplateChildren_Should_Not_Return_Nested_Template_Controls()
         {
             var target = new TestTemplatedControl();
-            var border1 = new Border { Id = "border1", TemplatedParent = target };
-            var inner = new TestTemplatedControl { Id = "inner", TemplatedParent = target };
-            var border2 = new Border { Id = "border2", TemplatedParent = inner };
-            var border3 = new Border { Id = "border3", TemplatedParent = inner };
-            var border4 = new Border { Id = "border4", TemplatedParent = target };
-            var border5 = new Border { Id = "border5", TemplatedParent = null };
+            var border1 = new Border { Name = "border1", TemplatedParent = target };
+            var inner = new TestTemplatedControl { Name = "inner", TemplatedParent = target };
+            var border2 = new Border { Name = "border2", TemplatedParent = inner };
+            var border3 = new Border { Name = "border3", TemplatedParent = inner };
+            var border4 = new Border { Name = "border4", TemplatedParent = target };
+            var border5 = new Border { Name = "border5", TemplatedParent = null };
 
             target.AddVisualChild(border1);
             border1.Content = inner;
@@ -37,7 +37,7 @@ namespace Perspex.Controls.Templates.UnitTests
             border3.Content = border4;
             border4.Content = border5;
 
-            var result = target.GetTemplateChildren().Select(x => x.Id).ToArray();
+            var result = target.GetTemplateChildren().Select(x => x.Name).ToArray();
 
             Assert.Equal(new[] { "border1", "inner", "border4" }, result);
         }

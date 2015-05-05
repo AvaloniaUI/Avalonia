@@ -52,7 +52,7 @@ namespace Perspex.Themes.Default
                 [~Border.BorderThicknessProperty] = control[~DropDown.BorderThicknessProperty],
                 Content = new Grid
                 {
-                    Id = "container",
+                    Name = "container",
                     ColumnDefinitions = new ColumnDefinitions
                     {
                         new ColumnDefinition(new GridLength(1, GridUnitType.Star)),
@@ -62,7 +62,7 @@ namespace Perspex.Themes.Default
                     {
                         new ContentControl
                         {
-                            Id = "contentControl",
+                            Name = "contentControl",
                             Margin = new Thickness(3),
                             [~ContentControl.ContentProperty] = control[~DropDown.ContentProperty],
                             [~ContentControl.HorizontalAlignmentProperty] = control[~DropDown.HorizontalContentAlignmentProperty],
@@ -70,13 +70,13 @@ namespace Perspex.Themes.Default
                         },
                         new ToggleButton
                         {
-                            Id = "toggle",
+                            Name = "toggle",
                             BorderThickness = 0,
                             Background = Brushes.Transparent,
                             ClickMode = ClickMode.Press,
                             Content = new Path
                             {
-                                Id = "checkMark",
+                                Name = "checkMark",
                                 Fill = Brushes.Black,
                                 Width = 8,
                                 Height = 4,

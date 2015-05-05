@@ -412,7 +412,7 @@ namespace TestApplication
                     {
                         new TreeView
                         {
-                            Id = "treeView",
+                            Name = "treeView",
                             Items = treeData,
                         },
                         (listBox = new ListBox

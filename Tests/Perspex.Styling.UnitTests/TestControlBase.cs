@@ -17,7 +17,7 @@ namespace Perspex.Styling.UnitTests
             this.SubscribeCheckObservable = new TestObservable();
         }
 
-        public string Id { get; set; }
+        public string Name { get; set; }
 
         public virtual Classes Classes { get; set; }
 

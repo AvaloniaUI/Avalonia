@@ -43,7 +43,7 @@ namespace Perspex.Themes.Default
                     CanScrollHorizontally = true,
                     Content = new ItemsPresenter
                     {
-                        Id = "itemsPresenter",
+                        Name = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
                     }

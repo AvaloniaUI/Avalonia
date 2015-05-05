@@ -40,7 +40,7 @@ namespace Perspex.Themes.Default
                 {
                     Content = new ContentPresenter
                     {
-                        Id = "contentPresenter",
+                        Name = "contentPresenter",
                         [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],
                     }
                 }

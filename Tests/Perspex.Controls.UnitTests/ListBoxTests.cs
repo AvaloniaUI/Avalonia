@@ -42,7 +42,7 @@ namespace Perspex.Controls.UnitTests
                 Template = new ControlTemplate(this.CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
-                    Id = "itemsPresenter",
+                    Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ListBox.ItemsProperty),
                 }
             };

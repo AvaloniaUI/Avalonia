@@ -25,11 +25,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -74,11 +74,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -99,11 +99,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -124,11 +124,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Content = new TextBlock { Id = "Foo" }
+                        Content = new TextBlock { Name = "Foo" }
                     },
                     new TabItem
                     {
-                        Content = new TextBlock { Id = "Foo" }
+                        Content = new TextBlock { Name = "Foo" }
                     },
                 },
             };
@@ -136,7 +136,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             Assert.Equal(1, target.GetLogicalChildren().Count());
-            Assert.Equal("Foo", ((TextBlock)target.GetLogicalChildren().First()).Id);
+            Assert.Equal("Foo", ((TextBlock)target.GetLogicalChildren().First()).Name);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)
@@ -147,14 +147,14 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabStrip
                     {
-                        Id = "tabStrip",
+                        Name = "tabStrip",
                         Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
                         [~TabStrip.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedTabProperty] = parent[~~TabControl.SelectedTabProperty]
                     },
                     new Deck
                     {
-                        Id = "deck",
+                        Name = "deck",
                         [~Deck.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [!Deck.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
                     }
@@ -166,7 +166,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ItemsPresenter
             {
-                Id = "itemsPresenter",
+                Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
             };
         }

@@ -288,7 +288,7 @@ namespace Perspex.Controls.Primitives.UnitTests
             return ControlTemplate.Create<Target>(control =>
                 new ItemsPresenter
                 {
-                    Id = "itemsPresenter",
+                    Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
                 });

@@ -17,7 +17,7 @@ namespace Perspex.Styling.UnitTests
             get;
         }
 
-        public abstract string Id
+        public abstract string Name
         {
             get;
         }

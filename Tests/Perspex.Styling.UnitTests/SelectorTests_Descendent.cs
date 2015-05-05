@@ -87,7 +87,7 @@ namespace Perspex.Styling.UnitTests
         public abstract class TestLogical : ILogical, IStyleable
         {
             public abstract Classes Classes { get; }
-            public abstract string Id { get; }
+            public abstract string Name { get; }
             public abstract IPerspexReadOnlyList<ILogical> LogicalChildren { get; }
             public abstract ILogical LogicalParent { get; }
             public Type StyleKey { get; }

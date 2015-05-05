@@ -34,14 +34,14 @@ namespace Perspex.Themes.Default
                         new Setter(ToggleButton.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":checked").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":checked").Template().Name("border"))
                 {
                     Setters = new[]
                     {
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xff7f7f7f)),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Template().Name("border"))
                 {
                     Setters = new[]
                     {
@@ -49,28 +49,28 @@ namespace Perspex.Themes.Default
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":checked").Class(":pointerover").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":checked").Class(":pointerover").Template().Name("border"))
                 {
                     Setters = new[]
                     {
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffa0a0a0)),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Class(":pressed").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Class(":pressed").Template().Name("border"))
                 {
                     Setters = new[]
                     {
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffc4e5f6)),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":pressed").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":pressed").Template().Name("border"))
                 {
                     Setters = new[]
                     {
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
                     },
                 },
-                new Style(x => x.OfType<ToggleButton>().Class(":disabled").Template().Id("border"))
+                new Style(x => x.OfType<ToggleButton>().Class(":disabled").Template().Name("border"))
                 {
                     Setters = new[]
                     {
@@ -84,14 +84,14 @@ namespace Perspex.Themes.Default
         {
             Border border = new Border
             {
-                Id = "border",
+                Name = "border",
                 Padding = new Thickness(3),
                 [~Border.BackgroundProperty] = control[~ToggleButton.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~ToggleButton.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ToggleButton.BorderThicknessProperty],
                 Content = new ContentPresenter
                 {
-                    Id = "contentPresenter",
+                    Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~ToggleButton.ContentProperty],
                     [~ContentPresenter.HorizontalAlignmentProperty] = control[~ToggleButton.HorizontalContentAlignmentProperty],
                     [~ContentPresenter.VerticalAlignmentProperty] = control[~ToggleButton.VerticalContentAlignmentProperty],

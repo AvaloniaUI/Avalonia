@@ -21,7 +21,7 @@ namespace Perspex.Controls
         {
             return control.GetLogicalDescendents()
                 .OfType<T>()
-                .FirstOrDefault(x => x.Id == id);
+                .FirstOrDefault(x => x.Name == id);
         }
     }
 }

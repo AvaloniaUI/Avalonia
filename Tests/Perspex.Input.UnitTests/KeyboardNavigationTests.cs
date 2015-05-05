@@ -26,18 +26,18 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (current = new Button { Id = "Button2" }),
-                            (next = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            (current = new Button { Name = "Button2" }),
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -64,18 +64,18 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            (current = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (next = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -102,12 +102,12 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            (current = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
                         }
                     }),
-                    (next = new Button { Id = "Button4" }),
+                    (next = new Button { Name = "Button4" }),
                 }
             };
 
@@ -136,9 +136,9 @@ namespace Perspex.Input.UnitTests
                             {
                                 Children = new Controls
                                 {
-                                    new Button { Id = "Button1" },
-                                    new Button { Id = "Button2" },
-                                    (current = new Button { Id = "Button3" }),
+                                    new Button { Name = "Button1" },
+                                    new Button { Name = "Button2" },
+                                    (current = new Button { Name = "Button3" }),
                                 }
                             }),
                         },
@@ -147,9 +147,9 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (next = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -170,7 +170,7 @@ namespace Perspex.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (next = new Button { Id = "Button1" }),
+                    (next = new Button { Name = "Button1" }),
                 }
             };
 
@@ -199,9 +199,9 @@ namespace Perspex.Input.UnitTests
                             {
                                 Children = new Controls
                                 {
-                                    (next = new Button { Id = "Button1" }),
-                                    new Button { Id = "Button2" },
-                                    new Button { Id = "Button3" },
+                                    (next = new Button { Name = "Button1" }),
+                                    new Button { Name = "Button2" },
+                                    new Button { Name = "Button3" },
                                 }
                             }),
                         },
@@ -210,9 +210,9 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            (current = new Button { Id = "Button6" }),
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            (current = new Button { Name = "Button6" }),
                         }
                     },
                 }
@@ -240,18 +240,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (current = new Button { Id = "Button2" }),
-                            (next = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            (current = new Button { Name = "Button2" }),
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -279,18 +279,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button1" }),
-                            new Button { Id = "Button2" },
-                            (current = new Button { Id = "Button3" }),
+                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -318,18 +318,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (current = new Button { Id = "Button2" }),
-                            new Button { Id = "Button3" },
+                            new Button { Name = "Button1" },
+                            (current = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (next = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -357,18 +357,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (next = new Button { Id = "Button2" }),
-                            new Button { Id = "Button3" },
+                            new Button { Name = "Button1" },
+                            (next = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            (current = new Button { Id = "Button6" }),
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            (current = new Button { Name = "Button6" }),
                         }
                     },
                 }
@@ -398,18 +398,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Never,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (current = new Button { Id = "Button2" }),
-                            new Button { Id = "Button3" },
+                            new Button { Name = "Button1" },
+                            (current = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (next = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -437,18 +437,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Never,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            new Button { Id = "Button3" },
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            (current = new Button { Id = "Button6" }),
+                            (next = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            (current = new Button { Name = "Button6" }),
                         }
                     },
                 }
@@ -477,18 +477,18 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (next = new Button { Id = "Button2" }),
-                            (current = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            (next = new Button { Name = "Button2" }),
+                            (current = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -515,18 +515,18 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            (next = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (current = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (current = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -553,12 +553,12 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            (next = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
-                    (current = new Button { Id = "Button4" }),
+                    (current = new Button { Name = "Button4" }),
                 }
             };
 
@@ -587,9 +587,9 @@ namespace Perspex.Input.UnitTests
                             {
                                 Children = new Controls
                                 {
-                                    new Button { Id = "Button1" },
-                                    new Button { Id = "Button2" },
-                                    (next = new Button { Id = "Button3" }),
+                                    new Button { Name = "Button1" },
+                                    new Button { Name = "Button2" },
+                                    (next = new Button { Name = "Button3" }),
                                 }
                             }),
                         },
@@ -598,9 +598,9 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (current = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (current = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -631,9 +631,9 @@ namespace Perspex.Input.UnitTests
                             {
                                 Children = new Controls
                                 {
-                                    (current = new Button { Id = "Button1" }),
-                                    new Button { Id = "Button2" },
-                                    new Button { Id = "Button3" },
+                                    (current = new Button { Name = "Button1" }),
+                                    new Button { Name = "Button2" },
+                                    new Button { Name = "Button3" },
                                 }
                             }),
                         },
@@ -642,9 +642,9 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            (next = new Button { Id = "Button6" }),
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            (next = new Button { Name = "Button6" }),
                         }
                     },
                 }
@@ -672,18 +672,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button1" }),
-                            (current = new Button { Id = "Button2" }),
-                            new Button { Id = "Button3" },
+                            (next = new Button { Name = "Button1" }),
+                            (current = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -711,18 +711,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
-                            (current = new Button { Id = "Button1" }),
-                            new Button { Id = "Button2" },
-                            (next = new Button { Id = "Button3" }),
+                            (current = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -749,9 +749,9 @@ namespace Perspex.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            new Button { Id = "Button2" },
-                            (next = new Button { Id = "Button3" }),
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (next = new Button { Name = "Button3" }),
                         }
                     }),
                     new StackPanel
@@ -759,9 +759,9 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
                         {
-                            new Button { Id = "Button4" },
-                            (current = new Button { Id = "Button5" }),
-                            new Button { Id = "Button6" },
+                            new Button { Name = "Button4" },
+                            (current = new Button { Name = "Button5" }),
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -789,18 +789,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
                         {
-                            new Button { Id = "Button1" },
-                            (next = new Button { Id = "Button2" }),
-                            new Button { Id = "Button3" },
+                            new Button { Name = "Button1" },
+                            (next = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (current = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (current = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }
@@ -830,18 +830,18 @@ namespace Perspex.Input.UnitTests
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
                         {
-                            (next = new Button { Id = "Button1" }),
-                            new Button { Id = "Button2" },
-                            new Button { Id = "Button3" },
+                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
                     {
                         Children = new Controls
                         {
-                            (current = new Button { Id = "Button4" }),
-                            new Button { Id = "Button5" },
-                            new Button { Id = "Button6" },
+                            (current = new Button { Name = "Button4" }),
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
                         }
                     },
                 }

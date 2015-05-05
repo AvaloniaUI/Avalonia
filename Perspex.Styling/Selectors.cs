@@ -53,13 +53,13 @@ namespace Perspex.Styling
             };
         }
 
-        public static Selector Id(this Selector previous, string id)
+        public static Selector Name(this Selector previous, string id)
         {
             Contract.Requires<ArgumentNullException>(previous != null);
 
             return new Selector(previous)
             {
-                GetObservable = control => Observable.Return(control.Id == id),
+                GetObservable = control => Observable.Return(control.Name == id),
                 SelectorString = '#' + id,
             };
         }

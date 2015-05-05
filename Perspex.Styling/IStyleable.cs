@@ -21,7 +21,7 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets the ID of the control.
         /// </summary>
-        string Id { get; }
+        string Name { get; }
 
         /// <summary>
         /// Gets the type by which the control is styled.

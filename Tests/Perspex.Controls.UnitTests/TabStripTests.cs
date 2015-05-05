@@ -25,11 +25,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -50,11 +50,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -75,11 +75,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -94,7 +94,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ItemsPresenter
             {
-                Id = "itemsPresenter",
+                Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
             };
         }

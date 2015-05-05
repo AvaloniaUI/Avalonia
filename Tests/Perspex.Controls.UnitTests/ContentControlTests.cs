@@ -160,7 +160,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = null;
 
             // Need to call ApplyTemplate on presenter for LogocalChildren to be updated.
-            var presenter = target.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
+            var presenter = target.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
@@ -181,7 +181,7 @@ namespace Perspex.Controls.UnitTests
             contentControl.ApplyTemplate();
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
+            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);
@@ -204,7 +204,7 @@ namespace Perspex.Controls.UnitTests
             contentControl.Content = null;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
+            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);
@@ -228,7 +228,7 @@ namespace Perspex.Controls.UnitTests
             contentControl.Content = child2;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Id == "contentPresenter");
+            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);
@@ -243,7 +243,7 @@ namespace Perspex.Controls.UnitTests
                     Background = new Perspex.Media.SolidColorBrush(0xffffffff),
                     Content = new ContentPresenter
                     {
-                        Id = "contentPresenter",
+                        Name = "contentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     }
                 };

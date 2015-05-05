@@ -25,7 +25,7 @@ namespace Perspex.Themes.Default
                         new Setter(ListBoxItem.TemplateProperty, ControlTemplate.Create<ListBoxItem>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().Id("border"))
+                new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().Name("border"))
                 {
                     Setters = new[]
                     {
@@ -40,7 +40,7 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                Id = "border",
+                Name = "border",
                 [~Border.BackgroundProperty] = control[~ListBoxItem.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~ListBoxItem.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ListBoxItem.BorderThicknessProperty],

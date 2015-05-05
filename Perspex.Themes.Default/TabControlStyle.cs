@@ -45,13 +45,13 @@ namespace Perspex.Themes.Default
                 {
                     new TabStrip
                     {
-                        Id = "tabStrip",
+                        Name = "tabStrip",
                         [~TabStrip.ItemsProperty] = control[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedItemProperty] = control[~~TabControl.SelectedItemProperty],
                     },
                     new Deck
                     {
-                        Id = "deck",
+                        Name = "deck",
                         DataTemplates = new DataTemplates
                         {
                             new DataTemplate<TabItem>(x => control.MaterializeDataTemplate(x.Content)),

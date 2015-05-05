@@ -101,7 +101,7 @@ namespace Perspex.Controls
             }
         }
 
-        public string Id
+        public string Name
         {
             get
             {

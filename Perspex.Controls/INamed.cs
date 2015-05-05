@@ -8,6 +8,6 @@ namespace Perspex.Controls
 {
     public interface INamed
     {
-        string Id { get; }
+        string Name { get; }
     }
 }

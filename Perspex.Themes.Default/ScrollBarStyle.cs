@@ -34,7 +34,7 @@ namespace Perspex.Themes.Default
                         new Setter(ScrollBar.HeightProperty, 10.0),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":horizontal").Template().Id("thumb"))
+                new Style(x => x.OfType<ScrollBar>().Class(":horizontal").Template().Name("thumb"))
                 {
                     Setters = new[]
                     {
@@ -49,7 +49,7 @@ namespace Perspex.Themes.Default
                         new Setter(ScrollBar.WidthProperty, 10.0),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":vertical").Template().Id("thumb"))
+                new Style(x => x.OfType<ScrollBar>().Class(":vertical").Template().Name("thumb"))
                 {
                     Setters = new[]
                     {
@@ -66,14 +66,14 @@ namespace Perspex.Themes.Default
                 Background = Brushes.Silver,
                 Content = new Track
                 {
-                    Id = "track",
+                    Name = "track",
                     [~Track.MinimumProperty] = control[~ScrollBar.MinimumProperty],
                     [~Track.MaximumProperty] = control[~ScrollBar.MaximumProperty],
                     [~Track.ViewportSizeProperty] = control[~ScrollBar.ViewportSizeProperty],
                     [~Track.OrientationProperty] = control[~ScrollBar.OrientationProperty],
                     Thumb = new Thumb
                     {
-                        Id = "thumb",
+                        Name = "thumb",
                         Template = ControlTemplate.Create<Thumb>(this.ThumbTemplate),
                     },
                 },

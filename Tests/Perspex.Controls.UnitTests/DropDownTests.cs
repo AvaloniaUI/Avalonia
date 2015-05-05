@@ -32,7 +32,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = this.GetTemplate();
             target.ApplyTemplate();
 
-            var childIds = ((ILogical)target).LogicalChildren.Cast<Control>().Select(x => x.Id);
+            var childIds = ((ILogical)target).LogicalChildren.Cast<Control>().Select(x => x.Name);
 
             Assert.Equal(new[] { "contentControl", "toggle", "popup" }, childIds);
         }
@@ -43,21 +43,21 @@ namespace Perspex.Controls.UnitTests
             {
                 return new Panel
                 {
-                    Id = "container",
+                    Name = "container",
                     Children = new Controls
                     {
                         new ContentControl
                         {
-                            Id = "contentControl",
+                            Name = "contentControl",
                             [~ContentPresenter.ContentProperty] = parent[~DropDown.ContentProperty],
                         },
                         new ToggleButton
                         {
-                            Id = "toggle",
+                            Name = "toggle",
                         },
                         new Popup
                         {
-                            Id = "popup",
+                            Name = "popup",
                         }
                     }
                 };
