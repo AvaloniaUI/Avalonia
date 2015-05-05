@@ -211,7 +211,7 @@ namespace Perspex.Layout
 
                 if (!this.Root.IsArrangeValid && this.Root.IsMeasureValid)
                 {
-                    this.Root.Arrange(new Rect(this.Root.DesiredSize.Value));
+                    this.Root.Arrange(new Rect(this.Root.DesiredSize));
                 }
 
                 if (this.toMeasure.Count > 0)

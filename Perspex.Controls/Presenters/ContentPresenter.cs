@@ -65,7 +65,7 @@ namespace Perspex.Controls.Presenters
             if (child != null)
             {
                 child.Measure(availableSize);
-                return child.DesiredSize.Value;
+                return child.DesiredSize;
             }
 
             return new Size();

@@ -173,8 +173,8 @@ namespace Perspex.Controls
             using (this.BeginAutoSizing())
             {
                 this.ClientSize = new Size(
-                    double.IsNaN(this.Width) ? this.DesiredSize.Value.Width : this.ClientSize.Width,
-                    double.IsNaN(this.Height) ? this.DesiredSize.Value.Height : this.ClientSize.Height);
+                    double.IsNaN(this.Width) ? this.DesiredSize.Width : this.ClientSize.Width,
+                    double.IsNaN(this.Height) ? this.DesiredSize.Height : this.ClientSize.Height);
             }
 
             this.PlatformImpl.Invalidate(new Rect(this.ClientSize));

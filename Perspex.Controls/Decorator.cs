@@ -80,7 +80,7 @@ namespace Perspex.Controls
             if (content != null)
             {
                 content.Measure(availableSize.Deflate(padding));
-                return content.DesiredSize.Value.Inflate(padding);
+                return content.DesiredSize.Inflate(padding);
             }
 
             return new Size();

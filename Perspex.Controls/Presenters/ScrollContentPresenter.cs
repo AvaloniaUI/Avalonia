@@ -76,7 +76,7 @@ namespace Perspex.Controls.Presenters
                 }
 
                 content.Measure(measureSize);
-                var size = content.DesiredSize.Value;
+                var size = content.DesiredSize;
                 this.measuredExtent = size;
                 return size.Constrain(availableSize);
             }
@@ -95,7 +95,7 @@ namespace Perspex.Controls.Presenters
 
             if (child != null)
             {
-                child.Arrange(new Rect((Point)(-this.Offset), child.DesiredSize.Value));
+                child.Arrange(new Rect((Point)(-this.Offset), child.DesiredSize));
                 return finalSize;
             }
 

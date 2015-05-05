@@ -64,7 +64,7 @@ namespace Perspex.Controls.Presenters
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
-            return this.Panel.DesiredSize.Value;
+            return this.Panel.DesiredSize;
         }
 
         protected override Size ArrangeOverride(Size finalSize)

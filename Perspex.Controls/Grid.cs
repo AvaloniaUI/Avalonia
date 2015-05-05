@@ -359,7 +359,7 @@ namespace Perspex.Controls
                     }
 
                     child.Measure(new Size(childSizeX, childSizeY));
-                    Size desired = child.DesiredSize.Value;
+                    Size desired = child.DesiredSize;
 
                     // Elements distribute their height based on two rules:
                     // 1) Elements with rowspan/colspan == 1 distribute their height first

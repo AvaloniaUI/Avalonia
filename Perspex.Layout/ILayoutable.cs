@@ -9,7 +9,7 @@ namespace Perspex.Layout
     // TODO: Probably want to move width/height/etc properties to different interface.
     public interface ILayoutable : IVisual
     {
-        Size? DesiredSize { get; }
+        Size DesiredSize { get; }
 
         double Width { get;  }
 

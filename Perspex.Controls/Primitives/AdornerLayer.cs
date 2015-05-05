@@ -60,7 +60,7 @@ namespace Perspex.Controls.Primitives
                 }
                 else
                 {
-                    child.Arrange(new Rect(child.DesiredSize.Value));
+                    child.Arrange(new Rect(child.DesiredSize));
                 }
             }
 

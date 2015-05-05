@@ -131,7 +131,7 @@ namespace Perspex.Layout
             set { this.SetValue(VerticalAlignmentProperty, value); }
         }
 
-        public Size? DesiredSize
+        public Size DesiredSize
         {
             get;
             set;
@@ -246,7 +246,6 @@ namespace Perspex.Layout
             this.IsArrangeValid = false;
             this.previousMeasure = null;
             this.previousArrange = null;
-            this.DesiredSize = null;
 
             if (parent != null && IsResizable(parent))
             {
@@ -307,12 +306,12 @@ namespace Perspex.Layout
 
                 if (this.HorizontalAlignment != HorizontalAlignment.Stretch)
                 {
-                    size = size.WithWidth(Math.Min(size.Width, this.DesiredSize.Value.Width));
+                    size = size.WithWidth(Math.Min(size.Width, this.DesiredSize.Width));
                 }
 
                 if (this.VerticalAlignment != VerticalAlignment.Stretch)
                 {
-                    size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Value.Height));
+                    size = size.WithHeight(Math.Min(size.Height, this.DesiredSize.Height));
                 }
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
@@ -411,8 +410,8 @@ namespace Perspex.Layout
             foreach (ILayoutable child in this.GetVisualChildren().OfType<ILayoutable>())
             {
                 child.Measure(availableSize);
-                width = Math.Max(width, child.DesiredSize.Value.Width);
-                height = Math.Max(height, child.DesiredSize.Value.Height);
+                width = Math.Max(width, child.DesiredSize.Width);
+                height = Math.Max(height, child.DesiredSize.Height);
             }
 
             return new Size(width, height);

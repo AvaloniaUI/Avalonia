@@ -14,10 +14,8 @@ namespace Perspex.Controls.Presenters
     using Perspex.Styling;
     using System;
     using System.Collections;
-    using System.Collections.Specialized;
     using System.Linq;
     using System.Reactive.Linq;
-    using System.Threading.Tasks;
 
     public class DeckPresenter : Control, IVisual, IPresenter, ITemplatedControl
     {
@@ -87,7 +85,7 @@ namespace Perspex.Controls.Presenters
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
-            return this.Panel.DesiredSize.Value;
+            return this.Panel.DesiredSize;
         }
 
         protected override Size ArrangeOverride(Size finalSize)

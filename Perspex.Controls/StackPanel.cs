@@ -116,7 +116,7 @@ namespace Perspex.Controls
             foreach (Control child in this.Children)
             {
                 child.Measure(new Size(childAvailableWidth, childAvailableHeight));
-                Size size = child.DesiredSize.Value;
+                Size size = child.DesiredSize;
 
                 if (Orientation == Orientation.Vertical)
                 {
@@ -150,8 +150,8 @@ namespace Perspex.Controls
 
             foreach (Control child in this.Children)
             {
-                double childWidth = child.DesiredSize.Value.Width;
-                double childHeight = child.DesiredSize.Value.Height;
+                double childWidth = child.DesiredSize.Width;
+                double childHeight = child.DesiredSize.Height;
 
                 if (Orientation == Orientation.Vertical)
                 {
