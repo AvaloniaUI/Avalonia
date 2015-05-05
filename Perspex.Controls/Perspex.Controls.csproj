@@ -41,7 +41,6 @@
     <Compile Include="IContentControl.cs" />
     <Compile Include="IItemsPanel.cs" />
     <Compile Include="INavigablePanel.cs" />
-    <Compile Include="DeckItem.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />

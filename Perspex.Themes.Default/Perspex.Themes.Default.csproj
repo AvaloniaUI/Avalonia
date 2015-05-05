@@ -72,7 +72,6 @@
   <ItemGroup>
     <Compile Include="FocusAdornerStyle.cs" />
     <Compile Include="DropDownStyle.cs" />
-    <Compile Include="DeckItemStyle.cs" />
     <Compile Include="DeckStyle.cs" />
     <Compile Include="RadioButtonStyle.cs" />
     <Compile Include="ToggleButtonStyle.cs" />

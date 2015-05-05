@@ -35,11 +35,6 @@ namespace Perspex.Controls
             set { this.SetValue(TransitionProperty, value); }
         }
 
-        protected override ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TypedItemContainerGenerator<DeckItem>(this);
-        }
-
         protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
         {
             base.ItemsChanged(oldValue, newValue);

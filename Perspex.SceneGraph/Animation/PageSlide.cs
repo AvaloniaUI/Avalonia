@@ -45,6 +45,7 @@ namespace Perspex.Animation
             {
                 var transform = new TranslateTransform();
                 to.RenderTransform = transform;
+                to.IsVisible = true;
                 tasks.Add(Animate.Property(
                     transform,
                     TranslateTransform.XProperty,
