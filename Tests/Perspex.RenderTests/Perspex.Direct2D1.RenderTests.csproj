@@ -39,8 +39,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Magick.NET-x86, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Magick.NET-Q16-x86.7.0.0.0007\lib\net40-client\Magick.NET-x86.dll</HintPath>
+      <HintPath>..\..\packages\Magick.NET-Q16-x86.7.0.0.0014\lib\net40-client\Magick.NET-x86.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Magick.NET.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Magick.NET-Q16-x86.7.0.0.0014\lib\net40-client\Magick.NET.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Magick.NET.Wrapper-x86, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
+      <HintPath>..\..\packages\Magick.NET-Q16-x86.7.0.0.0014\lib\net40-client\Magick.NET.Wrapper-x86.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
