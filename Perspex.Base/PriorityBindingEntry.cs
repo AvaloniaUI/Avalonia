@@ -18,11 +18,20 @@ namespace Perspex
         /// </summary>
         private IDisposable subscription;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityBindingEntry"/> class.
+        /// </summary>
+        /// <param name="index">
+        /// The binding index. Later bindings should have higher indexes.
+        /// </param>
         public PriorityBindingEntry(int index)
         {
             this.Index = index;
         }
 
+        /// <summary>
+        /// Gets the observable associated with the entry.
+        /// </summary>
         public IObservable<object> Observable { get; private set; }
 
         /// <summary>
@@ -34,6 +43,9 @@ namespace Perspex
             private set;
         }
 
+        /// <summary>
+        /// Gets the binding entry index. Later bindings will have higher indexes.
+        /// </summary>
         public int Index
         {
             get;
