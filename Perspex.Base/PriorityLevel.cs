@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="PriorityValueTests.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// <copyright file="PriorityLevel.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 

@@ -7,12 +7,12 @@
 namespace Perspex.Controls
 {
     using System;
-    using Perspex.Controls.Generators;
-    using Perspex.Input;
-    using Perspex.VisualTree;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Controls.Generators;
+    using Perspex.Input;
+    using Perspex.VisualTree;
 
     public class TreeView : ItemsControl
     {

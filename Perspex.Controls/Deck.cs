@@ -7,11 +7,11 @@
 namespace Perspex.Controls
 {
     using System.Collections;
+    using Perspex.Animation;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
     using Perspex.Input;
-    using Perspex.Animation;
 
     /// <summary>
     /// A selecting items control that displays a single item that fills the control.

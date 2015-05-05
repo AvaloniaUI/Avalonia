@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexList.cs" company="Steven Kirk">
+// <copyright file="PerspexSingleItemList.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -36,18 +36,9 @@ namespace Perspex.Collections
             this.item = item;
         }
 
-        public T this[int index]
-        {
-            get
-            {
-                if (index < 0 || index >= this.Count)
-                {
-                    throw new ArgumentOutOfRangeException();
-                }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-                return item;
-            }
-        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Count
         {
@@ -96,9 +87,18 @@ namespace Perspex.Collections
             }
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public T this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= this.Count)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+                return this.item;
+            }
+        }
 
         public IEnumerator<T> GetEnumerator()
         {

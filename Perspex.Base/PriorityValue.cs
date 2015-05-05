@@ -6,12 +6,12 @@
 
 namespace Perspex
 {
-    using Perspex.Diagnostics;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Subjects;
     using System.Reflection;
+    using Perspex.Diagnostics;
 
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.

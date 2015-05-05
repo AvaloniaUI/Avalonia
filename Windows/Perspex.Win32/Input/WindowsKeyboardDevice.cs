@@ -17,7 +17,7 @@ namespace Perspex.Win32.Input
 
         private byte[] keyStates = new byte[256];
 
-        public static WindowsKeyboardDevice Instance
+        public static new WindowsKeyboardDevice Instance
         {
             get { return instance; }
         }

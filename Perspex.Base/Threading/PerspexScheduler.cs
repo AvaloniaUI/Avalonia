@@ -12,20 +12,17 @@ namespace Perspex.Threading
 
     public class PerspexScheduler : LocalScheduler
     {
-        private static readonly PerspexScheduler instance = new PerspexScheduler();
-
-        public static PerspexScheduler Instance
-        {
-            get { return instance; }
-        }
+        public static readonly PerspexScheduler Instance = new PerspexScheduler();
 
         public override IDisposable Schedule<TState>(TState state, TimeSpan dueTime, Func<IScheduler, TState, IDisposable> action)
         {
-            return DispatcherTimer.Run(() => 
-            {
-                action(this, state);
-                return false;
-            }, dueTime);
+            return DispatcherTimer.Run(
+                () => 
+                {
+                    action(this, state);
+                    return false;
+                }, 
+                dueTime);
         }
     }
 }

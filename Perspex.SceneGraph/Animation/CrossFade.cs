@@ -52,7 +52,6 @@ namespace Perspex.Animation
                     1,
                     LinearEasing.For<double>(),
                     this.Duration).ToTask());
-
             }
 
             await Task.WhenAll(tasks.ToArray());

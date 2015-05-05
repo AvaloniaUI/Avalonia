@@ -1,12 +1,11 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="PriorityValue.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// <copyright file="PriorityBindingEntry.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex
 {
-    using Perspex.Diagnostics;
     using System;
 
     /// <summary>

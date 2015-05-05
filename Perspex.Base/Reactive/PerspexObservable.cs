@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObject.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// <copyright file="PerspexObservable.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -14,8 +14,6 @@ namespace Perspex.Reactive
     {
         private readonly Func<IObserver<T>, IDisposable> subscribe;
 
-        public string Description { get; }
-
         public PerspexObservable(Func<IObserver<T>, IDisposable> subscribe, string description)
         {
             if (subscribe == null)
@@ -26,6 +24,8 @@ namespace Perspex.Reactive
             this.subscribe = subscribe;
             this.Description = description;
         }
+
+        public string Description { get; }
 
         protected override IDisposable SubscribeCore(IObserver<T> observer)
         {

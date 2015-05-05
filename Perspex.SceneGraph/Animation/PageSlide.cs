@@ -6,12 +6,12 @@
 
 namespace Perspex.Animation
 {
-    using Perspex.Media;
-    using Perspex.VisualTree;
     using System;
     using System.Collections.Generic;
     using System.Reactive.Threading.Tasks;
     using System.Threading.Tasks;
+    using Perspex.Media;
+    using Perspex.VisualTree;
 
     public class PageSlide : IPageTransition
     {

@@ -32,10 +32,9 @@ namespace Perspex.Collections
             }
         }
 
-        public T this[int index]
-        {
-            get { return this.source[index]; }
-        }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Count
         {
@@ -83,9 +82,10 @@ namespace Perspex.Collections
             }
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public T this[int index]
+        {
+            get { return this.source[index]; }
+        }
 
         public void Dispose()
         {
@@ -163,15 +163,9 @@ namespace Perspex.Collections
             }
         }
 
-        public TOut this[int index]
-        {
-            get
-            {
-                return (this.convert != null) ?
-                    this.convert(this.source[index]) :
-                    (TOut)(object)this.source[index];
-            }
-        }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Count
         {
@@ -219,9 +213,15 @@ namespace Perspex.Collections
             }
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public TOut this[int index]
+        {
+            get
+            {
+                return (this.convert != null) ?
+                    this.convert(this.source[index]) :
+                    (TOut)(object)this.source[index];
+            }
+        }
 
         public void Dispose()
         {
@@ -289,5 +289,4 @@ namespace Perspex.Collections
             }
         }
     }
-
 }

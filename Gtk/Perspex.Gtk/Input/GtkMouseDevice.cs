@@ -22,7 +22,7 @@ namespace Perspex.Gtk
         {
         }
 
-        public static GtkMouseDevice Instance
+        public static new GtkMouseDevice Instance
         {
             get { return instance; }
         }

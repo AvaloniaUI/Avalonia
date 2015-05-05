@@ -6,15 +6,15 @@
 
 namespace Perspex
 {
+    using Splat;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Reflection;
     using Perspex.Diagnostics;
-    using Splat;
-    using System.Reactive.Disposables;
     using Perspex.Reactive;
 
     /// <summary>
@@ -306,25 +306,27 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return new PerspexObservable<object>(observer =>
-            {
-                EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
+            return new PerspexObservable<object>(
+                observer =>
                 {
-                    if (e.Property == property)
+                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
                     {
-                        observer.OnNext(e.NewValue);
-                    }
-                };
+                        if (e.Property == property)
+                        {
+                            observer.OnNext(e.NewValue);
+                        }
+                    };
 
-                observer.OnNext(this.GetValue(property));
+                    observer.OnNext(this.GetValue(property));
 
-                this.PropertyChanged += handler;
+                    this.PropertyChanged += handler;
 
-                return Disposable.Create(() =>
-                {
-                    this.PropertyChanged -= handler;
-                });
-            }, this.GetObservableDescription(property));
+                    return Disposable.Create(() =>
+                    {
+                        this.PropertyChanged -= handler;
+                    });
+                }, 
+                this.GetObservableDescription(property));
         }
 
         /// <summary>
@@ -348,23 +350,25 @@ namespace Perspex
         /// <returns></returns>
         public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
         {
-            return new PerspexObservable<Tuple<T, T>>(observer =>
-            {
-                EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
+            return new PerspexObservable<Tuple<T, T>>(
+                observer =>
                 {
-                    if (e.Property == property)
+                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
                     {
-                        observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
-                    }
-                };
+                        if (e.Property == property)
+                        {
+                            observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
+                        }
+                    };
 
-                this.PropertyChanged += handler;
+                    this.PropertyChanged += handler;
 
-                return Disposable.Create(() =>
-                {
-                    this.PropertyChanged -= handler;
-                });
-            }, this.GetObservableDescription(property));
+                    return Disposable.Create(() =>
+                    {
+                        this.PropertyChanged -= handler;
+                    });
+                }, 
+                this.GetObservableDescription(property));
         }
 
         /// <summary>

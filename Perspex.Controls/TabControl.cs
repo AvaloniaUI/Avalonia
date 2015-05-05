@@ -7,15 +7,12 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Animation;
     using Perspex.Collections;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.Input;
-    using Perspex.Animation;
 
     public class TabControl : SelectingItemsControl, ILogical
     {

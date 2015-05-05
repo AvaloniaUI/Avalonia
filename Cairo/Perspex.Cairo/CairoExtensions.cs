@@ -37,22 +37,34 @@ namespace Perspex.Cairo
         public static Pango.Weight ToCairo(this Perspex.Media.FontWeight weight)
         {
             if (weight == Perspex.Media.FontWeight.Light)
+            {
                 return Pango.Weight.Light;
+            }
 
             if (weight == Perspex.Media.FontWeight.Normal || weight == Perspex.Media.FontWeight.Regular)
+            {
                 return Pango.Weight.Normal;
+            }
 
             if (weight == Perspex.Media.FontWeight.DemiBold || weight == Perspex.Media.FontWeight.Medium)
+            {
                 return Pango.Weight.Semibold;
+            }
 
             if (weight == Perspex.Media.FontWeight.Bold)
+            {
                 return Pango.Weight.Bold;
+            }
 
             if (weight == Perspex.Media.FontWeight.UltraBold || weight == Perspex.Media.FontWeight.ExtraBold)
+            {
                 return Pango.Weight.Ultrabold;
+            }
 
             if (weight == Perspex.Media.FontWeight.Black || weight == Perspex.Media.FontWeight.Heavy || weight == Perspex.Media.FontWeight.UltraBlack)
+            {
                 return Pango.Weight.Heavy;
+            }
 
             return Pango.Weight.Ultralight;
         }
@@ -60,10 +72,14 @@ namespace Perspex.Cairo
         public static Pango.Alignment ToCairo(this Perspex.Media.TextAlignment alignment)
         {
             if (alignment == Perspex.Media.TextAlignment.Left)
+            {
                 return Pango.Alignment.Left;
+            }
 
             if (alignment == Perspex.Media.TextAlignment.Centered)
+            {
                 return Pango.Alignment.Center;
+            }
 
             return Pango.Alignment.Right;
         }

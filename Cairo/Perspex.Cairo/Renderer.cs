@@ -20,6 +20,8 @@ namespace Perspex.Cairo
     /// </summary>
     public class Renderer : RendererBase
     {
+        private ImageSurface surface;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
         /// </summary>
@@ -30,7 +32,6 @@ namespace Perspex.Cairo
         {
         }
 
-        private ImageSurface surface;
         public Renderer(ImageSurface surface)
         {
             this.surface = surface;

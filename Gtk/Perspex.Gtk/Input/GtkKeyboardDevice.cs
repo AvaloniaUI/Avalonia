@@ -22,7 +22,7 @@ namespace Perspex.Gtk
         {
         }
 
-        public static GtkKeyboardDevice Instance
+        public static new GtkKeyboardDevice Instance
         {
             get { return instance; }
         }

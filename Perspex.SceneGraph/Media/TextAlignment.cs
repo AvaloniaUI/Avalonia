@@ -1,15 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="FontStyle.cs" company="Steven Kirk">
+// <copyright file="TextAlignment.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Media
 {
-    public enum FontStyle
+    public enum TextAlignment
     {
-        Normal,
-        Oblique,
-        Italic,
+        Left,
+        Centered,
+        Right,
     }
 }
