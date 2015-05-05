@@ -8,8 +8,11 @@ namespace Perspex.Diagnostics.Views
 {
     using Perspex.Controls;
     using Perspex.Diagnostics.ViewModels;
+    using Perspex.Styling;
     using ReactiveUI;
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Reactive.Linq;
 
     internal class ControlDetailsView : UserControl
@@ -32,28 +35,49 @@ namespace Perspex.Diagnostics.Views
 
         private void InitializeComponent()
         {
+            Func<object, IEnumerable<Control>> pt = this.PropertyTemplate;
+
             this.Content = new ScrollViewer
             {
-                Content = new ItemsControl
+                Content = new Grid
                 {
-                    DataTemplates = new DataTemplates
+                    ColumnDefinitions = new ColumnDefinitions
                     {
-                        new DataTemplate<PropertyDetails>(x =>
-                            new StackPanel
-                            {
-                                Gap = 16,
-                                Orientation = Orientation.Horizontal,
-                                Children = new Controls
-                                {
-                                    new TextBlock { Text = x.Name },
-                                    new TextBlock { [!TextBlock.TextProperty] = x.WhenAnyValue(v => v.Value).Select(v => v?.ToString()) },
-                                    new TextBlock { Text = x.Priority },
-                                },
-                            }),
+                        new ColumnDefinition(GridLength.Auto),
+                        new ColumnDefinition(GridLength.Auto),
+                        new ColumnDefinition(GridLength.Auto),
                     },
-                    [!ItemsControl.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Properties),
+                    Styles = new Styles
+                    {
+                        new Style(x => x.Is<Control>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(Control.MarginProperty, new Thickness(2)),
+                            }
+                        }
+                    },
+                    [GridRepeater.TemplateProperty] = pt,
+                    [!GridRepeater.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Properties),
                 }
             };
+        }
+
+        private IEnumerable<Control> PropertyTemplate(object i)
+        {
+            var property = (PropertyDetails)i;
+
+            yield return new TextBlock
+            {
+                Text = property.Name
+            };
+
+            yield return new TextBlock
+            {
+                [!TextBlock.TextProperty] = property.WhenAnyValue(v => v.Value).Select(v => v?.ToString()),
+            };
+
+            yield return new TextBlock { Text = property.Priority };
         }
     }
 }

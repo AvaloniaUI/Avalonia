@@ -84,6 +84,7 @@
     <Compile Include="ViewModels\TreeNode.cs" />
     <Compile Include="ViewModels\VisualTreeNode.cs" />
     <Compile Include="Views\ControlDetailsView.cs" />
+    <Compile Include="Views\GridRepeater.cs" />
     <Compile Include="Views\VisualTreeView.cs" />
     <Compile Include="Views\LogicalTreeView.cs" />
     <Compile Include="Views\TreePage.cs" />

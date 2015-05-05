@@ -54,9 +54,10 @@ namespace Perspex
             Type valueType,
             Type ownerType,
             object defaultValue,
-            bool inherits,
-            BindingMode defaultBindingMode,
-            Func<PerspexObject, object, object> coerce)
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.Default,
+            Func<PerspexObject, object, object> coerce = null,
+            bool isAttached = false)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(valueType != null);
@@ -69,38 +70,44 @@ namespace Perspex
             this.Inherits = inherits;
             this.DefaultBindingMode = defaultBindingMode;
             this.Coerce = coerce;
+            this.IsAttached = isAttached;
         }
 
         /// <summary>
         /// Gets the name of the property.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets the type of the property's value.
         /// </summary>
-        public Type PropertyType { get; private set; }
+        public Type PropertyType { get; }
 
         /// <summary>
         /// Gets the type of the class that registers the property.
         /// </summary>
-        public Type OwnerType { get; private set; }
+        public Type OwnerType { get; }
 
         /// <summary>
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
-        public bool Inherits { get; private set; }
+        public bool Inherits { get; }
 
         /// <summary>
         /// Gets the default binding mode for the property.
         /// </summary>
         /// <returns></returns>
-        public BindingMode DefaultBindingMode { get; private set; }
+        public BindingMode DefaultBindingMode { get; }
 
         /// <summary>
         /// Gets the property's coerce function.
         /// </summary>
-        public Func<PerspexObject, object, object> Coerce { get; private set; }
+        public Func<PerspexObject, object, object> Coerce { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this is an attached property.
+        /// </summary>
+        public bool IsAttached { get; }
 
         /// <summary>
         /// Gets an observable that is fired when this property is initialized on a
@@ -153,7 +160,8 @@ namespace Perspex
                 defaultValue,
                 inherits,
                 defaultBindingMode,
-                coerce);
+                coerce,
+                false);
 
             PerspexObject.Register(typeof(TOwner), result);
 
@@ -182,12 +190,49 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
-                typeof(TOwner) + "." + name,
+                name,
                 typeof(TOwner),
                 defaultValue,
                 inherits,
                 defaultBindingMode,
-                coerce);
+                coerce,
+                true);
+
+            PerspexObject.Register(typeof(THost), result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Registers an attached <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="THost">The type of the class that the property is to be registered on.</typeparam>
+        /// <typeparam name="TValue">The type of the property's value.</typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="ownerType">The type of the class that is registering the property.</param>
+        /// <param name="defaultValue">The default value of the property.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
+        /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
+        public static PerspexProperty<TValue> RegisterAttached<THost, TValue>(
+            string name,
+            Type ownerType,
+            TValue defaultValue = default(TValue),
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<PerspexObject, TValue, TValue> coerce = null)
+        {
+            Contract.Requires<NullReferenceException>(name != null);
+
+            PerspexProperty<TValue> result = new PerspexProperty<TValue>(
+                name,
+                ownerType,
+                defaultValue,
+                inherits,
+                defaultBindingMode,
+                coerce,
+                true);
 
             PerspexObject.Register(typeof(THost), result);
 
@@ -335,13 +380,15 @@ namespace Perspex
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="coerce">A coercion function.</param>
+        /// <param name="isAttached">Whether the property is an attached property.</param>
         public PerspexProperty(
             string name,
             Type ownerType,
-            TValue defaultValue,
-            bool inherits,
-            BindingMode defaultBindingMode,
-            Func<PerspexObject, TValue, TValue> coerce)
+            TValue defaultValue = default(TValue),
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.Default,
+            Func<PerspexObject, TValue, TValue> coerce = null,
+            bool isAttached = false)
             : base(
                 name, 
                 typeof(TValue), 
@@ -349,7 +396,8 @@ namespace Perspex
                 defaultValue, 
                 inherits, 
                 defaultBindingMode,
-                Convert(coerce))
+                Convert(coerce),
+                isAttached)
         {
             Contract.Requires<NullReferenceException>(name != null);
             Contract.Requires<NullReferenceException>(ownerType != null);

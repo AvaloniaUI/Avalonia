@@ -15,7 +15,11 @@ namespace Perspex.Diagnostics.ViewModels
 
         public PropertyDetails(PerspexPropertyValue value)
         {
-            this.Name = value.Property.Name;
+            this.Name = value.Property.IsAttached ?
+                string.Format("[{0}.{1}]", value.Property.OwnerType.Name, value.Property.Name) :
+                value.Property.Name;
+            this.IsAttached = value.Property.IsAttached;
+
             this.value = value.CurrentValue ?? "(null)";
             this.Priority = (value.PriorityValue != null) ?
                 Enum.GetName(typeof(BindingPriority), value.PriorityValue.ValuePriority) :
@@ -30,7 +34,11 @@ namespace Perspex.Diagnostics.ViewModels
         public string Name
         {
             get;
-            private set;
+        }
+
+        public bool IsAttached
+        {
+            get;
         }
 
         public object Value
