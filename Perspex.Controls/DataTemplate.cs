@@ -12,7 +12,7 @@ namespace Perspex.Controls
     public class DataTemplate : IDataTemplate
     {
         public static readonly DataTemplate Default =
-            new DataTemplate(typeof(object), o => new TextBlock { Text = o.ToString() });
+            new DataTemplate(typeof(object), o => (o != null) ? new TextBlock { Text = o.ToString() } : null);
 
         public DataTemplate(Func<object, Control> build)
             : this(o => true, build)
@@ -39,7 +39,9 @@ namespace Perspex.Controls
 
         public static bool IsInstance(object o, Type t)
         {
-            return t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+            return (o != null) ?
+                t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()) :
+                false;
         }
 
         bool IDataTemplate.Match(object data)
