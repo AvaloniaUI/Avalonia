@@ -24,8 +24,6 @@ namespace Perspex.Controls.Primitives
 
         static SelectingItemsControl()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(SelectingItemsControl), true);
-
             SelectedIndexProperty.Changed.Subscribe(x =>
             {
                 var control = x.Sender as SelectingItemsControl;
