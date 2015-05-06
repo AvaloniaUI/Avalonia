@@ -47,7 +47,7 @@ namespace Perspex.Themes.Default
                     {
                         Name = "tabStrip",
                         [~TabStrip.ItemsProperty] = control[~TabControl.ItemsProperty],
-                        [~~TabStrip.SelectedItemProperty] = control[~~TabControl.SelectedItemProperty],
+                        [!!TabStrip.SelectedItemProperty] = control[!!TabControl.SelectedItemProperty],
                     },
                     new Deck
                     {
@@ -57,7 +57,7 @@ namespace Perspex.Themes.Default
                             new DataTemplate<TabItem>(x => control.MaterializeDataTemplate(x.Content)),
                         },
                         [~Deck.ItemsProperty] = control[~TabControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],
+                        [~Deck.SelectedItemProperty] = control[~TabControl.SelectedItemProperty],
                         [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [Grid.RowProperty] = 1,
                     }

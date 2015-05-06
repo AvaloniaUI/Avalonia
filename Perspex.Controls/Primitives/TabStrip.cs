@@ -27,7 +27,8 @@ namespace Perspex.Controls.Primitives
 
         public TabStrip()
         {
-            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
+            this.GetObservable(SelectedItemProperty).Subscribe(x => this.SelectedTab = x as TabItem);
+            this.GetObservable(SelectedTabProperty).Subscribe(x => this.SelectedItem = x as TabItem);
         }
 
         public TabItem SelectedTab

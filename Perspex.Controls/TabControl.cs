@@ -35,14 +35,15 @@ namespace Perspex.Controls
 
         public TabControl()
         {
+            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
+
             this.GetObservable(SelectedItemProperty).Subscribe(x =>
             {
                 ContentControl c = x as ContentControl;
                 object content = (c != null) ? c.Content : c;
+                this.SetValue(SelectedTabProperty, x);
                 this.SetValue(SelectedContentProperty, content);
             });
-
-            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
         }
 
         public object SelectedContent
@@ -73,11 +74,13 @@ namespace Perspex.Controls
             // Don't handle keypresses.
         }
 
+        Deck deck;
+
         protected override void OnTemplateApplied()
         {
             base.OnTemplateApplied();
 
-            var deck = this.GetTemplateChild<Deck>("deck");
+            this.deck = this.GetTemplateChild<Deck>("deck");
             this.logicalChildren.Source = ((ILogical)deck).LogicalChildren;
         }
     }

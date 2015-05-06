@@ -38,7 +38,7 @@ namespace Perspex.Collections
 
         public int Count
         {
-            get { return this.source.Count; }
+            get { return this.source?.Count ?? 0; }
         }
 
         public IPerspexReadOnlyList<T> Source
@@ -169,7 +169,7 @@ namespace Perspex.Collections
 
         public int Count
         {
-            get { return this.source.Count; }
+            get { return this.source?.Count ?? 0; }
         }
 
         public IPerspexReadOnlyList<TIn> Source

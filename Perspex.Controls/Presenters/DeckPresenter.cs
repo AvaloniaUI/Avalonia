@@ -135,9 +135,13 @@ namespace Perspex.Controls.Presenters
 
                 if (value.Item2 != null)
                 {
-                    to = generator.Generate(new[] { value.Item2 }).Single();
-                    this.Panel.Children.Add(to);
-                    toIndex = this.Items.IndexOf(value.Item2);
+                    to = generator.Generate(new[] { value.Item2 }).FirstOrDefault();
+
+                    if (to != null)
+                    {
+                        this.Panel.Children.Add(to);
+                        toIndex = this.Items.IndexOf(value.Item2);
+                    }
                 }
 
                 if (this.Transition != null)

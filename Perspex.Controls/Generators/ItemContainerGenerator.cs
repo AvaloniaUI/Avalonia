@@ -85,14 +85,17 @@ namespace Perspex.Controls.Generators
                 {
                     Control container = this.CreateContainerOverride(item);
 
-                    if (container.DataContext == null)
+                    if (container != null)
                     {
-                        container.DataContext = item;
-                    }
+                        if (container.DataContext == null)
+                        {
+                            container.DataContext = item;
+                        }
 
-                    container.TemplatedParent = null;
-                    this.AddInternal(item, container);
-                    result.Add(container);
+                        container.TemplatedParent = null;
+                        this.AddInternal(item, container);
+                        result.Add(container);
+                    }
                 }
             }
             finally
