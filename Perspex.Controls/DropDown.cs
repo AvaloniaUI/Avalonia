@@ -28,7 +28,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
 
-        private PerspexReadOnlyListView<ILogical> logicalChildren = new PerspexReadOnlyListView<ILogical>();
+        private IPerspexReadOnlyList<ILogical> logicalChildren = new PerspexSingleItemList<ILogical>();
 
         public DropDown()
         {
@@ -77,7 +77,7 @@ namespace Perspex.Controls
         {
             var container = this.GetTemplateChild<Panel>("container");
             ((IItemsPanel)container).ChildLogicalParent = this;
-            this.logicalChildren.Source = ((ILogical)container).LogicalChildren;
+            this.logicalChildren = ((ILogical)container).LogicalChildren;
         }
 
         private void SetContentParent(Tuple<object, object> change)

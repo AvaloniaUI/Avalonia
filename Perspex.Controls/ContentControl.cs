@@ -24,7 +24,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>("VerticalContentAlignment");
 
-        private PerspexReadOnlyListView<ILogical> logicalChildren = new PerspexReadOnlyListView<ILogical>();
+        private IPerspexReadOnlyList<ILogical> logicalChildren = new PerspexList<ILogical>();
 
         public ContentControl()
         {
@@ -63,11 +63,7 @@ namespace Perspex.Controls
 
             if (presenter != null)
             {
-                this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
-            }
-            else
-            {
-                this.logicalChildren.Source = null;
+                this.logicalChildren = ((ILogical)presenter)?.LogicalChildren;
             }
         }
 
