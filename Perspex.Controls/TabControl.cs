@@ -25,7 +25,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<TabControl>();
 
-        private IPerspexReadOnlyList<ILogical> logicalChildren = new PerspexSingleItemList<ILogical>();
+        private PerspexReadOnlyListView<ILogical> logicalChildren = 
+            new PerspexReadOnlyListView<ILogical>();
 
         static TabControl()
         {
@@ -80,7 +81,7 @@ namespace Perspex.Controls
             base.OnTemplateApplied();
 
             this.deck = this.GetTemplateChild<Deck>("deck");
-            this.logicalChildren = ((ILogical)deck).LogicalChildren;
+            this.logicalChildren.Source = ((ILogical)deck).LogicalChildren;
         }
     }
 }
