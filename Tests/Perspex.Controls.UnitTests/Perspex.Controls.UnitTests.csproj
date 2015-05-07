@@ -100,6 +100,7 @@
     <Compile Include="ContentControlTests.cs" />
     <Compile Include="DecoratorTests.cs" />
     <Compile Include="DeckTests.cs" />
+    <Compile Include="TopLevelTests.cs" />
     <Compile Include="TabStripTests.cs" />
     <Compile Include="TabControlTests.cs" />
     <Compile Include="PanelTests.cs" />

@@ -41,7 +41,7 @@ namespace Perspex.Controls
         public void Show()
         {
             this.PlatformImpl.Show();
-            this.ExecuteLayoutPass();
+            this.LayoutManager.ExecuteLayoutPass();
             this.IsVisible = true;
         }
     }
