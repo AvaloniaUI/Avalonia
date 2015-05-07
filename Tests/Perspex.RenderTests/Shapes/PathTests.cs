@@ -41,7 +41,6 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             this.CompareImages();
         }
 
-
         [Fact]
         public void Path_Tick_Scaled()
         {
@@ -54,6 +53,29 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                     Fill = Brushes.Gray,
                     Stroke = Brushes.Red,
                     StrokeThickness = 2,
+                    Stretch = Stretch.Uniform,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z"),
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [Fact]
+        public void Path_Tick_Scaled_Stroke_8px()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Content = new Path
+                {
+                    Fill = Brushes.Gray,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 8,
                     Stretch = Stretch.Uniform,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,

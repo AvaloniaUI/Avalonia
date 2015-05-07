@@ -70,7 +70,7 @@ namespace Perspex.Direct2D1.RenderTests
 
             if (error > 0.02)
             {
-                Assert.True(false, "Error = " + error);
+                Assert.True(false, actualPath + ": Error = " + error);
             }
         }
     }
