@@ -20,15 +20,15 @@ namespace Perspex.Diagnostics.ViewModels
                 value.Property.Name;
             this.IsAttached = value.Property.IsAttached;
 
-            this.value = value.CurrentValue ?? "(null)";
-            this.Priority = (value.PriorityValue != null) ?
-                Enum.GetName(typeof(BindingPriority), value.PriorityValue.ValuePriority) :
+            this.value = value.Value ?? "(null)";
+            this.Priority = (value.Priority != BindingPriority.Unset) ?
+                value.Priority.ToString() :
                 value.Property.Inherits ? "Inherited" : "Unset";
 
-            if (value.PriorityValue != null)
-            {
-                value.PriorityValue.Changed.Subscribe(x => this.Value = x.Item2);
-            }
+            //if (value.PriorityValue != null)
+            //{
+            //    value.PriorityValue.Changed.Subscribe(x => this.Value = x.Item2);
+            //}
         }
 
         public string Name

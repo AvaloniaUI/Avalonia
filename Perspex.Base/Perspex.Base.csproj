@@ -37,8 +37,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Binding.cs" />
-    <Compile Include="Diagnostics\PerspexPropertyBinding.cs" />
-    <Compile Include="Diagnostics\IPerspexPropertyBinding.cs" />
     <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IPerspexList.cs" />
     <Compile Include="Collections\PerspexReadOnlyListView.cs" />

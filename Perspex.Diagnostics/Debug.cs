@@ -46,9 +46,9 @@ namespace Perspex.Diagnostics
                     builder.Append(" |  ");
                     builder.Append(value.Property.Name);
                     builder.Append(" = ");
-                    builder.Append(value.CurrentValue ?? "(null)");
+                    builder.Append(value.Value ?? "(null)");
                     builder.Append(" [");
-                    builder.Append(value.PriorityValue.ValuePriority);
+                    builder.Append(value.Priority);
                     builder.AppendLine("]");
                 }
             }

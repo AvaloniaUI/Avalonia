@@ -94,20 +94,16 @@ namespace Perspex
         /// </summary>
         public PerspexObject()
         {
-            foreach (var p in this.GetAllValues())
+            foreach (var property in this.GetRegisteredProperties())
             {
-                var priority = p.PriorityValue != null ? 
-                    (BindingPriority)p.PriorityValue.ValuePriority : 
-                    BindingPriority.LocalValue;
-
                 var e = new PerspexPropertyChangedEventArgs(
-                    this, 
-                    p.Property, 
-                    PerspexProperty.UnsetValue, 
-                    p.CurrentValue,
-                    priority);
+                    this,
+                    property,
+                    PerspexProperty.UnsetValue,
+                    property.GetDefaultValue(this.GetType()),
+                    BindingPriority.Unset);
 
-                p.Property.NotifyInitialized(e);
+                property.NotifyInitialized(e);
             }
         }
 
@@ -427,11 +423,17 @@ namespace Perspex
 
                 if (this.values.TryGetValue(property, out value))
                 {
-                    yield return new PerspexPropertyValue(property, value);
+                    yield return new PerspexPropertyValue(
+                        property, 
+                        value.Value, 
+                        (BindingPriority)value.ValuePriority);
                 }
                 else
                 {
-                    yield return new PerspexPropertyValue(property, this.GetValue(property));
+                    yield return new PerspexPropertyValue(
+                        property, 
+                        this.GetValue(property),
+                        BindingPriority.Unset);
                 }
             }
         }
@@ -469,7 +471,10 @@ namespace Perspex
         {
             foreach (var value in this.values)
             {
-                yield return new PerspexPropertyValue(value.Key, value.Value);
+                yield return new PerspexPropertyValue(
+                    value.Key, 
+                    value.Value.Value,
+                    (BindingPriority)value.Value.ValuePriority);
             }
         }
 

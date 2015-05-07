@@ -25,7 +25,7 @@ namespace Perspex
     /// has a higher priority. Each time the value changes, the <see cref="Changed"/> observable is 
     /// fired with the old and new values.
     /// </remarks>
-    public class PriorityValue
+    internal class PriorityValue
     {
         /// <summary>
         /// The name of the property.
@@ -160,18 +160,13 @@ namespace Perspex
         /// Gets the currently active bindings on this object.
         /// </summary>
         /// <returns>An enumerable collection of bindings.</returns>
-        public IEnumerable<IPerspexPropertyBinding> GetBindings()
+        public IEnumerable<PriorityBindingEntry> GetBindings()
         {
             foreach (var level in this.levels)
             {
                 foreach (var binding in level.Value.Bindings)
                 {
-                    yield return new PerspexPropertyBinding
-                    {
-                        Description = binding.Description,
-                        Priority = level.Key,
-                        Value = binding.Value,
-                    };
+                    yield return binding;
                 }
             }
         }
