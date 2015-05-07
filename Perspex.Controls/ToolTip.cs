@@ -84,8 +84,8 @@ namespace Perspex.Controls
 
         private static void ControlPointerEnter(object sender, PointerEventArgs e)
         {
-            var control = (Control)sender;
-            show.OnNext(control);
+            current = (Control)sender;
+            show.OnNext(current);
         }
 
         private static void ControlPointerLeave(object sender, PointerEventArgs e)
@@ -94,7 +94,11 @@ namespace Perspex.Controls
 
             if (control == current)
             {
-                popup.Hide();
+                if (popup != null && popup.IsVisible)
+                {
+                    popup.Hide();
+                }
+
                 show.OnNext(null);
             }
         }

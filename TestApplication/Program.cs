@@ -220,6 +220,7 @@ namespace TestApplication
                         {
                             Content = "Button",
                             Background = new SolidColorBrush(0xcc119eda),
+                            [ToolTip.TipProperty] = "Goodbye Cruel World!",
                         },
                         (defaultButton = new Button
                         {
