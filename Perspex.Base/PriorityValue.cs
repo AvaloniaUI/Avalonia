@@ -11,7 +11,7 @@ namespace Perspex
     using System.Linq;
     using System.Reactive.Subjects;
     using System.Reflection;
-    using Perspex.Diagnostics;
+    using System.Text;
 
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.
@@ -169,6 +169,46 @@ namespace Perspex
                     yield return binding;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns diagnostic string that can help the user debug the bindings in effect on 
+        /// this object.
+        /// </summary>
+        /// <returns>A diagnostic string.</returns>
+        public string GetDiagnostic()
+        {
+            var b = new StringBuilder();
+            var first = true;
+
+            foreach (var level in this.levels)
+            {
+                if (!first)
+                {
+                    b.AppendLine();
+                }
+
+                b.Append(this.ValuePriority == level.Key ? "*" : "");
+                b.Append("Priority ");
+                b.Append(level.Key);
+                b.Append(": ");
+                b.AppendLine(level.Value.Value?.ToString() ?? "(null)");
+                b.AppendLine("--------");
+                b.Append("Direct: ");
+                b.AppendLine(level.Value.DirectValue.ToString());
+
+                foreach (var binding in level.Value.Bindings)
+                {
+                    b.Append(level.Value.ActiveBindingIndex == binding.Index ? "*" : "");
+                    b.Append(binding.Description ?? binding.Observable.GetType().Name);
+                    b.Append(": ");
+                    b.AppendLine(binding.Value.ToString());
+                }
+
+                first = false;
+            }
+
+            return b.ToString();
         }
 
         /// <summary>

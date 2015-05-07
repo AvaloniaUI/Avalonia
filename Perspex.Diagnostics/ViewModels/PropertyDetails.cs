@@ -13,44 +13,49 @@ namespace Perspex.Diagnostics.ViewModels
     {
         private object value;
 
-        public PropertyDetails(PerspexPropertyValue value)
+        private string priority;
+
+        private string diagnostic;
+
+        public PropertyDetails(PerspexObject o, PerspexProperty property)
         {
-            this.Name = value.Property.IsAttached ?
-                string.Format("[{0}.{1}]", value.Property.OwnerType.Name, value.Property.Name) :
-                value.Property.Name;
-            this.IsAttached = value.Property.IsAttached;
+            this.Name = property.IsAttached ?
+                string.Format("[{0}.{1}]", property.OwnerType.Name, property.Name) :
+                property.Name;
+            this.IsAttached = property.IsAttached;
 
-            this.value = value.Value ?? "(null)";
-            this.Priority = (value.Priority != BindingPriority.Unset) ?
-                value.Priority.ToString() :
-                value.Property.Inherits ? "Inherited" : "Unset";
-
-            //if (value.PriorityValue != null)
-            //{
-            //    value.PriorityValue.Changed.Subscribe(x => this.Value = x.Item2);
-            //}
+            // TODO: Unsubscribe when view model is deactivated.
+            o.GetObservable(property).Subscribe(x =>
+            {
+                var diagnostic = o.GetDiagnostic(property);
+                this.Value = diagnostic.Value ?? "(null)";
+                this.Priority = (diagnostic.Priority != BindingPriority.Unset) ?
+                    diagnostic.Priority.ToString() :
+                    diagnostic.Property.Inherits ? "Inherited" : "Unset";
+                this.Diagnostic = diagnostic.Diagnostic;
+            });
         }
 
-        public string Name
+        public string Name { get; }
+
+        public bool IsAttached { get; }
+
+        public string Priority
         {
-            get;
+            get { return this.priority; }
+            private set { this.RaiseAndSetIfChanged(ref this.priority, value); }
         }
 
-        public bool IsAttached
+        public string Diagnostic
         {
-            get;
+            get { return this.diagnostic; }
+            private set { this.RaiseAndSetIfChanged(ref this.diagnostic, value); }
         }
 
         public object Value
         {
             get { return this.value; }
             private set { this.RaiseAndSetIfChanged(ref this.value, value); }
-        }
-
-        public string Priority
-        {
-            get;
-            private set;
         }
     }
 }

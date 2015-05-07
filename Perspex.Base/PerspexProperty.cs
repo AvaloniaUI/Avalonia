@@ -361,7 +361,7 @@ namespace Perspex
         {
             public override string ToString()
             {
-                return "{Unset}";
+                return "(unset)";
             }
         }
     }

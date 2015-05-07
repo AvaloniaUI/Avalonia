@@ -11,17 +11,21 @@ namespace Perspex.Diagnostics
         public PerspexPropertyValue(
             PerspexProperty property, 
             object value,
-            BindingPriority priority)
+            BindingPriority priority,
+            string diagnostic)
         {
             this.Property = property;
             this.Value = value;
             this.Priority = priority;
+            this.Diagnostic = diagnostic;
         }
 
-        public PerspexProperty Property { get; private set; }
+        public PerspexProperty Property { get; }
 
-        public object Value { get; private set; }
+        public object Value { get; }
 
-        public BindingPriority Priority { get; private set; }
+        public BindingPriority Priority { get; }
+
+        public string Diagnostic { get; }
     }
 }

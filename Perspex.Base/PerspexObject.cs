@@ -410,35 +410,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets the value of of all properties that are registered on this object.
-        /// </summary>
-        /// <returns>
-        /// A collection of <see cref="PerspexPropertyValue"/> objects.
-        /// </returns>
-        public IEnumerable<PerspexPropertyValue> GetAllValues()
-        {
-            foreach (PerspexProperty property in this.GetRegisteredProperties())
-            {
-                PriorityValue value;
-
-                if (this.values.TryGetValue(property, out value))
-                {
-                    yield return new PerspexPropertyValue(
-                        property, 
-                        value.Value, 
-                        (BindingPriority)value.ValuePriority);
-                }
-                else
-                {
-                    yield return new PerspexPropertyValue(
-                        property, 
-                        this.GetValue(property),
-                        BindingPriority.Unset);
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets all properties that are registered on this object.
         /// </summary>
         /// <returns>
@@ -461,20 +432,6 @@ namespace Perspex
                 }
 
                 type = type.GetTypeInfo().BaseType;
-            }
-        }
-
-        /// <summary>
-        /// Gets all of the <see cref="PerspexProperty"/> values explicitly set on this object.
-        /// </summary>
-        public IEnumerable<PerspexPropertyValue> GetSetValues()
-        {
-            foreach (var value in this.values)
-            {
-                yield return new PerspexPropertyValue(
-                    value.Key, 
-                    value.Value.Value,
-                    (BindingPriority)value.Value.ValuePriority);
             }
         }
 
@@ -679,6 +636,15 @@ namespace Perspex
             {
                 value.Coerce();
             }
+        }
+
+        /// <summary>
+        /// Gets all priority values set on the object.
+        /// </summary>
+        /// <returns>A collection of property/value tuples.</returns>
+        internal IDictionary<PerspexProperty, PriorityValue> GetSetValues()
+        {
+            return this.values;
         }
 
         /// <summary>

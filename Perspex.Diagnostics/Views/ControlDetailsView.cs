@@ -55,7 +55,7 @@ namespace Perspex.Diagnostics.Views
                             {
                                 new Setter(Control.MarginProperty, new Thickness(2)),
                             }
-                        }
+                        },
                     },
                     [GridRepeater.TemplateProperty] = pt,
                     [!GridRepeater.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Properties),
@@ -69,7 +69,8 @@ namespace Perspex.Diagnostics.Views
 
             yield return new TextBlock
             {
-                Text = property.Name
+                Text = property.Name,
+                [!ToolTip.TipProperty] = property.WhenAnyValue(x => x.Diagnostic),
             };
 
             yield return new TextBlock
@@ -77,7 +78,10 @@ namespace Perspex.Diagnostics.Views
                 [!TextBlock.TextProperty] = property.WhenAnyValue(v => v.Value).Select(v => v?.ToString()),
             };
 
-            yield return new TextBlock { Text = property.Priority };
+            yield return new TextBlock
+            {
+                [!TextBlock.TextProperty] = property.WhenAnyValue(x => x.Priority),
+            };
         }
     }
 }
