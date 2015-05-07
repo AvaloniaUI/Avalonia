@@ -71,6 +71,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ToolTipStyle.cs" />
     <Compile Include="FocusAdornerStyle.cs" />
     <Compile Include="DropDownStyle.cs" />
     <Compile Include="DeckStyle.cs" />

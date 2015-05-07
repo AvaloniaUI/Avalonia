@@ -32,6 +32,7 @@ namespace Perspex.Themes.Default
             this.Add(new TabStripStyle());
             this.Add(new TextBoxStyle());
             this.Add(new ToggleButtonStyle());
+            this.Add(new ToolTipStyle());
             this.Add(new TreeViewStyle());
             this.Add(new TreeViewItemStyle());
             this.Add(new WindowStyle());

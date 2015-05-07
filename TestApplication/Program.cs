@@ -214,6 +214,7 @@ namespace TestApplication
                         {
                             Content = "Button",
                             Command = showDialog,
+                            [ToolTip.TipProperty] = "Hello World!",
                         }),
                         new Button
                         {
