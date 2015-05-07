@@ -31,10 +31,5 @@ namespace Perspex.Gtk
         {
             this.clientPosition = p;
         }
-
-        protected override Point GetClientPosition()
-        {
-            return this.clientPosition;
-        }
     }
 }
