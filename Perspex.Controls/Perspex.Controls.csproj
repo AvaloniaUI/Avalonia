@@ -95,6 +95,7 @@
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
     <Compile Include="Shapes\Ellipse.cs" />
+    <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
     <Compile Include="TextWrapping.cs" />

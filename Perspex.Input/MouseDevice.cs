@@ -63,7 +63,7 @@ namespace Perspex.Input
 
         public Point GetPosition(IVisual relativeTo)
         {
-            Point p = this.GetClientPosition();
+            Point p = this.Position;
             IVisual v = relativeTo;
 
             while (v != null)
@@ -74,8 +74,6 @@ namespace Perspex.Input
 
             return p;
         }
-
-        protected abstract Point GetClientPosition();
 
         private void ProcessRawEvent(RawMouseEventArgs e)
         {

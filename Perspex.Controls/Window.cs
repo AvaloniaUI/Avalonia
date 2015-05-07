@@ -68,7 +68,7 @@ namespace Perspex.Controls
 
         public void Show()
         {
-            this.ExecuteLayoutPass();
+            this.LayoutManager.ExecuteLayoutPass();
 
             using (this.BeginAutoSizing())
             {
@@ -83,7 +83,7 @@ namespace Perspex.Controls
 
         public Task<TResult> ShowDialog<TResult>()
         {
-            this.ExecuteLayoutPass();
+            this.LayoutManager.ExecuteLayoutPass();
 
             using (this.BeginAutoSizing())
             {

@@ -35,12 +35,14 @@ namespace Perspex.Controls
         public void Hide()
         {
             this.PlatformImpl.Hide();
+            this.IsVisible = false;
         }
 
         public void Show()
         {
             this.PlatformImpl.Show();
-            this.ExecuteLayoutPass();
+            this.LayoutManager.ExecuteLayoutPass();
+            this.IsVisible = true;
         }
     }
 }

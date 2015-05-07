@@ -214,11 +214,13 @@ namespace TestApplication
                         {
                             Content = "Button",
                             Command = showDialog,
+                            [ToolTip.TipProperty] = "Hello World!",
                         }),
                         new Button
                         {
                             Content = "Button",
                             Background = new SolidColorBrush(0xcc119eda),
+                            [ToolTip.TipProperty] = "Goodbye Cruel World!",
                         },
                         (defaultButton = new Button
                         {
