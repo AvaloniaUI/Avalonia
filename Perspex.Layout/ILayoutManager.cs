@@ -34,6 +34,11 @@ namespace Perspex.Layout
         IObservable<Unit> LayoutNeeded { get; }
 
         /// <summary>
+        /// Gets an observable that is fired when a layout pass is completed.
+        /// </summary>
+        IObservable<Unit> LayoutCompleted { get; }
+
+        /// <summary>
         /// Gets a value indicating whether a layout is queued.
         /// </summary>
         /// <remarks>

@@ -128,6 +128,7 @@ namespace Perspex.Controls
 
             this.LayoutManager.Root = this;
             this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
+            this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
             this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
 
             IStyler styler = Locator.Current.GetService<IStyler>();
@@ -294,6 +295,14 @@ namespace Perspex.Controls
         private void HandleLayoutNeeded()
         {
             this.dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+        }
+
+        /// <summary>
+        /// Handles a layout completion request from <see cref="LayoutManager.LayoutCompleted"/>.
+        /// </summary>
+        private void HandleLayoutCompleted()
+        {
+            this.renderManager.InvalidateRender(this);
         }
 
         /// <summary>
