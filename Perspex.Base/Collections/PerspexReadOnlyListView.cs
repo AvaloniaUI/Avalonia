@@ -115,7 +115,7 @@ namespace Perspex.Collections
                     case NotifyCollectionChangedAction.Add:
                         ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            e.NewItems.Cast<object>().ToList(),
+                            e.NewItems,
                             e.NewStartingIndex);
                         break;
                     case NotifyCollectionChangedAction.Remove:
