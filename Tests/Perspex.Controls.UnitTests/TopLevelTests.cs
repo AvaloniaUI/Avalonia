@@ -17,6 +17,8 @@ namespace Perspex.Controls.UnitTests
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.AutoMoq;
     using Splat;
+    using System.Reactive;
+    using System.Reactive.Subjects;
     using Xunit;
 
     public class TopLevelTests
@@ -160,6 +162,27 @@ namespace Perspex.Controls.UnitTests
 
                 Assert.Equal(double.NaN, target.Width);
                 Assert.Equal(double.NaN, target.Height);
+            }
+        }
+
+        [Fact]
+        public void Render_Should_Be_Scheduled_After_Layout_Pass()
+        {
+            using (Locator.CurrentMutable.WithResolver())
+            {
+                this.RegisterServices();
+                var completed = new Subject<Unit>();
+                var layoutManagerMock = Mock.Get(Locator.Current.GetService<ILayoutManager>());
+                layoutManagerMock.Setup(x => x.LayoutCompleted).Returns(completed);
+
+                var impl = new Mock<ITopLevelImpl>();
+                impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
+
+                var target = new TestTopLevel(impl.Object);
+                completed.OnNext(Unit.Default);
+
+                var renderManagerMock = Mock.Get(Locator.Current.GetService<IRenderManager>());
+                renderManagerMock.Verify(x => x.InvalidateRender(target));
             }
         }
 

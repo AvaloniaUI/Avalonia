@@ -34,6 +34,11 @@ namespace Perspex.Layout
         private Subject<Unit> layoutNeeded;
 
         /// <summary>
+        /// Called when a layout is completed.
+        /// </summary>
+        private Subject<Unit> layoutCompleted;
+
+        /// <summary>
         /// Whether a measure is needed on the next layout pass.
         /// </summary>
         private bool measureNeeded = true;
@@ -54,6 +59,7 @@ namespace Perspex.Layout
         public LayoutManager()
         {
             this.layoutNeeded = new Subject<Unit>();
+            this.layoutCompleted = new Subject<Unit>();
         }
 
         /// <summary>
@@ -71,10 +77,12 @@ namespace Perspex.Layout
         /// <summary>
         /// Gets an observable that is fired when a layout pass is needed.
         /// </summary>
-        public IObservable<Unit> LayoutNeeded
-        {
-            get { return this.layoutNeeded; }
-        }
+        public IObservable<Unit> LayoutNeeded => this.layoutNeeded;
+
+        /// <summary>
+        /// Gets an observable that is fired when a layout pass is completed.
+        /// </summary>
+        public IObservable<Unit> LayoutCompleted => this.layoutCompleted;
 
         /// <summary>
         /// Gets a value indicating whether a layout is queued.
@@ -111,6 +119,8 @@ namespace Perspex.Layout
                     break;
                 }
             }
+
+            this.layoutCompleted.OnNext(Unit.Default);
         }
 
         /// <summary>

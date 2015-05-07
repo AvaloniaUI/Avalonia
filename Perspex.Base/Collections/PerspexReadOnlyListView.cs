@@ -122,7 +122,7 @@ namespace Perspex.Collections
                         ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
                             e.OldItems,
-                            e.NewStartingIndex);
+                            e.OldStartingIndex);
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         ev = new NotifyCollectionChangedEventArgs(
@@ -248,7 +248,7 @@ namespace Perspex.Collections
             return this.GetEnumerator();
         }
 
-        private IList<TOut> ConvertList(IEnumerable list)
+        private IList ConvertList(IEnumerable list)
         {
             return list.Cast<TIn>().Select(this.convert).ToList();
         }
@@ -271,7 +271,7 @@ namespace Perspex.Collections
                         ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
                             this.ConvertList(e.OldItems),
-                            e.NewStartingIndex);
+                            e.OldStartingIndex);
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         ev = new NotifyCollectionChangedEventArgs(
