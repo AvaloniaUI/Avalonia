@@ -6,6 +6,7 @@
 
 namespace Perspex
 {
+    using Perspex.Reactive;
     using Splat;
     using System;
     using System.Collections.Generic;
@@ -14,8 +15,6 @@ namespace Perspex
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Reflection;
-    using Perspex.Diagnostics;
-    using Perspex.Reactive;
 
     /// <summary>
     /// The priority of a binding.
@@ -25,12 +24,12 @@ namespace Perspex
         /// <summary>
         /// A value that comes from an animation.
         /// </summary>
-        Animation = -1,
+        Animation = -2,
 
         /// <summary>
         /// A local value.
         /// </summary>
-        LocalValue,
+        LocalValue = 0,
 
         /// <summary>
         /// A triggered style binding.

@@ -11,6 +11,22 @@ namespace Perspex
     using System.Reactive.Disposables;
 
     /// <summary>
+    /// Determines how the current binding is selected for a <see cref="PriorityLevel"/>.
+    /// </summary>
+    internal enum LevelPrecedenceMode
+    {
+        /// <summary>
+        /// The latest fired binding is used as the current value.
+        /// </summary>
+        Latest,
+
+        /// <summary>
+        /// The latest added binding is used as the current value.
+        /// </summary>
+        Newest,
+    }
+
+    /// <summary>
     /// Stores bindings for a priority level in a <see cref="PriorityValue"/>.
     /// </summary>
     /// <remarks>
@@ -49,6 +65,8 @@ namespace Perspex
         /// </summary>
         private int nextIndex;
 
+        private LevelPrecedenceMode mode;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityLevel"/> class.
         /// </summary>
@@ -56,10 +74,12 @@ namespace Perspex
         /// <param name="changed">A method to be called when the current value changes.</param>
         public PriorityLevel(
             int priority, 
+            LevelPrecedenceMode mode,
             Action<PriorityLevel> changed)
         {
             Contract.Requires<ArgumentNullException>(changed != null);
 
+            this.mode = mode;
             this.changed = changed;
             this.Priority = priority;
             this.Value = this.directValue = PerspexProperty.UnsetValue;
@@ -136,7 +156,7 @@ namespace Perspex
         /// <param name="entry">The entry that changed.</param>
         private void Changed(PriorityBindingEntry entry)
         {
-            if (entry.Index >= this.ActiveBindingIndex)
+            if (mode == LevelPrecedenceMode.Latest || entry.Index >= this.ActiveBindingIndex)
             {
                 if (entry.Value != PerspexProperty.UnsetValue)
                 {

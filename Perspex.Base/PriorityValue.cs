@@ -195,7 +195,7 @@ namespace Perspex
                 b.AppendLine(level.Value.Value?.ToString() ?? "(null)");
                 b.AppendLine("--------");
                 b.Append("Direct: ");
-                b.AppendLine(level.Value.DirectValue.ToString());
+                b.AppendLine(level.Value.DirectValue?.ToString() ?? "(null)");
 
                 foreach (var binding in level.Value.Bindings)
                 {
@@ -239,7 +239,8 @@ namespace Perspex
 
             if (!this.levels.TryGetValue(priority, out result))
             {
-                result = new PriorityLevel(priority, this.ValueChanged);
+                var mode = (LevelPrecedenceMode)(priority % 2);
+                result = new PriorityLevel(priority, mode, this.ValueChanged);
                 this.levels.Add(priority, result);
             }
 
