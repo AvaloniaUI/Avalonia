@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls.UnitTests
+namespace Perspex.Controls.UnitTests.Presenters
 {
     using System;
     using System.Collections.Generic;
@@ -113,14 +113,10 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Content_Can_Be_Larger_Than_Viewport()
         {
-            Border content;
+            TestControl content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
-                {
-                    Width = 150,
-                    Height = 150,
-                }),
+                Content = (content = new TestControl()),
             };
 
             target.Measure(new Size(100, 100));
@@ -183,6 +179,14 @@ namespace Perspex.Controls.UnitTests
 
             Assert.True(target.IsMeasureValid);
             Assert.False(target.IsArrangeValid);
+        }
+
+        private class TestControl : Control
+        {
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                return new Size(150, 150);
+            }
         }
     }
 }
