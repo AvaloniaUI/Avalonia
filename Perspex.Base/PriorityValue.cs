@@ -202,7 +202,7 @@ namespace Perspex
                     b.Append(level.Value.ActiveBindingIndex == binding.Index ? "*" : "");
                     b.Append(binding.Description ?? binding.Observable.GetType().Name);
                     b.Append(": ");
-                    b.AppendLine(binding.Value.ToString());
+                    b.AppendLine(binding.Value?.ToString() ?? "(null)");
                 }
 
                 first = false;
