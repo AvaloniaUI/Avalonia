@@ -17,7 +17,8 @@ namespace Perspex
     using Perspex.Platform;
     using Perspex.Rendering;
     using Perspex.VisualTree;
-    using Splat;
+    using Serilog;
+    using Serilog.Core.Enrichers;
 
     public class Visual : Animatable, IVisual
     {
@@ -46,6 +47,8 @@ namespace Perspex
 
         private Visual visualParent;
 
+        private ILogger visualLogger;
+
         static Visual()
         {
             AffectsRender(IsVisibleProperty);
@@ -55,6 +58,13 @@ namespace Perspex
 
         public Visual()
         {
+            this.visualLogger = Log.ForContext(new[]
+            {
+                new PropertyEnricher("Area", "Visual"),
+                new PropertyEnricher("SourceContext", this.GetType()),
+                new PropertyEnricher("Id", this.GetHashCode()),
+            });
+
             this.visualChildren = new PerspexList<IVisual>();
             this.visualChildren.CollectionChanged += this.VisualChildrenChanged;
         }
@@ -307,10 +317,7 @@ namespace Perspex
 
         private void NotifyAttachedToVisualTree(IRenderRoot root)
         {
-            this.Log().Debug(
-                "Attached {0} (#{1:x8}) to visual tree",
-                this.GetType().Name,
-                this.GetHashCode());
+            this.visualLogger.Verbose("Attached to visual tree");
 
             this.OnAttachedToVisualTree(root);
 
@@ -325,10 +332,7 @@ namespace Perspex
 
         private void NotifyDetachedFromVisualTree(IRenderRoot oldRoot)
         {
-            this.Log().Debug(
-                "Detached {0} (#{1:x8}) from visual tree",
-                this.GetType().Name,
-                this.GetHashCode());
+            this.visualLogger.Verbose("Detached from visual tree");
 
             this.OnDetachedFromVisualTree(oldRoot);
 

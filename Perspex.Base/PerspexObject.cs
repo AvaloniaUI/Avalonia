@@ -7,7 +7,8 @@
 namespace Perspex
 {
     using Perspex.Reactive;
-    using Splat;
+    using Serilog;
+    using Serilog.Core.Enrichers;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -64,7 +65,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : INotifyPropertyChanged, IEnableLogger
+    public class PerspexObject : INotifyPropertyChanged
     {
         /// <summary>
         /// The registered properties by type.
@@ -89,10 +90,22 @@ namespace Perspex
         private PropertyChangedEventHandler inpcChanged;
 
         /// <summary>
+        /// A serilog logger for logging property events.
+        /// </summary>
+        private ILogger propertyLog;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
         {
+            this.propertyLog = Log.ForContext(new[]
+            {
+                new PropertyEnricher("Area", "Property"),
+                new PropertyEnricher("SourceContext", this.GetType()),
+                new PropertyEnricher("Id", this.GetHashCode()),
+            });
+
             foreach (var property in this.GetRegisteredProperties())
             {
                 var e = new PerspexPropertyChangedEventArgs(
@@ -515,14 +528,12 @@ namespace Perspex
                 v = this.CreatePriorityValue(property);
                 this.values.Add(property, v);
             }
-            
-            this.Log().Debug(
-                "Set local value of {0}.{1} (#{2:x8}) to {3}",
-                this.GetType().Name,
-                property.Name,
-                this.GetHashCode(),
-                value);
 
+            this.propertyLog.Verbose(
+                "Set {Property} to {$Value} with priority {Priority}", 
+                property, 
+                value,
+                priority);
             v.SetDirectValue(value, (int)priority);
         }
 
@@ -569,12 +580,11 @@ namespace Perspex
                 this.values.Add(property, v);
             }
 
-            this.Log().Debug(
-                "Bound value of {0}.{1} (#{2:x8}) to {3}",
-                this.GetType().Name,
-                property.Name,
-                this.GetHashCode(),
-                description != null ? description.Description : "[Anonymous]");
+            this.propertyLog.Verbose(
+                "Bound {Property} to {Binding} with priority {Priority}", 
+                property, 
+                source,
+                priority);
 
             return v.Add(source, (int)priority);
         }
@@ -699,13 +709,12 @@ namespace Perspex
                 {
                     this.RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
 
-                    this.Log().Debug(
-                        "Value of {0}.{1} (#{2:x8}) changed from {3} to {4}",
-                        this.GetType().Name,
-                        property.Name,
-                        this.GetHashCode(),
+                    this.propertyLog.Verbose(
+                        "{Property} changed from {$Old} to {$Value} with priority {Priority}",
+                        property,
                         oldValue,
-                        newValue);
+                        newValue,
+                        (BindingPriority)result.ValuePriority);
                 }
             });
 

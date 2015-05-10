@@ -11,6 +11,9 @@ namespace Perspex.Layout
     using System.Reactive.Subjects;
     using NGenerics.DataStructures.General;
     using Perspex.VisualTree;
+    using Serilog;
+    using Serilog.Core.Enrichers;
+    using System.Reactive.Disposables;
 
     /// <summary>
     /// Manages measuring and arranging of controls.
@@ -54,10 +57,27 @@ namespace Perspex.Layout
         private Heap<Item> toArrange = new Heap<Item>(HeapType.Minimum);
 
         /// <summary>
+        /// Prevents re-entrancy.
+        /// </summary>
+        private bool running;
+
+        /// <summary>
+        /// The logger to use.
+        /// </summary>
+        private ILogger log;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LayoutManager"/> class.
         /// </summary>
         public LayoutManager()
         {
+            this.log = Log.ForContext(new[]
+            {
+                new PropertyEnricher("Area", "Layout"),
+                new PropertyEnricher("SourceContext", this.GetType()),
+                new PropertyEnricher("Id", this.GetHashCode()),
+            });
+
             this.layoutNeeded = new Subject<Unit>();
             this.layoutCompleted = new Subject<Unit>();
         }
@@ -102,25 +122,45 @@ namespace Perspex.Layout
         /// </summary>
         public void ExecuteLayoutPass()
         {
-            this.LayoutQueued = false;
-
-            for (int i = 0; i < MaxTries; ++i)
+            if (this.running)
             {
-                if (this.measureNeeded)
-                {
-                    this.ExecuteMeasure();
-                    this.measureNeeded = false;
-                }
-
-                this.ExecuteArrange();
-
-                if (this.toMeasure.Count == 0)
-                {
-                    break;
-                }
+                return;
             }
 
-            this.layoutCompleted.OnNext(Unit.Default);
+            using (Disposable.Create(() => this.running = false))
+            {
+                this.running = true;
+                this.LayoutQueued = false;
+
+                this.log.Information(
+                    "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
+                    this.toMeasure.Count,
+                    this.toArrange.Count);
+
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+
+                for (int i = 0; i < MaxTries; ++i)
+                {
+                    if (this.measureNeeded)
+                    {
+                        this.ExecuteMeasure();
+                        this.measureNeeded = false;
+                    }
+
+                    this.ExecuteArrange();
+
+                    if (this.toMeasure.Count == 0)
+                    {
+                        break;
+                    }
+                }
+
+                stopwatch.Stop();
+                this.log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
+
+                this.layoutCompleted.OnNext(Unit.Default);
+            }
         }
 
         /// <summary>

@@ -9,7 +9,8 @@ namespace Perspex.Layout
     using System;
     using System.Linq;
     using Perspex.VisualTree;
-    using Splat;
+    using Serilog;
+    using Serilog.Core.Enrichers;
 
     public enum HorizontalAlignment
     {
@@ -27,7 +28,7 @@ namespace Perspex.Layout
         Bottom,
     }
 
-    public class Layoutable : Visual, ILayoutable, IEnableLogger
+    public class Layoutable : Visual, ILayoutable
     {
         public static readonly PerspexProperty<double> WidthProperty =
             PerspexProperty.Register<Layoutable, double>("Width", double.NaN);
@@ -63,6 +64,8 @@ namespace Perspex.Layout
 
         private Rect? previousArrange;
 
+        private ILogger layoutLog;
+
         static Layoutable()
         {
             Layoutable.AffectsMeasure(Visual.IsVisibleProperty);
@@ -75,6 +78,16 @@ namespace Perspex.Layout
             Layoutable.AffectsMeasure(Layoutable.MarginProperty);
             Layoutable.AffectsMeasure(Layoutable.HorizontalAlignmentProperty);
             Layoutable.AffectsMeasure(Layoutable.VerticalAlignmentProperty);
+        }
+
+        public Layoutable()
+        {
+            this.layoutLog = Log.ForContext(new[]
+            {
+                new PropertyEnricher("Area", "Layout"),
+                new PropertyEnricher("SourceContext", this.GetType()),
+                new PropertyEnricher("Id", this.GetHashCode()),
+            });
         }
 
         public double Width
@@ -192,11 +205,7 @@ namespace Perspex.Layout
                 this.DesiredSize = desiredSize;
                 this.previousMeasure = availableSize;
 
-                this.Log().Debug(
-                    "Measure of {0} (#{1:x8}) requested {2} ",
-                    this.GetType().Name,
-                    this.GetHashCode(),
-                    this.DesiredSize);
+                this.layoutLog.Verbose("Measure requested {DesiredSize}", this.DesiredSize);
             }
         }
 
@@ -218,11 +227,7 @@ namespace Perspex.Layout
 
             if (force || !this.IsArrangeValid || this.previousArrange != rect)
             {
-                this.Log().Debug(
-                    "Arrange of {0} (#{1:x8}) gave {2} ",
-                    this.GetType().Name,
-                    this.GetHashCode(),
-                    rect);
+                this.layoutLog.Verbose("Arrange to {Rect} ", rect);
 
                 this.IsArrangeValid = true;
                 this.ArrangeCore(rect);
@@ -236,10 +241,7 @@ namespace Perspex.Layout
 
             if (this.IsMeasureValid)
             {
-                this.Log().Debug(
-                    "Invalidated measure of {0} (#{1:x8})",
-                    this.GetType().Name,
-                    this.GetHashCode());
+                this.layoutLog.Verbose("Invalidated measure");
             }
 
             this.IsMeasureValid = false;
@@ -268,10 +270,7 @@ namespace Perspex.Layout
 
             if (this.IsArrangeValid)
             {
-                this.Log().Debug(
-                    "Invalidated arrange of {0} (#{1:x8})",
-                    this.GetType().Name,
-                    this.GetHashCode());
+                this.layoutLog.Verbose("Arrange measure");
             }
 
             this.IsArrangeValid = false;

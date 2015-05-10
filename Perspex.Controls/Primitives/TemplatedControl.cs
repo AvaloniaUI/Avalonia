@@ -13,7 +13,8 @@ namespace Perspex.Controls.Primitives
     using Perspex.Media;
     using Perspex.Styling;
     using Perspex.VisualTree;
-    using Splat;
+    using Serilog;
+    using Serilog.Core.Enrichers;
 
     public class TemplatedControl : Control, ITemplatedControl
     {
@@ -46,6 +47,8 @@ namespace Perspex.Controls.Primitives
 
         private bool templateApplied;
 
+        private ILogger templateLog;
+
         static TemplatedControl()
         {
             TemplateProperty.Changed.Subscribe(e =>
@@ -53,6 +56,16 @@ namespace Perspex.Controls.Primitives
                 var templatedControl = (TemplatedControl)e.Sender;
                 templatedControl.templateApplied = false;
                 templatedControl.InvalidateMeasure();
+            });
+        }
+
+        public TemplatedControl()
+        {
+            this.templateLog = Log.ForContext(new[]
+            {
+                new PropertyEnricher("Area", "Template"),
+                new PropertyEnricher("SourceContext", this.GetType()),
+                new PropertyEnricher("Id", this.GetHashCode()),
             });
         }
 
@@ -122,10 +135,7 @@ namespace Perspex.Controls.Primitives
 
                 if (this.Template != null)
                 {
-                    this.Log().Debug(
-                        "Creating template for {0} (#{1:x8})",
-                        this.GetType().Name,
-                        this.GetHashCode());
+                    this.templateLog.Verbose("Creating control template");
 
                     var child = this.Template.Build(this);
                     this.SetTemplatedParent(child);

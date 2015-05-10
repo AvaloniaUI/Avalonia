@@ -17,24 +17,12 @@ using Perspex.Gtk;
 #endif
 using ReactiveUI;
 using Splat;
+using Serilog;
+using Serilog.Filters;
+using Serilog.Events;
 
 namespace TestApplication
 {
-    class TestLogger : ILogger
-    {
-        public LogLevel Level
-        {
-            get;
-            set;
-        }
-
-        public void Write(string message, LogLevel logLevel)
-        {
-            if ((int)logLevel < (int)Level) return;
-            System.Diagnostics.Debug.WriteLine(message);
-        }
-    }
-
     class Item
     {
         public string Name { get; set; }
@@ -106,9 +94,11 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            //LogManager.Enable(new TestLogger());
-            //LogManager.Instance.LogLayoutMessages = true;
-            //LogManager.Instance.LogPropertyMessages = true;
+            Log.Logger = new LoggerConfiguration()
+                .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
+                .MinimumLevel.Verbose()
+                .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
+                .CreateLogger();
 
             // The version of ReactiveUI currently included is for WPF and so expects a WPF
             // dispatcher. This makes sure it's initialized.
