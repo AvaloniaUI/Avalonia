@@ -9,6 +9,7 @@ namespace Perspex.Styling.UnitTests
     using System;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using Moq;
     using Perspex.Collections;
     using Perspex.Styling;
@@ -17,7 +18,7 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Descendent
     {
         [Fact]
-        public void Descendent_Matches_Control_When_It_Is_Child_OfType()
+        public async Task Descendent_Matches_Control_When_It_Is_Child_OfType()
         {
             var parent = new Mock<TestLogical1>();
             var child = new Mock<TestLogical2>();
@@ -26,12 +27,13 @@ namespace Perspex.Styling.UnitTests
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
             var selector = new Selector().OfType(parent.Object.GetType()).Descendent().OfType(child.Object.GetType());
+            var activator = selector.GetActivator(childStyleable.Object);
 
-            Assert.True(ActivatorValue(selector, childStyleable.Object));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Descendent_Matches_Control_When_It_Is_Descendent_OfType()
+        public async Task Descendent_Matches_Control_When_It_Is_Descendent_OfType()
         {
             var grandparent = new Mock<TestLogical1>();
             var parent = new Mock<TestLogical2>();
@@ -41,12 +43,13 @@ namespace Perspex.Styling.UnitTests
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
             var selector = new Selector().OfType(grandparent.Object.GetType()).Descendent().OfType(child.Object.GetType());
+            var activator = selector.GetActivator(child.Object);
 
-            Assert.True(ActivatorValue(selector, child.Object));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Descendent_Matches_Control_When_It_Is_Descendent_OfType_And_Class()
+        public async Task Descendent_Matches_Control_When_It_Is_Descendent_OfType_And_Class()
         {
             var grandparent = new Mock<TestLogical1>();
             var parent = new Mock<TestLogical2>();
@@ -58,12 +61,13 @@ namespace Perspex.Styling.UnitTests
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
             var selector = new Selector().OfType(grandparent.Object.GetType()).Class("foo").Descendent().OfType(child.Object.GetType());
+            var activator = selector.GetActivator(child.Object);
 
-            Assert.True(ActivatorValue(selector, child.Object));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Descendent_Doesnt_Match_Control_When_It_Is_Descendent_OfType_But_Wrong_Class()
+        public async Task Descendent_Doesnt_Match_Control_When_It_Is_Descendent_OfType_But_Wrong_Class()
         {
             var grandparent = new Mock<TestLogical1>();
             var parent = new Mock<TestLogical2>();
@@ -75,13 +79,9 @@ namespace Perspex.Styling.UnitTests
             child.Setup(x => x.LogicalParent).Returns(parent.Object);
 
             var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
+            var activator = selector.GetActivator(child.Object);
 
-            Assert.False(ActivatorValue(selector, child.Object));
-        }
-
-        private static bool ActivatorValue(Selector selector, IStyleable control)
-        {
-            return selector.GetActivator(control).Take(1).ToEnumerable().Single();
+            Assert.False(await activator.Take(1));
         }
 
         public abstract class TestLogical : ILogical, IStyleable

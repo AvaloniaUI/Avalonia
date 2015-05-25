@@ -13,11 +13,12 @@ namespace Perspex.Styling.UnitTests
     using Perspex.Styling;
     using Perspex.VisualTree;
     using Xunit;
+    using System.Threading.Tasks;
 
     public class SelectorTests_Template
     {
         [Fact]
-        public void Control_In_Template_Is_Matched_With_Template_Selector()
+        public async Task Control_In_Template_Is_Matched_With_Template_Selector()
         {
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
@@ -26,26 +27,27 @@ namespace Perspex.Styling.UnitTests
             var border = (Border)target.Object.GetVisualChildren().Single();
 
             var selector = new Selector().Template().OfType<Border>();
+            var activator = selector.GetActivator(border);
 
-            Assert.True(ActivatorValue(selector, border));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Nested_Control_In_Template_Is_Matched_With_Template_Selector()
+        public async Task Nested_Control_In_Template_Is_Matched_With_Template_Selector()
         {
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             this.BuildVisualTree(target);
 
             var textBlock = (TextBlock)target.Object.VisualChildren.Single().VisualChildren.Single();
-
             var selector = new Selector().Template().OfType<TextBlock>();
+            var activator = selector.GetActivator(textBlock);
 
-            Assert.True(ActivatorValue(selector, textBlock));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Control_In_Template_Is_Matched_With_TypeOf_TemplatedControl()
+        public async Task Control_In_Template_Is_Matched_With_TypeOf_TemplatedControl()
         {
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
@@ -54,12 +56,13 @@ namespace Perspex.Styling.UnitTests
             var border = (Border)target.Object.VisualChildren.Single();
 
             var selector = new Selector().OfType(templatedControl.Object.GetType()).Template().OfType<Border>();
+            var activator = selector.GetActivator(border);
 
-            Assert.True(ActivatorValue(selector, border));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Control_In_Template_Is_Matched_With_Correct_TypeOf_And_Class_Of_TemplatedControl()
+        public async Task Control_In_Template_Is_Matched_With_Correct_TypeOf_And_Class_Of_TemplatedControl()
         {
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
@@ -71,14 +74,14 @@ namespace Perspex.Styling.UnitTests
             styleable.Setup(x => x.StyleKey).Returns(styleKey);
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
-
             var selector = new Selector().OfType(styleKey).Class("foo").Template().OfType<Border>();
+            var activator = selector.GetActivator(border);
 
-            Assert.True(ActivatorValue(selector, border));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Control_In_Template_Is_Not_Matched_With_Correct_TypeOf_And_Wrong_Class_Of_TemplatedControl()
+        public async Task Control_In_Template_Is_Not_Matched_With_Correct_TypeOf_And_Wrong_Class_Of_TemplatedControl()
         {
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
@@ -87,15 +90,10 @@ namespace Perspex.Styling.UnitTests
 
             styleable.Setup(x => x.Classes).Returns(new Classes("bar"));
             var border = (Border)target.Object.VisualChildren.Single();
-
             var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
+            var activator = selector.GetActivator(border);
 
-            Assert.False(ActivatorValue(selector, border));
-        }
-
-        private static bool ActivatorValue(Selector selector, IStyleable control)
-        {
-            return selector.GetActivator(control).Take(1).ToEnumerable().Single();
+            Assert.False(await activator.Take(1));
         }
 
         private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
