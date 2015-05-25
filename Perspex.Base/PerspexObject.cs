@@ -574,6 +574,14 @@ namespace Perspex
             PriorityValue v;
             IDescription description = source as IDescription;
 
+            if (!this.IsRegistered(property))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Property '{0}' not registered on '{1}'",
+                    property.Name,
+                    this.GetType()));
+            }
+
             if (!this.values.TryGetValue(property, out v))
             {
                 v = this.CreatePriorityValue(property);
