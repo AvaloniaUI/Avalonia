@@ -84,7 +84,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectorTests_Class.cs" />
     <Compile Include="SelectorTests_Descendent.cs" />
-    <Compile Include="SelectorTests_Id.cs" />
+    <Compile Include="SelectorTests_Name.cs" />
     <Compile Include="SelectorTests_Multiple.cs" />
     <Compile Include="SelectorTests_OfType.cs" />
     <Compile Include="SelectorTests_Template.cs" />

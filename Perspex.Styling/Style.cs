@@ -37,25 +37,25 @@ namespace Perspex.Styling
 
         public void Attach(IStyleable control)
         {
-            string description = "Style " + this.Selector.ToString();
-            StyleActivator activator = this.Selector.GetActivator(control);
+            var description = "Style " + this.Selector.ToString();
+            var match = this.Selector.Match(control);
 
-            if (activator.CurrentValue || !activator.HasCompleted)
+            if (match.ImmediateResult.HasValue)
             {
-                IObservable<bool> observable = activator;
-
-                // If the activator has completed, then we want its value to be true forever.
-                // Because of this we can't pass the activator directly as it will complete 
-                // immediately and remove the binding.
-                if (activator.HasCompleted)
+                if (match.ImmediateResult == true)
                 {
-                    observable = Observable.Never<bool>().StartWith(true);
+                    foreach (Setter setter in this.Setters)
+                    {
+                        control.SetValue(setter.Property, setter.Value, BindingPriority.Style);
+                    }
                 }
-
+            }
+            else
+            {
                 foreach (Setter setter in this.Setters)
                 {
-                    StyleBinding binding = new StyleBinding(observable, setter.Value, description);
-                    control.Bind(setter.Property, binding, this.Selector.Priority);
+                    var binding = new StyleBinding(match.ObservableResult, setter.Value, description);
+                    control.Bind(setter.Property, binding, BindingPriority.StyleTrigger);
                 }
             }
         }

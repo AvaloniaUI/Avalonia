@@ -12,10 +12,10 @@ namespace Perspex.Styling.UnitTests
     {
         public static Selector SubscribeCheck(this Selector selector)
         {
-            return new Selector(selector)
-            {
-                GetObservable = control => ((TestControlBase)control).SubscribeCheckObservable,
-            };
+            return new Selector(
+                selector,
+                control => new SelectorMatch(((TestControlBase)control).SubscribeCheckObservable),
+                "");
         }
     }
 }

@@ -16,15 +16,6 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Class
     {
         [Fact]
-        public void Class_Priority_Is_StyleTrigger()
-        {
-            var control = new Control1();
-            var target = new Selector().Class("foo");
-
-            Assert.Equal(BindingPriority.StyleTrigger, target.Priority);
-        }
-
-        [Fact]
         public async Task Class_Matches_Control_With_Class()
         {
             var control = new Control1
@@ -33,7 +24,7 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
         }
@@ -47,7 +38,7 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
         }
@@ -62,7 +53,7 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
         }
@@ -73,7 +64,7 @@ namespace Perspex.Styling.UnitTests
             var control = new Control1();
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -89,7 +80,7 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
             control.Classes.Remove("foo");
@@ -101,7 +92,7 @@ namespace Perspex.Styling.UnitTests
         {
             var control = new Control1();
             var target = new Selector().Class("foo").Class("bar");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");

@@ -16,64 +16,30 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_OfType
     {
         [Fact]
-        public void OfType_Priority_Is_Style()
+        public void OfType_Matches_Control_Of_Correct_Type()
         {
             var control = new Control1();
             var target = new Selector().OfType<Control1>();
 
-            Assert.Equal(BindingPriority.Style, target.Priority);
+            Assert.True(target.Match(control).ImmediateResult);
         }
 
         [Fact]
-        public async Task OfType_Matches_Control_Of_Correct_Type()
-        {
-            var control = new Control1();
-            var target = new Selector().OfType<Control1>();
-            var activator = target.GetActivator(control);
-
-            Assert.True(await activator.Take(1));
-        }
-
-        [Fact]
-        public async Task OfType_Doesnt_Match_Control_Of_Wrong_Type()
+        public void OfType_Doesnt_Match_Control_Of_Wrong_Type()
         {
             var control = new Control2();
             var target = new Selector().OfType<Control1>();
-            var activator = target.GetActivator(control);
 
-            Assert.False(await activator.Take(1));
+            Assert.False(target.Match(control).ImmediateResult);
         }
 
         [Fact]
-        public async Task OfType_Matches_Control_With_TemplatedParent()
+        public void OfType_Matches_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = new Selector().OfType<Control1>();
-            var activator = target.GetActivator(control);
 
-            Assert.True(await activator.Take(1));
-        }
-
-        [Fact]
-        public async Task When_OfType_Matches_Control_Other_Selectors_Are_Subscribed()
-        {
-            var control = new Control1();
-            var target = new Selector().OfType<Control1>().SubscribeCheck();
-
-            var result = await target.GetActivator(control).Take(1);
-
-            Assert.Equal(1, control.SubscribeCheckObservable.SubscribedCount);
-        }
-
-        [Fact]
-        public async Task When_OfType_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
-        {
-            var control = new Control1();
-            var target = new Selector().OfType<Control2>().SubscribeCheck();
-
-            var result = await target.GetActivator(control).Take(1);
-
-            Assert.Equal(0, control.SubscribeCheckObservable.SubscribedCount);
+            Assert.True(target.Match(control).ImmediateResult);
         }
 
         public class Control1 : TestControlBase

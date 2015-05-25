@@ -10,7 +10,6 @@ namespace Perspex.Styling.UnitTests
     using System.Linq;
     using System.Reactive.Linq;
     using System.Threading.Tasks;
-    using Moq;
     using Perspex.Collections;
     using Perspex.Styling;
     using Xunit;
@@ -18,50 +17,46 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Descendent
     {
         [Fact]
-        public async Task Descendent_Matches_Control_When_It_Is_Child_OfType()
+        public void Descendent_Matches_Control_When_It_Is_Child_OfType()
         {
-            var parent = new Mock<TestLogical1>();
-            var child = new Mock<TestLogical2>();
-            var childStyleable = child.As<IStyleable>();
+            var parent = new TestLogical1();
+            var child = new TestLogical2();
 
-            child.Setup(x => x.LogicalParent).Returns(parent.Object);
+            child.LogicalParent = parent;
 
-            var selector = new Selector().OfType(parent.Object.GetType()).Descendent().OfType(child.Object.GetType());
-            var activator = selector.GetActivator(childStyleable.Object);
+            var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical2>();
 
-            Assert.True(await activator.Take(1));
+            Assert.True(selector.Match(child).ImmediateResult);
         }
 
         [Fact]
-        public async Task Descendent_Matches_Control_When_It_Is_Descendent_OfType()
+        public void Descendent_Matches_Control_When_It_Is_Descendent_OfType()
         {
-            var grandparent = new Mock<TestLogical1>();
-            var parent = new Mock<TestLogical2>();
-            var child = new Mock<TestLogical3>();
+            var grandparent = new TestLogical1();
+            var parent = new TestLogical2();
+            var child = new TestLogical3();
 
-            parent.Setup(x => x.LogicalParent).Returns(grandparent.Object);
-            child.Setup(x => x.LogicalParent).Returns(parent.Object);
+            parent.LogicalParent = grandparent;
+            child.LogicalParent = parent;
 
-            var selector = new Selector().OfType(grandparent.Object.GetType()).Descendent().OfType(child.Object.GetType());
-            var activator = selector.GetActivator(child.Object);
+            var selector = new Selector().OfType<TestLogical1>().Descendent().OfType<TestLogical3>();
 
-            Assert.True(await activator.Take(1));
+            Assert.True(selector.Match(child).ImmediateResult);
         }
 
         [Fact]
         public async Task Descendent_Matches_Control_When_It_Is_Descendent_OfType_And_Class()
         {
-            var grandparent = new Mock<TestLogical1>();
-            var parent = new Mock<TestLogical2>();
-            var child = new Mock<TestLogical3>();
+            var grandparent = new TestLogical1();
+            var parent = new TestLogical2();
+            var child = new TestLogical3();
 
-            grandparent.Setup(x => x.Classes).Returns(new Classes("foo"));
-            parent.Setup(x => x.LogicalParent).Returns(grandparent.Object);
-            parent.Setup(x => x.Classes).Returns(new Classes());
-            child.Setup(x => x.LogicalParent).Returns(parent.Object);
+            grandparent.Classes.Add("foo");
+            parent.LogicalParent = grandparent;
+            child.LogicalParent = parent;
 
-            var selector = new Selector().OfType(grandparent.Object.GetType()).Class("foo").Descendent().OfType(child.Object.GetType());
-            var activator = selector.GetActivator(child.Object);
+            var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
+            var activator = selector.Match(child).ObservableResult;
 
             Assert.True(await activator.Take(1));
         }
@@ -69,41 +64,79 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public async Task Descendent_Doesnt_Match_Control_When_It_Is_Descendent_OfType_But_Wrong_Class()
         {
-            var grandparent = new Mock<TestLogical1>();
-            var parent = new Mock<TestLogical2>();
-            var child = new Mock<TestLogical3>();
+            var grandparent = new TestLogical1();
+            var parent = new TestLogical2();
+            var child = new TestLogical3();
 
-            grandparent.Setup(x => x.Classes).Returns(new Classes("bar"));
-            parent.Setup(x => x.LogicalParent).Returns(grandparent.Object);
-            parent.Setup(x => x.Classes).Returns(new Classes("foo"));
-            child.Setup(x => x.LogicalParent).Returns(parent.Object);
+            grandparent.Classes.Add("bar");
+            parent.LogicalParent = grandparent;
+            parent.Classes.Add("foo");
+            child.LogicalParent = parent;
 
             var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
-            var activator = selector.GetActivator(child.Object);
+            var activator = selector.Match(child).ObservableResult;
 
+            Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public async Task Descendent_Matches_Any_Ancestor()
+        {
+            var grandparent = new TestLogical1();
+            var parent = new TestLogical1();
+            var child = new TestLogical3();
+
+            parent.LogicalParent = grandparent;
+            child.LogicalParent = parent;
+
+            var selector = new Selector().OfType<TestLogical1>().Class("foo").Descendent().OfType<TestLogical3>();
+            var activator = selector.Match(child).ObservableResult;
+
+            Assert.False(await activator.Take(1));
+            parent.Classes.Add("foo");
+            Assert.True(await activator.Take(1));
+            grandparent.Classes.Add("foo");
+            Assert.True(await activator.Take(1));
+            parent.Classes.Remove("foo");
+            Assert.True(await activator.Take(1));
+            grandparent.Classes.Remove("foo");
             Assert.False(await activator.Take(1));
         }
 
         public abstract class TestLogical : ILogical, IStyleable
         {
-            public abstract Classes Classes { get; }
-            public abstract string Name { get; }
-            public abstract IPerspexReadOnlyList<ILogical> LogicalChildren { get; }
-            public abstract ILogical LogicalParent { get; }
+            public TestLogical()
+            {
+                this.Classes = new Classes();
+            }
+
+            public Classes Classes { get; }
+            public string Name { get; set; }
+            public IPerspexReadOnlyList<ILogical> LogicalChildren { get; set; }
+            public ILogical LogicalParent { get; set; }
             public Type StyleKey { get; }
-            public abstract ITemplatedControl TemplatedParent { get; }
-            public abstract IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue);
+            public ITemplatedControl TemplatedParent { get; }
+
+            public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetValue(PerspexProperty property, object value, BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public abstract class TestLogical1 : TestLogical
+        public class TestLogical1 : TestLogical
         {
         }
 
-        public abstract class TestLogical2 : TestLogical
+        public class TestLogical2 : TestLogical
         {
         }
 
-        public abstract class TestLogical3 : TestLogical
+        public class TestLogical3 : TestLogical
         {
         }
     }

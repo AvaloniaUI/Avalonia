@@ -42,7 +42,7 @@ namespace Perspex.Styling.UnitTests
 
             var border = (Border)((IVisual)control).VisualChildren.Single();
             var values = new List<bool>();
-            var activator = selector.GetActivator(border);
+            var activator = selector.Match(border).ObservableResult;
 
             activator.Subscribe(x => values.Add(x));
 

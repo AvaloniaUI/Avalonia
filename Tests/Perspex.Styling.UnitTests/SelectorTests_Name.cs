@@ -16,64 +16,31 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Name
     {
         [Fact]
-        public void Name_Priority_Is_Style()
-        {
-            var control = new Control1();
-            var target = new Selector().Name("foo");
-
-            Assert.Equal(BindingPriority.Style, target.Priority);
-        }
-
-        [Fact]
-        public async Task Name_Matches_Control_With_Correct_Name()
+        public void Name_Matches_Control_With_Correct_Name()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("foo");
-            var activator = target.GetActivator(control);
 
-            Assert.True(await activator.Take(1));
+            Assert.True(target.Match(control).ImmediateResult);
         }
 
         [Fact]
-        public async Task Name_Doesnt_Match_Control_Of_Wrong_Name()
+        public void Name_Doesnt_Match_Control_Of_Wrong_Name()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("bar");
-            var activator = target.GetActivator(control);
 
-            Assert.False(await activator.Take(1));
+            Assert.False(target.Match(control).ImmediateResult);
         }
 
         [Fact]
-        public async Task Name_Doesnt_Match_Control_With_TemplatedParent()
+        public void Name_Doesnt_Match_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = new Selector().Name("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control);
 
-            Assert.False(await activator.Take(1));
-        }
-
-        [Fact]
-        public async Task When_Name_Matches_Control_Other_Selectors_Are_Subscribed()
-        {
-            var control = new Control1 { Name = "foo" };
-            var target = new Selector().Name("foo").SubscribeCheck();
-
-            var result = await target.GetActivator(control).Take(1);
-
-            Assert.Equal(1, control.SubscribeCheckObservable.SubscribedCount);
-        }
-
-        [Fact]
-        public async Task When_Name_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
-        {
-            var control = new Control1 { Name = "foo" };
-            var target = new Selector().Name("bar").SubscribeCheck();
-
-            var result = await target.GetActivator(control).Take(1);
-
-            Assert.Equal(0, control.SubscribeCheckObservable.SubscribedCount);
+            Assert.False(target.Match(control).ImmediateResult);
         }
 
         public class Control1 : TestControlBase

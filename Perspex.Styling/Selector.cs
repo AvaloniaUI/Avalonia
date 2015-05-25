@@ -8,54 +8,38 @@ namespace Perspex.Styling
 {
     using System;
     using System.Collections.Generic;
-    using System.Reactive.Linq;
 
     public class Selector
     {
+        private Func<IStyleable, SelectorMatch> evaluate;
+
+        private bool inTemplate;
+
         private bool stopTraversal;
 
         public Selector()
         {
-            this.GetObservable = _ => Observable.Return(true);
-            this.Priority = BindingPriority.Style;
+            this.evaluate = _ => new SelectorMatch(true);
         }
 
-        public Selector(Selector previous, bool stopTraversal = false)
+        public Selector(
+            Selector previous,
+            Func<IStyleable, SelectorMatch> evaluate,
+            string selectorString,
+            bool inTemplate = false,
+            bool stopTraversal = false)
             : this()
         {
+            Contract.Requires<ArgumentNullException>(previous != null);
+
             this.Previous = previous;
-            this.Priority = previous.Priority;
-            this.InTemplate = previous != null ? previous.InTemplate : false;
+            this.evaluate = evaluate;
+            this.SelectorString = selectorString;
+            this.inTemplate = inTemplate || previous.inTemplate;
             this.stopTraversal = stopTraversal;
         }
 
-        public Selector(Selector previous, BindingPriority priority)
-            : this()
-        {
-            this.Previous = previous;
-            this.Priority = priority;
-            this.InTemplate = previous != null ? previous.InTemplate : false;
-        }
-
-        public bool InTemplate
-        {
-            get;
-            set;
-        }
-
-        public Func<IStyleable, IObservable<bool>> GetObservable
-        {
-            get;
-            set;
-        }
-
         public Selector Previous
-        {
-            get;
-            private set;
-        }
-
-        public BindingPriority Priority
         {
             get;
             private set;
@@ -72,26 +56,40 @@ namespace Perspex.Styling
             return this.stopTraversal ? null : this.Previous;
         }
 
-        public StyleActivator GetActivator(IStyleable control)
+        public SelectorMatch Match(IStyleable control)
         {
             List<IObservable<bool>> inputs = new List<IObservable<bool>>();
             Selector selector = this;
             
             while (selector != null)
             {
-                if (selector.InTemplate && control.TemplatedParent == null)
+                if (selector.inTemplate && control.TemplatedParent == null)
                 {
-                    inputs.Add(Observable.Return(false));
+                    return SelectorMatch.False;
                 }
-                else
+
+                var match = selector.evaluate(control);
+
+                if (match.ImmediateResult == false)
                 {
-                    inputs.Add(selector.GetObservable(control));
+                    return match;
+                }
+                else if (match.ObservableResult != null)
+                {
+                    inputs.Add(match.ObservableResult);
                 }
 
                 selector = selector.MovePrevious();
             }
 
-            return new StyleActivator(inputs);
+            if (inputs.Count > 0)
+            {
+                return new SelectorMatch(new StyleActivator(inputs));
+            }
+            else
+            {
+                return SelectorMatch.True;
+            }
         }
 
         public override string ToString()
