@@ -13,10 +13,10 @@ namespace Perspex.Styling.UnitTests
     using Perspex.Styling;
     using Xunit;
 
-    public class SelectorTests_Id
+    public class SelectorTests_Name
     {
         [Fact]
-        public void Id_Priority_Is_Style()
+        public void Name_Priority_Is_Style()
         {
             var control = new Control1();
             var target = new Selector().Name("foo");
@@ -25,7 +25,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Id_Matches_Control_With_Correct_Name()
+        public async Task Name_Matches_Control_With_Correct_Name()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("foo");
@@ -35,7 +35,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Id_Doesnt_Match_Control_Of_Wrong_Name()
+        public async Task Name_Doesnt_Match_Control_Of_Wrong_Name()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("bar");
@@ -45,7 +45,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Id_Doesnt_Match_Control_With_TemplatedParent()
+        public async Task Name_Doesnt_Match_Control_With_TemplatedParent()
         {
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = new Selector().Name("foo");
@@ -55,7 +55,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task When_Id_Matches_Control_Other_Selectors_Are_Subscribed()
+        public async Task When_Name_Matches_Control_Other_Selectors_Are_Subscribed()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("foo").SubscribeCheck();
@@ -66,7 +66,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task When_Id_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
+        public async Task When_Name_Doesnt_Match_Control_Other_Selectors_Are_Not_Subscribed()
         {
             var control = new Control1 { Name = "foo" };
             var target = new Selector().Name("bar").SubscribeCheck();
