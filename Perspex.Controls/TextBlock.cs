@@ -17,19 +17,19 @@ namespace Perspex.Controls
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         public static readonly PerspexProperty<string> FontFamilyProperty =
-            PerspexProperty.Register<TextBlock, string>("FontFamily", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, string>("FontFamily", inherits: true);
 
         public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.Register<TextBlock, double>("FontSize", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, double>("FontSize", inherits: true);
 
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
-            PerspexProperty.Register<TextBlock, FontStyle>("FontStyle", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, FontStyle>("FontStyle", inherits: true);
 
         public static readonly PerspexProperty<FontWeight> FontWeightProperty =
-            PerspexProperty.Register<TextBlock, FontWeight>("FontWeight", inherits: true, defaultValue: FontWeight.Normal);
+            PerspexProperty.RegisterAttached<TextBlock, Control, FontWeight>("FontWeight", inherits: true, defaultValue: FontWeight.Normal);
 
         public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.Register<TextBlock, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
 
         public static readonly PerspexProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>("Text");
