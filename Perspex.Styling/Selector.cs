@@ -17,6 +17,8 @@ namespace Perspex.Styling
 
         private bool stopTraversal;
 
+        private string description;
+
         public Selector()
         {
             this.evaluate = _ => new SelectorMatch(true);
@@ -94,14 +96,19 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            string result = string.Empty;
-
-            if (this.Previous != null)
+            if (this.description == null)
             {
-                result = this.Previous.ToString();
+                string result = string.Empty;
+
+                if (this.Previous != null)
+                {
+                    result = this.Previous.ToString();
+                }
+
+                this.description = result + this.SelectorString;
             }
 
-            return result + this.SelectorString;
+            return this.description;
         }
     }
 }
