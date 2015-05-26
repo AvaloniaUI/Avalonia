@@ -96,7 +96,7 @@ namespace TestApplication
         {
             Log.Logger = new LoggerConfiguration()
                 .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
-                .MinimumLevel.Verbose()
+                //.MinimumLevel.Verbose()
                 .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
                 .CreateLogger();
 
