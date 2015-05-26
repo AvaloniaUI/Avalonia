@@ -188,6 +188,7 @@ namespace Perspex.Themes.Default
                         (popup = new Popup
                         {
                             Name = "popup",
+                            PlacementMode = PlacementMode.Right,
                             StaysOpen = true,
                             [!!Popup.IsOpenProperty] = control[!!MenuItem.IsSubMenuOpenProperty],
                             Child = new Border

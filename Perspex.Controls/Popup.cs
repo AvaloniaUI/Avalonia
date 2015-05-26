@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using Perspex.Interactivity;
     using Perspex.Platform;
     using Perspex.Rendering;
+    using Perspex.VisualTree;
 
     public class Popup : Control
     {
@@ -18,6 +19,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<bool> IsOpenProperty =
             PerspexProperty.Register<Popup, bool>("IsOpen");
+
+        public static readonly PerspexProperty<PlacementMode> PlacementModeProperty =
+            PerspexProperty.Register<Popup, PlacementMode>("PlacementMode", defaultValue: PlacementMode.Bottom);
 
         public static readonly PerspexProperty<Control> PlacementTargetProperty =
             PerspexProperty.Register<Popup, Control>("PlacementTarget");
@@ -59,6 +63,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(IsOpenProperty); }
             set { this.SetValue(IsOpenProperty, value); }
+        }
+
+        public PlacementMode PlacementMode
+        {
+            get { return this.GetValue(PlacementModeProperty); }
+            set { this.SetValue(PlacementModeProperty, value); }
         }
 
         public Control PlacementTarget
@@ -130,9 +140,24 @@ namespace Perspex.Controls
 
         private Point GetPosition()
         {
-            if (this.PlacementTarget != null)
+            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();
+            Point point;
+
+            switch (this.PlacementMode)
             {
-                return this.PlacementTarget.PointToScreen(new Point(0, this.PlacementTarget.Bounds.Size.Height));
+                case PlacementMode.Bottom:
+                    point = target.Bounds.BottomLeft;
+                    break;
+                case PlacementMode.Right:
+                    point = target.Bounds.TopRight;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+            }
+
+            if (target != null)
+            {
+                return target.PointToScreen(point);
             }
             else
             {

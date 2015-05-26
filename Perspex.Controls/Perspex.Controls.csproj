@@ -50,6 +50,7 @@
     <Compile Include="Deck.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
+    <Compile Include="PlacementMode.cs" />
     <Compile Include="Popup.cs" />
     <Compile Include="IDataTemplate.cs" />
     <Compile Include="Presenters\IItemsPresenter.cs" />
