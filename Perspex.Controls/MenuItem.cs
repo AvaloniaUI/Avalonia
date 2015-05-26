@@ -6,10 +6,15 @@
 
 namespace Perspex.Controls
 {
+    using System;
+    using System.Linq;
+    using System.Windows.Input;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.LogicalTree;
-    using System.Windows.Input;
+    using Perspex.Collections;
+    using Perspex.Rendering;
+    using Perspex.Controls.Templates;
 
     public class MenuItem : HeaderedItemsControl
     {
@@ -24,6 +29,11 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<bool> IsSubMenuOpenProperty =
             PerspexProperty.Register<MenuItem, bool>("IsSubMenuOpen");
+
+        static MenuItem()
+        {
+            IsSubMenuOpenProperty.Changed.Subscribe(SubMenuOpenChanged);
+        }
 
         public ICommand Command
         {
@@ -62,6 +72,27 @@ namespace Perspex.Controls
             if (!this.Classes.Contains(":empty"))
             {
                 this.IsSubMenuOpen = !this.IsSubMenuOpen;
+            }
+        }
+
+        private void OnSubMenuOpenChanged(bool open)
+        {
+            if (!open && this.Items != null)
+            {
+                foreach (var item in this.Items.Cast<object>().OfType<MenuItem>())
+                {
+                    item.IsSubMenuOpen = false;
+                }
+            }
+        }
+
+        private static void SubMenuOpenChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var sender = e.Sender as MenuItem;
+
+            if (sender != null)
+            {
+                sender.OnSubMenuOpenChanged((bool)e.NewValue);
             }
         }
     }
