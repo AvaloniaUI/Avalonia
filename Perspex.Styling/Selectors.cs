@@ -59,6 +59,13 @@ namespace Perspex.Styling
             return previous.OfType(typeof(T));
         }
 
+        public static Selector Parent(this Selector previous)
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+
+            return new Selector(previous, x => MatchParent(x, previous), " < ", stopTraversal: true);
+        }
+
         public static Selector Template(this Selector previous)
         {
             Contract.Requires<ArgumentNullException>(previous != null);
@@ -126,6 +133,12 @@ namespace Perspex.Styling
         {
             var controlType = control.StyleKey ?? control.GetType();
             return new SelectorMatch(controlType == type);
+        }
+
+        private static SelectorMatch MatchParent(IStyleable control, Selector previous)
+        {
+            var parent = ((ILogical)control).LogicalParent;
+            return previous.Match((IStyleable)parent);
         }
 
         private static SelectorMatch MatchTemplate(IStyleable control, Selector previous)
