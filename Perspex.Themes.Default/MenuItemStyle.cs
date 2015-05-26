@@ -60,16 +60,16 @@ namespace Perspex.Themes.Default
                     },
                     Children = new Controls
                     {
-                        //new ContentPresenter
-                        //{
-                        //    Name = "icon",
-                        //    [~ContentPresenter.ContentProperty] = control[~MenuItem.IconProperty],
-                        //    Width = 16,
-                        //    Height = 16,
-                        //    Margin = new Thickness(3),
-                        //    HorizontalAlignment = HorizontalAlignment.Center,
-                        //    VerticalAlignment = VerticalAlignment.Center,
-                        //},
+                        new ContentPresenter
+                        {
+                            Name = "icon",
+                            [~ContentPresenter.ContentProperty] = control[~MenuItem.IconProperty],
+                            Width = 16,
+                            Height = 16,
+                            Margin = new Thickness(3),
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                        },
                         new Path
                         {
                             Data = StreamGeometry.Parse("F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z"),
@@ -97,12 +97,26 @@ namespace Perspex.Themes.Default
                                 Padding = new Thickness(2),
                                 Content = new ScrollViewer
                                 {
-                                    Content = new ItemsPresenter
+                                    Content = new Panel
                                     {
-                                        Name = "itemsPresenter",
-                                        [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
-                                        [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
-                                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                                        Children = new Controls
+                                        {
+                                            new Rectangle
+                                            {
+                                                Name = "iconSeparator",
+                                                Fill = new SolidColorBrush(0xffd7d7d7),
+                                                HorizontalAlignment = HorizontalAlignment.Left,
+                                                Margin = new Thickness(29, 2, 0, 2),
+                                                Width = 1,
+                                            },
+                                            new ItemsPresenter
+                                            {
+                                                Name = "itemsPresenter",
+                                                [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
+                                                [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                                                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                                            }
+                                        }
                                     }
                                 }
                             }
