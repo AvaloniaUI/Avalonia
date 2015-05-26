@@ -45,6 +45,21 @@ namespace Perspex.Themes.Default
                         new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
                     },
                 },
+                new Style(x => x.OfType<MenuItem>().Class(":empty").Template().Name("rightArrow"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Path.IsVisibleProperty, false),
+                    },
+                },
+                new Style(x => x.OfType<MenuItem>().PropertyEquals(MenuItem.IsSubMenuOpenProperty, true).Template().Name("root"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Border.BackgroundProperty, new SolidColorBrush(0x3d26a0da)),
+                        new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
+                    },
+                },
             });
         }
 
@@ -71,7 +86,7 @@ namespace Perspex.Themes.Default
                         (popup = new Popup
                         {
                             Name = "popup",
-                            StaysOpen = false,
+                            StaysOpen = true,
                             [!!Popup.IsOpenProperty] = control[!!MenuItem.IsSubMenuOpenProperty],
                             Child = new Border
                             {
@@ -160,10 +175,20 @@ namespace Perspex.Themes.Default
                             [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
                             [Grid.ColumnProperty] = 2,
                         },
+                        new Path
+                        {
+                            Name = "rightArrow",
+                            Data = StreamGeometry.Parse("M0,0L4,3.5 0,7z"),
+                            Fill = new SolidColorBrush(0xff212121),
+                            Margin = new Thickness(10, 0, 0, 0),
+                            UseLayoutRounding = false,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            [Grid.ColumnProperty] = 3,
+                        },
                         (popup = new Popup
                         {
                             Name = "popup",
-                            StaysOpen = false,
+                            StaysOpen = true,
                             [!!Popup.IsOpenProperty] = control[!!MenuItem.IsSubMenuOpenProperty],
                             Child = new Border
                             {
