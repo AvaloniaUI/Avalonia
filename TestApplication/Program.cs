@@ -129,11 +129,61 @@ namespace TestApplication
                     },
                     RowDefinitions = new RowDefinitions
                     {
+                        new RowDefinition(GridLength.Auto),
                         new RowDefinition(1, GridUnitType.Star),
                         new RowDefinition(GridLength.Auto),
                     },
                     Children = new Controls
                     {
+                        new Menu
+                        {
+                            Items = new[]
+                            {
+                                new MenuItem
+                                {
+                                    Header = "_File",
+                                    Items = new[]
+                                    {
+                                        new MenuItem
+                                        {
+                                            Header = "_Open...",
+                                        },
+                                        new MenuItem
+                                        {
+                                            Header = "_Save",
+                                        },
+                                        new MenuItem
+                                        {
+                                            Header = "Save _As",
+                                        },
+                                        new MenuItem
+                                        {
+                                            Header = "E_xit",
+                                        },
+                                    }
+                                },
+                                new MenuItem
+                                {
+                                    Header = "_Edit",
+                                    Items = new[]
+                                    {
+                                        new MenuItem
+                                        {
+                                            Header = "Cu_t",
+                                        },
+                                        new MenuItem
+                                        {
+                                            Header = "_Copy",
+                                        },
+                                        new MenuItem
+                                        {
+                                            Header = "_Paste",
+                                        },
+                                    }
+                                }
+                            },
+                            [Grid.ColumnSpanProperty] = 2,
+                        },
                         new TabControl
                         {
                             Items = new[]
@@ -146,13 +196,14 @@ namespace TestApplication
                                 AnimationsTab(),
                             },
                             Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
+                            [Grid.RowProperty] = 1,
                             [Grid.ColumnSpanProperty] = 2,
                         },
                         (fps = new TextBlock
                         {
                             HorizontalAlignment = HorizontalAlignment.Left,
                             Margin = new Thickness(2),
-                            [Grid.RowProperty] = 1,
+                            [Grid.RowProperty] = 2,
                         }),
                         new TextBlock
                         {
@@ -160,7 +211,7 @@ namespace TestApplication
                             HorizontalAlignment = HorizontalAlignment.Right,
                             Margin = new Thickness(2),
                             [Grid.ColumnProperty] = 1,
-                            [Grid.RowProperty] = 1,
+                            [Grid.RowProperty] = 2,
                         },
                     }
                 },

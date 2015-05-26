@@ -37,6 +37,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Border.cs" />
+    <Compile Include="MenuItem.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="AdornerTemplate.cs" />
     <Compile Include="DropDown.cs" />
