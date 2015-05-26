@@ -46,6 +46,20 @@ namespace Perspex.Styling
         IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority);
 
         /// <summary>
+        /// Gets an observable for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>An observable.</returns>
+        IObservable<object> GetObservable(PerspexProperty property);
+
+        /// <summary>
+        /// Checks whether a <see cref="PerspexProperty"/> is registered on this class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is registered, otherwise false.</returns>
+        bool IsRegistered(PerspexProperty property);
+
+        /// <summary>
         /// Sets a <see cref="PerspexProperty"/> value.
         /// </summary>
         /// <param name="property">The property.</param>

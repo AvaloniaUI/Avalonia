@@ -51,5 +51,15 @@ namespace Perspex.Styling.UnitTests
         {
             throw new NotImplementedException();
         }
+
+        public IObservable<object> GetObservable(PerspexProperty property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRegistered(PerspexProperty property)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

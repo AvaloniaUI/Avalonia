@@ -66,6 +66,14 @@ namespace Perspex.Styling
             return new Selector(previous, x => MatchParent(x, previous), " < ", stopTraversal: true);
         }
 
+        public static Selector PropertyEquals<T>(this Selector previous, PerspexProperty<T> property, object value)
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            return new Selector(previous, x => MatchPropertyEquals(x, property, value), $"[{property.Name}={value}]");
+        }
+
         public static Selector Template(this Selector previous)
         {
             Contract.Requires<ArgumentNullException>(previous != null);
@@ -139,6 +147,18 @@ namespace Perspex.Styling
         {
             var parent = ((ILogical)control).LogicalParent;
             return previous.Match((IStyleable)parent);
+        }
+
+        private static SelectorMatch MatchPropertyEquals<T>(IStyleable x, PerspexProperty<T> property, object value)
+        {
+            if (!x.IsRegistered(property))
+            {
+                return new SelectorMatch(false);
+            }
+            else
+            {
+                return new SelectorMatch(x.GetObservable(property).Select(v => object.Equals(v, value)));
+            }
         }
 
         private static SelectorMatch MatchTemplate(IStyleable control, Selector previous)

@@ -87,6 +87,7 @@
     <Compile Include="SelectorTests_Descendent.cs" />
     <Compile Include="SelectorTests_Name.cs" />
     <Compile Include="SelectorTests_Multiple.cs" />
+    <Compile Include="SelectorTests_PropertyEquals.cs" />
     <Compile Include="SelectorTests_OfType.cs" />
     <Compile Include="SelectorTests_Template.cs" />
     <Compile Include="StyleActivatorTests.cs" />
