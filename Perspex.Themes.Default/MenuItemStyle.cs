@@ -27,7 +27,14 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(MenuItem.BorderThicknessProperty, 1.0),
                         new Setter(MenuItem.PaddingProperty, new Thickness(6, 0)),
-                        new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.Template)),
+                        new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.PopupTemplate)),
+                    },
+                },
+                new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())
+                {
+                    Setters = new[]
+                    {
+                        new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.TopLevelTemplate)),
                     },
                 },
                 new Style(x => x.OfType<MenuItem>().Class(":pointerover").Template().Name("root"))
@@ -37,11 +44,77 @@ namespace Perspex.Themes.Default
                         new Setter(Border.BackgroundProperty, new SolidColorBrush(0x3d26a0da)),
                         new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
                     },
-                }
+                },
             });
         }
 
-        private Control Template(MenuItem control)
+        private Control TopLevelTemplate(MenuItem control)
+        {
+            Popup popup;
+
+            var result = new Border
+            {
+                Name = "root",
+                [~Border.BackgroundProperty] = control[~MenuItem.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~MenuItem.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~MenuItem.BorderThicknessProperty],
+                Content = new Panel
+                {
+                    Children = new Controls
+                    {
+                        new ContentPresenter
+                        {
+                            [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
+                            [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
+                            [Grid.ColumnProperty] = 1,
+                        },
+                        (popup = new Popup
+                        {
+                            Name = "popup",
+                            StaysOpen = false,
+                            [!!Popup.IsOpenProperty] = control[!!MenuItem.IsSubMenuOpenProperty],
+                            Child = new Border
+                            {
+                                Background = new SolidColorBrush(0xfff0f0f0),
+                                BorderBrush = new SolidColorBrush(0xff999999),
+                                BorderThickness = 1,
+                                Padding = new Thickness(2),
+                                Content = new ScrollViewer
+                                {
+                                    Content = new Panel
+                                    {
+                                        Children = new Controls
+                                        {
+                                            new Rectangle
+                                            {
+                                                Name = "iconSeparator",
+                                                Fill = new SolidColorBrush(0xffd7d7d7),
+                                                HorizontalAlignment = HorizontalAlignment.Left,
+                                                Margin = new Thickness(29, 2, 0, 2),
+                                                Width = 1,
+                                            },
+                                            new ItemsPresenter
+                                            {
+                                                Name = "itemsPresenter",
+                                                [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
+                                                [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                                                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                         })
+                    },
+                }
+            };
+
+            popup.PlacementTarget = result;
+
+            return result;
+        }
+
+        private Control PopupTemplate(MenuItem control)
         {
             Popup popup;
 
@@ -55,8 +128,10 @@ namespace Perspex.Themes.Default
                 {
                     ColumnDefinitions = new ColumnDefinitions
                     {
-                        new ColumnDefinition(GridLength.Auto),
-                        new ColumnDefinition(GridLength.Auto),
+                        new ColumnDefinition(22, GridUnitType.Pixel),
+                        new ColumnDefinition(13, GridUnitType.Pixel),
+                        new ColumnDefinition(1, GridUnitType.Star),
+                        new ColumnDefinition(20, GridUnitType.Pixel),
                     },
                     Children = new Controls
                     {
@@ -80,9 +155,10 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
+                            VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
                             [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
-                            [Grid.ColumnProperty] = 1,
+                            [Grid.ColumnProperty] = 2,
                         },
                         (popup = new Popup
                         {

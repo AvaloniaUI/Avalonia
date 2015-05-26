@@ -141,43 +141,43 @@ namespace TestApplication
                             {
                                 new MenuItem
                                 {
-                                    Header = "_File",
+                                    Header = "File",
                                     Items = new[]
                                     {
                                         new MenuItem
                                         {
-                                            Header = "_Open...",
+                                            Header = "Open...",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "_Save",
+                                            Header = "Save",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Save _As",
+                                            Header = "Save As",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "E_xit",
+                                            Header = "Exit",
                                         },
                                     }
                                 },
                                 new MenuItem
                                 {
-                                    Header = "_Edit",
+                                    Header = "Edit",
                                     Items = new[]
                                     {
                                         new MenuItem
                                         {
-                                            Header = "Cu_t",
+                                            Header = "Cut",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "_Copy",
+                                            Header = "Copy",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "_Paste",
+                                            Header = "Paste",
                                         },
                                     }
                                 }

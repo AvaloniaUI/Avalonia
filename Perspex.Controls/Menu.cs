@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Controls.Generators;
+
 namespace Perspex.Controls
 {
     public class Menu : ItemsControl

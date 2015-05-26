@@ -21,7 +21,7 @@ namespace Perspex.Styling
 
         public Selector()
         {
-            this.evaluate = _ => new SelectorMatch(true);
+            this.evaluate = _ => SelectorMatch.True;
         }
 
         public Selector(

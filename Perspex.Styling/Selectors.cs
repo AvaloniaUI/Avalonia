@@ -13,6 +13,13 @@ namespace Perspex.Styling
 
     public static class Selectors
     {
+        public static Selector Child(this Selector previous)
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+
+            return new Selector(previous, x => MatchChild(x, previous), " < ", stopTraversal: true);
+        }
+
         public static Selector Class(this Selector previous, string name)
         {
             Contract.Requires<ArgumentNullException>(previous != null);
@@ -59,13 +66,6 @@ namespace Perspex.Styling
             return previous.OfType(typeof(T));
         }
 
-        public static Selector Parent(this Selector previous)
-        {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(previous, x => MatchParent(x, previous), " < ", stopTraversal: true);
-        }
-
         public static Selector PropertyEquals<T>(this Selector previous, PerspexProperty<T> property, object value)
         {
             Contract.Requires<ArgumentNullException>(previous != null);
@@ -84,6 +84,20 @@ namespace Perspex.Styling
                 " /deep/ ", 
                 inTemplate: true, 
                 stopTraversal: true);
+        }
+
+        private static SelectorMatch MatchChild(IStyleable control, Selector previous)
+        {
+            var parent = ((ILogical)control).LogicalParent;
+
+            if (parent != null)
+            {
+                return previous.Match((IStyleable)parent);
+            }
+            else
+            {
+                return SelectorMatch.False;
+            }
         }
 
         private static SelectorMatch MatchClass(IStyleable control, string name)
@@ -111,7 +125,7 @@ namespace Perspex.Styling
                     {
                         if (match.ImmediateResult == true)
                         {
-                            return new SelectorMatch(true);
+                            return SelectorMatch.True;
                         }
                     }
                     else
@@ -143,17 +157,11 @@ namespace Perspex.Styling
             return new SelectorMatch(controlType == type);
         }
 
-        private static SelectorMatch MatchParent(IStyleable control, Selector previous)
-        {
-            var parent = ((ILogical)control).LogicalParent;
-            return previous.Match((IStyleable)parent);
-        }
-
         private static SelectorMatch MatchPropertyEquals<T>(IStyleable x, PerspexProperty<T> property, object value)
         {
             if (!x.IsRegistered(property))
             {
-                return new SelectorMatch(false);
+                return SelectorMatch.False;
             }
             else
             {
