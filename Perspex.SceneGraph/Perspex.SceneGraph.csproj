@@ -50,7 +50,6 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
-    <Compile Include="ILogical.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />
@@ -101,7 +100,6 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
-    <Compile Include="LogicalTree\LogicalExtensions.cs" />
     <Compile Include="VisualTree\TransformedBounds.cs" />
     <Compile Include="VisualTree\BoundsTracker.cs" />
     <Compile Include="VisualTree\VisualExtensions.cs" />

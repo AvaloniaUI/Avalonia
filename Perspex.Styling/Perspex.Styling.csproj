@@ -8,7 +8,7 @@
     <ProjectGuid>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.Styling</RootNamespace>
+    <RootNamespace>Perspex</RootNamespace>
     <AssemblyName>Perspex.Styling</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
@@ -36,23 +36,25 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ILogical.cs" />
+    <Compile Include="LogicalTree\LogicalExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Classes.cs" />
-    <Compile Include="IGlobalStyles.cs" />
-    <Compile Include="IStyle.cs" />
-    <Compile Include="IStyleable.cs" />
-    <Compile Include="IStyleHost.cs" />
-    <Compile Include="IStyler.cs" />
-    <Compile Include="ITemplatedControl.cs" />
-    <Compile Include="SelectorMatch.cs" />
-    <Compile Include="Selector.cs" />
-    <Compile Include="Selectors.cs" />
-    <Compile Include="Setter.cs" />
-    <Compile Include="Style.cs" />
-    <Compile Include="StyleActivator.cs" />
-    <Compile Include="StyleBinding.cs" />
-    <Compile Include="Styler.cs" />
-    <Compile Include="Styles.cs" />
+    <Compile Include="Styling\Classes.cs" />
+    <Compile Include="Styling\IGlobalStyles.cs" />
+    <Compile Include="Styling\IStyle.cs" />
+    <Compile Include="Styling\IStyleable.cs" />
+    <Compile Include="Styling\IStyleHost.cs" />
+    <Compile Include="Styling\IStyler.cs" />
+    <Compile Include="Styling\ITemplatedControl.cs" />
+    <Compile Include="Styling\SelectorMatch.cs" />
+    <Compile Include="Styling\Selector.cs" />
+    <Compile Include="Styling\Selectors.cs" />
+    <Compile Include="Styling\Setter.cs" />
+    <Compile Include="Styling\Style.cs" />
+    <Compile Include="Styling\StyleActivator.cs" />
+    <Compile Include="Styling\StyleBinding.cs" />
+    <Compile Include="Styling\Styler.cs" />
+    <Compile Include="Styling\Styles.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -74,7 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="Styling\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
