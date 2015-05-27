@@ -98,6 +98,10 @@ namespace Perspex.Controls
             }
             else if (open)
             {
+                // TODO: This is broken, meaning that a previous submenu isn't closed when a new 
+                // one opens. This is because each menu item is in a separate visual tree to its 
+                // parent due to its being contained in a Popup and parenting/templating is 
+                // broken across visual trees.
                 this.GetLogicalParent<IMenu>()?.ChildSubMenuOpened(this);
             }
         }
