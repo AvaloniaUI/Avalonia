@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using Perspex.Input;
     using Perspex.LogicalTree;
     using Perspex.Rendering;
+    using System.Reactive.Disposables;
 
     public class Menu : ItemsControl, IMenu
     {
@@ -49,11 +50,16 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(root);
 
-            var r = root as IInputElement;
-            this.subscription = r.AddHandler(
-                InputElement.PointerPressedEvent, 
-                this.RootPointerPressed, 
-                Interactivity.RoutingStrategies.Tunnel);
+            var topLevel = root as TopLevel;
+
+            topLevel.Deactivated += this.Deactivated;
+
+            this.subscription = new CompositeDisposable(
+                topLevel.AddHandler(
+                    InputElement.PointerPressedEvent,
+                    this.Deactivated,
+                    Interactivity.RoutingStrategies.Tunnel),
+                Disposable.Create(() => topLevel.Deactivated -= this.Deactivated));
         }
 
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
@@ -62,7 +68,7 @@ namespace Perspex.Controls
             this.subscription.Dispose();
         }
 
-        private void RootPointerPressed(object sender, PointerPressEventArgs e)
+        private void Deactivated(object sender, EventArgs e)
         {
             foreach (var i in this.GetLogicalChildren().Cast<MenuItem>())
             {
