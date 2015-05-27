@@ -8,11 +8,11 @@ namespace Perspex.Controls
 {
     using System;
     using Perspex.Interactivity;
-    using Perspex.Platform;
+    using Perspex.Collections;
     using Perspex.Rendering;
     using Perspex.VisualTree;
 
-    public class Popup : Control
+    public class Popup : Control, ILogical
     {
         public static readonly PerspexProperty<Control> ChildProperty =
             PerspexProperty.Register<Popup, Control>("Child");
@@ -33,24 +33,16 @@ namespace Perspex.Controls
 
         private TopLevel topLevel;
 
+        private PerspexSingleItemList<ILogical> logicalChild = new PerspexSingleItemList<ILogical>();
+
         static Popup()
         {
-            IsOpenProperty.Changed.Subscribe(x =>
-            {
-                Popup popup = x.Sender as Popup;
+            IsOpenProperty.Changed.Subscribe(IsOpenChanged);
+        }
 
-                if (popup != null)
-                {
-                    if ((bool)x.NewValue)
-                    {
-                        popup.Open();
-                    }
-                    else
-                    {
-                        popup.Close();
-                    }
-                }
-            });
+        public Popup()
+        {
+            this.GetObservableWithHistory(ChildProperty).Subscribe(ChildChanged);
         }
 
         public Control Child
@@ -81,6 +73,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(StaysOpenProperty); }
             set { this.SetValue(StaysOpenProperty, value); }
+        }
+
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
+        {
+            get { return this.logicalChild; }
         }
 
         public void Open()
@@ -136,6 +133,38 @@ namespace Perspex.Controls
         {
             base.OnDetachedFromVisualTree(oldRoot);
             this.topLevel = null;
+        }
+
+        private static void IsOpenChanged(PerspexPropertyChangedEventArgs e)
+        {
+            Popup popup = e.Sender as Popup;
+
+            if (popup != null)
+            {
+                if ((bool)e.NewValue)
+                {
+                    popup.Open();
+                }
+                else
+                {
+                    popup.Close();
+                }
+            }
+        }
+
+        private void ChildChanged(Tuple<Control, Control> values)
+        {
+            if (values.Item1 != null)
+            {
+                values.Item1.Parent = null;
+            }
+
+            if (values.Item2 != null)
+            {
+                values.Item2.Parent = this;
+            }
+
+            this.logicalChild.SingleItem = values.Item2;
         }
 
         private Point GetPosition()
