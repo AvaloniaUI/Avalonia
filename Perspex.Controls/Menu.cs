@@ -37,6 +37,14 @@ namespace Perspex.Controls
             }
         }
 
+        void IMenu.ChildSubMenuOpened(MenuItem item)
+        {
+            foreach (MenuItem i in this.GetLogicalChildren())
+            {
+                i.IsSubMenuOpen = i == item;
+            }
+        }
+
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
@@ -58,7 +66,7 @@ namespace Perspex.Controls
         {
             foreach (var i in this.GetLogicalChildren().Cast<MenuItem>())
             {
-                i.IsSubMenuOpen = false;
+                i.IsSubMenuOpen = false;               
             }
         }
     }

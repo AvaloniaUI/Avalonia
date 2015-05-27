@@ -16,7 +16,7 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.Controls.Templates;
 
-    public class MenuItem : HeaderedItemsControl
+    public class MenuItem : HeaderedItemsControl, IMenu
     {
         public static readonly PerspexProperty<ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>();
@@ -59,6 +59,18 @@ namespace Perspex.Controls
             set { this.SetValue(IsSubMenuOpenProperty, value); }
         }
 
+        void IMenu.ChildPointerEnter(MenuItem item)
+        {
+        }
+
+        void IMenu.ChildSubMenuOpened(MenuItem item)
+        {
+            foreach (var i in this.Items.Cast<object>().OfType<MenuItem>())
+            {
+                i.IsSubMenuOpen = i == item;
+            }
+        }
+
         protected override void OnPointerEnter(PointerEventArgs e)
         {
             base.OnPointerEnter(e);
@@ -83,6 +95,10 @@ namespace Perspex.Controls
                 {
                     item.IsSubMenuOpen = false;
                 }
+            }
+            else if (open)
+            {
+                this.GetLogicalParent<IMenu>()?.ChildSubMenuOpened(this);
             }
         }
 

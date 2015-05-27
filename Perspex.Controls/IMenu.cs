@@ -9,5 +9,7 @@ namespace Perspex.Controls
     internal interface IMenu
     {
         void ChildPointerEnter(MenuItem item);
+
+        void ChildSubMenuOpened(MenuItem item);
     }
 }

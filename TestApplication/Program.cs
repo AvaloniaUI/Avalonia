@@ -166,6 +166,17 @@ namespace TestApplication
                                         new MenuItem
                                         {
                                             Header = "Save As",
+                                            Items = new[]
+                                            {
+                                                new MenuItem
+                                                {
+                                                    Header = "Sub Item 1",
+                                                },
+                                                new MenuItem
+                                                {
+                                                    Header = "Sub Item 2",
+                                                },
+                                            }
                                         },
                                         new MenuItem
                                         {
