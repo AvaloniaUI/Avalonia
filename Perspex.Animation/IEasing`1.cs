@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="IEasing.cs" company="Steven Kirk">
+// <copyright file="IEasing`1.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,7 +9,8 @@ namespace Perspex.Animation
     /// <summary>
     /// Defines the interface for easing functions.
     /// </summary>
-    public interface IEasing
+    /// <typeparam name="T">The type of the property being transitioned.</typeparam>
+    public interface IEasing<T> : IEasing
     {
         /// <summary>
         /// Returns the value of the transition for the specified progress.
@@ -21,6 +22,6 @@ namespace Perspex.Animation
         /// A value between <paramref name="start"/> and <paramref name="finish"/> as determined
         /// by <paramref name="progress"/>.
         /// </returns>
-        object Ease(double progress, object start, object finish);
+        T Ease(double progress, T start, T finish);
     }
 }

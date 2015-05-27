@@ -35,7 +35,7 @@ namespace Perspex.Animation
                 tasks.Add(Animate.Property(
                     transform,
                     TranslateTransform.XProperty,
-                    0,
+                    0.0,
                     forward ? -distance : distance,
                     LinearEasing.For<double>(),
                     this.Duration).ToTask());
@@ -50,7 +50,7 @@ namespace Perspex.Animation
                     transform,
                     TranslateTransform.XProperty,
                     forward ? distance : -distance,
-                    0,
+                    0.0,
                     LinearEasing.For<double>(),
                     this.Duration).ToTask());
             }

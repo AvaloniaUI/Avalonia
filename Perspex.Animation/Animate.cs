@@ -28,7 +28,7 @@ namespace Perspex.Animation
         private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
         /// <summary>
-        /// Initializes the static class.
+        /// Initializes static members of the <see cref="Animate"/> class.
         /// </summary>
         static Animate()
         {
@@ -43,6 +43,9 @@ namespace Perspex.Animation
         /// <summary>
         /// The stopwatch used to track time.
         /// </summary>
+        /// <value>
+        /// The stopwatch used to track time.
+        /// </value>
         public static Stopwatch Stopwatch
         {
             get;
@@ -53,10 +56,13 @@ namespace Perspex.Animation
         /// Gets the animation timer.
         /// </summary>
         /// <remarks>
-        /// The animation timer ticks <see cref="FramesPerSecond"/> times per second. The 
-        /// parameter passed to a subsciber is the time span since the animation system was 
+        /// The animation timer ticks <see cref="FramesPerSecond"/> times per second. The
+        /// parameter passed to a subsciber is the time span since the animation system was
         /// initialized.
         /// </remarks>
+        /// <value>
+        /// The animation timer.
+        /// </value>
         public static IObservable<TimeSpan> Timer
         {
             get;
@@ -78,7 +84,7 @@ namespace Perspex.Animation
         public static IObservable<double> GetTimer(TimeSpan duration)
         {
             var startTime = Stopwatch.Elapsed.Ticks;
-            var endTime = (startTime + duration.Ticks);
+            var endTime = startTime + duration.Ticks;
             return Timer
                 .TakeWhile(x => x.Ticks < endTime)
                 .Select(x => (x.Ticks - startTime) / (double)duration.Ticks)
@@ -89,7 +95,6 @@ namespace Perspex.Animation
         /// <summary>
         /// Animates a <see cref="PerspexProperty"/>.
         /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
         /// <param name="target">The target object.</param>
         /// <param name="property">The target property.</param>
         /// <param name="start">The value of the property at the start of the animation.</param>
@@ -122,8 +127,8 @@ namespace Perspex.Animation
         /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         public static Animation<T> Property<T>(
             PerspexObject target,
-            PerspexProperty<T> property, 
-            T start, 
+            PerspexProperty<T> property,
+            T start,
             T finish,
             IEasing<T> easing,
             TimeSpan duration)
