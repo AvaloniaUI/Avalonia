@@ -12,9 +12,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.LogicalTree;
-    using Perspex.Collections;
-    using Perspex.Rendering;
-    using Perspex.Controls.Templates;
+    using Perspex.VisualTree;
 
     public class MenuItem : HeaderedItemsControl, IMenu
     {
@@ -98,11 +96,13 @@ namespace Perspex.Controls
             }
             else if (open)
             {
-                // TODO: This is broken, meaning that a previous submenu isn't closed when a new 
-                // one opens. This is because each menu item is in a separate visual tree to its 
-                // parent due to its being contained in a Popup and parenting/templating is 
-                // broken across visual trees.
-                this.GetLogicalParent<IMenu>()?.ChildSubMenuOpened(this);
+                var root = this.GetVisualAncestors().OfType<PopupRoot>().FirstOrDefault();
+
+                if (root != null)
+                {
+                    var parentItem = ((ILogical)root).GetLogicalParent<Popup>().TemplatedParent;
+                    (parentItem as IMenu)?.ChildSubMenuOpened(this);
+                }
             }
         }
 
