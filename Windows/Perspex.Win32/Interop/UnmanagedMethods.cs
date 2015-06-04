@@ -666,7 +666,7 @@ namespace Perspex.Win32.Interop
             public int dwHoverTime;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct WNDCLASSEX
         {
             public int cbSize;
