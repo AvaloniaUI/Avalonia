@@ -52,7 +52,7 @@ namespace Perspex.Themes.Default
                         new Setter(Path.IsVisibleProperty, false),
                     },
                 },
-                new Style(x => x.OfType<MenuItem>().PropertyEquals(MenuItem.IsSubMenuOpenProperty, true).Template().Name("root"))
+                new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>().PropertyEquals(MenuItem.IsSubMenuOpenProperty, true).Template().Name("root"))
                 {
                     Setters = new[]
                     {
