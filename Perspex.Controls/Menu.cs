@@ -12,7 +12,6 @@ namespace Perspex.Controls
     using Perspex.LogicalTree;
     using Perspex.Rendering;
     using System.Reactive.Disposables;
-    using Perspex.Interactivity;
 
     public class Menu : ItemsControl, IMenu
     {
@@ -73,7 +72,7 @@ namespace Perspex.Controls
         {
             foreach (var i in this.GetLogicalChildren().Cast<MenuItem>())
             {
-                i.IsSubMenuOpen = false;
+                i.IsSubMenuOpen = false;               
             }
         }
     }
