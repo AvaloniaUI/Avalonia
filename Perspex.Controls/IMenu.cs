@@ -11,5 +11,7 @@ namespace Perspex.Controls
         void ChildPointerEnter(MenuItem item);
 
         void ChildSubMenuOpened(MenuItem item);
+
+        void CloseMenu();
     }
 }

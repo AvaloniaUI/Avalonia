@@ -117,6 +117,9 @@ namespace TestApplication
 
             TextBlock fps;
 
+            var testCommand = ReactiveCommand.Create();
+            testCommand.Subscribe(_ => System.Diagnostics.Debug.WriteLine("Test command executed."));
+
             Window window = new Window
             {
                 Title = "Perspex Test Application",
@@ -181,6 +184,7 @@ namespace TestApplication
                                         new MenuItem
                                         {
                                             Header = "Exit",
+                                            Command = testCommand,
                                         },
                                     }
                                 },

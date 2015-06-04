@@ -42,6 +42,8 @@ namespace Perspex
         /// </summary>
         private Styler styler = new Styler();
 
+        private ICloseable mainWindow;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
         /// </summary>

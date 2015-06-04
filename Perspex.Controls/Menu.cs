@@ -46,6 +46,14 @@ namespace Perspex.Controls
             }
         }
 
+        void IMenu.CloseMenu()
+        {
+            foreach (MenuItem i in this.GetLogicalChildren())
+            {
+                i.IsSubMenuOpen = false;
+            }
+        }
+
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);

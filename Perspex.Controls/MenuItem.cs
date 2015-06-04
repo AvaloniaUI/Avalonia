@@ -13,6 +13,7 @@ namespace Perspex.Controls
     using Perspex.Input;
     using Perspex.LogicalTree;
     using Perspex.VisualTree;
+    using Perspex.Interactivity;
 
     public class MenuItem : HeaderedItemsControl, IMenu
     {
@@ -28,9 +29,19 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSubMenuOpenProperty =
             PerspexProperty.Register<MenuItem, bool>("IsSubMenuOpen");
 
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
+
         static MenuItem()
         {
+            ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             IsSubMenuOpenProperty.Changed.Subscribe(SubMenuOpenChanged);
+        }
+
+        public event EventHandler<RoutedEventArgs> Click
+        {
+            add { this.AddHandler(ClickEvent, value); }
+            remove { this.RemoveHandler(ClickEvent, value); }
         }
 
         public ICommand Command
@@ -69,6 +80,20 @@ namespace Perspex.Controls
             }
         }
 
+        void IMenu.CloseMenu()
+        {
+            this.IsSubMenuOpen = false;
+            this.GetParentMenu().CloseMenu();
+        }
+
+        protected virtual void OnClick(RoutedEventArgs e)
+        {
+            if (this.Command != null)
+            {
+                this.Command.Execute(this.CommandParameter);
+            }
+        }
+
         protected override void OnPointerEnter(PointerEventArgs e)
         {
             base.OnPointerEnter(e);
@@ -79,9 +104,35 @@ namespace Perspex.Controls
         {
             base.OnPointerPressed(e);
 
-            if (!this.Classes.Contains(":empty"))
+            if (this.Classes.Contains(":empty"))
+            {
+                RoutedEventArgs click = new RoutedEventArgs
+                {
+                    RoutedEvent = ClickEvent,
+                };
+
+                this.RaiseEvent(click);
+                this.GetParentMenu().CloseMenu();
+            }
+            else
             {
                 this.IsSubMenuOpen = !this.IsSubMenuOpen;
+            }
+        }
+
+        private IMenu GetParentMenu()
+        {
+            var parent = this.GetLogicalParent<IMenu>();
+
+            if (parent != null)
+            {
+                return parent;
+            }
+            else
+            {
+                var popupRoot = this.GetVisualAncestors().OfType<PopupRoot>().FirstOrDefault();
+                var parentItem = ((ILogical)popupRoot).GetLogicalParent<Popup>().TemplatedParent;
+                return (IMenu)parentItem;
             }
         }
 
@@ -96,13 +147,7 @@ namespace Perspex.Controls
             }
             else if (open)
             {
-                var root = this.GetVisualAncestors().OfType<PopupRoot>().FirstOrDefault();
-
-                if (root != null)
-                {
-                    var parentItem = ((ILogical)root).GetLogicalParent<Popup>().TemplatedParent;
-                    (parentItem as IMenu)?.ChildSubMenuOpened(this);
-                }
+                this.GetParentMenu().ChildSubMenuOpened(this);
             }
         }
 
