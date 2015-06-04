@@ -12,7 +12,7 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.VisualTree;
 
-    public class Popup : Control, ILogical
+    public class Popup : Control, ILogical, IVisualTreeHost
     {
         public static readonly PerspexProperty<Control> ChildProperty =
             PerspexProperty.Register<Popup, Control>("Child");
@@ -78,6 +78,11 @@ namespace Perspex.Controls
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChild; }
+        }
+
+        IVisual IVisualTreeHost.Root
+        {
+            get { return this.popupRoot; }
         }
 
         public void Open()

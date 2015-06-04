@@ -36,7 +36,7 @@ namespace Perspex.Diagnostics.ViewModels
                 });
         }
 
-        public IReactiveDerivedList<TreeNode> Children
+        public IReadOnlyReactiveList<TreeNode> Children
         {
             get;
             protected set;

@@ -7,6 +7,7 @@
 namespace Perspex.Diagnostics.ViewModels
 {
     using Perspex.Controls;
+    using Perspex.VisualTree;
     using ReactiveUI;
 
     internal class VisualTreeNode : TreeNode
@@ -14,7 +15,16 @@ namespace Perspex.Diagnostics.ViewModels
         public VisualTreeNode(IVisual visual)
             : base((Control)visual)
         {
-            this.Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
+            var host = visual as IVisualTreeHost;
+
+            if (host == null || host.Root == null)
+            {
+                this.Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
+            }
+            else
+            {
+                this.Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root) });
+            }
 
             if (this.Control != null)
             {
