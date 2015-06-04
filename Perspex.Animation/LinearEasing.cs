@@ -22,11 +22,11 @@ namespace Perspex.Animation
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <returns>An easing function.</returns>
-        public static IEasing For<T>()
+        public static IEasing<T> For<T>()
         {
             if (typeof(T) == typeof(double))
             {
-                return new LinearDoubleEasing();
+                return (IEasing<T>)new LinearDoubleEasing();
             }
             else
             {

@@ -16,12 +16,36 @@ namespace Perspex
     using Perspex.Threading;
     using Splat;
 
+    /// <summary>
+    /// Encapsulates a Perspex application.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Application"/> class encapsulates Perspex application-specific
+    /// functionality, including:
+    /// - A global set of <see cref="DataTemplates"/>.
+    /// - A global set of <see cref="Styles"/>.
+    /// - A <see cref="FocusManager"/>.
+    /// - An <see cref="InputManager"/>.
+    /// - Registers services needed by the rest of Perspex in the <see cref="RegisterServices"/>
+    /// method.
+    /// - Tracks the lifetime of the application.
+    /// </remarks>
     public class Application : IGlobalDataTemplates, IGlobalStyles
     {
+        /// <summary>
+        /// The application-global data templates.
+        /// </summary>
         private DataTemplates dataTemplates;
 
+        /// <summary>
+        /// The styler that will be used to apply styles to controls.
+        /// </summary>
         private Styler styler = new Styler();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Application"/> class.
+        /// </summary>
+        /// <param name="theme">The theme to use.</param>
         public Application(Styles theme)
         {
             if (Current != null)
@@ -34,12 +58,24 @@ namespace Perspex
             this.RegisterServices();
         }
 
+        /// <summary>
+        /// Gets the current instance of the <see cref="Application"/> class.
+        /// </summary>
+        /// <value>
+        /// The current instance of the <see cref="Application"/> class.
+        /// </value>
         public static Application Current
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets or sets the application's global data templates.
+        /// </summary>
+        /// <value>
+        /// The application's global data templates.
+        /// </value>
         public DataTemplates DataTemplates
         {
             get
@@ -58,24 +94,49 @@ namespace Perspex
             }
         }
 
+        /// <summary>
+        /// Gets the application's focus manager.
+        /// </summary>
+        /// <value>
+        /// The application's focus manager.
+        /// </value>
         public IFocusManager FocusManager
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the application's input manager.
+        /// </summary>
+        /// <value>
+        /// The application's input manager.
+        /// </value>
         public InputManager InputManager
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets the application's global styles.
+        /// </summary>
+        /// <value>
+        /// The application's global styles.
+        /// </value>
+        /// <remarks>
+        /// Global styles apply to all windows in the application.
+        /// </remarks>
         public Styles Styles
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
+        /// </summary>
+        /// <param name="closable">The closable to track</param>
         public void Run(ICloseable closable)
         {
             var source = new CancellationTokenSource();
@@ -83,6 +144,9 @@ namespace Perspex
             Dispatcher.UIThread.MainLoop(source.Token);
         }
 
+        /// <summary>
+        /// Register's the services needed by Perspex.
+        /// </summary>
         protected virtual void RegisterServices()
         {
             var keyboardNavigation = new KeyboardNavigation();
