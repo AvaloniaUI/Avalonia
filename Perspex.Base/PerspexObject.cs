@@ -6,9 +6,6 @@
 
 namespace Perspex
 {
-    using Perspex.Reactive;
-    using Serilog;
-    using Serilog.Core.Enrichers;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -16,6 +13,9 @@ namespace Perspex
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
     using System.Reflection;
+    using Perspex.Reactive;
+    using Serilog;
+    using Serilog.Core.Enrichers;
 
     /// <summary>
     /// The priority of a binding.
@@ -36,9 +36,9 @@ namespace Perspex
         /// A triggered style binding.
         /// </summary>
         /// <remarks>
-        /// A style trigger is a selector such as .class which overrides a 
+        /// A style trigger is a selector such as .class which overrides a
         /// <see cref="TemplatedParent"/> binding. In this way, a basic control can have
-        /// for example a Background from the templated parent which changes when the 
+        /// for example a Background from the templated parent which changes when the
         /// control has the :pointerover class.
         /// </remarks>
         StyleTrigger,
@@ -134,9 +134,12 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values 
+        /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
         /// are inherited from.
         /// </summary>
+        /// <value>
+        /// The inheritance parent.
+        /// </value>
         protected PerspexObject InheritanceParent
         {
             get
@@ -210,8 +213,8 @@ namespace Perspex
 
             set
             {
-                BindingMode mode = (binding.Mode == BindingMode.Default) ? 
-                    binding.Property.DefaultBindingMode : 
+                BindingMode mode = (binding.Mode == BindingMode.Default) ?
+                    binding.Property.DefaultBindingMode :
                     binding.Mode;
                 Binding sourceBinding = value as Binding;
 
@@ -272,7 +275,7 @@ namespace Perspex
         /// <param name="type">The type.</param>
         /// <param name="property">The property.</param>
         /// <remarks>
-        /// You won't usually want to call this method directly, instead use the 
+        /// You won't usually want to call this method directly, instead use the
         /// <see cref="PerspexProperty.Register"/> method.
         /// </remarks>
         public static void Register(Type type, PerspexProperty property)
@@ -301,7 +304,7 @@ namespace Perspex
         public void ClearValue(PerspexProperty property)
         {
             Contract.Requires<NullReferenceException>(property != null);
-            
+
             this.SetValue(property, PerspexProperty.UnsetValue);
         }
 
@@ -333,7 +336,7 @@ namespace Perspex
                     {
                         this.PropertyChanged -= handler;
                     });
-                }, 
+                },
                 this.GetObservableDescription(property));
         }
 
@@ -353,9 +356,10 @@ namespace Perspex
         /// <summary>
         /// Gets an observable for a <see cref="PerspexProperty"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <returns>An observable which when subscribed pushes the old and new values of the
+        /// property each time it is changed.</returns>
         public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
         {
             return new PerspexObservable<Tuple<T, T>>(
@@ -375,7 +379,7 @@ namespace Perspex
                     {
                         this.PropertyChanged -= handler;
                     });
-                }, 
+                },
                 this.GetObservableDescription(property));
         }
 
@@ -412,6 +416,7 @@ namespace Perspex
         /// <summary>
         /// Gets a <see cref="PerspexProperty"/> value.
         /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
         public T GetValue<T>(PerspexProperty<T> property)
@@ -493,8 +498,8 @@ namespace Perspex
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
         public void SetValue(
-            PerspexProperty property, 
-            object value, 
+            PerspexProperty property,
+            object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
@@ -530,8 +535,8 @@ namespace Perspex
             }
 
             this.propertyLog.Verbose(
-                "Set {Property} to {$Value} with priority {Priority}", 
-                property, 
+                "Set {Property} to {$Value} with priority {Priority}",
+                property,
                 value,
                 priority);
             v.SetDirectValue(value, (int)priority);
@@ -545,8 +550,8 @@ namespace Perspex
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
         public void SetValue<T>(
-            PerspexProperty<T> property, 
-            T value, 
+            PerspexProperty<T> property,
+            T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
@@ -557,7 +562,6 @@ namespace Perspex
         /// <summary>
         /// Binds a <see cref="PerspexProperty"/> to an observable.
         /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
@@ -589,8 +593,8 @@ namespace Perspex
             }
 
             this.propertyLog.Verbose(
-                "Bound {Property} to {Binding} with priority {Priority}", 
-                property, 
+                "Bound {Property} to {Binding} with priority {Priority}",
+                property,
                 source,
                 priority);
 
@@ -608,8 +612,8 @@ namespace Perspex
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind<T>(
-            PerspexProperty<T> property, 
-            IObservable<T> source, 
+            PerspexProperty<T> property,
+            IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<NullReferenceException>(property != null);
@@ -631,8 +635,8 @@ namespace Perspex
         /// The binding is first carried out from <paramref name="source"/> to this.
         /// </remarks>
         public IDisposable BindTwoWay(
-            PerspexProperty property, 
-            PerspexObject source, 
+            PerspexProperty property,
+            PerspexObject source,
             PerspexProperty sourceProperty,
             BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -782,17 +786,17 @@ namespace Perspex
         /// <param name="newValue">The new property value.</param>
         /// <param name="priority">The priority of the binding that produced the value.</param>
         private void RaisePropertyChanged(
-            PerspexProperty property, 
-            object oldValue, 
-            object newValue, 
+            PerspexProperty property,
+            object oldValue,
+            object newValue,
             BindingPriority priority)
         {
             Contract.Requires<NullReferenceException>(property != null);
 
             PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
-                this, 
-                property, 
-                oldValue, 
+                this,
+                property,
+                oldValue,
                 newValue,
                 priority);
 

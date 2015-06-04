@@ -1,0 +1,80 @@
+﻿// -----------------------------------------------------------------------
+// <copyright file="PerspexProperty`1.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex
+{
+    using System;
+
+    /// <summary>
+    /// A typed perspex property.
+    /// </summary>
+    /// <typeparam name="TValue">The value type of the property.</typeparam>
+    public class PerspexProperty<TValue> : PerspexProperty
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexProperty{TValue}"/> class.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="defaultValue">The default value of the property.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="coerce">A coercion function.</param>
+        /// <param name="isAttached">Whether the property is an attached property.</param>
+        public PerspexProperty(
+            string name,
+            Type ownerType,
+            TValue defaultValue = default(TValue),
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.Default,
+            Func<PerspexObject, TValue, TValue> coerce = null,
+            bool isAttached = false)
+            : base(
+                name,
+                typeof(TValue),
+                ownerType,
+                defaultValue,
+                inherits,
+                defaultBindingMode,
+                Convert(coerce),
+                isAttached)
+        {
+            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<NullReferenceException>(ownerType != null);
+        }
+
+        /// <summary>
+        /// Registers the property on another type.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
+        /// <returns>The property.</returns>
+        public PerspexProperty<TValue> AddOwner<TOwner>()
+        {
+            PerspexObject.Register(typeof(TOwner), this);
+            return this;
+        }
+
+        /// <summary>
+        /// Gets the default value for the property on the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <returns>The default value.</returns>
+        public TValue GetDefaultValue<T>()
+        {
+            return (TValue)this.GetDefaultValue(typeof(T));
+        }
+
+        /// <summary>
+        /// Converts from a typed coercion function to an untyped.
+        /// </summary>
+        /// <param name="f">The typed coercion function.</param>
+        /// <returns>Te untyped coercion function.</returns>
+        private static Func<PerspexObject, object, object> Convert(Func<PerspexObject, TValue, TValue> f)
+        {
+            return f != null ? (o, v) => f(o, (TValue)v) : (Func<PerspexObject, object, object>)null;
+        }
+    }
+}

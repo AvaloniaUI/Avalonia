@@ -22,6 +22,7 @@ namespace Perspex
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields must be private", Justification = "It's readonly")]
         public static readonly object UnsetValue = new Unset();
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace Perspex
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="coerce">A coercion function.</param>
+        /// <param name="isAttached">Whether the property is an attached property.</param>
         public PerspexProperty(
             string name,
             Type valueType,
@@ -76,37 +78,57 @@ namespace Perspex
         /// <summary>
         /// Gets the name of the property.
         /// </summary>
+        /// <value>
+        /// The name of the property.
+        /// </value>
         public string Name { get; }
 
         /// <summary>
         /// Gets the type of the property's value.
         /// </summary>
+        /// <value>
+        /// The type of the property's value.
+        /// </value>
         public Type PropertyType { get; }
 
         /// <summary>
         /// Gets the type of the class that registers the property.
         /// </summary>
+        /// <value>
+        /// The type of the class that registers the property.
+        /// </value>
         public Type OwnerType { get; }
 
         /// <summary>
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
+        /// <value>
+        /// A value indicating whether the property inherits its value.
+        /// </value>
         public bool Inherits { get; }
 
         /// <summary>
         /// Gets the default binding mode for the property.
         /// </summary>
-        /// <returns></returns>
+        /// <value>
+        /// The default binding mode for the property.
+        /// </value>
         public BindingMode DefaultBindingMode { get; }
 
         /// <summary>
         /// Gets the property's coerce function.
         /// </summary>
+        /// <value>
+        /// The property's coerce function.
+        /// </value>
         public Func<PerspexObject, object, object> Coerce { get; }
 
         /// <summary>
         /// Gets a value indicating whether this is an attached property.
         /// </summary>
+        /// <value>
+        /// A value indicating whether this is an attached property.
+        /// </value>
         public bool IsAttached { get; }
 
         /// <summary>
@@ -115,22 +137,60 @@ namespace Perspex
         /// </summary>
         /// <remarks>
         /// This observable is fired each time a new <see cref="PerspexObject"/> is constructed
-        /// for all properties registered on the object's type. The default value of the property 
-        /// for the object is passed in the args' NewValue (OldValue will always be 
+        /// for all properties registered on the object's type. The default value of the property
+        /// for the object is passed in the args' NewValue (OldValue will always be
         /// <see cref="UnsetValue"/>.
         /// </remarks>
+        /// <value>
+        /// An observable that is fired when this property is initialized on a new
+        /// <see cref="PerspexObject"/> instance.
+        /// </value>
         public IObservable<PerspexPropertyChangedEventArgs> Initialized
         {
             get { return this.initialized; }
         }
 
         /// <summary>
-        /// Gets an observable that is fired when this property changes on any 
+        /// Gets an observable that is fired when this property changes on any
         /// <see cref="PerspexObject"/> instance.
         /// </summary>
+        /// <value>
+        /// An observable that is fired when this property changes on any
+        /// <see cref="PerspexObject"/> instance.
+        /// </value>
         public IObservable<PerspexPropertyChangedEventArgs> Changed
         {
             get { return this.changed; }
+        }
+
+        /// <summary>
+        /// Provides access to a property's binding via the <see cref="PerspexObject"/>
+        /// indexer.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
+        public static Binding operator !(PerspexProperty property)
+        {
+            return new Binding
+            {
+                Priority = BindingPriority.LocalValue,
+                Property = property,
+            };
+        }
+
+        /// <summary>
+        /// Provides access to a property's template binding via the <see cref="PerspexObject"/>
+        /// indexer.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
+        public static Binding operator ~(PerspexProperty property)
+        {
+            return new Binding
+            {
+                Priority = BindingPriority.TemplatedParent,
+                Property = property,
+            };
         }
 
         /// <summary>
@@ -240,37 +300,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Provides access to a property's binding via the <see cref="PerspexObject"/> 
-        /// indexer.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
-        public static Binding operator !(PerspexProperty property)
-        {
-            return new Binding
-            {
-                Priority = BindingPriority.LocalValue,
-                Property = property,
-            };
-        }
-
-        /// <summary>
-        /// Provides access to a property's template binding via the <see cref="PerspexObject"/>
-        /// indexer.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
-        public static Binding operator ~(PerspexProperty property)
-        {
-            return new Binding
-            {
-                Priority = BindingPriority.TemplatedParent,
-                Property = property,
-            };
-        }
-
-        /// <summary>
-        /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s [] 
+        /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s []
         /// operator to initiate a binding.
         /// </summary>
         /// <returns>A <see cref="Binding"/>.</returns>
@@ -309,6 +339,11 @@ namespace Perspex
             return this.defaultValues[this.OwnerType];
         }
 
+        /// <summary>
+        /// Checks whether the <paramref name="value"/> is valid for the property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>True if the value is valid, otherwise false.</returns>
         public bool IsValidValue(object value)
         {
             if (value == UnsetValue)
@@ -342,96 +377,46 @@ namespace Perspex
             this.defaultValues.Add(type, defaultValue);
         }
 
+        /// <summary>
+        /// Gets the string representation of the property.
+        /// </summary>
+        /// <returns>The property's string representation.</returns>
         public override string ToString()
         {
             return this.Name;
         }
 
+        /// <summary>
+        /// Notifies the <see cref="Initialized"/> observable.
+        /// </summary>
+        /// <param name="e">The observable arguments.</param>
         internal void NotifyInitialized(PerspexPropertyChangedEventArgs e)
         {
             this.initialized.OnNext(e);
         }
 
+        /// <summary>
+        /// Notifies the <see cref="Changed"/> observable.
+        /// </summary>
+        /// <param name="e">The observable arguments.</param>
         internal void NotifyChanged(PerspexPropertyChangedEventArgs e)
         {
             this.changed.OnNext(e);
         }
 
+        /// <summary>
+        /// Class representing the <see cref="UnsetValue"/>.
+        /// </summary>
         private class Unset
         {
+            /// <summary>
+            /// Returns the string representation of the <see cref="UnsetValue"/>.
+            /// </summary>
+            /// <returns>The string "(unset)".</returns>
             public override string ToString()
             {
                 return "(unset)";
             }
-        }
-    }
-
-    /// <summary>
-    /// A typed perspex property.
-    /// </summary>
-    public class PerspexProperty<TValue> : PerspexProperty
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
-        /// </summary>
-        /// <param name="name">The name of the property.</param>
-        /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="defaultValue">The default value of the property.</param>
-        /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="coerce">A coercion function.</param>
-        /// <param name="isAttached">Whether the property is an attached property.</param>
-        public PerspexProperty(
-            string name,
-            Type ownerType,
-            TValue defaultValue = default(TValue),
-            bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            Func<PerspexObject, TValue, TValue> coerce = null,
-            bool isAttached = false)
-            : base(
-                name, 
-                typeof(TValue), 
-                ownerType, 
-                defaultValue, 
-                inherits, 
-                defaultBindingMode,
-                Convert(coerce),
-                isAttached)
-        {
-            Contract.Requires<NullReferenceException>(name != null);
-            Contract.Requires<NullReferenceException>(ownerType != null);
-        }
-
-        /// <summary>
-        /// Registers the property on another type.
-        /// </summary>
-        /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
-        /// <returns>The property.</returns>
-        public PerspexProperty<TValue> AddOwner<TOwner>()
-        {
-            PerspexObject.Register(typeof(TOwner), this);
-            return this;
-        }
-
-        /// <summary>
-        /// Gets the default value for the property on the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <returns>The default value.</returns>
-        public TValue GetDefaultValue<T>()
-        {
-            return (TValue)this.GetDefaultValue(typeof(T));
-        }
-
-        /// <summary>
-        /// Converts from a typed coercion function to an untyped.
-        /// </summary>
-        /// <param name="f">The typed coercion function.</param>
-        /// <returns>Te untyped coercion function.</returns>
-        private static Func<PerspexObject, object, object> Convert(Func<PerspexObject, TValue, TValue> f)
-        {
-            return f != null ? (o, v) => f(o, (TValue)v) : (Func<PerspexObject, object, object>)null;
         }
     }
 }
