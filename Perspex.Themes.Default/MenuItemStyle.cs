@@ -52,14 +52,6 @@ namespace Perspex.Themes.Default
                         new Setter(Path.IsVisibleProperty, false),
                     },
                 },
-                new Style(x => x.OfType<MenuItem>().PropertyEquals(MenuItem.IsSubMenuOpenProperty, true).Template().Name("root"))
-                {
-                    Setters = new[]
-                    {
-                        new Setter(Border.BackgroundProperty, new SolidColorBrush(0x3d26a0da)),
-                        new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
-                    },
-                },
             });
         }
 
