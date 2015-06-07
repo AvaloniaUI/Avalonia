@@ -144,12 +144,12 @@ namespace TestApplication
                             {
                                 new MenuItem
                                 {
-                                    Header = "File",
+                                    Header = "_File",
                                     Items = new[]
                                     {
                                         new MenuItem
                                         {
-                                            Header = "Open...",
+                                            Header = "_Open...",
                                             Icon = new Image
                                             {
                                                 Source = new Bitmap("github_icon.png"),
@@ -157,57 +157,57 @@ namespace TestApplication
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Save",
+                                            Header = "_Save",
                                             Items = new[]
                                             {
                                                 new MenuItem
                                                 {
-                                                    Header = "Sub Item 1",
+                                                    Header = "Sub Item _1",
                                                 },
                                                 new MenuItem
                                                 {
-                                                    Header = "Sub Item 2",
+                                                    Header = "Sub Item _2",
                                                 },
                                             }
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Save As",
+                                            Header = "Save _As",
                                             Items = new[]
                                             {
                                                 new MenuItem
                                                 {
-                                                    Header = "Sub Item 1",
+                                                    Header = "Sub Item _1",
                                                 },
                                                 new MenuItem
                                                 {
-                                                    Header = "Sub Item 2",
+                                                    Header = "Sub Item _2",
                                                 },
                                             }
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Exit",
+                                            Header = "E_xit",
                                             Command = testCommand,
                                         },
                                     }
                                 },
                                 new MenuItem
                                 {
-                                    Header = "Edit",
+                                    Header = "_Edit",
                                     Items = new[]
                                     {
                                         new MenuItem
                                         {
-                                            Header = "Cut",
+                                            Header = "Cu_t",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Copy",
+                                            Header = "_Copy",
                                         },
                                         new MenuItem
                                         {
-                                            Header = "Paste",
+                                            Header = "_Paste",
                                         },
                                     }
                                 }

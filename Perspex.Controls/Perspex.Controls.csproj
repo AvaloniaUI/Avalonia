@@ -36,6 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MenuItem.cs" />

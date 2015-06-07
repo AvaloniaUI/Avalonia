@@ -140,9 +140,9 @@ namespace Perspex.Controls.Presenters
             }
         }
 
-        protected override FormattedText CreateFormattedText()
+        protected override FormattedText CreateFormattedText(Size constraint)
         {
-            var result = base.CreateFormattedText();
+            var result = base.CreateFormattedText(constraint);
             var selectionStart = this.SelectionStart;
             var selectionEnd = this.SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);

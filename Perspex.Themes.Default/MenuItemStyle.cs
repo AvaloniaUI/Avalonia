@@ -6,17 +6,21 @@
 
 namespace Perspex.Themes.Default
 {
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
     using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
-    using System.Linq;
 
     public class MenuItemStyle : Styles
     {
+        private static readonly DataTemplate AccessKeyDataTemplate =
+            new DataTemplate<string>(x => new AccessText { Text = x });
+
         public MenuItemStyle()
         {
             this.AddRange(new[]
@@ -79,6 +83,10 @@ namespace Perspex.Themes.Default
                     {
                         new ContentPresenter
                         {
+                            DataTemplates = new DataTemplates
+                            {
+                                AccessKeyDataTemplate,
+                            },
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
                             [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
                             [Grid.ColumnProperty] = 1,
@@ -171,6 +179,10 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
+                            DataTemplates = new DataTemplates
+                            {
+                                AccessKeyDataTemplate,
+                            },
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
                             [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
