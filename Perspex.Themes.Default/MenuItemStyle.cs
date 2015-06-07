@@ -105,6 +105,7 @@ namespace Perspex.Themes.Default
                                                 Name = "iconSeparator",
                                                 Fill = new SolidColorBrush(0xffd7d7d7),
                                                 HorizontalAlignment = HorizontalAlignment.Left,
+                                                IsHitTestVisible = false,
                                                 Margin = new Thickness(29, 2, 0, 2),
                                                 Width = 1,
                                             },
