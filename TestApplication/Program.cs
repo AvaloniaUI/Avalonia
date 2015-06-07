@@ -150,6 +150,10 @@ namespace TestApplication
                                         new MenuItem
                                         {
                                             Header = "Open...",
+                                            Icon = new Image
+                                            {
+                                                Source = new Bitmap("github_icon.png"),
+                                            },
                                         },
                                         new MenuItem
                                         {
