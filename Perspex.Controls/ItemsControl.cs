@@ -6,17 +6,18 @@
 
 namespace Perspex.Controls
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Specialized;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.Controls.Utils;
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
+    using Perspex.Styling;
 
     public class ItemsControl : TemplatedControl, ILogical
     {
@@ -34,6 +35,8 @@ namespace Perspex.Controls
 
         private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
             new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
+
+        private IItemsPresenter presenter;
 
         static ItemsControl()
         {
@@ -85,8 +88,16 @@ namespace Perspex.Controls
 
         protected IItemsPresenter Presenter
         {
-            get;
-            private set;
+            get
+            {
+                return this.presenter;
+            }
+
+            set
+            {
+                this.presenter = value;
+                this.logicalChildren.Source = ((IVisual)value?.Panel)?.VisualChildren;
+            }
         }
 
         protected virtual ItemContainerGenerator CreateItemContainerGenerator()
@@ -97,11 +108,6 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             this.Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
-
-            if (this.Presenter != null)
-            {
-                this.logicalChildren.Source = ((IVisual)this.Presenter.Panel).VisualChildren;
-            }
         }
 
         protected virtual void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)

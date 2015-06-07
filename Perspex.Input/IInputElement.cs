@@ -9,7 +9,7 @@ namespace Perspex.Input
     using System;
     using Perspex.Interactivity;
 
-    public interface IInputElement : IInteractive
+    public interface IInputElement : IInteractive, IVisual
     {
         event EventHandler<RoutedEventArgs> GotFocus;
 

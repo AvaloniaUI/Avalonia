@@ -95,12 +95,33 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Content_Should_Set_Child_Controls_Parent()
+        public void Setting_Content_To_Control_Should_Set_Child_Controls_Parent()
         {
-            var target = new ContentControl();
-            var child = new Control();
+            var target = new ContentControl
+            {
+                Template = this.GetTemplate(),
+            };
 
+            var child = new Control();
             target.Content = child;
+            target.ApplyTemplate();
+
+            Assert.Equal(child.Parent, target);
+            Assert.Equal(((ILogical)child).LogicalParent, target);
+        }
+
+        [Fact]
+        public void Setting_Content_To_String_Should_Set_Child_Controls_Parent()
+        {
+            var target = new ContentControl
+            {
+                Template = this.GetTemplate(),
+            };
+
+            target.Content = "Foo";
+            target.ApplyTemplate();
+
+            var child = target.Presenter.Child;
 
             Assert.Equal(child.Parent, target);
             Assert.Equal(((ILogical)child).LogicalParent, target);
@@ -232,6 +253,22 @@ namespace Perspex.Controls.UnitTests
             presenter.ApplyTemplate();
 
             Assert.True(called);
+        }
+
+        [Fact]
+        public void Changing_Content_Should_Update_Presenter()
+        {
+            var target = new ContentControl();
+
+            target.Template = this.GetTemplate();
+            target.ApplyTemplate();
+
+            target.Content = "Foo";
+            target.Presenter.ApplyTemplate();
+            Assert.Equal("Foo", ((TextBlock)target.Presenter.Child).Text);
+            target.Content = "Bar";
+            target.Presenter.ApplyTemplate();
+            Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
         }
 
         private ControlTemplate GetTemplate()

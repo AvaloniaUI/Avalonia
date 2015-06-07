@@ -28,13 +28,18 @@ namespace Perspex.Controls
 
         public ContentControl()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(this.SetContentParent);
         }
 
         public object Content
         {
             get { return this.GetValue(ContentProperty); }
             set { this.SetValue(ContentProperty, value); }
+        }
+
+        public ContentPresenter Presenter
+        {
+            get;
+            private set;
         }
 
         public HorizontalAlignment HorizontalContentAlignment
@@ -59,32 +64,8 @@ namespace Perspex.Controls
             // We allow ContentControls without ContentPresenters in the template. This can be
             // useful for e.g. a simple ToggleButton that displays an image. There's no need to
             // have a ContentPresenter in the visual tree for that.
-            var presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
-
-            if (presenter != null)
-            {
-                this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
-            }
-            else
-            {
-                this.logicalChildren.Source = null;
-            }
-        }
-
-        private void SetContentParent(Tuple<object, object> change)
-        {
-            var control1 = change.Item1 as Control;
-            var control2 = change.Item2 as Control;
-
-            if (control1 != null)
-            {
-                control1.Parent = null;
-            }
-
-            if (control2 != null)
-            {
-                control2.Parent = this;
-            }
+            this.Presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
+            this.logicalChildren.Source = ((ILogical)this.Presenter)?.LogicalChildren;
         }
     }
 }

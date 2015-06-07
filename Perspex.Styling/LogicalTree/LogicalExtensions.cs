@@ -75,5 +75,10 @@ namespace Perspex.LogicalTree
                 }
             }
         }
+
+        public static bool IsLogicalParentOf(this ILogical logical, ILogical target)
+        {
+            return target.GetLogicalAncestors().Any(x => x == logical);
+        }
     }
 }

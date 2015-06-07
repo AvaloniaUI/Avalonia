@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Border.cs" />
-    <Compile Include="IMenu.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MenuItem.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />

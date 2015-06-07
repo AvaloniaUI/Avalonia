@@ -72,8 +72,16 @@ namespace Perspex.Controls
 
         ILogical IItemsPanel.ChildLogicalParent
         {
-            get { return this.childLogicalParent; }
-            set { this.childLogicalParent = value; }
+            get
+            {
+                return this.childLogicalParent;
+            }
+
+            set
+            {
+                this.childLogicalParent = value;
+                this.SetLogicalParent(this.Children);
+            }
         }
 
         protected virtual void OnChildrenAdded(IEnumerable<Control> child)

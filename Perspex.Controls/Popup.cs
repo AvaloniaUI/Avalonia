@@ -45,6 +45,10 @@ namespace Perspex.Controls
             this.GetObservableWithHistory(ChildProperty).Subscribe(ChildChanged);
         }
 
+        public event EventHandler Closed;
+
+        public event EventHandler Opened;
+
         public Control Child
         {
             get { return this.GetValue(ChildProperty); }
@@ -67,6 +71,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(PlacementTargetProperty); }
             set { this.SetValue(PlacementTargetProperty, value); }
+        }
+
+        public PopupRoot PopupRoot
+        {
+            get { return this.popupRoot; }
         }
 
         public bool StaysOpen
@@ -108,6 +117,8 @@ namespace Perspex.Controls
             this.topLevel.AddHandler(TopLevel.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Tunnel);
 
             this.popupRoot.Show();
+            this.IsOpen = true;
+            this.Opened?.Invoke(this, EventArgs.Empty);
         }
 
         public void Close()
@@ -121,6 +132,7 @@ namespace Perspex.Controls
             }
 
             this.IsOpen = false;
+            this.Closed?.Invoke(this, EventArgs.Empty);
         }
 
         protected override Size MeasureCore(Size availableSize)

@@ -94,11 +94,11 @@ namespace TestApplication
 
         static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
-                //.MinimumLevel.Verbose()
-                .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
-                .CreateLogger();
+            //Log.Logger = new LoggerConfiguration()
+            //    .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
+            //    .MinimumLevel.Verbose()
+            //    .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
+            //    .CreateLogger();
 
             // The version of ReactiveUI currently included is for WPF and so expects a WPF
             // dispatcher. This makes sure it's initialized.

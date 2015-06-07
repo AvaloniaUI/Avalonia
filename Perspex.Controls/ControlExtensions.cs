@@ -17,11 +17,11 @@ namespace Perspex.Controls
 
     public static class ControlExtensions
     {
-        public static T FindControl<T>(this Control control, string id) where T : Control
+        public static T FindControl<T>(this Control control, string name) where T : Control
         {
             return control.GetLogicalDescendents()
                 .OfType<T>()
-                .FirstOrDefault(x => x.Name == id);
+                .FirstOrDefault(x => x.Name == name);
         }
     }
 }

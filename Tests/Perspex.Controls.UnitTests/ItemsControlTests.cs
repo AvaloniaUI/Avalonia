@@ -6,19 +6,14 @@
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
     using System.Collections.Specialized;
     using System.Linq;
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Templates;
-    using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
     using Xunit;
 
     public class ItemsControlTests
@@ -275,6 +270,27 @@ namespace Perspex.Controls.UnitTests
             Assert.True(target.Classes.Contains(":empty"));
         }
 
+        [Fact]
+        public void Setting_Presenter_Explicitly_Should_Set_Item_Parent()
+        {
+            var target = new TestItemsControl();
+            var child = new Control();
+
+            var presenter = new ItemsPresenter
+            {
+                TemplatedParent = target,
+                [~ItemsPresenter.ItemsProperty] = target[~ItemsControl.ItemsProperty],
+            };
+
+            presenter.ApplyTemplate();
+            target.Presenter = presenter;
+            target.Items = new[] { child };
+            target.ApplyTemplate();
+
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, ((ILogical)child).LogicalParent);
+        }
+
         private ControlTemplate GetTemplate()
         {
             return ControlTemplate.Create<ItemsControl>(parent =>
@@ -291,13 +307,13 @@ namespace Perspex.Controls.UnitTests
             });
         }
 
-        private IDisposable RegisterServices()
+        private class TestItemsControl : ItemsControl
         {
-            var result = Locator.CurrentMutable.WithResolver();
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            Locator.CurrentMutable.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
-            return result;
+            public new IItemsPresenter Presenter
+            {
+                get { return base.Presenter; }
+                set { base.Presenter = value; }
+            }
         }
     }
 }

@@ -9,7 +9,6 @@ namespace Perspex.Interactive.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Collections;
     using Perspex.Interactivity;
     using Perspex.VisualTree;
     using Xunit;
@@ -82,9 +81,9 @@ namespace Perspex.Interactive.UnitTests
         public void Tunneling_Bubbling_Event_Should_Tunnel_Then_Bubble_Up()
         {
             var ev = new RoutedEvent(
-                "test", 
-                RoutingStrategies.Bubble | RoutingStrategies.Tunnel, 
-                typeof(RoutedEventArgs), 
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
@@ -117,7 +116,7 @@ namespace Perspex.Interactive.UnitTests
                 RoutingStrategies.Tunnel,
                 RoutingStrategies.Bubble,
                 RoutingStrategies.Bubble,
-            }, 
+            },
             invoked);
         }
 
@@ -299,7 +298,7 @@ namespace Perspex.Interactive.UnitTests
         }
 
         private TestInteractive CreateTree(
-            RoutedEvent ev, 
+            RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
             RoutingStrategies handlerRoutes,
             bool handledEventsToo = false)
@@ -336,7 +335,7 @@ namespace Perspex.Interactive.UnitTests
                     i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
                 }
             }
-            
+
             return target;
         }
 

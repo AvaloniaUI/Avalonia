@@ -6,11 +6,12 @@
 
 namespace Perspex.Controls
 {
+    using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Platform;
     using Splat;
 
-    public class PopupRoot : TopLevel
+    public class PopupRoot : TopLevel, IInteractive
     {
         static PopupRoot()
         {
@@ -25,6 +26,11 @@ namespace Perspex.Controls
         public new IPopupImpl PlatformImpl
         {
             get { return (IPopupImpl)base.PlatformImpl; }
+        }
+
+        IInteractive IInteractive.InteractiveParent
+        {
+            get { return this.Parent; }
         }
 
         public void SetPosition(Point p)
