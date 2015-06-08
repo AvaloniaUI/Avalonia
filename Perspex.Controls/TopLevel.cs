@@ -6,6 +6,9 @@
 
 namespace Perspex.Controls
 {
+    using System;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
     using Perspex.Input;
     using Perspex.Input.Raw;
     using Perspex.Layout;
@@ -14,16 +17,13 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Perspex.Threading;
     using Splat;
-    using System;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
 
     /// <summary>
     /// Base class for top-level windows.
     /// </summary>
     /// <remarks>
-    /// This class acts as a base for top level windows such as <see cref="Window"/> and 
-    /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as 
+    /// This class acts as a base for top level windows such as <see cref="Window"/> and
+    /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
     public abstract class TopLevel : ContentControl, ILayoutRoot, IRenderRoot, ICloseable, IFocusScope
@@ -63,7 +63,7 @@ namespace Perspex.Controls
         private bool autoSizing;
 
         /// <summary>
-        /// Statically initializes the <see cref="TopLevel"/> class.
+        /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
         static TopLevel()
         {
@@ -120,7 +120,7 @@ namespace Perspex.Controls
             this.PlatformImpl.Input = this.HandleInput;
             this.PlatformImpl.Paint = this.HandlePaint;
             this.PlatformImpl.Resized = this.HandleResized;
-            
+
             Size clientSize = this.ClientSize = this.PlatformImpl.ClientSize;
 
             this.dispatcher = Dispatcher.UIThread;
@@ -222,6 +222,15 @@ namespace Perspex.Controls
             this.PlatformImpl.Activate();
         }
 
+        /// <summary>
+        /// Begins an auto-resize operation.
+        /// </summary>
+        /// <returns>A disposable used to finish the operation.</returns>
+        /// <remarks>
+        /// When an auto-resize operation is in progress any resize events received will not be
+        /// cause the new size to be written to the <see cref="Width"/> and <see cref="Height"/>
+        /// properties.
+        /// </remarks>
         protected IDisposable BeginAutoSizing()
         {
             this.autoSizing = true;
@@ -284,6 +293,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Handles input from <see cref="ITopLevelImpl.Input"/>.
         /// </summary>
+        /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
             this.inputManager.Process(e);
@@ -294,7 +304,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            this.dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            this.dispatcher.InvokeAsync(this.LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -311,13 +321,15 @@ namespace Perspex.Controls
         private void HandleRenderNeeded()
         {
             this.dispatcher.InvokeAsync(
-                () => this.PlatformImpl.Invalidate(new Rect(this.ClientSize)), 
+                () => this.PlatformImpl.Invalidate(new Rect(this.ClientSize)),
                 DispatcherPriority.Render);
         }
 
         /// <summary>
         /// Handles a paint request from <see cref="ITopLevelImpl.Paint"/>.
         /// </summary>
+        /// <param name="rect">The rectangle to paint.</param>
+        /// <param name="handle">An optional platform-specific handle.</param>
         private void HandlePaint(Rect rect, IPlatformHandle handle)
         {
             this.renderer.Render(this, handle);
@@ -327,6 +339,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
+        /// <param name="clientSize">The new client size.</param>
         private void HandleResized(Size clientSize)
         {
             if (!this.autoSizing)
