@@ -59,6 +59,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="IInputRoot.cs" />
+    <Compile Include="IMainMenu.cs" />
+    <Compile Include="IAccessKeyHandler.cs" />
     <Compile Include="FocusManager.cs" />
     <Compile Include="FocusNavigationDirection.cs" />
     <Compile Include="ICloseable.cs" />

@@ -14,10 +14,18 @@ namespace Perspex.Controls.Primitives
     public class AccessText : TextBlock
     {
         /// <summary>
-        /// Defines the <see cref="ShowAccessKey"/> property.
+        /// Defines the <see cref="ShowAccessKey"/> attached property.
         /// </summary>
         public static readonly PerspexProperty<bool> ShowAccessKeyProperty =
-            PerspexProperty.Register<AccessText, bool>("ShowAccessKey", inherits: true);
+            PerspexProperty.RegisterAttached<AccessText, Control, bool>("ShowAccessKey", inherits: true);
+
+        /// <summary>
+        /// Initializes static members of the <see cref="AccessText"/> class.
+        /// </summary>
+        static AccessText()
+        {
+            AffectsRender(ShowAccessKeyProperty);
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the access key should be underlined.

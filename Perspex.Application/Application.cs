@@ -156,6 +156,7 @@ namespace Perspex
             this.FocusManager = new FocusManager();
             this.InputManager = new InputManager();
 
+            Locator.CurrentMutable.Register(() => new AccessKeyHandler(), typeof(IAccessKeyHandler));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));

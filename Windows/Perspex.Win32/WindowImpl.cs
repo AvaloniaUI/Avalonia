@@ -246,6 +246,7 @@ namespace Perspex.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
                     WindowsKeyboardDevice.Instance.UpdateKeyStates();
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,

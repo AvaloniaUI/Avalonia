@@ -17,7 +17,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A top-level menu control.
     /// </summary>
-    public class Menu : ItemsControl
+    public class Menu : ItemsControl, IFocusScope, IMainMenu
     {
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
@@ -67,11 +67,13 @@ namespace Perspex.Controls
 
             topLevel.Deactivated += this.Deactivated;
 
+            var pointerPress = topLevel.AddHandler(
+                InputElement.PointerPressedEvent,
+                this.TopLevelPreviewPointerPress,
+                RoutingStrategies.Tunnel);
+
             this.subscription = new CompositeDisposable(
-                topLevel.AddHandler(
-                    InputElement.PointerPressedEvent,
-                    this.TopLevelPointerPress,
-                    Interactivity.RoutingStrategies.Tunnel),
+                pointerPress,
                 Disposable.Create(() => topLevel.Deactivated -= this.Deactivated));
         }
 
@@ -144,7 +146,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void TopLevelPointerPress(object sender, PointerPressEventArgs e)
+        private void TopLevelPreviewPointerPress(object sender, PointerPressEventArgs e)
         {
             if (this.IsOpen)
             {

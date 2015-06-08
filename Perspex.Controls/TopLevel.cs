@@ -16,6 +16,8 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.Styling;
     using Perspex.Threading;
+    using Perspex.Controls.Primitives;
+    using Perspex.Interactivity;
     using Splat;
 
     /// <summary>
@@ -26,7 +28,7 @@ namespace Perspex.Controls
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
-    public abstract class TopLevel : ContentControl, ILayoutRoot, IRenderRoot, ICloseable, IFocusScope
+    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IFocusScope
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -60,6 +62,14 @@ namespace Perspex.Controls
         /// </summary>
         private IInputManager inputManager;
 
+        /// <summary>
+        /// The access key handler for the window.
+        /// </summary>
+        private IAccessKeyHandler accessKeyHandler;
+
+        /// <summary>
+        /// Whether an auto-size operation is in progress.
+        /// </summary>
         private bool autoSizing;
 
         /// <summary>
@@ -79,6 +89,7 @@ namespace Perspex.Controls
             IPlatformRenderInterface renderInterface = Locator.Current.GetService<IPlatformRenderInterface>();
 
             this.PlatformImpl = impl;
+            this.accessKeyHandler = Locator.Current.GetService<IAccessKeyHandler>();
             this.inputManager = Locator.Current.GetService<IInputManager>();
             this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
             this.renderManager = Locator.Current.GetService<IRenderManager>();
@@ -111,6 +122,11 @@ namespace Perspex.Controls
             {
                 throw new InvalidOperationException(
                     "Could not create render manager: maybe Application.RegisterServices() wasn't called?");
+            }
+
+            if (this.accessKeyHandler != null)
+            {
+                this.accessKeyHandler.SetOwner(this);
             }
 
             this.PlatformImpl.SetOwner(this);
@@ -185,7 +201,6 @@ namespace Perspex.Controls
         public ITopLevelImpl PlatformImpl
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -202,6 +217,23 @@ namespace Perspex.Controls
         IRenderManager IRenderRoot.RenderManager
         {
             get { return this.renderManager; }
+        }
+
+        /// <summary>
+        /// Gets the access key handler for the window.
+        /// </summary>
+        IAccessKeyHandler IInputRoot.AccessKeyHandler
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether access keys are shown in the window.
+        /// </summary>
+        bool IInputRoot.ShowAccessKeys
+        {
+            get { return this.GetValue(AccessText.ShowAccessKeyProperty); }
+            set { this.SetValue(AccessText.ShowAccessKeyProperty, value); }
         }
 
         /// <summary>
