@@ -83,9 +83,13 @@ namespace Perspex.Input
                 switch (e.Type)
                 {
                     case RawKeyEventType.KeyDown:
+                    case RawKeyEventType.KeyUp:
+                        var routedEvent = e.Type == RawKeyEventType.KeyDown ?
+                            InputElement.KeyDownEvent : InputElement.KeyUpEvent;
+
                         KeyEventArgs ev = new KeyEventArgs
                         {
-                            RoutedEvent = InputElement.KeyDownEvent,
+                            RoutedEvent = routedEvent,
                             Device = this,
                             Key = e.Key,
                             Text = e.Text,

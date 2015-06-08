@@ -256,6 +256,17 @@ namespace Perspex.Win32
                             WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
                     break;
 
+                case UnmanagedMethods.WindowsMessage.WM_KEYUP:
+                case UnmanagedMethods.WindowsMessage.WM_SYSKEYUP:
+                    WindowsKeyboardDevice.Instance.UpdateKeyStates();
+                    e = new RawKeyEventArgs(
+                            WindowsKeyboardDevice.Instance,
+                            timestamp,
+                            RawKeyEventType.KeyUp,
+                            KeyInterop.KeyFromVirtualKey((int)wParam),
+                            WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
