@@ -14,6 +14,21 @@ namespace Perspex.Controls.Primitives
     public class AccessText : TextBlock
     {
         /// <summary>
+        /// Defines the <see cref="ShowAccessKey"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<bool> ShowAccessKeyProperty =
+            PerspexProperty.Register<AccessText, bool>("ShowAccessKey", inherits: true);
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the access key should be underlined.
+        /// </summary>
+        public bool ShowAccessKey
+        {
+            get { return this.GetValue(ShowAccessKeyProperty); }
+            set { this.SetValue(ShowAccessKeyProperty, value); }
+        }
+
+        /// <summary>
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -23,7 +38,7 @@ namespace Perspex.Controls.Primitives
 
             int underscore = this.Text?.IndexOf('_') ?? -1;
 
-            if (underscore != -1)
+            if (underscore != -1 && this.ShowAccessKey)
             {
                 var rect = this.FormattedText.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -0.5);
