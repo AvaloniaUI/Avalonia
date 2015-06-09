@@ -81,6 +81,7 @@ namespace Perspex.Controls
         /// </summary>
         static MenuItem()
         {
+            FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.Subscribe(SubMenuOpenChanged);
@@ -197,6 +198,16 @@ namespace Perspex.Controls
             {
                 this.Command.Execute(this.CommandParameter);
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="MenuItem"/> recieves focus.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            this.IsSelected = true;
         }
 
         /// <summary>
