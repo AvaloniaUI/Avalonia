@@ -361,6 +361,7 @@ namespace Perspex.Controls
                 if (value)
                 {
                     sender.RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
+                    sender.IsSelected = true;
                 }
                 else
                 {
