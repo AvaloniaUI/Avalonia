@@ -109,13 +109,23 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="MenuItem"/> is detached from the visual tree.
+        /// Called when the <see cref="Menu"/> is detached from the visual tree.
         /// </summary>
         /// <param name="oldRoot">The root of the visual tree being detached from.</param>
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
             base.OnDetachedFromVisualTree(oldRoot);
             this.subscription.Dispose();
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Menu"/> loses focus.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            this.CloseMenu();
         }
 
         /// <summary>
@@ -162,7 +172,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void Deactivated(object sender, EventArgs e)
         {
-            //this.CloseMenu();
+            this.CloseMenu();
         }
 
         /// <summary>
