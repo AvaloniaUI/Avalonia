@@ -6,10 +6,11 @@
 
 namespace Perspex.Themes.Default
 {
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Input;
     using Perspex.Styling;
-    using System.Linq;
 
     public class MenuStyle : Styles
     {
@@ -30,7 +31,7 @@ namespace Perspex.Themes.Default
         private Control Template(Menu control)
         {
             return new Border
-            {                
+            {
                 [~Border.BackgroundProperty] = control[~Menu.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~Menu.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~Menu.BorderThicknessProperty],
@@ -40,6 +41,7 @@ namespace Perspex.Themes.Default
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Continue,
                 }
             };
         }
