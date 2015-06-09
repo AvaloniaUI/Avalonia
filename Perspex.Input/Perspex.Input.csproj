@@ -73,7 +73,7 @@
     <Compile Include="IInputElement.cs" />
     <Compile Include="IInputManager.cs" />
     <Compile Include="IKeyboardDevice.cs" />
-    <Compile Include="IKeyboardNavigation.cs" />
+    <Compile Include="IKeyboardNavigationHandler.cs" />
     <Compile Include="IMouseDevice.cs" />
     <Compile Include="InputElement.cs" />
     <Compile Include="InputExtensions.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="Key.cs" />
     <Compile Include="KeyboardDevice.cs" />
     <Compile Include="KeyboardNavigation.cs" />
+    <Compile Include="KeyboardNavigationHandler.cs" />
     <Compile Include="GotFocusEventArgs.cs" />
     <Compile Include="Platform\IPlatformSettings.cs" />
     <Compile Include="PointerPressEventArgs.cs" />

@@ -4,11 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Perspex.Interactivity;
-using System;
-
 namespace Perspex.Input
 {
+    using System;
+    using Perspex.Interactivity;
+
     /// <summary>
     /// Handles access keys for a window.
     /// </summary>
@@ -38,6 +38,8 @@ namespace Perspex.Input
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
+            Contract.Requires<ArgumentNullException>(owner != null);
+
             if (this.owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");

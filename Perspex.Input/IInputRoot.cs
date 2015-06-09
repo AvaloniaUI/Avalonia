@@ -17,6 +17,11 @@ namespace Perspex.Input
         IAccessKeyHandler AccessKeyHandler { get; }
 
         /// <summary>
+        /// Gets or sets the keyboard navigation handler.
+        /// </summary>
+        IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
         bool ShowAccessKeys { get; set; }

@@ -68,6 +68,11 @@ namespace Perspex.Controls
         private IAccessKeyHandler accessKeyHandler;
 
         /// <summary>
+        /// The access keyboard navigation handler for the window.
+        /// </summary>
+        private IKeyboardNavigationHandler keyboardNavigationHandler;
+
+        /// <summary>
         /// Whether an auto-size operation is in progress.
         /// </summary>
         private bool autoSizing;
@@ -91,6 +96,7 @@ namespace Perspex.Controls
             this.PlatformImpl = impl;
             this.accessKeyHandler = Locator.Current.GetService<IAccessKeyHandler>();
             this.inputManager = Locator.Current.GetService<IInputManager>();
+            this.keyboardNavigationHandler = Locator.Current.GetService<IKeyboardNavigationHandler>();
             this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
             this.renderManager = Locator.Current.GetService<IRenderManager>();
 
@@ -127,6 +133,11 @@ namespace Perspex.Controls
             if (this.accessKeyHandler != null)
             {
                 this.accessKeyHandler.SetOwner(this);
+            }
+
+            if (this.keyboardNavigationHandler != null)
+            {
+                this.keyboardNavigationHandler.SetOwner(this);
             }
 
             this.PlatformImpl.SetOwner(this);
@@ -225,6 +236,14 @@ namespace Perspex.Controls
         IAccessKeyHandler IInputRoot.AccessKeyHandler
         {
             get { return this.accessKeyHandler; }
+        }
+
+        /// <summary>
+        /// Gets or sets the keyboard navigation handler for the window.
+        /// </summary>
+        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler
+        {
+            get { return this.keyboardNavigationHandler; }
         }
 
         /// <summary>

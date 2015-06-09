@@ -151,8 +151,6 @@ namespace Perspex
         /// </summary>
         protected virtual void RegisterServices()
         {
-            var keyboardNavigation = new KeyboardNavigation();
-
             this.FocusManager = new FocusManager();
             this.InputManager = new InputManager();
 
@@ -161,7 +159,7 @@ namespace Perspex
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
             Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
             Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
-            Locator.CurrentMutable.Register(() => keyboardNavigation, typeof(IKeyboardNavigation));
+            Locator.CurrentMutable.Register(() => new KeyboardNavigationHandler(), typeof(IKeyboardNavigationHandler));
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
             Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
             Locator.CurrentMutable.Register(() => new RenderManager(), typeof(IRenderManager));
