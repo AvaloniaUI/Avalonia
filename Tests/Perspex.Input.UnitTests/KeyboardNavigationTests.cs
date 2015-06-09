@@ -43,8 +43,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -81,8 +80,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -111,8 +109,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -155,8 +152,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -174,8 +170,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(top);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(top);
 
             Assert.Equal(next, result);
         }
@@ -218,8 +213,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -257,8 +251,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -296,8 +289,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -335,8 +327,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -376,8 +367,7 @@ namespace Perspex.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -415,8 +405,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -456,8 +445,7 @@ namespace Perspex.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetNextInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -494,8 +482,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -532,8 +519,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -562,8 +548,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -606,8 +591,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -650,8 +634,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -689,8 +672,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -728,8 +710,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -767,8 +748,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -808,8 +788,7 @@ namespace Perspex.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
@@ -847,8 +826,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var target = new KeyboardNavigationHandler();
-            var result = target.GetPreviousInTabOrder(current);
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
         }
