@@ -98,6 +98,28 @@ namespace Perspex.Controls.Primitives.UnitTests
         }
 
         [Fact]
+        public void Setting_SelectedIndex_Before_ApplyTemplate_Should_Set_Item_IsSelected_True()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.SelectedIndex = 1;
+            target.ApplyTemplate();
+
+            Assert.False(items[0].IsSelected);
+            Assert.True(items[1].IsSelected);
+        }
+
+        [Fact]
         public void Setting_SelectedItem_Should_Set_SelectedIndex()
         {
             var items = new[]
@@ -175,7 +197,7 @@ namespace Perspex.Controls.Primitives.UnitTests
                 new Item(),
                 new Item(),
             };
-            
+
             var target = new Target
             {
                 Items = items,

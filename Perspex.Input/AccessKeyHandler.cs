@@ -45,21 +45,39 @@ namespace Perspex.Input
 
             this.owner = owner;
 
-            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown);
+            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnPreviewKeyDown, RoutingStrategies.Tunnel);
+            this.owner.AddHandler(InputElement.KeyUpEvent, this.OnPreviewKeyUp, RoutingStrategies.Tunnel);
             this.owner.AddHandler(InputElement.PointerPressedEvent, this.OnPreviewPointerPressed, RoutingStrategies.Tunnel);
         }
 
         /// <summary>
-        /// Handles Alt and F10 key presses in the window.
+        /// Handles the Alt/F10 keys being pressed in the window.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.F10)
             {
                 this.owner.ShowAccessKeys = this.showingAccessKeys = true;
                 e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Alt/F10 keys being released in the window.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftAlt || e.Key == Key.F10)
+            {
+                if (this.showingAccessKeys && this.MainMenu != null)
+                {
+                    this.MainMenu.OpenMenu();
+                    e.Handled = true;
+                }
             }
         }
 

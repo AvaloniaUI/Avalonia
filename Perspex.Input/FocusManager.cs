@@ -9,25 +9,39 @@ namespace Perspex.Input
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Interactivity;
     using Perspex.VisualTree;
     using Splat;
 
+    /// <summary>
+    /// Manages focus for the application.
+    /// </summary>
     public class FocusManager : IFocusManager
     {
-        private Dictionary<IFocusScope, IInputElement> focusScopes = 
+        /// <summary>
+        /// The focus scopes in which the focus is currently defined.
+        /// </summary>
+        private Dictionary<IFocusScope, IInputElement> focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
 
+        /// <summary>
+        /// Gets the instance of the <see cref="IFocusManager"/>.
+        /// </summary>
         public static IFocusManager Instance
         {
             get { return Locator.Current.GetService<IFocusManager>(); }
         }
 
+        /// <summary>
+        /// Gets the currently focused <see cref="IInputElement"/>.
+        /// </summary>
         public IInputElement Current
         {
             get { return KeyboardDevice.Instance.FocusedElement; }
         }
 
+        /// <summary>
+        /// Gets the current focus scope.
+        /// </summary>
         public IFocusScope Scope
         {
             get;
@@ -51,6 +65,7 @@ namespace Perspex.Input
 
                 if (scope != null)
                 {
+                    this.Scope = scope;
                     this.SetFocusedElement(scope, control, keyboardNavigated);
                 }
             }
@@ -73,8 +88,8 @@ namespace Perspex.Input
         /// will change.
         /// </remarks>
         public void SetFocusedElement(
-            IFocusScope scope, 
-            IInputElement element, 
+            IFocusScope scope,
+            IInputElement element,
             bool keyboardNavigated = false)
         {
             Contract.Requires<ArgumentNullException>(scope != null);

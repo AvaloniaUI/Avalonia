@@ -15,11 +15,13 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.Controls.Templates;
     using Perspex.Controls.Presenters;
+    using Perspex.VisualTree;
+
 
     /// <summary>
     /// A menu item control.
     /// </summary>
-    public class MenuItem : HeaderedItemsControl
+    public class MenuItem : SelectingItemsControl, ISelectable
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -34,10 +36,22 @@ namespace Perspex.Controls
             Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         /// <summary>
+        /// Defines the <see cref="Header"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<object> HeaderProperty =
+            HeaderedItemsControl.HeaderProperty.AddOwner<MenuItem>();
+
+        /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly PerspexProperty<object> IconProperty =
             PerspexProperty.Register<MenuItem, object>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="IsSelected"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<bool> IsSelectedProperty =
+            ListBoxItem.IsSelectedProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
@@ -110,12 +124,30 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="MenuItem"/>'s header.
+        /// </summary>
+        public object Header
+        {
+            get { return this.GetValue(HeaderProperty); }
+            set { this.SetValue(HeaderProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the icon that appears in a <see cref="MenuItem"/>.
         /// </summary>
         public object Icon
         {
             get { return this.GetValue(IconProperty); }
             set { this.SetValue(IconProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="MenuItem"/> is currently selected.
+        /// </summary>
+        public bool IsSelected
+        {
+            get { return this.GetValue(IsSelectedProperty); }
+            set { this.SetValue(IsSelectedProperty, value); }
         }
 
         /// <summary>
@@ -164,6 +196,20 @@ namespace Perspex.Controls
             if (this.Command != null)
             {
                 this.Command.Execute(this.CommandParameter);
+            }
+        }
+
+        /// <summary>
+        /// Called when a key is pressed in the <see cref="MenuItem"/>.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (this.IsTopLevel && e.Key == Key.Down && this.HasSubMenu)
+            {
+                this.IsSubMenuOpen = true;
             }
         }
 
@@ -253,7 +299,8 @@ namespace Perspex.Controls
 
             if (popup != null)
             {
-                popup.Opened += this.PopupFirstOpened;
+                popup.PopupRootCreated += this.PopupRootCreated;
+                popup.Opened += this.PopupOpened;
             }
         }
 
@@ -286,38 +333,48 @@ namespace Perspex.Controls
                 else
                 {
                     sender.CloseSubmenus();
+                    sender.SelectedIndex = -1;
                 }
             }
         }
 
+        private void PopupOpened(object sender, EventArgs e)
+        {
+            this.SelectedIndex = 0;
+        }
+
         /// <summary>
-        /// Called the first time the MenuItem's popup is opened.
+        /// Called when the MenuItem's popup root is opened.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void PopupFirstOpened(object sender, EventArgs e)
+        private void PopupRootCreated(object sender, EventArgs e)
         {
             var popup = (Popup)sender;
+            ItemsPresenter presenter = null;
 
             // Our ItemsPresenter is in a Popup which means that it's only created when the
             // Popup is opened, therefore it wasn't found by ItemsControl.OnTemplateApplied.
             // Now the Popup has been opened for the first time it should exist, so make sure
             // the PopupRoot's template is applied and look for the ItemsPresenter.
-            popup.PopupRoot.ApplyTemplate();
-            var presenter = popup.PopupRoot.FindControl<ItemsPresenter>("itemsPresenter");
+            foreach (var c in popup.PopupRoot.GetSelfAndVisualDescendents().OfType<Control>())
+            {
+                if (c.Name == "itemsPresenter" && c is ItemsPresenter)
+                {
+                    presenter = c as ItemsPresenter;
+                    break;
+                }
+
+                c.ApplyTemplate();
+            }
 
             if (presenter != null)
             {
-                // The presenter was found. First make its Panel's ChildLogicalParent point to
-                // this so that the child MenuItems will be logically parented by the parent
-                // MenuItem and then assign it to our Presenter property.
-                presenter.ApplyTemplate();
-                ((IItemsPanel)presenter.Panel).ChildLogicalParent = this;
+                // The presenter was found. Set its TemplatedParent so it thinks that it had a
+                // normal birth; may it never know its own perveristy.
+                presenter.TemplatedParent = this;
                 this.Presenter = presenter;
             }
-
-            // Don't call this event handler again.
-            popup.Opened -= this.PopupFirstOpened;
         }
     }
 }

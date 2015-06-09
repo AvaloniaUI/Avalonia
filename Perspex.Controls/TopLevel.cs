@@ -28,7 +28,7 @@ namespace Perspex.Controls
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
-    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IFocusScope
+    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -224,7 +224,7 @@ namespace Perspex.Controls
         /// </summary>
         IAccessKeyHandler IInputRoot.AccessKeyHandler
         {
-            get;
+            get { return this.accessKeyHandler; }
         }
 
         /// <summary>
@@ -294,7 +294,13 @@ namespace Perspex.Controls
                 this.Activated(this, EventArgs.Empty);
             }
 
-            FocusManager.Instance.SetFocusScope(this);
+            var scope = this as IFocusScope;
+
+            if (scope != null)
+            {
+                FocusManager.Instance.SetFocusScope(scope);
+            }
+
             this.IsActive = true;
         }
 

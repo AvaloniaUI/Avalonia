@@ -49,6 +49,8 @@ namespace Perspex.Controls
 
         public event EventHandler Opened;
 
+        public event EventHandler PopupRootCreated;
+
         public Control Child
         {
             get { return this.GetValue(ChildProperty); }
@@ -115,6 +117,8 @@ namespace Perspex.Controls
             this.topLevel.Deactivated += this.MaybeClose;
             this.popupRoot.AddHandler(PopupRoot.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Bubble, true);
             this.topLevel.AddHandler(TopLevel.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Tunnel);
+
+            this.PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             this.popupRoot.Show();
             this.IsOpen = true;

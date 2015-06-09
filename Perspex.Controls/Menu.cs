@@ -13,11 +13,12 @@ namespace Perspex.Controls
     using Perspex.LogicalTree;
     using Perspex.Rendering;
     using Perspex.Interactivity;
+    using Perspex.Controls.Primitives;
 
     /// <summary>
     /// A top-level menu control.
     /// </summary>
-    public class Menu : ItemsControl, IFocusScope, IMainMenu
+    public class Menu : SelectingItemsControl, IFocusScope, IMainMenu
     {
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
@@ -56,6 +57,29 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Closes the menu.
+        /// </summary>
+        public void CloseMenu()
+        {
+            foreach (MenuItem i in this.GetLogicalChildren())
+            {
+                i.IsSubMenuOpen = false;
+            }
+
+            this.IsOpen = false;
+            this.SelectedIndex = -1;
+        }
+
+        /// <summary>
+        /// Opens the menu in response to the Alt/F10 key.
+        /// </summary>
+        public void OpenMenu()
+        {
+            this.SelectedIndex = 0;
+            ((IInputElement)this.SelectedItem)?.Focus();
+        }
+
+        /// <summary>
         /// Called when the <see cref="MenuItem"/> is attached to the visual tree.
         /// </summary>
         /// <param name="root">The root of the visual tree.</param>
@@ -75,6 +99,13 @@ namespace Perspex.Controls
             this.subscription = new CompositeDisposable(
                 pointerPress,
                 Disposable.Create(() => topLevel.Deactivated -= this.Deactivated));
+
+            var inputRoot = root as IInputRoot;
+
+            if (inputRoot != null && inputRoot.AccessKeyHandler != null)
+            {
+                inputRoot.AccessKeyHandler.MainMenu = this;
+            }
         }
 
         /// <summary>
@@ -85,6 +116,20 @@ namespace Perspex.Controls
         {
             base.OnDetachedFromVisualTree(oldRoot);
             this.subscription.Dispose();
+        }
+
+        /// <summary>
+        /// Called when a key is pressed within the menu.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (this.IsOpen && e.Key == Key.Escape)
+            {
+                this.CloseMenu();
+            }
         }
 
         /// <summary>
@@ -110,26 +155,13 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Closes the menu.
-        /// </summary>
-        private void CloseMenu()
-        {
-            foreach (MenuItem i in this.GetLogicalChildren())
-            {
-                i.IsSubMenuOpen = false;
-            }
-
-            this.IsOpen = false;
-        }
-
-        /// <summary>
         /// Called when the top-level window is deactivated.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
         private void Deactivated(object sender, EventArgs e)
         {
-            this.CloseMenu();
+            //this.CloseMenu();
         }
 
         /// <summary>

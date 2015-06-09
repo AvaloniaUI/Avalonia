@@ -9,12 +9,13 @@ namespace Perspex.Controls
     using System;
     using System.Reactive.Linq;
     using System.Threading.Tasks;
+    using Perspex.Input;
     using Perspex.Media;
     using Perspex.Platform;
     using Perspex.Styling;
     using Splat;
 
-    public class Window : TopLevel, IStyleable
+    public class Window : TopLevel, IStyleable, IFocusScope
     {
         public static readonly PerspexProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>("Title", "Window");

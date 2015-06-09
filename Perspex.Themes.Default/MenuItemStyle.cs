@@ -41,6 +41,14 @@ namespace Perspex.Themes.Default
                         new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.TopLevelTemplate)),
                     },
                 },
+                new Style(x => x.OfType<MenuItem>().Class(":selected").Template().Name("root"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(Border.BackgroundProperty, new SolidColorBrush(0x3d26a0da)),
+                        new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
+                    },
+                },
                 new Style(x => x.OfType<MenuItem>().Class(":pointerover").Template().Name("root"))
                 {
                     Setters = new[]
@@ -54,14 +62,6 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(Path.IsVisibleProperty, false),
-                    },
-                },
-                new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>().PropertyEquals(MenuItem.IsSubMenuOpenProperty, true).Template().Name("root"))
-                {
-                    Setters = new[]
-                    {
-                        new Setter(Border.BackgroundProperty, new SolidColorBrush(0x3d26a0da)),
-                        new Setter(Border.BorderBrushProperty, new SolidColorBrush(0xff26a0da)),
                     },
                 },
             });

@@ -11,5 +11,9 @@ namespace Perspex.Input
     /// </summary>
     public interface IMainMenu
     {
+        /// <summary>
+        /// Opens the menu in response to the Alt/F10 key.
+        /// </summary>
+        void OpenMenu();
     }
 }
