@@ -61,7 +61,7 @@ namespace Perspex.Input
             {
                 var scope = control.GetSelfAndVisualAncestors()
                     .OfType<IFocusScope>()
-                    .FirstOrDefault();
+                    .FirstOrDefault() ?? this.Scope;
 
                 if (scope != null)
                 {

@@ -216,15 +216,13 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            base.OnKeyDown(e);
-
             switch (e.Key)
             {
                 case Key.Down:
                     if (this.IsTopLevel && this.HasSubMenu)
                     {
-                        this.IsSubMenuOpen = true;
                         this.SelectedIndex = 0;
+                        this.IsSubMenuOpen = true;
                         e.Handled = true;
                     }
 
@@ -239,6 +237,8 @@ namespace Perspex.Controls
 
                     break;
             }
+
+            base.OnKeyDown(e);
         }
 
         /// <summary>
@@ -328,6 +328,7 @@ namespace Perspex.Controls
             if (popup != null)
             {
                 popup.PopupRootCreated += this.PopupRootCreated;
+                popup.Opened += this.PopupRootOpened;
             }
         }
 
@@ -396,6 +397,21 @@ namespace Perspex.Controls
                 // normal birth; may it never know its own perveristy.
                 presenter.TemplatedParent = this;
                 this.Presenter = presenter;
+            }
+        }
+
+        private void PopupRootOpened(object sender, EventArgs e)
+        {
+            var selected = this.SelectedItem;
+
+            if (selected != null)
+            {
+                var container = this.ItemContainerGenerator.GetContainerForItem(selected);
+
+                if (container != null)
+                {
+                    container.Focus();
+                }
             }
         }
     }
