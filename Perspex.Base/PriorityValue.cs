@@ -103,9 +103,9 @@ namespace Perspex
         /// <summary>
         /// Checks whether a value is valid for a type.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="propertyType"></param>
-        /// <returns></returns>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">The type.</param>
+        /// <returns>True if the value is valid, otherwise false.</returns>
         public static bool IsValidValue(object value, Type propertyType)
         {
             TypeInfo type = propertyType.GetTypeInfo();
