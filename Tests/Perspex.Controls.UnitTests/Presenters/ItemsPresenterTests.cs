@@ -49,6 +49,17 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Panel_TabNavigation_Should_Be_Set_To_ItemsPresenter_Value()
+        {
+            var target = new ItemsPresenter();
+
+            KeyboardNavigation.SetTabNavigation(target, KeyboardNavigationMode.Cycle);
+            target.ApplyTemplate();
+
+            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(target.Panel));
+        }
+
+        [Fact]
         public void Panel_Should_Be_Visual_Child()
         {
             var target = new ItemsPresenter();

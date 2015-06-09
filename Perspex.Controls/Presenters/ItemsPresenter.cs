@@ -24,6 +24,13 @@ namespace Perspex.Controls.Presenters
 
         private bool createdPanel;
 
+        static ItemsPresenter()
+        {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ItemsPresenter),
+                KeyboardNavigationMode.Once);
+        }
+
         public ItemsPresenter()
         {
             this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
@@ -78,7 +85,7 @@ namespace Perspex.Controls.Presenters
             this.ClearVisualChildren();
             this.Panel = this.ItemsPanel.Build();
             this.Panel.TemplatedParent = this;
-            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigationMode.Once);
+            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigation.GetTabNavigation(this));
             ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
