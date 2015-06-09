@@ -10,6 +10,7 @@ namespace Perspex.Controls.Primitives.UnitTests
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
+    using Perspex.Interactivity;
     using Xunit;
 
     public class SelectingItemsControlTests
@@ -303,6 +304,36 @@ namespace Perspex.Controls.Primitives.UnitTests
             target.RaiseEvent(e);
 
             Assert.True(e.Handled);
+        }
+
+        [Fact]
+        public void Raising_IsSelectedChanged_Should_Update_Selection()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[1];
+
+            Assert.False(items[0].IsSelected);
+            Assert.True(items[1].IsSelected);
+
+            items[0].IsSelected = true;
+            items[0].RaiseEvent(new RoutedEventArgs(SelectingItemsControl.IsSelectedChangedEvent));
+
+            Assert.Equal(target.SelectedIndex, 0);
+            Assert.Equal(target.SelectedItem, items[0]);
+            Assert.True(items[0].IsSelected);
+            Assert.False(items[1].IsSelected);
         }
 
         private ControlTemplate Template()

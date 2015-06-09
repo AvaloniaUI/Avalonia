@@ -6,66 +6,81 @@
 
 namespace Perspex.Controls.Primitives
 {
-    using Perspex.Controls.Utils;
-    using Perspex.Input;
-    using Perspex.VisualTree;
     using System;
     using System.Linq;
     using System.Collections;
     using System.Collections.Specialized;
+    using Perspex.Controls.Utils;
+    using Perspex.Input;
+    using Perspex.VisualTree;
+    using Perspex.Interactivity;
 
+    /// <summary>
+    /// An <see cref="ItemsControl"/> that maintains a selection.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Support multiple selection.
+    /// </remarks>
     public abstract class SelectingItemsControl : ItemsControl
     {
+        /// <summary>
+        /// Defines the <see cref="SelectedIndex"/> property.
+        /// </summary>
         public static readonly PerspexProperty<int> SelectedIndexProperty =
-            PerspexProperty.Register<SelectingItemsControl, int>("SelectedIndex", defaultValue: -1, coerce: CoerceSelectedIndex);
+            PerspexProperty.Register<SelectingItemsControl, int>(
+                nameof(SelectedIndex),
+                defaultValue: -1,
+                coerce: CoerceSelectedIndex);
 
+        /// <summary>
+        /// Defines the <see cref="SelectedItem"/> property.
+        /// </summary>
         public static readonly PerspexProperty<object> SelectedItemProperty =
-            PerspexProperty.Register<SelectingItemsControl, object>("SelectedItem", coerce: CoerceSelectedItem);
+            PerspexProperty.Register<SelectingItemsControl, object>(
+                nameof(SelectedItem),
+                coerce: CoerceSelectedItem);
 
+        /// <summary>
+        /// Event that should be raised by items that implement <see cref="ISelectable"/> to
+        /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
+        /// has changed.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
+            RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
+        /// </summary>
         static SelectingItemsControl()
         {
-            SelectedIndexProperty.Changed.Subscribe(x =>
-            {
-                var control = x.Sender as SelectingItemsControl;
-
-                if (control != null)
-                {
-                    var index = (int)x.NewValue;
-
-                    if (index == -1)
-                    {
-                        control.SelectedItem = null;
-                    }
-                    else
-                    {
-                        control.SelectedItem = control.Items.ElementAt((int)x.NewValue);
-                    }
-                }
-            });
-
-            SelectedItemProperty.Changed.Subscribe(x =>
-            {
-                var control = x.Sender as SelectingItemsControl;
-
-                if (control != null)
-                {
-                    control.SelectedItemChanged(x.NewValue);
-                }
-            });
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ItemSelectionChanged);
+            SelectedIndexProperty.Changed.Subscribe(SelectedIndexChanged);
+            SelectedItemProperty.Changed.Subscribe(SelectedItemChanged);
         }
 
+        /// <summary>
+        /// Gets or sets the index of the selected item.
+        /// </summary>
         public int SelectedIndex
         {
             get { return this.GetValue(SelectedIndexProperty); }
             set { this.SetValue(SelectedIndexProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the selected item.
+        /// </summary>
         public object SelectedItem
         {
             get { return this.GetValue(SelectedItemProperty); }
             set { this.SetValue(SelectedItemProperty, value); }
         }
 
+        /// <summary>
+        /// Called when the <see cref="Items"/> property changes.
+        /// </summary>
+        /// <param name="oldValue">The old value of the property.</param>
+        /// <param name="newValue">The new value of the property.</param>
         protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
         {
             base.ItemsChanged(oldValue, newValue);
@@ -81,6 +96,12 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Called when a <see cref="INotifyCollectionChanged.CollectionChanged"/> event is raised
+        /// on <see cref="Items"/>.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
         protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsCollectionChanged(sender, e);
@@ -95,6 +116,7 @@ namespace Perspex.Controls.Primitives
                     {
                         this.SelectedItem = null;
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Move:
                     this.SelectedItem = this.Items.IndexOf(selected);
@@ -102,6 +124,25 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Called when the selection on a child item changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void ItemSelectionChanged(RoutedEventArgs e)
+        {
+            var selectable = e.Source as ISelectable;
+
+            if (selectable != null && selectable != this && selectable.IsSelected)
+            {
+                this.SelectedItem = selectable;
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Moves the selection in the specified direction.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
         protected virtual void MoveSelection(FocusNavigationDirection direction)
         {
             var panel = this.Presenter?.Panel as INavigablePanel;
@@ -125,6 +166,10 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Called when a key is pressed within the control.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -166,6 +211,10 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Called when the pointer is pressed within the control.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             IVisual source = (IVisual)e.Source;
@@ -189,12 +238,21 @@ namespace Perspex.Controls.Primitives
             e.Handled = true;
         }
 
+        /// <summary>
+        /// Called when the control's template has been applied.
+        /// </summary>
         protected override void OnTemplateApplied()
         {
             base.OnTemplateApplied();
             this.SelectedItemChanged(this.SelectedItem);
         }
 
+        /// <summary>
+        /// Provides coercion for the <see cref="SelectedIndex"/> property.
+        /// </summary>
+        /// <param name="o">The object on which the property has changed.</param>
+        /// <param name="value">The proposed value.</param>
+        /// <returns>The coerced value.</returns>
         private static int CoerceSelectedIndex(PerspexObject o, int value)
         {
             var control = o as SelectingItemsControl;
@@ -224,6 +282,12 @@ namespace Perspex.Controls.Primitives
             return value;
         }
 
+        /// <summary>
+        /// Provides coercion for the <see cref="SelectedItem"/> property.
+        /// </summary>
+        /// <param name="o">The object on which the property has changed.</param>
+        /// <param name="value">The proposed value.</param>
+        /// <returns>The coerced value.</returns>
         private static object CoerceSelectedItem(PerspexObject o, object value)
         {
             var control = o as SelectingItemsControl;
@@ -239,6 +303,47 @@ namespace Perspex.Controls.Primitives
             return value;
         }
 
+        /// <summary>
+        /// Called when the <see cref="SelectedIndex"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var control = e.Sender as SelectingItemsControl;
+
+            if (control != null)
+            {
+                var index = (int)e.NewValue;
+
+                if (index == -1)
+                {
+                    control.SelectedItem = null;
+                }
+                else
+                {
+                    control.SelectedItem = control.Items.ElementAt((int)e.NewValue);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="SelectedItem"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var control = e.Sender as SelectingItemsControl;
+
+            if (control != null)
+            {
+                control.SelectedItemChanged(e.NewValue);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="SelectedItem"/> property changes.
+        /// </summary>
+        /// <param name="selected">The new selected item.</param>
         private void SelectedItemChanged(object selected)
         {
             var containers = this.ItemContainerGenerator.GetAll()
