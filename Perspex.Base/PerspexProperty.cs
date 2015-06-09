@@ -346,21 +346,21 @@ namespace Perspex
         /// <returns>True if the value is valid, otherwise false.</returns>
         public bool IsValidValue(object value)
         {
-            if (value == UnsetValue)
-            {
-                return true;
-            }
-            else if (value == null)
-            {
-                return !this.PropertyType.GetTypeInfo().IsValueType ||
-                    Nullable.GetUnderlyingType(this.PropertyType) != null;
-            }
-
-            return this.PropertyType.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
+            return PriorityValue.IsValidValue(value, this.PropertyType);
         }
 
         /// <summary>
-        /// Gets the default value for the property on the specified type.
+        /// Overrides the default value for the property on the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="defaultValue">The default value.</param>
+        public void OverrideDefaultValue<T>(object defaultValue)
+        {
+            this.OverrideDefaultValue(typeof(T), defaultValue);
+        }
+
+        /// <summary>
+        /// Overrides the default value for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="defaultValue">The default value.</param>
@@ -368,7 +368,15 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(type != null);
 
-            // TODO: Ensure correct type.
+            if (!this.IsValidValue(defaultValue))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Invalid value for Property '{0}': {1} ({2})",
+                    this.Name,
+                    defaultValue,
+                    defaultValue.GetType().FullName));
+            }
+
             if (this.defaultValues.ContainsKey(type))
             {
                 throw new InvalidOperationException("Default value is already set for this property.");
