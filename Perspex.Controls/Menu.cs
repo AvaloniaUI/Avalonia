@@ -125,7 +125,7 @@ namespace Perspex.Controls
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            this.CloseMenu();
+            //this.CloseMenu();
         }
 
         /// <summary>

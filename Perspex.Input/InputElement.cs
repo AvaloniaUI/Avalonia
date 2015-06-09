@@ -84,7 +84,7 @@ namespace Perspex.Input
             GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
             LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
+            KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
             PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
             PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
