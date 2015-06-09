@@ -129,6 +129,7 @@ namespace Perspex.Controls
             if (this.IsOpen && e.Key == Key.Escape)
             {
                 this.CloseMenu();
+                e.Handled = true;
             }
         }
 

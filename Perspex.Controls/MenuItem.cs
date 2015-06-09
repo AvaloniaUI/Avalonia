@@ -207,9 +207,26 @@ namespace Perspex.Controls
         {
             base.OnKeyDown(e);
 
-            if (this.IsTopLevel && e.Key == Key.Down && this.HasSubMenu)
+            switch (e.Key)
             {
-                this.IsSubMenuOpen = true;
+                case Key.Down:
+                    if (this.IsTopLevel && this.HasSubMenu)
+                    {
+                        this.IsSubMenuOpen = true;
+                        this.SelectedIndex = 0;
+                        e.Handled = true;
+                    }
+
+                    break;
+
+                case Key.Escape:
+                    if (this.IsSubMenuOpen)
+                    {
+                        this.IsSubMenuOpen = false;
+                        e.Handled = true;
+                    }
+
+                    break;
             }
         }
 
@@ -300,7 +317,6 @@ namespace Perspex.Controls
             if (popup != null)
             {
                 popup.PopupRootCreated += this.PopupRootCreated;
-                popup.Opened += this.PopupOpened;
             }
         }
 
@@ -336,11 +352,6 @@ namespace Perspex.Controls
                     sender.SelectedIndex = -1;
                 }
             }
-        }
-
-        private void PopupOpened(object sender, EventArgs e)
-        {
-            this.SelectedIndex = 0;
         }
 
         /// <summary>
