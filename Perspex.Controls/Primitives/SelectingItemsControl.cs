@@ -134,7 +134,7 @@ namespace Perspex.Controls.Primitives
 
             if (selectable != null && selectable != this && selectable.IsSelected)
             {
-                this.SelectedItem = selectable;
+                this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer((Control)selectable);
                 e.Handled = true;
             }
         }

@@ -35,6 +35,23 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_Item_IsSelected_Sets_ListBox_Selection()
+        {
+            var target = new ListBox
+            {
+                Template = new ControlTemplate(this.CreateListBoxTemplate),
+                Items = new[] { "Foo", "Bar", "Baz " },
+            };
+
+            target.ApplyTemplate();
+
+            ((ListBoxItem)target.GetLogicalChildren().ElementAt(1)).IsSelected = true;
+
+            Assert.Equal("Bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
         private Control CreateListBoxTemplate(ITemplatedControl parent)
         {
             return new ScrollViewer
