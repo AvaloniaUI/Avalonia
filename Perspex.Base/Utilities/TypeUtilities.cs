@@ -16,7 +16,8 @@ namespace Perspex.Utilities
     /// </summary>
     internal static class TypeUtilities
     {
-        private static readonly Dictionary<Type, List<Type>> Conversions = new Dictionary<Type, List<Type>>() {
+        private static readonly Dictionary<Type, List<Type>> Conversions = new Dictionary<Type, List<Type>>()
+        {
             { typeof(decimal), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
             { typeof(double), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
             { typeof(float), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },

@@ -6,11 +6,11 @@
 
 namespace Perspex
 {
-    using Perspex.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Reactive.Subjects;
     using System.Reflection;
+    using Perspex.Utilities;
 
     /// <summary>
     /// A perspex property.

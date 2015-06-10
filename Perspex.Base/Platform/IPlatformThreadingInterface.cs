@@ -7,15 +7,16 @@
 namespace Perspex.Platform
 {
     using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Perspex.Threading;
 
     /// <summary>
     /// Provides platform-specific services relating to threading.
     /// </summary>
     public interface IPlatformThreadingInterface
     {
+        /// <summary>
+        /// Checks whether there are messages waiting to be processed.
+        /// </summary>
+        /// <returns>True if there are messages waiting, otherwise false.</returns>
         bool HasMessages();
 
         /// <summary>

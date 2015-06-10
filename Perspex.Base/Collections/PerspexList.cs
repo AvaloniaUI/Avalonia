@@ -20,7 +20,7 @@ namespace Perspex.Collections
     /// <remarks>
     /// PerspexList is similar to <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>
     /// except that when the <see cref="Clear"/> method is called, it notifies with a
-    /// <see cref="NotifyCollectionChangedAction.Remove"/> action, passing the items that were 
+    /// <see cref="NotifyCollectionChangedAction.Remove"/> action, passing the items that were
     /// removed.
     /// </remarks>
     public class PerspexList<T> : IPerspexList<T>, INotifyCollectionChanged, INotifyPropertyChanged

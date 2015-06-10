@@ -18,7 +18,6 @@ namespace Perspex
     using Serilog.Core.Enrichers;
     using Perspex.Utilities;
 
-
     /// <summary>
     /// The priority of a binding.
     /// </summary>

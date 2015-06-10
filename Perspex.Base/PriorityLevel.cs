@@ -31,21 +31,21 @@ namespace Perspex
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Each priority level in a <see cref="PriorityValue"/> has a current <see cref="Value"/>, 
-    /// a list of <see cref="Bindings"/> and a <see cref="DirectValue"/>. When there are no 
+    /// Each priority level in a <see cref="PriorityValue"/> has a current <see cref="Value"/>,
+    /// a list of <see cref="Bindings"/> and a <see cref="DirectValue"/>. When there are no
     /// bindings present, or all bindings return <see cref="PerspexProperty.UnsetValue"/> then
-    /// <code>Value</code> will equal <code>DirectValue</code>. 
+    /// <code>Value</code> will equal <code>DirectValue</code>.
     /// </para>
     /// <para>
-    /// When there are bindings present, then the latest added binding that doesn't return 
-    /// <code>UnsetValue</code> will take precedence. The active binding is returned by the 
-    /// <see cref="ActiveBindingIndex"/> property (which refers to the active binding's 
-    /// <see cref="PriorityBindingEntry.Index"/> property rather than the index in 
+    /// When there are bindings present, then the latest added binding that doesn't return
+    /// <code>UnsetValue</code> will take precedence. The active binding is returned by the
+    /// <see cref="ActiveBindingIndex"/> property (which refers to the active binding's
+    /// <see cref="PriorityBindingEntry.Index"/> property rather than the index in
     /// <code>Bindings</code>).
     /// </para>
     /// <para>
     /// If <code>DirectValue</code> is set while a binding is active, then it will replace the
-    /// current value until the active binding fires again/
+    /// current value until the active binding fires again.
     /// </para>
     /// </remarks>
     internal class PriorityLevel
@@ -71,9 +71,10 @@ namespace Perspex
         /// Initializes a new instance of the <see cref="PriorityLevel"/> class.
         /// </summary>
         /// <param name="priority">The priority.</param>
+        /// <param name="mode">The precedence mode.</param>
         /// <param name="changed">A method to be called when the current value changes.</param>
         public PriorityLevel(
-            int priority, 
+            int priority,
             LevelPrecedenceMode mode,
             Action<PriorityLevel> changed)
         {
@@ -115,7 +116,7 @@ namespace Perspex
         public object Value { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="PriorityBindingEntry.Index"/> value of the active binding, or -1 
+        /// Gets the <see cref="PriorityBindingEntry.Index"/> value of the active binding, or -1
         /// if no binding is active.
         /// </summary>
         public int ActiveBindingIndex { get; private set; }
@@ -150,13 +151,13 @@ namespace Perspex
             });
         }
 
-        /// <summary> 
+        /// <summary>
         /// Invoked when an entry in <see cref="Bindings"/> changes value.
         /// </summary>
         /// <param name="entry">The entry that changed.</param>
         private void Changed(PriorityBindingEntry entry)
         {
-            if (mode == LevelPrecedenceMode.Latest || entry.Index >= this.ActiveBindingIndex)
+            if (this.mode == LevelPrecedenceMode.Latest || entry.Index >= this.ActiveBindingIndex)
             {
                 if (entry.Value != PerspexProperty.UnsetValue)
                 {
@@ -171,7 +172,7 @@ namespace Perspex
             }
         }
 
-        /// <summary> 
+        /// <summary>
         /// Invoked when an entry in <see cref="Bindings"/> completes.
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
@@ -185,7 +186,7 @@ namespace Perspex
             }
         }
 
-        /// <summary> 
+        /// <summary>
         /// Activates the first binding that has a value.
         /// </summary>
         private void ActivateFirstBinding()
