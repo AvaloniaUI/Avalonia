@@ -236,9 +236,31 @@ namespace Perspex.Controls
                     }
 
                     break;
+
+                case Key.Left:
+                    if (!this.IsTopLevel && this.IsSubMenuOpen)
+                    {
+                        this.IsSubMenuOpen = false;
+                        e.Handled = true;
+                    }
+
+                    break;
+
+                case Key.Right:
+                    if (!this.IsTopLevel && this.HasSubMenu && !this.IsSubMenuOpen)
+                    {
+                        this.SelectedIndex = 0;
+                        this.IsSubMenuOpen = true;
+                        e.Handled = true;
+                    }
+
+                    break;
             }
 
-            if (!((e.Key == Key.Up || e.Key == Key.Down) && !this.IsSubMenuOpen))
+            // If this key is a directional key and the submenu isn't open we need the parent
+            // menu item to handle the keypress, so don't pass the key to the base or it will try
+            // to move the selection in the non-open submenu.
+            if (!((e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right) && !this.IsSubMenuOpen))
             {
                 base.OnKeyDown(e);
             }
