@@ -53,7 +53,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ItemSelectionChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ItemIsSelectedChanged);
             SelectedIndexProperty.Changed.Subscribe(SelectedIndexChanged);
             SelectedItemProperty.Changed.Subscribe(SelectedItemChanged);
         }
@@ -128,14 +128,19 @@ namespace Perspex.Controls.Primitives
         /// Called when the selection on a child item changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void ItemSelectionChanged(RoutedEventArgs e)
+        protected virtual void ItemIsSelectedChanged(RoutedEventArgs e)
         {
             var selectable = e.Source as ISelectable;
 
             if (selectable != null && selectable != this && selectable.IsSelected)
             {
-                this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer((Control)selectable);
-                e.Handled = true;
+                var container = this.ItemContainerGenerator.GetItemForContainer((Control)selectable);
+
+                if (container != null)
+                {
+                    this.SelectedItem = container;
+                    e.Handled = true;
+                }
             }
         }
 

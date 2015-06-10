@@ -307,7 +307,7 @@ namespace Perspex.Controls.Primitives.UnitTests
         }
 
         [Fact]
-        public void Raising_IsSelectedChanged_Should_Update_Selection()
+        public void Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
         {
             var items = new[]
             {
@@ -334,6 +334,39 @@ namespace Perspex.Controls.Primitives.UnitTests
             Assert.Equal(target.SelectedItem, items[0]);
             Assert.True(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
+        }
+
+        [Fact]
+        public void Raising_IsSelectedChanged_On_Someone_Elses_Item_Should_Not_Update_Selection()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[1];
+
+            var notChild = new Item
+            {
+                IsSelected = true,
+            };
+
+            target.RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = SelectingItemsControl.IsSelectedChangedEvent,
+                Source = notChild,
+                OriginalSource = notChild,
+            });
+
+            Assert.Equal(target.SelectedItem, items[1]);
         }
 
         private ControlTemplate Template()
