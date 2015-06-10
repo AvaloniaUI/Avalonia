@@ -6,6 +6,7 @@
 
 namespace Perspex
 {
+    using Perspex.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Reactive.Subjects;
@@ -346,7 +347,7 @@ namespace Perspex
         /// <returns>True if the value is valid, otherwise false.</returns>
         public bool IsValidValue(object value)
         {
-            return PriorityValue.IsValidValue(value, this.PropertyType);
+            return TypeUtilities.TryCast(this.PropertyType, value, out value);
         }
 
         /// <summary>
@@ -368,7 +369,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(type != null);
 
-            if (!this.IsValidValue(defaultValue))
+            if (!TypeUtilities.TryCast(this.PropertyType, defaultValue, out defaultValue))
             {
                 throw new InvalidOperationException(string.Format(
                     "Invalid value for Property '{0}': {1} ({2})",

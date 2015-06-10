@@ -16,6 +16,8 @@ namespace Perspex
     using Perspex.Reactive;
     using Serilog;
     using Serilog.Core.Enrichers;
+    using Perspex.Utilities;
+
 
     /// <summary>
     /// The priority of a binding.
@@ -514,13 +516,13 @@ namespace Perspex
                     this.GetType()));
             }
 
-            if (!PriorityValue.IsValidValue(value, property.PropertyType))
+            if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
             {
                 throw new InvalidOperationException(string.Format(
                     "Invalid value for Property '{0}': {1} ({2})",
                     property.Name,
                     value,
-                    value.GetType().FullName));
+                    value?.GetType().FullName ?? "(null)"));
             }
 
             if (!this.values.TryGetValue(property, out v))

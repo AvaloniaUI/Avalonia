@@ -35,7 +35,7 @@ namespace Perspex.Base.UnitTests
         {
             string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Bar", "Flob", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux" }, names);
         }
 
         [Fact]
@@ -176,7 +176,35 @@ namespace Perspex.Base.UnitTests
         {
             Class2 target = new Class2();
 
-            target.SetValue(Class2.FlobProperty, 4);
+            target.SetValue((PerspexProperty)Class2.FlobProperty, 4);
+
+            var value = target.GetValue(Class2.FlobProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
+        }
+
+        [Fact]
+        public void SetValue_Respects_Implicit_Conversions()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue((PerspexProperty)Class2.FlobProperty, new ImplictDouble(4));
+
+            var value = target.GetValue(Class2.FlobProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
+        }
+
+        [Fact]
+        public void SetValue_Can_Convert_To_Nullable()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue((PerspexProperty)Class2.FredProperty, 4.0);
+
+            var value = target.GetValue(Class2.FredProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
         }
 
         [Fact]
@@ -616,12 +644,12 @@ namespace Perspex.Base.UnitTests
             public static readonly PerspexProperty<int> QuxProperty =
                 PerspexProperty.Register<Class1, int>("Qux", coerce: Coerce);
 
-            public int MaxQux { get; set; }
-
             public Class1()
             {
                 this.MaxQux = 10;
             }
+
+            public int MaxQux { get; set; }
 
             private static int Coerce(PerspexObject instance, int value)
             {
@@ -637,6 +665,9 @@ namespace Perspex.Base.UnitTests
             public static readonly PerspexProperty<double> FlobProperty =
                 PerspexProperty.Register<Class2, double>("Flob");
 
+            public static readonly PerspexProperty<double?> FredProperty =
+                PerspexProperty.Register<Class2, double?>("Fred");
+
             static Class2()
             {
                 FooProperty.OverrideDefaultValue(typeof(Class2), "foooverride");
@@ -646,6 +677,21 @@ namespace Perspex.Base.UnitTests
             {
                 get { return (Class1)this.InheritanceParent; }
                 set { this.InheritanceParent = value; }
+            }
+        }
+
+        private class ImplictDouble
+        {
+            public ImplictDouble(double value)
+            {
+                this.Value = value;
+            }
+
+            public double Value { get; }
+
+            public static implicit operator double(ImplictDouble v)
+            {
+                return v.Value;
             }
         }
     }

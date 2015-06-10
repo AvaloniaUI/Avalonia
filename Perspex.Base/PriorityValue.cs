@@ -12,17 +12,18 @@ namespace Perspex
     using System.Reactive.Subjects;
     using System.Reflection;
     using System.Text;
+    using Perspex.Utilities;
 
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.
     /// </summary>
     /// <remarks>
-    /// Bindings, in the form of <see cref="IObservable<object>"/>s are added to the object using
+    /// Bindings, in the form of <see cref="IObservable{object}"/>s are added to the object using
     /// the <see cref="Add"/> method. With the observable is passed a priority, where lower values
     /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
-    /// has a higher priority. Each time the value changes, the <see cref="Changed"/> observable is 
+    /// has a higher priority. Each time the value changes, the <see cref="Changed"/> observable is
     /// fired with the old and new values.
     /// </remarks>
     internal class PriorityValue
@@ -101,39 +102,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Checks whether a value is valid for a type.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="propertyType">The type.</param>
-        /// <returns>True if the value is valid, otherwise false.</returns>
-        public static bool IsValidValue(object value, Type propertyType)
-        {
-            TypeInfo type = propertyType.GetTypeInfo();
-
-            if (value == PerspexProperty.UnsetValue)
-            {
-                return true;
-            }
-            else if (value == null)
-            {
-                if (type.IsValueType && 
-                    (!type.IsGenericType || !(type.GetGenericTypeDefinition() == typeof(Nullable<>))))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!type.IsAssignableFrom(value.GetType().GetTypeInfo()))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Adds a new binding.
         /// </summary>
         /// <param name="binding">The binding.</param>
@@ -172,7 +140,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Returns diagnostic string that can help the user debug the bindings in effect on 
+        /// Returns diagnostic string that can help the user debug the bindings in effect on
         /// this object.
         /// </summary>
         /// <returns>A diagnostic string.</returns>
@@ -188,7 +156,7 @@ namespace Perspex
                     b.AppendLine();
                 }
 
-                b.Append(this.ValuePriority == level.Key ? "*" : "");
+                b.Append(this.ValuePriority == level.Key ? "*" : string.Empty);
                 b.Append("Priority ");
                 b.Append(level.Key);
                 b.Append(": ");
@@ -199,7 +167,7 @@ namespace Perspex
 
                 foreach (var binding in level.Value.Bindings)
                 {
-                    b.Append(level.Value.ActiveBindingIndex == binding.Index ? "*" : "");
+                    b.Append(level.Value.ActiveBindingIndex == binding.Index ? "*" : string.Empty);
                     b.Append(binding.Description ?? binding.Observable.GetType().Name);
                     b.Append(": ");
                     b.AppendLine(binding.Value?.ToString() ?? "(null)");
@@ -254,7 +222,14 @@ namespace Perspex
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            this.VerifyValidValue(value);
+            if (!TypeUtilities.TryCast(this.valueType, value, out value))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Invalid value for Property '{0}': {1} ({2})",
+                    this.name,
+                    value,
+                    value?.GetType().FullName ?? "(null)"));
+            }
 
             var old = this.value;
 
@@ -269,25 +244,9 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Throws an exception if <paramref name="value"/> is invalid.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        private void VerifyValidValue(object value)
-        {
-            if (!IsValidValue(value, this.valueType))
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': {1} ({2})",
-                    this.name,
-                    value,
-                    value.GetType().FullName));
-            }
-        }
-
-        /// <summary>
         /// Called when the value for a priority level changes.
         /// </summary>
-        /// <param name="changed">The changed entry.</param>
+        /// <param name="level">The priority level of the changed entry.</param>
         private void ValueChanged(PriorityLevel level)
         {
             if (level.Priority <= this.ValuePriority)

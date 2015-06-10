@@ -37,7 +37,7 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(Button.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xff707070)),
-                        new Setter(Button.BorderThicknessProperty, 2.0),
+                        new Setter(Button.BorderThicknessProperty, 2),
                         new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
                     },
                 },
