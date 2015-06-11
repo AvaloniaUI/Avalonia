@@ -173,18 +173,7 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsTopLevel
         {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Called when the <see cref="MenuItem"/> is attached to the visual tree.
-        /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
-        {
-            base.OnAttachedToVisualTree(root);
-            this.IsTopLevel = this.Parent is Menu;
+            get { return this.Parent is Menu; }
         }
 
         /// <summary>
@@ -257,6 +246,18 @@ namespace Perspex.Controls
                     }
 
                     passStraightToParent = this.IsTopLevel || !this.IsSubMenuOpen;
+                    break;
+
+                case Key.Enter:
+                    if (this.HasSubMenu)
+                    {
+                        goto case Key.Right;
+                    }
+                    else
+                    {
+                        this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                    }
+
                     break;
 
                 case Key.Escape:
