@@ -84,7 +84,7 @@ namespace Perspex.Controls
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
-            IsSubMenuOpenProperty.Changed.Subscribe(SubMenuOpenChanged);
+            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
         }
 
         /// <summary>
@@ -383,23 +383,19 @@ namespace Perspex.Controls
         /// Called when the <see cref="IsSubMenuOpen"/> property changes.
         /// </summary>
         /// <param name="e">The property change event.</param>
-        private static void SubMenuOpenChanged(PerspexPropertyChangedEventArgs e)
+        private void SubMenuOpenChanged(PerspexPropertyChangedEventArgs e)
         {
-            var sender = e.Sender as MenuItem;
             var value = (bool)e.NewValue;
 
-            if (sender != null)
+            if (value)
             {
-                if (value)
-                {
-                    sender.RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
-                    sender.IsSelected = true;
-                }
-                else
-                {
-                    sender.CloseSubmenus();
-                    sender.SelectedIndex = -1;
-                }
+                this.RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
+                this.IsSelected = true;
+            }
+            else
+            {
+                this.CloseSubmenus();
+                this.SelectedIndex = -1;
             }
         }
 
