@@ -57,6 +57,19 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets the selected <see cref="MenuItem"/> container.
+        /// </summary>
+        private MenuItem SelectedMenuItem
+        {
+            get
+            {
+                return (this.SelectedItem != null) ?
+                    (MenuItem)this.ItemContainerGenerator.GetContainerForItem(this.SelectedItem) :
+                    null;
+            }
+        }
+
+        /// <summary>
         /// Closes the menu.
         /// </summary>
         public void CloseMenu()
@@ -134,12 +147,26 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            bool menuWasOpen = this.SelectedMenuItem?.IsSubMenuOpen ?? false;
+
             base.OnKeyDown(e);
 
             if (this.IsOpen && e.Key == Key.Escape)
             {
                 this.CloseMenu();
                 e.Handled = true;
+            }
+            else if (menuWasOpen)
+            {
+                // If a menu item was open and we navigate to a new one with the arrow keys, open
+                // that menu and select the first item.
+                var selection = this.SelectedMenuItem;
+
+                if (selection != null && !selection.IsSubMenuOpen)
+                {
+                    selection.IsSubMenuOpen = true;
+                    selection.SelectedIndex = 0;
+                }
             }
         }
 
@@ -153,7 +180,7 @@ namespace Perspex.Controls
 
             if (menuItem != null && menuItem.Parent == this)
             {
-                foreach (var child in this.Items.OfType<MenuItem>())
+                foreach (var child in this.GetLogicalChildren().OfType<MenuItem>())
                 {
                     if (child != menuItem && child.IsSubMenuOpen)
                     {
