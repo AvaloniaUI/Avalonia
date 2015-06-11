@@ -216,8 +216,18 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            // Some keypresses we want to pass straight to the parent MenuItem/Menu without giving
+            // this MenuItem the chance to handle them. This is usually e.g. when the submenu is
+            // closed so passing them to the base would try to move the selection in a hidden
+            // submenu.
+            var passStraightToParent = true;
+
             switch (e.Key)
             {
+                case Key.Up:
+                    passStraightToParent = !this.IsSubMenuOpen;
+                    break;
+
                 case Key.Down:
                     if (this.IsTopLevel && this.HasSubMenu && !this.IsSubMenuOpen)
                     {
@@ -226,15 +236,7 @@ namespace Perspex.Controls
                         e.Handled = true;
                     }
 
-                    break;
-
-                case Key.Escape:
-                    if (this.IsSubMenuOpen)
-                    {
-                        this.IsSubMenuOpen = false;
-                        e.Handled = true;
-                    }
-
+                    passStraightToParent = !this.IsSubMenuOpen;
                     break;
 
                 case Key.Left:
@@ -244,6 +246,7 @@ namespace Perspex.Controls
                         e.Handled = true;
                     }
 
+                    passStraightToParent = this.IsTopLevel || !this.IsSubMenuOpen;
                     break;
 
                 case Key.Right:
@@ -254,13 +257,20 @@ namespace Perspex.Controls
                         e.Handled = true;
                     }
 
+                    passStraightToParent = this.IsTopLevel || !this.IsSubMenuOpen;
+                    break;
+
+                case Key.Escape:
+                    if (this.IsSubMenuOpen)
+                    {
+                        this.IsSubMenuOpen = false;
+                        e.Handled = true;
+                    }
+
                     break;
             }
 
-            // If this key is a directional key and the submenu isn't open we need the parent
-            // menu item to handle the keypress, so don't pass the key to the base or it will try
-            // to move the selection in the non-open submenu.
-            if (!((e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right) && !this.IsSubMenuOpen))
+            if (!passStraightToParent)
             {
                 base.OnKeyDown(e);
             }
