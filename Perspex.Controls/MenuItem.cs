@@ -76,6 +76,11 @@ namespace Perspex.Controls
         private IDisposable submenuTimer;
 
         /// <summary>
+        /// The submenu popup.
+        /// </summary>
+        private Popup popup;
+
+        /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
         /// </summary>
         static MenuItem()
@@ -268,12 +273,62 @@ namespace Perspex.Controls
                     }
 
                     break;
+
+                default:
+                    e.Handled = this.HandleAccessKey(e.Text);
+                    break;
             }
 
             if (!passStraightToParent)
             {
                 base.OnKeyDown(e);
             }
+        }
+
+        private bool HandleAccessKey(string text)
+        {
+            text = text.ToUpper();
+
+            if (!this.IsSubMenuOpen)
+            {
+                var match = this.GetVisualDescendents()
+                    .OfType<AccessText>()
+                    .FirstOrDefault(x => x.AccessKey.ToString().ToUpper() == text);
+
+                if (match != null)
+                {
+                    this.IsSubMenuOpen = true;
+                    return true;
+                }
+            }
+            else
+            {
+                var match = this.popup.PopupRoot.GetVisualDescendents()
+                    .OfType<AccessText>()
+                    .FirstOrDefault(x => x.AccessKey.ToString().ToUpper() == text)
+                    ?.GetVisualAncestors()
+                    .OfType<MenuItem>()
+                    .FirstOrDefault();
+
+                if (match != null)
+                {
+                    var item = (MenuItem)this.ItemContainerGenerator.GetItemForContainer(match);
+
+                    if (item.HasSubMenu)
+                    {
+                        item.SelectedIndex = 0;
+                        item.IsSubMenuOpen = true;
+                    }
+                    else
+                    {
+                        item.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -358,14 +413,10 @@ namespace Perspex.Controls
         {
             base.OnTemplateApplied();
 
-            var popup = this.FindTemplateChild<Popup>("popup");
-
-            if (popup != null)
-            {
-                popup.PopupRootCreated += this.PopupRootCreated;
-                popup.Opened += this.PopupOpened;
-                popup.Closed += this.PopupClosed;
-            }
+            this.popup = this.GetTemplateChild<Popup>("popup");
+            this.popup.PopupRootCreated += this.PopupRootCreated;
+            this.popup.Opened += this.PopupOpened;
+            this.popup.Closed += this.PopupClosed;
         }
 
         /// <summary>
