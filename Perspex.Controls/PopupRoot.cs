@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls
 {
+    using System;
     using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Platform;
@@ -21,6 +22,7 @@ namespace Perspex.Controls
         public PopupRoot()
             : base(Locator.Current.GetService<IPopupImpl>())
         {
+            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = x);
         }
 
         public new IPopupImpl PlatformImpl
