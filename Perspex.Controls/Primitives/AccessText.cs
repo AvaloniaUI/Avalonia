@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Primitives
 {
+    using System;
     using Perspex.Media;
 
     /// <summary>
@@ -25,6 +26,23 @@ namespace Perspex.Controls.Primitives
         static AccessText()
         {
             AffectsRender(ShowAccessKeyProperty);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccessText"/> class.
+        /// </summary>
+        public AccessText()
+        {
+            this.GetObservable(TextProperty).Subscribe(this.TextChanged);
+        }
+
+        /// <summary>
+        /// Gets the access key.
+        /// </summary>
+        public char AccessKey
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -103,6 +121,26 @@ namespace Perspex.Controls.Primitives
             {
                 return text.Substring(0, position) + text.Substring(position + 1);
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Text"/> property changes.
+        /// </summary>
+        /// <param name="text">The new text.</param>
+        private void TextChanged(string text)
+        {
+            if (text != null)
+            {
+                int underscore = text.IndexOf('_');
+
+                if (underscore != -1 && underscore < text.Length - 1)
+                {
+                    this.AccessKey = text[underscore + 1];
+                    return;
+                }
+            }
+
+            this.AccessKey = (char)0;
         }
     }
 }
