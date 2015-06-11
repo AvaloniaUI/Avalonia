@@ -17,7 +17,6 @@ namespace Perspex.Controls
     using Perspex.Controls.Presenters;
     using Perspex.VisualTree;
 
-
     /// <summary>
     /// A menu item control.
     /// </summary>
@@ -363,8 +362,8 @@ namespace Perspex.Controls
             if (popup != null)
             {
                 popup.PopupRootCreated += this.PopupRootCreated;
-                popup.Opened += this.PopupRootOpened;
-                popup.Closed += this.PopupRootClosed;
+                popup.Opened += this.PopupOpened;
+                popup.Closed += this.PopupClosed;
             }
         }
 
@@ -400,7 +399,7 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the MenuItem's popup root is opened.
+        /// Called when the submenu's <see cref="PopupRoot"/> is created.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
@@ -433,7 +432,12 @@ namespace Perspex.Controls
             }
         }
 
-        private void PopupRootOpened(object sender, EventArgs e)
+        /// <summary>
+        /// Called when the submenu's <see cref="Popup"/> is opened.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void PopupOpened(object sender, EventArgs e)
         {
             var selected = this.SelectedItem;
 
@@ -448,7 +452,12 @@ namespace Perspex.Controls
             }
         }
 
-        private void PopupRootClosed(object sender, EventArgs e)
+        /// <summary>
+        /// Called when the submenu's <see cref="Popup"/> is closed.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void PopupClosed(object sender, EventArgs e)
         {
             this.SelectedItem = null;
         }
