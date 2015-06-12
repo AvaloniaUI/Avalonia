@@ -16,6 +16,7 @@ namespace Perspex.Controls
     using Perspex.Controls.Templates;
     using Perspex.Controls.Presenters;
     using Perspex.VisualTree;
+    using Perspex.Threading;
 
     /// <summary>
     /// A menu item control.
@@ -342,9 +343,18 @@ namespace Perspex.Controls
 
             var menu = this.Parent as Menu;
 
-            if (menu != null && menu.IsOpen)
+            if (menu != null)
             {
-                this.IsSubMenuOpen = true;
+                if (menu.IsOpen)
+                {
+                    this.IsSubMenuOpen = true;
+                }
+            }
+            else if (!this.IsSubMenuOpen)
+            {
+                this.submenuTimer = DispatcherTimer.Run(
+                    () => this.IsSubMenuOpen = true,
+                    TimeSpan.FromMilliseconds(400));
             }
         }
 
