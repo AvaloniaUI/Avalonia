@@ -8,6 +8,10 @@ namespace Perspex.Controls.Primitives
 {
     using System;
     using Perspex.Media;
+    using Perspex.Input;
+    using Perspex.Rendering;
+
+
 
     /// <summary>
     /// A text block that displays a character prefixed with an underscore as an access key.
@@ -19,6 +23,11 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public static readonly PerspexProperty<bool> ShowAccessKeyProperty =
             PerspexProperty.RegisterAttached<AccessText, Control, bool>("ShowAccessKey", inherits: true);
+
+        /// <summary>
+        /// The access key handler for the current window.
+        /// </summary>
+        private IAccessKeyHandler accessKeys;
 
         /// <summary>
         /// Initializes static members of the <see cref="AccessText"/> class.
@@ -105,6 +114,36 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
+        /// Called when the control is attached to a visual tree.
+        /// </summary>
+        /// <param name="root">The root of the visual tree.</param>
+        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        {
+            base.OnAttachedToVisualTree(root);
+            this.accessKeys = (root as IInputRoot)?.AccessKeyHandler;
+
+            if (this.accessKeys != null && this.AccessKey != 0)
+            {
+                this.accessKeys.Register(this.AccessKey, this);
+            }
+        }
+
+        /// <summary>
+        /// Called when the control is detached from a visual tree.
+        /// </summary>
+        /// <param name="root">The root of the visual tree.</param>
+        protected override void OnDetachedFromVisualTree(IRenderRoot root)
+        {
+            base.OnDetachedFromVisualTree(root);
+
+            if (this.accessKeys != null && this.AccessKey != 0)
+            {
+                this.accessKeys.Unregister(this);
+                this.accessKeys = null;
+            }
+        }
+
+        /// <summary>
         /// Returns a string with the first underscore stripped.
         /// </summary>
         /// <param name="text">The text.</param>
@@ -129,18 +168,24 @@ namespace Perspex.Controls.Primitives
         /// <param name="text">The new text.</param>
         private void TextChanged(string text)
         {
+            var key = (char)0;
+
             if (text != null)
             {
                 int underscore = text.IndexOf('_');
 
                 if (underscore != -1 && underscore < text.Length - 1)
                 {
-                    this.AccessKey = text[underscore + 1];
-                    return;
+                    key = text[underscore + 1];
                 }
             }
 
-            this.AccessKey = (char)0;
+            this.AccessKey = key;
+
+            if (this.accessKeys != null && this.AccessKey != 0)
+            {
+                this.accessKeys.Register(this.AccessKey, this);
+            }
         }
     }
 }

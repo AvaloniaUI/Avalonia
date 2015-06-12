@@ -89,6 +89,7 @@ namespace Perspex.Controls
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
         }
 
         /// <summary>
@@ -417,6 +418,23 @@ namespace Perspex.Controls
             this.popup.PopupRootCreated += this.PopupRootCreated;
             this.popup.Opened += this.PopupOpened;
             this.popup.Closed += this.PopupClosed;
+        }
+
+        /// <summary>
+        /// Called when the menu item's access key is pressed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void AccessKeyPressed(RoutedEventArgs e)
+        {
+            if (this.HasSubMenu)
+            {
+                this.SelectedIndex = 0;
+                this.IsSubMenuOpen = true;
+            }
+            else
+            {
+                this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
         }
 
         /// <summary>

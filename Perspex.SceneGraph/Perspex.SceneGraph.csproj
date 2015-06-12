@@ -50,6 +50,7 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />

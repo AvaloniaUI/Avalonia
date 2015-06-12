@@ -133,6 +133,14 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets a value indicating whether this scene graph node and all its parents are visible.
+        /// </summary>
+        public bool IsEffectivelyVisible
+        {
+            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is visible.
         /// </summary>
         public bool IsVisible

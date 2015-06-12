@@ -33,6 +33,11 @@ namespace Perspex
         bool ClipToBounds { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this scene graph node and all its parents are visible.
+        /// </summary>
+        bool IsEffectivelyVisible { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is visible.
         /// </summary>
         bool IsVisible { get; }
