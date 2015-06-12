@@ -203,7 +203,7 @@ namespace Perspex.Controls
 
         private void ListenForDefault(IInputElement root)
         {
-            root.AddHandler(InputElement.KeyDownEvent, this.RootKeyDown, RoutingStrategies.Tunnel);
+            root.AddHandler(InputElement.KeyDownEvent, this.RootKeyDown);
         }
 
         private void StopListeningForDefault(IInputElement root)

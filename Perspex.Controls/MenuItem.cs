@@ -263,6 +263,7 @@ namespace Perspex.Controls
                     else
                     {
                         this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                        e.Handled = true;
                     }
 
                     break;
