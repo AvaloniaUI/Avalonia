@@ -29,6 +29,7 @@ namespace Perspex.Collections
             if (source != null)
             {
                 this.source.CollectionChanged += this.SourceCollectionChanged;
+                this.source.PropertyChanged += this.SourcePropertyChanged;
             }
         }
 
@@ -53,6 +54,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged -= this.SourceCollectionChanged;
+                    this.source.PropertyChanged -= this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -69,6 +71,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged += this.SourceCollectionChanged;
+                    this.source.PropertyChanged += this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -90,6 +93,7 @@ namespace Perspex.Collections
         public void Dispose()
         {
             this.source.CollectionChanged -= this.SourceCollectionChanged;
+            this.source.PropertyChanged -= this.SourcePropertyChanged;
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -139,6 +143,11 @@ namespace Perspex.Collections
                 this.CollectionChanged(this, ev);
             }
         }
+
+        private void SourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            this.PropertyChanged?.Invoke(this, e);
+        }
     }
 
     public class PerspexReadOnlyListView<TIn, TOut> : IPerspexReadOnlyList<TOut>, IDisposable
@@ -160,6 +169,7 @@ namespace Perspex.Collections
             if (source != null)
             {
                 this.source.CollectionChanged += this.SourceCollectionChanged;
+                this.source.PropertyChanged += this.SourcePropertyChanged;
             }
         }
 
@@ -184,6 +194,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged -= this.SourceCollectionChanged;
+                    this.source.PropertyChanged -= this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -200,6 +211,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged += this.SourceCollectionChanged;
+                    this.source.PropertyChanged += this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -228,6 +240,7 @@ namespace Perspex.Collections
             if (this.source != null)
             {
                 this.source.CollectionChanged -= this.SourceCollectionChanged;
+                this.source.PropertyChanged -= this.SourcePropertyChanged;
             }
         }
 
@@ -287,6 +300,11 @@ namespace Perspex.Collections
 
                 this.CollectionChanged(this, ev);
             }
+        }
+
+        private void SourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            this.PropertyChanged?.Invoke(this, e);
         }
     }
 }
