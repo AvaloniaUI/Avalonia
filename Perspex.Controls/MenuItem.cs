@@ -300,7 +300,15 @@ namespace Perspex.Controls
 
                 if (match != null)
                 {
-                    this.IsSubMenuOpen = true;
+                    if (this.HasSubMenu)
+                    {
+                        this.IsSubMenuOpen = true;
+                    }
+                    else
+                    {
+                        this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                    }
+
                     return true;
                 }
             }
