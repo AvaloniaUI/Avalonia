@@ -90,15 +90,29 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="impl">The platform-specific window implementation.</param>
         public TopLevel(ITopLevelImpl impl)
+            : this(impl, Locator.Current)
         {
-            IPlatformRenderInterface renderInterface = Locator.Current.GetService<IPlatformRenderInterface>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TopLevel"/> class.
+        /// </summary>
+        /// <param name="impl">The platform-specific window implementation.</param>
+        /// <param name="dependencyResolver">
+        /// The dependency resolver to use. If null the default dependency resolver will be used.
+        /// </param>
+        public TopLevel(ITopLevelImpl impl, IDependencyResolver dependencyResolver)
+        {
+            dependencyResolver = dependencyResolver ?? Locator.Current;
+
+            IPlatformRenderInterface renderInterface = dependencyResolver.GetService<IPlatformRenderInterface>();
 
             this.PlatformImpl = impl;
-            this.accessKeyHandler = Locator.Current.GetService<IAccessKeyHandler>();
-            this.inputManager = Locator.Current.GetService<IInputManager>();
-            this.keyboardNavigationHandler = Locator.Current.GetService<IKeyboardNavigationHandler>();
-            this.LayoutManager = Locator.Current.GetService<ILayoutManager>();
-            this.renderManager = Locator.Current.GetService<IRenderManager>();
+            this.accessKeyHandler = dependencyResolver.GetService<IAccessKeyHandler>();
+            this.inputManager = dependencyResolver.GetService<IInputManager>();
+            this.keyboardNavigationHandler = dependencyResolver.GetService<IKeyboardNavigationHandler>();
+            this.LayoutManager = dependencyResolver.GetService<ILayoutManager>();
+            this.renderManager = dependencyResolver.GetService<IRenderManager>();
 
             if (renderInterface == null)
             {
@@ -158,7 +172,7 @@ namespace Perspex.Controls
             this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
             this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
 
-            IStyler styler = Locator.Current.GetService<IStyler>();
+            IStyler styler = dependencyResolver.GetService<IStyler>();
             styler.ApplyStyles(this);
 
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);

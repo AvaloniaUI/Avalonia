@@ -7,16 +7,17 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Windows.Input;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Interactivity;
-    using Perspex.Rendering;
     using Perspex.Controls.Templates;
     using Perspex.Controls.Presenters;
     using Perspex.VisualTree;
     using Perspex.Threading;
+    using Splat;
 
     /// <summary>
     /// A menu item control.
@@ -434,6 +435,7 @@ namespace Perspex.Controls
             base.OnTemplateApplied();
 
             this.popup = this.GetTemplateChild<Popup>("popup");
+            this.popup.DependencyResolver = DependencyResolver.Instance;
             this.popup.PopupRootCreated += this.PopupRootCreated;
             this.popup.Opened += this.PopupOpened;
             this.popup.Closed += this.PopupClosed;
@@ -549,6 +551,53 @@ namespace Perspex.Controls
         private void PopupClosed(object sender, EventArgs e)
         {
             this.SelectedItem = null;
+        }
+
+        /// <summary>
+        /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.
+        /// </summary>
+        private class DependencyResolver : IDependencyResolver
+        {
+            /// <summary>
+            /// Gets the default instance of <see cref="DependencyResolver"/>.
+            /// </summary>
+            public static readonly DependencyResolver Instance = new DependencyResolver();
+
+            /// <summary>
+            /// Disposes of all managed resources.
+            /// </summary>
+            public void Dispose()
+            {
+            }
+
+            /// <summary>
+            /// Gets a service of the specified type.
+            /// </summary>
+            /// <param name="serviceType">The service type.</param>
+            /// <param name="contract">An optional contract.</param>
+            /// <returns>A service of the requested type.</returns>
+            public object GetService(Type serviceType, string contract = null)
+            {
+                if (serviceType == typeof(IAccessKeyHandler))
+                {
+                    return new MenuItemAccessKeyHandler();
+                }
+                else
+                {
+                    return Locator.Current.GetService(serviceType, contract);
+                }
+            }
+
+            /// <summary>
+            /// Gets collection of services of the specified type.
+            /// </summary>
+            /// <param name="serviceType">The service type.</param>
+            /// <param name="contract">An optional contract.</param>
+            /// <returns>A collection of services of the requested type.</returns>
+            public IEnumerable<object> GetServices(Type serviceType, string contract = null)
+            {
+                return Locator.Current.GetServices(serviceType, contract);
+            }
         }
     }
 }

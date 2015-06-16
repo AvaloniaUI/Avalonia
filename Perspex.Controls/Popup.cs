@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using Perspex.Collections;
     using Perspex.Rendering;
     using Perspex.VisualTree;
+    using Splat;
 
     /// <summary>
     /// Displays a popup window.
@@ -103,6 +104,19 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets or sets a dependency resolver for the <see cref="PopupRoot"/>.
+        /// </summary>
+        /// <remarks>
+        /// This property allows a client to customize the behaviour of the popup by injecting
+        /// a specialized dependency resolver into the <see cref="PopupRoot"/>'s constructor.
+        /// </remarks>
+        public IDependencyResolver DependencyResolver
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the popup is currently open.
         /// </summary>
         public bool IsOpen
@@ -169,7 +183,7 @@ namespace Perspex.Controls
         {
             if (this.popupRoot == null)
             {
-                this.popupRoot = new PopupRoot()
+                this.popupRoot = new PopupRoot(this.DependencyResolver)
                 {
                     Parent = this,
                     [~PopupRoot.ContentProperty] = this[~ChildProperty],

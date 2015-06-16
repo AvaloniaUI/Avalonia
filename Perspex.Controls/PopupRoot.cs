@@ -35,6 +35,17 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PopupRoot"/> class.
+        /// </summary>
+        /// <param name="dependencyResolver">
+        /// The dependency resolver to use. If null the default dependency resolver will be used.
+        /// </param>
+        public PopupRoot(IDependencyResolver dependencyResolver)
+            : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
+        {
+        }
+
+        /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
         public new IPopupImpl PlatformImpl
