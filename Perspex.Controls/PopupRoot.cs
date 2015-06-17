@@ -29,9 +29,8 @@ namespace Perspex.Controls
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
         public PopupRoot()
-            : base(Locator.Current.GetService<IPopupImpl>())
+            : this(null)
         {
-            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = x);
         }
 
         /// <summary>
@@ -43,6 +42,7 @@ namespace Perspex.Controls
         public PopupRoot(IDependencyResolver dependencyResolver)
             : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
         {
+            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = x);
         }
 
         /// <summary>
