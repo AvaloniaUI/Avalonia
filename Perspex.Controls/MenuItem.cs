@@ -456,6 +456,8 @@ namespace Perspex.Controls
             {
                 this.RaiseEvent(new RoutedEventArgs(ClickEvent));
             }
+
+            e.Handled = true;
         }
 
         /// <summary>
