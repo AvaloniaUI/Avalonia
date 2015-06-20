@@ -92,14 +92,19 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyDown(object sender, KeyEventArgs e)
         {
-            var text = e.Text.ToUpper();
-            var focus = this.registered
-                .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
-                .FirstOrDefault()?.Item2;
-
-            if (focus != null)
+            if (!string.IsNullOrWhiteSpace(e.Text))
             {
-                focus.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                var text = e.Text.ToUpper();
+                var focus = this.registered
+                    .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
+                    .FirstOrDefault()?.Item2;
+
+                if (focus != null)
+                {
+                    focus.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                }
+
+                e.Handled = true;
             }
         }
     }

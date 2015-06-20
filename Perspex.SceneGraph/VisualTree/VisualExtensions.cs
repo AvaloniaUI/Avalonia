@@ -117,5 +117,10 @@ namespace Perspex.VisualTree
 
             return visual;
         }
+
+        public static bool IsVisualParentOf(this IVisual visual, IVisual target)
+        {
+            return target.GetVisualAncestors().Any(x => x == visual);
+        }
     }
 }

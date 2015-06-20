@@ -277,70 +277,12 @@ namespace Perspex.Controls
                     }
 
                     break;
-
-                default:
-                    e.Handled = this.HandleAccessKey(e.Text);
-                    break;
             }
 
             if (!passStraightToParent)
             {
                 base.OnKeyDown(e);
             }
-        }
-
-        private bool HandleAccessKey(string text)
-        {
-            text = text.ToUpper();
-
-            if (!this.IsSubMenuOpen)
-            {
-                var match = this.GetVisualDescendents()
-                    .OfType<AccessText>()
-                    .FirstOrDefault(x => x.AccessKey.ToString().ToUpper() == text);
-
-                if (match != null)
-                {
-                    if (this.HasSubMenu)
-                    {
-                        this.IsSubMenuOpen = true;
-                    }
-                    else
-                    {
-                        this.RaiseEvent(new RoutedEventArgs(ClickEvent));
-                    }
-
-                    return true;
-                }
-            }
-            else
-            {
-                var match = this.popup.PopupRoot.GetVisualDescendents()
-                    .OfType<AccessText>()
-                    .FirstOrDefault(x => x.AccessKey.ToString().ToUpper() == text)
-                    ?.GetVisualAncestors()
-                    .OfType<MenuItem>()
-                    .FirstOrDefault();
-
-                if (match != null)
-                {
-                    var item = (MenuItem)this.ItemContainerGenerator.GetItemForContainer(match);
-
-                    if (item.HasSubMenu)
-                    {
-                        item.SelectedIndex = 0;
-                        item.IsSubMenuOpen = true;
-                    }
-                    else
-                    {
-                        item.RaiseEvent(new RoutedEventArgs(ClickEvent));
-                    }
-
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>

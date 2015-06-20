@@ -72,7 +72,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Closes the menu.
         /// </summary>
-        public void CloseMenu()
+        public void Close()
         {
             foreach (MenuItem i in this.GetLogicalChildren())
             {
@@ -86,10 +86,11 @@ namespace Perspex.Controls
         /// <summary>
         /// Opens the menu in response to the Alt/F10 key.
         /// </summary>
-        public void OpenMenu()
+        public void Open()
         {
             this.SelectedIndex = 0;
-            ((IInputElement)this.SelectedItem)?.Focus();
+            this.SelectedMenuItem.Focus();
+            this.IsOpen = true;
         }
 
         /// <summary>
@@ -138,7 +139,7 @@ namespace Perspex.Controls
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            //this.CloseMenu();
+            //this.Close();
         }
 
         /// <summary>
@@ -151,12 +152,7 @@ namespace Perspex.Controls
 
             base.OnKeyDown(e);
 
-            if (this.IsOpen && e.Key == Key.Escape)
-            {
-                this.CloseMenu();
-                e.Handled = true;
-            }
-            else if (menuWasOpen)
+            if (menuWasOpen)
             {
                 // If a menu item was open and we navigate to a new one with the arrow keys, open
                 // that menu and select the first item.
@@ -199,7 +195,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void Deactivated(object sender, EventArgs e)
         {
-            this.CloseMenu();
+            this.Close();
         }
 
         /// <summary>
@@ -208,7 +204,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void OnMenuClick(RoutedEventArgs e)
         {
-            this.CloseMenu();
+            this.Close();
         }
 
         /// <summary>
@@ -224,7 +220,7 @@ namespace Perspex.Controls
 
                 if (!this.IsLogicalParentOf(control))
                 {
-                    this.CloseMenu();
+                    this.Close();
                 }
             }
         }

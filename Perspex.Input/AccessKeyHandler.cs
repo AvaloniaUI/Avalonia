@@ -10,6 +10,7 @@ namespace Perspex.Input
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Interactivity;
+    using Perspex.VisualTree;
 
     /// <summary>
     /// Handles access keys for a window.
@@ -41,6 +42,11 @@ namespace Perspex.Input
         private bool showingAccessKeys;
 
         /// <summary>
+        /// Whether to ignore the Alt KeyUp event.
+        /// </summary>
+        private bool ignoreAltUp;
+
+        /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
         public IMainMenu MainMenu { get; set; }
@@ -64,6 +70,7 @@ namespace Perspex.Input
             this.owner = owner;
 
             this.owner.AddHandler(InputElement.KeyDownEvent, this.OnPreviewKeyDown, RoutingStrategies.Tunnel);
+            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown, RoutingStrategies.Bubble);
             this.owner.AddHandler(InputElement.KeyUpEvent, this.OnPreviewKeyUp, RoutingStrategies.Tunnel);
             this.owner.AddHandler(InputElement.PointerPressedEvent, this.OnPreviewPointerPressed, RoutingStrategies.Tunnel);
         }
@@ -98,7 +105,7 @@ namespace Perspex.Input
         }
 
         /// <summary>
-        /// Handles the Alt key being pressed in the window.
+        /// Called when a key is pressed in the owner window.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
@@ -106,19 +113,61 @@ namespace Perspex.Input
         {
             if (e.Key == Key.LeftAlt)
             {
-                this.owner.ShowAccessKeys = this.showingAccessKeys = true;
+                if (this.MainMenu == null || !this.MainMenu.IsOpen)
+                {
+                    // When Alt is pressed without a main menu, or with a closed main menu, show
+                    // access key markers in the window (i.e. "_File").
+                    this.owner.ShowAccessKeys = this.showingAccessKeys = true;
+                }
+                else
+                {
+                    // If the Alt key is pressed and the main menu is open, close the main menu.
+                    this.CloseMenu();
+                    this.ignoreAltUp = true;
+                }
+
+                // We always handle the Alt key.
                 e.Handled = true;
             }
-            else if ((KeyboardDevice.Instance.Modifiers & ModifierKeys.Alt) != 0)
-            {
-                var text = e.Text.ToUpper();
-                var focus = this.registered
-                    .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
-                    .FirstOrDefault()?.Item2;
+        }
 
-                if (focus != null)
+        /// <summary>
+        /// Called when a key is pressed in the owner window.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            bool menuIsOpen = this.MainMenu?.IsOpen == true;
+
+            if (e.Key == Key.Escape && menuIsOpen)
+            {
+                // When the Escape key is pressed with the main menu open, close it.
+                this.CloseMenu();
+                e.Handled = true;
+            }
+            else if ((KeyboardDevice.Instance.Modifiers & ModifierKeys.Alt) != 0 || menuIsOpen)
+            {
+                // If any other key is pressed with the Alt key held down, or the main menu is open,
+                // find all controls who have registered that access key.
+                var text = e.Text.ToUpper();
+                var matches = this.registered
+                    .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
+                    .Select(x => x.Item2);
+
+                // If the menu is open, only match controls in the menu's visual tree.
+                if (menuIsOpen)
                 {
-                    focus.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
+                    matches = matches.Where(x => this.MainMenu.IsVisualParentOf(x));
+                }
+
+                var match = matches.FirstOrDefault();
+
+                // If there was a match, raise the AccessKeyPressed event on it.
+                if (match != null)
+                {
+                    match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
+                    e.Handled = true;
                 }
             }
         }
@@ -133,9 +182,13 @@ namespace Perspex.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
-                    if (this.showingAccessKeys && this.MainMenu != null)
+                    if (this.ignoreAltUp)
                     {
-                        this.MainMenu.OpenMenu();
+                        this.ignoreAltUp = false;
+                    }
+                    else if (this.showingAccessKeys && this.MainMenu != null)
+                    {
+                        this.MainMenu.Open();
                         e.Handled = true;
                     }
 
@@ -143,7 +196,7 @@ namespace Perspex.Input
 
                 case Key.F10:
                     this.owner.ShowAccessKeys = this.showingAccessKeys = true;
-                    this.MainMenu.OpenMenu();
+                    this.MainMenu.Open();
                     e.Handled = true;
                     break;
             }
@@ -160,6 +213,15 @@ namespace Perspex.Input
             {
                 this.owner.ShowAccessKeys = false;
             }
+        }
+
+        /// <summary>
+        /// Closes the <see cref="MainMenu"/> and performs other bookeeping.
+        /// </summary>
+        private void CloseMenu()
+        {
+            this.MainMenu.Close();
+            this.owner.ShowAccessKeys = this.showingAccessKeys = false;
         }
     }
 }
