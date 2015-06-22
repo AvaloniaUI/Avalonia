@@ -302,7 +302,7 @@ namespace Perspex.Controls
                     this.IsSubMenuOpen = true;
                 }
             }
-            else if (!this.IsSubMenuOpen)
+            else if (this.HasSubMenu && !this.IsSubMenuOpen)
             {
                 this.submenuTimer = DispatcherTimer.Run(
                     () => this.IsSubMenuOpen = true,
