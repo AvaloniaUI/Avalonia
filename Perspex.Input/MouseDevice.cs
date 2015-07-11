@@ -143,7 +143,7 @@ namespace Perspex.Input
 
                 IInputElement focusable = this.GetFocusable(hit);
 
-                if (focusable != null && focusable.Focusable)
+                if (focusable != null && focusable.Focusable && focusable.IsEffectivelyVisible)
                 {
                     focusable.Focus();
                 }

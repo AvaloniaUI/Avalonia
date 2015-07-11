@@ -133,16 +133,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="Menu"/> loses focus.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-            //this.Close();
-        }
-
-        /// <summary>
         /// Called when a key is pressed within the menu.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -205,6 +195,8 @@ namespace Perspex.Controls
         private void OnMenuClick(RoutedEventArgs e)
         {
             this.Close();
+            FocusManager.Instance.Focus(null);
+            e.Handled = true;
         }
 
         /// <summary>

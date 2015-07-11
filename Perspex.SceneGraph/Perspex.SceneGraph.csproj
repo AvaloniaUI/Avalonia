@@ -101,6 +101,7 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
+    <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />
     <Compile Include="VisualTree\IVisualTreeHost.cs" />
     <Compile Include="VisualTree\TransformedBounds.cs" />
     <Compile Include="VisualTree\BoundsTracker.cs" />

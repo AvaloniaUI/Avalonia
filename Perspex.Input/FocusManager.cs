@@ -59,19 +59,29 @@ namespace Perspex.Input
         {
             if (control != null)
             {
-                var scope = control.GetSelfAndVisualAncestors()
-                    .OfType<IFocusScope>()
-                    .FirstOrDefault() ?? this.Scope;
+                var scope = GetFocusScopeAncestors(control)
+                    .FirstOrDefault();
 
                 if (scope != null)
                 {
                     this.Scope = scope;
                     this.SetFocusedElement(scope, control, keyboardNavigated);
+                    System.Diagnostics.Debug.WriteLine("Focused " + control.GetType().Name);
                 }
             }
-            else
+            else if (this.Current != null)
             {
-                this.SetFocusedElement(this.Scope, null);
+                // If control is null, set focus to the topmost focus scope.
+                foreach (var scope in GetFocusScopeAncestors(this.Current).Reverse().ToList())
+                {
+                    IInputElement element;
+
+                    if (this.focusScopes.TryGetValue(scope, out element))
+                    {
+                        this.Focus(element, keyboardNavigated);
+                        break;
+                    }
+                }
             }
         }
 
@@ -123,6 +133,27 @@ namespace Perspex.Input
 
             this.Scope = scope;
             this.Focus(e);
+        }
+
+        /// <summary>
+        /// Gets the focus scope ancestors of the specified control, traversing popups.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The focus scopes.</returns>
+        private static IEnumerable<IFocusScope> GetFocusScopeAncestors(IInputElement control)
+        {
+            while (control != null)
+            {
+                var scope = control as IFocusScope;
+
+                if (scope != null)
+                {
+                    yield return scope;
+                }
+
+                control = control.GetVisualParent<IInputElement>() ?? 
+                    ((control as IHostedVisualTreeRoot)?.Host as IInputElement);
+            }
         }
     }
 }

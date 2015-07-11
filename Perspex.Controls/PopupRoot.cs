@@ -11,11 +11,12 @@ namespace Perspex.Controls
     using Perspex.Media;
     using Perspex.Platform;
     using Splat;
+    using Perspex.VisualTree;
 
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : TopLevel, IInteractive
+    public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot
     {
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -60,6 +61,14 @@ namespace Perspex.Controls
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
         IInteractive IInteractive.InteractiveParent
+        {
+            get { return this.Parent; }
+        }
+
+        /// <summary>
+        /// Gets the control that is hosting the popup root.
+        /// </summary>
+        IVisual IHostedVisualTreeRoot.Host
         {
             get { return this.Parent; }
         }
