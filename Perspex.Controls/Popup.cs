@@ -296,23 +296,23 @@ namespace Perspex.Controls
         /// <returns>The popup's position in screen coordinates.</returns>
         private Point GetPosition()
         {
-            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();
+            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();            
             Point point;
-
-            switch (this.PlacementMode)
-            {
-                case PlacementMode.Bottom:
-                    point = target.Bounds.BottomLeft;
-                    break;
-                case PlacementMode.Right:
-                    point = target.Bounds.TopRight;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
-            }
 
             if (target != null)
             {
+                switch (this.PlacementMode)
+                {
+                    case PlacementMode.Bottom:
+                        point = new Point(0, target.Bounds.Height);
+                        break;
+                    case PlacementMode.Right:
+                        point = new Point(target.Bounds.Width, 0);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+                }
+
                 return target.PointToScreen(point);
             }
             else
