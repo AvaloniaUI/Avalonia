@@ -137,7 +137,7 @@ namespace Perspex.Direct2D1
             {
                 case Perspex.Media.TextAlignment.Left:
                     return DWrite.TextAlignment.Leading;
-                case Perspex.Media.TextAlignment.Centered:
+                case Perspex.Media.TextAlignment.Center:
                     return DWrite.TextAlignment.Center;
                 case Perspex.Media.TextAlignment.Right:
                     return DWrite.TextAlignment.Trailing;

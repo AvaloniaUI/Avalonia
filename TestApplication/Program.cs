@@ -384,7 +384,7 @@ namespace TestApplication
                         {
                             Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Centered,
+                            TextAlignment = TextAlignment.Center,
                         },
                         new TextBlock
                         {
