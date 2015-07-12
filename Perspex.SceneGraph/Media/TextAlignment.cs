@@ -9,7 +9,7 @@ namespace Perspex.Media
     public enum TextAlignment
     {
         Left,
-        Centered,
+        Center,
         Right,
     }
 }
