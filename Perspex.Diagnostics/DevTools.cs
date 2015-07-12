@@ -64,48 +64,50 @@ namespace Perspex.Diagnostics
         {
             this.DataTemplates.Add(new ViewLocator<ReactiveObject>());
 
-            this.Content = new TabControl
+            this.Content = new Grid
             {
-                Items = new[]
+                RowDefinitions = new RowDefinitions
                 {
-                    new TabItem
-                    {
-                        Header = "Logical Tree",
-                        [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.LogicalTree),
-                    },
-                    new TabItem
-                    {
-                        Header = "Visual Tree",
-                        [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.VisualTree),
-                    }
+                    new RowDefinition(new GridLength(1, GridUnitType.Star)),
+                    new RowDefinition(GridLength.Auto),
                 },
+                Children = new Controls
+                {
+                    new TabControl
+                    {
+                        Items = new[]
+                        {
+                            new TabItem
+                            {
+                                Header = "Logical Tree",
+                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.LogicalTree),
+                            },
+                            new TabItem
+                            {
+                                Header = "Visual Tree",
+                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.VisualTree),
+                            }
+                        },
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Gap = 4,
+                        [Grid.RowProperty] = 1,
+                        Children = new Controls
+                        {
+                            new TextBlock
+                            {
+                                Text = "Focused: "
+                            },
+                            new TextBlock
+                            {
+                                [!TextBlock.TextProperty] = this.viewModel.WhenAnyValue(x => x.FocusedControl).Select(x => x?.GetType().Name)
+                            }
+                        }
+                    }
+                }
             };
         }
-
-        //private Control GetHeader(VisualTreeNode node)
-        //{
-        //    var result = new StackPanel
-        //    {
-        //        Orientation = Orientation.Horizontal,
-        //        Gap = 8,
-        //        Children = new Controls
-        //        {
-        //            new TextBlock
-        //            {
-        //                Text = node.Type,
-        //                FontStyle = node.IsInTemplate ? Media.FontStyle.Italic : Media.FontStyle.Normal,
-        //            },
-        //            new TextBlock
-        //            {
-        //                [!TextBlock.TextProperty] = node.WhenAnyValue(x => x.Classes),
-        //            }
-        //        }
-        //    };
-
-        //    result.PointerEnter += this.AddAdorner;
-        //    result.PointerLeave += this.RemoveAdorner;
-
-        //    return result;
-        //}
     }
 }
