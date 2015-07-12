@@ -6,12 +6,12 @@
 
 namespace Perspex.Diagnostics
 {
+    using System;
+    using System.Reactive.Linq;
     using Perspex.Controls;
     using Perspex.Diagnostics.ViewModels;
     using Perspex.Input;
     using ReactiveUI;
-    using System;
-    using System.Reactive.Linq;
 
     public class DevTools : Decorator
     {
