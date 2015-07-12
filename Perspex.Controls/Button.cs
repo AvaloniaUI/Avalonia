@@ -100,6 +100,39 @@ namespace Perspex.Controls
             }
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                this.RaiseClickEvent();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Space)
+            {
+                if (this.ClickMode == ClickMode.Press)
+                {
+                    this.RaiseClickEvent();
+                }
+
+                e.Handled = true;
+            }
+
+            base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                if (this.ClickMode == ClickMode.Release)
+                {
+                    this.RaiseClickEvent();
+                }
+
+                e.Handled = true;
+            }
+        }
+
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
             base.OnDetachedFromVisualTree(oldRoot);
