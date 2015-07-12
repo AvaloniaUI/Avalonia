@@ -66,11 +66,7 @@ namespace Perspex.Diagnostics
 
             this.Content = new Grid
             {
-                RowDefinitions = new RowDefinitions
-                {
-                    new RowDefinition(new GridLength(1, GridUnitType.Star)),
-                    new RowDefinition(GridLength.Auto),
-                },
+                RowDefinitions = new RowDefinitions("*,Auto"),
                 Children = new Controls
                 {
                     new TabControl

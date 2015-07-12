@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MenuItemAccessKeyHandler.cs" />
+    <Compile Include="Parsers\GridLengthsParser.cs" />
     <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />
     <Compile Include="GlobalSuppressions.cs" />
