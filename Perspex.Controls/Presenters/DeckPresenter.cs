@@ -99,7 +99,6 @@ namespace Perspex.Controls.Presenters
             this.ClearVisualChildren();
             this.Panel = this.ItemsPanel.Build();
             this.Panel.TemplatedParent = this;
-            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigationMode.Once);
             ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
