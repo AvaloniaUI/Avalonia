@@ -156,6 +156,10 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Called when the menu loses focus.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
