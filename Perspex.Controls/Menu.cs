@@ -156,6 +156,12 @@ namespace Perspex.Controls
             }
         }
 
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            this.SelectedItem = null;
+        }
+
         /// <summary>
         /// Called when a submenu opens somewhere in the menu.
         /// </summary>
