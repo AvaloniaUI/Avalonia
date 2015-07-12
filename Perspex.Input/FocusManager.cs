@@ -11,6 +11,8 @@ namespace Perspex.Input
     using System.Linq;
     using Perspex.VisualTree;
     using Splat;
+    using Perspex.Interactivity;
+
 
     /// <summary>
     /// Manages focus for the application.
@@ -22,6 +24,17 @@ namespace Perspex.Input
         /// </summary>
         private Dictionary<IFocusScope, IInputElement> focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FocusManager"/> class.
+        /// </summary>
+        public FocusManager()
+        {
+            InputElement.PointerPressedEvent.AddClassHandler(
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(this.OnPreviewPointerPressed),
+                RoutingStrategies.Tunnel);
+        }
 
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
@@ -136,6 +149,13 @@ namespace Perspex.Input
         }
 
         /// <summary>
+        /// Checks if the specified element can be focused.
+        /// </summary>
+        /// <param name="e">The element.</param>
+        /// <returns>True if the element can be focused.</returns>
+        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
+
+        /// <summary>
         /// Gets the focus scope ancestors of the specified control, traversing popups.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -153,6 +173,32 @@ namespace Perspex.Input
 
                 control = control.GetVisualParent<IInputElement>() ?? 
                     ((control as IHostedVisualTreeRoot)?.Host as IInputElement);
+            }
+        }
+
+        /// <summary>
+        /// Global handler for pointer pressed events.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        {
+            if (sender == e.Source)
+            {
+                var ev = (PointerPressEventArgs)e;
+                var element = (ev.Device.Captured as IInputElement) ?? (e.Source as IInputElement);
+
+                if (element == null || !CanFocus(element))
+                {
+                    element = element.GetSelfAndVisualAncestors()
+                        .OfType<IInputElement>()
+                        .FirstOrDefault(x => CanFocus(x));
+                }
+
+                if (element != null)
+                {
+                    this.Focus(element);
+                }
             }
         }
     }

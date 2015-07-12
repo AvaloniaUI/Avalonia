@@ -140,13 +140,6 @@ namespace Perspex.Input
 
                     source.RaiseEvent(e);
                 }
-
-                IInputElement focusable = this.GetFocusable(hit);
-
-                if (focusable != null && focusable.Focusable && focusable.IsEffectivelyVisible)
-                {
-                    focusable.Focus();
-                }
             }
         }
 
@@ -224,22 +217,6 @@ namespace Perspex.Input
                         Delta = delta,
                     });
                 }
-            }
-        }
-
-        private IInputElement GetFocusable(IVisual hit)
-        {
-            var inputFocus = this.Captured as IInputElement;
-
-            if (inputFocus != null && inputFocus.Focusable)
-            {
-                return inputFocus;
-            }
-            else
-            {
-                return hit.GetSelfAndVisualAncestors()
-                    .OfType<IInputElement>()
-                    .FirstOrDefault(x => x.Focusable);
             }
         }
 

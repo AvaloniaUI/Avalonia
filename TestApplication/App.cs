@@ -20,7 +20,6 @@
         public App()
             : base(new DefaultTheme())
         {
-            this.RegisterServices();
 #if PERSPEX_CAIRO
             CairoPlatform.Initialize();
 #else
