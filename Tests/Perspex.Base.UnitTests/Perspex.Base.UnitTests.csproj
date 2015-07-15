@@ -79,9 +79,15 @@
   <ItemGroup>
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="PerspexObjectTests_GetObservable.cs" />
+    <Compile Include="PerspexObjectTests_Coercion.cs" />
+    <Compile Include="PerspexObjectTests_Binding.cs" />
+    <Compile Include="PerspexObjectTests_Inheritance.cs" />
+    <Compile Include="PerspexObjectTests_SetValue.cs" />
+    <Compile Include="PerspexObjectTests_GetValue.cs" />
+    <Compile Include="PerspexObjectTests_Metadata.cs" />
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PerspexObjectTests.cs" />
     <Compile Include="PriorityValueTests.cs" />
   </ItemGroup>
   <ItemGroup>

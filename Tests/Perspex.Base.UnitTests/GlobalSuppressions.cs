@@ -4,6 +4,10 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "StyleCop.CSharp.MaintainabilityRules",
+    "SA1401:Fields must be private",
+    Justification = "PerspexProperty fields should not be private.")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(
     "StyleCop.CSharp.DocumentationRules",
     "SA1600:Elements must be documented",
     Justification = "Tests should be self-documenting")]
