@@ -40,6 +40,7 @@ namespace Perspex.Gtk
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
+            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));

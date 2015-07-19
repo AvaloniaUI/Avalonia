@@ -12,6 +12,7 @@ namespace Perspex.Gtk
     using Perspex.Input.Raw;
     using Perspex.Platform;
     using Gtk = global::Gtk;
+    using System.Reactive.Disposables;
 
     public class WindowImpl : Gtk.Window, IWindowImpl
     {
@@ -31,10 +32,20 @@ namespace Perspex.Gtk
             this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
         }
 
+        public WindowImpl(Gtk.WindowType type)
+            : base(type)
+        {
+            this.DefaultSize = new Gdk.Size(640, 480);
+            this.Events = Gdk.EventMask.PointerMotionMask |
+                          Gdk.EventMask.ButtonPressMask |
+                          Gdk.EventMask.ButtonReleaseMask;
+            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+        }
+
         public Size ClientSize
         {
-            get { return this.clientSize; }
-            set { this.Resize((int)value.Width, (int)value.Height); }
+            get;
+            set;
         }
 
         IPlatformHandle ITopLevelImpl.Handle
@@ -56,12 +67,14 @@ namespace Perspex.Gtk
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl();
         }
 
         public void Invalidate(Rect rect)
         {
-            this.QueueDraw();
+#pragma warning disable CS0612 // Type or member is obsolete
+            this.Draw(new Gdk.Rectangle { X = (int)rect.X, Y = (int)rect.Y, Width = (int)rect.Width, Height = (int)rect.Height });
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         public Point PointToScreen(Point point)
@@ -82,7 +95,10 @@ namespace Perspex.Gtk
 
         public IDisposable ShowDialog()
         {
-            throw new NotImplementedException();
+            this.Modal = true;
+            this.Show();
+
+            return Disposable.Empty;
         }
 
         void ITopLevelImpl.Activate()
@@ -120,8 +136,7 @@ namespace Perspex.Gtk
 
             if (newSize != this.clientSize)
             {
-                this.clientSize = newSize;
-                this.Resized(this.clientSize);
+                this.Resized(newSize);
             }
 
             return true;
