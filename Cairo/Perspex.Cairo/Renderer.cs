@@ -31,7 +31,7 @@ namespace Perspex.Cairo
         public Renderer(IPlatformHandle handle, double width, double height)
         {
         }
-        
+
         public Renderer(ImageSurface surface)
         {
             this.surface = surface;

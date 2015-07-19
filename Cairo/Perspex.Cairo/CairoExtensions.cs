@@ -76,7 +76,7 @@ namespace Perspex.Cairo
                 return Pango.Alignment.Left;
             }
 
-            if (alignment == Perspex.Media.TextAlignment.Center)
+            if (alignment == Perspex.Media.TextAlignment.Centered)
             {
                 return Pango.Alignment.Center;
             }

@@ -17,6 +17,9 @@ using Perspex.Gtk;
 #endif
 using ReactiveUI;
 using Splat;
+using Serilog;
+using Serilog.Filters;
+using Serilog.Events;
 
 namespace TestApplication
 {
@@ -262,6 +265,8 @@ namespace TestApplication
         private static TabItem ButtonsTab()
         {
             Button defaultButton;
+
+            var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
             
             var result = new TabItem
@@ -279,6 +284,7 @@ namespace TestApplication
                         (showDialogButton = new Button
                         {
                             Content = "Button",
+                            Command = showDialog,
                             [ToolTip.TipProperty] = "Hello World!",
                         }),
                         new Button
@@ -333,6 +339,29 @@ namespace TestApplication
             {
                 defaultButton.Content = ((string)defaultButton.Content == "Default") ? "Clicked" : "Default";
             };
+
+            showDialog.Subscribe(async _ =>
+            {
+                var close = ReactiveCommand.Create();
+
+                var dialog = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls
+                        {
+                            new Button { Content = "Yes", Command = close, CommandParameter = "Yes" },
+                            new Button { Content = "No", Command = close, CommandParameter = "No" },
+                        }
+                    }
+                };
+
+                close.Subscribe(x => dialog.Close(x));
+
+                showDialogButton.Content =  await dialog.ShowDialog<string>();
+            });
 
             return result;
         }

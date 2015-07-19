@@ -158,8 +158,7 @@ namespace Perspex.Cairo.Media
                         this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine("Render");
+                
                 if (useFill)
                 {
                     this.context.FillPreserve();
@@ -205,7 +204,6 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect)
         {
-            
             this.SetBrush(brush);
             this.context.Rectangle(rect.ToCairo());
             this.context.Fill();
@@ -268,7 +266,6 @@ namespace Perspex.Cairo.Media
         {
             this.SetBrush(pen.Brush);
             this.context.LineWidth = pen.Thickness;
-            
         }
     }
 }
