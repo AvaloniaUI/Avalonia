@@ -17,7 +17,7 @@ namespace Perspex.Win32.Input
 
         private byte[] keyStates = new byte[256];
 
-        public static WindowsKeyboardDevice Instance
+        public static new WindowsKeyboardDevice Instance
         {
             get { return instance; }
         }
@@ -54,7 +54,7 @@ namespace Perspex.Win32.Input
 
         public void WindowActivated(Window window)
         {
-            this.FocusedElement = window;
+            this.SetFocusedElement(window, false);
         }
 
         public string StringFromVirtualKey(uint virtualKey)

@@ -6,11 +6,9 @@
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
     using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Media;
     using Perspex.Styling;
+    using System.Linq;
 
     public class GridSplitterStyle : Styles
     {
@@ -23,7 +21,7 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(GridSplitter.TemplateProperty, ControlTemplate.Create<GridSplitter>(this.Template)),
-                        new Setter(GridSplitter.WidthProperty, 4),
+                        new Setter(GridSplitter.WidthProperty, 4.0),
                     },
                 },
             });

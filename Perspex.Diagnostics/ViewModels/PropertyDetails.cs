@@ -13,36 +13,49 @@ namespace Perspex.Diagnostics.ViewModels
     {
         private object value;
 
-        public PropertyDetails(PerspexPropertyValue value)
-        {
-            this.Name = value.Property.Name;
-            this.value = value.CurrentValue ?? "(null)";
-            this.Priority = (value.PriorityValue != null) ?
-                Enum.GetName(typeof(BindingPriority), value.PriorityValue.ValuePriority) :
-                value.Property.Inherits ? "Inherited" : "Unset";
+        private string priority;
 
-            if (value.PriorityValue != null)
+        private string diagnostic;
+
+        public PropertyDetails(PerspexObject o, PerspexProperty property)
+        {
+            this.Name = property.IsAttached ?
+                string.Format("[{0}.{1}]", property.OwnerType.Name, property.Name) :
+                property.Name;
+            this.IsAttached = property.IsAttached;
+
+            // TODO: Unsubscribe when view model is deactivated.
+            o.GetObservable(property).Subscribe(x =>
             {
-                value.PriorityValue.Changed.Subscribe(x => this.Value = x.Item2);
-            }
+                var diagnostic = o.GetDiagnostic(property);
+                this.Value = diagnostic.Value ?? "(null)";
+                this.Priority = (diagnostic.Priority != BindingPriority.Unset) ?
+                    diagnostic.Priority.ToString() :
+                    diagnostic.Property.Inherits ? "Inherited" : "Unset";
+                this.Diagnostic = diagnostic.Diagnostic;
+            });
         }
 
-        public string Name
+        public string Name { get; }
+
+        public bool IsAttached { get; }
+
+        public string Priority
         {
-            get;
-            private set;
+            get { return this.priority; }
+            private set { this.RaiseAndSetIfChanged(ref this.priority, value); }
+        }
+
+        public string Diagnostic
+        {
+            get { return this.diagnostic; }
+            private set { this.RaiseAndSetIfChanged(ref this.diagnostic, value); }
         }
 
         public object Value
         {
             get { return this.value; }
             private set { this.RaiseAndSetIfChanged(ref this.value, value); }
-        }
-
-        public string Priority
-        {
-            get;
-            private set;
         }
     }
 }

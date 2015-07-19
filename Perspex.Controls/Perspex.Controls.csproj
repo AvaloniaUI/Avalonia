@@ -15,6 +15,8 @@
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,17 +36,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="MenuItemAccessKeyHandler.cs" />
+    <Compile Include="Parsers\GridLengthsParser.cs" />
+    <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="MenuItem.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="AdornerTemplate.cs" />
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="IItemsPanel.cs" />
+    <Compile Include="INamed.cs" />
+    <Compile Include="INavigablePanel.cs" />
+    <Compile Include="Deck.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
+    <Compile Include="PlacementMode.cs" />
     <Compile Include="Popup.cs" />
     <Compile Include="IDataTemplate.cs" />
+    <Compile Include="Presenters\IItemsPresenter.cs" />
     <Compile Include="Presenters\IPresenter.cs" />
+    <Compile Include="Presenters\DeckPresenter.cs" />
     <Compile Include="Primitives\AdornerDecorator.cs" />
     <Compile Include="Primitives\AdornerLayer.cs" />
     <Compile Include="RadioButton.cs" />
@@ -88,9 +102,11 @@
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
     <Compile Include="Shapes\Ellipse.cs" />
+    <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
     <Compile Include="TextWrapping.cs" />
+    <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
     <Compile Include="PopupRoot.cs" />
@@ -118,8 +134,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Splat">
-      <HintPath>..\packages\Splat.1.6.1\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.1.5.5\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
@@ -168,14 +189,10 @@
       <Name>Perspex.Styling</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-alpha008\tools\analyzers\C#\StyleCop.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -9,10 +9,22 @@ namespace Perspex.Animation
     using System.Linq;
     using System.Reactive.Linq;
 
+    /// <summary>
+    /// Base class for control which can have property transitions.
+    /// </summary>
     public class Animatable : PerspexObject
     {
+        /// <summary>
+        /// The property transitions for the control.
+        /// </summary>
         private PropertyTransitions propertyTransitions;
 
+        /// <summary>
+        /// Gets or sets the property transitions for the control.
+        /// </summary>
+        /// <value>
+        /// The property transitions for the control.
+        /// </value>
         public PropertyTransitions PropertyTransitions
         {
             get
@@ -31,6 +43,11 @@ namespace Perspex.Animation
             }
         }
 
+        /// <summary>
+        /// Reacts to a change in a <see cref="PerspexProperty"/> value in order to animate the
+        /// change if a <see cref="PropertyTransition"/> is set for the property..
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(PerspexPropertyChangedEventArgs e)
         {
             if (e.Priority != BindingPriority.Animation && this.propertyTransitions != null)

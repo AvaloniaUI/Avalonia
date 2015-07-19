@@ -13,10 +13,10 @@ namespace Perspex
     /// Represents a node in the visual scene graph.
     /// </summary>
     /// <remarks>
-    /// The <see cref="IVisual"/> interface defines the interface required for a renderer to 
-    /// render a scene graph. You should not usually need to reference this interface unless 
-    /// you are writing a renderer; instead use the extension methods defined in 
-    /// <see cref="VisualExtensions"/> to traverse the scene graph. This interface is 
+    /// The <see cref="IVisual"/> interface defines the interface required for a renderer to
+    /// render a scene graph. You should not usually need to reference this interface unless
+    /// you are writing a renderer; instead use the extension methods defined in
+    /// <see cref="VisualExtensions"/> to traverse the scene graph. This interface is
     /// implemented by <see cref="Visual"/>. It should not be necessary to implement it
     /// anywhere else.
     /// </remarks>
@@ -25,13 +25,17 @@ namespace Perspex
         /// <summary>
         /// Gets the bounds of the scene graph node.
         /// </summary>
-        /// <returns></returns>
         Rect Bounds { get; }
 
         /// <summary>
         /// Gets a value indicating whether the scene graph node should be clipped to its bounds.
         /// </summary>
         bool ClipToBounds { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this scene graph node and all its parents are visible.
+        /// </summary>
+        bool IsEffectivelyVisible { get; }
 
         /// <summary>
         /// Gets a value indicating whether this scene graph node is visible.
@@ -78,7 +82,7 @@ namespace Perspex
         /// Returns a transform that transforms the visual's coordinates into the coordinates
         /// of the specified <paramref name="visual"/>.
         /// </summary>
-        /// <param name="visual"></param>
+        /// <param name="visual">The visual to translate the coordinates to.</param>
         /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
         Matrix TransformToVisual(IVisual visual);
     }

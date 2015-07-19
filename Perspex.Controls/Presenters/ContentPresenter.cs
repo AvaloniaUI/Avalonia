@@ -65,7 +65,7 @@ namespace Perspex.Controls.Presenters
             if (child != null)
             {
                 child.Measure(availableSize);
-                return child.DesiredSize.Value;
+                return child.DesiredSize;
             }
 
             return new Size();
@@ -87,6 +87,8 @@ namespace Perspex.Controls.Presenters
             if (content != null)
             {
                 result = this.MaterializeDataTemplate(content);
+                result.Parent = this.TemplatedParent as Control;
+
                 var templatedParent = this.TemplatedParent as TemplatedControl;
 
                 if (templatedParent != null)

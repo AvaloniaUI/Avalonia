@@ -64,6 +64,13 @@ namespace Perspex.Media
         IDisposable PushClip(Rect clip);
 
         /// <summary>
+        /// Pushes an opacity value.
+        /// </summary>
+        /// <param name="opacity">The opacity.</param>
+        /// <returns>A disposable used to undo the opacity.</returns>
+        IDisposable PushOpacity(double opacity);
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>

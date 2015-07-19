@@ -15,6 +15,8 @@
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,11 +47,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ILogical.cs" />
+    <Compile Include="Animation\PageSlide.cs" />
+    <Compile Include="Animation\CrossFade.cs" />
+    <Compile Include="Animation\IPageTransition.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
     <Compile Include="Media\FormattedTextLine.cs" />
@@ -61,6 +67,7 @@
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Media\TranslateTransform.cs" />
     <Compile Include="Media\PathMarkupParser.cs" />
     <Compile Include="Media\Pen.cs" />
     <Compile Include="Media\EllipseGeometry.cs" />
@@ -94,12 +101,20 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
-    <Compile Include="LogicalTree\LogicalExtensions.cs" />
+    <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />
+    <Compile Include="VisualTree\IVisualTreeHost.cs" />
+    <Compile Include="VisualTree\TransformedBounds.cs" />
+    <Compile Include="VisualTree\BoundsTracker.cs" />
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Splat">
-      <HintPath>..\packages\Splat.1.6.1\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.1.5.5\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
@@ -118,14 +133,10 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-alpha008\tools\analyzers\C#\StyleCop.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

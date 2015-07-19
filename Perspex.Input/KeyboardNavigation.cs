@@ -6,81 +6,70 @@
 
 namespace Perspex.Input
 {
-    using System.Linq;
-    using Perspex.VisualTree;
-    using Splat;
-
-    public class KeyboardNavigation : IKeyboardNavigation
+    /// <summary>
+    /// Defines attached properties that control keyboard navigation behaviour for a container.
+    /// </summary>
+    public static class KeyboardNavigation
     {
-        public static IKeyboardNavigation Instance
+        /// <summary>
+        /// Defines the TabNavigation attached property.
+        /// </summary>
+        /// <remarks>
+        /// The TabNavigation attached property defines how pressing the Tab key causes focus to
+        /// be navigated between the children of the container.
+        /// </remarks>
+        public static readonly PerspexProperty<KeyboardNavigationMode> TabNavigationProperty =
+            PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>("TabNavigation", typeof(KeyboardNavigation));
+
+        /// <summary>
+        /// Defines the TabOnceActiveElement attached property.
+        /// </summary>
+        /// <remarks>
+        /// When focus enters a container which has its <see cref="TabNavigationProperty"/>
+        /// attached property set to <see cref="KeyboardNavigationMode.Once"/>, this property
+        /// defines to which child the focus should move.
+        /// </remarks>
+        public static readonly PerspexProperty<IInputElement> TabOnceActiveElementProperty =
+            PerspexProperty.RegisterAttached<InputElement, IInputElement>("TabOnceActiveElement", typeof(KeyboardNavigation));
+
+        /// <summary>
+        /// Gets the <see cref="TabNavigationProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <returns>The <see cref="KeyboardNavigationMode"/> for the container.</returns>
+        public static KeyboardNavigationMode GetTabNavigation(InputElement element)
         {
-            get { return Locator.Current.GetService<IKeyboardNavigation>(); }
+            return element.GetValue(TabNavigationProperty);
         }
 
-        public bool MoveNext(IInputElement element)
+        /// <summary>
+        /// Sets the <see cref="TabNavigationProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <param name="value">The <see cref="KeyboardNavigationMode"/> for the container.</param>
+        public static void SetTabNavigation(InputElement element, KeyboardNavigationMode value)
         {
-            var parent = element.GetVisualParent();
-            var descendent = element.GetVisualDescendents()
-                .OfType<IInputElement>()
-                .Where(x => x.Focusable && x.IsEnabledCore)
-                .FirstOrDefault();
-
-            if (descendent != null)
-            {
-                FocusManager.Instance.Focus(descendent, true);
-                return true;
-            }
-            else if (parent != null)
-            {
-                var sibling = parent.GetVisualChildren()
-                    .OfType<IInputElement>()
-                    .Where(x => x.Focusable && x.IsEnabledCore)
-                    .SkipWhile(x => x != element)
-                    .Skip(1)
-                    .FirstOrDefault();
-
-                if (sibling != null)
-                {
-                    FocusManager.Instance.Focus(sibling, true);
-                    return true;
-                }
-            }
-
-            return false;
+            element.SetValue(TabNavigationProperty, value);
         }
 
-        public bool MovePrevious(IInputElement element)
+        /// <summary>
+        /// Gets the <see cref="TabOnceActiveElementProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <returns>The active element for the container.</returns>
+        public static IInputElement GetTabOnceActiveElement(InputElement element)
         {
-            var parent = element.GetVisualParent();
-            var descendent = element.GetVisualDescendents()
-                .OfType<IInputElement>()
-                .Where(x => x.Focusable && x.IsEnabledCore)
-                .Reverse()
-                .FirstOrDefault();
+            return element.GetValue(TabOnceActiveElementProperty);
+        }
 
-            if (descendent != null)
-            {
-                FocusManager.Instance.Focus(descendent, true);
-                return true;
-            }
-            else if (parent != null)
-            {
-                var previous = parent.GetVisualChildren()
-                    .OfType<IInputElement>()
-                    .Where(x => x.Focusable && x.IsEnabledCore)
-                    .Reverse()
-                    .SkipWhile(x => x != element)
-                    .Skip(1)
-                    .FirstOrDefault();
-
-                if (previous != null)
-                {
-                    FocusManager.Instance.Focus(previous, true);
-                    return true;
-                }
-            }
-
-            return false;
+        /// <summary>
+        /// Sets the <see cref="TabOnceActiveElementProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <param name="value">The active element for the container.</param>
+        public static void SetTabOnceActiveElement(InputElement element, IInputElement value)
+        {
+            element.SetValue(TabOnceActiveElementProperty, value);
         }
     }
 }

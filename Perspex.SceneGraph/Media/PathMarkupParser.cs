@@ -8,6 +8,7 @@ namespace Perspex.Media
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Text;
 
@@ -224,7 +225,7 @@ namespace Perspex.Media
                 }
             }
 
-            return double.Parse(b.ToString());
+            return double.Parse(b.ToString(), CultureInfo.InvariantCulture);
         }
 
         private static Point ReadPoint(StringReader reader)

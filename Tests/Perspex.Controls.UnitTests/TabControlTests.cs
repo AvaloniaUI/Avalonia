@@ -6,11 +6,11 @@
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.LogicalTree;
-    using Perspex.Styling;
+    using System.Linq;
     using Xunit;
 
     public class TabControlTests
@@ -18,50 +18,30 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void First_Tab_Should_Be_Selected_By_Default()
         {
+            TabItem selected;
             var target = new TabControl
             {
                 Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
                 Items = new[]
                 {
+                    (selected = new TabItem
+                    {
+                        Name = "first",
+                        Content = "foo",
+                    }),
                     new TabItem
                     {
-                        Id = "first"
-                    },
-                    new TabItem
-                    {
-                        Id = "second"
+                        Name = "second",
+                        Content = "bar",
                     },
                 }
             };
 
             target.ApplyTemplate();
 
-            Assert.NotNull(target.SelectedTab);
-            Assert.Equal(target.SelectedTab, target.SelectedItem);
-        }
-
-        [Fact]
-        public void First_Tab_Content_Should_Be_Displayed_By_Default()
-        {
-            var target = new TabControl
-            {
-                Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
-                Items = new[]
-                {
-                    new TabItem
-                    {
-                        Content = new TextBlock(),
-                    },
-                    new TabItem
-                    {
-                        Content = new Border(),
-                    },
-                }
-            };
-
-            target.ApplyTemplate();
-
-            Assert.IsType<TextBlock>(target.SelectedContent);
+            Assert.Equal(selected, target.SelectedItem);
+            Assert.Equal(selected, target.SelectedTab);
+            Assert.Equal("foo", target.SelectedContent);
         }
 
         [Fact]
@@ -74,11 +54,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -99,11 +79,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Id = "first"
+                        Name = "first"
                     },
                     new TabItem
                     {
-                        Id = "second"
+                        Name = "second"
                     },
                 }
             };
@@ -124,11 +104,11 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Content = new TextBlock { Id = "Foo" }
+                        Content = "foo"
                     },
                     new TabItem
                     {
-                        Content = new TextBlock { Id = "Foo" }
+                        Content = "bar"
                     },
                 },
             };
@@ -136,7 +116,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             Assert.Equal(1, target.GetLogicalChildren().Count());
-            Assert.Equal("Foo", ((TextBlock)target.GetLogicalChildren().First()).Id);
+            Assert.Equal("foo", ((TextBlock)target.GetLogicalChildren().First()).Text);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)
@@ -147,15 +127,21 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabStrip
                     {
-                        Id = "tabStrip",
+                        Name = "tabStrip",
                         Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
                         [~TabStrip.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedTabProperty] = parent[~~TabControl.SelectedTabProperty]
                     },
-                    new ContentPresenter
+                    new Deck
                     {
-                        Id = "contentPresenter",
-                        [~ContentPresenter.ContentProperty] = parent[~TabControl.SelectedContentProperty],
+                        Name = "deck",
+                        Template = ControlTemplate.Create<Deck>(this.CreateDeckTemplate),
+                        DataTemplates = new DataTemplates
+                        {
+                            new DataTemplate<TabItem>(x => parent.MaterializeDataTemplate(x.Content)),
+                        },
+                        [~Deck.ItemsProperty] = parent[~TabControl.ItemsProperty],
+                        [~Deck.SelectedItemProperty] = parent[~TabControl.SelectedItemProperty],
                     }
                 }
             };
@@ -165,8 +151,20 @@ namespace Perspex.Controls.UnitTests
         {
             return new ItemsPresenter
             {
-                Id = "itemsPresenter",
+                Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
+            };
+        }
+
+        private Control CreateDeckTemplate(Deck control)
+        {
+            return new DeckPresenter
+            {
+                Name = "itemsPresenter",
+                [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
+                [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
+                [~DeckPresenter.SelectedItemProperty] = control[~Deck.SelectedItemProperty],
+                [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }
     }

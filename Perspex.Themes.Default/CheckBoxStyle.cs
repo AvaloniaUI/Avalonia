@@ -28,14 +28,14 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<CheckBox>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<CheckBox>().Template().Id("checkMark"))
+                new Style(x => x.OfType<CheckBox>().Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
                         new Setter(Shape.IsVisibleProperty, false),
                     },
                 },
-                new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
+                new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
@@ -61,7 +61,7 @@ namespace Perspex.Themes.Default
                     {
                         new Border
                         {
-                            Id = "checkBorder",
+                            Name = "checkBorder",
                             BorderBrush = Brushes.Black,
                             BorderThickness = 2,
                             Width = 18,
@@ -71,7 +71,7 @@ namespace Perspex.Themes.Default
                         },
                         new Path
                         {
-                            Id = "checkMark",
+                            Name = "checkMark",
                             Fill = Brushes.Black,
                             Width = 11,
                             Height = 10,
@@ -83,7 +83,7 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
-                            Id = "contentPresenter",
+                            Name = "contentPresenter",
                             Margin = new Thickness(4, 0, 0, 0),
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~CheckBox.ContentProperty],

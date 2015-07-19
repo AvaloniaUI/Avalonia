@@ -103,11 +103,11 @@ namespace Perspex.Controls.Primitives
 
                 if (this.Orientation == Orientation.Horizontal)
                 {
-                    return new Size(0, thumb.DesiredSize.Value.Height);
+                    return new Size(0, thumb.DesiredSize.Height);
                 }
                 else
                 {
-                    return new Size(thumb.DesiredSize.Value.Width, 0);
+                    return new Size(thumb.DesiredSize.Width, 0);
                 }
             }
 

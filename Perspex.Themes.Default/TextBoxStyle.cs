@@ -27,9 +27,10 @@ namespace Perspex.Themes.Default
                         new Setter(TextBox.TemplateProperty, ControlTemplate.Create<TextBox>(this.Template)),
                         new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(TextBox.BorderThicknessProperty, 2.0),
+                        new Setter(TextBox.FocusAdornerProperty, null),
                     },
                 },
-                new Style(x => x.OfType<TextBox>().Class(":focus").Template().Id("border"))
+                new Style(x => x.OfType<TextBox>().Class(":focus").Template().Name("border"))
                 {
                     Setters = new[]
                     {
@@ -43,7 +44,7 @@ namespace Perspex.Themes.Default
         {
             Border result = new Border
             {
-                Id = "border",
+                Name = "border",
                 Padding = new Thickness(2),
                 [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
@@ -55,11 +56,11 @@ namespace Perspex.Themes.Default
                     [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                     Content = new TextPresenter
                     {
-                        Id = "textPresenter",
+                        Name = "textPresenter",
                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
                         [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
                         [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
-                        [~~TextPresenter.TextProperty] = control[~~TextBox.TextProperty],
+                        [~TextPresenter.TextProperty] = control[~TextBox.TextProperty],
                         [~TextPresenter.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
                     }
                 }

@@ -89,12 +89,19 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Initialized_Observable_Fired()
         {
-            string value = null;
+            bool invoked = false;
 
-            Class1.FooProperty.Initialized.Subscribe(x => value = (string)x.NewValue);
+            Class1.FooProperty.Initialized.Subscribe(x =>
+            {
+                Assert.Equal(PerspexProperty.UnsetValue, x.OldValue);
+                Assert.Equal("default", x.NewValue);
+                Assert.Equal(BindingPriority.Unset, x.Priority);
+                invoked = true;
+            });
+
             var target = new Class1();
 
-            Assert.Equal("default", value);
+            Assert.True(invoked);
         }
 
         [Fact]

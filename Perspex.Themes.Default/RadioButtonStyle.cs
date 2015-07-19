@@ -28,14 +28,14 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<RadioButton>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<RadioButton>().Template().Id("checkMark"))
+                new Style(x => x.OfType<RadioButton>().Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
                         new Setter(Shape.IsVisibleProperty, false),
                     },
                 },
-                new Style(x => x.OfType<RadioButton>().Class(":checked").Template().Id("checkMark"))
+                new Style(x => x.OfType<RadioButton>().Class(":checked").Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
@@ -61,7 +61,7 @@ namespace Perspex.Themes.Default
                     {
                         new Ellipse
                         {
-                            Id = "checkBorder",
+                            Name = "checkBorder",
                             Stroke = Brushes.Black,
                             StrokeThickness = 2,
                             Width = 18,
@@ -71,7 +71,7 @@ namespace Perspex.Themes.Default
                         },
                         new Ellipse
                         {
-                            Id = "checkMark",
+                            Name = "checkMark",
                             Fill = Brushes.Black,
                             Width = 10,
                             Height = 10,
@@ -82,7 +82,7 @@ namespace Perspex.Themes.Default
                         },
                         new ContentPresenter
                         {
-                            Id = "contentPresenter",
+                            Name = "contentPresenter",
                             Margin = new Thickness(4, 0, 0, 0),
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~RadioButton.ContentProperty],

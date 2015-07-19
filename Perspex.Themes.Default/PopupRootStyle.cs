@@ -37,7 +37,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~PopupRoot.BackgroundProperty],
                 Content = new ContentPresenter
                 {
-                    Id = "contentPresenter",
+                    Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~PopupRoot.ContentProperty],
                 }
             };

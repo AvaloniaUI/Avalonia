@@ -21,6 +21,7 @@ namespace Perspex.Direct2D1.Media
             string fontFamily,
             double fontSize,
             FontStyle fontStyle,
+            TextAlignment textAlignment,
             FontWeight fontWeight)
         {
             var factory = Locator.Current.GetService<DWrite.Factory>();
@@ -38,6 +39,8 @@ namespace Perspex.Direct2D1.Media
                 format,
                 float.MaxValue,
                 float.MaxValue);
+
+            this.TextLayout.TextAlignment = textAlignment.ToDirect2D();
         }
 
         public Size Constraint
@@ -117,9 +120,15 @@ namespace Perspex.Direct2D1.Media
 
         public Size Measure()
         {
-            return new Size(
-                this.TextLayout.Metrics.WidthIncludingTrailingWhitespace,
-                this.TextLayout.Metrics.Height);
+            var metrics = this.TextLayout.Metrics;
+            var width = metrics.WidthIncludingTrailingWhitespace;
+
+            if (float.IsNaN(width))
+            {
+                width = metrics.Width;
+            }
+
+            return new Size(width, this.TextLayout.Metrics.Height);
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int count)

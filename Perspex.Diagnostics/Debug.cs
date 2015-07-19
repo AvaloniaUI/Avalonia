@@ -40,16 +40,21 @@ namespace Perspex.Diagnostics
                 builder.Append(" ");
                 builder.AppendLine(control.Classes.ToString());
 
-                foreach (var value in control.GetSetValues())
+                foreach (var property in control.GetRegisteredProperties())
                 {
-                    builder.Append(Indent(indent));
-                    builder.Append(" |  ");
-                    builder.Append(value.Property.Name);
-                    builder.Append(" = ");
-                    builder.Append(value.CurrentValue ?? "(null)");
-                    builder.Append(" [");
-                    builder.Append(value.PriorityValue.ValuePriority);
-                    builder.AppendLine("]");
+                    var value = control.GetDiagnostic(property);
+
+                    if (value.Priority != BindingPriority.Unset)
+                    {
+                        builder.Append(Indent(indent));
+                        builder.Append(" |  ");
+                        builder.Append(value.Property.Name);
+                        builder.Append(" = ");
+                        builder.Append(value.Value ?? "(null)");
+                        builder.Append(" [");
+                        builder.Append(value.Priority);
+                        builder.AppendLine("]");
+                    }
                 }
             }
             else

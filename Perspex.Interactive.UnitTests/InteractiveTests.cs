@@ -9,7 +9,6 @@ namespace Perspex.Interactive.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Collections;
     using Perspex.Interactivity;
     using Perspex.VisualTree;
     using Xunit;
@@ -21,7 +20,7 @@ namespace Perspex.Interactive.UnitTests
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Direct, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var target = this.CreateTree(ev, handler, RoutingStrategies.Direct);
 
             var args = new RoutedEventArgs(ev, target);
@@ -55,7 +54,7 @@ namespace Perspex.Interactive.UnitTests
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -69,7 +68,7 @@ namespace Perspex.Interactive.UnitTests
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Tunnel, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -82,12 +81,12 @@ namespace Perspex.Interactive.UnitTests
         public void Tunneling_Bubbling_Event_Should_Tunnel_Then_Bubble_Up()
         {
             var ev = new RoutedEvent(
-                "test", 
-                RoutingStrategies.Bubble | RoutingStrategies.Tunnel, 
-                typeof(RoutedEventArgs), 
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -117,7 +116,7 @@ namespace Perspex.Interactive.UnitTests
                 RoutingStrategies.Tunnel,
                 RoutingStrategies.Bubble,
                 RoutingStrategies.Bubble,
-            }, 
+            },
             invoked);
         }
 
@@ -204,7 +203,7 @@ namespace Perspex.Interactive.UnitTests
 
             EventHandler<RoutedEventArgs> handler = (s, e) =>
             {
-                invoked.Add(((TestInteractive)s).Id);
+                invoked.Add(((TestInteractive)s).Name);
                 e.Handled = true;
             };
 
@@ -225,7 +224,7 @@ namespace Perspex.Interactive.UnitTests
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
             var target = this.CreateTree(ev, null, 0);
 
@@ -246,7 +245,7 @@ namespace Perspex.Interactive.UnitTests
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
             var target = this.CreateTree(ev, null, 0);
 
@@ -267,7 +266,7 @@ namespace Perspex.Interactive.UnitTests
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Id);
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
             var target = this.CreateTree(ev, null, 0);
 
@@ -299,7 +298,7 @@ namespace Perspex.Interactive.UnitTests
         }
 
         private TestInteractive CreateTree(
-            RoutedEvent ev, 
+            RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
             RoutingStrategies handlerRoutes,
             bool handledEventsToo = false)
@@ -308,21 +307,21 @@ namespace Perspex.Interactive.UnitTests
 
             var tree = new TestInteractive
             {
-                Id = "1",
+                Name = "1",
                 Children = new[]
                 {
                     new TestInteractive
                     {
-                        Id = "2a",
+                        Name = "2a",
                     },
                     (target = new TestInteractive
                     {
-                        Id = "2b",
+                        Name = "2b",
                         Children = new[]
                         {
                             new TestInteractive
                             {
-                                Id = "3",
+                                Name = "3",
                             },
                         },
                     }),
@@ -336,13 +335,13 @@ namespace Perspex.Interactive.UnitTests
                     i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
                 }
             }
-            
+
             return target;
         }
 
         private class TestInteractive : Interactive
         {
-            public string Id { get; set; }
+            public string Name { get; set; }
 
             public bool ClassHandlerInvoked { get; private set; }
 

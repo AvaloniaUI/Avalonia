@@ -22,7 +22,7 @@ namespace Perspex.Styling.UnitTests
             {
                 return new Border
                 {
-                    Id = "border",
+                    Name = "border",
                 };
             });
 
@@ -38,11 +38,11 @@ namespace Perspex.Styling.UnitTests
                 .Class("foo")
                 .Class("bar")
                 .Template()
-                .Id("border");
+                .Name("border");
 
             var border = (Border)((IVisual)control).VisualChildren.Single();
             var values = new List<bool>();
-            var activator = selector.GetActivator(border);
+            var activator = selector.Match(border).ObservableResult;
 
             activator.Subscribe(x => values.Add(x));
 

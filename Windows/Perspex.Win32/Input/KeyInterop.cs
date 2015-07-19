@@ -198,6 +198,7 @@ namespace Perspex.Win32.Input
             { 9, Key.Tab },
             { 12, Key.Clear },
             { 13, Key.Return },
+            { 18, Key.LeftAlt },
             { 19, Key.Pause },
             { 20, Key.Capital },
             { 21, Key.KanaMode },

@@ -1,6 +1,8 @@
 # Perspex #
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/grokys/Perspex?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/grokys/perspex/branch/master)
+
 ...a next generation WPF?
 
 ![](Docs/screen.png)
@@ -37,10 +39,7 @@ Contributions are always welcome!
 ## Building and Using
 In order to build and use Perpex you need a compiler that supports the upcoming C# 6 features.
 
-- **Visual Studio 2015 Preview**: The recommended way to compile C# 6 code is to use the new Visual Studio 2015 Preview version, which Microsoft has released later this year. It comes with the new Roslyn compiler and features like the new upcoming JIT (RyuJIT) and other improvements like extensible code analysis right out of the box. It can be downloaded [here](http://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs)
-
-- **Visual Studio 2013**: With the introduction of the new Roslyn compiler platform earlier this year Microsoft has released an *April End User Preview* which is a small extension that brings supports to Visual Studio 2013.<br/>
-  **NOTE**: This extension is **out of date** and will **no longer be updated**, according to the [Roslyn CodePlex](https://roslyn.codeplex.com/) main page. However, if you don't want to use a Preview IDE feel free to download the extension [over here](https://connect.microsoft.com/VisualStudio/Downloads/DownloadDetails.aspx?DownloadID=52793). It must be noted that it is not guaranteed that future versions of Perspex will compile and run when using this extension.
+- **Visual Studio 2015 RC**: The recommended way to compile C# 6 code is to use the Visual Studio 2015 RC.It comes with the new Roslyn compiler and features like the new upcoming JIT (RyuJIT) and other improvements like extensible code analysis right out of the box. It can be downloaded [here](http://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs)
 
 ## Contributing ##
 

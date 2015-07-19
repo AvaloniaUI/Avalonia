@@ -17,7 +17,7 @@ namespace Perspex.Styling.UnitTests
             get;
         }
 
-        public abstract string Id
+        public abstract string Name
         {
             get;
         }
@@ -42,7 +42,22 @@ namespace Perspex.Styling.UnitTests
             throw new NotImplementedException();
         }
 
-        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
+        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetValue(PerspexProperty property, object value, BindingPriority priority)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IObservable<object> GetObservable(PerspexProperty property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRegistered(PerspexProperty property)
         {
             throw new NotImplementedException();
         }

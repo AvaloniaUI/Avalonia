@@ -63,7 +63,7 @@ namespace Perspex.Input
 
         public Point GetPosition(IVisual relativeTo)
         {
-            Point p = this.GetClientPosition();
+            Point p = this.Position;
             IVisual v = relativeTo;
 
             while (v != null)
@@ -74,8 +74,6 @@ namespace Perspex.Input
 
             return p;
         }
-
-        protected abstract Point GetClientPosition();
 
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
@@ -141,13 +139,6 @@ namespace Perspex.Input
                     };
 
                     source.RaiseEvent(e);
-                }
-
-                IInputElement focusable = this.GetFocusable(hit);
-
-                if (focusable != null && focusable.Focusable)
-                {
-                    focusable.Focus();
                 }
             }
         }
@@ -226,22 +217,6 @@ namespace Perspex.Input
                         Delta = delta,
                     });
                 }
-            }
-        }
-
-        private IInputElement GetFocusable(IVisual hit)
-        {
-            var inputFocus = this.Captured as IInputElement;
-
-            if (inputFocus != null && inputFocus.Focusable)
-            {
-                return inputFocus;
-            }
-            else
-            {
-                return hit.GetSelfAndVisualAncestors()
-                    .OfType<IInputElement>()
-                    .FirstOrDefault(x => x.Focusable);
             }
         }
 

@@ -9,26 +9,52 @@ namespace Perspex.Input
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Perspex.Interactivity;
     using Perspex.VisualTree;
     using Splat;
+    using Perspex.Interactivity;
 
+
+    /// <summary>
+    /// Manages focus for the application.
+    /// </summary>
     public class FocusManager : IFocusManager
     {
-        private Dictionary<IFocusScope, IInputElement> focusScopes = 
+        /// <summary>
+        /// The focus scopes in which the focus is currently defined.
+        /// </summary>
+        private Dictionary<IFocusScope, IInputElement> focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FocusManager"/> class.
+        /// </summary>
+        public FocusManager()
+        {
+            InputElement.PointerPressedEvent.AddClassHandler(
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(this.OnPreviewPointerPressed),
+                RoutingStrategies.Tunnel);
+        }
+
+        /// <summary>
+        /// Gets the instance of the <see cref="IFocusManager"/>.
+        /// </summary>
         public static IFocusManager Instance
         {
             get { return Locator.Current.GetService<IFocusManager>(); }
         }
 
+        /// <summary>
+        /// Gets the currently focused <see cref="IInputElement"/>.
+        /// </summary>
         public IInputElement Current
         {
-            get;
-            private set;
+            get { return KeyboardDevice.Instance.FocusedElement; }
         }
 
+        /// <summary>
+        /// Gets the current focus scope.
+        /// </summary>
         public IFocusScope Scope
         {
             get;
@@ -46,18 +72,29 @@ namespace Perspex.Input
         {
             if (control != null)
             {
-                var scope = control.GetSelfAndVisualAncestors()
-                    .OfType<IFocusScope>()
+                var scope = GetFocusScopeAncestors(control)
                     .FirstOrDefault();
 
                 if (scope != null)
                 {
+                    this.Scope = scope;
                     this.SetFocusedElement(scope, control, keyboardNavigated);
+                    System.Diagnostics.Debug.WriteLine("Focused " + control.GetType().Name);
                 }
             }
-            else
+            else if (this.Current != null)
             {
-                this.SetFocusedElement(this.Scope, null);
+                // If control is null, set focus to the topmost focus scope.
+                foreach (var scope in GetFocusScopeAncestors(this.Current).Reverse().ToList())
+                {
+                    IInputElement element;
+
+                    if (this.focusScopes.TryGetValue(scope, out element))
+                    {
+                        this.Focus(element, keyboardNavigated);
+                        break;
+                    }
+                }
             }
         }
 
@@ -74,8 +111,8 @@ namespace Perspex.Input
         /// will change.
         /// </remarks>
         public void SetFocusedElement(
-            IFocusScope scope, 
-            IInputElement element, 
+            IFocusScope scope,
+            IInputElement element,
             bool keyboardNavigated = false)
         {
             Contract.Requires<ArgumentNullException>(scope != null);
@@ -84,29 +121,7 @@ namespace Perspex.Input
 
             if (this.Scope == scope)
             {
-                var interactive = this.Current as IInteractive;
-
-                if (interactive != null)
-                {
-                    interactive.RaiseEvent(new RoutedEventArgs
-                    {
-                        RoutedEvent = InputElement.LostFocusEvent,
-                    });
-                }
-
-                this.Current = element;
-                KeyboardDevice.Instance.FocusedElement = element;
-
-                interactive = element as IInteractive;
-
-                if (interactive != null)
-                {
-                    interactive.RaiseEvent(new GotFocusEventArgs
-                    {
-                        RoutedEvent = InputElement.GotFocusEvent,
-                        KeyboardNavigated = keyboardNavigated,
-                    });
-                }
+                KeyboardDevice.Instance.SetFocusedElement(element, keyboardNavigated);
             }
         }
 
@@ -131,6 +146,60 @@ namespace Perspex.Input
 
             this.Scope = scope;
             this.Focus(e);
+        }
+
+        /// <summary>
+        /// Checks if the specified element can be focused.
+        /// </summary>
+        /// <param name="e">The element.</param>
+        /// <returns>True if the element can be focused.</returns>
+        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
+
+        /// <summary>
+        /// Gets the focus scope ancestors of the specified control, traversing popups.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The focus scopes.</returns>
+        private static IEnumerable<IFocusScope> GetFocusScopeAncestors(IInputElement control)
+        {
+            while (control != null)
+            {
+                var scope = control as IFocusScope;
+
+                if (scope != null)
+                {
+                    yield return scope;
+                }
+
+                control = control.GetVisualParent<IInputElement>() ?? 
+                    ((control as IHostedVisualTreeRoot)?.Host as IInputElement);
+            }
+        }
+
+        /// <summary>
+        /// Global handler for pointer pressed events.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        {
+            if (sender == e.Source)
+            {
+                var ev = (PointerPressEventArgs)e;
+                var element = (ev.Device.Captured as IInputElement) ?? (e.Source as IInputElement);
+
+                if (element == null || !CanFocus(element))
+                {
+                    element = element.GetSelfAndVisualAncestors()
+                        .OfType<IInputElement>()
+                        .FirstOrDefault(x => CanFocus(x));
+                }
+
+                if (element != null)
+                {
+                    this.Focus(element);
+                }
+            }
         }
     }
 }

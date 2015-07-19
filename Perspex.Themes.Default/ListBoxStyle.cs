@@ -6,12 +6,11 @@
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
-    using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
+    using System.Linq;
 
     public class ListBoxStyle : Styles
     {
@@ -43,7 +42,7 @@ namespace Perspex.Themes.Default
                 {
                     Content = new ItemsPresenter
                     {
-                        Id = "itemsPresenter",
+                        Name = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
                     }

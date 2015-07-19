@@ -9,6 +9,7 @@ namespace Perspex.Controls.Primitives
     using System;
     using System.Reactive;
     using System.Reactive.Linq;
+    using Perspex.Controls.Templates;
 
     public class ScrollBar : TemplatedControl
     {
@@ -86,6 +87,18 @@ namespace Perspex.Controls.Primitives
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(availableSize);
+        }
+
+        protected override void OnTemplateApplied()
+        {
+            base.OnTemplateApplied();
+
+            // Binding between this.Value and track.Value must be done explicitly like this rather 
+            // than using standard bindings as it shouldn't be able to to be overridden by binding
+            // e.g. ScrollBar.Value.
+            var track = this.GetTemplateChild<Track>("track");
+            track.GetObservable(ValueProperty).Subscribe(x => this.Value = x);
+            this.GetObservable(ValueProperty).Subscribe(x => track.Value = x);
         }
 
         private bool CalculateIsVisible()

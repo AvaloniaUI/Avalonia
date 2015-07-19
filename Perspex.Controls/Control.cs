@@ -20,7 +20,7 @@ namespace Perspex.Controls
     using Perspex.Styling;
     using Splat;
 
-    public class Control : InputElement, ILogical, IStyleable, IStyleHost
+    public class Control : InputElement, INamed, ILogical, IStyleable, IStyleHost
     {
         public static readonly PerspexProperty<object> DataContextProperty =
             PerspexProperty.Register<Control, object>("DataContext", inherits: true);
@@ -101,7 +101,7 @@ namespace Perspex.Controls
             }
         }
 
-        public string Id
+        public string Name
         {
             get
             {
@@ -192,6 +192,40 @@ namespace Perspex.Controls
             this.RaiseEvent(ev);
         }
 
+        protected static void PseudoClass(PerspexProperty<bool> property, string className)
+        {
+            PseudoClass(property, x => x, className);
+        }
+
+        protected static void PseudoClass<T>(
+            PerspexProperty<T> property,
+            Func<T, bool> selector,
+            string className)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(selector != null);
+            Contract.Requires<ArgumentNullException>(className != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                throw new ArgumentException("Cannot supply an empty className.");
+            }
+
+            Observable.Merge(property.Changed, property.Initialized)
+                .Subscribe(e =>
+                {
+                    if (selector((T)e.NewValue))
+                    {
+                        ((Control)e.Sender).Classes.Add(className);
+                    }
+                    else
+                    {
+                        ((Control)e.Sender).Classes.Remove(className);
+                    }
+                });
+        }
+
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
@@ -231,40 +265,6 @@ namespace Perspex.Controls
                 adornerLayer.Children.Remove(this.focusAdorner);
                 this.focusAdorner = null;
             }
-        }
-
-        protected static void PseudoClass(PerspexProperty<bool> property, string className)
-        {
-            PseudoClass(property, x => x, className);
-        }
-
-        protected static void PseudoClass<T>(
-            PerspexProperty<T> property, 
-            Func<T, bool> selector, 
-            string className)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
-            Contract.Requires<ArgumentNullException>(className != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                throw new ArgumentException("Cannot supply an empty className.");
-            }
-
-            Observable.Merge(property.Changed, property.Initialized)
-                .Subscribe(e =>
-                {
-                    if (selector((T)e.NewValue))
-                    {
-                        ((Control)e.Sender).Classes.Add(className);
-                    }
-                    else
-                    {
-                        ((Control)e.Sender).Classes.Remove(className);
-                    }
-                });
         }
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)

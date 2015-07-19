@@ -6,14 +6,15 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using Perspex.Controls.Generators;
+    using Perspex.Input;
+    using Perspex.Styling;
     using System;
     using System.Collections;
     using System.Collections.Specialized;
     using System.Reactive.Linq;
-    using Perspex.Controls.Generators;
-    using Perspex.Styling;
 
-    public class ItemsPresenter : Control, IVisual, IPresenter, ITemplatedControl
+    public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl
     {
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
@@ -23,9 +24,22 @@ namespace Perspex.Controls.Presenters
 
         private bool createdPanel;
 
+        static ItemsPresenter()
+        {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ItemsPresenter),
+                KeyboardNavigationMode.Once);
+        }
+
         public ItemsPresenter()
         {
             this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
+        }
+
+        public ItemContainerGenerator ItemContainerGenerator
+        {
+            get;
+            private set;
         }
 
         public IEnumerable Items
@@ -57,7 +71,7 @@ namespace Perspex.Controls.Presenters
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
-            return this.Panel.DesiredSize.Value;
+            return this.Panel.DesiredSize;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -71,6 +85,7 @@ namespace Perspex.Controls.Presenters
             this.ClearVisualChildren();
             this.Panel = this.ItemsPanel.Build();
             this.Panel.TemplatedParent = this;
+            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigation.GetTabNavigation(this));
             ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
@@ -79,14 +94,13 @@ namespace Perspex.Controls.Presenters
 
         private IItemContainerGenerator GetGenerator()
         {
-            ItemsControl i = this.TemplatedParent as ItemsControl;
-
-            if (i == null)
+            if (this.ItemContainerGenerator == null)
             {
-                throw new InvalidOperationException("ItemsPresenter must be part of an ItemsControl template.");
+                ItemsControl i = this.TemplatedParent as ItemsControl;
+                this.ItemContainerGenerator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
             }
 
-            return i.ItemContainerGenerator;
+            return this.ItemContainerGenerator;
         }
 
         private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)

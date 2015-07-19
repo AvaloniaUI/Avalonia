@@ -51,7 +51,7 @@ namespace Perspex.Controls
             Brush background = this.Background;
             Brush borderBrush = this.BorderBrush;
             double borderThickness = this.BorderThickness;
-            Rect rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness / 2);
+            Rect rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness);
 
             if (background != null)
             {
@@ -85,10 +85,12 @@ namespace Perspex.Controls
             if (content != null)
             {
                 content.Measure(availableSize.Deflate(padding));
-                return content.DesiredSize.Value.Inflate(padding);
+                return content.DesiredSize.Inflate(padding);
             }
-
-            return new Size();
+            else
+            {
+                return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
 
         private Control Template(ScrollViewer control)
         {
-            return new Grid
+            var result = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions
                 {
@@ -47,7 +47,7 @@ namespace Perspex.Themes.Default
                 {
                     new ScrollContentPresenter
                     {
-                        Id = "contentPresenter",
+                        Name = "contentPresenter",
                         [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
                         [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
@@ -56,7 +56,7 @@ namespace Perspex.Themes.Default
                     },
                     new ScrollBar
                     {
-                        Id = "horizontalScrollBar",
+                        Name = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
                         [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
@@ -66,7 +66,7 @@ namespace Perspex.Themes.Default
                     },
                     new ScrollBar
                     {
-                        Id = "verticalScrollBar",
+                        Name = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
                         [~ScrollBar.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
                         [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
@@ -76,6 +76,8 @@ namespace Perspex.Themes.Default
                     },
                 },
             };
+
+            return result;
         }
     }
 }

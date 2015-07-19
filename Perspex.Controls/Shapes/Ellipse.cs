@@ -20,8 +20,7 @@ namespace Perspex.Controls.Shapes
             {
                 if (this.geometry == null || this.geometrySize != this.Bounds.Size)
                 {
-                    var rect = new Rect(0, 0, this.Bounds.Size.Width, this.Bounds.Size.Height);
-                    rect = rect.Deflate(this.StrokeThickness / 2);
+                    var rect = new Rect(this.Bounds.Size).Deflate(this.StrokeThickness);
                     this.geometry = new EllipseGeometry(rect);
                     this.geometrySize = this.Bounds.Size;
                 }

@@ -28,8 +28,10 @@ namespace Perspex.Input
 
     public interface IKeyboardDevice : IInputDevice
     {
-        IInputElement FocusedElement { get; set; }
+        IInputElement FocusedElement { get; }
 
         ModifierKeys Modifiers { get; }
+
+        void SetFocusedElement(IInputElement element, bool keyboardNavigated);
     }
 }

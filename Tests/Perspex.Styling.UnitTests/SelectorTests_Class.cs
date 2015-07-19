@@ -8,6 +8,7 @@ namespace Perspex.Styling.UnitTests
 {
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using Moq;
     using Perspex.Styling;
     using Xunit;
@@ -15,16 +16,7 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Class
     {
         [Fact]
-        public void Class_Priority_Is_StyleTrigger()
-        {
-            var control = new Control1();
-            var target = new Selector().Class("foo");
-
-            Assert.Equal(BindingPriority.StyleTrigger, target.Priority);
-        }
-
-        [Fact]
-        public void Class_Matches_Control_With_Class()
+        public async Task Class_Matches_Control_With_Class()
         {
             var control = new Control1
             {
@@ -32,12 +24,13 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.True(ActivatorValue(target, control));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Class_Doesnt_Match_Control_Without_Class()
+        public async Task Class_Doesnt_Match_Control_Without_Class()
         {
             var control = new Control1
             {
@@ -45,12 +38,13 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.False(ActivatorValue(target, control));
+            Assert.False(await activator.Take(1));
         }
 
         [Fact]
-        public void Class_Matches_Control_With_TemplatedParent()
+        public async Task Class_Matches_Control_With_TemplatedParent()
         {
             var control = new Control1
             {
@@ -59,25 +53,26 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.True(ActivatorValue(target, control));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Class_Tracks_Additions()
+        public async Task Class_Tracks_Additions()
         {
             var control = new Control1();
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.False(ActivatorValue(target, control));
+            Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
-            Assert.True(ActivatorValue(target, control));
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]
-        public void Class_Tracks_Removals()
+        public async Task Class_Tracks_Removals()
         {
             var control = new Control1
             {
@@ -85,32 +80,27 @@ namespace Perspex.Styling.UnitTests
             };
 
             var target = new Selector().Class("foo");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.True(ActivatorValue(target, control));
+            Assert.True(await activator.Take(1));
             control.Classes.Remove("foo");
-            Assert.False(ActivatorValue(target, control));
+            Assert.False(await activator.Take(1));
         }
 
         [Fact]
-        public void Multiple_Classes()
+        public async Task Multiple_Classes()
         {
             var control = new Control1();
             var target = new Selector().Class("foo").Class("bar");
-            var activator = target.GetActivator(control);
+            var activator = target.Match(control).ObservableResult;
 
-            Assert.False(ActivatorValue(target, control));
+            Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
-            Assert.False(ActivatorValue(target, control));
+            Assert.False(await activator.Take(1));
             control.Classes.Add("bar");
-            Assert.True(ActivatorValue(target, control));
+            Assert.True(await activator.Take(1));
             control.Classes.Remove("bar");
-            Assert.False(ActivatorValue(target, control));
-        }
-
-        private static bool ActivatorValue(Selector selector, IStyleable control)
-        {
-            return selector.GetActivator(control).Take(1).ToEnumerable().Single();
+            Assert.False(await activator.Take(1));
         }
 
         public class Control1 : TestControlBase

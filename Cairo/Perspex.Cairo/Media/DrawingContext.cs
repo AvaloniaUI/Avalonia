@@ -118,53 +118,57 @@ namespace Perspex.Cairo.Media
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
             var clone = new Queue<GeometryOp>(impl.Operations);
+
             bool useFill = false;
-            
-            var pop = this.PushTransform(impl.Transform);
-
+      
             this.SetPen(pen);
+            this.SetBrush(brush);
 
-            while (clone.Count > 0)
+            using (var pop = this.PushTransform(impl.Transform))
             {
+                while (clone.Count > 0)
+                {
 
-                var current = clone.Dequeue();
+                    var current = clone.Dequeue();
 
-                if (current is BeginOp)
-                {
-                    var bo = current as BeginOp;
-                    this.context.MoveTo(bo.Point.ToCairo());
+                    if (current is BeginOp)
+                    {
+                        var bo = current as BeginOp;
+                        this.context.MoveTo(bo.Point.ToCairo());
 
-                    useFill = bo.IsFilled;
+                        useFill = bo.IsFilled;
+
+                        System.Diagnostics.Debug.WriteLine("Start");
+                    }
+                    else if (current is LineToOp)
+                    {
+                        var lto = current as LineToOp;
+                        this.context.LineTo(lto.Point.ToCairo());
+                    }
+                    else if (current is EndOp)
+                    {
+                        if (((EndOp)current).IsClosed)
+                            this.context.ClosePath();
+
+                        System.Diagnostics.Debug.WriteLine("End");
+                    }
+                    else if (current is CurveToOp)
+                    {
+                        var cto = current as CurveToOp;
+                        this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
+                    }
                 }
-                else if (current is LineToOp)
+
+                System.Diagnostics.Debug.WriteLine("Render");
+                if (useFill)
                 {
-                    var lto = current as LineToOp;
-                    this.context.LineTo(lto.Point.ToCairo());
+                    this.context.FillPreserve();
                 }
-                else if (current is EndOp)
+                else
                 {
-                    if (((EndOp)current).IsClosed)
-                        this.context.ClosePath();
+                    this.context.StrokePreserve();
                 }
-                else if (current is CurveToOp)
-                {
-                    var cto = current as CurveToOp;
-                    this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
-                }
-             
             }
-
-            if (useFill)
-            {
-                this.context.StrokePreserve();
-                this.context.Fill();
-            }
-            else
-            {
-                this.context.Stroke();
-            }
-
-            pop.Dispose();
         }
 
         /// <summary>
@@ -221,6 +225,17 @@ namespace Perspex.Cairo.Media
         }
 
         /// <summary>
+        /// Pushes an opacity value.
+        /// </summary>
+        /// <param name="opacity">The opacity.</param>
+        /// <returns>A disposable used to undo the opacity.</returns>
+        public IDisposable PushOpacity(double opacity)
+        {
+            // TODO: Implement
+            return Disposable.Empty;
+        }
+
+        /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
@@ -253,6 +268,7 @@ namespace Perspex.Cairo.Media
         {
             this.SetBrush(pen.Brush);
             this.context.LineWidth = pen.Thickness;
+            
         }
     }
 }

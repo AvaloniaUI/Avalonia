@@ -66,18 +66,11 @@ namespace Perspex.Direct2D1.RenderTests
             string actualPath = Path.Combine(this.OutputPath, testName + ".out.png");
             MagickImage expected = new MagickImage(expectedPath);
             MagickImage actual = new MagickImage(actualPath);
-            MagickErrorInfo error = expected.Compare(actual);
+            double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
 
-            if (error.NormalizedMaximumError > 0.1)
+            if (error > 0.02)
             {
-                if (error.NormalizedMaximumError > 0.15)
-                {
-                    Assert.True(false, "NormalizedMaximumError = " + error.NormalizedMaximumError);
-                }
-                else
-                {
-                    Assert.True(false,  "Close but no cigar. NormalizedMaximumError = " + error.NormalizedMaximumError);
-                }
+                Assert.True(false, actualPath + ": Error = " + error);
             }
         }
     }

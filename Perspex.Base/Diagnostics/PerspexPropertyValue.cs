@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+﻿// --------------------------------------------------------------------
 // <copyright file="PerspexPropertyValue.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
@@ -8,23 +8,24 @@ namespace Perspex.Diagnostics
 {
     public class PerspexPropertyValue
     {
-        public PerspexPropertyValue(PerspexProperty property, object value)
+        public PerspexPropertyValue(
+            PerspexProperty property, 
+            object value,
+            BindingPriority priority,
+            string diagnostic)
         {
             this.Property = property;
-            this.CurrentValue = value;
+            this.Value = value;
+            this.Priority = priority;
+            this.Diagnostic = diagnostic;
         }
 
-        public PerspexPropertyValue(PerspexProperty property, PriorityValue priorityValue)
-        {
-            this.Property = property;
-            this.CurrentValue = priorityValue.Value;
-            this.PriorityValue = priorityValue;
-        }
+        public PerspexProperty Property { get; }
 
-        public PerspexProperty Property { get; private set; }
+        public object Value { get; }
 
-        public object CurrentValue { get; private set; }
+        public BindingPriority Priority { get; }
 
-        public PriorityValue PriorityValue { get; private set; }
+        public string Diagnostic { get; }
     }
 }

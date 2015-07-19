@@ -24,21 +24,17 @@ namespace Perspex.Cairo.Media
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            // TODO: Implement
-            int i = 10;
             points.Add(point);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            System.Diagnostics.Debug.WriteLine("IS filled {0}", isFilled);
             this.impl.Operations.Enqueue(new BeginOp { Point = startPoint, IsFilled = isFilled });
             points.Add(startPoint);
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-            // TODO: Implement
             this.impl.Operations.Enqueue(new CurveToOp { Point = point1, Point2 = point2, Point3 = point3 });
             points.Add(point1);
             points.Add(point2);
@@ -63,6 +59,7 @@ namespace Perspex.Cairo.Media
                 maxX = System.Math.Max(p.X, maxX);
                 maxY = System.Math.Max(p.Y, maxY);
             }
+            
 
             var context = new Cairo.Context(new Cairo.ImageSurface(Cairo.Format.Argb32, (int)maxX, (int)maxY));
             var clone = new Queue<GeometryOp>(this.impl.Operations);
@@ -95,6 +92,7 @@ namespace Perspex.Cairo.Media
                 }
 
                 context.StrokePreserve();
+                context.FillPreserve();
             }
 
             var test = context.StrokeExtents();

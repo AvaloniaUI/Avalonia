@@ -7,10 +7,8 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
+    using Perspex.Input;
 
     public enum Orientation
     {
@@ -18,7 +16,7 @@ namespace Perspex.Controls
         Horizontal,
     }
 
-    public class StackPanel : Panel
+    public class StackPanel : Panel, INavigablePanel
     {
         public static readonly PerspexProperty<double> GapProperty =
             PerspexProperty.Register<StackPanel, double>("Gap");
@@ -36,6 +34,49 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(OrientationProperty); }
             set { this.SetValue(OrientationProperty, value); }
+        }
+
+        Control INavigablePanel.GetControl(FocusNavigationDirection direction, Control from)
+        {
+            var horiz = this.Orientation == Orientation.Horizontal;
+            int index = this.Children.IndexOf(from);
+
+            switch (direction)
+            {
+                case FocusNavigationDirection.First:
+                    index = 0;
+                    break;
+                case FocusNavigationDirection.Last:
+                    index = this.Children.Count - 1;
+                    break;
+                case FocusNavigationDirection.Next:
+                    ++index;
+                    break;
+                case FocusNavigationDirection.Previous:
+                    ++index;
+                    break;
+                case FocusNavigationDirection.Left:
+                    index = horiz ? index - 1 : -1;
+                    break;
+                case FocusNavigationDirection.Right:
+                    index = horiz ? index + 1 : -1;
+                    break;
+                case FocusNavigationDirection.Up:
+                    index = horiz ? -1 : index - 1;
+                    break;
+                case FocusNavigationDirection.Down:
+                    index = horiz ? -1 : index + 1;
+                    break;
+            }
+
+            if (index >= 0 && index < this.Children.Count)
+            {
+                return this.Children[index];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -75,7 +116,7 @@ namespace Perspex.Controls
             foreach (Control child in this.Children)
             {
                 child.Measure(new Size(childAvailableWidth, childAvailableHeight));
-                Size size = child.DesiredSize.Value;
+                Size size = child.DesiredSize;
 
                 if (Orientation == Orientation.Vertical)
                 {
@@ -109,8 +150,8 @@ namespace Perspex.Controls
 
             foreach (Control child in this.Children)
             {
-                double childWidth = child.DesiredSize.Value.Width;
-                double childHeight = child.DesiredSize.Value.Height;
+                double childWidth = child.DesiredSize.Width;
+                double childHeight = child.DesiredSize.Height;
 
                 if (Orientation == Orientation.Vertical)
                 {

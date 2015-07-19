@@ -29,17 +29,17 @@ namespace Perspex.Collections
             if (source != null)
             {
                 this.source.CollectionChanged += this.SourceCollectionChanged;
+                this.source.PropertyChanged += this.SourcePropertyChanged;
             }
         }
 
-        public T this[int index]
-        {
-            get { return this.source[index]; }
-        }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Count
         {
-            get { return this.source.Count; }
+            get { return this.source?.Count ?? 0; }
         }
 
         public IPerspexReadOnlyList<T> Source
@@ -54,6 +54,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged -= this.SourceCollectionChanged;
+                    this.source.PropertyChanged -= this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -70,12 +71,13 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged += this.SourceCollectionChanged;
+                    this.source.PropertyChanged += this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
                         var ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            this.source,
+                            this.source.ToList(),
                             0);
                         this.CollectionChanged(this, ev);
                     }
@@ -83,13 +85,15 @@ namespace Perspex.Collections
             }
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public T this[int index]
+        {
+            get { return this.source[index]; }
+        }
 
         public void Dispose()
         {
             this.source.CollectionChanged -= this.SourceCollectionChanged;
+            this.source.PropertyChanged -= this.SourcePropertyChanged;
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -122,7 +126,7 @@ namespace Perspex.Collections
                         ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
                             e.OldItems,
-                            e.NewStartingIndex);
+                            e.OldStartingIndex);
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         ev = new NotifyCollectionChangedEventArgs(
@@ -138,6 +142,11 @@ namespace Perspex.Collections
 
                 this.CollectionChanged(this, ev);
             }
+        }
+
+        private void SourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            this.PropertyChanged?.Invoke(this, e);
         }
     }
 
@@ -160,22 +169,17 @@ namespace Perspex.Collections
             if (source != null)
             {
                 this.source.CollectionChanged += this.SourceCollectionChanged;
+                this.source.PropertyChanged += this.SourcePropertyChanged;
             }
         }
 
-        public TOut this[int index]
-        {
-            get
-            {
-                return (this.convert != null) ?
-                    this.convert(this.source[index]) :
-                    (TOut)(object)this.source[index];
-            }
-        }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Count
         {
-            get { return this.source.Count; }
+            get { return this.source?.Count ?? 0; }
         }
 
         public IPerspexReadOnlyList<TIn> Source
@@ -190,6 +194,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged -= this.SourceCollectionChanged;
+                    this.source.PropertyChanged -= this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -206,6 +211,7 @@ namespace Perspex.Collections
                 if (this.source != null)
                 {
                     this.source.CollectionChanged += this.SourceCollectionChanged;
+                    this.source.PropertyChanged += this.SourcePropertyChanged;
 
                     if (this.CollectionChanged != null)
                     {
@@ -219,15 +225,22 @@ namespace Perspex.Collections
             }
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public TOut this[int index]
+        {
+            get
+            {
+                return (this.convert != null) ?
+                    this.convert(this.source[index]) :
+                    (TOut)(object)this.source[index];
+            }
+        }
 
         public void Dispose()
         {
             if (this.source != null)
             {
                 this.source.CollectionChanged -= this.SourceCollectionChanged;
+                this.source.PropertyChanged -= this.SourcePropertyChanged;
             }
         }
 
@@ -248,7 +261,7 @@ namespace Perspex.Collections
             return this.GetEnumerator();
         }
 
-        private IList<TOut> ConvertList(IEnumerable list)
+        private IList ConvertList(IEnumerable list)
         {
             return list.Cast<TIn>().Select(this.convert).ToList();
         }
@@ -271,7 +284,7 @@ namespace Perspex.Collections
                         ev = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
                             this.ConvertList(e.OldItems),
-                            e.NewStartingIndex);
+                            e.OldStartingIndex);
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         ev = new NotifyCollectionChangedEventArgs(
@@ -288,6 +301,10 @@ namespace Perspex.Collections
                 this.CollectionChanged(this, ev);
             }
         }
-    }
 
+        private void SourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            this.PropertyChanged?.Invoke(this, e);
+        }
+    }
 }

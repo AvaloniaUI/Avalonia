@@ -14,6 +14,8 @@ namespace Perspex.Input
     {
         IObservable<RawInputEventArgs> RawEventReceived { get; }
 
+        IObservable<RawInputEventArgs> PostProcess { get; }
+
         void Process(RawInputEventArgs e);
     }
 }

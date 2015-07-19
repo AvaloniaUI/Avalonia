@@ -15,12 +15,12 @@ namespace Perspex.Controls.Templates
 
     public static class TemplateExtensions
     {
-        public static T FindTemplateChild<T>(this ITemplatedControl control, string id) where T : Control
+        public static T FindTemplateChild<T>(this ITemplatedControl control, string id) where T : INamed
         {
-            return control.GetTemplateChildren().OfType<T>().SingleOrDefault(x => x.Id == id);
+            return control.GetTemplateChildren().OfType<T>().SingleOrDefault(x => x.Name == id);
         }
 
-        public static T GetTemplateChild<T>(this ITemplatedControl control, string id) where T : Control
+        public static T GetTemplateChild<T>(this ITemplatedControl control, string id) where T : INamed
         {
             var result = control.FindTemplateChild<T>(id);
 

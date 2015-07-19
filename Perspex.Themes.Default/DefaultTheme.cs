@@ -12,15 +12,19 @@ namespace Perspex.Themes.Default
     {
         public DefaultTheme()
         {
+            this.Add(new FocusAdornerStyle());
+
             this.Add(new ButtonStyle());
             this.Add(new CheckBoxStyle());
             this.Add(new ContentControlStyle());
+            this.Add(new DeckStyle());
             this.Add(new DropDownStyle());
-            this.Add(new FocusAdornerStyle());
             this.Add(new GridSplitterStyle());
             this.Add(new ItemsControlStyle());
             this.Add(new ListBoxStyle());
             this.Add(new ListBoxItemStyle());
+            this.Add(new MenuStyle());
+            this.Add(new MenuItemStyle());
             this.Add(new PopupRootStyle());
             this.Add(new RadioButtonStyle());
             this.Add(new ScrollBarStyle());
@@ -30,6 +34,7 @@ namespace Perspex.Themes.Default
             this.Add(new TabStripStyle());
             this.Add(new TextBoxStyle());
             this.Add(new ToggleButtonStyle());
+            this.Add(new ToolTipStyle());
             this.Add(new TreeViewStyle());
             this.Add(new TreeViewItemStyle());
             this.Add(new WindowStyle());

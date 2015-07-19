@@ -22,7 +22,7 @@ namespace Perspex.Gtk
         {
         }
 
-        public static GtkMouseDevice Instance
+        public static new GtkMouseDevice Instance
         {
             get { return instance; }
         }
@@ -30,11 +30,6 @@ namespace Perspex.Gtk
         internal void SetClientPosition(Point p)
         {
             this.clientPosition = p;
-        }
-
-        protected override Point GetClientPosition()
-        {
-            return this.clientPosition;
         }
     }
 }

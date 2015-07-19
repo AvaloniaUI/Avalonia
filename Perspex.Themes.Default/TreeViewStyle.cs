@@ -40,9 +40,10 @@ namespace Perspex.Themes.Default
                 [~Border.BorderThicknessProperty] = control[~TreeView.BorderThicknessProperty],
                 Content = new ScrollViewer
                 {
+                    CanScrollHorizontally = true,
                     Content = new ItemsPresenter
                     {
-                        Id = "itemsPresenter",
+                        Name = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
                     }

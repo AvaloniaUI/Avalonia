@@ -17,7 +17,7 @@ namespace Perspex.Styling.UnitTests
             this.SubscribeCheckObservable = new TestObservable();
         }
 
-        public string Id { get; set; }
+        public string Name { get; set; }
 
         public virtual Classes Classes { get; set; }
 
@@ -34,7 +34,22 @@ namespace Perspex.Styling.UnitTests
             set;
         }
 
-        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
+        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetValue(PerspexProperty property, object value, BindingPriority priority)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IObservable<object> GetObservable(PerspexProperty property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRegistered(PerspexProperty property)
         {
             throw new NotImplementedException();
         }

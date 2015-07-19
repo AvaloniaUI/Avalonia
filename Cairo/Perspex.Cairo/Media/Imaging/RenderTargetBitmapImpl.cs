@@ -12,7 +12,6 @@ namespace Perspex.Cairo.Media.Imaging
 
     public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl
     {
-
         public RenderTargetBitmapImpl(
             Cairo.ImageSurface surface)
             : base(surface)

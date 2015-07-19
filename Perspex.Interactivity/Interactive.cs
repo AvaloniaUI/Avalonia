@@ -15,13 +15,32 @@ namespace Perspex.Interactivity
     using Perspex.Layout;
     using Perspex.VisualTree;
 
+    /// <summary>
+    /// Base class for objects that raise routed events.
+    /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers = 
+        private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers =
             new Dictionary<RoutedEvent, List<EventSubscription>>();
 
+        /// <summary>
+        /// Gets the interactive parent of the object for bubbling and tunnelling events.
+        /// </summary>
+        IInteractive IInteractive.InteractiveParent
+        {
+            get { return ((IVisual)this).VisualParent as IInteractive; }
+        }
+
+        /// <summary>
+        /// Adds a handler for the specified routed event.
+        /// </summary>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
+        /// <param name="routes">The routing strategies to listen to.</param>
+        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
+        /// <returns>A disposable that terminates the event subscription.</returns>
         public IDisposable AddHandler(
-            RoutedEvent routedEvent, 
+            RoutedEvent routedEvent,
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
@@ -49,6 +68,15 @@ namespace Perspex.Interactivity
             return Disposable.Create(() => subscriptions.Remove(sub));
         }
 
+        /// <summary>
+        /// Adds a handler for the specified routed event.
+        /// </summary>
+        /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
+        /// <param name="routes">The routing strategies to listen to.</param>
+        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
+        /// <returns>A disposable that terminates the event subscription.</returns>
         public IDisposable AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
@@ -58,15 +86,11 @@ namespace Perspex.Interactivity
             return this.AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
         }
 
-        public IObservable<EventPattern<T>> GetObservable<T>(RoutedEvent<T> routedEvent) where T : RoutedEventArgs
-        {
-            Contract.Requires<NullReferenceException>(routedEvent != null);
-
-            return Observable.FromEventPattern<T>(
-                handler => this.AddHandler(routedEvent, handler),
-                handler => this.RemoveHandler(routedEvent, handler));
-        }
-
+        /// <summary>
+        /// Removes a handler for the specified routed event.
+        /// </summary>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
         public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
         {
             Contract.Requires<NullReferenceException>(routedEvent != null);
@@ -80,12 +104,22 @@ namespace Perspex.Interactivity
             }
         }
 
-        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler) 
+        /// <summary>
+        /// Removes a handler for the specified routed event.
+        /// </summary>
+        /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
+        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
             where TEventArgs : RoutedEventArgs
         {
             this.RemoveHandler(routedEvent, (Delegate)handler);
         }
 
+        /// <summary>
+        /// Raises a routed event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         public void RaiseEvent(RoutedEventArgs e)
         {
             Contract.Requires<NullReferenceException>(e != null);
@@ -110,30 +144,42 @@ namespace Perspex.Interactivity
             }
         }
 
+        /// <summary>
+        /// Bubbles an event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         private void BubbleEvent(RoutedEventArgs e)
         {
             Contract.Requires<NullReferenceException>(e != null);
 
             e.Route = RoutingStrategies.Bubble;
 
-            foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>())
+            foreach (var target in this.GetBubbleEventRoute())
             {
-                target.RaiseEventImpl(e);
+                ((Interactive)target).RaiseEventImpl(e);
             }
         }
 
+        /// <summary>
+        /// Tunnels an event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         private void TunnelEvent(RoutedEventArgs e)
         {
             Contract.Requires<NullReferenceException>(e != null);
 
             e.Route = RoutingStrategies.Tunnel;
 
-            foreach (var target in this.GetSelfAndVisualAncestors().OfType<Interactive>().Reverse())
+            foreach (var target in this.GetTunnelEventRoute())
             {
-                target.RaiseEventImpl(e);
+                ((Interactive)target).RaiseEventImpl(e);
             }
         }
 
+        /// <summary>
+        /// Carries out the actual invocation of an event on this object.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         private void RaiseEventImpl(RoutedEventArgs e)
         {
             Contract.Requires<NullReferenceException>(e != null);
@@ -146,9 +192,7 @@ namespace Perspex.Interactivity
             {
                 foreach (var sub in subscriptions.ToList())
                 {
-                    bool correctRoute =
-                        (e.Route == RoutingStrategies.Direct && (sub.Routes & RoutingStrategies.Direct) != 0) ||
-                        (e.Route != RoutingStrategies.Direct && (e.Route & sub.Routes) != 0);
+                    bool correctRoute = (e.Route & sub.Routes) != 0;
                     bool notFinished = !e.Handled || sub.AlsoIfHandled;
 
                     if (correctRoute && notFinished)

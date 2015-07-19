@@ -302,7 +302,7 @@ namespace Perspex
         /// <remarks>The deflated rectangle size cannot be less than 0.</remarks>
         public Rect Deflate(double thickness)
         {
-            return this.Deflate(new Thickness(thickness));
+            return this.Deflate(new Thickness(thickness / 2));
         }
 
         /// <summary>

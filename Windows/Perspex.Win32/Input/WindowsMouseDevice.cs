@@ -26,12 +26,6 @@ namespace Perspex.Win32.Input
             set;
         }
 
-        public new Point Position
-        {
-            get { return base.Position; }
-            internal set { base.Position = value; }
-        }
-
         public override void Capture(IInputElement control)
         {
             base.Capture(control);
@@ -44,14 +38,6 @@ namespace Perspex.Win32.Input
             {
                 UnmanagedMethods.ReleaseCapture();
             }
-        }
-
-        protected override Point GetClientPosition()
-        {
-            UnmanagedMethods.POINT p;
-            UnmanagedMethods.GetCursorPos(out p);
-            UnmanagedMethods.ScreenToClient(this.CurrentWindow.Handle.Handle, ref p);
-            return new Point(p.X, p.Y);
         }
     }
 }

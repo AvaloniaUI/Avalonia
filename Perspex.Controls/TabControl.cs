@@ -7,13 +7,12 @@
 namespace Perspex.Controls
 {
     using System;
-    using System.Linq;
     using System.Reactive.Linq;
+    using Perspex.Animation;
     using Perspex.Collections;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
+    using Perspex.Input;
 
     public class TabControl : SelectingItemsControl, ILogical
     {
@@ -22,6 +21,9 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
+
+        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
+            Deck.TransitionProperty.AddOwner<TabControl>();
 
         private PerspexReadOnlyListView<ILogical> logicalChildren = 
             new PerspexReadOnlyListView<ILogical>();
@@ -33,14 +35,15 @@ namespace Perspex.Controls
 
         public TabControl()
         {
+            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
+
             this.GetObservable(SelectedItemProperty).Subscribe(x =>
             {
                 ContentControl c = x as ContentControl;
                 object content = (c != null) ? c.Content : c;
+                this.SetValue(SelectedTabProperty, x);
                 this.SetValue(SelectedContentProperty, content);
             });
-
-            this.BindTwoWay(SelectedTabProperty, this, SelectingItemsControl.SelectedItemProperty);
         }
 
         public object SelectedContent
@@ -55,15 +58,30 @@ namespace Perspex.Controls
             set { this.SetValue(SelectedTabProperty, value); }
         }
 
+        public IPageTransition Transition
+        {
+            get { return this.GetValue(TransitionProperty); }
+            set { this.SetValue(TransitionProperty, value); }
+        }
+
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.logicalChildren; }
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            // Don't handle keypresses.
+        }
+
+        Deck deck;
+
         protected override void OnTemplateApplied()
         {
-            var presenter = this.GetTemplateChild<ContentPresenter>("contentPresenter");
-            this.logicalChildren.Source = ((ILogical)presenter).LogicalChildren;
+            base.OnTemplateApplied();
+
+            this.deck = this.GetTemplateChild<Deck>("deck");
+            this.logicalChildren.Source = ((ILogical)deck).LogicalChildren;
         }
     }
 }

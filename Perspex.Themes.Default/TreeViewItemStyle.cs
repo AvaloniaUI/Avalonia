@@ -28,14 +28,14 @@ namespace Perspex.Themes.Default
                         new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeViewItem>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Template().Id("header"))
+                new Style(x => x.OfType<TreeViewItem>().Template().Name("header"))
                 {
                     Setters = new[]
                     {
                         new Setter(Border.PaddingProperty, new Thickness(2)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().Id("header"))
+                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().Name("header"))
                 {
                     Setters = new[]
                     {
@@ -89,7 +89,7 @@ namespace Perspex.Themes.Default
                             },
                             new Border
                             {
-                                Id = "header",
+                                Name = "header",
                                 [~Border.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
                                 Content = new ContentPresenter
@@ -101,7 +101,7 @@ namespace Perspex.Themes.Default
                     },
                     new ItemsPresenter
                     {
-                        Id = "itemsPresenter",
+                        Name = "itemsPresenter",
                         Margin = new Thickness(24, 0, 0, 0),
                         [~ItemsPresenter.ItemsProperty] = control[~TreeViewItem.ItemsProperty],
                         [~ItemsPresenter.ItemsPanelProperty] = control[~TreeViewItem.ItemsPanelProperty],

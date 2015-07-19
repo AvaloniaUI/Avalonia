@@ -35,7 +35,7 @@ namespace Perspex.Base.UnitTests
         {
             string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Bar", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux" }, names);
         }
 
         [Fact]
@@ -172,6 +172,42 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Of_Integer_On_Double_Property_Works()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue((PerspexProperty)Class2.FlobProperty, 4);
+
+            var value = target.GetValue(Class2.FlobProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
+        }
+
+        [Fact]
+        public void SetValue_Respects_Implicit_Conversions()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue((PerspexProperty)Class2.FlobProperty, new ImplictDouble(4));
+
+            var value = target.GetValue(Class2.FlobProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
+        }
+
+        [Fact]
+        public void SetValue_Can_Convert_To_Nullable()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue((PerspexProperty)Class2.FredProperty, 4.0);
+
+            var value = target.GetValue(Class2.FredProperty);
+            Assert.IsType<double>(value);
+            Assert.Equal(4, value);
+        }
+
+        [Fact]
         public void SetValue_Causes_Coercion()
         {
             Class1 target = new Class1();
@@ -182,6 +218,19 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(0, target.GetValue(Class1.QuxProperty));
             target.SetValue(Class1.QuxProperty, 15);
             Assert.Equal(10, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void SetValue_Respects_Priority()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.TemplatedParent);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Style);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "three", BindingPriority.StyleTrigger);
+            Assert.Equal("three", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
@@ -335,6 +384,17 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Bind_Throws_Exception_For_Unregistered_Property()
+        {
+            Class1 target = new Class1();
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Bind(Class2.BarProperty, Observable.Return("foo"));
+            });
+        }
+
+        [Fact]
         public void Bind_Sets_Subsequent_Value()
         {
             Class1 target = new Class1();
@@ -348,34 +408,6 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Binding_Doesnt_Set_Value_After_Clear()
-        {
-            Class1 target = new Class1();
-            Class1 source = new Class1();
-
-            source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
-            target.ClearValue(Class1.FooProperty);
-            source.SetValue(Class1.FooProperty, "newvalue");
-
-            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
-        public void Bind_Doesnt_Set_Value_After_Reset()
-        {
-            Class1 target = new Class1();
-            Class1 source = new Class1();
-
-            source.SetValue(Class1.FooProperty, "initial");
-            target.Bind(Class1.FooProperty, source.GetObservable(Class1.FooProperty));
-            target.SetValue(Class1.FooProperty, "reset");
-            source.SetValue(Class1.FooProperty, "newvalue");
-
-            Assert.Equal("reset", target.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
         public void Bind_Throws_Exception_For_Invalid_Value_Type()
         {
             Class1 target = new Class1();
@@ -384,6 +416,68 @@ namespace Perspex.Base.UnitTests
             {
                 target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
             });
+        }
+
+        [Fact]
+        public void Two_Way_Binding_Works()
+        {
+            Class1 obj1 = new Class1();
+            Class1 obj2 = new Class1();
+
+            obj1.SetValue(Class1.FooProperty, "initial1");
+            obj2.SetValue(Class1.FooProperty, "initial2");
+
+            obj1.Bind(Class1.FooProperty, obj2.GetObservable(Class1.FooProperty));
+            obj2.Bind(Class1.FooProperty, obj1.GetObservable(Class1.FooProperty));
+
+            Assert.Equal("initial2", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("initial2", obj2.GetValue(Class1.FooProperty));
+
+            obj1.SetValue(Class1.FooProperty, "first");
+
+            Assert.Equal("first", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("first", obj2.GetValue(Class1.FooProperty));
+
+            obj2.SetValue(Class1.FooProperty, "second");
+
+            Assert.Equal("second", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("second", obj2.GetValue(Class1.FooProperty));
+
+            obj1.SetValue(Class1.FooProperty, "third");
+
+            Assert.Equal("third", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("third", obj2.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Two_Way_Binding_With_Priority_Works()
+        {
+            Class1 obj1 = new Class1();
+            Class1 obj2 = new Class1();
+
+            obj1.SetValue(Class1.FooProperty, "initial1", BindingPriority.Style);
+            obj2.SetValue(Class1.FooProperty, "initial2", BindingPriority.Style);
+
+            obj1.Bind(Class1.FooProperty, obj2.GetObservable(Class1.FooProperty), BindingPriority.Style);
+            obj2.Bind(Class1.FooProperty, obj1.GetObservable(Class1.FooProperty), BindingPriority.Style);
+
+            Assert.Equal("initial2", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("initial2", obj2.GetValue(Class1.FooProperty));
+
+            obj1.SetValue(Class1.FooProperty, "first", BindingPriority.Style);
+
+            Assert.Equal("first", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("first", obj2.GetValue(Class1.FooProperty));
+
+            obj2.SetValue(Class1.FooProperty, "second", BindingPriority.Style);
+
+            Assert.Equal("second", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("second", obj2.GetValue(Class1.FooProperty));
+
+            obj1.SetValue(Class1.FooProperty, "third", BindingPriority.Style);
+
+            Assert.Equal("third", obj1.GetValue(Class1.FooProperty));
+            Assert.Equal("third", obj2.GetValue(Class1.FooProperty));
         }
 
         [Fact]
@@ -426,6 +520,24 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Local_Binding_Overwrites_Local_Value()
+        {
+            var target = new Class1();
+            var binding = new Subject<string>();
+
+            target.Bind(Class1.FooProperty, binding);
+
+            binding.OnNext("first");
+            Assert.Equal("first", target.GetValue(Class1.FooProperty));
+
+            target.SetValue(Class1.FooProperty, "second");
+            Assert.Equal("second", target.GetValue(Class1.FooProperty));
+
+            binding.OnNext("third");
+            Assert.Equal("third", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void StyleBinding_Overrides_Default_Value()
         {
             Class1 target = new Class1();
@@ -433,17 +545,6 @@ namespace Perspex.Base.UnitTests
             target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
 
             Assert.Equal("stylevalue", target.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
-        public void StyleBinding_Doesnt_Override_Local_Value()
-        {
-            Class1 target = new Class1();
-
-            target.SetValue(Class1.FooProperty, "newvalue");
-            target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
-
-            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
@@ -543,12 +644,12 @@ namespace Perspex.Base.UnitTests
             public static readonly PerspexProperty<int> QuxProperty =
                 PerspexProperty.Register<Class1, int>("Qux", coerce: Coerce);
 
-            public int MaxQux { get; set; }
-
             public Class1()
             {
                 this.MaxQux = 10;
             }
+
+            public int MaxQux { get; set; }
 
             private static int Coerce(PerspexObject instance, int value)
             {
@@ -561,6 +662,12 @@ namespace Perspex.Base.UnitTests
             public static readonly PerspexProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar", "bardefault");
 
+            public static readonly PerspexProperty<double> FlobProperty =
+                PerspexProperty.Register<Class2, double>("Flob");
+
+            public static readonly PerspexProperty<double?> FredProperty =
+                PerspexProperty.Register<Class2, double?>("Fred");
+
             static Class2()
             {
                 FooProperty.OverrideDefaultValue(typeof(Class2), "foooverride");
@@ -570,6 +677,21 @@ namespace Perspex.Base.UnitTests
             {
                 get { return (Class1)this.InheritanceParent; }
                 set { this.InheritanceParent = value; }
+            }
+        }
+
+        private class ImplictDouble
+        {
+            public ImplictDouble(double value)
+            {
+                this.Value = value;
+            }
+
+            public double Value { get; }
+
+            public static implicit operator double(ImplictDouble v)
+            {
+                return v.Value;
             }
         }
     }
