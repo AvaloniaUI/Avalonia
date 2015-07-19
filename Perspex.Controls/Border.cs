@@ -22,6 +22,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Border, double>("BorderThickness");
 
+        public static readonly PerspexProperty<float> CornerRadiusProperty =
+    PerspexProperty.Register<Border, float>("CornerRadius");
+
         static Border()
         {
             Control.AffectsRender(Border.BackgroundProperty);
@@ -46,21 +49,28 @@ namespace Perspex.Controls
             set { this.SetValue(BorderThicknessProperty, value); }
         }
 
+        public float CornerRadius
+        {
+            get { return this.GetValue(CornerRadiusProperty); }
+            set { this.SetValue(CornerRadiusProperty, value); }
+        }
+
         public override void Render(IDrawingContext context)
         {
             Brush background = this.Background;
             Brush borderBrush = this.BorderBrush;
             double borderThickness = this.BorderThickness;
+            float cornerRadius = this.CornerRadius;
             Rect rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness);
 
             if (background != null)
             {
-                context.FillRectange(background, rect);
+                context.FillRectange(background, rect, cornerRadius);
             }
 
             if (borderBrush != null && borderThickness > 0)
             {
-                context.DrawRectange(new Pen(borderBrush, borderThickness), rect);
+                context.DrawRectange(new Pen(borderBrush, borderThickness), rect, cornerRadius);
             }
         }
 

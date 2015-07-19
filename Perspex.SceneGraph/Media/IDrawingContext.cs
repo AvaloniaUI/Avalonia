@@ -39,7 +39,7 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        void DrawRectange(Pen pen, Rect rect);
+        void DrawRectange(Pen pen, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
         /// Draws text.
@@ -54,7 +54,7 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        void FillRectange(Brush brush, Rect rect);
+        void FillRectange(Brush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
         /// Pushes a clip rectange.
