@@ -8,37 +8,97 @@ namespace Perspex.Cairo.Media
 {
     using Perspex.Media;
     using Perspex.Platform;
+    using System.Collections.Generic;
+    using Cairo = global::Cairo;
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        public StreamGeometryContextImpl()
+        private StreamGeometryImpl impl;
+        public StreamGeometryContextImpl(StreamGeometryImpl imp)
         {
-            // TODO: Implement
+            this.impl = imp;
+            points = new List<Point>();
         }
+
+        private List<Point> points;
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            // TODO: Implement
+            points.Add(point);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            // TODO: Implement
+            this.impl.Operations.Enqueue(new BeginOp { Point = startPoint, IsFilled = isFilled });
+            points.Add(startPoint);
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-            // TODO: Implement
+            this.impl.Operations.Enqueue(new CurveToOp { Point = point1, Point2 = point2, Point3 = point3 });
+            points.Add(point1);
+            points.Add(point2);
+            points.Add(point3);
         }
 
         public void LineTo(Point point)
         {
-            // TODO: Implement
+            this.impl.Operations.Enqueue(new LineToOp { Point = point });
+            points.Add(point);
         }
 
         public void EndFigure(bool isClosed)
         {
-            // TODO: Implement
+            this.impl.Operations.Enqueue(new EndOp { IsClosed = isClosed });
+
+            double maxX = 0;
+            double maxY = 0;
+
+            foreach (var p in this.points)
+            {
+                maxX = System.Math.Max(p.X, maxX);
+                maxY = System.Math.Max(p.Y, maxY);
+            }
+            
+
+            var context = new Cairo.Context(new Cairo.ImageSurface(Cairo.Format.Argb32, (int)maxX, (int)maxY));
+            var clone = new Queue<GeometryOp>(this.impl.Operations);
+
+            context.LineWidth = 2;
+
+            while (clone.Count > 0)
+            {
+                var current = clone.Dequeue();
+
+                if (current is BeginOp)
+                {
+                    var bo = current as BeginOp;
+                    context.MoveTo(bo.Point.ToCairo());
+                }
+                else if (current is LineToOp)
+                {
+                    var lto = current as LineToOp;
+                    context.LineTo(lto.Point.ToCairo());
+                }
+                else if (current is EndOp)
+                {
+                    if (((EndOp)current).IsClosed)
+                        context.ClosePath();
+                }
+                else if (current is CurveToOp)
+                {
+                    var cto = current as CurveToOp;
+                    context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
+                }
+
+                context.StrokePreserve();
+                context.FillPreserve();
+            }
+
+            var test = context.StrokeExtents();
+            this.impl.Bounds = new Rect(test.X, test.Y, test.Width, test.Height);
+
+            context.Dispose();
         }
 
         public void Dispose()

@@ -13,6 +13,8 @@ namespace Perspex.Cairo.Media
     using Splat;
     using Cairo = global::Cairo;
     using IBitmap = Perspex.Media.Imaging.IBitmap;
+    using System.Collections.Generic;
+
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -114,7 +116,58 @@ namespace Perspex.Cairo.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
-            // TODO: Implement
+            var impl = geometry.PlatformImpl as StreamGeometryImpl;
+            var clone = new Queue<GeometryOp>(impl.Operations);
+
+            bool useFill = false;
+      
+            this.SetPen(pen);
+            this.SetBrush(brush);
+
+            using (var pop = this.PushTransform(impl.Transform))
+            {
+                while (clone.Count > 0)
+                {
+
+                    var current = clone.Dequeue();
+
+                    if (current is BeginOp)
+                    {
+                        var bo = current as BeginOp;
+                        this.context.MoveTo(bo.Point.ToCairo());
+
+                        useFill = bo.IsFilled;
+
+                        System.Diagnostics.Debug.WriteLine("Start");
+                    }
+                    else if (current is LineToOp)
+                    {
+                        var lto = current as LineToOp;
+                        this.context.LineTo(lto.Point.ToCairo());
+                    }
+                    else if (current is EndOp)
+                    {
+                        if (((EndOp)current).IsClosed)
+                            this.context.ClosePath();
+
+                        System.Diagnostics.Debug.WriteLine("End");
+                    }
+                    else if (current is CurveToOp)
+                    {
+                        var cto = current as CurveToOp;
+                        this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
+                    }
+                }
+                
+                if (useFill)
+                {
+                    this.context.FillPreserve();
+                }
+                else
+                {
+                    this.context.StrokePreserve();
+                }
+            }
         }
 
         /// <summary>
@@ -139,6 +192,7 @@ namespace Perspex.Cairo.Media
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             this.SetBrush(foreground);
+            
             this.context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(this.context, layout);
         }
