@@ -61,6 +61,8 @@
     <Compile Include="Presenters\DeckPresenter.cs" />
     <Compile Include="Primitives\AdornerDecorator.cs" />
     <Compile Include="Primitives\AdornerLayer.cs" />
+    <Compile Include="Primitives\RangeBase.cs" />
+    <Compile Include="ProgressBar.cs" />
     <Compile Include="RadioButton.cs" />
     <Compile Include="CheckBox.cs" />
     <Compile Include="ColumnDefinition.cs" />
