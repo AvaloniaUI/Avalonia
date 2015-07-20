@@ -17,9 +17,6 @@ using Perspex.Gtk;
 #endif
 using ReactiveUI;
 using Splat;
-using Serilog;
-using Serilog.Filters;
-using Serilog.Events;
 
 namespace TestApplication
 {
