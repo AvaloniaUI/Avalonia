@@ -125,13 +125,13 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void DrawRectange(Pen pen, Rect rect)
+        public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
             using (var brush = pen.Brush.ToDirect2D(this.renderTarget))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
-                this.renderTarget.DrawRectangle(
-                    rect.ToDirect2D(),
+                this.renderTarget.DrawRoundedRectangle(
+                    new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
                     brush,
                     (float)pen.Thickness,
                     d2dStroke);
@@ -162,16 +162,21 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect)
+        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = brush.ToDirect2D(this.renderTarget))
             {
-                this.renderTarget.FillRectangle(
-                    new RectangleF(
-                        (float)rect.X,
-                        (float)rect.Y,
-                        (float)rect.Width,
-                        (float)rect.Height),
+                this.renderTarget.FillRoundedRectangle(
+                    new RoundedRectangle
+                    {
+                        Rect = new RectangleF(
+                                (float)rect.X,
+                                (float)rect.Y,
+                                (float)rect.Width,
+                                (float)rect.Height),
+                        RadiusX = cornerRadius,
+                        RadiusY = cornerRadius
+                    },
                     b);
             }
         }
