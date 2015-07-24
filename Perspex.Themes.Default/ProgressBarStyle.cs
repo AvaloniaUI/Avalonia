@@ -1,4 +1,10 @@
-﻿namespace Perspex.Themes.Default
+﻿// -----------------------------------------------------------------------
+// <copyright file="ProgressBarStyle.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Themes.Default
 {
     using System.Linq;
     using System.Reactive.Linq;

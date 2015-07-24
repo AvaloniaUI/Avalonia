@@ -1,19 +1,20 @@
-﻿namespace Perspex.Controls
-{
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Primitives;
+﻿// -----------------------------------------------------------------------
+// <copyright file="ProgressBar.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
 
+namespace Perspex.Controls
+{
+    using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
+
+    /// <summary>
+    /// A control used to indicate the progress of an operation.
+    /// </summary>
     public class ProgressBar : RangeBase
     {
-        public static readonly PerspexProperty<bool> IsIndeterminateProperty =
-            PerspexProperty.Register<ProgressBar, bool>("IsIndeterminate", defaultValue: false);
-
-        public static readonly PerspexProperty<Orientation> OrientationProperty =
-            PerspexProperty.Register<ProgressBar, Orientation>("Orientation", defaultValue: Orientation.Horizontal);
-
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
             var size = base.ArrangeOverride(finalSize);
