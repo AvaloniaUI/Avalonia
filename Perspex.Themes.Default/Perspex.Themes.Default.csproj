@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="MenuItemStyle.cs" />
     <Compile Include="MenuStyle.cs" />
+    <Compile Include="ProgressBarStyle.cs" />
     <Compile Include="ToolTipStyle.cs" />
     <Compile Include="FocusAdornerStyle.cs" />
     <Compile Include="DropDownStyle.cs" />

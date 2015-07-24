@@ -11,17 +11,8 @@ namespace Perspex.Controls.Primitives
     using System.Reactive.Linq;
     using Perspex.Controls.Templates;
 
-    public class ScrollBar : TemplatedControl
+    public class ScrollBar : RangeBase
     {
-        public static readonly PerspexProperty<double> MinimumProperty =
-            PerspexProperty.Register<ScrollBar, double>("Minimum");
-
-        public static readonly PerspexProperty<double> MaximumProperty =
-            PerspexProperty.Register<ScrollBar, double>("Maximum", defaultValue: 100.0);
-
-        public static readonly PerspexProperty<double> ValueProperty =
-            PerspexProperty.Register<ScrollBar, double>("Value");
-
         public static readonly PerspexProperty<double> ViewportSizeProperty =
             PerspexProperty.Register<ScrollBar, double>("ViewportSize", defaultValue: double.NaN);
 
@@ -46,24 +37,6 @@ namespace Perspex.Controls.Primitives
                 this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
                 .Select(_ => this.CalculateIsVisible());
             this.Bind(ScrollBar.IsVisibleProperty, isVisible, BindingPriority.Style);
-        }
-
-        public double Minimum
-        {
-            get { return this.GetValue(MinimumProperty); }
-            set { this.SetValue(MinimumProperty, value); }
-        }
-
-        public double Maximum
-        {
-            get { return this.GetValue(MaximumProperty); }
-            set { this.SetValue(MaximumProperty, value); }
-        }
-
-        public double Value
-        {
-            get { return this.GetValue(ValueProperty); }
-            set { this.SetValue(ValueProperty, value); }
         }
 
         public double ViewportSize

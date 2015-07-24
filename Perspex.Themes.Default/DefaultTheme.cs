@@ -26,6 +26,7 @@ namespace Perspex.Themes.Default
             this.Add(new MenuStyle());
             this.Add(new MenuItemStyle());
             this.Add(new PopupRootStyle());
+            this.Add(new ProgressBarStyle());
             this.Add(new RadioButtonStyle());
             this.Add(new ScrollBarStyle());
             this.Add(new ScrollViewerStyle());
