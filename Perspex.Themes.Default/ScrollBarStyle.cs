@@ -64,7 +64,7 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 Background = Brushes.Silver,
-                Content = new Track
+                Child = new Track
                 {
                     Name = "track",
                     [~Track.MinimumProperty] = control[~ScrollBar.MinimumProperty],

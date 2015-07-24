@@ -56,7 +56,7 @@ namespace Perspex.Controls.UnitTests
                 Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
                 target.Content = "Foo";
                 target.Template = this.GetTemplate();
-                root.Content = target;
+                root.Child = target;
 
                 target.ApplyTemplate();
 
@@ -278,7 +278,7 @@ namespace Perspex.Controls.UnitTests
                 return new Border
                 {
                     Background = new Perspex.Media.SolidColorBrush(0xffffffff),
-                    Content = new ContentPresenter
+                    Child = new ContentPresenter
                     {
                         Name = "contentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],

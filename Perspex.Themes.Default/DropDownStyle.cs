@@ -50,7 +50,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~DropDown.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~DropDown.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~DropDown.BorderThicknessProperty],
-                Content = new Grid
+                Child = new Grid
                 {
                     Name = "container",
                     ColumnDefinitions = new ColumnDefinitions

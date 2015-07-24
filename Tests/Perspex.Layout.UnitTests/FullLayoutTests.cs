@@ -43,9 +43,9 @@ namespace Perspex.Layout.UnitTests
                     {
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
-                        Content = new Border
+                        Child = new Border
                         {
-                            Content = (textBlock = new TextBlock
+                            Child = (textBlock = new TextBlock
                             {
                                 Width = 400,
                                 Height = 400,

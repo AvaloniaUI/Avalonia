@@ -298,7 +298,7 @@ namespace Perspex.Controls.UnitTests
                 return new Border
                 {
                     Background = new Perspex.Media.SolidColorBrush(0xffffffff),
-                    Content = new ItemsPresenter
+                    Child = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],

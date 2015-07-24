@@ -77,7 +77,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~MenuItem.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~MenuItem.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~MenuItem.BorderThicknessProperty],
-                Content = new Panel
+                Child = new Panel
                 {
                     Children = new Controls
                     {
@@ -102,7 +102,7 @@ namespace Perspex.Themes.Default
                                 BorderBrush = new SolidColorBrush(0xff999999),
                                 BorderThickness = 1,
                                 Padding = new Thickness(2),
-                                Content = new ScrollViewer
+                                Child = new ScrollViewer
                                 {
                                     Content = new Panel
                                     {
@@ -148,7 +148,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~MenuItem.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~MenuItem.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~MenuItem.BorderThicknessProperty],
-                Content = new Grid
+                Child = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
                     {
@@ -210,7 +210,7 @@ namespace Perspex.Themes.Default
                                 BorderBrush = new SolidColorBrush(0xff999999),
                                 BorderThickness = 1,
                                 Padding = new Thickness(2),
-                                Content = new ScrollViewer
+                                Child = new ScrollViewer
                                 {
                                     Content = new Panel
                                     {

@@ -26,7 +26,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Ellipse
+                Child = new Ellipse
                 {
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,

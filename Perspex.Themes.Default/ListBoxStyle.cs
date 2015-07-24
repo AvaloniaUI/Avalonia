@@ -38,7 +38,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~ListBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~ListBox.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ListBox.BorderThicknessProperty],
-                Content = new ScrollViewer
+                Child = new ScrollViewer
                 {
                     Content = new ItemsPresenter
                     {

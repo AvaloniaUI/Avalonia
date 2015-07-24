@@ -90,7 +90,7 @@ namespace Perspex.Themes.Default
             {
                 Name = "border",
                 Padding = new Thickness(3),
-                Content = new ContentPresenter
+                Child = new ContentPresenter
                 {
                     Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~Button.ContentProperty],

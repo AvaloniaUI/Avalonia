@@ -64,7 +64,7 @@ namespace Perspex.Diagnostics
         {
             this.DataTemplates.Add(new ViewLocator<ReactiveObject>());
 
-            this.Content = new Grid
+            this.Child = new Grid
             {
                 RowDefinitions = new RowDefinitions("*,Auto"),
                 Children = new Controls

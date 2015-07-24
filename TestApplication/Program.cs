@@ -580,7 +580,7 @@ namespace TestApplication
                             VerticalAlignment = VerticalAlignment.Center,
                             Background = Brushes.Crimson,
                             RenderTransform = new RotateTransform(),
-                            Content = new TextBox
+                            Child = new TextBox
                             {
                                 Background = Brushes.White,
                                 Text = "Hello!",
@@ -595,7 +595,7 @@ namespace TestApplication
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Background = Brushes.Coral,
-                            Content = new Image
+                            Child = new Image
                             {
                                 Source = new Bitmap("github_icon.png"),
                                 HorizontalAlignment = HorizontalAlignment.Center,

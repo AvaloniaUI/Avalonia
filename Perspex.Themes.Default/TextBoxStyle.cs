@@ -49,7 +49,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],
-                Content = new ScrollViewer
+                Child = new ScrollViewer
                 {
                     [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
                     [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],

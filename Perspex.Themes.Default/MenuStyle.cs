@@ -36,7 +36,7 @@ namespace Perspex.Themes.Default
                 [~Border.BorderBrushProperty] = control[~Menu.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~Menu.BorderThicknessProperty],
                 [~Border.PaddingProperty] = control[~Menu.PaddingProperty],
-                Content = new ItemsPresenter
+                Child = new ItemsPresenter
                 {
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],

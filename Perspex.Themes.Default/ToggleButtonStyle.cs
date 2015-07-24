@@ -89,7 +89,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~ToggleButton.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~ToggleButton.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ToggleButton.BorderThicknessProperty],
-                Content = new ContentPresenter
+                Child = new ContentPresenter
                 {
                     Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~ToggleButton.ContentProperty],

@@ -37,7 +37,7 @@ namespace Perspex.Controls.UnitTests
 
                 Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
 
-                root.Content = target;
+                root.Child = target;
 
                 styler.Verify(x => x.ApplyStyles(target), Times.Once());
             }
@@ -56,12 +56,12 @@ namespace Perspex.Controls.UnitTests
 
                 Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
 
-                parent.Content = child;
-                child.Content = grandchild;
+                parent.Child = child;
+                child.Child = grandchild;
 
                 styler.Verify(x => x.ApplyStyles(It.IsAny<IStyleable>()), Times.Never());
 
-                root.Content = parent;
+                root.Child = parent;
 
                 styler.Verify(x => x.ApplyStyles(parent), Times.Once());
                 styler.Verify(x => x.ApplyStyles(child), Times.Once());

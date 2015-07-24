@@ -44,7 +44,7 @@ namespace Perspex.Themes.Default
                 [~Border.BackgroundProperty] = control[~ListBoxItem.BackgroundProperty],
                 [~Border.BorderBrushProperty] = control[~ListBoxItem.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ListBoxItem.BorderThicknessProperty],
-                Content = new ContentPresenter
+                Child = new ContentPresenter
                 {
                     [~ContentPresenter.ContentProperty] = control[~ListBoxItem.ContentProperty],
                 },

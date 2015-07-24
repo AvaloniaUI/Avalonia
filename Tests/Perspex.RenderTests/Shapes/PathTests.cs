@@ -26,7 +26,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             {
                 Width = 200,
                 Height = 200,
-                Content = new Path
+                Child = new Path
                 {
                     Fill = Brushes.Gray,
                     Stroke = Brushes.Red,
@@ -48,7 +48,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             {
                 Width = 200,
                 Height = 200,
-                Content = new Path
+                Child = new Path
                 {
                     Fill = Brushes.Gray,
                     Stroke = Brushes.Red,
@@ -71,7 +71,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             {
                 Width = 200,
                 Height = 200,
-                Content = new Path
+                Child = new Path
                 {
                     Fill = Brushes.Gray,
                     Stroke = Brushes.Red,
@@ -94,13 +94,13 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             {
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Red,
                     BorderThickness = 1,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Content = new Path
+                    Child = new Path
                     {
                         Fill = Brushes.Black,
                         Stroke = Brushes.Black,

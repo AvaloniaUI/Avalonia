@@ -76,7 +76,7 @@ namespace Perspex.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Control content = this.Content;
+            Control content = this.Child;
 
             if (content != null)
             {
@@ -89,7 +89,7 @@ namespace Perspex.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = this.Content;
+            var content = this.Child;
             var padding = this.Padding + new Thickness(this.BorderThickness);
 
             if (content != null)

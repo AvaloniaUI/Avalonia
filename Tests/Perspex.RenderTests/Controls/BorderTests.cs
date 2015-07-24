@@ -26,7 +26,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 1,
@@ -45,7 +45,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
@@ -64,7 +64,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     Background = Brushes.Red,
                 }
@@ -82,11 +82,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new Border
+                    Child = new Border
                     {
                         Background = Brushes.Red,
                     }
@@ -105,12 +105,12 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
                     Padding = new Thickness(2),
-                    Content = new Border
+                    Child = new Border
                     {
                         Background = Brushes.Red,
                     }
@@ -129,11 +129,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new Border
+                    Child = new Border
                     {
                         Background = Brushes.Red,
                         Margin = new Thickness(2),
@@ -153,11 +153,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -180,11 +180,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -207,11 +207,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -234,11 +234,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -261,11 +261,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -288,11 +288,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -315,11 +315,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -342,11 +342,11 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     BorderBrush = Brushes.Black,
                     BorderThickness = 2,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
@@ -369,14 +369,14 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
-                Content = new Border
+                Child = new Border
                 {
                     Background = Brushes.Coral,
                     Width = 100,
                     Height = 100,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Content = new Border
+                    Child = new Border
                     {
                         Margin = new Thickness(25),
                         Background = Brushes.Chocolate,

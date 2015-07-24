@@ -40,7 +40,7 @@ namespace Perspex.Themes.Default
                 [~Border.BorderBrushProperty] = control[~ToolTip.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ToolTip.BorderThicknessProperty],
                 [~Border.PaddingProperty] = control[~ToolTip.PaddingProperty],
-                Content = new ContentPresenter
+                Child = new ContentPresenter
                 {
                     Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~ToolTip.ContentProperty],

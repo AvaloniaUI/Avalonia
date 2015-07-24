@@ -15,8 +15,8 @@ namespace Perspex.Controls
 
     public class Decorator : Control, IVisual, ILogical
     {
-        public static readonly PerspexProperty<Control> ContentProperty =
-            PerspexProperty.Register<Decorator, Control>("Content");
+        public static readonly PerspexProperty<Control> ChildProperty =
+            PerspexProperty.Register<Decorator, Control>("Child");
 
         public static readonly PerspexProperty<Thickness> PaddingProperty =
             PerspexProperty.Register<Decorator, Thickness>("Padding");
@@ -25,7 +25,7 @@ namespace Perspex.Controls
 
         public Decorator()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(x =>
+            this.GetObservableWithHistory(ChildProperty).Subscribe(x =>
             {
                 if (x.Item1 != null)
                 {
@@ -43,10 +43,10 @@ namespace Perspex.Controls
             });
         }
 
-        public Control Content
+        public Control Child
         {
-            get { return this.GetValue(ContentProperty); }
-            set { this.SetValue(ContentProperty, value); }
+            get { return this.GetValue(ChildProperty); }
+            set { this.SetValue(ChildProperty, value); }
         }
 
         public Thickness Padding
@@ -62,7 +62,7 @@ namespace Perspex.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Control content = this.Content;
+            Control content = this.Child;
 
             if (content != null)
             {
@@ -74,7 +74,7 @@ namespace Perspex.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = this.Content;
+            var content = this.Child;
             var padding = this.Padding;
 
             if (content != null)

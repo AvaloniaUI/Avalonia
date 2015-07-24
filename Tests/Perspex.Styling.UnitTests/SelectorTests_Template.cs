@@ -117,7 +117,7 @@ namespace Perspex.Styling.UnitTests
                 new Border
                 {
                     [Border.TemplatedParentProperty] = templatedControl.Object,
-                    Content = new TextBlock
+                    Child = new TextBlock
                     {
                         [Border.TemplatedParentProperty] = templatedControl.Object,
                     },

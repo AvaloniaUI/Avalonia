@@ -50,7 +50,7 @@ namespace Perspex.Themes.Default
             Border result = new Border
             {
                 [~Border.BackgroundProperty] = control[~CheckBox.BackgroundProperty],
-                Content = new Grid
+                Child = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
                     {

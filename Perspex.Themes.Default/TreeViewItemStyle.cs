@@ -92,7 +92,7 @@ namespace Perspex.Themes.Default
                                 Name = "header",
                                 [~Border.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
-                                Content = new ContentPresenter
+                                Child = new ContentPresenter
                                 {
                                     [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
                                 },
@@ -119,7 +119,7 @@ namespace Perspex.Themes.Default
                 Height = 14,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Content = new Path
+                Child = new Path
                 {
                     Fill = Brushes.Black,
                     HorizontalAlignment = HorizontalAlignment.Center,

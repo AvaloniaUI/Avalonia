@@ -36,9 +36,9 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 [~Border.BackgroundProperty] = control[~Window.BackgroundProperty],
-                Content = new AdornerDecorator
+                Child = new AdornerDecorator
                 {
-                    Content = new ContentPresenter
+                    Child = new ContentPresenter
                     {
                         Name = "contentPresenter",
                         [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],

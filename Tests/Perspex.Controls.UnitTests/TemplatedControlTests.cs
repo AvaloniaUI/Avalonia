@@ -155,7 +155,7 @@ namespace Perspex.Controls.UnitTests
 
                 var root = new TestRoot
                 {
-                    Content = (target = new TestTemplatedControl
+                    Child = (target = new TestTemplatedControl
                     {
                         Template = new ControlTemplate(_ =>
                         {
@@ -247,7 +247,7 @@ namespace Perspex.Controls.UnitTests
                         {
                             return new Border
                             {
-                                Content = new ContentPresenter
+                                Child = new ContentPresenter
                                 {
                                     [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
                                 }

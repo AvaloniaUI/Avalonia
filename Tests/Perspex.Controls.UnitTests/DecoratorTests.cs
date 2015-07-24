@@ -18,7 +18,7 @@ namespace Perspex.Controls.UnitTests
             var decorator = new Decorator();
             var child = new Control();
 
-            decorator.Content = child;
+            decorator.Child = child;
 
             Assert.Equal(child.Parent, decorator);
             Assert.Equal(((ILogical)child).LogicalParent, decorator);
@@ -30,8 +30,8 @@ namespace Perspex.Controls.UnitTests
             var decorator = new Decorator();
             var child = new Control();
 
-            decorator.Content = child;
-            decorator.Content = null;
+            decorator.Child = child;
+            decorator.Child = null;
 
             Assert.Null(child.Parent);
             Assert.Null(((ILogical)child).LogicalParent);
@@ -43,7 +43,7 @@ namespace Perspex.Controls.UnitTests
             var decorator = new Decorator();
             var child = new Control();
 
-            decorator.Content = child;
+            decorator.Child = child;
 
             Assert.Equal(new[] { child }, ((ILogical)decorator).LogicalChildren.ToList());
         }
@@ -54,8 +54,8 @@ namespace Perspex.Controls.UnitTests
             var decorator = new Decorator();
             var child = new Control();
 
-            decorator.Content = child;
-            decorator.Content = null;
+            decorator.Child = child;
+            decorator.Child = null;
 
             Assert.Equal(new ILogical[0], ((ILogical)decorator).LogicalChildren.ToList());
         }
@@ -70,7 +70,7 @@ namespace Perspex.Controls.UnitTests
             ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => 
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            decorator.Content = child;
+            decorator.Child = child;
 
             Assert.True(called);
         }
@@ -82,12 +82,12 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            decorator.Content = child;
+            decorator.Child = child;
 
             ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
 
-            decorator.Content = null;
+            decorator.Child = null;
 
             Assert.True(called);
         }
@@ -100,12 +100,12 @@ namespace Perspex.Controls.UnitTests
             var child2 = new Control();
             var called = false;
 
-            decorator.Content = child1;
+            decorator.Child = child1;
 
             ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Replace;
 
-            decorator.Content = child2;
+            decorator.Child = child2;
 
             Assert.True(called);
         }

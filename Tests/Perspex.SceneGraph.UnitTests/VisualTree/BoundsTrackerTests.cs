@@ -25,10 +25,10 @@ namespace Perspex.SceneGraph.UnitTests.VisualTree
             var tree = new Decorator
             {
                 Padding = new Thickness(10),
-                Content = new Decorator
+                Child = new Decorator
                 {
                     Padding = new Thickness(5),
-                    Content = (control = new Rectangle
+                    Child = (control = new Rectangle
                     {
                         Width = 15,
                         Height = 15,

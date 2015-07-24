@@ -31,11 +31,11 @@ namespace Perspex.Controls.Templates.UnitTests
             var border5 = new Border { Name = "border5", TemplatedParent = null };
 
             target.AddVisualChild(border1);
-            border1.Content = inner;
+            border1.Child = inner;
             inner.AddVisualChild(border2);
             inner.AddVisualChild(border3);
-            border3.Content = border4;
-            border4.Content = border5;
+            border3.Child = border4;
+            border4.Child = border5;
 
             var result = target.GetTemplateChildren().Select(x => x.Name).ToArray();
 
