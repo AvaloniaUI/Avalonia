@@ -29,7 +29,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, INamed, ILogical, IStyleable, IStyleHost
+    public class Control : InputElement, IControl
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -46,8 +46,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Control> ParentProperty =
-            PerspexProperty.Register<Control, Control>(nameof(Parent));
+        public static readonly PerspexProperty<IControl> ParentProperty =
+            PerspexProperty.Register<Control, IControl>(nameof(Parent));
 
         /// <summary>
         /// Defines the <see cref="Tag"/> property.
@@ -228,7 +228,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        public Control Parent
+        public IControl Parent
         {
             get { return this.GetValue(ParentProperty); }
             internal set { this.SetValue(ParentProperty, value); }

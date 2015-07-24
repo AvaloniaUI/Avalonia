@@ -43,7 +43,7 @@ namespace Perspex.Controls
         public PopupRoot(IDependencyResolver dependencyResolver)
             : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
         {
-            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = x);
+            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = (PerspexObject)x);
         }
 
         /// <summary>

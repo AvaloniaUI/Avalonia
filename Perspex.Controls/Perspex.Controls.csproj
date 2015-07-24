@@ -36,6 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="IControl.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Parsers\GridLengthsParser.cs" />
     <Compile Include="Primitives\AccessText.cs" />
