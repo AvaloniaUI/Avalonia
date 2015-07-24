@@ -15,17 +15,33 @@ namespace Perspex.Controls
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
+    /// <remarks>
+    /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
+    /// collection. All children are layed out to fill the panel.
+    /// </remarks>
     public class Panel : Control, ILogical, IItemsPanel
     {
         private Controls children;
 
         private ILogical childLogicalParent;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Panel"/> class.
+        /// </summary>
         public Panel()
         {
             this.childLogicalParent = this;
         }
 
+        /// <summary>
+        /// Gets or sets the children of the <see cref="Panel"/>.
+        /// </summary>
+        /// <remarks>
+        /// Even though this property can be set, the setter is only intended for use in object
+        /// initializers. Assigning to this property does not change the underlying collection,
+        /// it simply clears the existing collection and addds the contents of the assigned
+        /// collection.
+        /// </remarks>
         public Controls Children
         {
             get
@@ -65,11 +81,15 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the logical children of the control.
+        /// </summary>
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
             get { return this.children; }
         }
 
+        /// <inheritdoc/>
         ILogical IItemsPanel.ChildLogicalParent
         {
             get
@@ -84,14 +104,20 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void OnChildrenAdded(IEnumerable<Control> child)
         {
         }
 
+        /// <inheritdoc/>
         protected virtual void OnChildrenRemoved(IEnumerable<Control> child)
         {
         }
 
+        /// <summary>
+        /// Clears <see cref="IControl.Parent"/> for the specified controls.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
         private void ClearLogicalParent(IEnumerable<Control> controls)
         {
             foreach (var control in controls)
@@ -100,6 +126,10 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Sets <see cref="IControl.Parent"/> for the specified controls.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
         private void SetLogicalParent(IEnumerable<Control> controls)
         {
             foreach (var control in controls)
@@ -108,6 +138,11 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="Children"/> collection changes.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             List<Control> controls;
