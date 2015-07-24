@@ -37,7 +37,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="IControl.cs" />
-    <Compile Include="INameScope.cs" />
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Parsers\GridLengthsParser.cs" />

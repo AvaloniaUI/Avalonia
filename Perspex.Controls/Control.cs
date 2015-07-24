@@ -321,39 +321,6 @@ namespace Perspex.Controls
             }
 
             this.SetValue(ParentProperty, parent);
-
-            if (parent != null)
-            {
-                var nameScope = parent.GetSelfAndLogicalAncestors()
-                    .OfType<INameScope>()
-                    .FirstOrDefault();
-
-                if (nameScope != null)
-                {
-                    this.RegisterName(nameScope);
-
-                    foreach (var descendent in this.GetLogicalDescendents().OfType<Control>())
-                    {
-                        descendent.RegisterName(nameScope);
-                    }
-                }
-            }
-            else if (old != null)
-            {
-                var nameScope = old.GetSelfAndLogicalAncestors()
-                    .OfType<INameScope>()
-                    .FirstOrDefault();
-
-                if (nameScope != null)
-                {
-                    this.UnregisterName(nameScope);
-
-                    foreach (var descendent in this.GetLogicalDescendents().OfType<Control>())
-                    {
-                        descendent.UnregisterName(nameScope);
-                    }
-                }
-            }
         }
 
         [Obsolete("Obsolete this: use properties instead")]
@@ -442,30 +409,6 @@ namespace Perspex.Controls
 
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
-        }
-
-        /// <summary>
-        /// Registers the control with the specified name scope.
-        /// </summary>
-        /// <param name="nameScope">The name scope.</param>
-        private void RegisterName(INameScope nameScope)
-        {
-            if (!string.IsNullOrWhiteSpace(this.Name))
-            {
-                nameScope.RegisterName(this.Name, this);
-            }
-        }
-
-        /// <summary>
-        /// Unregisters the control with the specified name scope.
-        /// </summary>
-        /// <param name="nameScope">The name scope.</param>
-        private void UnregisterName(INameScope nameScope)
-        {
-            if (!string.IsNullOrWhiteSpace(this.Name))
-            {
-                nameScope.UnregisterName(this.Name);
-            }
         }
     }
 }
