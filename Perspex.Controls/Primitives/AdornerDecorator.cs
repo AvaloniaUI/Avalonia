@@ -11,7 +11,7 @@ namespace Perspex.Controls.Primitives
         public AdornerDecorator()
         {
             this.AdornerLayer = new AdornerLayer();
-            this.AdornerLayer.Parent = this;
+            ((ISetLogicalParent)this.AdornerLayer).SetParent(this);
             this.AdornerLayer.ZIndex = int.MaxValue;
             this.AddVisualChild(this.AdornerLayer);
         }

@@ -122,7 +122,7 @@ namespace Perspex.Controls
         {
             foreach (var control in controls)
             {
-                control.Parent = null;
+                ((ISetLogicalParent)control).SetParent(null);
             }
         }
 
@@ -132,9 +132,11 @@ namespace Perspex.Controls
         /// <param name="controls">The controls.</param>
         private void SetLogicalParent(IEnumerable<Control> controls)
         {
+            var parent = this.childLogicalParent as Control;
+
             foreach (var control in controls)
             {
-                control.Parent = this.childLogicalParent as Control;
+                ((ISetLogicalParent)control).SetParent(parent);
             }
         }
 

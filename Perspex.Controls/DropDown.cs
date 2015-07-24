@@ -76,7 +76,6 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             var container = this.GetTemplateChild<Panel>("container");
-            ((IItemsPanel)container).ChildLogicalParent = this;
             this.logicalChildren.Source = ((ILogical)container).LogicalChildren;
         }
 
@@ -87,12 +86,12 @@ namespace Perspex.Controls
 
             if (control1 != null)
             {
-                control1.Parent = null;
+                ((ISetLogicalParent)control1).SetParent(null);
             }
 
             if (control2 != null)
             {
-                control2.Parent = this;
+                ((ISetLogicalParent)control2).SetParent(this);
             }
         }
     }

@@ -102,14 +102,14 @@ namespace Perspex.Controls
 
             if (oldChild != null)
             {
-                oldChild.Parent = null;
+                ((ISetLogicalParent)oldChild).SetParent(null);
                 this.RemoveVisualChild(oldChild);
             }
 
             if (newChild != null)
             {
                 this.AddVisualChild(newChild);
-                newChild.Parent = this;
+                ((ISetLogicalParent)newChild).SetParent(this);
             }
 
             this.logicalChild.SingleItem = newChild;

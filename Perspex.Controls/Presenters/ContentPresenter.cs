@@ -87,7 +87,11 @@ namespace Perspex.Controls.Presenters
             if (content != null)
             {
                 result = this.MaterializeDataTemplate(content);
-                result.Parent = this.TemplatedParent as Control;
+
+                if (result.Parent == null)
+                {
+                    ((ISetLogicalParent)result).SetParent(this.TemplatedParent as Control);
+                }
 
                 var templatedParent = this.TemplatedParent as TemplatedControl;
 

@@ -7,11 +7,13 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Collections;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Interactivity;
+    using Perspex.LogicalTree;
     using Perspex.Rendering;
     using Perspex.Styling;
     using Splat;
@@ -29,7 +31,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl
+    public class Control : InputElement, IControl, ISetLogicalParent
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -231,7 +233,6 @@ namespace Perspex.Controls
         public IControl Parent
         {
             get { return this.GetValue(ParentProperty); }
-            internal set { this.SetValue(ParentProperty, value); }
         }
 
         /// <summary>
@@ -304,6 +305,55 @@ namespace Perspex.Controls
             };
 
             this.RaiseEvent(ev);
+        }
+
+        /// <summary>
+        /// Sets the control's logical parent.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        void ISetLogicalParent.SetParent(IControl parent)
+        {
+            var old = this.Parent;
+
+            if (old != null && parent != null)
+            {
+                throw new InvalidOperationException("The Control already has a parent.");
+            }
+
+            this.SetValue(ParentProperty, parent);
+
+            if (parent != null)
+            {
+                var nameScope = parent.GetSelfAndLogicalAncestors()
+                    .OfType<INameScope>()
+                    .FirstOrDefault();
+
+                if (nameScope != null)
+                {
+                    this.RegisterName(nameScope);
+
+                    foreach (var descendent in this.GetLogicalDescendents().OfType<Control>())
+                    {
+                        descendent.RegisterName(nameScope);
+                    }
+                }
+            }
+            else if (old != null)
+            {
+                var nameScope = old.GetSelfAndLogicalAncestors()
+                    .OfType<INameScope>()
+                    .FirstOrDefault();
+
+                if (nameScope != null)
+                {
+                    this.UnregisterName(nameScope);
+
+                    foreach (var descendent in this.GetLogicalDescendents().OfType<Control>())
+                    {
+                        descendent.UnregisterName(nameScope);
+                    }
+                }
+            }
         }
 
         [Obsolete("Obsolete this: use properties instead")]
@@ -392,6 +442,30 @@ namespace Perspex.Controls
 
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
+        }
+
+        /// <summary>
+        /// Registers the control with the specified name scope.
+        /// </summary>
+        /// <param name="nameScope">The name scope.</param>
+        private void RegisterName(INameScope nameScope)
+        {
+            if (!string.IsNullOrWhiteSpace(this.Name))
+            {
+                nameScope.RegisterName(this.Name, this);
+            }
+        }
+
+        /// <summary>
+        /// Unregisters the control with the specified name scope.
+        /// </summary>
+        /// <param name="nameScope">The name scope.</param>
+        private void UnregisterName(INameScope nameScope)
+        {
+            if (!string.IsNullOrWhiteSpace(this.Name))
+            {
+                nameScope.UnregisterName(this.Name);
+            }
         }
     }
 }

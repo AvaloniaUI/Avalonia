@@ -140,7 +140,7 @@ namespace Perspex.Controls.Primitives
                     var child = this.Template.Build(this);
                     this.SetTemplatedParent(child);
                     this.AddVisualChild(child);
-                    child.Parent = this;
+                    ((ISetLogicalParent)child).SetParent(this);
 
                     foreach (var i in this.GetTemplateChildren())
                     {

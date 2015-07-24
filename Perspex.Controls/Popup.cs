@@ -185,7 +185,6 @@ namespace Perspex.Controls
             {
                 this.popupRoot = new PopupRoot(this.DependencyResolver)
                 {
-                    Parent = this,
                     [~PopupRoot.ContentProperty] = this[~ChildProperty],
                     [~PopupRoot.WidthProperty] = this[~WidthProperty],
                     [~PopupRoot.HeightProperty] = this[~HeightProperty],
@@ -194,6 +193,8 @@ namespace Perspex.Controls
                     [~PopupRoot.MinHeightProperty] = this[~MinHeightProperty],
                     [~PopupRoot.MaxHeightProperty] = this[~MaxHeightProperty],
                 };
+
+                ((ISetLogicalParent)this.popupRoot).SetParent(this);
             }
 
             this.popupRoot.SetPosition(this.GetPosition());
@@ -279,12 +280,12 @@ namespace Perspex.Controls
         {
             if (values.Item1 != null)
             {
-                values.Item1.Parent = null;
+                ((ISetLogicalParent)values.Item1).SetParent(null);
             }
 
             if (values.Item2 != null)
             {
-                values.Item2.Parent = this;
+                ((ISetLogicalParent)values.Item2).SetParent(this);
             }
 
             this.logicalChild.SingleItem = values.Item2;
