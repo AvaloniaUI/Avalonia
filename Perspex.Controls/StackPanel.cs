@@ -1,41 +1,80 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="StackPanel.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Controls
 {
     using System;
-    using System.Linq;
     using Perspex.Input;
 
+    /// <summary>
+    /// Defines vertical or horizontal orientation.
+    /// </summary>
     public enum Orientation
     {
+        /// <summary>
+        /// Vertical orientation.
+        /// </summary>
         Vertical,
+
+        /// <summary>
+        /// Horizontal orientation.
+        /// </summary>
         Horizontal,
     }
 
+    /// <summary>
+    /// A panel which lays out its children horizontally or vertically.
+    /// </summary>
     public class StackPanel : Panel, INavigablePanel
     {
+        /// <summary>
+        /// Defines the <see cref="Gap"/> property.
+        /// </summary>
         public static readonly PerspexProperty<double> GapProperty =
-            PerspexProperty.Register<StackPanel, double>("Gap");
+            PerspexProperty.Register<StackPanel, double>(nameof(Gap));
 
+        /// <summary>
+        /// Defines the <see cref="Orientation"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Orientation> OrientationProperty =
-            PerspexProperty.Register<StackPanel, Orientation>("Orientation");
+            PerspexProperty.Register<StackPanel, Orientation>(nameof(Orientation));
 
+        /// <summary>
+        /// Initializes static members of the <see cref="StackPanel"/> class.
+        /// </summary>
+        static StackPanel()
+        {
+            AffectsMeasure(GapProperty);
+            AffectsMeasure(OrientationProperty);
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the gap to place between child controls.
+        /// </summary>
         public double Gap
         {
             get { return this.GetValue(GapProperty); }
             set { this.SetValue(GapProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the orientation in which child controls will be layed out.
+        /// </summary>
         public Orientation Orientation
         {
             get { return this.GetValue(OrientationProperty); }
             set { this.SetValue(OrientationProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
         Control INavigablePanel.GetControl(FocusNavigationDirection direction, Control from)
         {
             var horiz = this.Orientation == Orientation.Horizontal;
@@ -79,6 +118,11 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Measures the control.
+        /// </summary>
+        /// <param name="availableSize">The available size.</param>
+        /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
             double childAvailableWidth = double.PositiveInfinity;
@@ -118,7 +162,7 @@ namespace Perspex.Controls
                 child.Measure(new Size(childAvailableWidth, childAvailableHeight));
                 Size size = child.DesiredSize;
 
-                if (Orientation == Orientation.Vertical)
+                if (this.Orientation == Orientation.Vertical)
                 {
                     measuredHeight += size.Height + gap;
                     measuredWidth = Math.Max(measuredWidth, size.Width);
@@ -133,13 +177,18 @@ namespace Perspex.Controls
             return new Size(measuredWidth, measuredHeight);
         }
 
+        /// <summary>
+        /// Arranges the control's children.
+        /// </summary>
+        /// <param name="finalSize">The size allocated to the control.</param>
+        /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
             double gap = this.Gap;
 
-            if (Orientation == Orientation.Vertical)
+            if (this.Orientation == Orientation.Vertical)
             {
                 arrangedHeight = 0;
             }
@@ -153,7 +202,7 @@ namespace Perspex.Controls
                 double childWidth = child.DesiredSize.Width;
                 double childHeight = child.DesiredSize.Height;
 
-                if (Orientation == Orientation.Vertical)
+                if (this.Orientation == Orientation.Vertical)
                 {
                     double width = Math.Max(childWidth, arrangedWidth);
                     Rect childFinal = new Rect(0, arrangedHeight, width, childHeight);
@@ -171,7 +220,7 @@ namespace Perspex.Controls
                 }
             }
 
-            if (Orientation == Orientation.Vertical)
+            if (this.Orientation == Orientation.Vertical)
             {
                 arrangedHeight = Math.Max(arrangedHeight - gap, finalSize.Height);
             }
