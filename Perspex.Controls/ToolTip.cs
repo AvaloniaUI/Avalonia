@@ -112,12 +112,13 @@ namespace Perspex.Controls
                     {
                         Content = new ToolTip(),
                     };
+
+                    ((ISetLogicalParent)popup).SetParent(control);
                 }
 
                 var cp = MouseDevice.Instance.GetPosition(control);
                 var position = control.PointToScreen(cp) + new Vector(0, 22);
 
-                ((ISetLogicalParent)popup).SetParent(control);
                 ((ToolTip)popup.Content).Content = GetTip(control);
                 popup.SetPosition(position);
                 popup.Show();
