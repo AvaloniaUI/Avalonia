@@ -36,7 +36,7 @@
                 [~Border.BorderBrushProperty] = control[~ProgressBar.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~ProgressBar.BorderThicknessProperty],
 
-                Content = new Grid
+                Child = new Grid
                 {
                     MinHeight = 14,
                     MinWidth = 200,
@@ -56,8 +56,7 @@
                             BorderThickness = 1,
                             HorizontalAlignment = HorizontalAlignment.Left,
                             [~Border.BackgroundProperty] = control[~ProgressBar.ForegroundProperty],
-                           
-                            Content = new Grid
+                            Child = new Grid
                             {
                                 Name = "Animation",
                                 ClipToBounds = true,

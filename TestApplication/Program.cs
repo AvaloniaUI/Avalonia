@@ -448,6 +448,10 @@ namespace TestApplication
                                 [!Image.HeightProperty] = size[!ScrollBar.ValueProperty],
                             },
                         },
+                        new ProgressBar
+                        {
+                            Value = 50
+                        }
                     }
                 },
             };
