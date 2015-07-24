@@ -647,16 +647,16 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Forces the specified property to be re-coerced.
+        /// Forces the specified property to be revalidated.
         /// </summary>
         /// <param name="property">The property.</param>
-        public void CoerceValue(PerspexProperty property)
+        public void Revalidate(PerspexProperty property)
         {
             PriorityValue value;
 
             if (this.values.TryGetValue(property, out value))
             {
-                value.Coerce();
+                value.Revalidate();
             }
         }
 
@@ -670,17 +670,17 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Forces re-coercion of properties when a property value changes.
+        /// Forces revalidation of properties when a property value changes.
         /// </summary>
-        /// <param name="property">The property to that affects coercion.</param>
+        /// <param name="property">The property to that affects validation.</param>
         /// <param name="affected">The affected properties.</param>
-        protected static void AffectsCoercion(PerspexProperty property, params PerspexProperty[] affected)
+        protected static void AffectsValidation(PerspexProperty property, params PerspexProperty[] affected)
         {
             property.Changed.Subscribe(e =>
             {
                 foreach (var p in affected)
                 {
-                    e.Sender.CoerceValue(p);
+                    e.Sender.Revalidate(p);
                 }
             });
         }
@@ -700,14 +700,15 @@ namespace Perspex
         /// <returns>The <see cref="PriorityValue"/>.</returns>
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
-            Func<object, object> coerce = null;
+            Func<PerspexObject, object, object> validate = property.GetValidationFunc(this.GetType());
+            Func<object, object> validate2 = null;
 
-            if (property.Coerce != null)
+            if (validate != null)
             {
-                coerce = v => property.Coerce(this, v);
+                validate2 = v => validate(this, v);
             }
 
-            PriorityValue result = new PriorityValue(property.Name, property.PropertyType, coerce);
+            PriorityValue result = new PriorityValue(property.Name, property.PropertyType, validate2);
 
             result.Changed.Subscribe(x =>
             {

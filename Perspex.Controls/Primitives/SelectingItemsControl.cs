@@ -30,7 +30,7 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.Register<SelectingItemsControl, int>(
                 nameof(SelectedIndex),
                 defaultValue: -1,
-                coerce: CoerceSelectedIndex);
+                validate: ValidateSelectedIndex);
 
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
@@ -38,7 +38,7 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<object> SelectedItemProperty =
             PerspexProperty.Register<SelectingItemsControl, object>(
                 nameof(SelectedItem),
-                coerce: CoerceSelectedItem);
+                validate: ValidateSelectedItem);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -258,7 +258,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="o">The object on which the property has changed.</param>
         /// <param name="value">The proposed value.</param>
         /// <returns>The coerced value.</returns>
-        private static int CoerceSelectedIndex(PerspexObject o, int value)
+        private static int ValidateSelectedIndex(PerspexObject o, int value)
         {
             var control = o as SelectingItemsControl;
 
@@ -293,7 +293,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="o">The object on which the property has changed.</param>
         /// <param name="value">The proposed value.</param>
         /// <returns>The coerced value.</returns>
-        private static object CoerceSelectedItem(PerspexObject o, object value)
+        private static object ValidateSelectedItem(PerspexObject o, object value)
         {
             var control = o as SelectingItemsControl;
 

@@ -22,7 +22,7 @@ namespace Perspex
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="coerce">A coercion function.</param>
+        /// <param name="validate">A validation function.</param>
         /// <param name="isAttached">Whether the property is an attached property.</param>
         public PerspexProperty(
             string name,
@@ -30,7 +30,7 @@ namespace Perspex
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.Default,
-            Func<PerspexObject, TValue, TValue> coerce = null,
+            Func<PerspexObject, TValue, TValue> validate = null,
             bool isAttached = false)
             : base(
                 name,
@@ -39,7 +39,7 @@ namespace Perspex
                 defaultValue,
                 inherits,
                 defaultBindingMode,
-                Convert(coerce),
+                Convert(validate),
                 isAttached)
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -68,10 +68,10 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Converts from a typed coercion function to an untyped.
+        /// Converts from a typed validation function to an untyped.
         /// </summary>
-        /// <param name="f">The typed coercion function.</param>
-        /// <returns>Te untyped coercion function.</returns>
+        /// <param name="f">The typed validation function.</param>
+        /// <returns>The untyped validation function.</returns>
         private static Func<PerspexObject, object, object> Convert(Func<PerspexObject, TValue, TValue> f)
         {
             return f != null ? (o, v) => f(o, (TValue)v) : (Func<PerspexObject, object, object>)null;

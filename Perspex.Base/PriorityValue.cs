@@ -54,23 +54,23 @@ namespace Perspex
         private object value;
 
         /// <summary>
-        /// The function used to coerce the value, if any.
+        /// The function used to validate the value, if any.
         /// </summary>
-        private Func<object, object> coerce;
+        private Func<object, object> validate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The value type.</param>
-        /// <param name="coerce">An optional coercion function.</param>
-        public PriorityValue(string name, Type valueType, Func<object, object> coerce = null)
+        /// <param name="validate">An optional validation function.</param>
+        public PriorityValue(string name, Type valueType, Func<object, object> validate = null)
         {
             this.name = name;
             this.valueType = valueType;
             this.value = PerspexProperty.UnsetValue;
             this.ValuePriority = int.MaxValue;
-            this.coerce = coerce;
+            this.validate = validate;
         }
 
         /// <summary>
@@ -180,11 +180,11 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Causes a re-coercion of the value.
+        /// Causes a revalidation of the value.
         /// </summary>
-        public void Coerce()
+        public void Revalidate()
         {
-            if (this.coerce != null)
+            if (this.validate != null)
             {
                 PriorityLevel level;
 
@@ -233,9 +233,9 @@ namespace Perspex
 
             var old = this.value;
 
-            if (this.coerce != null)
+            if (this.validate != null)
             {
-                value = this.coerce(value);
+                value = this.validate(value);
             }
 
             this.ValuePriority = priority;

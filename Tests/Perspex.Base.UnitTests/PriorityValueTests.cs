@@ -290,7 +290,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Coerce_Should_ReCoerce_Value()
+        public void Revalidate_Should_ReCoerce_Value()
         {
             var max = 10;
             var target = new PriorityValue("Test", typeof(int), x => Math.Min((int)x, max));
@@ -302,7 +302,7 @@ namespace Perspex.Base.UnitTests
             source.OnNext(15);
             Assert.Equal(10, target.Value);
             max = 12;
-            target.Coerce();
+            target.Revalidate();
             Assert.Equal(12, target.Value);
         }
 

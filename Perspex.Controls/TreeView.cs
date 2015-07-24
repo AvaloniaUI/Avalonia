@@ -17,7 +17,7 @@ namespace Perspex.Controls
     public class TreeView : ItemsControl
     {
         public static readonly PerspexProperty<object> SelectedItemProperty =
-            PerspexProperty.Register<TreeView, object>("SelectedItem", coerce: CoerceSelectedItem);
+            PerspexProperty.Register<TreeView, object>("SelectedItem", validate: ValidateSelectedItem);
 
         static TreeView()
         {
@@ -158,7 +158,7 @@ namespace Perspex.Controls
             e.Handled = true;
         }
 
-        private static object CoerceSelectedItem(PerspexObject o, object value)
+        private static object ValidateSelectedItem(PerspexObject o, object value)
         {
             //var control = o as SelectingItemsControl;
 

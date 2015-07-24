@@ -80,7 +80,7 @@
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
-    <Compile Include="PerspexObjectTests_Coercion.cs" />
+    <Compile Include="PerspexObjectTests_Validation.cs" />
     <Compile Include="PerspexObjectTests_Binding.cs" />
     <Compile Include="PerspexObjectTests_Inheritance.cs" />
     <Compile Include="PerspexObjectTests_SetValue.cs" />

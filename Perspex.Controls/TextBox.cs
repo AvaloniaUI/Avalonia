@@ -27,13 +27,13 @@ namespace Perspex.Controls
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
         public static readonly PerspexProperty<int> CaretIndexProperty =
-            PerspexProperty.Register<TextBox, int>("CaretIndex", coerce: CoerceCaretIndex);
+            PerspexProperty.Register<TextBox, int>("CaretIndex", validate: ValidateCaretIndex);
 
         public static readonly PerspexProperty<int> SelectionStartProperty =
-            PerspexProperty.Register<TextBox, int>("SelectionStart", coerce: CoerceCaretIndex);
+            PerspexProperty.Register<TextBox, int>("SelectionStart", validate: ValidateCaretIndex);
 
         public static readonly PerspexProperty<int> SelectionEndProperty =
-            PerspexProperty.Register<TextBox, int>("SelectionEnd", coerce: CoerceCaretIndex);
+            PerspexProperty.Register<TextBox, int>("SelectionEnd", validate: ValidateCaretIndex);
 
         public static readonly PerspexProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
@@ -297,7 +297,7 @@ namespace Perspex.Controls
             }
         }
 
-        private static int CoerceCaretIndex(PerspexObject o, int value)
+        private static int ValidateCaretIndex(PerspexObject o, int value)
         {
             var text = o.GetValue(TextProperty);
             var length = (text != null) ? text.Length : 0;
