@@ -79,7 +79,6 @@ namespace Perspex.Input
                 {
                     this.Scope = scope;
                     this.SetFocusedElement(scope, control, keyboardNavigated);
-                    System.Diagnostics.Debug.WriteLine("Focused " + control.GetType().Name);
                 }
             }
             else if (this.Current != null)
