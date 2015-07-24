@@ -23,7 +23,6 @@ namespace Perspex
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields must be private", Justification = "It's readonly")]
         public static readonly object UnsetValue = new Unset();
 
         /// <summary>
@@ -41,7 +40,11 @@ namespace Perspex
         /// </summary>
         private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
 
-        private Func<PerspexObject, object, object> validate;
+        /// <summary>
+        /// The validation functions for the property, by type.
+        /// </summary>
+        private Dictionary<Type, Func<PerspexObject, object, object>> validation =
+            new Dictionary<Type, Func<PerspexObject, object, object>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
@@ -74,7 +77,7 @@ namespace Perspex
             this.defaultValues.Add(ownerType, defaultValue);
             this.Inherits = inherits;
             this.DefaultBindingMode = defaultBindingMode;
-            this.validate = validate;
+            this.validation.Add(ownerType, validate);
             this.IsAttached = isAttached;
         }
 
@@ -204,7 +207,7 @@ namespace Perspex
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<PerspexObject, TValue, TValue> validate = null)
+            Func<TOwner, TValue, TValue> validate = null)
             where TOwner : PerspexObject
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -215,7 +218,7 @@ namespace Perspex
                 defaultValue,
                 inherits,
                 defaultBindingMode,
-                validate,
+                Cast(validate),
                 false);
 
             PerspexObject.Register(typeof(TOwner), result);
@@ -343,7 +346,21 @@ namespace Perspex
         /// </returns>
         public Func<PerspexObject, object, object> GetValidationFunc(Type type)
         {
-            return this.validate;
+            Contract.Requires<NullReferenceException>(type != null);
+
+            while (type != null)
+            {
+                Func<PerspexObject, object, object> result;
+
+                if (this.validation.TryGetValue(type, out result))
+                {
+                    return result;
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -393,6 +410,23 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Overrides the validation function for the property on the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="validation">The validation function.</param>
+        public void OverrideValidation(Type type, Func<PerspexObject, object, object> validation)
+        {
+            Contract.Requires<NullReferenceException>(type != null);
+
+            if (this.validation.ContainsKey(type))
+            {
+                throw new InvalidOperationException("Validation is already set for this property.");
+            }
+
+            this.validation.Add(type, validation);
+        }
+
+        /// <summary>
         /// Gets the string representation of the property.
         /// </summary>
         /// <returns>The property's string representation.</returns>
@@ -417,6 +451,20 @@ namespace Perspex
         internal void NotifyChanged(PerspexPropertyChangedEventArgs e)
         {
             this.changed.OnNext(e);
+        }
+
+        /// <summary>
+        /// Casts a validation function accepting a typed owner to one accepting a
+        /// <see cref="Perspex"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The owner type.</typeparam>
+        /// <typeparam name="TValue">The property value type.</typeparam>
+        /// <param name="f">The typed function.</param>
+        /// <returns>The untyped function.</returns>
+        private static Func<PerspexObject, TValue, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
+            where TOwner : PerspexObject
+        {
+            return f != null ? (o, v) => f((TOwner)o, v) : (Func < PerspexObject, TValue, TValue > )null;
         }
 
         /// <summary>

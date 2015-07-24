@@ -68,6 +68,19 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Overrides the validation function for the property on the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="validation">The validation function.</param>
+        public void OverrideValidation<T>(Func<T, TValue, TValue> validation) where T : PerspexObject
+        {
+            var f = validation != null ?
+                (o, v) => validation((T)o, (TValue)v) :
+                (Func<PerspexObject, object, object>)null;
+            this.OverrideValidation(typeof(T), f);
+        }
+
+        /// <summary>
         /// Converts from a typed validation function to an untyped.
         /// </summary>
         /// <param name="f">The typed validation function.</param>
