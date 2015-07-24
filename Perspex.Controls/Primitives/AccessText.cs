@@ -7,11 +7,9 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
-    using Perspex.Media;
     using Perspex.Input;
+    using Perspex.Media;
     using Perspex.Rendering;
-
-
 
     /// <summary>
     /// A text block that displays a character prefixed with an underscore as an access key.

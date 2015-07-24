@@ -7,13 +7,13 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
-    using System.Linq;
     using System.Collections;
     using System.Collections.Specialized;
+    using System.Linq;
     using Perspex.Controls.Utils;
     using Perspex.Input;
-    using Perspex.VisualTree;
     using Perspex.Interactivity;
+    using Perspex.VisualTree;
 
     /// <summary>
     /// An <see cref="ItemsControl"/> that maintains a selection.

@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Image.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -10,27 +10,46 @@ namespace Perspex.Controls
     using Perspex.Media;
     using Perspex.Media.Imaging;
 
+    /// <summary>
+    /// Displays a <see cref="Bitmap"/> image.
+    /// </summary>
     public class Image : Control
     {
+        /// <summary>
+        /// Defines the <see cref="Source"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Bitmap> SourceProperty =
-            PerspexProperty.Register<Image, Bitmap>("Source");
+            PerspexProperty.Register<Image, Bitmap>(nameof(Source));
 
+        /// <summary>
+        /// Defines the <see cref="Stretch"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Stretch> StretchProperty =
-            PerspexProperty.Register<Image, Stretch>("Stretch", Stretch.Uniform);
+            PerspexProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
+        /// <summary>
+        /// Gets or sets the bitmap image that will be displayed.
+        /// </summary>
         public Bitmap Source
         {
             get { return this.GetValue(SourceProperty); }
             set { this.SetValue(SourceProperty, value); }
         }
 
-        public Stretch Stretch 
-        { 
+        /// <summary>
+        /// Gets or sets a value controlling how the image will be stretched.
+        /// </summary>
+        public Stretch Stretch
+        {
             get { return (Stretch)this.GetValue(StretchProperty); }
             set { this.SetValue(StretchProperty, value); }
         }
 
-        public override void Render(IDrawingContext drawingContext)
+        /// <summary>
+        /// Renders the control.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        public override void Render(IDrawingContext context)
         {
             Bitmap source = this.Source;
 
@@ -46,10 +65,15 @@ namespace Perspex.Controls
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterIn(new Rect(destRect.Size / scale));
 
-                drawingContext.DrawImage(source, 1, sourceRect, destRect);
+                context.DrawImage(source, 1, sourceRect, destRect);
             }
         }
 
+        /// <summary>
+        /// Measures the control.
+        /// </summary>
+        /// <param name="availableSize">The available size.</param>
+        /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
             double width = 0;
@@ -77,11 +101,13 @@ namespace Perspex.Controls
             return new Size(width * scale.X, height * scale.Y);
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            return finalSize;
-        }
-
+        /// <summary>
+        /// Calculates the scaling for the image.
+        /// </summary>
+        /// <param name="availableSize">The size available to display the image.</param>
+        /// <param name="imageSize">The pxiel size of the image.</param>
+        /// <param name="stretch">The stretch mode of the control.</param>
+        /// <returns>A vector with the X and Y scaling factors.</returns>
         private static Vector CalculateScaling(Size availableSize, Size imageSize, Stretch stretch)
         {
             double scaleX = 1;

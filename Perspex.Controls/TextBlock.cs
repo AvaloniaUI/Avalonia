@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="TextBlock.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -26,49 +26,61 @@ namespace Perspex.Controls
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly PerspexProperty<string> FontFamilyProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, string>("FontFamily", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, string>(
+                nameof(FontFamily),
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, double>("FontSize", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, double>(
+                nameof(FontSize),
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, FontStyle>("FontStyle", inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, FontStyle>(
+                nameof(FontStyle),
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
         public static readonly PerspexProperty<FontWeight> FontWeightProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, FontWeight>("FontWeight", inherits: true, defaultValue: FontWeight.Normal);
+            PerspexProperty.RegisterAttached<TextBlock, Control, FontWeight>(
+                nameof(FontWeight),
+                inherits: true,
+                defaultValue: FontWeight.Normal);
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly PerspexProperty<Brush> ForegroundProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, Brush>("Foreground", new SolidColorBrush(0xff000000), inherits: true);
+            PerspexProperty.RegisterAttached<TextBlock, Control, Brush>(
+                nameof(Foreground),
+                new SolidColorBrush(0xff000000),
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly PerspexProperty<string> TextProperty =
-            PerspexProperty.Register<TextBlock, string>("Text");
+            PerspexProperty.Register<TextBlock, string>(nameof(Text));
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly PerspexProperty<TextAlignment> TextAlignmentProperty =
-            PerspexProperty.Register<TextBlock, TextAlignment>("TextAlignment");
+            PerspexProperty.Register<TextBlock, TextAlignment>(nameof(TextAlignment));
 
         /// <summary>
         /// Defines the <see cref="TextWrapping"/> property.
         /// </summary>
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
-            PerspexProperty.Register<TextBlock, TextWrapping>("TextWrapping");
+            PerspexProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
 
         /// <summary>
         /// The formatted text used for rendering.
@@ -79,6 +91,14 @@ namespace Perspex.Controls
         /// Stores the last constraint passed to MeasureOverride.
         /// </summary>
         private Size constraint;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="TextBlock"/> class.
+        /// </summary>
+        static TextBlock()
+        {
+            AffectsRender(ForegroundProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextBlock"/> class.
@@ -207,7 +227,7 @@ namespace Perspex.Controls
             }
 
             this.FormattedText.Constraint = this.Bounds.Size;
-            context.DrawText(this.Foreground,  new Point(), this.FormattedText);
+            context.DrawText(this.Foreground, new Point(), this.FormattedText);
         }
 
         /// <summary>
