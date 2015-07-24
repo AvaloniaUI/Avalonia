@@ -38,16 +38,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Magick.NET-x64, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=AMD64">
-      <HintPath>..\..\packages\Magick.NET-Q16-x64.7.0.0.0016\lib\net40-client\Magick.NET-x64.dll</HintPath>
+    <Reference Include="Magick.NET-AnyCPU, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Magick.NET-Q16-AnyCPU.7.0.0.0016\lib\net40-client\Magick.NET-AnyCPU.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Magick.NET.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Magick.NET-Q16-x64.7.0.0.0016\lib\net40-client\Magick.NET.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Magick.NET.Wrapper-x64, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=AMD64">
-      <HintPath>..\..\packages\Magick.NET-Q16-x64.7.0.0.0016\lib\net40-client\Magick.NET.Wrapper-x64.dll</HintPath>
+      <HintPath>..\..\packages\Magick.NET-Q16-AnyCPU.7.0.0.0016\lib\net40-client\Magick.NET.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
