@@ -9,7 +9,6 @@ namespace Perspex.Controls.Primitives
     using System;
     using System.Reactive;
     using System.Reactive.Linq;
-    using Perspex.Controls.Templates;
 
     /// <summary>
     /// A scrollbar control.
@@ -98,7 +97,7 @@ namespace Perspex.Controls.Primitives
 
                 case ScrollBarVisibility.Auto:
                     var viewportSize = this.ViewportSize;
-                    return !double.IsNaN(viewportSize) && viewportSize < this.Maximum - this.Minimum;
+                    return double.IsNaN(viewportSize) || viewportSize < this.Maximum - this.Minimum;
 
                 default:
                     throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");

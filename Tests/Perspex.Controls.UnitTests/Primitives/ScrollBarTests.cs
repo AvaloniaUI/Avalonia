@@ -61,6 +61,58 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(target.Value, 50);
         }
 
+        [Fact]
+        public void ScrollBar_Can_AutoHide()
+        {
+            var target = new ScrollBar();
+
+            target.Visibility = ScrollBarVisibility.Auto;
+            target.Minimum = 0;
+            target.Maximum = 100;
+            target.ViewportSize = 100;
+
+            Assert.False(target.IsVisible);
+        }
+
+        [Fact]
+        public void ScrollBar_Should_Not_AutoHide_When_ViewportSize_Is_NaN()
+        {
+            var target = new ScrollBar();
+
+            target.Visibility = ScrollBarVisibility.Auto;
+            target.Minimum = 0;
+            target.Maximum = 100;
+            target.ViewportSize = double.NaN;
+
+            Assert.True(target.IsVisible);
+        }
+
+        [Fact]
+        public void ScrollBar_Should_Not_AutoHide_When_Visibility_Set_To_Visible()
+        {
+            var target = new ScrollBar();
+
+            target.Visibility = ScrollBarVisibility.Visible;
+            target.Minimum = 0;
+            target.Maximum = 100;
+            target.ViewportSize = 100;
+
+            Assert.True(target.IsVisible);
+        }
+
+        [Fact]
+        public void ScrollBar_Should_Hide_When_Visibility_Set_To_Hidden()
+        {
+            var target = new ScrollBar();
+
+            target.Visibility = ScrollBarVisibility.Hidden;
+            target.Minimum = 0;
+            target.Maximum = 100;
+            target.ViewportSize = 10;
+
+            Assert.False(target.IsVisible);
+        }
+
         private static Control Template(ScrollBar control)
         {
             return new Border
