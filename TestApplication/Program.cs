@@ -433,7 +433,7 @@ namespace TestApplication
                         {
                             Minimum = 100,
                             Maximum = 400,
-                            Value = 400,
+                            Value = 100,
                             Orientation = Orientation.Horizontal,
                         }),
                         new ScrollViewer
@@ -450,7 +450,9 @@ namespace TestApplication
                         },
                         new ProgressBar
                         {
-                            Value = 50
+                            [!ProgressBar.MinimumProperty] = size[!ScrollBar.MinimumProperty],
+                            [!ProgressBar.MaximumProperty] = size[!ScrollBar.MaximumProperty],
+                            [!ProgressBar.ValueProperty] = size[!ScrollBar.ValueProperty],
                         }
                     }
                 },
