@@ -11,23 +11,41 @@ namespace Perspex.Controls.Primitives
     using System.Reactive.Linq;
     using Perspex.Controls.Templates;
 
+    /// <summary>
+    /// A scrollbar control.
+    /// </summary>
     public class ScrollBar : RangeBase
     {
+        /// <summary>
+        /// Defines the <see cref="ViewportSize"/> property.
+        /// </summary>
         public static readonly PerspexProperty<double> ViewportSizeProperty =
-            PerspexProperty.Register<ScrollBar, double>("ViewportSize", defaultValue: double.NaN);
+            PerspexProperty.Register<ScrollBar, double>(nameof(ViewportSize), defaultValue: double.NaN);
 
+        /// <summary>
+        /// Defines the <see cref="Visibility"/> property.
+        /// </summary>
         public static readonly PerspexProperty<ScrollBarVisibility> VisibilityProperty =
-            PerspexProperty.Register<ScrollBar, ScrollBarVisibility>("Visibility");
+            PerspexProperty.Register<ScrollBar, ScrollBarVisibility>(nameof(Visibility));
 
+        /// <summary>
+        /// Defines the <see cref="Orientation"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Orientation> OrientationProperty =
-            PerspexProperty.Register<ScrollBar, Orientation>("Orientation");
+            PerspexProperty.Register<ScrollBar, Orientation>(nameof(Orientation));
 
+        /// <summary>
+        /// Initializes static members of the <see cref="ScrollBar"/> class.
+        /// </summary>
         static ScrollBar()
         {
             Control.PseudoClass(OrientationProperty, x => x == Orientation.Horizontal, ":horizontal");
             Control.PseudoClass(OrientationProperty, x => x == Orientation.Vertical, ":vertical");
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScrollBar"/> class.
+        /// </summary>
         public ScrollBar()
         {
             var isVisible = Observable.Merge(
@@ -39,41 +57,59 @@ namespace Perspex.Controls.Primitives
             this.Bind(ScrollBar.IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
+        /// <summary>
+        /// Gets or sets the amount of the scrollable content that is currently visible.
+        /// </summary>
         public double ViewportSize
         {
             get { return this.GetValue(ViewportSizeProperty); }
             set { this.SetValue(ViewportSizeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the scrollbar should hide itself when it
+        /// is not needed.
+        /// </summary>
         public ScrollBarVisibility Visibility
         {
             get { return this.GetValue(VisibilityProperty); }
             set { this.SetValue(VisibilityProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the orientation of the scrollbar.
+        /// </summary>
         public Orientation Orientation
         {
             get { return this.GetValue(OrientationProperty); }
             set { this.SetValue(OrientationProperty, value); }
         }
 
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(availableSize);
         }
 
+        /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
             base.OnTemplateApplied();
 
-            // Binding between this.Value and track.Value must be done explicitly like this rather 
+            // Binding between this.Value and track.Value must be done explicitly like this rather
             // than using standard bindings as it shouldn't be able to to be overridden by binding
             // e.g. ScrollBar.Value.
+            // TODO: This is probably no longer true. Test and use a standard 2 way binding if
+            // possible.
             var track = this.GetTemplateChild<Track>("track");
             track.GetObservable(ValueProperty).Subscribe(x => this.Value = x);
             this.GetObservable(ValueProperty).Subscribe(x => track.Value = x);
         }
 
+        /// <summary>
+        /// Calculates whether the scrollbar should be visible.
+        /// </summary>
+        /// <returns>The scrollbar's visibility.</returns>
         private bool CalculateIsVisible()
         {
             switch (this.Visibility)
