@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
+    using System;
 
     /// <summary>
     /// A control used to indicate the progress of an operation.
@@ -21,7 +22,7 @@ namespace Perspex.Controls
             var b = this.Bounds;
 
             var indicator = this.GetTemplateChild<Border>("PART_Indicator");
-            indicator.Width = finalSize.Width * (this.Value / 100);
+            indicator.Width = Math.Max(this.Minimum, finalSize.Width * (this.Value / this.Maximum));
 
             return size;
         }
