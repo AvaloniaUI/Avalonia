@@ -6,8 +6,8 @@
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using Perspex.Controls.Primitives;
     using System;
+    using Perspex.Controls.Primitives;
     using Xunit;
 
     public class RangeBaseTests

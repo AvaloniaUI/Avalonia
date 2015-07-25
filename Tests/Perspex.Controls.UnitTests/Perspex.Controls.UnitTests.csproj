@@ -96,6 +96,7 @@
     <Compile Include="DropDownTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
+    <Compile Include="Primitives\ScrollBarTests.cs" />
     <Compile Include="Primitives\RangeBaseTests.cs" />
     <Compile Include="ScrollViewerTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests.cs" />

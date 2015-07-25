@@ -82,21 +82,6 @@ namespace Perspex.Controls.Primitives
             return base.MeasureOverride(availableSize);
         }
 
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied()
-        {
-            base.OnTemplateApplied();
-
-            // Binding between this.Value and track.Value must be done explicitly like this rather
-            // than using standard bindings as it shouldn't be able to to be overridden by binding
-            // e.g. ScrollBar.Value.
-            // TODO: This is probably no longer true. Test and use a standard 2 way binding if
-            // possible.
-            var track = this.GetTemplateChild<Track>("track");
-            track.GetObservable(ValueProperty).Subscribe(x => this.Value = x);
-            this.GetObservable(ValueProperty).Subscribe(x => track.Value = x);
-        }
-
         /// <summary>
         /// Calculates whether the scrollbar should be visible.
         /// </summary>

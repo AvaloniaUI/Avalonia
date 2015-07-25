@@ -67,10 +67,11 @@ namespace Perspex.Themes.Default
                 Child = new Track
                 {
                     Name = "track",
-                    [~Track.MinimumProperty] = control[~ScrollBar.MinimumProperty],
-                    [~Track.MaximumProperty] = control[~ScrollBar.MaximumProperty],
-                    [~Track.ViewportSizeProperty] = control[~ScrollBar.ViewportSizeProperty],
-                    [~Track.OrientationProperty] = control[~ScrollBar.OrientationProperty],
+                    [!Track.MinimumProperty] = control[!ScrollBar.MinimumProperty],
+                    [!Track.MaximumProperty] = control[!ScrollBar.MaximumProperty],
+                    [!!Track.ValueProperty] = control[!!ScrollBar.ValueProperty],
+                    [!Track.ViewportSizeProperty] = control[!ScrollBar.ViewportSizeProperty],
+                    [!Track.OrientationProperty] = control[!ScrollBar.OrientationProperty],
                     Thumb = new Thumb
                     {
                         Name = "thumb",
