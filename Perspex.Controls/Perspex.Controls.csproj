@@ -39,6 +39,7 @@
     <Compile Include="IControl.cs" />
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
+    <Compile Include="Mixins\SelectableMixin.cs" />
     <Compile Include="Parsers\GridLengthsParser.cs" />
     <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />

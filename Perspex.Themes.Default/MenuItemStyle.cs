@@ -41,7 +41,7 @@ namespace Perspex.Themes.Default
                         new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.TopLevelTemplate)),
                     },
                 },
-                new Style(x => x.OfType<MenuItem>().Class(":selected").Template().Name("root"))
+                new Style(x => x.OfType<MenuItem>().Class("selected").Template().Name("root"))
                 {
                     Setters = new[]
                     {

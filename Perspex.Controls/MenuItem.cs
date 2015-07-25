@@ -10,13 +10,14 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using System.Linq;
     using System.Windows.Input;
+    using Perspex.Controls.Mixins;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Interactivity;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Presenters;
-    using Perspex.VisualTree;
     using Perspex.Threading;
+    using Perspex.VisualTree;
     using Splat;
 
     /// <summary>
@@ -87,6 +88,7 @@ namespace Perspex.Controls
         /// </summary>
         static MenuItem()
         {
+            SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
