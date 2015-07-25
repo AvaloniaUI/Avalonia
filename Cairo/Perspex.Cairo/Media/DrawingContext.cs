@@ -88,7 +88,7 @@ namespace Perspex.Cairo.Media
             this.context.Save();
             this.context.Scale(scaleX, scaleY);
             this.context.SetSourceSurface(impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
-            this.context.Rectangle(destRect.ToCairo());
+            this.context.Rectangle(sourceRect.ToCairo());
             this.context.Fill();
             this.context.Restore();
         }
