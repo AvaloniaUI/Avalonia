@@ -27,7 +27,7 @@ namespace Perspex.Themes.Default
                         new Setter(TabItem.TemplateProperty, ControlTemplate.Create<TabItem>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<TabItem>().Class(":selected"))
+                new Style(x => x.OfType<TabItem>().Class("selected"))
                 {
                     Setters = new[]
                     {

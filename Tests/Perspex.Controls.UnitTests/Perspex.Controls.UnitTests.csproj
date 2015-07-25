@@ -91,6 +91,7 @@
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="Parsers\GridLengthsParserTests.cs" />
     <Compile Include="PopupTests.cs" />
     <Compile Include="DropDownTests.cs" />

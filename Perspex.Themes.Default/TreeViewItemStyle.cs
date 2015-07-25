@@ -35,7 +35,7 @@ namespace Perspex.Themes.Default
                         new Setter(Border.PaddingProperty, new Thickness(2)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().Name("header"))
+                new Style(x => x.OfType<TreeViewItem>().Class("selected").Template().Name("header"))
                 {
                     Setters = new[]
                     {

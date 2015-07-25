@@ -1,17 +1,15 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="ListBoxItem.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Controls
 {
-    using System;
-    using Perspex.Controls.Primitives;
-    using Perspex.Interactivity;
+    using Perspex.Controls.Mixins;
 
     /// <summary>
-    /// An selectable item in a <see cref="ListBox"/>.
+    /// A selectable item in a <see cref="ListBox"/>.
     /// </summary>
     public class ListBoxItem : ContentControl, ISelectable
     {
@@ -26,8 +24,7 @@ namespace Perspex.Controls
         /// </summary>
         static ListBoxItem()
         {
-            Control.PseudoClass(IsSelectedProperty, ":selected");
-            IsSelectedProperty.Changed.Subscribe(IsSelectedChanged);
+            SelectableMixin.Attach<ListBoxItem>(IsSelectedProperty);
         }
 
         /// <summary>
@@ -37,20 +34,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(IsSelectedProperty); }
             set { this.SetValue(IsSelectedProperty, value); }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="IsSelected"/> property changes on an object.
-        /// </summary>
-        /// <param name="e">The sender.</param>
-        private static void IsSelectedChanged(PerspexPropertyChangedEventArgs e)
-        {
-            var interactive = e.Sender as IInteractive;
-
-            if (interactive != null)
-            {
-                interactive.RaiseEvent(new RoutedEventArgs(SelectingItemsControl.IsSelectedChangedEvent));
-            }
         }
     }
 }
