@@ -6,6 +6,9 @@
 
 namespace Perspex.Controls.Primitives
 {
+    using System;
+    using Perspex.Utilities;
+
     /// <summary>
     /// Base class for controls that display a value within a range.
     /// </summary>
@@ -15,19 +18,35 @@ namespace Perspex.Controls.Primitives
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> MinimumProperty =
-            PerspexProperty.Register<RangeBase, double>("Minimum");
+            PerspexProperty.Register<RangeBase, double>(
+                nameof(Minimum),
+                validate: ValidateMinimum);
 
         /// <summary>
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> MaximumProperty =
-            PerspexProperty.Register<RangeBase, double>("Maximum", defaultValue: 100.0);
+            PerspexProperty.Register<RangeBase, double>(
+                nameof(Maximum),
+                defaultValue: 100.0,
+                validate: ValidateMaximum);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> ValueProperty =
-            PerspexProperty.Register<RangeBase, double>("Value");
+            PerspexProperty.Register<RangeBase, double>(
+                nameof(Value),
+                validate: ValidateValue);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RangeBase"/> class.
+        /// </summary>
+        public RangeBase()
+        {
+            AffectsValidation(MinimumProperty, MaximumProperty, ValueProperty);
+            AffectsValidation(MaximumProperty, ValueProperty);
+        }
 
         /// <summary>
         /// Gets or sets the minimum value.
@@ -54,6 +73,55 @@ namespace Perspex.Controls.Primitives
         {
             get { return this.GetValue(ValueProperty); }
             set { this.SetValue(ValueProperty, value); }
+        }
+
+        /// <summary>
+        /// Throws an exception if the double valus is NaN or Inf.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="property">The name of the property being set.</param>
+        private static void ValidateDouble(double value, string property)
+        {
+            if (double.IsInfinity(value) || double.IsNaN(value))
+            {
+                throw new ArgumentException($"{value} is not a valid value for {property}.");
+            }
+        }
+
+        /// <summary>
+        /// Validates the <see cref="Minimum"/> property.
+        /// </summary>
+        /// <param name="sender">The RangeBase control.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The coerced value.</returns>
+        private static double ValidateMinimum(RangeBase sender, double value)
+        {
+            ValidateDouble(value, "Minimum");
+            return value;
+        }
+
+        /// <summary>
+        /// Validates/coerces the <see cref="Maximum"/> property.
+        /// </summary>
+        /// <param name="sender">The RangeBase control.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The coerced value.</returns>
+        private static double ValidateMaximum(RangeBase sender, double value)
+        {
+            ValidateDouble(value, "Maximum");
+            return Math.Max(value, sender.Minimum);
+        }
+
+        /// <summary>
+        /// Validates/coerces the <see cref="Value"/> property.
+        /// </summary>
+        /// <param name="sender">The RangeBase control.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The coerced value.</returns>
+        private static double ValidateValue(RangeBase sender, double value)
+        {
+            ValidateDouble(value, "Value");
+            return MathUtilities.Clamp(value, sender.Minimum, sender.Maximum);
         }
     }
 }

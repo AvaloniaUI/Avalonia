@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls.Primitives.UnitTests
+namespace Perspex.Controls.UnitTests.Primitives
 {
     using Perspex.Collections;
     using Perspex.Controls.Presenters;

@@ -6,10 +6,10 @@
 
 namespace Perspex.Controls.UnitTests.Presenters
 {
+    using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Input;
     using Perspex.VisualTree;
-    using System.Linq;
     using Xunit;
 
     public class ItemsPresenterTests
