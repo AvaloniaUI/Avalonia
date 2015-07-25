@@ -15,18 +15,27 @@ namespace Perspex.Controls
     /// </summary>
     public class ProgressBar : RangeBase
     {
+        static ProgressBar()
+        {
+            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
+        }
+
+        private Border indicator;
+
         /// <inheritdoc/>
         /// 
-        private Border indicator;
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override void OnTemplateApplied()
         {
-            var size = base.ArrangeOverride(finalSize);
-            this.indicator = this.indicator ?? this.GetTemplateChild<Border>("PART_Indicator");
-            
-            double percent = this.Maximum == this.Minimum ? 1.0 : (this.Value - this.Minimum) / (this.Maximum - this.Minimum);
-            indicator.Width = finalSize.Width * percent;
+            this.indicator = this.GetTemplateChild<Border>("PART_Indicator");
+        }
 
-            return size;
+        private void ValueChanged(PerspexPropertyChangedEventArgs e)
+        {
+            if (this.indicator != null)
+            {
+                double percent = this.Maximum == this.Minimum ? 1.0 : ((double)e.NewValue - this.Minimum) / (this.Maximum - this.Minimum);
+                this.indicator.Width = this.Bounds.Width * percent;
+            }
         }
     }
 }
