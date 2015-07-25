@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                         new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":horizontal"))
+                new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal))
                 {
                     Setters = new[]
                     {
@@ -34,14 +34,14 @@ namespace Perspex.Themes.Default
                         new Setter(ScrollBar.HeightProperty, 10.0),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":horizontal").Template().Name("thumb"))
+                new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal).Template().Name("thumb"))
                 {
                     Setters = new[]
                     {
                         new Setter(Thumb.MinWidthProperty, 10.0),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":vertical"))
+                new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Vertical))
                 {
                     Setters = new[]
                     {
@@ -49,7 +49,7 @@ namespace Perspex.Themes.Default
                         new Setter(ScrollBar.WidthProperty, 10.0),
                     },
                 },
-                new Style(x => x.OfType<ScrollBar>().Class(":vertical").Template().Name("thumb"))
+                new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Vertical).Template().Name("thumb"))
                 {
                     Setters = new[]
                     {

@@ -35,15 +35,6 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.Register<ScrollBar, Orientation>(nameof(Orientation));
 
         /// <summary>
-        /// Initializes static members of the <see cref="ScrollBar"/> class.
-        /// </summary>
-        static ScrollBar()
-        {
-            Control.PseudoClass(OrientationProperty, x => x == Orientation.Horizontal, ":horizontal");
-            Control.PseudoClass(OrientationProperty, x => x == Orientation.Vertical, ":vertical");
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ScrollBar"/> class.
         /// </summary>
         public ScrollBar()
