@@ -8,22 +8,34 @@ namespace Perspex.Controls
 {
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
+    using System;
 
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
     public class ProgressBar : RangeBase
     {
-        /// <inheritdoc/>
-        protected override Size ArrangeOverride(Size finalSize)
+        static ProgressBar()
         {
-            var size = base.ArrangeOverride(finalSize);
-            var b = this.Bounds;
+            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
+        }
+        
+        private Border indicator;
 
-            var indicator = this.GetTemplateChild<Border>("PART_Indicator");
-            indicator.Width = finalSize.Width * (this.Value / 100);
+        /// <inheritdoc/>
+        /// 
+        protected override void OnTemplateApplied()
+        {
+            this.indicator = this.GetTemplateChild<Border>("PART_Indicator");
+        }
 
-            return size;
+        private void ValueChanged(PerspexPropertyChangedEventArgs e)
+        {
+            if (this.indicator != null)
+            {
+                double percent = this.Maximum == this.Minimum ? 1.0 : ((double)e.NewValue - this.Minimum) / (this.Maximum - this.Minimum);
+                this.indicator.Width = this.Bounds.Width * percent;
+            }
         }
     }
 }
