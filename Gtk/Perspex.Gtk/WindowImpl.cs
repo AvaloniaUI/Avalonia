@@ -35,13 +35,12 @@ namespace Perspex.Gtk
         public WindowImpl(Gtk.WindowType type)
             : base(type)
         {
-            this.DefaultSize = new Gdk.Size(640, 480);
             this.Events = Gdk.EventMask.PointerMotionMask |
                           Gdk.EventMask.ButtonPressMask |
                           Gdk.EventMask.ButtonReleaseMask;
             this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
         }
-
+        
         public Size ClientSize
         {
             get;
@@ -79,8 +78,10 @@ namespace Perspex.Gtk
 
         public Point PointToScreen(Point point)
         {
-            // TODO: Implement.
-            return new Point();
+            int x, y;
+            this.GdkWindow.GetDeskrelativeOrigin(out x, out y);
+            
+            return new Point(point.X + x, point.Y + y);
         }
 
         public void SetOwner(TopLevel owner)
