@@ -72,10 +72,11 @@ namespace Perspex.Cairo.Media
         {
             this.context.Dispose();
 
-            if (this.surface is Cairo.Win32Surface)
-            {
+         //   if (this.surface is Cairo.Win32Surface)
+       //     {
+            if (this.surface != null)
                 this.surface.Dispose();
-            }
+           // }
         }
 
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
@@ -118,27 +119,17 @@ namespace Perspex.Cairo.Media
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
             var clone = new Queue<GeometryOp>(impl.Operations);
-
-            bool useFill = false;
       
-            this.SetPen(pen);
-            this.SetBrush(brush);
-
             using (var pop = this.PushTransform(impl.Transform))
             {
                 while (clone.Count > 0)
                 {
-
                     var current = clone.Dequeue();
 
                     if (current is BeginOp)
                     {
                         var bo = current as BeginOp;
                         this.context.MoveTo(bo.Point.ToCairo());
-
-                        useFill = bo.IsFilled;
-
-                        System.Diagnostics.Debug.WriteLine("Start");
                     }
                     else if (current is LineToOp)
                     {
@@ -147,10 +138,8 @@ namespace Perspex.Cairo.Media
                     }
                     else if (current is EndOp)
                     {
-                        if (((EndOp)current).IsClosed)
+                      if (((EndOp)current).IsClosed)
                             this.context.ClosePath();
-
-                        System.Diagnostics.Debug.WriteLine("End");
                     }
                     else if (current is CurveToOp)
                     {
@@ -159,13 +148,21 @@ namespace Perspex.Cairo.Media
                     }
                 }
                 
-                if (useFill)
+                if (brush != null)
                 {
-                    this.context.FillPreserve();
+                    this.SetBrush(brush);
+
+                    if (pen != null)
+                        this.context.FillPreserve();
+                    else
+                        this.context.Fill();
                 }
-                else
+
+
+                if (pen != null)
                 {
-                    this.context.StrokePreserve();
+                    this.SetPen(pen);
+                    this.context.Stroke();
                 }
             }
         }
