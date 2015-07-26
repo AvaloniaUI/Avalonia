@@ -133,7 +133,7 @@ namespace Perspex.Gtk
         protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
         {
             var newSize = new Size(evnt.Width, evnt.Height);
-
+            
             if (newSize != this.clientSize)
             {
                 this.Resized(newSize);
@@ -161,11 +161,7 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)
         {
-            if (evnt.Type == Gdk.EventType.Expose)
-            {
-                this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
-            }
-
+            this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
             return true;
         }
 
