@@ -72,10 +72,11 @@ namespace Perspex.Cairo.Media
         {
             this.context.Dispose();
 
-            if (this.surface is Cairo.Win32Surface)
-            {
+         //   if (this.surface is Cairo.Win32Surface)
+       //     {
+            if (this.surface != null)
                 this.surface.Dispose();
-            }
+           // }
         }
 
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
@@ -137,7 +138,7 @@ namespace Perspex.Cairo.Media
                     }
                     else if (current is EndOp)
                     {
-                        if (((EndOp)current).IsClosed)
+                      if (((EndOp)current).IsClosed)
                             this.context.ClosePath();
                     }
                     else if (current is CurveToOp)
@@ -150,7 +151,11 @@ namespace Perspex.Cairo.Media
                 if (brush != null)
                 {
                     this.SetBrush(brush);
-                    this.context.Fill();
+
+                    if (pen != null)
+                        this.context.FillPreserve();
+                    else
+                        this.context.Fill();
                 }
 
 
