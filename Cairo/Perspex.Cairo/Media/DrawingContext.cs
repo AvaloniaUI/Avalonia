@@ -51,7 +51,7 @@ namespace Perspex.Cairo.Media
             this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
             this.CurrentTransform = Matrix.Identity;
-         }
+        }
 
         public Matrix CurrentTransform
         {
@@ -192,7 +192,7 @@ namespace Perspex.Cairo.Media
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             this.SetBrush(foreground);
-
+            
             this.context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(this.context, layout);
         }

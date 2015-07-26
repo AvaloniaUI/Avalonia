@@ -37,15 +37,17 @@ namespace Perspex.Cairo.Media
             this.Layout.Alignment = textAlignment.ToCairo();
         }
 
+        private Size size;
         public Size Constraint
         {
             get
             {
-                return new Size(this.Layout.Width, double.PositiveInfinity);
+                return size;
             }
 
             set
             {
+                this.size = value;
                 this.Layout.Width = Pango.Units.FromDouble(value.Width);
             }
         }

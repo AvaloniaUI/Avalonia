@@ -161,7 +161,11 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)
         {
-            this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
+            if (evnt.Type == Gdk.EventType.Expose)
+            {
+                this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
+            }
+
             return true;
         }
 
