@@ -51,7 +51,7 @@ namespace Perspex.Cairo.Media
             this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
             this.CurrentTransform = Matrix.Identity;
-        }
+         }
 
         public Matrix CurrentTransform
         {
@@ -175,7 +175,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void DrawRectange(Pen pen, Rect rect)
+        public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
             this.SetPen(pen);
             this.context.Rectangle(rect.ToCairo());
@@ -192,7 +192,7 @@ namespace Perspex.Cairo.Media
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             this.SetBrush(foreground);
-            
+
             this.context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(this.context, layout);
         }
@@ -202,7 +202,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect)
+        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             this.SetBrush(brush);
             this.context.Rectangle(rect.ToCairo());
