@@ -118,27 +118,17 @@ namespace Perspex.Cairo.Media
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
             var clone = new Queue<GeometryOp>(impl.Operations);
-
-            bool useFill = false;
       
-            this.SetPen(pen);
-            this.SetBrush(brush);
-
             using (var pop = this.PushTransform(impl.Transform))
             {
                 while (clone.Count > 0)
                 {
-
                     var current = clone.Dequeue();
 
                     if (current is BeginOp)
                     {
                         var bo = current as BeginOp;
                         this.context.MoveTo(bo.Point.ToCairo());
-
-                        useFill = bo.IsFilled;
-
-                        System.Diagnostics.Debug.WriteLine("Start");
                     }
                     else if (current is LineToOp)
                     {
@@ -149,8 +139,6 @@ namespace Perspex.Cairo.Media
                     {
                         if (((EndOp)current).IsClosed)
                             this.context.ClosePath();
-
-                        System.Diagnostics.Debug.WriteLine("End");
                     }
                     else if (current is CurveToOp)
                     {
@@ -159,13 +147,17 @@ namespace Perspex.Cairo.Media
                     }
                 }
                 
-                if (useFill)
+                if (brush != null)
                 {
-                    this.context.FillPreserve();
+                    this.SetBrush(brush);
+                    this.context.Fill();
                 }
-                else
+
+
+                if (pen != null)
                 {
-                    this.context.StrokePreserve();
+                    this.SetPen(pen);
+                    this.context.Stroke();
                 }
             }
         }
