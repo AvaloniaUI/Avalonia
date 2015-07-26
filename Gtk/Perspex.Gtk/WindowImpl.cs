@@ -133,7 +133,7 @@ namespace Perspex.Gtk
         protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
         {
             var newSize = new Size(evnt.Width, evnt.Height);
-
+            
             if (newSize != this.clientSize)
             {
                 this.Resized(newSize);

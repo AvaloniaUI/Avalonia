@@ -29,23 +29,25 @@ namespace Perspex.Cairo.Media
             this.Layout.FontDescription = new Pango.FontDescription
             {
                 Family = fontFamily,
-                Size = Pango.Units.FromDouble(fontSize),
+                Size = Pango.Units.FromDouble(fontSize * 0.73),
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };
-
+            
             this.Layout.Alignment = textAlignment.ToCairo();
         }
 
+        private Size size;
         public Size Constraint
         {
             get
             {
-                return new Size(this.Layout.Width, double.PositiveInfinity);
+                return size;
             }
 
             set
             {
+                this.size = value;
                 this.Layout.Width = Pango.Units.FromDouble(value.Width);
             }
         }
@@ -92,8 +94,14 @@ namespace Perspex.Cairo.Media
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
         {
-            // TODO: Implement.
-            return new Rect[0];
+            var ranges = new List<Rect>();
+        
+            for (var i = 0; i < length; i++)
+            {
+                ranges.Add(this.HitTestTextPosition(index+i));
+            }
+            
+            return ranges;
         }
 
         public Size Measure()
@@ -102,11 +110,6 @@ namespace Perspex.Cairo.Media
             int height;
             this.Layout.GetPixelSize(out width, out height);
         
-            if (this.Layout.Alignment == Pango.Alignment.Right)
-            {
-                return new Size(width, height);
-            }
-
             return new Size(width, height);
         }
 
