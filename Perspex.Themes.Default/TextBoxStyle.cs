@@ -6,13 +6,12 @@
 
 namespace Perspex.Themes.Default
 {
-    using System;
     using System.Linq;
     using Perspex.Controls;
-    using Perspex.Media;
-    using Perspex.Controls.Shapes;
-    using Perspex.Styling;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
+    using Perspex.Media;
+    using Perspex.Styling;
 
     public class TextBoxStyle : Styles
     {
@@ -24,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBox.TemplateProperty, ControlTemplate.Create<TextBox>(this.Template)),
+                        new Setter(TextBox.TemplateProperty, new ControlTemplate<TextBox>(this.Template)),
                         new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(TextBox.BorderThicknessProperty, 2.0),
                         new Setter(TextBox.FocusAdornerProperty, null),

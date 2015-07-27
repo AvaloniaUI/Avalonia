@@ -6,11 +6,12 @@
 
 namespace Perspex.Themes.Default
 {
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
-    using System.Linq;
 
     public class ToolTipStyle : Styles
     {
@@ -22,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ToolTip.TemplateProperty, ControlTemplate.Create<ToolTip>(this.Template)),
+                        new Setter(ToolTip.TemplateProperty, new ControlTemplate<ToolTip>(this.Template)),
                         new Setter(ToolTip.BackgroundProperty, new SolidColorBrush(0xffffffe1)),
                         new Setter(ToolTip.BorderBrushProperty, Brushes.Gray),
                         new Setter(ToolTip.BorderThicknessProperty, 1.0),

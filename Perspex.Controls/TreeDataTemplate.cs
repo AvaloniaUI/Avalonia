@@ -8,11 +8,13 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections;
+    using System.Reflection;
+    using Perspex.Controls.Templates;
 
     public class TreeDataTemplate : DataTemplate
     {
         public TreeDataTemplate(
-            Func<object, Control> build, 
+            Func<object, IControl> build, 
             Func<object, IEnumerable> itemsSelector)
             : this(o => true, build, itemsSelector)
         {
@@ -20,24 +22,24 @@ namespace Perspex.Controls
 
         public TreeDataTemplate(
             Type type, 
-            Func<object, Control> build,
+            Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector)
-            : this(o => DataTemplate.IsInstance(o, type), build, itemsSelector)
+            : this(o => IsInstance(o, type), build, itemsSelector)
         {
         }
 
         public TreeDataTemplate(
             Type type,
-            Func<object, Control> build,
+            Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector,
             Func<object, bool> isExpanded)
-            : this(o => DataTemplate.IsInstance(o, type), build, itemsSelector, isExpanded)
+            : this(o => IsInstance(o, type), build, itemsSelector, isExpanded)
         {
         }
 
         public TreeDataTemplate(
             Func<object, bool> match, 
-            Func<object, Control> build,
+            Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector)
             : this(match, build, itemsSelector, _ => false)
         {
@@ -46,7 +48,7 @@ namespace Perspex.Controls
 
         public TreeDataTemplate(
             Func<object, bool> match,
-            Func<object, Control> build,
+            Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector,
             Func<object, bool> isExpanded)
             : base(match, build)
@@ -58,6 +60,21 @@ namespace Perspex.Controls
         public Func<object, IEnumerable> ItemsSelector { get; private set; }
 
         public Func<object, bool> IsExpanded { get; private set; }
+
+        /// <summary>
+        /// Determines of an object is of the specified type.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="t">The type.</param>
+        /// <returns>
+        /// True if <paramref name="o"/> is of type <paramref name="t"/>, otherwise false.
+        /// </returns>
+        private static bool IsInstance(object o, Type t)
+        {
+            return (o != null) ?
+                t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()) :
+                false;
+        }
     }
 
     public class TreeDataTemplate<T> : TreeDataTemplate

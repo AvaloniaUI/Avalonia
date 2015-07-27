@@ -8,12 +8,13 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using Perspex.Controls;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Controls.Shapes;
-    using Perspex.Styling;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
+    using Perspex.Layout;
+    using Perspex.Media;
+    using Perspex.Styling;
 
     public class TreeViewItemStyle : Styles
     {
@@ -25,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<TreeViewItem>(this.Template)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<TreeViewItem>(this.Template)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().Name("header"))
@@ -47,7 +48,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.ToggleButtonTemplate)),
+                        new Setter(ToggleButton.TemplateProperty, new ControlTemplate<ToggleButton>(this.ToggleButtonTemplate)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander").Class(":checked").Template().OfType<Path>())

@@ -6,14 +6,14 @@
 
 namespace Perspex.Themes.Default
 {
-    using System;
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Controls.Presenters;
+    using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
     using Perspex.Media;
-    using Perspex.Controls.Shapes;
     using Perspex.Styling;
-    using Perspex.Controls.Presenters;
 
     public class RadioButtonStyle : Styles
     {
@@ -25,7 +25,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<RadioButton>(this.Template)),
+                        new Setter(Button.TemplateProperty,  new ControlTemplate<RadioButton>(this.Template)),
                     },
                 },
                 new Style(x => x.OfType<RadioButton>().Template().Name("checkMark"))

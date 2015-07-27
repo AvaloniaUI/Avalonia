@@ -9,6 +9,7 @@ namespace Perspex.Controls.UnitTests.Primitives
     using Perspex.Collections;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Interactivity;
     using Xunit;
@@ -371,7 +372,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
         private ControlTemplate Template()
         {
-            return ControlTemplate.Create<Target>(control =>
+            return new ControlTemplate<Target>(control =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",

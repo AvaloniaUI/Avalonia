@@ -6,17 +6,15 @@ using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
 using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Perspex.Rendering;
-using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #endif
 using ReactiveUI;
-using Splat;
 
 namespace TestApplication
 {

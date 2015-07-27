@@ -22,7 +22,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ScrollViewer
             {
-                Template = ControlTemplate.Create<ScrollViewer>(this.CreateTemplate),
+                Template = new ControlTemplate<ScrollViewer>(this.CreateTemplate),
                 Content = "Foo",
             };
 
@@ -38,7 +38,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ContentControl
             {
-                Template = ControlTemplate.Create<ContentControl>(this.CreateNestedTemplate),
+                Template = new ControlTemplate<ContentControl>(this.CreateNestedTemplate),
                 Content = "Foo",
             };
 
@@ -104,7 +104,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = ControlTemplate.Create<ScrollViewer>(this.CreateTemplate),
+                Template = new ControlTemplate<ScrollViewer>(this.CreateTemplate),
                 Content = new ContentPresenter
                 {
                     Name = "this"

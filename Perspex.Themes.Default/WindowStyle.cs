@@ -10,7 +10,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
-    using Perspex.Media;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
 
     public class WindowStyle : Styles
@@ -23,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Window.TemplateProperty, ControlTemplate.Create<Window>(this.Template)),
+                        new Setter(Window.TemplateProperty, new ControlTemplate<Window>(this.Template)),
                         new Setter(Window.FontFamilyProperty, "Segoe UI"),
                         new Setter(Window.FontSizeProperty, 12.0),
                     },

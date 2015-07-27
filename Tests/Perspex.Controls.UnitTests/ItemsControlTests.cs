@@ -293,7 +293,7 @@ namespace Perspex.Controls.UnitTests
 
         private ControlTemplate GetTemplate()
         {
-            return ControlTemplate.Create<ItemsControl>(parent =>
+            return new ControlTemplate<ItemsControl>(parent =>
             {
                 return new Border
                 {

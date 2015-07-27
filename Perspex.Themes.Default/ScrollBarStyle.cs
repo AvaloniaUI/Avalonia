@@ -10,6 +10,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
 
@@ -23,14 +24,14 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal))
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
                         new Setter(ScrollBar.HeightProperty, 10.0),
                     },
                 },
@@ -45,7 +46,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, ControlTemplate.Create<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
                         new Setter(ScrollBar.WidthProperty, 10.0),
                     },
                 },
@@ -75,7 +76,7 @@ namespace Perspex.Themes.Default
                     Thumb = new Thumb
                     {
                         Name = "thumb",
-                        Template = ControlTemplate.Create<Thumb>(this.ThumbTemplate),
+                        Template = new ControlTemplate<Thumb>(this.ThumbTemplate),
                     },
                 },
             };

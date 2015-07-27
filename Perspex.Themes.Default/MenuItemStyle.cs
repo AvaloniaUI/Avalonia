@@ -11,6 +11,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Media;
@@ -31,14 +32,14 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(MenuItem.BorderThicknessProperty, 1.0),
                         new Setter(MenuItem.PaddingProperty, new Thickness(6, 0)),
-                        new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.PopupTemplate)),
+                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(this.PopupTemplate)),
                     },
                 },
                 new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(MenuItem.TemplateProperty, ControlTemplate.Create<MenuItem>(this.TopLevelTemplate)),
+                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(this.TopLevelTemplate)),
                     },
                 },
                 new Style(x => x.OfType<MenuItem>().Class("selected").Template().Name("root"))

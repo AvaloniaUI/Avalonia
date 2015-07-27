@@ -9,8 +9,7 @@ namespace Perspex.Controls.UnitTests
     using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
-    using Perspex.LogicalTree;
-    using Perspex.Styling;
+    using Perspex.Controls.Templates;
     using Xunit;
 
     public class TabStripTests
@@ -20,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabStrip
             {
-                Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -45,7 +44,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabStrip
             {
-                Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -70,7 +69,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabStrip
             {
-                Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem

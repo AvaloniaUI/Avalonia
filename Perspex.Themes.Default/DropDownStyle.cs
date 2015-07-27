@@ -9,9 +9,9 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Controls;
-    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(DropDown.TemplateProperty, ControlTemplate.Create<DropDown>(this.Template)),
+                        new Setter(DropDown.TemplateProperty, new ControlTemplate<DropDown>(this.Template)),
                         new Setter(DropDown.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(DropDown.BorderThicknessProperty, 2.0),
                         new Setter(DropDown.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),

@@ -6,11 +6,11 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.LogicalTree;
-    using System.Linq;
     using Xunit;
 
     public class TabControlTests
@@ -21,7 +21,7 @@ namespace Perspex.Controls.UnitTests
             TabItem selected;
             var target = new TabControl
             {
-                Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
                 Items = new[]
                 {
                     (selected = new TabItem
@@ -49,7 +49,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -74,7 +74,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -99,7 +99,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = ControlTemplate.Create<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -128,17 +128,17 @@ namespace Perspex.Controls.UnitTests
                     new TabStrip
                     {
                         Name = "tabStrip",
-                        Template = ControlTemplate.Create<TabStrip>(this.CreateTabStripTemplate),
+                        Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
                         [~TabStrip.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [~~TabStrip.SelectedTabProperty] = parent[~~TabControl.SelectedTabProperty]
                     },
                     new Deck
                     {
                         Name = "deck",
-                        Template = ControlTemplate.Create<Deck>(this.CreateDeckTemplate),
+                        Template = new ControlTemplate<Deck>(this.CreateDeckTemplate),
                         DataTemplates = new DataTemplates
                         {
-                            new DataTemplate<TabItem>(x => parent.MaterializeDataTemplate(x.Content)),
+                            new DataTemplate<TabItem>(x => (Control)parent.MaterializeDataTemplate(x.Content)),
                         },
                         [~Deck.ItemsProperty] = parent[~TabControl.ItemsProperty],
                         [~Deck.SelectedItemProperty] = parent[~TabControl.SelectedItemProperty],

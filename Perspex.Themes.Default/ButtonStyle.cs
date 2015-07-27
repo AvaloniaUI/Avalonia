@@ -11,6 +11,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
@@ -26,7 +27,7 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(Button.FocusAdornerProperty, new AdornerTemplate(FocusAdornerTemplate)),
-                        new Setter(Button.TemplateProperty, ControlTemplate.Create<Button>(this.Template)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<Button>(this.Template)),
                         new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },

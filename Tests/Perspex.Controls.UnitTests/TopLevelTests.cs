@@ -6,8 +6,11 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System.Reactive;
+    using System.Reactive.Subjects;
     using Moq;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Input.Raw;
     using Perspex.Layout;
@@ -17,8 +20,6 @@ namespace Perspex.Controls.UnitTests
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.AutoMoq;
     using Splat;
-    using System.Reactive;
-    using System.Reactive.Subjects;
     using Xunit;
 
     public class TopLevelTests
@@ -99,7 +100,7 @@ namespace Perspex.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
-                    Template = ControlTemplate.Create<TestTopLevel>(x =>
+                    Template = new ControlTemplate<TestTopLevel>(x =>
                         new ContentPresenter
                         {
                             [~ContentPresenter.ContentProperty] = x[~TestTopLevel.ContentProperty],
@@ -129,7 +130,7 @@ namespace Perspex.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
-                    Template = ControlTemplate.Create<TestTopLevel>(x =>
+                    Template = new ControlTemplate<TestTopLevel>(x =>
                         new ContentPresenter
                         {
                             [~ContentPresenter.ContentProperty] = x[~TestTopLevel.ContentProperty],

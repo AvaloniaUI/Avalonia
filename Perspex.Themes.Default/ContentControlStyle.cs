@@ -9,7 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
-    using Perspex.Media;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
 
     public class ContentControlStyle : Styles
@@ -22,7 +22,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ContentControl.TemplateProperty, ControlTemplate.Create<ContentControl>(this.Template)),
+                        new Setter(ContentControl.TemplateProperty, new ControlTemplate<ContentControl>(this.Template)),
                     },
                 },
             });

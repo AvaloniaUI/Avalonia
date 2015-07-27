@@ -1,16 +1,17 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DevTools.cs" company="Steven Kirk">
+// <copyright file="LogicalTreeView.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Diagnostics.Views
 {
-    using Perspex.Controls;
-    using Perspex.Diagnostics.ViewModels;
-    using ReactiveUI;
     using System;
     using System.Reactive.Linq;
+    using Perspex.Controls;
+    using Perspex.Controls.Templates;
+    using Perspex.Diagnostics.ViewModels;
+    using ReactiveUI;
 
     internal class LogicalTreeView : TreePage
     {

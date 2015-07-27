@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new ScrollBar
             {
-                Template = ControlTemplate.Create<ScrollBar>(Template),
+                Template = new ControlTemplate<ScrollBar>(Template),
             };
 
             target.ApplyTemplate();
@@ -34,7 +34,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new ScrollBar
             {
-                Template = ControlTemplate.Create<ScrollBar>(Template),
+                Template = new ControlTemplate<ScrollBar>(Template),
             };
 
             target.ApplyTemplate();
@@ -49,7 +49,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new ScrollBar
             {
-                Template = ControlTemplate.Create<ScrollBar>(Template),
+                Template = new ControlTemplate<ScrollBar>(Template),
             };
 
             target.ApplyTemplate();
@@ -127,7 +127,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                     [!Track.OrientationProperty] = control[!ScrollBar.OrientationProperty],
                     Thumb = new Thumb
                     {
-                        Template = ControlTemplate.Create<Thumb>(ThumbTemplate),
+                        Template = new ControlTemplate<Thumb>(ThumbTemplate),
                     },
                 },
             };

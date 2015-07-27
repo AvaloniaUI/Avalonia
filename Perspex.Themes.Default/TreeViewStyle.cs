@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
 
@@ -22,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeView.TemplateProperty, ControlTemplate.Create<TreeView>(this.Template)),
+                        new Setter(TreeView.TemplateProperty, new ControlTemplate<TreeView>(this.Template)),
                         new Setter(TreeView.BorderBrushProperty, Brushes.Black),
                         new Setter(TreeView.BorderThicknessProperty, 1.0),
                     },

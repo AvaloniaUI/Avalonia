@@ -10,6 +10,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
@@ -24,7 +25,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.TemplateProperty, ControlTemplate.Create<ToggleButton>(this.Template)),
+                        new Setter(ToggleButton.TemplateProperty, new ControlTemplate<ToggleButton>(this.Template)),
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(ToggleButton.BorderThicknessProperty, 2.0),

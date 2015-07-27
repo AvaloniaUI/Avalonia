@@ -9,6 +9,7 @@ namespace Perspex
     using System;
     using System.Threading;
     using Perspex.Controls;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Rendering;

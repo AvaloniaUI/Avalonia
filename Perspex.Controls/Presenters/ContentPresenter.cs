@@ -86,7 +86,7 @@ namespace Perspex.Controls.Presenters
 
             if (content != null)
             {
-                result = this.MaterializeDataTemplate(content);
+                result = (Control)this.MaterializeDataTemplate(content);
 
                 if (result.Parent == null)
                 {

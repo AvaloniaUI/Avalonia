@@ -8,10 +8,11 @@ namespace Perspex.Diagnostics
 {
     using System;
     using Perspex.Controls;
+    using Perspex.Controls.Templates;
 
     internal class ViewLocator<TViewModel> : IDataTemplate
     {
-        public Control Build(object data)
+        public IControl Build(object data)
         {
             var name = data.GetType().FullName.Replace("ViewModel", "View");
             var type = Type.GetType(name);

@@ -9,12 +9,9 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Controls;
-    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
-    using Perspex.Styling;
     using Perspex.Controls.Templates;
-    using Perspex.Animation;
-    using System;
+    using Perspex.Styling;
 
     public class TabControlStyle : Styles
     {
@@ -26,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TabControl.TemplateProperty, ControlTemplate.Create<TabControl>(this.Template)),
+                        new Setter(TabControl.TemplateProperty, new ControlTemplate<TabControl>(this.Template)),
                     },
                 },
             });
@@ -54,7 +51,7 @@ namespace Perspex.Themes.Default
                         Name = "deck",
                         DataTemplates = new DataTemplates
                         {
-                            new DataTemplate<TabItem>(x => control.MaterializeDataTemplate(x.Content)),
+                            new DataTemplate<TabItem>(x => (Control)control.MaterializeDataTemplate(x.Content)),
                         },
                         [~Deck.ItemsProperty] = control[~TabControl.ItemsProperty],
                         [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],

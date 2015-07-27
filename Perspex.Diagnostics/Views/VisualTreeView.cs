@@ -9,6 +9,7 @@ namespace Perspex.Diagnostics.Views
     using System;
     using System.Reactive.Linq;
     using Perspex.Controls;
+    using Perspex.Controls.Templates;
     using Perspex.Diagnostics.ViewModels;
     using Perspex.Media;
     using ReactiveUI;

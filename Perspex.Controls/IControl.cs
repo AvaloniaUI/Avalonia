@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls
 {
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Layout;
     using Perspex.Styling;

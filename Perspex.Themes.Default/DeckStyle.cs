@@ -6,10 +6,11 @@
 
 namespace Perspex.Themes.Default
 {
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
-    using System.Linq;
 
     public class DeckStyle : Styles
     {
@@ -21,7 +22,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Deck.TemplateProperty, ControlTemplate.Create<Deck>(this.Template)),
+                        new Setter(Deck.TemplateProperty, new ControlTemplate<Deck>(this.Template)),
                     },
                 },
             });

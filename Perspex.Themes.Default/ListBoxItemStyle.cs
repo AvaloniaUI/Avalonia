@@ -6,11 +6,12 @@
 
 namespace Perspex.Themes.Default
 {
+    using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
-    using System.Linq;
 
     public class ListBoxItemStyle : Styles
     {
@@ -22,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.TemplateProperty, ControlTemplate.Create<ListBoxItem>(this.Template)),
+                        new Setter(ListBoxItem.TemplateProperty, new ControlTemplate<ListBoxItem>(this.Template)),
                     },
                 },
                 new Style(x => x.OfType<ListBoxItem>().Class("selected").Template().Name("border"))

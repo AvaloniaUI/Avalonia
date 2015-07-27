@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Styling;
 
@@ -22,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Menu.TemplateProperty, ControlTemplate.Create<Menu>(this.Template)),
+                        new Setter(Menu.TemplateProperty, new ControlTemplate<Menu>(this.Template)),
                     },
                 },
             });

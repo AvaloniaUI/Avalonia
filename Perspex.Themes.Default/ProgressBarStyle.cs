@@ -12,6 +12,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Layout;
     using Perspex.Media;
     using Perspex.Styling;
@@ -26,7 +27,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ProgressBar.TemplateProperty, ControlTemplate.Create<ProgressBar>(this.Template)),
+                        new Setter(ProgressBar.TemplateProperty, new ControlTemplate<ProgressBar>(this.Template)),
                         new Setter(ProgressBar.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ProgressBar.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
                     },

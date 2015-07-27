@@ -6,9 +6,10 @@
 
 namespace Perspex.Controls.UnitTests
 {
-    using Perspex.Controls.Presenters;
-    using Perspex.LogicalTree;
     using System.Linq;
+    using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
+    using Perspex.LogicalTree;
     using Xunit;
 
     public class DeckTests
@@ -18,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = ControlTemplate.Create<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(this.CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -36,7 +37,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = ControlTemplate.Create<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(this.CreateTemplate),
                 Items = new[]
                 {
                     "Foo",

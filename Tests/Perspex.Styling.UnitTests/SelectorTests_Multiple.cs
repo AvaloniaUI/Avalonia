@@ -10,6 +10,7 @@ namespace Perspex.Styling.UnitTests
     using System.Collections.Generic;
     using System.Linq;
     using Perspex.Controls;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
     using Xunit;
 

@@ -39,7 +39,7 @@ namespace Perspex.Controls.UnitTests
 
         private ControlTemplate GetTemplate()
         {
-            return ControlTemplate.Create<DropDown>(parent =>
+            return new ControlTemplate<DropDown>(parent =>
             {
                 return new Panel
                 {

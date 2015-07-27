@@ -10,7 +10,7 @@ namespace Perspex.Themes.Default
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
-    using Perspex.Media;
+    using Perspex.Controls.Templates;
     using Perspex.Styling;
 
     public class ScrollViewerStyle : Styles
@@ -23,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollViewer.TemplateProperty, ControlTemplate.Create<ScrollViewer>(this.Template)),
+                        new Setter(ScrollViewer.TemplateProperty, new ControlTemplate<ScrollViewer>(this.Template)),
                     },
                 },
             });
