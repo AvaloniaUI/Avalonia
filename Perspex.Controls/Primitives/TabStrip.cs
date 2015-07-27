@@ -16,13 +16,9 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
             TabControl.SelectedTabProperty.AddOwner<TabStrip>();
 
-        private static readonly ItemsPanelTemplate PanelTemplate = new ItemsPanelTemplate(
-            () => new StackPanel());
-
         static TabStrip()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
-            ItemsPanelProperty.OverrideDefaultValue(typeof(TabStrip), PanelTemplate);
         }
 
         public TabStrip()

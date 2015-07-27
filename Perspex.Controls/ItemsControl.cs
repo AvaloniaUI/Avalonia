@@ -23,7 +23,7 @@ namespace Perspex.Controls
     {
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
         private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Vertical });
+            new ItemsPanelTemplate(() => new StackPanel());
 
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
