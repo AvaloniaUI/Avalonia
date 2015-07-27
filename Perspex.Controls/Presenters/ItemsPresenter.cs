@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using System;
     using System.Collections;
     using System.Collections.Specialized;
     using Perspex.Controls.Generators;
@@ -59,6 +60,16 @@ namespace Perspex.Controls.Presenters
                 }
 
                 return this.generator;
+            }
+
+            set
+            {
+                if (this.generator != null)
+                {
+                    throw new InvalidOperationException("ItemContainerGenerator is already set.");
+                }
+
+                this.generator = value;
             }
         }
 

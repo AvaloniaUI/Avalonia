@@ -7,13 +7,113 @@
 namespace Perspex.Controls.UnitTests.Presenters
 {
     using System.Linq;
+    using Perspex.Collections;
+    using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
     using Perspex.Input;
+    using Perspex.LogicalTree;
     using Perspex.VisualTree;
     using Xunit;
 
     public class ItemsPresenterTests
     {
+        [Fact]
+        public void Should_Add_Containers()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal(2, target.Panel.Children.Count);
+            Assert.IsType<TextBlock>(target.Panel.Children[0]);
+            Assert.IsType<TextBlock>(target.Panel.Children[1]);
+            Assert.Equal("foo", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.Equal("bar", ((TextBlock)target.Panel.Children[1]).Text);
+        }
+
+        [Fact]
+        public void Should_Add_Containers_Of_Correct_Type()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ItemContainerGenerator = new TypedItemContainerGenerator<ListBoxItem>(target);
+            target.ApplyTemplate();
+
+            Assert.Equal(2, target.Panel.Children.Count);
+            Assert.IsType<ListBoxItem>(target.Panel.Children[0]);
+            Assert.IsType<ListBoxItem>(target.Panel.Children[1]);
+        }
+
+        [Fact]
+        public void Should_Remove_Containers()
+        {
+            var items = new PerspexList<string>(new[] { "foo", "bar" });
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.RemoveAt(0);
+
+            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
+        }
+
+        [Fact]
+        public void Clearing_Items_Should_Remove_Containers()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ApplyTemplate();
+            target.Items = null;
+
+            Assert.Empty(target.Panel.Children);
+        }
+
+        [Fact]
+        public void Should_Handle_Null_Items()
+        {
+            var items = new PerspexList<string>(new[] { "foo", null, "bar" });
+
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.RemoveAt(2);
+
+            var text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text).ToList();
+            Assert.Equal(new[] { "foo", "bar" }, text);
+        }
+
+        [Fact]
+        public void Should_Handle_Duplicate_Items()
+        {
+            var items = new PerspexList<int>(new[] { 1, 2, 1 });
+
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.RemoveAt(2);
+
+            var text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text);
+            Assert.Equal(new[] { "1", "2" }, text);
+        }
+
         [Fact]
         public void Panel_Should_Be_Created_From_ItemsPanel_Template()
         {
@@ -69,19 +169,6 @@ namespace Perspex.Controls.UnitTests.Presenters
             var child = target.GetVisualChildren().Single();
 
             Assert.Equal(target.Panel, child);
-        }
-
-        [Fact]
-        public void Items_Should_Be_Created_On_ApplyTemplate()
-        {
-            var target = new ItemsPresenter
-            {
-                Items = new[] { "foo", "bar" },
-            };
-
-            target.ApplyTemplate();
-
-            Assert.Equal(2, target.Panel.GetVisualChildren().Count());
         }
     }
 }

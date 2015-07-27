@@ -10,7 +10,7 @@ namespace Perspex.Controls.Generators
 
     public class TypedItemContainerGenerator<T> : ItemContainerGenerator where T : ContentControl, new()
     {
-        public TypedItemContainerGenerator(ItemsControl owner)
+        public TypedItemContainerGenerator(Control owner)
             : base(owner)
         {
         }
