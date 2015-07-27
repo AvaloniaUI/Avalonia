@@ -8,22 +8,20 @@ namespace Perspex.Controls
 {
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
-    using System;
 
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
     public class ProgressBar : RangeBase
     {
+        private Border indicator;
+
         static ProgressBar()
         {
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
         }
 
-        private Border indicator;
-
         /// <inheritdoc/>
-        /// 
         protected override void OnTemplateApplied()
         {
             this.indicator = this.GetTemplateChild<Border>("PART_Indicator");
