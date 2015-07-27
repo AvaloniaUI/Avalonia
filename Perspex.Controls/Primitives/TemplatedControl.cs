@@ -138,8 +138,8 @@ namespace Perspex.Controls.Primitives
                     this.templateLog.Verbose("Creating control template");
 
                     var child = this.Template.Build(this);
-                    this.SetTemplatedParent(child);
-                    this.AddVisualChild(child);
+                    this.SetTemplatedParent((Control)child);
+                    this.AddVisualChild((Visual)child);
                     ((ISetLogicalParent)child).SetParent(this);
 
                     foreach (var i in this.GetTemplateChildren())

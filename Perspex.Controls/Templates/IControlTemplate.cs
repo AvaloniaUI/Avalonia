@@ -12,7 +12,7 @@ namespace Perspex.Controls.Templates
     /// <summary>
     /// Interface representing a template used to build a <see cref="TemplatedControl"/>.
     /// </summary>
-    public interface IControlTemplate : ITemplate<ITemplatedControl, Control>
+    public interface IControlTemplate : ITemplate<ITemplatedControl, IControl>
     {
     }
 }

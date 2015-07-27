@@ -20,7 +20,7 @@ namespace Perspex.Controls.Templates
         /// Initializes a new instance of the <see cref="ControlTemplate{T}"/> class.
         /// </summary>
         /// <param name="build">The build function.</param>
-        public ControlTemplate(Func<T, Control> build)
+        public ControlTemplate(Func<T, IControl> build)
             : base(x => build((T)x))
         {
         }

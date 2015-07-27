@@ -20,7 +20,7 @@ namespace Perspex.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public DataTemplate(Func<T, Control> build)
+        public DataTemplate(Func<T, IControl> build)
             : base(typeof(T), CastBuild(build))
         {
         }
@@ -34,7 +34,7 @@ namespace Perspex.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public DataTemplate(Func<T, bool> match, Func<T, Control> build)
+        public DataTemplate(Func<T, bool> match, Func<T, IControl> build)
             : base(CastMatch(match), CastBuild(build))
         {
         }
