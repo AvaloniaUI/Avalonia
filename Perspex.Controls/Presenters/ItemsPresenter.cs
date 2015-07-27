@@ -6,60 +6,90 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using System.Collections;
+    using System.Collections.Specialized;
     using Perspex.Controls.Generators;
     using Perspex.Input;
     using Perspex.Styling;
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Reactive.Linq;
 
+    /// <summary>
+    /// Displays items inside an <see cref="ItemsControl"/>.
+    /// </summary>
     public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl
     {
+        /// <summary>
+        /// Defines the <see cref="Items"/> property.
+        /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="ItemsPanel"/> property.
+        /// </summary>
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
         private bool createdPanel;
 
+        private IItemContainerGenerator generator;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="ItemsPresenter"/> class.
+        /// </summary>
         static ItemsPresenter()
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
+            ItemsProperty.Changed.AddClassHandler<ItemsPresenter>(x => x.ItemsChanged);
         }
 
-        public ItemsPresenter()
+        /// <summary>
+        /// Gets the <see cref="IItemContainerGenerator"/> used to generate item container
+        /// controls.
+        /// </summary>
+        public IItemContainerGenerator ItemContainerGenerator
         {
-            this.GetObservableWithHistory(ItemsProperty).Subscribe(this.ItemsChanged);
+            get
+            {
+                if (this.generator == null)
+                {
+                    var i = this.TemplatedParent as ItemsControl;
+                    this.generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
+                }
+
+                return this.generator;
+            }
         }
 
-        public ItemContainerGenerator ItemContainerGenerator
-        {
-            get;
-            private set;
-        }
-
+        /// <summary>
+        /// Gets or sets the items to be displayed.
+        /// </summary>
         public IEnumerable Items
         {
             get { return this.GetValue(ItemsProperty); }
             set { this.SetValue(ItemsProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
+        /// </summary>
         public ItemsPanelTemplate ItemsPanel
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the panel used to display the items.
+        /// </summary>
         public Panel Panel
         {
             get;
             private set;
         }
 
+        /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
             if (!this.createdPanel)
@@ -68,18 +98,24 @@ namespace Perspex.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
             return this.Panel.DesiredSize;
         }
 
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
             this.Panel.Arrange(new Rect(finalSize));
             return finalSize;
         }
 
+        /// <summary>
+        /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first
+        /// time.
+        /// </summary>
         private void CreatePanel()
         {
             this.ClearVisualChildren();
@@ -89,32 +125,44 @@ namespace Perspex.Controls.Presenters
             ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
-            this.ItemsChanged(Tuple.Create(default(IEnumerable), this.Items));
+            this.CreateItemsAndListenForChanges(this.Items);
         }
 
-        private IItemContainerGenerator GetGenerator()
+        /// <summary>
+        /// Creates the items for a collection and starts listening for changes on the collection.
+        /// </summary>
+        /// <param name="items">The items, may be null.</param>
+        private void CreateItemsAndListenForChanges(IEnumerable items)
         {
-            if (this.ItemContainerGenerator == null)
+            if (items != null)
             {
-                ItemsControl i = this.TemplatedParent as ItemsControl;
-                this.ItemContainerGenerator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
-            }
+                this.Panel.Children.AddRange(this.ItemContainerGenerator.Generate(this.Items));
 
-            return this.ItemContainerGenerator;
+                INotifyCollectionChanged incc = items as INotifyCollectionChanged;
+
+                if (incc != null)
+                {
+                    incc.CollectionChanged += this.ItemsCollectionChanged;
+                }
+            }
         }
 
-        private void ItemsChanged(Tuple<IEnumerable, IEnumerable> value)
+        /// <summary>
+        /// Called when the <see cref="Items"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
             if (this.createdPanel)
             {
-                var generator = this.GetGenerator();
+                var generator = this.ItemContainerGenerator;
 
-                if (value.Item1 != null)
+                if (e.OldValue != null)
                 {
                     generator.RemoveAll();
                     this.Panel.Children.Clear();
 
-                    INotifyCollectionChanged incc = value.Item1 as INotifyCollectionChanged;
+                    INotifyCollectionChanged incc = e.OldValue as INotifyCollectionChanged;
 
                     if (incc != null)
                     {
@@ -124,26 +172,21 @@ namespace Perspex.Controls.Presenters
 
                 if (this.Panel != null)
                 {
-                    if (value.Item2 != null)
-                    {
-                        this.Panel.Children.AddRange(generator.Generate(this.Items));
-
-                        INotifyCollectionChanged incc = value.Item2 as INotifyCollectionChanged;
-
-                        if (incc != null)
-                        {
-                            incc.CollectionChanged += this.ItemsCollectionChanged;
-                        }
-                    }
+                    this.CreateItemsAndListenForChanges((IEnumerable)e.NewValue);
                 }
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="Items"/> collection changes.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
         private void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (this.createdPanel)
             {
-                var generator = this.GetGenerator();
+                var generator = this.ItemContainerGenerator;
 
                 // TODO: Handle Move and Replace etc.
                 switch (e.Action)
