@@ -34,7 +34,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 TemplatedParent = parent,
             };
 
-            Assert.IsType<TypedItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);
+            Assert.IsType<ItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new TypedItemContainerGenerator<TestItem>(this);
+                return new ItemContainerGenerator<TestItem>(this);
             }
         }
     }

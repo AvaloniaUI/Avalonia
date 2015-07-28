@@ -13,7 +13,7 @@ namespace Perspex.Controls
     {
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TypedItemContainerGenerator<ListBoxItem>(this);
+            return new ItemContainerGenerator<ListBoxItem>(this);
         }
     }
 }

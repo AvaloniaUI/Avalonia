@@ -7,7 +7,7 @@ namespace Perspex.Controls
 {
     using Perspex.Layout;
 
-    public interface IContentControl
+    public interface IContentControl : IControl
     {
         object Content { get; set; }
 

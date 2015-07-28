@@ -91,7 +91,7 @@
     <Compile Include="Templates\DataTemplateExtensions.cs" />
     <Compile Include="Templates\DataTemplate.cs" />
     <Compile Include="Generators\TreeItemContainerGenerator.cs" />
-    <Compile Include="Generators\TypedItemContainerGenerator.cs" />
+    <Compile Include="Generators\ItemContainerGenerator`1.cs" />
     <Compile Include="Generators\ItemContainerGenerator.cs" />
     <Compile Include="IGlobalDataTemplates.cs" />
     <Compile Include="Templates\DataTemplates.cs" />
