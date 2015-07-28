@@ -10,9 +10,10 @@ namespace Perspex.Controls.Primitives
     using System.Collections;
     using System.Collections.Specialized;
     using System.Linq;
-    using Perspex.Controls.Utils;
+    using Perspex.Controls.Generators;
     using Perspex.Input;
     using Perspex.Interactivity;
+    using Perspex.Styling;
     using Perspex.VisualTree;
 
     /// <summary>
@@ -53,9 +54,17 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ItemIsSelectedChanged);
-            SelectedIndexProperty.Changed.Subscribe(SelectedIndexChanged);
-            SelectedItemProperty.Changed.Subscribe(SelectedItemChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
+            SelectedIndexProperty.Changed.AddClassHandler<SelectingItemsControl>(x => x.SelectedIndexChanged);
+            SelectedItemProperty.Changed.AddClassHandler<SelectingItemsControl>(x => x.SelectedItemChanged);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectingItemsControl"/> class.
+        /// </summary>
+        public SelectingItemsControl()
+        {
+            this.ItemContainerGenerator.ContainersInitialized.Subscribe(this.ContainersInitialized);
         }
 
         /// <summary>
@@ -76,258 +85,186 @@ namespace Perspex.Controls.Primitives
             set { this.SetValue(SelectedItemProperty, value); }
         }
 
-        /// <summary>
-        /// Called when the <see cref="Items"/> property changes.
-        /// </summary>
-        /// <param name="oldValue">The old value of the property.</param>
-        /// <param name="newValue">The new value of the property.</param>
+        /// <inheritdoc/>
         protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
         {
             base.ItemsChanged(oldValue, newValue);
-
-            var selected = this.SelectedItem;
-
-            if (selected != null)
-            {
-                if (newValue == null || !newValue.Contains(selected))
-                {
-                    this.SelectedItem = null;
-                }
-            }
+            this.SelectedIndex = IndexOf(newValue, this.SelectedItem);
         }
 
-        /// <summary>
-        /// Called when a <see cref="INotifyCollectionChanged.CollectionChanged"/> event is raised
-        /// on <see cref="Items"/>.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
+        /// <inheritdoc/>
         protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsCollectionChanged(sender, e);
 
-            var selected = this.SelectedItem;
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    var selectedIndex = this.SelectedIndex;
+
+                    if (selectedIndex >= e.OldStartingIndex &&
+                        selectedIndex < e.OldStartingIndex + e.OldItems.Count)
+                    {
+                        this.SelectedIndex = -1;
+                    }
+
+                    break;
+
                 case NotifyCollectionChangedAction.Reset:
-                    if (e.OldItems.Contains(selected))
-                    {
-                        this.SelectedItem = null;
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    this.SelectedItem = this.Items.IndexOf(selected);
+                    this.SelectedIndex = IndexOf(e.NewItems, this.SelectedItem);
                     break;
             }
         }
 
-        /// <summary>
-        /// Called when the selection on a child item changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void ItemIsSelectedChanged(RoutedEventArgs e)
+        /// <inheritdoc/>
+        protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            var selectable = e.Source as ISelectable;
-
-            if (selectable != null && selectable != this && selectable.IsSelected)
-            {
-                var container = this.ItemContainerGenerator.GetItemForContainer((Control)selectable);
-
-                if (container != null)
-                {
-                    this.SelectedItem = container;
-                    e.Handled = true;
-                }
-            }
+            base.OnGotFocus(e);
+            this.TrySetSelectionFromContainerEvent(e.Source);
         }
 
         /// <summary>
-        /// Moves the selection in the specified direction.
+        /// Gets the index of an item in a collection.
         /// </summary>
-        /// <param name="direction">The direction.</param>
-        protected virtual void MoveSelection(FocusNavigationDirection direction)
+        /// <param name="items">The collection.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>The index of the item or -1 if the item was not found.</returns>
+        private static int IndexOf(IEnumerable items, object item)
         {
-            var panel = this.Presenter?.Panel as INavigablePanel;
-            var selected = this.SelectedItem;
-            var container = selected != null ?
-                this.ItemContainerGenerator.GetContainerForItem(selected) :
-                null;
-
-            if (panel != null)
+            if (items != null && item != null)
             {
-                var next = panel.GetControl(direction, container);
+                var list = items as IList;
 
-                if (next != null)
+                if (list != null)
                 {
-                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer((Control)next);
+                    return list.IndexOf(item);
                 }
-            }
-            else
-            {
-                // TODO: Try doing a visual search?
-            }
-        }
-
-        /// <summary>
-        /// Called when a key is pressed within the control.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (!e.Handled)
-            {
-                switch (e.Key)
+                else
                 {
-                    case Key.Up:
-                        this.MoveSelection(FocusNavigationDirection.Up);
-                        break;
-                    case Key.Down:
-                        this.MoveSelection(FocusNavigationDirection.Down);
-                        break;
-                    case Key.Left:
-                        this.MoveSelection(FocusNavigationDirection.Left);
-                        break;
-                    case Key.Right:
-                        this.MoveSelection(FocusNavigationDirection.Right);
-                        break;
-                    default:
-                        return;
-                }
+                    int index = 0;
 
-                var selected = this.SelectedItem;
-
-                if (selected != null)
-                {
-                    var container = this.ItemContainerGenerator.GetContainerForItem(selected);
-
-                    if (container != null)
+                    foreach (var i in items)
                     {
-                        container.BringIntoView();
-                        FocusManager.Instance.Focus(container, true);
+                        if (object.Equals(i, item))
+                        {
+                            return index;
+                        }
+
+                        ++index;
                     }
                 }
-
-                e.Handled = true;
             }
+
+            return -1;
         }
 
         /// <summary>
-        /// Called when the pointer is pressed within the control.
+        /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        /// <param name="container">The container.</param>
+        /// <param name="selected">Whether the control is selected</param>
+        private static void MarkContainerSelected(IControl container, bool selected)
         {
-            IVisual source = (IVisual)e.Source;
-            var selectable = source.GetVisualAncestors()
-                .OfType<ISelectable>()
-                .OfType<Control>()
-                .FirstOrDefault();
+            var selectable = container as ISelectable;
+            var styleable = container as IStyleable;
 
             if (selectable != null)
             {
-                var item = this.ItemContainerGenerator.GetItemForContainer(selectable);
-
-                if (item != null)
-                {
-                    this.SelectedItem = item;
-                    selectable.BringIntoView();
-                    FocusManager.Instance.Focus(selectable);
-                }
+                selectable.IsSelected = selected;
             }
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Called when the control's template has been applied.
-        /// </summary>
-        protected override void OnTemplateApplied()
-        {
-            base.OnTemplateApplied();
-            this.SelectedItemChanged(this.SelectedItem);
-        }
-
-        /// <summary>
-        /// Provides coercion for the <see cref="SelectedIndex"/> property.
-        /// </summary>
-        /// <param name="o">The object on which the property has changed.</param>
-        /// <param name="value">The proposed value.</param>
-        /// <returns>The coerced value.</returns>
-        private static int ValidateSelectedIndex(PerspexObject o, int value)
-        {
-            var control = o as SelectingItemsControl;
-
-            if (control != null)
+            else if (styleable != null)
             {
-                if (value < -1)
+                if (selected)
                 {
-                    return -1;
+                    styleable.Classes.Add("selected");
                 }
-                else if (value > -1)
+                else
                 {
-                    var items = control.Items;
-
-                    if (items != null)
-                    {
-                        var count = items.Count();
-                        return Math.Min(value, count - 1);
-                    }
-                    else
-                    {
-                        return -1;
-                    }
+                    styleable.Classes.Remove("selected");
                 }
             }
-
-            return value;
         }
 
         /// <summary>
-        /// Provides coercion for the <see cref="SelectedItem"/> property.
+        /// Coerces the <see cref="SelectedIndex"/> property.
         /// </summary>
-        /// <param name="o">The object on which the property has changed.</param>
-        /// <param name="value">The proposed value.</param>
-        /// <returns>The coerced value.</returns>
-        private static object ValidateSelectedItem(PerspexObject o, object value)
+        /// <param name="sender">The object with the property.</param>
+        /// <param name="index">The proposed value of the property.</param>
+        /// <returns>The final value of the property.</returns>
+        private static int ValidateSelectedIndex(SelectingItemsControl sender, int index)
         {
-            var control = o as SelectingItemsControl;
+            var items = sender.Items;
+            return (index >= 0 && index < items?.Cast<object>().Count()) ? index : -1;
+        }
 
-            if (control != null)
+        /// <summary>
+        /// Coerces the <see cref="SelectedItem"/> property.
+        /// </summary>
+        /// <param name="sender">The object with the property.</param>
+        /// <param name="item">The proposed value of the property.</param>
+        /// <returns>The final value of the property.</returns>
+        private static object ValidateSelectedItem(SelectingItemsControl sender, object item)
+        {
+            var items = sender.Items;
+            return items?.Cast<object>().Contains(item) == true ? item : null;
+        }
+
+        /// <summary>
+        /// Called when new containers are initialized by the <see cref="ItemContainerGenerator"/>.
+        /// </summary>
+        /// <param name="containers">The containers.</param>
+        private void ContainersInitialized(ItemContainers containers)
+        {
+            var selectedIndex = this.SelectedIndex;
+            var selectedContainer = containers.Items.OfType<ISelectable>().FirstOrDefault(x => x.IsSelected);
+
+            if (selectedContainer != null)
             {
-                if (value != null && (control.Items == null || control.Items.IndexOf(value) == -1))
-                {
-                    return null;
-                }
+                this.SelectedIndex = containers.Items.IndexOf((IControl)selectedContainer) + containers.StartingIndex;
             }
+            else if (selectedIndex >= containers.StartingIndex &&
+                     selectedIndex < containers.StartingIndex + containers.Items.Count)
+            {
+                var container = containers.Items[selectedIndex - containers.StartingIndex];
+                MarkContainerSelected(container, true);
+            }
+        }
 
-            return value;
+        /// <summary>
+        /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
+        /// </summary>
+        /// <param name="e">The event.</param>
+        private void ContainerSelectionChanged(RoutedEventArgs e)
+        {
+            this.TrySetSelectionFromContainerEvent(e.Source);
         }
 
         /// <summary>
         /// Called when the <see cref="SelectedIndex"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
+        private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
         {
-            var control = e.Sender as SelectingItemsControl;
+            var index = (int)e.OldValue;
 
-            if (control != null)
+            if (index != -1)
             {
-                var index = (int)e.NewValue;
+                var container = this.ItemContainerGenerator.ContainerFromIndex(index);
+                MarkContainerSelected(container, false);
+            }
 
-                if (index == -1)
-                {
-                    control.SelectedItem = null;
-                }
-                else
-                {
-                    control.SelectedItem = control.Items.ElementAt((int)e.NewValue);
-                }
+            index = (int)e.NewValue;
+
+            if (index == -1)
+            {
+                this.SelectedItem = null;
+            }
+            else
+            {
+                this.SelectedItem = this.Items.Cast<object>().ElementAt((int)e.NewValue);
+                var container = this.ItemContainerGenerator.ContainerFromIndex(index);
+                MarkContainerSelected(container, true);
             }
         }
 
@@ -335,50 +272,28 @@ namespace Perspex.Controls.Primitives
         /// Called when the <see cref="SelectedItem"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
+        private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
         {
-            var control = e.Sender as SelectingItemsControl;
-
-            if (control != null)
-            {
-                control.SelectedItemChanged(e.NewValue);
-            }
+            this.SelectedIndex = IndexOf(this.Items, e.NewValue);
         }
 
         /// <summary>
-        /// Called when the <see cref="SelectedItem"/> property changes.
+        /// Tries to set the selection to a container that raised an event.
         /// </summary>
-        /// <param name="selected">The new selected item.</param>
-        private void SelectedItemChanged(object selected)
+        /// <param name="eventSource">The control that raised the event.</param>
+        private void TrySetSelectionFromContainerEvent(IInteractive eventSource)
         {
-            var containers = this.ItemContainerGenerator.GetAll()
-                .Select(x => x.Item2)
-                .OfType<ISelectable>();
-            var selectedContainer = (selected != null) ?
-                this.ItemContainerGenerator.GetContainerForItem(selected) :
-                null;
+            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
+                .OfType<ILogical>()
+                .FirstOrDefault(x => x.LogicalParent == this);
 
-            if (this.Presenter != null && this.Presenter.Panel != null)
+            if (item != null)
             {
-                KeyboardNavigation.SetTabOnceActiveElement(this.Presenter.Panel, selectedContainer);
-            }
+                var index = this.ItemContainerGenerator.IndexFromContainer((IControl)item);
 
-            foreach (var item in containers)
-            {
-                item.IsSelected = item == selectedContainer;
-            }
-
-            if (selected == null)
-            {
-                this.SelectedIndex = -1;
-            }
-            else
-            {
-                var items = this.Items;
-
-                if (items != null)
+                if (index != -1)
                 {
-                    this.SelectedIndex = items.IndexOf(selected);
+                    this.SelectedIndex = index;
                 }
             }
         }

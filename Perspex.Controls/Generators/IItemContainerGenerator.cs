@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="IItemContainerGenerator.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -9,30 +9,60 @@ namespace Perspex.Controls.Generators
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Templates;
 
-    public enum ItemContainerGeneratorState
-    {
-        NoStarted,
-        Generating,
-        Generated,
-    }
-
+    /// <summary>
+    /// Creates containers for items and maintains a list of created containers.
+    /// </summary>
     public interface IItemContainerGenerator
     {
-        event EventHandler StateChanged;
+        /// <summary>
+        /// Signalled whenever new containers are initialized.
+        /// </summary>
+        IObservable<ItemContainers> ContainersInitialized { get; }
 
-        ItemContainerGeneratorState State { get; }
+        /// <summary>
+        /// Creates container controls for a collection of items.
+        /// </summary>
+        /// <param name="startingIndex">
+        /// The index of the first item of the data in the containing collection.
+        /// </param>
+        /// <param name="items">The items.</param>
+        /// <param name="itemTemplate">An optional item template.</param>
+        /// <returns>The created controls.</returns>
+        IList<IControl> CreateContainers(
+            int startingIndex,
+            IEnumerable items,
+            IDataTemplate itemTemplate);
 
-        Control GetContainerForItem(object item);
+        /// <summary>
+        /// Removes a set of created containers from the index and returns the removed controls.
+        /// </summary>
+        /// <param name="startingIndex">
+        /// The index of the first item of the data in the containing collection.
+        /// </param>
+        /// <param name="count">The number of items to remove.</param>
+        /// <returns>The removed controls.</returns>
+        IList<IControl> RemoveContainers(int startingIndex, int count);
 
-        object GetItemForContainer(Control container);
+        /// <summary>
+        /// Clears the created containers from the index and returns the removed controls.
+        /// </summary>
+        /// <returns>The removed controls.</returns>
+        IList<IControl> ClearContainers();
 
-        IEnumerable<Tuple<object, Control>> GetAll();
+        /// <summary>
+        /// Gets the container control representing the item with the specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>The container, or null if no container created.</returns>
+        IControl ContainerFromIndex(int index);
 
-        IEnumerable<Control> Generate(IEnumerable items);
-
-        IEnumerable<Control> Remove(IEnumerable item);
-
-        void RemoveAll();
+        /// <summary>
+        /// Gets the index of the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>The index of the container, or -1 if not found.</returns>
+        int IndexFromContainer(IControl container);
     }
 }

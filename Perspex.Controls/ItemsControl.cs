@@ -77,26 +77,26 @@ namespace Perspex.Controls
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get
-            {
-                this.ApplyTemplate();
-                return this.logicalChildren;
-            }
-        }
-
-        protected IItemsPresenter Presenter
+        public IItemsPresenter Presenter
         {
             get
             {
                 return this.presenter;
             }
 
-            set
+            protected set
             {
                 this.presenter = value;
                 this.logicalChildren.Source = ((IVisual)value?.Panel)?.VisualChildren;
+            }
+        }
+
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
+        {
+            get
+            {
+                this.ApplyTemplate();
+                return this.logicalChildren;
             }
         }
 

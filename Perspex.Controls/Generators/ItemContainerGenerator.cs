@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="ItemContainerGenerator.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -10,145 +10,182 @@ namespace Perspex.Controls.Generators
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive.Subjects;
     using Perspex.Controls.Templates;
 
+    /// <summary>
+    /// Creates containers for items and maintains a list of created containers.
+    /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private Dictionary<object, Control> containersByItem = new Dictionary<object, Control>();
+        private Dictionary<int, IControl> containers = new Dictionary<int, IControl>();
 
-        private Dictionary<Control, object> itemsByContainer = new Dictionary<Control, object>();
+        private Subject<ItemContainers> containersInitialized;
 
-        private ItemContainerGeneratorState state;
-
-        public ItemContainerGenerator(Control owner)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
+        /// </summary>
+        /// <param name="owner">The owner control.</param>
+        public ItemContainerGenerator(IControl owner)
         {
             this.Owner = owner;
+            this.containersInitialized = new Subject<ItemContainers>();
         }
 
-        public event EventHandler StateChanged;
+        /// <summary>
+        /// Signalled whenever new containers are initialized.
+        /// </summary>
+        public IObservable<ItemContainers> ContainersInitialized => this.containersInitialized;
 
-        public ItemContainerGeneratorState State
+        /// <summary>
+        /// Gets the owner control.
+        /// </summary>
+        public IControl Owner { get; }
+
+        /// <summary>
+        /// Creates container controls for a collection of items.
+        /// </summary>
+        /// <param name="startingIndex">
+        /// The index of the first item of the data in the containing collection.
+        /// </param>
+        /// <param name="items">The items.</param>
+        /// <param name="itemTemplate">An optional item template.</param>
+        /// <returns>The created container controls.</returns>
+        public IList<IControl> CreateContainers(
+            int startingIndex,
+            IEnumerable items,
+            IDataTemplate itemTemplate)
         {
-            get
-            {
-                return this.state;
-            }
+            Contract.Requires<ArgumentNullException>(items != null);
 
-            private set
-            {
-                if (this.state != value)
-                {
-                    this.state = value;
-
-                    if (this.StateChanged != null)
-                    {
-                        this.StateChanged(this, EventArgs.Empty);
-                    }
-                }
-            }
-        }
-
-        protected Control Owner
-        {
-            get;
-            private set;
-        }
-
-        public Control GetContainerForItem(object item)
-        {
-            Control result;
-            this.containersByItem.TryGetValue(item, out result);
-            return result;
-        }
-
-        public object GetItemForContainer(Control container)
-        {
-            object result;
-            this.itemsByContainer.TryGetValue(container, out result);
-            return result;
-        }
-
-        public IEnumerable<Tuple<object, Control>> GetAll()
-        {
-            return this.containersByItem.Select(x => Tuple.Create(x.Key, x.Value));
-        }
-
-        IEnumerable<Control> IItemContainerGenerator.Generate(IEnumerable items)
-        {
-            List<Control> result = new List<Control>();
-
-            this.State = ItemContainerGeneratorState.Generating;
-
-            try
-            {
-                foreach (object item in items)
-                {
-                    Control container = this.CreateContainerOverride(item);
-
-                    if (container != null)
-                    {
-                        if (container.DataContext == null)
-                        {
-                            container.DataContext = item;
-                        }
-
-                        container.TemplatedParent = null;
-                        this.AddInternal(item, container);
-                        result.Add(container);
-                    }
-                }
-            }
-            finally
-            {
-                this.State = ItemContainerGeneratorState.Generated;
-            }
-
-            return result;
-        }
-
-        IEnumerable<Control> IItemContainerGenerator.Remove(IEnumerable items)
-        {
-            List<Control> result = new List<Control>();
+            int index = startingIndex;
+            var result = new List<IControl>();
 
             foreach (var item in items)
             {
-                result.Add(this.RemoveByItemInternal(item));
+                IControl container = this.CreateContainer(item, itemTemplate);
+                result.Add(container);
+            }
+
+            this.AddContainers(startingIndex, result);
+            this.containersInitialized.OnNext(new ItemContainers(startingIndex, result));
+
+            return result.Where(x => x != null).ToList();
+        }
+
+        /// <summary>
+        /// Removes a set of created containers from the index and returns the removed controls.
+        /// </summary>
+        /// <param name="startingIndex">
+        /// The index of the first item of the data in the containing collection.
+        /// </param>
+        /// <param name="count">The number of items to remove.</param>
+        /// <returns>The removed controls.</returns>
+        public IList<IControl> RemoveContainers(int startingIndex, int count)
+        {
+            var result = new List<IControl>();
+
+            for (int i = startingIndex; i < startingIndex + count; ++i)
+            {
+                var container = this.containers[i];
+
+                if (container != null)
+                {
+                    result.Add(container);
+                    this.containers[i] = null;
+                }
             }
 
             return result;
         }
 
-        void IItemContainerGenerator.RemoveAll()
+        /// <summary>
+        /// Clears the created containers from the index and returns the removed controls.
+        /// </summary>
+        /// <returns>The removed controls.</returns>
+        public IList<IControl> ClearContainers()
         {
-            this.containersByItem.Clear();
-            this.itemsByContainer.Clear();
+            var result = this.containers;
+            this.containers = new Dictionary<int, IControl>();
+            return result.Values.ToList();
         }
 
-        protected virtual Control CreateContainerOverride(object item)
+        /// <summary>
+        /// Gets the container control representing the item with the specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>The container or null if no container created.</returns>
+        public IControl ContainerFromIndex(int index)
         {
-            return (Control)this.Owner.MaterializeDataTemplate(item);
+            IControl result;
+            this.containers.TryGetValue(index, out result);
+            return result;
         }
 
-        protected void AddInternal(object item, Control container)
+        /// <summary>
+        /// Gets the index of the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>The index of the container or -1 if not found.</returns>
+        public int IndexFromContainer(IControl container)
         {
-            this.containersByItem.Add(item, container);
-            this.itemsByContainer.Add(container, item);
+            foreach (var i in this.containers)
+            {
+                if (i.Value == container)
+                {
+                    return i.Key;
+                }
+            }
+
+            return -1;
         }
 
-        protected object RemoveByContainerInternal(Control container)
+        /// <summary>
+        /// Creates the container for an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="itemTemplate">An optional item template.</param>
+        /// <returns>The created container control.</returns>
+        protected virtual IControl CreateContainer(object item, IDataTemplate itemTemplate)
         {
-            object item = this.itemsByContainer[container];
-            this.containersByItem.Remove(item);
-            this.itemsByContainer.Remove(container);
-            return item;
+            if (item == null)
+            {
+                return null;
+            }
+            else if (itemTemplate != null && itemTemplate.Match(item))
+            {
+                var result = itemTemplate.Build(item);
+                result.DataContext = item;
+                return result;
+            }
+            else
+            {
+                return this.Owner.MaterializeDataTemplate(item);
+            }
         }
 
-        protected Control RemoveByItemInternal(object item)
+        /// <summary>
+        /// Adds a collection of containers to the index.
+        /// </summary>
+        /// <param name="index">The starting index.</param>
+        /// <param name="container">The container.</param>
+        protected void AddContainers(int index, IList<IControl> container)
         {
-            Control container = this.containersByItem[item];
-            this.containersByItem.Remove(item);
-            this.itemsByContainer.Remove(container);
-            return container;
+            Contract.Requires<ArgumentNullException>(container != null);
+
+            foreach (var c in container)
+            {
+                if (!this.containers.ContainsKey(index))
+                {
+                    this.containers[index] = c;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Container already created.");
+                }
+
+                ++index;
+            }
         }
     }
 }

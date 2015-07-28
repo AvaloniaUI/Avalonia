@@ -63,8 +63,9 @@ namespace Perspex.Controls
         {
             get
             {
-                return (this.SelectedItem != null) ?
-                    (MenuItem)this.ItemContainerGenerator.GetContainerForItem(this.SelectedItem) :
+                var index = this.SelectedIndex;
+                return (index != -1) ?
+                    (MenuItem)this.ItemContainerGenerator.ContainerFromIndex(index) :
                     null;
             }
         }

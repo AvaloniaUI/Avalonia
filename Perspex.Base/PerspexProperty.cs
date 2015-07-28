@@ -77,8 +77,12 @@ namespace Perspex
             this.defaultValues.Add(ownerType, defaultValue);
             this.Inherits = inherits;
             this.DefaultBindingMode = defaultBindingMode;
-            this.validation.Add(ownerType, validate);
             this.IsAttached = isAttached;
+
+            if (validate != null)
+            {
+                this.validation.Add(ownerType, validate);
+            }
         }
 
         /// <summary>

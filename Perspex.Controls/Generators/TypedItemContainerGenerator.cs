@@ -15,7 +15,7 @@ namespace Perspex.Controls.Generators
         {
         }
 
-        protected override Control CreateContainerOverride(object item)
+        protected override IControl CreateContainer(object item, IDataTemplate itemTemplate)
         {
             T result = item as T;
 

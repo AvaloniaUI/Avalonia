@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
+    using System.Collections.ObjectModel;
     using Perspex.Collections;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
@@ -192,7 +193,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Should_Coerce()
+        public void Setting_SelectedIndex_Out_Of_Bounds_Should_Clear_Selection()
         {
             var items = new[]
             {
@@ -209,25 +210,11 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.SelectedIndex = 2;
 
-            Assert.Equal(1, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Setting_SelectedIndex_With_No_Items_Should_Not_Throw_Exception()
-        {
-            var target = new Target
-            {
-                Template = this.Template(),
-            };
-
-            target.ApplyTemplate();
-            target.SelectedIndex = 2;
-
             Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]
-        public void Setting_SelectedItem_With_No_Items_Should_Not_Throw_Exception()
+        public void Setting_SelectedItem_To_Non_Existent_Item_Should_Clear_Selection()
         {
             var target = new Target
             {
@@ -236,10 +223,35 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.SelectedItem = new Item();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]
-        public void Clearing_Items_Should_Clear_Selection()
+        public void Adding_Selected_Item_Should_Update_Selection()
+        {
+            var items = new PerspexList<Item>(new[]
+            {
+                new Item(),
+                new Item(),
+            });
+
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            items.Add(new Item { IsSelected = true });
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(items[2], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_Items_To_Null_Should_Clear_Selection()
         {
             var items = new PerspexList<Item>
             {
@@ -293,18 +305,54 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void PointerPressed_Event_Should_Be_Handled()
+        public void Resetting_Items_Collection_Should_Clear_Selection()
         {
-            var target = new Target();
-
-            var e = new PointerPressEventArgs
+            // Need to use ObservableCollection here as PerspexList signals a Clear as an
+            // add + remove.
+            var items = new ObservableCollection<Item>
             {
-                RoutedEvent = InputElement.PointerPressedEvent
+                new Item(),
+                new Item(),
             };
 
-            target.RaiseEvent(e);
+            var target = new Target
+            {
+                Items = items,
+                Template = this.Template(),
+            };
 
-            Assert.True(e.Handled);
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            items.Clear();
+
+            Assert.Equal(null, target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Focusing_Item_Should_Select_It()
+        {
+            var target = new Target
+            {
+                Template = this.Template(),
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ApplyTemplate();
+
+            var e = new GotFocusEventArgs
+            {
+                RoutedEvent = InputElement.GotFocusEvent
+            };
+
+            target.Presenter.Panel.Children[1].RaiseEvent(e);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.False(e.Handled);
         }
 
         [Fact]

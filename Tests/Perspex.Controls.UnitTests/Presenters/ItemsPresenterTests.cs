@@ -91,9 +91,13 @@ namespace Perspex.Controls.UnitTests.Presenters
             };
 
             target.ApplyTemplate();
-            items.RemoveAt(2);
 
             var text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text).ToList();
+            Assert.Equal(new[] { "foo", "bar" }, text);
+
+            items.RemoveAt(1);
+
+            text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text).ToList();
             Assert.Equal(new[] { "foo", "bar" }, text);
         }
 

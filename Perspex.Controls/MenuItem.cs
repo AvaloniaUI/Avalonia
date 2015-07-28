@@ -476,11 +476,11 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void PopupOpened(object sender, EventArgs e)
         {
-            var selected = this.SelectedItem;
+            var selected = this.SelectedIndex;
 
-            if (selected != null)
+            if (selected != -1)
             {
-                var container = this.ItemContainerGenerator.GetContainerForItem(selected);
+                var container = this.ItemContainerGenerator.ContainerFromIndex(selected);
 
                 if (container != null)
                 {

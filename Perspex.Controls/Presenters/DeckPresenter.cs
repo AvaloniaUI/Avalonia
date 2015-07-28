@@ -102,7 +102,11 @@ namespace Perspex.Controls.Presenters
             ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
-            this.SelectedItemChanged(Tuple.Create<object, object>(null, this.SelectedItem));
+
+            if (this.SelectedItem != null)
+            {
+                this.SelectedItemChanged(Tuple.Create<object, object>(null, this.SelectedItem));
+            }
         }
 
         private IItemContainerGenerator GetGenerator()
@@ -121,37 +125,37 @@ namespace Perspex.Controls.Presenters
             if (this.createdPanel)
             {
                 var generator = this.GetGenerator();
-                Control from = null;
-                Control to = null;
+                IControl from = null;
+                IControl to = null;
                 int fromIndex = -1;
                 int toIndex = -1;
 
                 if (value.Item1 != null)
                 {
-                    from = generator.GetContainerForItem(value.Item1);
                     fromIndex = this.Items.IndexOf(value.Item1);
+                    from = generator.ContainerFromIndex(fromIndex);
                 }
 
                 if (value.Item2 != null)
                 {
-                    to = generator.Generate(new[] { value.Item2 }).FirstOrDefault();
+                    toIndex = this.Items.IndexOf(value.Item2);
+                    to = generator.CreateContainers(toIndex, new[] { value.Item2 }, null).FirstOrDefault();
 
                     if (to != null)
                     {
                         this.Panel.Children.Add(to);
-                        toIndex = this.Items.IndexOf(value.Item2);
                     }
                 }
 
                 if (this.Transition != null)
                 {
-                    await this.Transition.Start(from, to, fromIndex < toIndex);
+                    await this.Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
                 }
 
                 if (from != null)
                 {
                     this.Panel.Children.Remove(from);
-                    generator.Remove(new[] { value.Item1 });
+                    generator.RemoveContainers(fromIndex, 1);
                 }
             }
         }

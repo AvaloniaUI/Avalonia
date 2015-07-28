@@ -47,22 +47,22 @@ namespace Perspex.Controls.Primitives
                 result = new TypedItemContainerGenerator<TabItem>(this);
             }
 
-            result.StateChanged += this.ItemsContainerGeneratorStateChanged;
+            ////result.StateChanged += this.ItemsContainerGeneratorStateChanged;
 
             return result;
         }
 
         private void ItemsContainerGeneratorStateChanged(object sender, EventArgs e)
         {
-            if (this.ItemContainerGenerator.State == ItemContainerGeneratorState.Generated)
-            {
-                var tabs = this.ItemContainerGenerator.GetAll()
-                    .Select(x => x.Item2)
-                    .OfType<TabItem>()
-                    .ToList();
+            ////if (this.ItemContainerGenerator.State == ItemContainerGeneratorState.Generated)
+            ////{
+            ////    var tabs = this.ItemContainerGenerator.GetAll()
+            ////        .Select(x => x.Item2)
+            ////        .OfType<TabItem>()
+            ////        .ToList();
 
-                this.SelectedItem = tabs.FirstOrDefault(x => x.IsSelected) ?? tabs.FirstOrDefault();
-            }
+            ////    this.SelectedItem = tabs.FirstOrDefault(x => x.IsSelected) ?? tabs.FirstOrDefault();
+            ////}
         }
     }
 }

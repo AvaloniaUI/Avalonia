@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="DataTemplateExtensions.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -10,9 +10,18 @@ namespace Perspex.Controls.Templates
     using Perspex.LogicalTree;
     using Splat;
 
+    /// <summary>
+    /// Defines extension methods for working with <see cref="IDataTemplate"/>s.
+    /// </summary>
     public static class DataTemplateExtensions
     {
-        public static IControl MaterializeDataTemplate(this Control control, object data)
+        /// <summary>
+        /// Materializes a piece of data based on a data template.
+        /// </summary>
+        /// <param name="control">The control materializing the data template.</param>
+        /// <param name="data">The data.</param>
+        /// <returns>The data materialized as a control.</returns>
+        public static IControl MaterializeDataTemplate(this IControl control, object data)
         {
             IDataTemplate template = control.FindDataTemplate(data);
             IControl result;
@@ -26,9 +35,9 @@ namespace Perspex.Controls.Templates
                     result.DataContext = data;
                 }
             }
-            else if (data is Control)
+            else if (data is IControl)
             {
-                result = (Control)data;
+                result = (IControl)data;
             }
             else
             {
@@ -38,9 +47,15 @@ namespace Perspex.Controls.Templates
             return result;
         }
 
-        public static IDataTemplate FindDataTemplate(this Control control, object data)
+        /// <summary>
+        /// Find a data template that matches a piece of data.
+        /// </summary>
+        /// <param name="control">The control searching for the data template.</param>
+        /// <param name="data">The data.</param>
+        /// <returns>The data template or null if no matching data template was found.</returns>
+        public static IDataTemplate FindDataTemplate(this IControl control, object data)
         {
-            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<Control>())
+            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IControl>())
             {
                 foreach (IDataTemplate dt in i.DataTemplates.Reverse())
                 {

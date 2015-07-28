@@ -19,74 +19,75 @@ namespace Perspex.Controls.Generators
         {
         }
 
-        IEnumerable<Control> IItemContainerGenerator.Remove(IEnumerable items)
-        {
-            var result = new List<Control>();
+        ////IEnumerable<Control> IItemContainerGenerator.Remove(IEnumerable items)
+        ////{
+        ////    throw new NotImplementedException();
+        ////    var result = new List<Control>();
 
-            foreach (var item in items)
-            {
-                var container = (T)this.GetContainerForItem(item);
-                this.Remove(container, result);
-            }
+        ////    foreach (var item in items)
+        ////    {
+        ////        var container = (T)this.GetContainerForItem(item);
+        ////        this.Remove(container, result);
+        ////    }
 
-            return result;
-        }
+        ////    return result;
+        ////}
 
-        protected override Control CreateContainerOverride(object item)
-        {
-            T result = item as T;
+        ////protected override Control CreateContainerOverride(object item)
+        ////{
+        ////    T result = item as T;
 
-            if (result == null)
-            {
-                TreeDataTemplate template = this.GetTreeDataTemplate(item);
+        ////    if (result == null)
+        ////    {
+        ////        TreeDataTemplate template = this.GetTreeDataTemplate(item);
 
-                result = new T
-                {
-                    Header = template.Build(item),
-                    Items = template.ItemsSelector(item),
-                    IsExpanded = template.IsExpanded(item),
-                };
-            }
+        ////        result = new T
+        ////        {
+        ////            Header = template.Build(item),
+        ////            Items = template.ItemsSelector(item),
+        ////            IsExpanded = template.IsExpanded(item),
+        ////        };
+        ////    }
 
-            return result;
-        }
+        ////    return result;
+        ////}
 
-        private TreeDataTemplate GetTreeDataTemplate(object item)
-        {
-            IDataTemplate template = this.Owner.FindDataTemplate(item);
+        ////private TreeDataTemplate GetTreeDataTemplate(object item)
+        ////{
+        ////    IDataTemplate template = this.Owner.FindDataTemplate(item);
 
-            if (template == null)
-            {
-                template = DataTemplate.Default;
-            }
+        ////    if (template == null)
+        ////    {
+        ////        template = DataTemplate.Default;
+        ////    }
 
-            TreeDataTemplate treeTemplate = template as TreeDataTemplate;
+        ////    TreeDataTemplate treeTemplate = template as TreeDataTemplate;
 
-            if (treeTemplate == null)
-            {
-                treeTemplate = new TreeDataTemplate(template.Build, x => null);
-            }
+        ////    if (treeTemplate == null)
+        ////    {
+        ////        treeTemplate = new TreeDataTemplate(template.Build, x => null);
+        ////    }
 
-            return treeTemplate;
-        }
+        ////    return treeTemplate;
+        ////}
 
-        private void Remove(T container, List<Control> removed)
-        {
-            if (container.Items != null)
-            {
-                foreach (var childItem in container.Items)
-                {
-                    var childContainer = (T)this.GetContainerForItem(childItem);
+        ////private void Remove(T container, List<Control> removed)
+        ////{
+        ////    if (container.Items != null)
+        ////    {
+        ////        foreach (var childItem in container.Items)
+        ////        {
+        ////            var childContainer = (T)this.GetContainerForItem(childItem);
 
-                    if (childContainer != null)
-                    {
-                        this.Remove(childContainer, removed);
-                    }
-                }
-            }
+        ////            if (childContainer != null)
+        ////            {
+        ////                this.Remove(childContainer, removed);
+        ////            }
+        ////        }
+        ////    }
 
-            this.RemoveByContainerInternal(container);
-            removed.Add(container);
-        }
+        ////    this.RemoveByContainerInternal(container);
+        ////    removed.Add(container);
+        ////}
     }
 }
