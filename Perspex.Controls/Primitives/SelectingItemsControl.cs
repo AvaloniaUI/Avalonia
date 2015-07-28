@@ -105,7 +105,15 @@ namespace Perspex.Controls.Primitives
         protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
             base.ItemsChanged(e);
-            this.SelectedIndex = IndexOf((IEnumerable)e.NewValue, this.SelectedItem);
+
+            if (this.SelectedIndex != -1)
+            {
+                this.SelectedIndex = IndexOf((IEnumerable)e.NewValue, this.SelectedItem);
+            }
+            else if (this.AutoSelect && this.Items != null & this.Items.Cast<object>().Any())
+            {
+                this.SelectedIndex = 0;
+            }
         }
 
         /// <inheritdoc/>
@@ -115,6 +123,13 @@ namespace Perspex.Controls.Primitives
 
             switch (e.Action)
             {
+                case NotifyCollectionChangedAction.Add:
+                    if (this.AutoSelect && this.SelectedIndex == -1)
+                    {
+                        this.SelectedIndex = 0;
+                    }
+                    break;
+
                 case NotifyCollectionChangedAction.Remove:
                 case NotifyCollectionChangedAction.Replace:
                     var selectedIndex = this.SelectedIndex;
@@ -251,10 +266,6 @@ namespace Perspex.Controls.Primitives
             {
                 var container = containers.Items[selectedIndex - containers.StartingIndex];
                 MarkContainerSelected(container, true);
-            }
-            else if (selectedIndex == -1 && this.AutoSelect)
-            {
-                this.SelectedIndex = 0;
             }
         }
 

@@ -29,6 +29,7 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
+            Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("Foo", target.SelectedItem);
         }
 
@@ -61,7 +62,7 @@ namespace Perspex.Controls.UnitTests
                 Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
-                [~DeckPresenter.SelectedItemProperty] = control[~Deck.SelectedItemProperty],
+                [~DeckPresenter.SelectedIndexProperty] = control[~Deck.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }

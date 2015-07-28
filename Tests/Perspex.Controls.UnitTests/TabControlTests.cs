@@ -45,6 +45,32 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectedContent_Should_Initially_Be_First_Tab_Content()
+        {
+            var target = new TabControl
+            {
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Items = new[]
+                {
+                    new TabItem
+                    {
+                        Name = "first",
+                        Content = "foo",
+                    },
+                    new TabItem
+                    {
+                        Name = "second",
+                        Content = "bar",
+                    },
+                }
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal("foo", target.SelectedContent);
+        }
+
+        [Fact]
         public void Setting_SelectedItem_Should_Set_SelectedTab()
         {
             var target = new TabControl
@@ -54,11 +80,13 @@ namespace Perspex.Controls.UnitTests
                 {
                     new TabItem
                     {
-                        Name = "first"
+                        Name = "first",
+                        Content = "foo",
                     },
                     new TabItem
                     {
-                        Name = "second"
+                        Name = "second",
+                        Content = "bar",
                     },
                 }
             };
@@ -67,31 +95,7 @@ namespace Perspex.Controls.UnitTests
             target.SelectedItem = target.Items.Cast<TabItem>().ElementAt(1);
 
             Assert.Same(target.SelectedTab, target.SelectedItem);
-        }
-
-        [Fact]
-        public void Setting_SelectedTab_Should_Set_SelectedItem()
-        {
-            var target = new TabControl
-            {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
-                Items = new[]
-                {
-                    new TabItem
-                    {
-                        Name = "first"
-                    },
-                    new TabItem
-                    {
-                        Name = "second"
-                    },
-                }
-            };
-
-            target.ApplyTemplate();
-            target.SelectedTab = target.Items.Cast<TabItem>().ElementAt(1);
-
-            Assert.Same(target.SelectedItem, target.SelectedTab);
+            Assert.Equal("bar", target.SelectedContent);
         }
 
         [Fact]
@@ -145,7 +149,7 @@ namespace Perspex.Controls.UnitTests
                     }
                 }
             };
-        } 
+        }
 
         private Control CreateTabStripTemplate(TabStrip parent)
         {
@@ -163,7 +167,7 @@ namespace Perspex.Controls.UnitTests
                 Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
-                [~DeckPresenter.SelectedItemProperty] = control[~Deck.SelectedItemProperty],
+                [~DeckPresenter.SelectedIndexProperty] = control[~Deck.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }

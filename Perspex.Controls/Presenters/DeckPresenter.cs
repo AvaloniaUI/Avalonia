@@ -6,74 +6,132 @@
 
 namespace Perspex.Controls.Presenters
 {
-    using Perspex.Animation;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Utils;
-    using Perspex.Input;
-    using Perspex.Styling;
     using System;
     using System.Collections;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
+    using Perspex.Animation;
+    using Perspex.Controls.Generators;
+    using Perspex.Controls.Primitives;
+    using Perspex.Controls.Utils;
+    using Perspex.Styling;
 
+    /// <summary>
+    /// Displays pages inside an <see cref="ItemsControl"/>.
+    /// </summary>
     public class DeckPresenter : Control, IItemsPresenter, ITemplatedControl
     {
+        /// <summary>
+        /// Defines the <see cref="Items"/> property.
+        /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<DeckPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="ItemsPanel"/> property.
+        /// </summary>
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<DeckPresenter>();
 
-        public static readonly PerspexProperty<object> SelectedItemProperty =
-            SelectingItemsControl.SelectedItemProperty.AddOwner<DeckPresenter>();
+        /// <summary>
+        /// Defines the <see cref="SelectedIndex"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<int> SelectedIndexProperty =
+            SelectingItemsControl.SelectedIndexProperty.AddOwner<DeckPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="Transition"/> property.
+        /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<DeckPresenter>();
 
         private bool createdPanel;
 
-        public DeckPresenter()
+        private IItemContainerGenerator generator;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="DeckPresenter"/> class.
+        /// </summary>
+        static DeckPresenter()
         {
-            this.GetObservableWithHistory(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
+            SelectedIndexProperty.Changed.AddClassHandler<DeckPresenter>(x => x.SelectedIndexChanged);
         }
 
+        /// <summary>
+        /// Gets the <see cref="IItemContainerGenerator"/> used to generate item container
+        /// controls.
+        /// </summary>
         public IItemContainerGenerator ItemContainerGenerator
         {
-            get;
-            private set;
+            get
+            {
+                if (this.generator == null)
+                {
+                    var i = this.TemplatedParent as ItemsControl;
+                    this.generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
+                }
+
+                return this.generator;
+            }
+
+            set
+            {
+                if (this.generator != null)
+                {
+                    throw new InvalidOperationException("ItemContainerGenerator is already set.");
+                }
+
+                this.generator = value;
+            }
         }
 
+        /// <summary>
+        /// Gets or sets the items to display.
+        /// </summary>
         public IEnumerable Items
         {
             get { return this.GetValue(ItemsProperty); }
             set { this.SetValue(ItemsProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the panel used to display the pages.
+        /// </summary>
         public ItemsPanelTemplate ItemsPanel
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }
         }
 
-        public object SelectedItem
+        /// <summary>
+        /// Gets or sets the index of the selected page.
+        /// </summary>
+        public int SelectedIndex
         {
-            get { return this.GetValue(SelectedItemProperty); }
-            set { this.SetValue(SelectedItemProperty, value); }
+            get { return this.GetValue(SelectedIndexProperty); }
+            set { this.SetValue(SelectedIndexProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the panel used to display the pages.
+        /// </summary>
         public Panel Panel
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Gets or sets a transition to use when switching pages.
+        /// </summary>
         public IPageTransition Transition
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }
         }
 
+        /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
             if (!this.createdPanel)
@@ -82,81 +140,73 @@ namespace Perspex.Controls.Presenters
             }
         }
 
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            this.Panel.Measure(availableSize);
-            return this.Panel.DesiredSize;
-        }
-
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            this.Panel.Arrange(new Rect(finalSize));
-            return finalSize;
-        }
-
+        /// <summary>
+        /// Creates the <see cref="Panel"/>.
+        /// </summary>
         private void CreatePanel()
         {
             this.ClearVisualChildren();
-            this.Panel = this.ItemsPanel.Build();
-            this.Panel.TemplatedParent = this;
-            ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
-            this.AddVisualChild(this.Panel);
-            this.createdPanel = true;
 
-            if (this.SelectedItem != null)
+            if (this.ItemsPanel != null)
             {
-                this.SelectedItemChanged(Tuple.Create<object, object>(null, this.SelectedItem));
+                this.Panel = this.ItemsPanel.Build();
+                this.Panel.TemplatedParent = this;
+                ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
+                this.AddVisualChild(this.Panel);
+                this.createdPanel = true;
+                var task = this.MoveToPage(-1, this.SelectedIndex);
             }
         }
 
-        private IItemContainerGenerator GetGenerator()
+        /// <summary>
+        /// Moves to the selected page, animating if a <see cref="Transition"/> is set.
+        /// </summary>
+        /// <param name="fromIndex">The index of the old page.</param>
+        /// <param name="toIndex">The index of the new page.</param>
+        /// <returns>A task tracking the animation.</returns>
+        private async Task MoveToPage(int fromIndex, int toIndex)
         {
-            if (this.ItemContainerGenerator == null)
+            var generator = this.ItemContainerGenerator;
+            IControl from = null;
+            IControl to = null;
+
+            if (fromIndex != -1)
             {
-                ItemsControl i = this.TemplatedParent as ItemsControl;
-                this.ItemContainerGenerator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
+                from = generator.ContainerFromIndex(fromIndex);
             }
 
-            return this.ItemContainerGenerator;
+            if (toIndex != -1)
+            {
+                var item = this.Items.Cast<object>().ElementAt(toIndex);
+                to = generator.CreateContainers(toIndex, new[] { item }, null).FirstOrDefault();
+
+                if (to != null)
+                {
+                    this.Panel.Children.Add(to);
+                }
+            }
+
+            if (this.Transition != null)
+            {
+                await this.Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
+            }
+
+            if (from != null)
+            {
+                this.Panel.Children.Remove(from);
+                generator.RemoveContainers(fromIndex, 1);
+            }
         }
 
-        private async void SelectedItemChanged(Tuple<object, object> value)
+        /// <summary>
+        /// Called when the <see cref="SelectedIndex"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (this.createdPanel)
+            if (this.Panel != null)
             {
-                var generator = this.GetGenerator();
-                IControl from = null;
-                IControl to = null;
-                int fromIndex = -1;
-                int toIndex = -1;
-
-                if (value.Item1 != null)
-                {
-                    fromIndex = this.Items.IndexOf(value.Item1);
-                    from = generator.ContainerFromIndex(fromIndex);
-                }
-
-                if (value.Item2 != null)
-                {
-                    toIndex = this.Items.IndexOf(value.Item2);
-                    to = generator.CreateContainers(toIndex, new[] { value.Item2 }, null).FirstOrDefault();
-
-                    if (to != null)
-                    {
-                        this.Panel.Children.Add(to);
-                    }
-                }
-
-                if (this.Transition != null)
-                {
-                    await this.Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
-                }
-
-                if (from != null)
-                {
-                    this.Panel.Children.Remove(from);
-                    generator.RemoveContainers(fromIndex, 1);
-                }
+                var task = this.MoveToPage((int)e.OldValue, (int)e.NewValue);
             }
         }
     }

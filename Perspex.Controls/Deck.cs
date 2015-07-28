@@ -6,57 +6,59 @@
 
 namespace Perspex.Controls
 {
-    using System.Collections;
     using Perspex.Animation;
-    using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
     using Perspex.Input;
 
     /// <summary>
-    /// A selecting items control that displays a single item that fills the control.
+    /// An items control that displays its items as pages that fill the control.
     /// </summary>
     public class Deck : SelectingItemsControl
     {
+        /// <summary>
+        /// Defines the <see cref="Transition"/> property.
+        /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             PerspexProperty.Register<Deck, IPageTransition>("Transition");
 
-        private static readonly ItemsPanelTemplate PanelTemplate = 
+        /// <summary>
+        /// The default value of <see cref="IItemsPanel"/> for <see cref="Deck"/>.
+        /// </summary>
+        private static readonly ItemsPanelTemplate PanelTemplate =
             new ItemsPanelTemplate(() => new Panel());
 
+        /// <summary>
+        /// Initializes static members of the <see cref="Deck"/> class.
+        /// </summary>
         static Deck()
         {
-            ItemsPanelProperty.OverrideDefaultValue(typeof(Deck), PanelTemplate);
+            AutoSelectProperty.OverrideDefaultValue<Deck>(true);
+            ItemsPanelProperty.OverrideDefaultValue<Deck>(PanelTemplate);
         }
 
+        /// <summary>
+        /// Gets or sets the transition to use when moving between pages.
+        /// </summary>
         public IPageTransition Transition
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }
         }
 
-        protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
-        {
-            base.ItemsChanged(e);
-
-            var items = this.Items;
-
-            if (items != null && items.Count() > 0)
-            {
-                this.SelectedIndex = 0;
-            }
-        }
-
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             // Ignore key presses.
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             // Ignore pointer presses.
         }
 
+        /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
             base.OnTemplateApplied();

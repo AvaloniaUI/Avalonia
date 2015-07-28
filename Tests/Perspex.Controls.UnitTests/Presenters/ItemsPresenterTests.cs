@@ -51,6 +51,18 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void ItemContainerGenerator_Should_Be_Picked_Up_From_TemplatedControl()
+        {
+            var parent = new TestItemsControl();
+            var target = new ItemsPresenter
+            {
+                TemplatedParent = parent,
+            };
+
+            Assert.IsType<TypedItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);
+        }
+
+        [Fact]
         public void Should_Remove_Containers()
         {
             var items = new PerspexList<string>(new[] { "foo", "bar" });
@@ -173,6 +185,18 @@ namespace Perspex.Controls.UnitTests.Presenters
             var child = target.GetVisualChildren().Single();
 
             Assert.Equal(target.Panel, child);
+        }
+
+        private class TestItem : ContentControl
+        {
+        }
+
+        private class TestItemsControl : ItemsControl
+        {
+            protected override IItemContainerGenerator CreateItemContainerGenerator()
+            {
+                return new TypedItemContainerGenerator<TestItem>(this);
+            }
         }
     }
 }

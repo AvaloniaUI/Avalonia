@@ -95,6 +95,7 @@
     <Compile Include="Parsers\GridLengthsParserTests.cs" />
     <Compile Include="PopupTests.cs" />
     <Compile Include="DropDownTests.cs" />
+    <Compile Include="Presenters\DeckPresenterTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
     <Compile Include="Primitives\ScrollBarTests.cs" />

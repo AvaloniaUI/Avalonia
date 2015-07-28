@@ -32,6 +32,24 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void First_Item_Should_Be_Selected_When_Added()
+        {
+            var items = new PerspexList<string>();
+            var target = new SelectingItemsControl
+            {
+                AutoSelect = true,
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            items.Add("foo");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("foo", target.SelectedItem);
+        }
+
+        [Fact]
         public void Item_Should_Be_Selected_When_Selection_Removed()
         {
             var items = new PerspexList<string>(new[] { "foo", "bar", "baz", "qux" });

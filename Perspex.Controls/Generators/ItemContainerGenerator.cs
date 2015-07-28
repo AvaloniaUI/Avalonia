@@ -92,7 +92,7 @@ namespace Perspex.Controls.Generators
                 if (container != null)
                 {
                     result.Add(container);
-                    this.containers[i] = null;
+                    this.containers.Remove(i);
                 }
             }
 
