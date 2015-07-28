@@ -35,9 +35,9 @@ namespace Perspex.Controls
             set { this.SetValue(TransitionProperty, value); }
         }
 
-        protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
+        protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
-            base.ItemsChanged(oldValue, newValue);
+            base.ItemsChanged(e);
 
             var items = this.Items;
 

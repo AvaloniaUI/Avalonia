@@ -86,10 +86,10 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void ItemsChanged(IEnumerable oldValue, IEnumerable newValue)
+        protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
-            base.ItemsChanged(oldValue, newValue);
-            this.SelectedIndex = IndexOf(newValue, this.SelectedItem);
+            base.ItemsChanged(e);
+            this.SelectedIndex = IndexOf((IEnumerable)e.NewValue, this.SelectedItem);
         }
 
         /// <inheritdoc/>
