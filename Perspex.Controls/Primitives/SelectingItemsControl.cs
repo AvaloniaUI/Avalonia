@@ -22,8 +22,14 @@ namespace Perspex.Controls.Primitives
     /// <remarks>
     /// TODO: Support multiple selection.
     /// </remarks>
-    public abstract class SelectingItemsControl : ItemsControl
+    public class SelectingItemsControl : ItemsControl
     {
+        /// <summary>
+        /// Defines the <see cref="AutoSelect"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<bool> AutoSelectProperty =
+            PerspexProperty.Register<SelectingItemsControl, bool>("AutoSelect");
+
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
@@ -68,6 +74,16 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the control should always try to keep an item
+        /// selected where possible.
+        /// </summary>
+        public bool AutoSelect
+        {
+            get { return this.GetValue(AutoSelectProperty); }
+            set { this.SetValue(AutoSelectProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the index of the selected item.
         /// </summary>
         public int SelectedIndex
@@ -106,7 +122,14 @@ namespace Perspex.Controls.Primitives
                     if (selectedIndex >= e.OldStartingIndex &&
                         selectedIndex < e.OldStartingIndex + e.OldItems.Count)
                     {
-                        this.SelectedIndex = -1;
+                        if (!this.AutoSelect)
+                        {
+                            this.SelectedIndex = -1;
+                        }
+                        else
+                        {
+                            this.LostSelection();
+                        }
                     }
 
                     break;
@@ -121,7 +144,7 @@ namespace Perspex.Controls.Primitives
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            this.TrySetSelectionFromContainerEvent(e.Source);
+            this.TrySetSelectionFromContainerEvent(e.Source, true);
         }
 
         /// <summary>
@@ -229,6 +252,10 @@ namespace Perspex.Controls.Primitives
                 var container = containers.Items[selectedIndex - containers.StartingIndex];
                 MarkContainerSelected(container, true);
             }
+            else if (selectedIndex == -1 && this.AutoSelect)
+            {
+                this.SelectedIndex = 0;
+            }
         }
 
         /// <summary>
@@ -237,7 +264,12 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event.</param>
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
-            this.TrySetSelectionFromContainerEvent(e.Source);
+            var selectable = (ISelectable)e.Source;
+
+            if (selectable != null)
+            {
+                this.TrySetSelectionFromContainerEvent(e.Source, selectable.IsSelected);
+            }
         }
 
         /// <summary>
@@ -278,22 +310,64 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Tries to set the selection to a container that raised an event.
+        /// Tries to get the container that was the source of an event.
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
-        private void TrySetSelectionFromContainerEvent(IInteractive eventSource)
+        /// <returns>The container or null if the event did not originate in a container.</returns>
+        private IControl GetContainerFromEvent(IInteractive eventSource)
         {
             var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
                 .OfType<ILogical>()
                 .FirstOrDefault(x => x.LogicalParent == this);
 
+            return item as IControl;
+        }
+
+        /// <summary>
+        /// Called when the currently selected item is lost and the selection must be changed
+        /// depending on the <see cref="AutoSelect"/> property.
+        /// </summary>
+        private void LostSelection()
+        {
+            var items = this.Items?.Cast<object>();
+
+            if (items != null && this.AutoSelect)
+            {
+                var index = Math.Min(this.SelectedIndex, items.Count() - 1);
+
+                if (index > -1)
+                {
+                    this.SelectedItem = items.ElementAt(index);
+                    return;
+                }
+            }
+
+            this.SelectedIndex = -1;
+        }
+
+        /// <summary>
+        /// Tries to set the selection to a container that raised an event.
+        /// </summary>
+        /// <param name="eventSource">The control that raised the event.</param>
+        /// <param name="select">Whether the container should be selected or unselected.</param>
+        private void TrySetSelectionFromContainerEvent(IInteractive eventSource, bool select)
+        {
+            var item = this.GetContainerFromEvent(eventSource);
+
             if (item != null)
             {
-                var index = this.ItemContainerGenerator.IndexFromContainer((IControl)item);
+                var index = this.ItemContainerGenerator.IndexFromContainer(item);
 
                 if (index != -1)
                 {
-                    this.SelectedIndex = index;
+                    if (select)
+                    {
+                        this.SelectedIndex = index;
+                    }
+                    else
+                    {
+                        this.LostSelection();
+                    }
                 }
             }
         }

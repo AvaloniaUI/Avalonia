@@ -26,7 +26,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -44,7 +44,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -65,7 +65,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -87,7 +87,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -109,7 +109,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -131,7 +131,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -153,7 +153,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -180,7 +180,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -201,7 +201,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -216,7 +216,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedItem_To_Non_Existent_Item_Should_Clear_Selection()
         {
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Template = this.Template(),
             };
@@ -237,7 +237,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             });
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -259,7 +259,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -286,7 +286,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -315,7 +315,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -336,7 +336,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         [Fact]
         public void Focusing_Item_Should_Select_It()
         {
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Template = this.Template(),
                 Items = new[] { "foo", "bar" },
@@ -364,7 +364,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -379,10 +379,38 @@ namespace Perspex.Controls.UnitTests.Primitives
             items[0].IsSelected = true;
             items[0].RaiseEvent(new RoutedEventArgs(SelectingItemsControl.IsSelectedChangedEvent));
 
-            Assert.Equal(target.SelectedIndex, 0);
-            Assert.Equal(target.SelectedItem, items[0]);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
             Assert.True(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
+        }
+
+        [Fact]
+        public void Clearing_IsSelected_And_Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = this.Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[1];
+
+            Assert.False(items[0].IsSelected);
+            Assert.True(items[1].IsSelected);
+
+            items[1].IsSelected = false;
+            items[1].RaiseEvent(new RoutedEventArgs(SelectingItemsControl.IsSelectedChangedEvent));
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]
@@ -394,7 +422,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new Item(),
             };
 
-            var target = new Target
+            var target = new SelectingItemsControl
             {
                 Items = items,
                 Template = this.Template(),
@@ -420,17 +448,13 @@ namespace Perspex.Controls.UnitTests.Primitives
 
         private ControlTemplate Template()
         {
-            return new ControlTemplate<Target>(control =>
+            return new ControlTemplate<SelectingItemsControl>(control =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
                 });
-        }
-
-        private class Target : SelectingItemsControl
-        {
         }
 
         private class Item : Control, ISelectable

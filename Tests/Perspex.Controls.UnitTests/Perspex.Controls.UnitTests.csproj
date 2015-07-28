@@ -99,6 +99,7 @@
     <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
     <Compile Include="Primitives\ScrollBarTests.cs" />
     <Compile Include="Primitives\RangeBaseTests.cs" />
+    <Compile Include="Primitives\SelectingItemsControlTests_AutoSelect.cs" />
     <Compile Include="ScrollViewerTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests.cs" />
     <Compile Include="ListBoxTests.cs" />
@@ -107,7 +108,7 @@
     <Compile Include="DecoratorTests.cs" />
     <Compile Include="DeckTests.cs" />
     <Compile Include="TopLevelTests.cs" />
-    <Compile Include="TabStripTests.cs" />
+    <Compile Include="Primitives\TabStripTests.cs" />
     <Compile Include="TabControlTests.cs" />
     <Compile Include="PanelTests.cs" />
     <Compile Include="ControlTests.cs" />

@@ -30,7 +30,7 @@ namespace Perspex.Controls
 
         static TabControl()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(TabControl), false);
+            FocusableProperty.OverrideDefaultValue<TabControl>(false);
         }
 
         public TabControl()
