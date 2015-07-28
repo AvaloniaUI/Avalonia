@@ -118,7 +118,7 @@ namespace Perspex.Controls
         /// Clears <see cref="IControl.Parent"/> for the specified controls.
         /// </summary>
         /// <param name="controls">The controls.</param>
-        private void ClearLogicalParent(IEnumerable<Control> controls)
+        private void ClearLogicalParent(IEnumerable<IControl> controls)
         {
             foreach (var control in controls)
             {
@@ -130,7 +130,7 @@ namespace Perspex.Controls
         /// Sets <see cref="IControl.Parent"/> for the specified controls.
         /// </summary>
         /// <param name="controls">The controls.</param>
-        private void SetLogicalParent(IEnumerable<Control> controls)
+        private void SetLogicalParent(IEnumerable<IControl> controls)
         {
             var parent = this.childLogicalParent as Control;
 

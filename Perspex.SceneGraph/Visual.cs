@@ -271,7 +271,7 @@ namespace Perspex
         /// Adds a visual child to the control.
         /// </summary>
         /// <param name="visual">The child to add.</param>
-        protected void AddVisualChild(Visual visual)
+        protected void AddVisualChild(IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
@@ -282,7 +282,7 @@ namespace Perspex
         /// Adds visual children to the control.
         /// </summary>
         /// <param name="visuals">The children to add.</param>
-        protected void AddVisualChildren(IEnumerable<Visual> visuals)
+        protected void AddVisualChildren(IEnumerable<IVisual> visuals)
         {
             Contract.Requires<ArgumentNullException>(visuals != null);
 
@@ -301,7 +301,7 @@ namespace Perspex
         /// Removes a visual child from the control;
         /// </summary>
         /// <param name="visual">The child to remove.</param>
-        protected void RemoveVisualChild(Visual visual)
+        protected void RemoveVisualChild(IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
@@ -312,7 +312,7 @@ namespace Perspex
         /// Removes a visual children from the control;
         /// </summary>
         /// <param name="visuals">The children to remove.</param>
-        protected void RemoveVisualChildren(IEnumerable<Visual> visuals)
+        protected void RemoveVisualChildren(IEnumerable<IVisual> visuals)
         {
             Contract.Requires<ArgumentNullException>(visuals != null);
 

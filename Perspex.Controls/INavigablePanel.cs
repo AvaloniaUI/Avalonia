@@ -8,8 +8,17 @@ namespace Perspex.Controls
 {
     using Perspex.Input;
 
+    /// <summary>
+    /// Defines a panel in which the child controls can be navigated by keyboard.
+    /// </summary>
     public interface INavigablePanel
     {
-        Control GetControl(FocusNavigationDirection direction, Control from);
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
+        IControl GetControl(FocusNavigationDirection direction, IControl from);
     }
 }

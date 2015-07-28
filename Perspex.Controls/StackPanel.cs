@@ -75,7 +75,7 @@ namespace Perspex.Controls
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        Control INavigablePanel.GetControl(FocusNavigationDirection direction, Control from)
+        IControl INavigablePanel.GetControl(FocusNavigationDirection direction, IControl from)
         {
             var horiz = this.Orientation == Orientation.Horizontal;
             int index = this.Children.IndexOf(from);

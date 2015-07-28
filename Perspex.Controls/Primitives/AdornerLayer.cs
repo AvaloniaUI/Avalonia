@@ -52,7 +52,7 @@ namespace Perspex.Controls.Primitives
 
             foreach (var child in this.Children)
             {
-                var info = child.GetValue(AdornedElementInfoProperty);
+                var info = (AdornedElementInfo)child.GetValue(AdornedElementInfoProperty);
 
                 if (info != null)
                 {

@@ -162,7 +162,7 @@ namespace Perspex.Controls.Primitives
 
                 if (next != null)
                 {
-                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer(next);
+                    this.SelectedItem = this.ItemContainerGenerator.GetItemForContainer((Control)next);
                 }
             }
             else

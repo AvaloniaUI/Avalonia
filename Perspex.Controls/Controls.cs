@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Controls.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -9,13 +9,23 @@ namespace Perspex.Controls
     using System.Collections.Generic;
     using Perspex.Collections;
 
-    public class Controls : PerspexList<Control>
+    /// <summary>
+    /// A collection of <see cref="Control"/>s.
+    /// </summary>
+    public class Controls : PerspexList<IControl>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Controls"/> class.
+        /// </summary>
         public Controls()
         {
         }
 
-        public Controls(IEnumerable<Control> items)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Controls"/> class.
+        /// </summary>
+        /// <param name="items">The initial items in the collection.</param>
+        public Controls(IEnumerable<IControl> items)
             : base(items)
         {
         }

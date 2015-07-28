@@ -111,10 +111,15 @@ namespace Perspex.Styling.UnitTests
             }
 
             public Classes Classes { get; }
+
             public string Name { get; set; }
+
             public IPerspexReadOnlyList<ILogical> LogicalChildren { get; set; }
+
             public ILogical LogicalParent { get; set; }
+
             public Type StyleKey { get; }
+
             public ITemplatedControl TemplatedParent { get; }
 
             public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
@@ -133,6 +138,21 @@ namespace Perspex.Styling.UnitTests
             }
 
             public bool IsRegistered(PerspexProperty property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ClearValue(PerspexProperty property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public object GetValue(PerspexProperty property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsSet(PerspexProperty property)
             {
                 throw new NotImplementedException();
             }

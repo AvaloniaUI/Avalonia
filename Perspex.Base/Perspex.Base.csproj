@@ -39,6 +39,8 @@
     <Compile Include="Binding.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="IObservablePropertyBag.cs" />
+    <Compile Include="IPropertyBag.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PerspexProperty`1.cs" />
     <Compile Include="PriorityBindingEntry.cs" />

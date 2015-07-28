@@ -11,7 +11,7 @@ namespace Perspex.Styling
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
-    public interface IStyleable
+    public interface IStyleable : IObservablePropertyBag
     {
         /// <summary>
         /// Gets the list of classes for the control.
@@ -32,39 +32,5 @@ namespace Perspex.Styling
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
         ITemplatedControl TemplatedParent { get; }
-
-        /// <summary>
-        /// Binds a <see cref="PerspexProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority);
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        IObservable<object> GetObservable(PerspexProperty property);
-
-        /// <summary>
-        /// Checks whether a <see cref="PerspexProperty"/> is registered on this class.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>True if the property is registered, otherwise false.</returns>
-        bool IsRegistered(PerspexProperty property);
-
-        /// <summary>
-        /// Sets a <see cref="PerspexProperty"/> value.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        void SetValue(PerspexProperty property, object value, BindingPriority priority);
     }
 }
