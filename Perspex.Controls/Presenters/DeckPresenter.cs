@@ -38,7 +38,7 @@ namespace Perspex.Controls.Presenters
             this.GetObservableWithHistory(SelectedItemProperty).Subscribe(this.SelectedItemChanged);
         }
 
-        public ItemContainerGenerator ItemContainerGenerator
+        public IItemContainerGenerator ItemContainerGenerator
         {
             get;
             private set;

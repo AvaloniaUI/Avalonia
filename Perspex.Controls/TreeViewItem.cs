@@ -60,7 +60,7 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override ItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             if (this.treeView == null)
             {

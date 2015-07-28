@@ -33,10 +33,10 @@ namespace Perspex.Controls.Primitives
             set { this.SetValue(SelectedTabProperty, value); }
         }
 
-        protected override ItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             TabControl tabControl = this.TemplatedParent as TabControl;
-            ItemContainerGenerator result;
+            IItemContainerGenerator result;
 
             if (tabControl != null)
             {

@@ -31,7 +31,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
-        private ItemContainerGenerator itemContainerGenerator;
+        private IItemContainerGenerator itemContainerGenerator;
 
         private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren = 
             new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
@@ -52,7 +52,6 @@ namespace Perspex.Controls
             this.ItemsChanged(null, null);
         }
 
-        public ItemContainerGenerator ItemContainerGenerator
         {
             get
             {
@@ -100,7 +99,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected virtual ItemContainerGenerator CreateItemContainerGenerator()
+        protected virtual IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
         }

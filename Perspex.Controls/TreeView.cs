@@ -38,7 +38,7 @@ namespace Perspex.Controls
             set { this.SetValue(SelectedItemProperty, value); }
         }
 
-        protected override ItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TreeItemContainerGenerator<TreeViewItem>(this);
         }
