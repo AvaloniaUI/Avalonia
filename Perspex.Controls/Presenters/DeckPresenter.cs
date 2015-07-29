@@ -194,7 +194,7 @@ namespace Perspex.Controls.Presenters
             if (from != null)
             {
                 this.Panel.Children.Remove(from);
-                generator.RemoveContainers(fromIndex, 1);
+                generator.RemoveContainers(fromIndex, new[] { from });
             }
         }
 

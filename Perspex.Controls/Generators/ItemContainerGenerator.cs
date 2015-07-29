@@ -20,7 +20,7 @@ namespace Perspex.Controls.Generators
     {
         private Dictionary<int, IControl> containers = new Dictionary<int, IControl>();
 
-        private Subject<ItemContainers> containersInitialized;
+        private Subject<ItemContainers> containersInitialized = new Subject<ItemContainers>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -29,7 +29,6 @@ namespace Perspex.Controls.Generators
         public ItemContainerGenerator(IControl owner)
         {
             this.Owner = owner;
-            this.containersInitialized = new Subject<ItemContainers>();
         }
 
         /// <summary>
@@ -79,11 +78,12 @@ namespace Perspex.Controls.Generators
         /// <param name="startingIndex">
         /// The index of the first item of the data in the containing collection.
         /// </param>
-        /// <param name="count">The number of items to remove.</param>
+        /// <param name="items">The items.</param>
         /// <returns>The removed controls.</returns>
-        public IList<IControl> RemoveContainers(int startingIndex, int count)
+        public IList<IControl> RemoveContainers(int startingIndex, IEnumerable items)
         {
             var result = new List<IControl>();
+            var count = items.Cast<object>().Count();
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {

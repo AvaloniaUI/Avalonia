@@ -41,9 +41,9 @@ namespace Perspex.Controls.Generators
         /// <param name="startingIndex">
         /// The index of the first item of the data in the containing collection.
         /// </param>
-        /// <param name="count">The number of items to remove.</param>
+        /// <param name="items">The items.</param>
         /// <returns>The removed controls.</returns>
-        IList<IControl> RemoveContainers(int startingIndex, int count);
+        IList<IControl> RemoveContainers(int startingIndex, IEnumerable items);
 
         /// <summary>
         /// Clears the created containers from the index and returns the removed controls.
