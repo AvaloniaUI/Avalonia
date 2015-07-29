@@ -154,34 +154,6 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-            if (child != null)
-            {
-                child.Arrange(new Rect(finalSize));
-                return child.Bounds.Size;
-            }
-            else
-            {
-                return new Size();
-            }
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            Control child = ((IVisual)this).VisualChildren.SingleOrDefault() as Control;
-
-            if (child != null)
-            {
-                child.Measure(availableSize);
-                return child.DesiredSize;
-            }
-
-            return new Size();
-        }
-
         protected virtual void OnTemplateApplied()
         {
         }
