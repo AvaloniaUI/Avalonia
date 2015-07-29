@@ -7,10 +7,8 @@
 namespace Perspex.Controls
 {
     using Perspex.Animation;
-    using Perspex.Collections;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
-    using Perspex.Input;
 
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
@@ -35,9 +33,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<TabControl>();
 
-        private PerspexReadOnlyListView<ILogical> logicalChildren =
-            new PerspexReadOnlyListView<ILogical>();
-
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
@@ -46,13 +41,6 @@ namespace Perspex.Controls
             AutoSelectProperty.OverrideDefaultValue<TabControl>(true);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             SelectedIndexProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedIndexChanged);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TabControl"/> class.
-        /// </summary>
-        public TabControl()
-        {
         }
 
         /// <summary>
@@ -83,18 +71,14 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            // Don't handle keypresses.
-        }
-
-        /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
             base.OnTemplateApplied();
 
             var deck = this.GetTemplateChild<Deck>("deck");
-            this.logicalChildren.Source = ((ILogical)deck).LogicalChildren;
+            ((IReparentingControl)deck.Presenter.Panel).ReparentLogicalChildren(
+                this,
+                this.LogicalChildren);
         }
 
         /// <summary>

@@ -9,13 +9,9 @@ namespace Perspex.Collections
     using System.Collections;
     using System.Collections.Generic;
 
-    public interface IPerspexList<T> : IList<T>, IList, IPerspexReadOnlyList<T>
+    public interface IPerspexList<T> : IList<T>, IPerspexReadOnlyList<T>
     {
-        new int Count { get; }
-
         void AddRange(IEnumerable<T> items);
-
-        new void Clear();
 
         void InsertRange(int index, IEnumerable<T> items);
 

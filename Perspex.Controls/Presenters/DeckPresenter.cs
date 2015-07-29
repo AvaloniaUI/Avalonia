@@ -12,11 +12,10 @@ namespace Perspex.Controls.Presenters
     using System.Reactive.Linq;
     using System.Threading.Tasks;
     using Perspex.Animation;
-    using Collections;
+    using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
-    using Perspex.Styling;
 
     /// <summary>
     /// Displays pages inside an <see cref="ItemsControl"/>.
@@ -132,14 +131,6 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(TransitionProperty, value); }
         }
 
-        Panel IItemsPresenter.Panel
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -152,7 +143,8 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
         {
-            throw new NotImplementedException();
+            this.ApplyTemplate();
+            ((IReparentingControl)this.Panel).ReparentLogicalChildren(logicalParent, children);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ namespace Perspex.Controls.UnitTests
 {
     using System.Collections.Specialized;
     using System.Linq;
+    using Perspex.LogicalTree;
     using Xunit;
 
     public class PopupTests
@@ -45,7 +46,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Child = child;
 
-            Assert.Equal(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
         }
 
         [Fact]
@@ -102,8 +103,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Child = child1;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Replace;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Child = child2;
 

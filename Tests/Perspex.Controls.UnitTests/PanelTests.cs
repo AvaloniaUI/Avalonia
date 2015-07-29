@@ -7,7 +7,8 @@
 namespace Perspex.Controls.UnitTests
 {
     using System.Linq;
-    using Collections;
+    using Perspex.Collections;
+    using Perspex.LogicalTree;
     using Xunit;
 
     public class PanelTests
@@ -21,7 +22,7 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Add(child);
 
             Assert.Equal(child.Parent, panel);
-            Assert.Equal(((ILogical)child).LogicalParent, panel);
+            Assert.Equal(child.GetLogicalParent(), panel);
         }
 
         [Fact]
@@ -33,7 +34,7 @@ namespace Perspex.Controls.UnitTests
             panel.Children = new Controls { child };
 
             Assert.Equal(child.Parent, panel);
-            Assert.Equal(((ILogical)child).LogicalParent, panel);
+            Assert.Equal(child.GetLogicalParent(), panel);
         }
 
         [Fact]
@@ -46,7 +47,7 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Remove(child);
 
             Assert.Null(child.Parent);
-            Assert.Null(((ILogical)child).LogicalParent);
+            Assert.Null(child.GetLogicalParent());
         }
 
         [Fact]
@@ -61,9 +62,9 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Clear();
 
             Assert.Null(child1.Parent);
-            Assert.Null(((ILogical)child1).LogicalParent);
+            Assert.Null(child1.GetLogicalParent());
             Assert.Null(child2.Parent);
-            Assert.Null(((ILogical)child2).LogicalParent);
+            Assert.Null(child2.GetLogicalParent());
         }
 
         [Fact]
@@ -78,9 +79,9 @@ namespace Perspex.Controls.UnitTests
             panel.Children = new Controls();
 
             Assert.Null(child1.Parent);
-            Assert.Null(((ILogical)child1).LogicalParent);
+            Assert.Null(child1.GetLogicalParent());
             Assert.Null(child2.Parent);
-            Assert.Null(((ILogical)child2).LogicalParent);
+            Assert.Null(child2.GetLogicalParent());
         }
 
         [Fact]
@@ -92,7 +93,7 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Add(child);
 
             Assert.Equal(new[] { child }, panel.Children);
-            Assert.Equal(new[] { child }, ((ILogical)panel).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, panel.GetLogicalChildren());
         }
 
         [Fact]
@@ -105,7 +106,7 @@ namespace Perspex.Controls.UnitTests
             panel.Children.Remove(child);
 
             Assert.Equal(new Control[0], panel.Children);
-            Assert.Equal(new ILogical[0], ((ILogical)panel).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], panel.GetLogicalChildren());
         }
 
         [Fact]

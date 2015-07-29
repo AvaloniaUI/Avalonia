@@ -7,7 +7,6 @@
 namespace Perspex.Controls
 {
     using System;
-    using Perspex.Collections;
     using Perspex.Interactivity;
     using Perspex.Rendering;
     using Perspex.VisualTree;
@@ -59,24 +58,12 @@ namespace Perspex.Controls
         private TopLevel topLevel;
 
         /// <summary>
-        /// The popup's logical child.
-        /// </summary>
-        private PerspexSingleItemList<ILogical> logicalChild = new PerspexSingleItemList<ILogical>();
-
-        /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
         /// </summary>
         static Popup()
         {
+            ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Popup"/> class.
-        /// </summary>
-        public Popup()
-        {
-            this.GetObservableWithHistory(ChildProperty).Subscribe(this.ChildChanged);
         }
 
         /// <summary>
@@ -267,20 +254,21 @@ namespace Perspex.Controls
         /// <summary>
         /// Called when the <see cref="Child"/> property changes.
         /// </summary>
-        /// <param name="values">The old and new values.</param>
-        private void ChildChanged(Tuple<Control, Control> values)
+        /// <param name="e">The event args.</param>
+        private void ChildChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (values.Item1 != null)
+            this.LogicalChildren.Clear();
+
+            if (e.OldValue != null)
             {
-                ((ISetLogicalParent)values.Item1).SetParent(null);
+                ((ISetLogicalParent)e.OldValue).SetParent(null);
             }
 
-            if (values.Item2 != null)
+            if (e.NewValue != null)
             {
-                ((ISetLogicalParent)values.Item2).SetParent(this);
+                ((ISetLogicalParent)e.NewValue).SetParent(this);
+                this.LogicalChildren.Add((ILogical)e.NewValue);
             }
-
-            this.logicalChild.SingleItem = values.Item2;
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace Perspex.Collections
     /// <see cref="NotifyCollectionChangedAction.Remove"/> action, passing the items that were
     /// removed.
     /// </remarks>
-    public class PerspexList<T> : IPerspexList<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    public class PerspexList<T> : IPerspexList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged
     {
         private List<T> inner;
 

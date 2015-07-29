@@ -6,14 +6,11 @@
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
     using System.Linq;
     using System.Reactive.Linq;
-    using System.Reactive.Subjects;
     using Perspex.Collections;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
-    using Perspex.Media;
 
     /// <summary>
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
@@ -116,12 +113,17 @@ namespace Perspex.Controls.Presenters
             IControl result = null;
             object content = this.Content;
 
+            this.LogicalChildren.Clear();
             this.ClearVisualChildren();
 
             if (content != null)
             {
                 result = this.MaterializeDataTemplate(content);
-                ((ISetLogicalParent)result).SetParent(this.logicalParent ?? this);
+
+                if (result.Parent == null)
+                {
+                    ((ISetLogicalParent)result).SetParent(this.logicalParent ?? this);
+                }
 
                 var templatedParent = this.TemplatedParent as TemplatedControl;
 
@@ -132,10 +134,9 @@ namespace Perspex.Controls.Presenters
 
                 ((Control)result).TemplatedParent = templatedParent;
                 this.AddVisualChild(result);
+                this.LogicalChildren.Add(result);
             }
 
-            this.LogicalChildren.Clear();
-            this.LogicalChildren.Add(result);
             this.createdChild = true;
         }
     }

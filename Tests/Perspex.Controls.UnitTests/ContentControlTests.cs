@@ -242,8 +242,7 @@ namespace Perspex.Controls.UnitTests
             contentControl.Content = child1;
             contentControl.ApplyTemplate();
 
-            ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Replace;
+            ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             contentControl.Content = child2;
 

@@ -21,7 +21,7 @@ namespace Perspex.Controls
     /// </remarks>
     public class Panel : Control, IReparentingControl
     {
-        private Controls children;
+        private Controls children = new Controls();
 
         private ILogical childLogicalParent;
 
@@ -30,6 +30,7 @@ namespace Perspex.Controls
         /// </summary>
         public Panel()
         {
+            this.children.CollectionChanged += this.ChildrenChanged;
             this.childLogicalParent = this;
         }
 
@@ -39,19 +40,13 @@ namespace Perspex.Controls
         /// <remarks>
         /// Even though this property can be set, the setter is only intended for use in object
         /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and addds the contents of the assigned
+        /// it simply clears the existing collection and adds the contents of the assigned
         /// collection.
         /// </remarks>
         public Controls Children
         {
             get
             {
-                if (this.children == null)
-                {
-                    this.children = new Controls();
-                    this.children.CollectionChanged += this.ChildrenChanged;
-                }
-
                 return this.children;
             }
 
@@ -59,25 +54,10 @@ namespace Perspex.Controls
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                if (this.children != value)
-                {
-                    if (this.children != null)
-                    {
-                        this.ClearLogicalParent(this.children);
-                        this.children.CollectionChanged -= this.ChildrenChanged;
-                    }
-
-                    this.children = value;
-                    this.ClearVisualChildren();
-
-                    if (this.children != null)
-                    {
-                        this.children.CollectionChanged += this.ChildrenChanged;
-                        this.AddVisualChildren(value);
-                        this.SetLogicalParent(value);
-                        this.InvalidateMeasure();
-                    }
-                }
+                this.ClearVisualChildren();
+                this.children.Clear();
+                this.children.AddRange(value);
+                this.LogicalChildren.AddRange(value);
             }
         }
 
@@ -105,16 +85,6 @@ namespace Perspex.Controls
                 ((ISetLogicalParent)control).SetParent((IControl)logicalParent);
                 children.Add(control);
             }
-        }
-
-        /// <inheritdoc/>
-        protected virtual void OnChildrenAdded(IEnumerable<Control> child)
-        {
-        }
-
-        /// <inheritdoc/>
-        protected virtual void OnChildrenRemoved(IEnumerable<Control> child)
-        {
         }
 
         /// <summary>
@@ -160,7 +130,6 @@ namespace Perspex.Controls
                     this.SetLogicalParent(controls);
                     this.AddVisualChildren(e.NewItems.OfType<Visual>());
                     this.LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    this.OnChildrenAdded(controls);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -168,7 +137,6 @@ namespace Perspex.Controls
                     this.ClearLogicalParent(e.OldItems.OfType<Control>());
                     this.LogicalChildren.RemoveAll(controls);
                     this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
-                    this.OnChildrenRemoved(controls);
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
@@ -177,7 +145,6 @@ namespace Perspex.Controls
                     this.LogicalChildren.Clear();
                     this.ClearVisualChildren();
                     this.AddVisualChildren(this.children);
-                    this.OnChildrenAdded(controls);
                     break;
             }
 

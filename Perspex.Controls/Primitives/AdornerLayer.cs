@@ -8,6 +8,7 @@ namespace Perspex.Controls.Primitives
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
     using Perspex.VisualTree;
 
@@ -26,6 +27,11 @@ namespace Perspex.Controls.Primitives
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
             IsHitTestVisibleProperty.OverrideDefaultValue(typeof(AdornerLayer), false);
+        }
+
+        public AdornerLayer()
+        {
+            this.Children.CollectionChanged += ChildrenCollectionChanged;
         }
 
         public static Visual GetAdornedElement(Visual adorner)
@@ -67,18 +73,19 @@ namespace Perspex.Controls.Primitives
             return finalSize;
         }
 
-        protected override void OnChildrenAdded(IEnumerable<Control> children)
+        private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var i in children)
+            switch (e.Action)
             {
-                this.UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Visual i in e.NewItems)
+                    {
+                        this.UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                    }
+
+                    break;
             }
 
-            this.InvalidateArrange();
-        }
-
-        protected override void OnChildrenRemoved(IEnumerable<Control> child)
-        {
             this.InvalidateArrange();
         }
 

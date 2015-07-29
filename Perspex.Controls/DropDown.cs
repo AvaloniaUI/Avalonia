@@ -69,6 +69,7 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             var container = this.GetTemplateChild<Panel>("container");
+            ((IReparentingControl)container).ReparentLogicalChildren(this, this.LogicalChildren);
         }
 
         private void SetContentParent(Tuple<object, object> change)
