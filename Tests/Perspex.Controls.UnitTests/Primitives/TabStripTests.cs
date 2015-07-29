@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
+    using System.Collections.ObjectModel;
     using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
@@ -87,6 +88,41 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.SelectedTab = target.Items.Cast<TabItem>().ElementAt(1);
 
             Assert.Same(target.SelectedItem, target.SelectedTab);
+        }
+
+        [Fact]
+        public void Removing_Selected_Should_Select_Next()
+        {
+            var list = new ObservableCollection<TabItem>()
+                {
+                    new TabItem
+                    {
+                        Name = "first"
+                    },
+                    new TabItem
+                    {
+                        Name = "second"
+                    },
+                    new TabItem
+                    {
+                        Name = "3rd"
+                    },
+                };
+
+            var target = new TabStrip
+            {
+                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Items = list
+            };
+
+            target.ApplyTemplate();
+            target.SelectedTab = list[1];
+            Assert.Same(list[1], target.SelectedTab);
+            list.RemoveAt(1);
+
+            // Assert for former element [2] now [1] == "3rd"
+            Assert.Same(list[1], target.SelectedTab);
+            Assert.Same("3rd", target.SelectedTab.Name);
         }
 
         private Control CreateTabStripTemplate(TabStrip parent)

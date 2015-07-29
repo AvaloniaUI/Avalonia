@@ -12,6 +12,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Controls.Templates;
     using Perspex.LogicalTree;
     using Xunit;
+    using System.Collections.ObjectModel;
 
     public class TabControlTests
     {
@@ -121,6 +122,44 @@ namespace Perspex.Controls.UnitTests
 
             Assert.Equal(1, target.GetLogicalChildren().Count());
             Assert.Equal("foo", ((TextBlock)target.GetLogicalChildren().First()).Text);
+        }
+
+        [Fact]
+        public void Removal_Should_Set_Next_Tab()
+        {
+            var collection = new ObservableCollection<TabItem>()
+                {
+                    new TabItem
+                    {
+                        Name = "first",
+                        Content = "foo",
+                    },
+                    new TabItem
+                    {
+                        Name = "second",
+                        Content = "bar",
+                    },
+                    new TabItem
+                    {
+                        Name = "3rd",
+                        Content = "barf",
+                    },
+                };
+
+            var target = new TabControl
+            {
+                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Items = collection,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = collection[1];
+            collection.RemoveAt(1);
+
+            // compare with former [2] now [1] == "3rd"
+            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Same(target.SelectedTab, target.SelectedItem);
+            Assert.Equal("barf", target.SelectedContent);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)
