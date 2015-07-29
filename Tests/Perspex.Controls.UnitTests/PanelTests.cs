@@ -7,6 +7,7 @@
 namespace Perspex.Controls.UnitTests
 {
     using System.Linq;
+    using Collections;
     using Xunit;
 
     public class PanelTests
@@ -105,6 +106,31 @@ namespace Perspex.Controls.UnitTests
 
             Assert.Equal(new Control[0], panel.Children);
             Assert.Equal(new ILogical[0], ((ILogical)panel).LogicalChildren.ToList());
+        }
+
+        [Fact]
+        public void Should_Be_Able_To_Reparent_Child_Controls()
+        {
+            var target = new Panel();
+            var parent = new TestReparent();
+            var control1 = new Control();
+            var control2 = new Control();
+
+            target.Children.Add(control1);
+            ((IReparentingControl)target).ReparentLogicalChildren(parent, parent.LogicalChildren);
+            target.Children.Add(control2);
+
+            Assert.Equal(new[] { control1, control2 }, parent.LogicalChildren);
+            Assert.Equal(parent, target.Children[0].Parent);
+            Assert.Equal(parent, target.Children[1].Parent);
+        }
+
+        private class TestReparent : Panel
+        {
+            public new IPerspexList<ILogical> LogicalChildren
+            {
+                get { return base.LogicalChildren; }
+            }
         }
     }
 }

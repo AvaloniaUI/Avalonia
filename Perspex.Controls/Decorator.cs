@@ -11,7 +11,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Base class for controls which decorate a single child control.
     /// </summary>
-    public class Decorator : Control, IVisual, ILogical
+    public class Decorator : Control
     {
         /// <summary>
         /// Defines the <see cref="Child"/> property.
@@ -24,8 +24,6 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly PerspexProperty<Thickness> PaddingProperty =
             PerspexProperty.Register<Decorator, Thickness>(nameof(Padding));
-
-        private PerspexSingleItemList<ILogical> logicalChild = new PerspexSingleItemList<ILogical>();
 
         /// <summary>
         /// Initializes static members of the <see cref="Decorator"/> class.
@@ -51,14 +49,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(PaddingProperty); }
             set { this.SetValue(PaddingProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets the logical children of the control.
-        /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.logicalChild; }
         }
 
         /// <inheritdoc/>
@@ -103,16 +93,16 @@ namespace Perspex.Controls
             if (oldChild != null)
             {
                 ((ISetLogicalParent)oldChild).SetParent(null);
+                this.LogicalChildren.Clear();
                 this.RemoveVisualChild(oldChild);
             }
 
             if (newChild != null)
             {
                 this.AddVisualChild(newChild);
+                this.LogicalChildren.Add(newChild);
                 ((ISetLogicalParent)newChild).SetParent(this);
             }
-
-            this.logicalChild.SingleItem = newChild;
         }
     }
 }

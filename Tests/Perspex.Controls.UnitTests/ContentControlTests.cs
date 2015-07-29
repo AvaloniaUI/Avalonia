@@ -14,6 +14,7 @@ namespace Perspex.Controls.UnitTests
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Templates;
     using Perspex.Layout;
+    using LogicalTree;
     using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;
@@ -180,30 +181,28 @@ namespace Perspex.Controls.UnitTests
 
             target.Content = null;
 
-            // Need to call ApplyTemplate on presenter for LogocalChildren to be updated.
-            var presenter = target.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
-            presenter.ApplyTemplate();
+            // Need to call ApplyTemplate on presenter for LogicalChildren to be updated.
+            target.Presenter.ApplyTemplate();
 
-            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
+            Assert.Empty(target.GetLogicalChildren());
         }
 
         [Fact]
         public void Setting_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var contentControl = new ContentControl();
+            var target = new ContentControl();
             var child = new Control();
             var called = false;
 
-            ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            contentControl.Template = this.GetTemplate();
-            contentControl.Content = child;
-            contentControl.ApplyTemplate();
+            target.Template = this.GetTemplate();
+            target.Content = child;
+            target.ApplyTemplate();
 
-            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
-            presenter.ApplyTemplate();
+            // Need to call ApplyTemplate on presenter for LogicalChildren to be updated.
+            target.Presenter.ApplyTemplate();
 
             Assert.True(called);
         }
@@ -211,21 +210,21 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Clearing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var contentControl = new ContentControl();
+            var target = new ContentControl();
             var child = new Control();
             var called = false;
 
-            contentControl.Template = this.GetTemplate();
-            contentControl.Content = child;
-            contentControl.ApplyTemplate();
+            target.Template = this.GetTemplate();
+            target.Content = child;
+            target.ApplyTemplate();
 
-            ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) =>
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
 
-            contentControl.Content = null;
+            target.Content = null;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
+            var presenter = target.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
             presenter.ApplyTemplate();
 
             Assert.True(called);

@@ -9,6 +9,7 @@ namespace Perspex.Controls.Presenters
     using System;
     using System.Collections;
     using System.Collections.Specialized;
+    using Collections;
     using Perspex.Controls.Generators;
     using Perspex.Input;
     using Perspex.Styling;
@@ -16,7 +17,7 @@ namespace Perspex.Controls.Presenters
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl
+    public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl, IReparentingControl
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -110,6 +111,13 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        public void ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
+        {
+            this.ApplyTemplate();
+            ((IReparentingControl)this.Panel).ReparentLogicalChildren(logicalParent, children);
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
@@ -133,7 +141,6 @@ namespace Perspex.Controls.Presenters
             this.Panel = this.ItemsPanel.Build();
             this.Panel.TemplatedParent = this;
             KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigation.GetTabNavigation(this));
-            ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
             this.AddVisualChild(this.Panel);
             this.createdPanel = true;
             this.CreateItemsAndListenForChanges(this.Items);

@@ -7,8 +7,8 @@
 namespace Perspex.Controls
 {
     using System;
-    using Perspex.Interactivity;
     using Perspex.Collections;
+    using Perspex.Interactivity;
     using Perspex.Rendering;
     using Perspex.VisualTree;
     using Splat;
@@ -16,7 +16,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-    public class Popup : Control, ILogical, IVisualTreeHost
+    public class Popup : Control, IVisualTreeHost
     {
         /// <summary>
         /// Defines the <see cref="Child"/> property.
@@ -161,14 +161,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Gets the logical children of the popup.
-        /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.logicalChild; }
-        }
-
-        /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
         IVisual IVisualTreeHost.Root
@@ -297,7 +289,7 @@ namespace Perspex.Controls
         /// <returns>The popup's position in screen coordinates.</returns>
         private Point GetPosition()
         {
-            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();            
+            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();
             Point point;
 
             if (target != null)

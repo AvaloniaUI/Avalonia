@@ -13,7 +13,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Threading;
     using Perspex.VisualTree;
 
-    public class TextPresenter : TextBlock, IPresenter
+    public class TextPresenter : TextBlock
     {
         public static readonly PerspexProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>();

@@ -15,7 +15,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
-    public class TabControl : SelectingItemsControl, ILogical
+    public class TabControl : SelectingItemsControl
     {
         /// <summary>
         /// Defines the <see cref="SelectedContent"/> property.
@@ -80,14 +80,6 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(TransitionProperty); }
             set { this.SetValue(TransitionProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets the logical children of the control.
-        /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.logicalChildren; }
         }
 
         /// <inheritdoc/>

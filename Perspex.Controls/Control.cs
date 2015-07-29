@@ -80,6 +80,8 @@ namespace Perspex.Controls
 
         private string id;
 
+        private IPerspexList<ILogical> logicalChildren;
+
         private Styles styles;
 
         /// <summary>
@@ -267,7 +269,7 @@ namespace Perspex.Controls
         /// </summary>
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
-            get { return EmptyChildren; }
+            get { return this.LogicalChildren; }
         }
 
         /// <summary>
@@ -282,6 +284,22 @@ namespace Perspex.Controls
         Type IStyleable.StyleKey
         {
             get { return this.GetType(); }
+        }
+
+        /// <summary>
+        /// Gets the control's logical children.
+        /// </summary>
+        protected IPerspexList<ILogical> LogicalChildren
+        {
+            get
+            {
+                if (this.logicalChildren == null)
+                {
+                    this.logicalChildren = new PerspexList<ILogical>();
+                }
+
+                return this.logicalChildren;
+            }
         }
 
         /// <summary>
@@ -312,7 +330,7 @@ namespace Perspex.Controls
         /// Sets the control's logical parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void ISetLogicalParent.SetParent(IControl parent)
+        void ISetLogicalParent.SetParent(ILogical parent)
         {
             var old = this.Parent;
 
@@ -324,13 +342,11 @@ namespace Perspex.Controls
             this.SetValue(ParentProperty, parent);
         }
 
-        [Obsolete("Obsolete this: use properties instead")]
         protected static void PseudoClass(PerspexProperty<bool> property, string className)
         {
             PseudoClass(property, x => x, className);
         }
 
-        [Obsolete("Obsolete this: use properties instead")]
         protected static void PseudoClass<T>(
             PerspexProperty<T> property,
             Func<T, bool> selector,
@@ -410,6 +426,11 @@ namespace Perspex.Controls
 
             IStyler styler = Locator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
+        }
+
+        protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
+        {
+            this.logicalChildren = collection;
         }
     }
 }

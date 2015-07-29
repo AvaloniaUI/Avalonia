@@ -23,7 +23,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<Deck, IPageTransition>("Transition");
 
         /// <summary>
-        /// The default value of <see cref="IItemsPanel"/> for <see cref="Deck"/>.
+        /// The default value of <see cref="IReparentingControl"/> for <see cref="Deck"/>.
         /// </summary>
         private static readonly ItemsPanelTemplate PanelTemplate =
             new ItemsPanelTemplate(() => new Panel());

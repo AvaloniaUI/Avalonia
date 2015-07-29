@@ -22,7 +22,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
-    public class ItemsControl : TemplatedControl, ILogical
+    public class ItemsControl : TemplatedControl
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -44,9 +44,6 @@ namespace Perspex.Controls
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
         private IItemContainerGenerator itemContainerGenerator;
-
-        private PerspexReadOnlyListView<IVisual, ILogical> logicalChildren =
-            new PerspexReadOnlyListView<IVisual, ILogical>(x => (ILogical)x);
 
         private IItemsPresenter presenter;
 
@@ -113,22 +110,7 @@ namespace Perspex.Controls
             protected set
             {
                 this.presenter = value;
-                this.logicalChildren.Source = ((IVisual)value?.Panel)?.VisualChildren;
-            }
-        }
-
-        /// <summary>
-        /// Gets the logical children of the control.
-        /// </summary>
-        /// <remarks>
-        /// The logical children of an <see cref="ItemsControl"/> are the item containers.
-        /// </remarks>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get
-            {
-                this.ApplyTemplate();
-                return this.logicalChildren;
+                (value as IReparentingControl)?.ReparentLogicalChildren(this, this.LogicalChildren);
             }
         }
 

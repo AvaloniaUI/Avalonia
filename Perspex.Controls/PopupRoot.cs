@@ -7,11 +7,12 @@
 namespace Perspex.Controls
 {
     using System;
+    using Collections;
     using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Platform;
-    using Splat;
     using Perspex.VisualTree;
+    using Splat;
 
     /// <summary>
     /// The root window of a <see cref="Popup"/>.

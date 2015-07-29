@@ -19,7 +19,7 @@ namespace Perspex.Controls
     /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
     /// collection. All children are layed out to fill the panel.
     /// </remarks>
-    public class Panel : Control, ILogical, IItemsPanel
+    public class Panel : Control, IReparentingControl
     {
         private Controls children;
 
@@ -82,25 +82,28 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Gets the logical children of the control.
+        /// Requests that the visual children of the panel use another control as their logical
+        /// parent.
         /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
+        /// <param name="logicalParent">
+        /// The logical parent for the visual children of the panel.
+        /// </param>
+        /// <param name="children">
+        /// The <see cref="ILogical.LogicalChildren"/> collection to modify.
+        /// </param>
+        void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
         {
-            get { return this.children; }
-        }
+            Contract.Requires<ArgumentNullException>(logicalParent != null);
+            Contract.Requires<ArgumentNullException>(children != null);
 
-        /// <inheritdoc/>
-        ILogical IItemsPanel.ChildLogicalParent
-        {
-            get
-            {
-                return this.childLogicalParent;
-            }
+            this.childLogicalParent = logicalParent;
+            this.RedirectLogicalChildren(children);
 
-            set
+            foreach (var control in this.Children)
             {
-                this.childLogicalParent = value;
-                this.SetLogicalParent(this.Children);
+                ((ISetLogicalParent)control).SetParent(null);
+                ((ISetLogicalParent)control).SetParent((IControl)logicalParent);
+                children.Add(control);
             }
         }
 
@@ -156,12 +159,14 @@ namespace Perspex.Controls
                     controls = e.NewItems.OfType<Control>().ToList();
                     this.SetLogicalParent(controls);
                     this.AddVisualChildren(e.NewItems.OfType<Visual>());
+                    this.LogicalChildren.InsertRange(e.NewStartingIndex, controls);
                     this.OnChildrenAdded(controls);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
                     this.ClearLogicalParent(e.OldItems.OfType<Control>());
+                    this.LogicalChildren.RemoveAll(controls);
                     this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
                     this.OnChildrenRemoved(controls);
                     break;
@@ -169,6 +174,7 @@ namespace Perspex.Controls
                 case NotifyCollectionChangedAction.Reset:
                     controls = e.OldItems.OfType<Control>().ToList();
                     this.ClearLogicalParent(controls);
+                    this.LogicalChildren.Clear();
                     this.ClearVisualChildren();
                     this.AddVisualChildren(this.children);
                     this.OnChildrenAdded(controls);

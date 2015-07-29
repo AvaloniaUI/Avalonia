@@ -12,6 +12,7 @@ namespace Perspex.Controls.Presenters
     using System.Reactive.Linq;
     using System.Threading.Tasks;
     using Perspex.Animation;
+    using Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Utils;
@@ -20,7 +21,7 @@ namespace Perspex.Controls.Presenters
     /// <summary>
     /// Displays pages inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class DeckPresenter : Control, IItemsPresenter, ITemplatedControl
+    public class DeckPresenter : Control, IItemsPresenter
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -131,6 +132,14 @@ namespace Perspex.Controls.Presenters
             set { this.SetValue(TransitionProperty, value); }
         }
 
+        Panel IItemsPresenter.Panel
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -138,6 +147,12 @@ namespace Perspex.Controls.Presenters
             {
                 this.CreatePanel();
             }
+        }
+
+        /// <inheritdoc/>
+        void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -150,8 +165,7 @@ namespace Perspex.Controls.Presenters
             if (this.ItemsPanel != null)
             {
                 this.Panel = this.ItemsPanel.Build();
-                this.Panel.TemplatedParent = this;
-                ((IItemsPanel)this.Panel).ChildLogicalParent = this.TemplatedParent as ILogical;
+                this.Panel.TemplatedParent = this.TemplatedParent;
                 this.AddVisualChild(this.Panel);
                 this.createdPanel = true;
                 var task = this.MoveToPage(-1, this.SelectedIndex);

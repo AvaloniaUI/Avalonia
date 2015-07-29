@@ -67,7 +67,7 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => 
+            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
             decorator.Child = child;
@@ -102,8 +102,7 @@ namespace Perspex.Controls.UnitTests
 
             decorator.Child = child1;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Replace;
+            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             decorator.Child = child2;
 

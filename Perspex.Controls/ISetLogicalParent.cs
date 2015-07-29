@@ -18,6 +18,6 @@ namespace Perspex.Controls
         /// Sets the control's parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void SetParent(IControl parent);
+        void SetParent(ILogical parent);
     }
 }

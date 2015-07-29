@@ -52,7 +52,7 @@
     <Compile Include="AdornerTemplate.cs" />
     <Compile Include="DropDown.cs" />
     <Compile Include="IContentControl.cs" />
-    <Compile Include="IItemsPanel.cs" />
+    <Compile Include="IReparentingControl.cs" />
     <Compile Include="INamed.cs" />
     <Compile Include="INavigablePanel.cs" />
     <Compile Include="Deck.cs" />

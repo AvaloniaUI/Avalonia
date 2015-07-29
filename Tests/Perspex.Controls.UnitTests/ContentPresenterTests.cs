@@ -6,20 +6,10 @@
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
     using System.Collections.Specialized;
     using System.Linq;
-    using Moq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Layout;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
     using Xunit;
 
     public class ContentPresenterTests
@@ -74,8 +64,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = child;
             target.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = null;
             target.ApplyTemplate();

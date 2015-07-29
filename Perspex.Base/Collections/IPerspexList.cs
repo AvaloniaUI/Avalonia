@@ -11,5 +11,14 @@ namespace Perspex.Collections
 
     public interface IPerspexList<T> : IList<T>, IList, IPerspexReadOnlyList<T>
     {
+        new int Count { get; }
+
+        void AddRange(IEnumerable<T> items);
+
+        new void Clear();
+
+        void InsertRange(int index, IEnumerable<T> items);
+
+        void RemoveAll(IEnumerable<T> items);
     }
 }
