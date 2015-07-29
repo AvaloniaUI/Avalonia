@@ -70,8 +70,6 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
-        private static readonly IPerspexReadOnlyList<ILogical> EmptyChildren = new PerspexSingleItemList<ILogical>();
-
         private Classes classes = new Classes();
 
         private DataTemplates dataTemplates;
