@@ -308,6 +308,12 @@ namespace Perspex.Controls.Primitives
                 this.SelectedItem = this.Items.Cast<object>().ElementAt((int)e.NewValue);
                 var container = this.ItemContainerGenerator.ContainerFromIndex(index);
                 MarkContainerSelected(container, true);
+
+                var inputElement = container as IInputElement;
+                if (inputElement != null && this.Presenter != null && this.Presenter.Panel != null)
+                {
+                    KeyboardNavigation.SetTabOnceActiveElement(this.Presenter.Panel, inputElement);
+                }
             }
         }
 
