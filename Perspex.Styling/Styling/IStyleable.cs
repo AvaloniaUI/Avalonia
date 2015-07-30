@@ -11,17 +11,12 @@ namespace Perspex.Styling
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
-    public interface IStyleable : IObservablePropertyBag
+    public interface IStyleable : IObservablePropertyBag, INamed
     {
         /// <summary>
         /// Gets the list of classes for the control.
         /// </summary>
         Classes Classes { get; }
-
-        /// <summary>
-        /// Gets the ID of the control.
-        /// </summary>
-        string Name { get; }
 
         /// <summary>
         /// Gets the type by which the control is styled.

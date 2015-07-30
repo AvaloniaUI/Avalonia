@@ -6,7 +6,7 @@
 
 namespace Perspex.Controls.Presenters
 {
-    using Perspex.Controls.Primitives;
+    using Perspex.Styling;
 
     /// <summary>
     /// Interface for presenters such as <see cref="ContentPresenter"/> and
