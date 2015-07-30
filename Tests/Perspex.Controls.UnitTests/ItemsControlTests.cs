@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests
     public class ItemsControlTests
     {
         [Fact]
-        public void Panel_Should_Have_TemplatedParent_Set_To_ItemsPresenter()
+        public void Panel_Should_Have_TemplatedParent_Set_To_ItemsControl()
         {
             var target = new ItemsControl();
 
@@ -28,9 +28,9 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
-            var panel = presenter.GetTemplateChildren().OfType<StackPanel>().Single();
+            var panel = target.GetTemplateChildren().OfType<StackPanel>().Single();
 
-            Assert.Equal(presenter, panel.TemplatedParent);
+            Assert.Equal(target, panel.TemplatedParent);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
 
             var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
-            var panel = presenter.GetTemplateChildren().OfType<StackPanel>().Single();
+            var panel = target.GetTemplateChildren().OfType<StackPanel>().Single();
             var item = (TextBlock)panel.GetVisualChildren().First();
 
             Assert.Null(item.TemplatedParent);

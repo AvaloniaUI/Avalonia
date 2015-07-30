@@ -125,14 +125,6 @@ namespace Perspex.Controls.Presenters
                     ((ISetLogicalParent)result).SetParent(this.logicalParent ?? this);
                 }
 
-                var templatedParent = this.TemplatedParent as TemplatedControl;
-
-                if (templatedParent != null)
-                {
-                    templatedParent = templatedParent.TemplatedParent as TemplatedControl;
-                }
-
-                ((Control)result).TemplatedParent = templatedParent;
                 this.AddVisualChild(result);
                 this.LogicalChildren.Add(result);
             }

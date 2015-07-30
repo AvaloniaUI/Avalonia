@@ -198,15 +198,9 @@ namespace Perspex.Controls.Primitives
                     this.templateLog.Verbose("Creating control template");
 
                     var child = this.Template.Build(this);
-                    this.SetTemplatedParent((Control)child);
+                    this.SetTemplatedParentAndApplyChildTemplates(child);
                     this.AddVisualChild((Visual)child);
                     ((ISetLogicalParent)child).SetParent(this);
-
-                    foreach (var i in this.GetTemplateChildren())
-                    {
-                        i.ApplyTemplate();
-                    }
-
                     this.OnTemplateApplied();
                 }
 
@@ -222,19 +216,24 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Sets the <see cref="TemplatedParent"/> property of the control and decendents until
-        /// an <see cref="IPresenter"/> is found.
+        /// Sets the TemplatedParent property for a control created from the control template and
+        /// applies the templates of nested templated controls.
         /// </summary>
         /// <param name="control">The control.</param>
-        private void SetTemplatedParent(Control control)
+        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            control.TemplatedParent = this;
-
-            if (!(control is IPresenter))
+            if (control.TemplatedParent == null)
             {
-                foreach (var child in control.GetVisualChildren().OfType<Control>())
+                control.SetValue(TemplatedParentProperty, this);
+            }
+
+            control.ApplyTemplate();
+
+            if (!(control is IPresenter && control.TemplatedParent == this))
+            {
+                foreach (IControl child in control.GetVisualChildren())
                 {
-                    this.SetTemplatedParent(child);
+                    this.SetTemplatedParentAndApplyChildTemplates(child);
                 }
             }
         }

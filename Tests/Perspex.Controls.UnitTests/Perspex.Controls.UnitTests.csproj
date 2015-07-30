@@ -98,6 +98,7 @@
     <Compile Include="Presenters\DeckPresenterTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
+    <Compile Include="Primitives\TemplatedControlTests.cs" />
     <Compile Include="Primitives\ScrollBarTests.cs" />
     <Compile Include="Primitives\RangeBaseTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests_AutoSelect.cs" />

@@ -145,16 +145,6 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Panel_TemplatedParent_Should_Be_Set()
-        {
-            var target = new ItemsPresenter();
-
-            target.ApplyTemplate();
-
-            Assert.Equal(target, target.Panel.TemplatedParent);
-        }
-
-        [Fact]
         public void Panel_TabNavigation_Should_Be_Set_To_Once()
         {
             var target = new ItemsPresenter();
