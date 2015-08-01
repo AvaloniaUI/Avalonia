@@ -15,6 +15,7 @@ namespace Perspex.Controls.Presenters
     using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
+    using Templates;
     using Perspex.Controls.Utils;
 
     /// <summary>
@@ -140,28 +141,28 @@ namespace Perspex.Controls.Presenters
             }
         }
 
-        /// <inheritdoc/>
-        void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
-        {
-            this.ApplyTemplate();
-            ((IReparentingControl)this.Panel).ReparentLogicalChildren(logicalParent, children);
-        }
-
         /// <summary>
         /// Creates the <see cref="Panel"/>.
         /// </summary>
         private void CreatePanel()
         {
-            this.ClearVisualChildren();
+            var logicalHost = this.FindReparentingHost();
 
-            if (this.ItemsPanel != null)
+            this.ClearVisualChildren();
+            this.Panel = this.ItemsPanel.Build();
+            this.Panel.SetValue(TemplatedParentProperty, this.TemplatedParent);
+
+            this.AddVisualChild(this.Panel);
+
+            if (logicalHost != null)
             {
-                this.Panel = this.ItemsPanel.Build();
-                this.Panel.TemplatedParent = this.TemplatedParent;
-                this.AddVisualChild(this.Panel);
-                this.createdPanel = true;
-                var task = this.MoveToPage(-1, this.SelectedIndex);
+                ((IReparentingControl)this.Panel).ReparentLogicalChildren(
+                    logicalHost,
+                    logicalHost.LogicalChildren);
             }
+
+            this.createdPanel = true;
+            var task = this.MoveToPage(-1, this.SelectedIndex);
         }
 
         /// <summary>

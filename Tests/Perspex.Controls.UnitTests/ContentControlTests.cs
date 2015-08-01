@@ -218,8 +218,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = child;
             target.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = null;
 

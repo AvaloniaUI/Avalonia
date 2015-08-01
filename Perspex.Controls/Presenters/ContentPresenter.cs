@@ -6,16 +6,12 @@
 
 namespace Perspex.Controls.Presenters
 {
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
 
     /// <summary>
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
-    public class ContentPresenter : Control, IPresenter
+    public class ContentPresenter : Control, IContentPresenter
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property.
@@ -24,8 +20,6 @@ namespace Perspex.Controls.Presenters
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         private bool createdChild;
-
-        private ILogical logicalParent;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -40,7 +34,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IControl Child
         {
-            get { return (Control)this.LogicalChildren.SingleOrDefault(); }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -59,20 +54,6 @@ namespace Perspex.Controls.Presenters
             {
                 this.CreateChild();
             }
-        }
-
-        /// <inheritdoc/>
-        void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
-        {
-            if (this.Child != null)
-            {
-                ((ISetLogicalParent)this.Child).SetParent(null);
-                ((ISetLogicalParent)this.Child).SetParent(logicalParent);
-                children.Add(this.Child);
-            }
-
-            this.logicalParent = logicalParent;
-            this.RedirectLogicalChildren(children);
         }
 
         /// <inheritdoc/>
@@ -110,23 +91,29 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         private void CreateChild()
         {
-            IControl result = null;
-            object content = this.Content;
+            var old = this.Child;
+            var content = this.Content;
+            var result = content != null ? this.MaterializeDataTemplate(content) : null;
+            var logicalHost = this.FindReparentingHost();
+            var logicalChildren = logicalHost?.LogicalChildren ?? this.LogicalChildren;
 
-            this.LogicalChildren.Clear();
+            logicalChildren.Remove(old);
             this.ClearVisualChildren();
 
-            if (content != null)
+            this.Child = result;
+
+            if (result != null)
             {
-                result = this.MaterializeDataTemplate(content);
+                this.AddVisualChild(result);
 
                 if (result.Parent == null)
                 {
-                    ((ISetLogicalParent)result).SetParent(this.logicalParent ?? this);
+                    ((ISetLogicalParent)result).SetParent((ILogical)logicalHost ?? this);
+
                 }
 
-                this.AddVisualChild(result);
-                this.LogicalChildren.Add(result);
+                logicalChildren.Remove(old);
+                logicalChildren.Add(result);
             }
 
             this.createdChild = true;

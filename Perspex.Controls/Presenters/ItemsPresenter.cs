@@ -9,15 +9,15 @@ namespace Perspex.Controls.Presenters
     using System;
     using System.Collections;
     using System.Collections.Specialized;
-    using Collections;
     using Perspex.Controls.Generators;
+    using Templates;
     using Perspex.Input;
     using Perspex.Styling;
 
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl, IReparentingControl
+    public class ItemsPresenter : Control, IItemsPresenter, ITemplatedControl
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -111,13 +111,6 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public void ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
-        {
-            this.ApplyTemplate();
-            ((IReparentingControl)this.Panel).ReparentLogicalChildren(logicalParent, children);
-        }
-
-        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             this.Panel.Measure(availableSize);
@@ -140,8 +133,19 @@ namespace Perspex.Controls.Presenters
             this.ClearVisualChildren();
             this.Panel = this.ItemsPanel.Build();
             this.Panel.SetValue(TemplatedParentProperty, this.TemplatedParent);
-            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigation.GetTabNavigation(this));
+
             this.AddVisualChild(this.Panel);
+
+            var logicalHost = this.FindReparentingHost();
+
+            if (logicalHost != null)
+            {
+                ((IReparentingControl)this.Panel).ReparentLogicalChildren(
+                    logicalHost,
+                    logicalHost.LogicalChildren);
+            }
+
+            KeyboardNavigation.SetTabNavigation(this.Panel, KeyboardNavigation.GetTabNavigation(this));
             this.createdPanel = true;
             this.CreateItemsAndListenForChanges(this.Items);
         }

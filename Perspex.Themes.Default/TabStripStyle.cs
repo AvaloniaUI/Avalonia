@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                         new Setter(TabStrip.TemplateProperty, new ControlTemplate<TabStrip>(this.Template)),
                     },
                 },
-                new Style(x => x.OfType<TabStrip>().Template().OfType<ItemsPresenter>().Template().OfType<StackPanel>())
+                new Style(x => x.OfType<TabStrip>().Template().OfType<StackPanel>())
                 {
                     Setters = new[]
                     {

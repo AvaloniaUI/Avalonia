@@ -41,33 +41,6 @@ namespace Perspex.Controls.UnitTests
 
             Assert.Equal(selected, target.SelectedItem);
             Assert.Equal(selected, target.SelectedTab);
-            Assert.Equal("foo", target.SelectedContent);
-        }
-
-        [Fact]
-        public void SelectedContent_Should_Initially_Be_First_Tab_Content()
-        {
-            var target = new TabControl
-            {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
-                Items = new[]
-                {
-                    new TabItem
-                    {
-                        Name = "first",
-                        Content = "foo",
-                    },
-                    new TabItem
-                    {
-                        Name = "second",
-                        Content = "bar",
-                    },
-                }
-            };
-
-            target.ApplyTemplate();
-
-            Assert.Equal("foo", target.SelectedContent);
         }
 
         [Fact]
@@ -95,7 +68,6 @@ namespace Perspex.Controls.UnitTests
             target.SelectedItem = target.Items.Cast<TabItem>().ElementAt(1);
 
             Assert.Same(target.SelectedTab, target.SelectedItem);
-            Assert.Equal("bar", target.SelectedContent);
         }
 
         [Fact]

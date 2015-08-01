@@ -22,7 +22,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
-    public class ItemsControl : TemplatedControl
+    public class ItemsControl : TemplatedControl, IReparentingHost
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -44,8 +44,6 @@ namespace Perspex.Controls
             PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
 
         private IItemContainerGenerator itemContainerGenerator;
-
-        private IItemsPresenter presenter;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -102,16 +100,27 @@ namespace Perspex.Controls
         /// </summary>
         public IItemsPresenter Presenter
         {
-            get
-            {
-                return this.presenter;
-            }
+            get;
+            set;
+        }
 
-            protected set
-            {
-                this.presenter = value;
-                (value as IReparentingControl)?.ReparentLogicalChildren(this, this.LogicalChildren);
-            }
+        /// <inheritdoc/>
+        IPerspexList<ILogical> IReparentingHost.LogicalChildren
+        {
+            get { return this.LogicalChildren; }
+        }
+
+        /// <summary>
+        /// Asks the control whether it wants to reparent the logical children of the specified
+        /// control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>
+        /// True if the control wants to reparent its logical children otherwise false.
+        /// </returns>
+        bool IReparentingHost.WillReparentChildrenOf(IControl control)
+        {
+            return control is IItemsPresenter && control.TemplatedParent == this;
         }
 
         /// <summary>

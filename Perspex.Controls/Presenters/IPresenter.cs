@@ -18,7 +18,7 @@ namespace Perspex.Controls.Presenters
     /// of a <see cref="TemplatedControl"/> then that signals that the visual child
     /// of the presenter is not a part of the template.
     /// </remarks>
-    public interface IPresenter : IControl, INamed, IReparentingControl
+    public interface IPresenter : IControl, INamed
     {
     }
 }

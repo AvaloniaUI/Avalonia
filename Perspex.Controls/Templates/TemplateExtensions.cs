@@ -15,6 +15,35 @@ namespace Perspex.Controls.Templates
 
     public static class TemplateExtensions
     {
+        public static IReparentingHost FindReparentingHost(this IControl control)
+        {
+            var tp = control.TemplatedParent;
+            var chain = new List<IReparentingHost>();
+
+            while (tp != null)
+            {
+                var reparentingHost = tp as IReparentingHost;
+                var styleable = tp as IStyleable;
+
+                if (reparentingHost != null)
+                {
+                    chain.Add(reparentingHost);
+                }
+
+                tp = styleable?.TemplatedParent ?? null;
+            }
+
+            foreach (var reparenting in chain.AsEnumerable().Reverse())
+            {
+                if (reparenting.WillReparentChildrenOf(control))
+                {
+                    return reparenting;
+                }
+            }
+
+            return null;
+        }
+
         public static T FindTemplateChild<T>(this ITemplatedControl control, string id) where T : INamed
         {
             return control.GetTemplateChildren().OfType<T>().SingleOrDefault(x => x.Name == id);
