@@ -60,7 +60,7 @@
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="PlacementMode.cs" />
-    <Compile Include="Popup.cs" />
+    <Compile Include="Primitives\Popup.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
     <Compile Include="Templates\DataTemplate`1.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
@@ -126,7 +126,7 @@
     <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
-    <Compile Include="PopupRoot.cs" />
+    <Compile Include="Primitives\PopupRoot.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />

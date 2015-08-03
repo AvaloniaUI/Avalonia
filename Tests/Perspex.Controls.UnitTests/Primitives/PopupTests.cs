@@ -4,10 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls.UnitTests
+namespace Perspex.Controls.UnitTests.Primitives
 {
     using System.Collections.Specialized;
     using System.Linq;
+    using Perspex.Controls.Primitives;
     using Perspex.LogicalTree;
     using Xunit;
 

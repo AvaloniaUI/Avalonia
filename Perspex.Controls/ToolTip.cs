@@ -6,11 +6,12 @@
 
 namespace Perspex.Controls
 {
-    using Perspex.Input;
-    using Perspex.Threading;
     using System;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using Perspex.Controls.Primitives;
+    using Perspex.Input;
+    using Perspex.Threading;
 
     /// <summary>
     /// A tooltip control.
