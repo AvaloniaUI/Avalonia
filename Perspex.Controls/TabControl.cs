@@ -16,12 +16,6 @@ namespace Perspex.Controls
     public class TabControl : SelectingItemsControl, IReparentingHost
     {
         /// <summary>
-        /// Defines the <see cref="SelectedContent"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<object> SelectedContentProperty =
-            PerspexProperty.Register<TabControl, object>("SelectedContent");
-
-        /// <summary>
         /// Defines the <see cref="SelectedTab"/> property.
         /// </summary>
         public static readonly PerspexProperty<TabItem> SelectedTabProperty =
@@ -41,15 +35,6 @@ namespace Perspex.Controls
             AutoSelectProperty.OverrideDefaultValue<TabControl>(true);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             SelectedIndexProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedIndexChanged);
-        }
-
-        /// <summary>
-        /// Gets the content of the selected tab.
-        /// </summary>
-        public object SelectedContent
-        {
-            get { return this.GetValue(SelectedContentProperty); }
-            private set { this.SetValue(SelectedContentProperty, value); }
         }
 
         /// <summary>
@@ -94,7 +79,6 @@ namespace Perspex.Controls
                 var item = this.SelectedItem as IContentControl;
                 var content = item?.Content ?? item;
                 this.SelectedTab = item as TabItem;
-                this.SelectedContent = content;
             }
         }
     }

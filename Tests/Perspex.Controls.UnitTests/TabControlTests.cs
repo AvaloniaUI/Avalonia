@@ -131,7 +131,6 @@ namespace Perspex.Controls.UnitTests
             // compare with former [2] now [1] == "3rd"
             Assert.Same(collection[1], target.SelectedItem);
             Assert.Same(target.SelectedTab, target.SelectedItem);
-            Assert.Equal("barf", target.SelectedContent);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)
