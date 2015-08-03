@@ -25,6 +25,7 @@ namespace Perspex.Controls
         static ListBoxItem()
         {
             SelectableMixin.Attach<ListBoxItem>(IsSelectedProperty);
+            FocusableProperty.OverrideDefaultValue<ListBoxItem>(true);
         }
 
         /// <summary>
