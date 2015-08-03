@@ -85,6 +85,18 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_Children_Should_Make_Controls_Appear_In_Panel_Children()
+        {
+            var panel = new Panel();
+            var child = new Control();
+
+            panel.Children = new Controls { child };
+
+            Assert.Equal(new[] { child }, panel.Children);
+            Assert.Equal(new[] { child }, panel.GetLogicalChildren());
+        }
+
+        [Fact]
         public void Child_Control_Should_Appear_In_Panel_Children()
         {
             var panel = new Panel();

@@ -57,7 +57,6 @@ namespace Perspex.Controls
                 this.ClearVisualChildren();
                 this.children.Clear();
                 this.children.AddRange(value);
-                this.LogicalChildren.AddRange(value);
             }
         }
 
