@@ -7,8 +7,7 @@
 namespace Perspex.Controls
 {
     using System;
-    using Perspex.Collections;
-    using Perspex.Controls.Presenters;
+    using Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.Input;
@@ -56,6 +55,11 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(IsDropDownOpenProperty); }
             set { this.SetValue(IsDropDownOpenProperty, value); }
+        }
+
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator<ListBoxItem>(this);
         }
 
         protected override void OnPointerPressed(PointerPressEventArgs e)

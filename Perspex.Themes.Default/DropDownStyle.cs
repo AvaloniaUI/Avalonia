@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using System.Linq;
     using System.Reactive.Linq;
     using Perspex.Controls;
+    using Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
     using Perspex.Controls.Templates;
@@ -91,10 +92,15 @@ namespace Perspex.Themes.Default
                         },
                         new Popup
                         {
-                            Child = new ListBox
+                            Child = new Border
                             {
-                                [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
-                                [~~ListBox.SelectedItemProperty] = control[~~DropDown.SelectedItemProperty],
+                                BorderBrush = Brushes.Black,
+                                BorderThickness = 1,
+                                Padding = new Thickness(4),
+                                Child = new ItemsPresenter
+                                {
+                                    [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
+                                }
                             },
                             PlacementTarget = control,
                             StaysOpen = false,

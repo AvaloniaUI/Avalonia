@@ -47,6 +47,13 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsPresenter"/> class.
+        /// </summary>
+        public ItemsPresenter()
+        {
+        }
+
+        /// <summary>
         /// Gets the <see cref="IItemContainerGenerator"/> used to generate item container
         /// controls.
         /// </summary>
