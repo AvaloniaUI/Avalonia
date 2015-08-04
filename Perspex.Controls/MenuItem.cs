@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Windows.Input;
     using Perspex.Controls.Mixins;
@@ -74,6 +75,15 @@ namespace Perspex.Controls
             RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(SubmenuOpened), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// The default value for the <see cref="ItemsPanel"/> property.
+        /// </summary>
+        private static readonly ItemsPanelTemplate DefaultPanel =
+            new ItemsPanelTemplate(() => new StackPanel
+            {
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
+            });
+
+        /// <summary>
         /// The timer used to display submenus.
         /// </summary>
         private IDisposable submenuTimer;
@@ -90,6 +100,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
+            ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
@@ -222,21 +233,6 @@ namespace Perspex.Controls
 
             switch (e.Key)
             {
-                case Key.Up:
-                    passStraightToParent = !this.IsSubMenuOpen;
-                    break;
-
-                case Key.Down:
-                    if (this.IsTopLevel && this.HasSubMenu && !this.IsSubMenuOpen)
-                    {
-                        this.SelectedIndex = 0;
-                        this.IsSubMenuOpen = true;
-                        e.Handled = true;
-                    }
-
-                    passStraightToParent = !this.IsSubMenuOpen;
-                    break;
-
                 case Key.Left:
                     if (!this.IsTopLevel && this.IsSubMenuOpen)
                     {

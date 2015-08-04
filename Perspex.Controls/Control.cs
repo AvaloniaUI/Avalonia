@@ -301,30 +301,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Tries to being the control into view.
-        /// </summary>
-        public void BringIntoView()
-        {
-            this.BringIntoView(new Rect(this.Bounds.Size));
-        }
-
-        /// <summary>
-        /// Tries to being the specified area on the control into view.
-        /// </summary>
-        /// <param name="rect">The area of the control to being into view.</param>
-        public void BringIntoView(Rect rect)
-        {
-            var ev = new RequestBringIntoViewEventArgs
-            {
-                RoutedEvent = RequestBringIntoViewEvent,
-                TargetObject = this,
-                TargetRect = rect,
-            };
-
-            this.RaiseEvent(ev);
-        }
-
-        /// <summary>
         /// Sets the control's logical parent.
         /// </summary>
         /// <param name="parent">The parent.</param>

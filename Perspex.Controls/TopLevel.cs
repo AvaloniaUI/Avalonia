@@ -149,6 +149,16 @@ namespace Perspex.Controls
                 this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
             }
 
+            if (this.keyboardNavigationHandler != null)
+            {
+                this.keyboardNavigationHandler.SetOwner(this);
+            }
+
+            if (this.accessKeyHandler != null)
+            {
+                this.accessKeyHandler.SetOwner(this);
+            }
+
             styler?.ApplyStyles(this);
 
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);

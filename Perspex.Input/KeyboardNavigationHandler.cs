@@ -98,30 +98,15 @@ namespace Perspex.Input
         }
 
         /// <summary>
-        /// Moves the focus to the next control in tab order.
+        /// Moves the focus in the specified direction.
         /// </summary>
         /// <param name="element">The current element.</param>
-        public void TabNext(IInputElement element)
+        /// <param name="direction">The direction to move.</param>
+        public void Move(IInputElement element, FocusNavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            var next = GetNext(element, FocusNavigationDirection.Next);
-
-            if (next != null)
-            {
-                FocusManager.Instance.Focus(next, true);
-            }
-        }
-
-        /// <summary>
-        /// Moves the focus to the previous control in tab order.
-        /// </summary>
-        /// <param name="element">The current element.</param>
-        public void TabPrevious(IInputElement element)
-        {
-            Contract.Requires<ArgumentNullException>(element != null);
-
-            var next = GetNext(element, FocusNavigationDirection.Previous);
+            var next = GetNext(element, direction);
 
             if (next != null)
             {
@@ -312,15 +297,34 @@ namespace Perspex.Input
         {
             var current = FocusManager.Instance.Current;
 
-            if (e.Key == Key.Tab && current != null)
+            if (current != null)
             {
-                if ((KeyboardDevice.Instance.Modifiers & ModifierKeys.Shift) == 0)
+                FocusNavigationDirection? direction = null;
+
+                switch (e.Key)
                 {
-                    this.TabNext(current);
+                    case Key.Tab:
+                        direction = (KeyboardDevice.Instance.Modifiers & ModifierKeys.Shift) == 0 ?
+                            FocusNavigationDirection.Next : FocusNavigationDirection.Previous;
+                        break;
+                    case Key.Up:
+                        direction = FocusNavigationDirection.Up;
+                        break;
+                    case Key.Down:
+                        direction = FocusNavigationDirection.Down;
+                        break;
+                    case Key.Left:
+                        direction = FocusNavigationDirection.Left;
+                        break;
+                    case Key.Right:
+                        direction = FocusNavigationDirection.Right;
+                        break;
                 }
-                else
+
+                if (direction.HasValue)
                 {
-                    this.TabPrevious(current);
+                    this.Move(current, direction.Value);
+                    e.Handled = true;
                 }
             }
         }

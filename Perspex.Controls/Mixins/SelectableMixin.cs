@@ -26,6 +26,9 @@ namespace Perspex.Controls.Mixins
     /// <item>
     /// Adds a 'selected' class to selected controls.
     /// </item>
+    /// <item>
+    /// Requests that the control is scrolled into view when focused.
+    /// </item>
     /// </list>
     /// <para>
     /// Mixins apply themselves to classes and not instances, and as such should be created in
@@ -53,6 +56,11 @@ namespace Perspex.Controls.Mixins
                     if ((bool)x.NewValue)
                     {
                         sender.Classes.Add("selected");
+
+                        if (((IVisual)sender).IsAttachedToVisualTree)
+                        {
+                            sender.BringIntoView();
+                        }
                     }
                     else
                     {

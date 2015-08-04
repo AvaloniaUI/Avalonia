@@ -141,6 +141,11 @@ namespace Perspex.Controls.Presenters
             this.Panel = this.ItemsPanel.Build();
             this.Panel.SetValue(TemplatedParentProperty, this.TemplatedParent);
 
+            if (!this.Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
+            {
+                KeyboardNavigation.SetDirectionalNavigation(this.Panel, KeyboardNavigationMode.Contained);
+            }
+
             this.AddVisualChild(this.Panel);
 
             var logicalHost = this.FindReparentingHost();

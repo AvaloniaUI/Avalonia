@@ -84,6 +84,11 @@ namespace Perspex
         private Visual visualParent;
 
         /// <summary>
+        /// Whether the element is attached to the visual tree.
+        /// </summary>
+        private bool isAttachedToVisualTree;
+
+        /// <summary>
         /// The logger for visual-level events.
         /// </summary>
         private ILogger visualLogger;
@@ -184,6 +189,15 @@ namespace Perspex
             get { return this.GetValue(ZIndexProperty); }
             set { this.SetValue(ZIndexProperty, value); }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this scene graph node is attached to a visual root.
+        /// </summary>
+        bool IVisual.IsAttachedToVisualTree
+        {
+            get { return this.isAttachedToVisualTree; }
+        }
+
 
         /// <summary>
         /// Gets the scene graph node's child nodes.
@@ -487,6 +501,7 @@ namespace Perspex
         {
             this.visualLogger.Verbose("Attached to visual tree");
 
+            this.isAttachedToVisualTree = true;
             this.OnAttachedToVisualTree(root);
 
             if (this.visualChildren != null)
@@ -507,6 +522,7 @@ namespace Perspex
         {
             this.visualLogger.Verbose("Detached from visual tree");
 
+            this.isAttachedToVisualTree = false;
             this.OnDetachedFromVisualTree(root);
 
             if (this.visualChildren != null)

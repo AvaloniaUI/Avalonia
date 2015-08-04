@@ -21,15 +21,10 @@ namespace Perspex.Input
         void SetOwner(IInputRoot owner);
 
         /// <summary>
-        /// Moves the focus to the next control in tab order.
+        /// Moves the focus in the specified direction.
         /// </summary>
         /// <param name="element">The current element.</param>
-        void TabNext(IInputElement element);
-
-        /// <summary>
-        /// Moves the focus to the previous control in tab order.
-        /// </summary>
-        /// <param name="element">The current element.</param>
-        void TabPrevious(IInputElement element);
+        /// <param name="direction">The direction to move.</param>
+        void Move(IInputElement element, FocusNavigationDirection direction);
     }
 }
