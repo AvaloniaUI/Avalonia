@@ -28,7 +28,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A panel which lays out its children horizontally or vertically.
     /// </summary>
-    public class StackPanel : Panel, INavigablePanel
+    public class StackPanel : Panel, INavigableContainer
     {
         /// <summary>
         /// Defines the <see cref="Gap"/> property.
@@ -75,10 +75,10 @@ namespace Perspex.Controls
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IControl INavigablePanel.GetControl(FocusNavigationDirection direction, IControl from)
+        IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
         {
             var horiz = this.Orientation == Orientation.Horizontal;
-            int index = this.Children.IndexOf(from);
+            int index = this.Children.IndexOf((IControl)from);
 
             switch (direction)
             {
@@ -92,7 +92,7 @@ namespace Perspex.Controls
                     ++index;
                     break;
                 case FocusNavigationDirection.Previous:
-                    ++index;
+                    --index;
                     break;
                 case FocusNavigationDirection.Left:
                     index = horiz ? index - 1 : -1;

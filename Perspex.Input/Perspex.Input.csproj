@@ -75,6 +75,7 @@
     <Compile Include="IKeyboardDevice.cs" />
     <Compile Include="IKeyboardNavigationHandler.cs" />
     <Compile Include="IMouseDevice.cs" />
+    <Compile Include="INavigableContainer.cs" />
     <Compile Include="InputElement.cs" />
     <Compile Include="InputExtensions.cs" />
     <Compile Include="InputManager.cs" />

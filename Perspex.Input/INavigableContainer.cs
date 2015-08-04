@@ -1,17 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="INavigablePanel.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// <copyright file="INavigableContainer.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Controls
+namespace Perspex.Input
 {
-    using Perspex.Input;
-
     /// <summary>
-    /// Defines a panel in which the child controls can be navigated by keyboard.
+    /// Defines a container in which the child controls can be navigated by keyboard.
     /// </summary>
-    public interface INavigablePanel
+    public interface INavigableContainer
     {
         /// <summary>
         /// Gets the next control in the specified direction.
@@ -19,6 +17,6 @@ namespace Perspex.Controls
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IControl GetControl(FocusNavigationDirection direction, IControl from);
+        IInputElement GetControl(FocusNavigationDirection direction, IInputElement from);
     }
 }

@@ -43,11 +43,17 @@ namespace Perspex.Input
         }
 
         /// <summary>
-        /// Gets the next element in tab order.
+        /// Gets the next control in the specified navigation direction.
         /// </summary>
         /// <param name="element">The element.</param>
-        /// <returns>The next element in tab order.</returns>
-        public static IInputElement GetNextInTabOrder(IInputElement element)
+        /// <param name="direction">The navigation direction.</param>
+        /// <returns>
+        /// The next element in the specified direction, or null if <paramref name="element"/>
+        /// was the last in therequested direction.
+        /// </returns>
+        public static IInputElement GetNext(
+            IInputElement element,
+            FocusNavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
@@ -55,60 +61,39 @@ namespace Perspex.Input
 
             if (container != null)
             {
-                var mode = KeyboardNavigation.GetTabNavigation((InputElement)container);
+                KeyboardNavigationMode mode;
+
+                if (direction == FocusNavigationDirection.Next || direction == FocusNavigationDirection.Previous)
+                {
+                    mode = KeyboardNavigation.GetTabNavigation((InputElement)container);
+                }
+                else
+                {
+                    mode = KeyboardNavigation.GetDirectionalNavigation((InputElement)container);
+                }
+
+                bool forward = direction == FocusNavigationDirection.Next ||
+                               direction == FocusNavigationDirection.Last ||
+                               direction == FocusNavigationDirection.Right ||
+                               direction == FocusNavigationDirection.Down;
 
                 switch (mode)
                 {
                     case KeyboardNavigationMode.Continue:
-                        return GetNextInContainer(element, container) ??
-                               GetFirstInNextContainer(container);
+                        return GetNextInContainer(element, container, direction) ??
+                               GetFirstInNextContainer(element, forward);
                     case KeyboardNavigationMode.Cycle:
-                        return GetNextInContainer(element, container) ??
-                               GetDescendents(container).FirstOrDefault();
+                        return GetNextInContainer(element, container, direction) ??
+                               GetDescendent(container, forward);
                     case KeyboardNavigationMode.Contained:
-                        return GetNextInContainer(element, container);
+                        return GetNextInContainer(element, container, direction);
                     default:
-                        return GetFirstInNextContainer(container);
+                        return GetFirstInNextContainer(container, forward);
                 }
             }
             else
             {
                 return GetDescendents(element).FirstOrDefault();
-            }
-        }
-
-        /// <summary>
-        /// Gets the next element in tab order.
-        /// </summary>
-        /// <param name="element">The element.</param>
-        /// <returns>The next element in tab order.</returns>
-        public static IInputElement GetPreviousInTabOrder(IInputElement element)
-        {
-            Contract.Requires<ArgumentNullException>(element != null);
-
-            var container = element.GetVisualParent<IInputElement>();
-
-            if (container != null)
-            {
-                var mode = KeyboardNavigation.GetTabNavigation((InputElement)container);
-
-                switch (mode)
-                {
-                    case KeyboardNavigationMode.Continue:
-                        return GetPreviousInContainer(element, container) ??
-                               GetLastInPreviousContainer(element);
-                    case KeyboardNavigationMode.Cycle:
-                        return GetPreviousInContainer(element, container) ??
-                               GetDescendents(container).LastOrDefault();
-                    case KeyboardNavigationMode.Contained:
-                        return GetPreviousInContainer(element, container);
-                    default:
-                        return GetLastInPreviousContainer(container);
-                }
-            }
-            else
-            {
-                return GetDescendents(element).LastOrDefault();
             }
         }
 
@@ -120,7 +105,7 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            var next = GetNextInTabOrder(element);
+            var next = GetNext(element, FocusNavigationDirection.Next);
 
             if (next != null)
             {
@@ -136,7 +121,7 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            var next = GetPreviousInTabOrder(element);
+            var next = GetNext(element, FocusNavigationDirection.Previous);
 
             if (next != null)
             {
@@ -157,6 +142,19 @@ namespace Perspex.Input
         /// <param name="e">The element.</param>
         /// <returns>True if a descendent of the element can be focused.</returns>
         private static bool CanFocusDescendent(IInputElement e) => e.IsEnabledCore && e.IsVisible;
+
+        /// <summary>
+        /// Gets the first or last focusable descendent of the specified element.
+        /// </summary>
+        /// <param name="container">The element.</param>
+        /// <param name="forward">Whether to search forward or backwards.</param>
+        /// <returns>The element or null if not found.##</returns>
+        private static IInputElement GetDescendent(IInputElement container, bool forward)
+        {
+            return forward ?
+                GetDescendents(container).FirstOrDefault() :
+                GetDescendents(container).LastOrDefault();
+        }
 
         /// <summary>
         /// Gets the focusable descendents of the specified element, depending on the element's
@@ -212,8 +210,12 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="element">The starting element/</param>
         /// <param name="container">The container.</param>
+        /// <param name="direction">The direction.</param>
         /// <returns>The next element, or null if the element is the last.</returns>
-        private static IInputElement GetNextInContainer(IInputElement element, IInputElement container)
+        private static IInputElement GetNextInContainer(
+            IInputElement element,
+            IInputElement container,
+            FocusNavigationDirection direction)
         {
             var descendent = GetDescendents(element).FirstOrDefault();
 
@@ -223,16 +225,22 @@ namespace Perspex.Input
             }
             else if (container != null)
             {
-                var sibling = container.GetVisualChildren()
-                    .OfType<IInputElement>()
-                    .Where(CanFocus)
-                    .SkipWhile(x => x != element)
-                    .Skip(1)
-                    .FirstOrDefault();
+                var navigable = container as INavigableContainer;
 
-                if (sibling != null)
+                // TODO: Do a spatial search here.
+                if (navigable != null)
                 {
-                    return sibling;
+                    while (element != null)
+                    {
+                        var sibling = navigable.GetControl(direction, element);
+
+                        if (sibling != null && CanFocus(sibling))
+                        {
+                            return sibling;
+                        }
+
+                        element = sibling;
+                    }
                 }
             }
 
@@ -240,38 +248,31 @@ namespace Perspex.Input
         }
 
         /// <summary>
-        /// Gets the previous item that should be focused in the specified container.
-        /// </summary>
-        /// <param name="element">The starting element/</param>
-        /// <param name="container">The container.</param>
-        /// <returns>The previous element, or null if the element is the first.</returns>
-        private static IInputElement GetPreviousInContainer(IInputElement element, IInputElement container)
-        {
-            return container.GetVisualChildren()
-                .OfType<IInputElement>()
-                .Where(CanFocus)
-                .TakeWhile(x => x != element)
-                .LastOrDefault();
-        }
-
-        /// <summary>
         /// Gets the first item that should be focused in the next container.
         /// </summary>
         /// <param name="container">The container.</param>
+        /// <param name="forward">Whether to search forward or backwards.</param>
         /// <returns>The first element, or null if there are no more elements.</returns>
-        private static IInputElement GetFirstInNextContainer(IInputElement container)
+        private static IInputElement GetFirstInNextContainer(IInputElement container, bool forward)
         {
             var parent = container.GetVisualParent<IInputElement>();
             IInputElement next = null;
 
             if (parent != null)
             {
-                var sibling = parent.GetVisualChildren()
+                var siblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
-                    .Where(CanFocusDescendent)
-                    .SkipWhile(x => x != container)
-                    .Skip(1)
-                    .FirstOrDefault();
+                    .Where(CanFocusDescendent);
+                IInputElement sibling;
+
+                if (forward)
+                {
+                    sibling = siblings.SkipWhile(x => x != container).Skip(1).FirstOrDefault();
+                }
+                else
+                {
+                    sibling = siblings.TakeWhile(x => x != container).LastOrDefault();
+                }
 
                 if (sibling != null)
                 {
@@ -281,61 +282,22 @@ namespace Perspex.Input
                     }
                     else
                     {
-                        next = GetDescendents(sibling).FirstOrDefault();
+                        next = forward ?
+                            GetDescendents(sibling).FirstOrDefault() :
+                            GetDescendents(sibling).LastOrDefault();
                     }
                 }
 
                 if (next == null)
                 {
-                    next = GetFirstInNextContainer(parent);
+                    next = GetFirstInNextContainer(parent, forward);
                 }
             }
             else
             {
-                next = GetDescendents(container).FirstOrDefault();
-            }
-
-            return next;
-        }
-
-        /// <summary>
-        /// Gets the last item that should be focused in the previous container.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>The next element, or null if there are no more elements.</returns>
-        private static IInputElement GetLastInPreviousContainer(IInputElement container)
-        {
-            var parent = container.GetVisualParent<IInputElement>();
-            IInputElement next = null;
-
-            if (parent != null)
-            {
-                var sibling = parent.GetVisualChildren()
-                    .OfType<IInputElement>()
-                    .Where(CanFocusDescendent)
-                    .TakeWhile(x => x != container)
-                    .LastOrDefault();
-
-                if (sibling != null)
-                {
-                    if (CanFocus(sibling))
-                    {
-                        next = sibling;
-                    }
-                    else
-                    {
-                        next = GetDescendents(sibling).LastOrDefault();
-                    }
-                }
-
-                if (next == null)
-                {
-                    next = GetLastInPreviousContainer(parent);
-                }
-            }
-            else
-            {
-                next = GetDescendents(container).LastOrDefault();
+                next = forward ?
+                    GetDescendents(container).FirstOrDefault() :
+                    GetDescendents(container).LastOrDefault();
             }
 
             return next;

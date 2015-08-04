@@ -12,6 +12,19 @@ namespace Perspex.Input
     public static class KeyboardNavigation
     {
         /// <summary>
+        /// Defines the DirectionalNavigation attached property.
+        /// </summary>
+        /// <remarks>
+        /// The DirectionalNavigation attached property defines how pressing arrow keys causes
+        /// focus to be navigated between the children of the container.
+        /// </remarks>
+        public static readonly PerspexProperty<KeyboardNavigationMode> DirectionalNavigationProperty =
+            PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>(
+                "DirectionalNavigation",
+                typeof(KeyboardNavigation),
+                KeyboardNavigationMode.None);
+
+        /// <summary>
         /// Defines the TabNavigation attached property.
         /// </summary>
         /// <remarks>
@@ -19,7 +32,9 @@ namespace Perspex.Input
         /// be navigated between the children of the container.
         /// </remarks>
         public static readonly PerspexProperty<KeyboardNavigationMode> TabNavigationProperty =
-            PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>("TabNavigation", typeof(KeyboardNavigation));
+            PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>(
+                "TabNavigation",
+                typeof(KeyboardNavigation));
 
         /// <summary>
         /// Defines the TabOnceActiveElement attached property.
@@ -30,7 +45,29 @@ namespace Perspex.Input
         /// defines to which child the focus should move.
         /// </remarks>
         public static readonly PerspexProperty<IInputElement> TabOnceActiveElementProperty =
-            PerspexProperty.RegisterAttached<InputElement, IInputElement>("TabOnceActiveElement", typeof(KeyboardNavigation));
+            PerspexProperty.RegisterAttached<InputElement, IInputElement>(
+                "TabOnceActiveElement",
+                typeof(KeyboardNavigation));
+
+        /// <summary>
+        /// Gets the <see cref="DirectionalNavigationProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <returns>The <see cref="KeyboardNavigationMode"/> for the container.</returns>
+        public static KeyboardNavigationMode GetDirectionalNavigation(InputElement element)
+        {
+            return element.GetValue(DirectionalNavigationProperty);
+        }
+
+        /// <summary>
+        /// Sets the <see cref="DirectionalNavigationProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <param name="value">The <see cref="KeyboardNavigationMode"/> for the container.</param>
+        public static void SetDirectionalNavigation(InputElement element, KeyboardNavigationMode value)
+        {
+            element.SetValue(DirectionalNavigationProperty, value);
+        }
 
         /// <summary>
         /// Gets the <see cref="TabNavigationProperty"/> for a container.
