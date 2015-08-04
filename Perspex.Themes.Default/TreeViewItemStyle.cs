@@ -86,6 +86,7 @@ namespace Perspex.Themes.Default
                             new ToggleButton
                             {
                                 Classes = new Classes("expander"),
+                                Focusable = false,
                                 [~~ToggleButton.IsCheckedProperty] = control[~TreeViewItem.IsExpandedProperty],
                             },
                             new Border

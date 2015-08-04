@@ -84,7 +84,7 @@ namespace Perspex.Input
                                GetFirstInNextContainer(element, forward);
                     case KeyboardNavigationMode.Cycle:
                         return GetNextInContainer(element, container, direction) ??
-                               GetDescendent(container, forward);
+                               GetFocusableDescendent(container, forward);
                     case KeyboardNavigationMode.Contained:
                         return GetNextInContainer(element, container, direction);
                     default:
@@ -93,7 +93,7 @@ namespace Perspex.Input
             }
             else
             {
-                return GetDescendents(element).FirstOrDefault();
+                return GetFocusableDescendents(element).FirstOrDefault();
             }
         }
 
@@ -134,11 +134,11 @@ namespace Perspex.Input
         /// <param name="container">The element.</param>
         /// <param name="forward">Whether to search forward or backwards.</param>
         /// <returns>The element or null if not found.##</returns>
-        private static IInputElement GetDescendent(IInputElement container, bool forward)
+        private static IInputElement GetFocusableDescendent(IInputElement container, bool forward)
         {
             return forward ?
-                GetDescendents(container).FirstOrDefault() :
-                GetDescendents(container).LastOrDefault();
+                GetFocusableDescendents(container).FirstOrDefault() :
+                GetFocusableDescendents(container).LastOrDefault();
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The element's focusable descendents.</returns>
-        private static IEnumerable<IInputElement> GetDescendents(IInputElement element)
+        private static IEnumerable<IInputElement> GetFocusableDescendents(IInputElement element)
         {
             var mode = KeyboardNavigation.GetTabNavigation((InputElement)element);
 
@@ -182,7 +182,7 @@ namespace Perspex.Input
 
                 if (CanFocusDescendent(child))
                 {
-                    foreach (var descendent in GetDescendents(child))
+                    foreach (var descendent in GetFocusableDescendents(child))
                     {
                         yield return descendent;
                     }
@@ -202,7 +202,7 @@ namespace Perspex.Input
             IInputElement container,
             FocusNavigationDirection direction)
         {
-            var descendent = GetDescendents(element).FirstOrDefault();
+            var descendent = GetFocusableDescendents(element).FirstOrDefault();
 
             if (descendent != null)
             {
@@ -268,8 +268,8 @@ namespace Perspex.Input
                     else
                     {
                         next = forward ?
-                            GetDescendents(sibling).FirstOrDefault() :
-                            GetDescendents(sibling).LastOrDefault();
+                            GetFocusableDescendents(sibling).FirstOrDefault() :
+                            GetFocusableDescendents(sibling).LastOrDefault();
                     }
                 }
 
@@ -281,8 +281,8 @@ namespace Perspex.Input
             else
             {
                 next = forward ?
-                    GetDescendents(container).FirstOrDefault() :
-                    GetDescendents(container).LastOrDefault();
+                    GetFocusableDescendents(container).FirstOrDefault() :
+                    GetFocusableDescendents(container).LastOrDefault();
             }
 
             return next;
