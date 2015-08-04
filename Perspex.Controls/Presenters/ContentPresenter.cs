@@ -14,6 +14,12 @@ namespace Perspex.Controls.Presenters
     public class ContentPresenter : Control, IContentPresenter
     {
         /// <summary>
+        /// Defines the <see cref="Child"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IControl> ChildProperty =
+            PerspexProperty.Register<ContentPresenter, IControl>("Child");
+
+        /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
         public static readonly PerspexProperty<object> ContentProperty =
@@ -34,8 +40,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IControl Child
         {
-            get;
-            private set;
+            get { return this.GetValue(ChildProperty); }
+            private set { this.SetValue(ChildProperty, value); }
         }
 
         /// <summary>

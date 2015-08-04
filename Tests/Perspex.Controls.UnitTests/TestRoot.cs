@@ -36,7 +36,7 @@ namespace Perspex.Controls.UnitTests
 
         public Point TranslatePointToScreen(Point p)
         {
-            throw new NotImplementedException();
+            return new Point();
         }
     }
 }

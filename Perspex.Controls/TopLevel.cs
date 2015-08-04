@@ -103,56 +103,22 @@ namespace Perspex.Controls
         /// </param>
         public TopLevel(ITopLevelImpl impl, IDependencyResolver dependencyResolver)
         {
-            dependencyResolver = dependencyResolver ?? Locator.Current;
-
-            IPlatformRenderInterface renderInterface = dependencyResolver.GetService<IPlatformRenderInterface>();
-
-            this.PlatformImpl = impl;
-            this.accessKeyHandler = dependencyResolver.GetService<IAccessKeyHandler>();
-            this.inputManager = dependencyResolver.GetService<IInputManager>();
-            this.keyboardNavigationHandler = dependencyResolver.GetService<IKeyboardNavigationHandler>();
-            this.LayoutManager = dependencyResolver.GetService<ILayoutManager>();
-            this.renderManager = dependencyResolver.GetService<IRenderManager>();
-
-            if (renderInterface == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create an interface to the rendering subsystem: maybe no rendering subsystem was initialized?");
-            }
-
-            if (this.PlatformImpl == null)
+            if (impl == null)
             {
                 throw new InvalidOperationException(
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
 
-            if (this.inputManager == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create input manager: maybe Application.RegisterServices() wasn't called?");
-            }
+            this.PlatformImpl = impl;
 
-            if (this.LayoutManager == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create layout manager: maybe Application.RegisterServices() wasn't called?");
-            }
-
-            if (this.renderManager == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create render manager: maybe Application.RegisterServices() wasn't called?");
-            }
-
-            if (this.accessKeyHandler != null)
-            {
-                this.accessKeyHandler.SetOwner(this);
-            }
-
-            if (this.keyboardNavigationHandler != null)
-            {
-                this.keyboardNavigationHandler.SetOwner(this);
-            }
+            dependencyResolver = dependencyResolver ?? Locator.Current;
+            var renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+            var styler = TryGetService<IStyler>(dependencyResolver);
+            this.accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
+            this.inputManager = TryGetService<IInputManager>(dependencyResolver);
+            this.keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
+            this.LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
+            this.renderManager = TryGetService<IRenderManager>(dependencyResolver);
 
             this.PlatformImpl.SetOwner(this);
             this.PlatformImpl.Activated = this.HandleActivated;
@@ -165,17 +131,41 @@ namespace Perspex.Controls
             Size clientSize = this.ClientSize = this.PlatformImpl.ClientSize;
 
             this.dispatcher = Dispatcher.UIThread;
-            this.renderer = renderInterface.CreateRenderer(this.PlatformImpl.Handle, clientSize.Width, clientSize.Height);
 
-            this.LayoutManager.Root = this;
-            this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
-            this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
-            this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
+            if (renderInterface != null)
+            {
+                this.renderer = renderInterface.CreateRenderer(this.PlatformImpl.Handle, clientSize.Width, clientSize.Height);
+            }
 
-            IStyler styler = dependencyResolver.GetService<IStyler>();
-            styler.ApplyStyles(this);
+            if (this.LayoutManager != null)
+            {
+                this.LayoutManager.Root = this;
+                this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
+                this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
+            }
+
+            if (this.renderManager != null)
+            {
+                this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
+            }
+
+            styler?.ApplyStyles(this);
 
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);
+        }
+
+        private static T TryGetService<T>(IDependencyResolver resolver) where T : class
+        {
+            var result = resolver.GetService<T>();
+
+            if (result == null)
+            {
+                System.Diagnostics.Debug.WriteLineIf(
+                    result == null,
+                    $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -383,7 +373,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutCompleted()
         {
-            this.renderManager.InvalidateRender(this);
+            this.renderManager?.InvalidateRender(this);
         }
 
         /// <summary>

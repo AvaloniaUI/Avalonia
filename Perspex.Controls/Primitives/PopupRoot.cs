@@ -8,6 +8,7 @@ namespace Perspex.Controls.Primitives
 {
     using System;
     using Collections;
+    using Perspex.Controls.Presenters;
     using Perspex.Interactivity;
     using Perspex.Media;
     using Perspex.Platform;
@@ -19,6 +20,8 @@ namespace Perspex.Controls.Primitives
     /// </summary>
     public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot
     {
+        private IDisposable presenterSubscription;
+
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
         /// </summary>
@@ -98,8 +101,51 @@ namespace Perspex.Controls.Primitives
         public void Show()
         {
             this.PlatformImpl.Show();
-            this.LayoutManager.ExecuteLayoutPass();
+            this.LayoutManager?.ExecuteLayoutPass();
             this.IsVisible = true;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnTemplateApplied()
+        {
+            base.OnTemplateApplied();
+
+            if (this.Parent.TemplatedParent != null)
+            {
+                if (this.presenterSubscription != null)
+                {
+                    this.presenterSubscription.Dispose();
+                    this.presenterSubscription = null;
+                }
+
+                var presenter = this.Presenter;
+
+                if (presenter != null)
+                {
+                    presenter.GetObservable(ContentPresenter.ChildProperty)
+                        .Subscribe(this.SetTemplatedParentAndApplyChildTemplates);
+                }
+            }
+        }
+
+        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
+        {
+            var templatedParent = this.Parent.TemplatedParent;
+
+            if (control.TemplatedParent == null)
+            {
+                control.SetValue(TemplatedParentProperty, templatedParent);
+            }
+
+            control.ApplyTemplate();
+
+            if (!(control is IPresenter && control.TemplatedParent == templatedParent))
+            {
+                foreach (IControl child in control.GetVisualChildren())
+                {
+                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                }
+            }
         }
     }
 }
