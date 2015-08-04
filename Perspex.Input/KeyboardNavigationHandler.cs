@@ -65,6 +65,8 @@ namespace Perspex.Input
                     case KeyboardNavigationMode.Cycle:
                         return GetNextInContainer(element, container) ??
                                GetDescendents(container).FirstOrDefault();
+                    case KeyboardNavigationMode.Contained:
+                        return GetNextInContainer(element, container);
                     default:
                         return GetFirstInNextContainer(container);
                 }
@@ -98,6 +100,8 @@ namespace Perspex.Input
                     case KeyboardNavigationMode.Cycle:
                         return GetPreviousInContainer(element, container) ??
                                GetDescendents(container).LastOrDefault();
+                    case KeyboardNavigationMode.Contained:
+                        return GetPreviousInContainer(element, container);
                     default:
                         return GetLastInPreviousContainer(container);
                 }
@@ -164,7 +168,7 @@ namespace Perspex.Input
         {
             var mode = KeyboardNavigation.GetTabNavigation((InputElement)element);
 
-            if (mode == KeyboardNavigationMode.Never)
+            if (mode == KeyboardNavigationMode.None)
             {
                 yield break;
             }

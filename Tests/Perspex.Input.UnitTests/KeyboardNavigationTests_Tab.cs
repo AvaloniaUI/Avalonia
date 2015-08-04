@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="KeyboardNavigationTests.cs" company="Steven Kirk">
+// <copyright file="KeyboardNavigationTests_Tab.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,7 +9,7 @@ namespace Perspex.Input.UnitTests
     using Perspex.Controls;
     using Xunit;
 
-    public class KeyboardNavigationTests
+    public class KeyboardNavigationTests_Tab
     {
         [Fact]
         public void GetNextInTabOrder_Continue_Returns_Next_Control_In_Container()
@@ -295,6 +295,82 @@ namespace Perspex.Input.UnitTests
         }
 
         [Fact]
+        public void GetNextInTabOrder_Contained_Returns_Next_Control_In_Container()
+        {
+            StackPanel container;
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children = new Controls
+                {
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        Children = new Controls
+                        {
+                            new Button { Name = "Button1" },
+                            (current = new Button { Name = "Button2" }),
+                            (next = new Button { Name = "Button3" }),
+                        }
+                    }),
+                    new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
+                        }
+                    },
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
+        public void GetNextInTabOrder_Contained_Stops_At_End()
+        {
+            StackPanel container;
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children = new Controls
+                {
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        Children = new Controls
+                        {
+                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
+                        }
+                    }),
+                    new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
+                        }
+                    },
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNextInTabOrder(current);
+
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void GetNextInTabOrder_Once_Moves_To_Next_Container()
         {
             StackPanel container;
@@ -385,7 +461,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Never,
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -423,7 +499,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Never,
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -713,6 +789,82 @@ namespace Perspex.Input.UnitTests
             var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
 
             Assert.Equal(next, result);
+        }
+
+        [Fact]
+        public void GetPreviousInTabOrder_Contained_Returns_Previous_Control_In_Container()
+        {
+            StackPanel container;
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children = new Controls
+                {
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        Children = new Controls
+                        {
+                            (next = new Button { Name = "Button1" }),
+                            (current = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
+                        }
+                    }),
+                    new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
+                        }
+                    },
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
+        public void GetPreviousInTabOrder_Contained_Stops_At_Beginning()
+        {
+            StackPanel container;
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children = new Controls
+                {
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        Children = new Controls
+                        {
+                            (current = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            (next = new Button { Name = "Button3" }),
+                        }
+                    }),
+                    new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            new Button { Name = "Button4" },
+                            new Button { Name = "Button5" },
+                            new Button { Name = "Button6" },
+                        }
+                    },
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetPreviousInTabOrder(current);
+
+            Assert.Null(result);
         }
 
         [Fact]

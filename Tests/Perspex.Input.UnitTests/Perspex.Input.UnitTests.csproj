@@ -59,7 +59,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KeyboardNavigationTests.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="KeyboardNavigationTests_Tab.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
