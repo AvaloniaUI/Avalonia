@@ -61,21 +61,15 @@ namespace Perspex.Input
 
             if (container != null)
             {
-                KeyboardNavigationMode mode;
-
-                if (direction == FocusNavigationDirection.Next || direction == FocusNavigationDirection.Previous)
-                {
-                    mode = KeyboardNavigation.GetTabNavigation((InputElement)container);
-                }
-                else
-                {
-                    mode = KeyboardNavigation.GetDirectionalNavigation((InputElement)container);
-                }
-
-                bool forward = direction == FocusNavigationDirection.Next ||
+                var tab = direction == FocusNavigationDirection.Next ||
+                           direction == FocusNavigationDirection.Previous;
+                var forward = direction == FocusNavigationDirection.Next ||
                                direction == FocusNavigationDirection.Last ||
                                direction == FocusNavigationDirection.Right ||
                                direction == FocusNavigationDirection.Down;
+                var mode = tab ?
+                    KeyboardNavigation.GetTabNavigation((InputElement)container) :
+                    KeyboardNavigation.GetDirectionalNavigation((InputElement)container);
 
                 switch (mode)
                 {
@@ -88,7 +82,7 @@ namespace Perspex.Input
                     case KeyboardNavigationMode.Contained:
                         return GetNextInContainer(element, container, direction);
                     default:
-                        return GetFirstInNextContainer(container, forward);
+                        return tab ? GetFirstInNextContainer(container, forward) : null;
                 }
             }
             else
@@ -202,13 +196,17 @@ namespace Perspex.Input
             IInputElement container,
             FocusNavigationDirection direction)
         {
-            var descendent = GetFocusableDescendents(element).FirstOrDefault();
-
-            if (descendent != null)
+            if (direction == FocusNavigationDirection.Next || direction == FocusNavigationDirection.Down)
             {
-                return descendent;
+                var descendent = GetFocusableDescendents(element).FirstOrDefault();
+
+                if (descendent != null)
+                {
+                    return descendent;
+                }
             }
-            else if (container != null)
+
+            if (container != null)
             {
                 var navigable = container as INavigableContainer;
 

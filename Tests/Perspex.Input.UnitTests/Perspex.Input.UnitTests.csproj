@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="KeyboardNavigationTests_Arrows.cs" />
     <Compile Include="KeyboardNavigationTests_Tab.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="KeyboardNavigationTests_Tab.cs" company="Steven Kirk">
+// <copyright file="KeyboardNavigationTests_Arrows.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,10 +9,10 @@ namespace Perspex.Input.UnitTests
     using Perspex.Controls;
     using Xunit;
 
-    public class KeyboardNavigationTests_Tab
+    public class KeyboardNavigationTests_Arrows
     {
         [Fact]
-        public void Next_Continue_Returns_Next_Control_In_Container()
+        public void Down_Continue_Returns_Down_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -24,6 +24,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -33,6 +34,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -43,13 +45,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Continue_Returns_First_Control_In_Next_Sibling_Container()
+        public void Down_Continue_Returns_First_Control_In_Down_Sibling_Container()
         {
             StackPanel container;
             Button current;
@@ -61,6 +63,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -70,6 +73,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button4" }),
@@ -80,13 +84,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Continue_Returns_Next_Sibling()
+        public void Down_Continue_Returns_Down_Sibling()
         {
             StackPanel container;
             Button current;
@@ -98,6 +102,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -109,13 +114,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Continue_Returns_First_Control_In_Next_Uncle_Container()
+        public void Down_Continue_Returns_First_Control_In_Down_Uncle_Container()
         {
             StackPanel container;
             Button current;
@@ -131,6 +136,7 @@ namespace Perspex.Input.UnitTests
                         {
                             (container = new StackPanel
                             {
+                                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
                                 {
                                     new Button { Name = "Button1" },
@@ -152,31 +158,32 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Continue_Returns_Child_Of_Top_Level()
+        public void Down_Continue_Returns_Child_Of_Top_Level()
         {
             Button next;
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                 Children = new Controls
                 {
                     (next = new Button { Name = "Button1" }),
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(top, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(top, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Continue_Wraps()
+        public void Down_Continue_Wraps()
         {
             StackPanel container;
             Button current;
@@ -188,10 +195,12 @@ namespace Perspex.Input.UnitTests
                 {
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (container = new StackPanel
                             {
+                                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
                                 {
                                     (next = new Button { Name = "Button1" }),
@@ -203,6 +212,7 @@ namespace Perspex.Input.UnitTests
                     },
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -213,13 +223,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Cycle_Returns_Next_Control_In_Container()
+        public void Down_Cycle_Returns_Down_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -231,7 +241,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -251,13 +261,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Cycle_Wraps_To_First()
+        public void Down_Cycle_Wraps_To_First()
         {
             StackPanel container;
             Button current;
@@ -269,7 +279,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button1" }),
@@ -289,13 +299,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Contained_Returns_Next_Control_In_Container()
+        public void Down_Contained_Returns_Down_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -307,7 +317,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -327,13 +337,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Next_Contained_Stops_At_End()
+        public void Down_Contained_Stops_At_End()
         {
             StackPanel container;
             Button current;
@@ -345,7 +355,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button1" }),
@@ -365,17 +375,16 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void Next_Once_Moves_To_Next_Container()
+        public void Down_None_Does_Nothing()
         {
             StackPanel container;
             Button current;
-            Button next;
 
             var top = new StackPanel
             {
@@ -383,49 +392,11 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.None,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
-                            new Button { Name = "Button3" },
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            (next = new Button { Name = "Button4" }),
-                            new Button { Name = "Button5" },
-                            new Button { Name = "Button6" },
-                        }
-                    },
-                }
-            };
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Next_Once_Moves_To_Active_Element()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button1" },
-                            (next = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
                     }),
@@ -435,59 +406,19 @@ namespace Perspex.Input.UnitTests
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
-                            (current = new Button { Name = "Button6" }),
-                        }
-                    },
-                }
-            };
-
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Next_None_Moves_To_Next_Container()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button1" },
-                            (current = new Button { Name = "Button2" }),
-                            new Button { Name = "Button3" },
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            (next = new Button { Name = "Button4" }),
-                            new Button { Name = "Button5" },
                             new Button { Name = "Button6" },
                         }
                     },
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Down);
 
-            Assert.Equal(next, result);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void Next_None_Skips_Container()
+        public void Up_Continue_Returns_Up_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -499,46 +430,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button1" },
-                            new Button { Name = "Button2" },
-                            new Button { Name = "Button3" },
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            (next = new Button { Name = "Button4" }),
-                            new Button { Name = "Button5" },
-                            (current = new Button { Name = "Button6" }),
-                        }
-                    },
-                }
-            };
-
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Previous_Continue_Returns_Previous_Control_In_Container()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -558,13 +450,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Continue_Returns_Last_Control_In_Previous_Sibling_Container()
+        public void Up_Continue_Returns_Last_Control_In_Up_Sibling_Container()
         {
             StackPanel container;
             Button current;
@@ -576,6 +468,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -585,6 +478,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (current = new Button { Name = "Button4" }),
@@ -595,13 +489,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Continue_Returns_Last_Child_Of_Sibling()
+        public void Up_Continue_Returns_Last_Child_Of_Sibling()
         {
             StackPanel container;
             Button current;
@@ -609,10 +503,12 @@ namespace Perspex.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                 Children = new Controls
                 {
                     (container = new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button1" },
@@ -624,13 +520,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Continue_Returns_Last_Control_In_Previous_Nephew_Container()
+        public void Up_Continue_Returns_Last_Control_In_Up_Nephew_Container()
         {
             StackPanel container;
             Button current;
@@ -642,6 +538,7 @@ namespace Perspex.Input.UnitTests
                 {
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (container = new StackPanel
@@ -657,6 +554,7 @@ namespace Perspex.Input.UnitTests
                     },
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (current = new Button { Name = "Button4" }),
@@ -667,13 +565,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Continue_Wraps()
+        public void Up_Continue_Wraps()
         {
             StackPanel container;
             Button current;
@@ -689,6 +587,7 @@ namespace Perspex.Input.UnitTests
                         {
                             (container = new StackPanel
                             {
+                                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
                                 {
                                     (current = new Button { Name = "Button1" }),
@@ -710,13 +609,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Cycle_Returns_Previous_Control_In_Container()
+        public void Up_Cycle_Returns_Up_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -728,7 +627,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button1" }),
@@ -748,13 +647,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Cycle_Wraps_To_Last()
+        public void Up_Cycle_Wraps_To_Last()
         {
             StackPanel container;
             Button current;
@@ -766,7 +665,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             (current = new Button { Name = "Button1" }),
@@ -786,13 +685,13 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Contained_Returns_Previous_Control_In_Container()
+        public void Up_Contained_Returns_Up_Control_In_Container()
         {
             StackPanel container;
             Button current;
@@ -804,7 +703,7 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button1" }),
@@ -824,17 +723,16 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Equal(next, result);
         }
 
         [Fact]
-        public void Previous_Contained_Stops_At_Beginning()
+        public void Up_Contained_Stops_At_Beginning()
         {
             StackPanel container;
             Button current;
-            Button next;
 
             var top = new StackPanel
             {
@@ -842,12 +740,12 @@ namespace Perspex.Input.UnitTests
                 {
                     (container = new StackPanel
                     {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             (current = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
-                            (next = new Button { Name = "Button3" }),
+                            new Button { Name = "Button3" },
                         }
                     }),
                     new StackPanel
@@ -862,135 +760,19 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void Previous_Once_Moves_To_Previous_Container()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button1" },
-                            new Button { Name = "Button2" },
-                            (next = new Button { Name = "Button3" }),
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button4" },
-                            (current = new Button { Name = "Button5" }),
-                            new Button { Name = "Button6" },
-                        }
-                    },
-                }
-            };
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Previous_Once_Moves_To_Active_Element()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
-                        {
-                            new Button { Name = "Button1" },
-                            (next = new Button { Name = "Button2" }),
-                            new Button { Name = "Button3" },
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            (current = new Button { Name = "Button4" }),
-                            new Button { Name = "Button5" },
-                            new Button { Name = "Button6" },
-                        }
-                    },
-                }
-            };
-
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Previous_Once_Moves_To_First_Element()
-        {
-            StackPanel container;
-            Button current;
-            Button next;
-
-            var top = new StackPanel
-            {
-                Children = new Controls
-                {
-                    (container = new StackPanel
-                    {
-                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
-                        {
-                            (next = new Button { Name = "Button1" }),
-                            new Button { Name = "Button2" },
-                            new Button { Name = "Button3" },
-                        }
-                    }),
-                    new StackPanel
-                    {
-                        Children = new Controls
-                        {
-                            (current = new Button { Name = "Button4" }),
-                            new Button { Name = "Button5" },
-                            new Button { Name = "Button6" },
-                        }
-                    },
-                }
-            };
-
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
-
-            Assert.Equal(next, result);
-        }
-
-        [Fact]
-        public void Previous_Contained_Doesnt_Select_Child_Control()
+        public void Up_Contained_Doesnt_Select_Child_Control()
         {
             Decorator current;
 
             var top = new StackPanel
             {
-                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                 Children = new Controls
                 {
                     (current = new Decorator
@@ -1001,7 +783,7 @@ namespace Perspex.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
 
             Assert.Null(result);
         }
