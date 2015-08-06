@@ -48,27 +48,16 @@ namespace Perspex.Controls
             return new TreeItemContainerGenerator<TreeViewItem>(this);
         }
 
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            IVisual source = (IVisual)e.Source;
-            var selectable = source.GetVisualAncestors()
-                .OfType<ISelectable>()
-                .OfType<Control>()
-                .FirstOrDefault();
+            var control = (IControl)e.Source;
+            var item = this.ItemContainerGenerator.ItemFromContainer(control);
 
-            if (selectable != null)
+            if (item != null)
             {
-                var item = this.ItemContainerGenerator.ItemFromContainer(selectable);
-
-                if (item != null)
-                {
-                    this.SelectedItem = item;
-                    selectable.BringIntoView();
-                    FocusManager.Instance.Focus(selectable);
-                }
+                this.SelectedItem = item;
+                e.Handled = true;
             }
-
-            e.Handled = true;
         }
 
         private void SelectedItemChanged(object selected)
