@@ -759,6 +759,25 @@ namespace Perspex.Input.UnitTests
         }
 
         [Fact]
+        public void Previous_Continue_Returns_Parent()
+        {
+            Button current;
+
+            var top = new Decorator
+            {
+                Focusable = true,
+                Child = current = new Button
+                {
+                    Name = "Button",
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+
+            Assert.Equal(top, result);
+        }
+
+        [Fact]
         public void Previous_Cycle_Returns_Previous_Control_In_Container()
         {
             StackPanel container;

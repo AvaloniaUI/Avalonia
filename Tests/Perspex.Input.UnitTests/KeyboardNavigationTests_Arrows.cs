@@ -622,6 +622,26 @@ namespace Perspex.Input.UnitTests
         }
 
         [Fact]
+        public void Up_Continue_Returns_Parent()
+        {
+            Button current;
+
+            var top = new Decorator
+            {
+                Focusable = true,
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
+                Child = current = new Button
+                {
+                    Name = "Button",
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Up);
+
+            Assert.Equal(top, result);
+        }
+
+        [Fact]
         public void Up_Cycle_Returns_Up_Control_In_Container()
         {
             StackPanel container;
@@ -777,7 +797,7 @@ namespace Perspex.Input.UnitTests
         }
 
         [Fact]
-        public void Up_Contained_Doesnt_Select_Child_Control()
+        public void Up_Contained_Doesnt_Return_Child_Control()
         {
             Decorator current;
 

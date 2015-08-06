@@ -140,8 +140,6 @@ namespace Perspex.Input.Navigation
             {
                 var navigable = container as INavigableContainer;
 
-                // TODO: Do a spatial search here if the container doesn't implement
-                // INavigableContainer.
                 if (navigable != null)
                 {
                     while (element != null)
@@ -153,6 +151,12 @@ namespace Perspex.Input.Navigation
                             break;
                         }
                     }
+                }
+                else
+                {
+                    // TODO: Do a spatial search here if the container doesn't implement
+                    // INavigableContainer.
+                    element = null;
                 }
 
                 if (element != null && direction == FocusNavigationDirection.Up)
@@ -187,6 +191,11 @@ namespace Perspex.Input.Navigation
 
             if (parent != null)
             {
+                if (!isForward && parent.CanFocus())
+                {
+                    return parent;
+                }
+
                 var siblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
                     .Where(FocusExtensions.CanFocusDescendents);

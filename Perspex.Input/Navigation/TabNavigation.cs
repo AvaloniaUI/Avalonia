@@ -161,6 +161,12 @@ namespace Perspex.Input.Navigation
                         }
                     }
                 }
+                else
+                {
+                    // TODO: Do a spatial search here if the container doesn't implement
+                    // INavigableContainer.
+                    element = null;
+                }
 
                 if (element != null && direction == FocusNavigationDirection.Previous)
                 {
@@ -193,6 +199,11 @@ namespace Perspex.Input.Navigation
 
             if (parent != null)
             {
+                if (direction == FocusNavigationDirection.Previous && parent.CanFocus())
+                {
+                    return parent;
+                }
+
                 var siblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
                     .Where(FocusExtensions.CanFocusDescendents);
