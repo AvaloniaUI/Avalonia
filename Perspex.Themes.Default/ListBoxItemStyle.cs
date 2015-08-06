@@ -30,6 +30,13 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
+                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
+                    },
+                },
+                new Style(x => x.OfType<ListBoxItem>().Class("selected").Class(":focus").Template().Name("border"))
+                {
+                    Setters = new[]
+                    {
                         new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
                         new Setter(ListBoxItem.ForegroundProperty, Brushes.White),
                     },

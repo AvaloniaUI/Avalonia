@@ -41,6 +41,13 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
+                        new Setter(TreeViewItem.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
+                    },
+                },
+                new Style(x => x.OfType<TreeViewItem>().Class("selected").Class(":focus").Template().Name("header"))
+                {
+                    Setters = new[]
+                    {
                         new Setter(TreeViewItem.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
                         new Setter(TreeViewItem.ForegroundProperty, Brushes.White),
                     },
