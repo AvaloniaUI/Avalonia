@@ -100,5 +100,30 @@ namespace Perspex.Controls
                 this.treeView = null;
             }
         }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                switch (e.Key)
+                {
+                    case Key.Right:
+                        if (this.Items != null && this.Items.Cast<object>().Any())
+                        {
+                            this.IsExpanded = true;
+                        }
+
+                        e.Handled = true;
+                        break;
+
+                    case Key.Left:
+                        this.IsExpanded = false;
+                        e.Handled = true;
+                        break;
+                }
+            }
+
+            base.OnKeyDown(e);
+        }
     }
 }
