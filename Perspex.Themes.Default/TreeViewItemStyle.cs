@@ -26,14 +26,15 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, new ControlTemplate<TreeViewItem>(this.Template)),
+                        new Setter(TreeViewItem.TemplateProperty, new ControlTemplate<TreeViewItem>(this.Template)),
+                        new Setter(TreeViewItem.FocusAdornerProperty, null),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().Name("header"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Border.PaddingProperty, new Thickness(2)),
+                        new Setter(TreeViewItem.PaddingProperty, new Thickness(2)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Class("selected").Template().Name("header"))
