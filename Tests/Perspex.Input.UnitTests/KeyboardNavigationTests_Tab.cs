@@ -84,6 +84,49 @@ namespace Perspex.Input.UnitTests
 
             Assert.Equal(next, result);
         }
+        [Fact]
+        public void Next_Continue_Doesnt_Enter_Panel_With_TabNavigation_None()
+        {
+            StackPanel container;
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children = new Controls
+                {
+                    (container = new StackPanel
+                    {
+                        Children = new Controls
+                        {
+                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
+                        }
+                    }),
+                    new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                        Children = new Controls
+                        {
+                            new StackPanel
+                            {
+                                Children = new Controls
+                                {
+                                    new Button { Name = "Button4" },
+                                    new Button { Name = "Button5" },
+                                    new Button { Name = "Button6" },
+                                }
+                            },
+                        }
+                    }
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+
+            Assert.Equal(next, result);
+        }
 
         [Fact]
         public void Next_Continue_Returns_Next_Sibling()

@@ -85,6 +85,9 @@
     <Compile Include="KeyboardNavigation.cs" />
     <Compile Include="KeyboardNavigationHandler.cs" />
     <Compile Include="GotFocusEventArgs.cs" />
+    <Compile Include="Navigation\FocusExtensions.cs" />
+    <Compile Include="Navigation\DirectionalNavigation.cs" />
+    <Compile Include="Navigation\TabNavigation.cs" />
     <Compile Include="Platform\IPlatformSettings.cs" />
     <Compile Include="PointerPressEventArgs.cs" />
     <Compile Include="PointerWheelEventArgs.cs" />

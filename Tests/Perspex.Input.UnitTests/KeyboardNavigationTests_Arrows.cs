@@ -148,6 +148,7 @@ namespace Perspex.Input.UnitTests
                     },
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (next = new Button { Name = "Button4" }),
@@ -191,6 +192,7 @@ namespace Perspex.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                 Children = new Controls
                 {
                     new StackPanel
@@ -327,6 +329,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -365,6 +368,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -402,6 +406,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -440,6 +445,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -538,11 +544,11 @@ namespace Perspex.Input.UnitTests
                 {
                     new StackPanel
                     {
-                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             (container = new StackPanel
                             {
+                                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
                                 {
                                     new Button { Name = "Button1" },
@@ -599,6 +605,7 @@ namespace Perspex.Input.UnitTests
                     },
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -637,6 +644,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -675,6 +683,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -713,6 +722,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
@@ -750,6 +760,7 @@ namespace Perspex.Input.UnitTests
                     }),
                     new StackPanel
                     {
+                        [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             new Button { Name = "Button4" },
