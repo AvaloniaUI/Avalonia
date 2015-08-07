@@ -14,9 +14,9 @@ namespace Perspex
     using System.Reactive.Linq;
     using System.Reflection;
     using Perspex.Reactive;
+    using Perspex.Utilities;
     using Serilog;
     using Serilog.Core.Enrichers;
-    using Perspex.Utilities;
 
     /// <summary>
     /// The priority of a binding.
@@ -26,7 +26,7 @@ namespace Perspex
         /// <summary>
         /// A value that comes from an animation.
         /// </summary>
-        Animation = -2,
+        Animation = -1,
 
         /// <summary>
         /// A local value.
