@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using Perspex.Controls.Primitives;
     using Perspex.Input;
+    using Rendering;
     using Perspex.VisualTree;
 
     public class GridSplitter : Thumb
@@ -27,8 +28,9 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void OnVisualParentChanged(Visual oldParent)
+        protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
+            base.OnAttachedToVisualTree(root);
             this.grid = this.GetVisualParent<Grid>();
         }
     }

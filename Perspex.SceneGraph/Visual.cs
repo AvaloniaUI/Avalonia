@@ -352,11 +352,6 @@ namespace Perspex
         {
         }
 
-        [Obsolete("Use OnAttachedToVisualTree instead")]
-        protected virtual void OnVisualParentChanged(Visual oldParent)
-        {
-        }
-
         /// <summary>
         /// Called when a property changes that should invalidate the visual.
         /// </summary>
@@ -449,7 +444,6 @@ namespace Perspex
                 }
 
                 this.visualParent = value;
-                this.OnVisualParentChanged(old);
 
                 if (oldRoot != null)
                 {

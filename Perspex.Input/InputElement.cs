@@ -219,8 +219,9 @@ namespace Perspex.Input
             }
         }
 
-        protected override void OnVisualParentChanged(Visual oldParent)
+        protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
+            base.OnAttachedToVisualTree(root);
             this.UpdateIsEnabledCore();
         }
 
