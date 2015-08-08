@@ -67,6 +67,18 @@ namespace Perspex.Controls
             return new ItemContainerGenerator<ListBoxItem>(this);
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (!e.Handled &&
+                (e.Key == Key.F4 || (e.Key == Key.Down && ((e.Device.Modifiers & ModifierKeys.Alt) != 0))))
+            {
+                this.IsDropDownOpen = !this.IsDropDownOpen;
+                e.Handled = true;
+            }
+        }
+
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             if (!this.IsDropDownOpen)
