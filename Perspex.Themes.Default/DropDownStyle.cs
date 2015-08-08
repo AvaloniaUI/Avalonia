@@ -106,6 +106,7 @@ namespace Perspex.Themes.Default
                         },
                         new Popup
                         {
+                            Name = "popup",
                             Child = new Border
                             {
                                 BorderBrush = Brushes.Black,

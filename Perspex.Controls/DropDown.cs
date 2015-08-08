@@ -27,6 +27,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
 
+        private Popup popup;
+
         static DropDown()
         {
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
@@ -73,13 +75,13 @@ namespace Perspex.Controls
 
             if (!e.Handled)
             {
-                if (e.Key == Key.F4 || 
+                if (e.Key == Key.F4 ||
                     (e.Key == Key.Down && ((e.Device.Modifiers & ModifierKeys.Alt) != 0)))
                 {
                     this.IsDropDownOpen = !this.IsDropDownOpen;
                     e.Handled = true;
                 }
-                else if (e.Key == Key.Escape)
+                else if (this.IsDropDownOpen && (e.Key == Key.Escape || e.Key == Key.Enter))
                 {
                     this.IsDropDownOpen = false;
                     e.Handled = true;
@@ -97,7 +99,24 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            var container = this.GetTemplateChild<Panel>("container");
+            if (this.popup != null)
+            {
+                this.popup.Opened -= this.PopupOpened;
+            }
+
+            this.popup = this.GetTemplateChild<Popup>("popup");
+            this.popup.Opened += this.PopupOpened;
+        }
+
+        private void PopupOpened(object sender, EventArgs e)
+        {
+            var selectedIndex = this.SelectedIndex;
+
+            if (selectedIndex != -1)
+            {
+                var container = this.ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                container.Focus();
+            }
         }
 
         private void SetContentParent(Tuple<object, object> change)
