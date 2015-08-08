@@ -8,8 +8,9 @@ namespace Perspex.Themes.Default
 {
     using System.Linq;
     using System.Reactive.Linq;
+    using Collections;
     using Perspex.Controls;
-    using Controls.Presenters;
+    using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Shapes;
     using Perspex.Controls.Templates;
@@ -30,6 +31,7 @@ namespace Perspex.Themes.Default
                         new Setter(DropDown.TemplateProperty, new ControlTemplate<DropDown>(this.Template)),
                         new Setter(DropDown.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(DropDown.BorderThicknessProperty, 2.0),
+                        new Setter(DropDown.FocusAdornerProperty, new AdornerTemplate(FocusAdornerTemplate)),
                         new Setter(DropDown.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(DropDown.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
@@ -42,6 +44,17 @@ namespace Perspex.Themes.Default
                     }
                 }
             });
+        }
+
+        public static Control FocusAdornerTemplate()
+        {
+            return new Rectangle
+            {
+                Stroke = Brushes.Black,
+                StrokeThickness = 1,
+                StrokeDashArray = new PerspexList<double>(1, 2),
+                Margin = new Thickness(3.5),
+            };
         }
 
         private Control Template(DropDown control)
@@ -75,6 +88,7 @@ namespace Perspex.Themes.Default
                             BorderThickness = 0,
                             Background = Brushes.Transparent,
                             ClickMode = ClickMode.Press,
+                            Focusable = false,
                             Content = new Path
                             {
                                 Name = "checkMark",

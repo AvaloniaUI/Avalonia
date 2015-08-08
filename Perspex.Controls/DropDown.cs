@@ -27,6 +27,11 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
 
+        static DropDown()
+        {
+            FocusableProperty.OverrideDefaultValue<DropDown>(true);
+        }
+
         public DropDown()
         {
             this.GetObservableWithHistory(ContentProperty).Subscribe(this.SetContentParent);
