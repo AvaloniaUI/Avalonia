@@ -7,6 +7,7 @@
 namespace Perspex.Controls.UnitTests.Primitives
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Collections;
     using Perspex.Controls.Presenters;
@@ -82,6 +83,43 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Templated_Child_Should_Have_Parent_Set()
+        {
+            var target = new TemplatedControl
+            {
+                Template = new ControlTemplate(_ => new Decorator())
+            };
+
+            target.ApplyTemplate();
+
+            var child = (Decorator)target.GetVisualChildren().Single();
+
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, child.GetLogicalParent());
+        }
+
+        [Fact]
+        public void Templated_Child_Should_Have_ApplyTemplate_Called_With_Logical_Then_Visual_Parent()
+        {
+            var target = new TemplatedControl
+            {
+                Template = new ControlTemplate(_ => new ApplyTemplateTracker())
+            };
+
+            target.ApplyTemplate();
+
+            var child = (ApplyTemplateTracker)target.GetVisualChildren().Single();
+
+            Assert.Equal(
+                new[]
+                {
+                    new Tuple<IVisual, ILogical>(null, target),
+                    new Tuple<IVisual, ILogical>(target, target),
+                },
+                child.Invocations);
+        }
+
+        [Fact]
         public void Nested_TemplatedControls_Should_Be_Expanded_And_Have_Correct_TemplatedParent()
         {
             var target = new ItemsControl
@@ -154,6 +192,17 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             return result;
+        }
+
+        private class ApplyTemplateTracker : Control
+        {
+            public List<Tuple<IVisual, ILogical>> Invocations { get; } = new List<Tuple<IVisual, ILogical>>();
+
+            public override void ApplyTemplate()
+            {
+                base.ApplyTemplate();
+                this.Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
+            }
         }
     }
 }

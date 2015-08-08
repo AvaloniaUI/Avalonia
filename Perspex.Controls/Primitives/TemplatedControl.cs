@@ -199,16 +199,15 @@ namespace Perspex.Controls.Primitives
 
                     var child = this.Template.Build(this);
 
-                    // We need to call this twice - once before the controls are added to the
-                    // visual tree so that the logical tree can be set up before styling is
-                    // applied.
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
-
-                    this.AddVisualChild((Visual)child);
+                    // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
+                    // before the controls are added to the visual tree so that the logical
+                    // tree can be set up before styling is applied.
                     ((ISetLogicalParent)child).SetParent(this);
+                    this.SetTemplatedParentAndApplyChildTemplates(child);
 
                     // And again after the controls are added to the visual tree, and have their
                     // styling and thus Template property set.
+                    this.AddVisualChild((Visual)child);
                     this.SetTemplatedParentAndApplyChildTemplates(child);
 
                     this.OnTemplateApplied();
