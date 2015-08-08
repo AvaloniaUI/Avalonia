@@ -71,11 +71,19 @@ namespace Perspex.Controls
         {
             base.OnKeyDown(e);
 
-            if (!e.Handled &&
-                (e.Key == Key.F4 || (e.Key == Key.Down && ((e.Device.Modifiers & ModifierKeys.Alt) != 0))))
+            if (!e.Handled)
             {
-                this.IsDropDownOpen = !this.IsDropDownOpen;
-                e.Handled = true;
+                if (e.Key == Key.F4 || 
+                    (e.Key == Key.Down && ((e.Device.Modifiers & ModifierKeys.Alt) != 0)))
+                {
+                    this.IsDropDownOpen = !this.IsDropDownOpen;
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Escape)
+                {
+                    this.IsDropDownOpen = false;
+                    e.Handled = true;
+                }
             }
         }
 
