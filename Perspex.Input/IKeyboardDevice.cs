@@ -32,6 +32,6 @@ namespace Perspex.Input
 
         ModifierKeys Modifiers { get; }
 
-        void SetFocusedElement(IInputElement element, bool keyboardNavigated);
+        void SetFocusedElement(IInputElement element, NavigationMethod method);
     }
 }

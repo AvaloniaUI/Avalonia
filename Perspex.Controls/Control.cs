@@ -355,7 +355,7 @@ namespace Perspex.Controls
         {
             base.OnGotFocus(e);
 
-            if (this.IsFocused && e.KeyboardNavigated)
+            if (this.IsFocused && e.NavigationMethod == NavigationMethod.Tab)
             {
                 var adornerLayer = AdornerLayer.GetAdornerLayer(this);
 

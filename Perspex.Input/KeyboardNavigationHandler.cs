@@ -78,7 +78,10 @@ namespace Perspex.Input
 
             if (next != null)
             {
-                FocusManager.Instance.Focus(next, true);
+                var method = direction == FocusNavigationDirection.Next ||
+                             direction == FocusNavigationDirection.Previous ?
+                             NavigationMethod.Tab : NavigationMethod.Directional;
+                FocusManager.Instance.Focus(next, method);
             }
         }
 

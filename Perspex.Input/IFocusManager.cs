@@ -22,10 +22,8 @@ namespace Perspex.Input
         /// Focuses a control.
         /// </summary>
         /// <param name="control">The control to focus.</param>
-        /// <param name="keyboardNavigated">
-        /// Whether the control was focused by a keypress (e.g. the Tab key).
-        /// </param>
-        void Focus(IInputElement focusable, bool keyboardNavigated = false);
+        /// <param name="method">The method by which focus was changed.</param>
+        void Focus(IInputElement control, NavigationMethod method = NavigationMethod.Unspecified);
 
         /// <summary>
         /// Notifies the focus manager of a change in focus scope.

@@ -492,7 +492,6 @@ namespace TestApplication
                         (listBox = new ListBox
                         {
                             Items = listBoxData,
-                            SelectedIndex = 0,
                             MaxHeight = 300,
                         }),
                         new DropDown

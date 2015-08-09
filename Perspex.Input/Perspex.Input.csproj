@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="NavigationMethod.cs" />
     <Compile Include="IInputRoot.cs" />
     <Compile Include="IMainMenu.cs" />
     <Compile Include="IAccessKeyHandler.cs" />

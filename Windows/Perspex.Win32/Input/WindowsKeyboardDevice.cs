@@ -54,7 +54,7 @@ namespace Perspex.Win32.Input
 
         public void WindowActivated(Window window)
         {
-            this.SetFocusedElement(window, false);
+            this.SetFocusedElement(window, NavigationMethod.Unspecified);
         }
 
         public string StringFromVirtualKey(uint virtualKey)

@@ -8,12 +8,14 @@ namespace Perspex.Input
 {
     using Perspex.Interactivity;
 
+    /// <summary>
+    /// Holds arguments for a <see cref="InputElement.GotFocusEvent"/>.
+    /// </summary>
     public class GotFocusEventArgs : RoutedEventArgs
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the control was focused by a keypress (e.g. 
-        /// the Tab key).
+        /// Gets or sets a value indicating how the change in focus occurred.
         /// </summary>
-        public bool KeyboardNavigated { get; set; }
+        public NavigationMethod NavigationMethod { get; set; }
     }
 }

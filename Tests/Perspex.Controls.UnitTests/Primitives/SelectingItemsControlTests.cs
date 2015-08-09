@@ -334,7 +334,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Focusing_Item_Should_Select_It()
+        public void Focusing_Item_With_Pointer_Should_Select_It()
         {
             var target = new SelectingItemsControl
             {
@@ -346,13 +346,61 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var e = new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent
+                RoutedEvent = InputElement.GotFocusEvent,
+                NavigationMethod = NavigationMethod.Pointer,
+            };
+
+            target.Presenter.Panel.Children[1].RaiseEvent(e);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            // GotFocus should be raised on parent control.
+            Assert.False(e.Handled);
+        }
+
+        [Fact]
+        public void Focusing_Item_With_Directional_Keys_Should_Select_It()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = this.Template(),
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ApplyTemplate();
+
+            var e = new GotFocusEventArgs
+            {
+                RoutedEvent = InputElement.GotFocusEvent,
+                NavigationMethod = NavigationMethod.Directional,
             };
 
             target.Presenter.Panel.Children[1].RaiseEvent(e);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.False(e.Handled);
+        }
+
+        [Fact]
+        public void Focusing_Item_With_Tab_Should_Not_Select_It()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = this.Template(),
+                Items = new[] { "foo", "bar" },
+            };
+
+            target.ApplyTemplate();
+
+            var e = new GotFocusEventArgs
+            {
+                RoutedEvent = InputElement.GotFocusEvent,
+                NavigationMethod = NavigationMethod.Tab,
+            };
+
+            target.Presenter.Panel.Children[1].RaiseEvent(e);
+
+            Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]

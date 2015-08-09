@@ -65,10 +65,8 @@ namespace Perspex.Input
         /// Focuses a control.
         /// </summary>
         /// <param name="control">The control to focus.</param>
-        /// <param name="keyboardNavigated">
-        /// Whether the control was focused by a keypress (e.g. the Tab key).
-        /// </param>
-        public void Focus(IInputElement control, bool keyboardNavigated = false)
+        /// <param name="method">The method by which focus was changed.</param>
+        public void Focus(IInputElement control, NavigationMethod method = NavigationMethod.Unspecified)
         {
             if (control != null)
             {
@@ -78,7 +76,7 @@ namespace Perspex.Input
                 if (scope != null)
                 {
                     this.Scope = scope;
-                    this.SetFocusedElement(scope, control, keyboardNavigated);
+                    this.SetFocusedElement(scope, control, method);
                 }
             }
             else if (this.Current != null)
@@ -90,7 +88,7 @@ namespace Perspex.Input
 
                     if (this.focusScopes.TryGetValue(scope, out element))
                     {
-                        this.Focus(element, keyboardNavigated);
+                        this.Focus(element, method);
                         break;
                     }
                 }
@@ -102,9 +100,7 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="scope">The focus scope.</param>
         /// <param name="element">The element to focus. May be null.</param>
-        /// <param name="keyboardNavigated">
-        /// Whether the control was focused by a keypress (e.g. the Tab key).
-        /// </param>
+        /// <param name="method">The method by which focus was changed.</param>
         /// <remarks>
         /// If the specified scope is the current <see cref="Scope"/> then the keyboard focus
         /// will change.
@@ -112,7 +108,7 @@ namespace Perspex.Input
         public void SetFocusedElement(
             IFocusScope scope,
             IInputElement element,
-            bool keyboardNavigated = false)
+            NavigationMethod method = NavigationMethod.Unspecified)
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
@@ -120,7 +116,7 @@ namespace Perspex.Input
 
             if (this.Scope == scope)
             {
-                KeyboardDevice.Instance.SetFocusedElement(element, keyboardNavigated);
+                KeyboardDevice.Instance.SetFocusedElement(element, method);
             }
         }
 
@@ -196,7 +192,7 @@ namespace Perspex.Input
 
                 if (element != null)
                 {
-                    this.Focus(element);
+                    this.Focus(element, NavigationMethod.Pointer);
                 }
             }
         }

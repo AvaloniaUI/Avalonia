@@ -159,7 +159,19 @@ namespace Perspex.Controls.Primitives
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            this.TrySetSelectionFromContainerEvent(e.Source, true);
+
+            if (e.NavigationMethod == NavigationMethod.Pointer ||
+                e.NavigationMethod == NavigationMethod.Directional)
+            {
+                this.TrySetSelectionFromContainerEvent(e.Source, true);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            e.Handled = true;
         }
 
         /// <summary>

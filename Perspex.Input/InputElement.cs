@@ -228,7 +228,7 @@ namespace Perspex.Input
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
             this.IsFocused = e.OriginalSource == this;
-            this.SetValue(IsTabFocusedProperty, e.KeyboardNavigated);
+            this.SetValue(IsTabFocusedProperty, e.NavigationMethod == NavigationMethod.Tab);
         }
 
         protected virtual void OnLostFocus(RoutedEventArgs e)

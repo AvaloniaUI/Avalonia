@@ -60,7 +60,7 @@ namespace Perspex.Input
 
         public abstract ModifierKeys Modifiers { get; }
 
-        public void SetFocusedElement(IInputElement element, bool keyboardNavigated)
+        public void SetFocusedElement(IInputElement element, NavigationMethod method)
         {
             if (element != this.FocusedElement)
             {
@@ -82,7 +82,7 @@ namespace Perspex.Input
                     interactive.RaiseEvent(new GotFocusEventArgs
                     {
                         RoutedEvent = InputElement.GotFocusEvent,
-                        KeyboardNavigated = keyboardNavigated,
+                        NavigationMethod = method,
                     });
                 }
             }
