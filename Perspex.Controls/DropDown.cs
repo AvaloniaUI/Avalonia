@@ -7,11 +7,13 @@
 namespace Perspex.Controls
 {
     using System;
+    using System.Linq;
     using Generators;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Layout;
+    using VisualTree;
 
     public class DropDown : SelectingItemsControl, IContentControl
     {
@@ -93,8 +95,13 @@ namespace Perspex.Controls
         {
             if (!this.IsDropDownOpen)
             {
-                this.IsDropDownOpen = true;
+                if (((IVisual)e.Source).GetVisualAncestors().Last().GetType() != typeof(PopupRoot))
+                {
+                    this.IsDropDownOpen = true;
+                }
             }
+
+            base.OnPointerPressed(e);
         }
 
         protected override void OnTemplateApplied()

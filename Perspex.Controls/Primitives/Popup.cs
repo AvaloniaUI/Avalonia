@@ -139,7 +139,8 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the popup should stay open when the popup loses focus.
+        /// Gets or sets a value indicating whether the popup should stay open when the popup is
+        /// pressed or loses focus.
         /// </summary>
         public bool StaysOpen
         {
@@ -316,13 +317,6 @@ namespace Perspex.Controls.Primitives
         {
             if (!this.StaysOpen)
             {
-                var routed = e as RoutedEventArgs;
-
-                if (routed != null)
-                {
-                    routed.Handled = true;
-                }
-
                 this.Close();
             }
         }
