@@ -12,8 +12,8 @@ namespace Perspex.Styling
     /// Holds the result of a <see cref="Selector"/> match.
     /// </summary>
     /// <remarks>
-    /// There are two types of selectors - ones whose match can never change for a particular 
-    /// control (such as <see cref="Selectors.OfType{T}(Selector)"/>) and ones whose result can 
+    /// There are two types of selectors - ones whose match can never change for a particular
+    /// control (such as <see cref="Selectors.OfType{T}(Selector)"/>) and ones whose result can
     /// change over time (such as <see cref="Selectors.Class(Selector, string)"/>. For the first
     /// category of selectors, the value of <see cref="ImmediateResult"/> will be set but for the
     /// second, <see cref="ImmediateResult"/> will be null and <see cref="ObservableResult"/> will
@@ -44,7 +44,7 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Gets the immedate result of the selector match, in the case of selectors that cannot 
+        /// Gets the immedate result of the selector match, in the case of selectors that cannot
         /// change over time.
         /// </summary>
         public bool? ImmediateResult { get; }

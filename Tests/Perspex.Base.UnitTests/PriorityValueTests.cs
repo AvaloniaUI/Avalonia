@@ -177,7 +177,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
             bool called = false;
 
-            target.Changed.Subscribe(value => called = (value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo"));
+            target.Changed.Subscribe(value => called = value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo");
             target.Add(this.Single("foo"), 0);
 
             Assert.True(called);
@@ -191,7 +191,7 @@ namespace Perspex.Base.UnitTests
             bool called = false;
 
             target.Add(subject, 0);
-            target.Changed.Subscribe(value => called = ((string)value.Item1 == "foo" && (string)value.Item2 == "bar"));
+            target.Changed.Subscribe(value => called = (string)value.Item1 == "foo" && (string)value.Item2 == "bar");
             subject.OnNext("bar");
 
             Assert.True(called);

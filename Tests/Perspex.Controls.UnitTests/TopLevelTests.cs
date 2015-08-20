@@ -295,10 +295,10 @@ namespace Perspex.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
 
                 var input = new RawKeyEventArgs(
-                    new Mock<IKeyboardDevice>().Object, 
-                    0, 
-                    RawKeyEventType.KeyDown, 
-                    Key.A, 
+                    new Mock<IKeyboardDevice>().Object,
+                    0,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
                     "A");
                 impl.Object.Input(input);
 

@@ -105,8 +105,8 @@ namespace Perspex.Controls.Presenters
                     var b = Math.Ceiling(charPos.Bottom) - 0.5;
 
                     context.DrawLine(
-                        new Pen(caretBrush, 1), 
-                        new Point(x, y), 
+                        new Pen(caretBrush, 1),
+                        new Point(x, y),
                         new Point(x, b));
                 }
             }

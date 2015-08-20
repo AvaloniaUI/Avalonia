@@ -44,14 +44,14 @@ namespace Perspex.Controls.Primitives
             {
                 if (val.Item1 != null)
                 {
-                    val.Item1.DragDelta -= ThumbDragged;
+                    val.Item1.DragDelta -= this.ThumbDragged;
                 }
 
                 this.ClearVisualChildren();
 
                 if (val.Item2 != null)
                 {
-                    val.Item2.DragDelta += ThumbDragged;
+                    val.Item2.DragDelta += this.ThumbDragged;
                     this.AddVisualChild(val.Item2);
                 }
             });

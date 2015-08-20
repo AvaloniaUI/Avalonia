@@ -62,8 +62,8 @@ namespace Perspex.Controls
                 .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
 
             this.Bind(
-                ScrollViewer.HorizontalScrollBarVisibilityProperty, 
-                horizontalScrollBarVisibility, 
+                ScrollViewer.HorizontalScrollBarVisibilityProperty,
+                horizontalScrollBarVisibility,
                 BindingPriority.Style);
         }
 

@@ -16,20 +16,22 @@ namespace Perspex.Direct2D1.Media
         private WicRenderTarget target;
 
         public RenderTargetBitmapImpl(
-            ImagingFactory imagingFactory, 
+            ImagingFactory imagingFactory,
             Factory d2dFactory,
-            int width, 
+            int width,
             int height)
             : base(imagingFactory, width, height)
         {
+            var props = new RenderTargetProperties
+            {
+                DpiX = 96,
+                DpiY = 96,
+            };
+
             this.target = new WicRenderTarget(
                 d2dFactory,
                 this.WicImpl,
-                new RenderTargetProperties
-                {
-                    DpiX = 96,
-                    DpiY = 96,
-                });
+                props);
         }
 
         public void Dispose()

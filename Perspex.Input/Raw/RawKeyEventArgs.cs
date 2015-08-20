@@ -15,10 +15,10 @@ namespace Perspex.Input.Raw
     public class RawKeyEventArgs : RawInputEventArgs
     {
         public RawKeyEventArgs(
-            IKeyboardDevice device, 
+            IKeyboardDevice device,
             uint timestamp,
-            RawKeyEventType type, 
-            Key key, 
+            RawKeyEventType type,
+            Key key,
             string text)
             : base(device, timestamp)
         {

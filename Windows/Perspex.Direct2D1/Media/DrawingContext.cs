@@ -43,10 +43,13 @@ namespace Perspex.Direct2D1.Media
             this.renderTarget.BeginDraw();
         }
 
+        /// <summary>
+        /// Gets the current transform of the drawing context.
+        /// </summary>
         public Matrix CurrentTransform
         {
             get { return this.renderTarget.Transform.ToPerspex(); }
-            set { this.renderTarget.Transform = value.ToDirect2D(); }
+            private set { this.renderTarget.Transform = value.ToDirect2D(); }
         }
 
         /// <summary>
@@ -57,9 +60,16 @@ namespace Perspex.Direct2D1.Media
             this.renderTarget.EndDraw();
         }
 
-        public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
+        /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacity">The opacity to draw with.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
-            BitmapImpl impl = (BitmapImpl)bitmap.PlatformImpl;
+            BitmapImpl impl = (BitmapImpl)source.PlatformImpl;
             Bitmap d2d = impl.GetDirect2DBitmap(this.renderTarget);
             this.renderTarget.DrawBitmap(
                 d2d,
@@ -74,7 +84,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
-        /// <param name="p1">The second point of the line.</param>
+        /// <param name="p2">The second point of the line.</param>
         public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
         {
             if (pen != null)
@@ -125,6 +135,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
             using (var brush = pen.Brush.ToDirect2D(this.renderTarget))
@@ -162,6 +173,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = brush.ToDirect2D(this.renderTarget))

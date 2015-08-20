@@ -43,7 +43,7 @@ namespace Perspex.Input
 
         public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>(
-                "KeyDown", 
+                "KeyDown",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<KeyEventArgs> KeyUpEvent =
@@ -59,22 +59,22 @@ namespace Perspex.Input
 
         public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>(
-                "PointerMove", 
+                "PointerMove",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerPressEventArgs> PointerPressedEvent =
             RoutedEvent.Register<InputElement, PointerPressEventArgs>(
-                "PointerPressed", 
+                "PointerPressed",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>(
-                "PointerReleased", 
+                "PointerReleased",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<PointerWheelEventArgs> PointerWheelChangedEvent =
             RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
-                "PointerWheelChanged", 
+                "PointerWheelChanged",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         static InputElement()

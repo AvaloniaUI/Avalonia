@@ -106,7 +106,7 @@ namespace Perspex.Controls.Shapes
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            // This should probably use GetRenderBounds(strokeThickness) but then the calculations 
+            // This should probably use GetRenderBounds(strokeThickness) but then the calculations
             // will multiply the stroke thickness as well, which isn't correct.
             Rect shapeBounds = this.DefiningGeometry.Bounds;
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);

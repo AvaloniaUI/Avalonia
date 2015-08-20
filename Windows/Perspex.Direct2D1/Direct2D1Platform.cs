@@ -38,9 +38,9 @@ namespace Perspex.Direct2D1
         }
 
         public IFormattedTextImpl CreateFormattedText(
-            string text, 
-            string fontFamily, 
-            double fontSize, 
+            string text,
+            string fontFamily,
+            double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight)

@@ -9,6 +9,7 @@ namespace Perspex.Controls
     using System;
     using System.Reactive.Disposables;
     using System.Reactive.Linq;
+    using Perspex.Controls.Primitives;
     using Perspex.Input;
     using Perspex.Input.Raw;
     using Perspex.Layout;
@@ -16,8 +17,6 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.Styling;
     using Perspex.Threading;
-    using Perspex.Controls.Primitives;
-    using Perspex.Interactivity;
     using Splat;
 
     /// <summary>
@@ -164,20 +163,6 @@ namespace Perspex.Controls
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);
         }
 
-        private static T TryGetService<T>(IDependencyResolver resolver) where T : class
-        {
-            var result = resolver.GetService<T>();
-
-            if (result == null)
-            {
-                System.Diagnostics.Debug.WriteLineIf(
-                    result == null,
-                    $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Fired when the window is activated.
         /// </summary>
@@ -293,8 +278,8 @@ namespace Perspex.Controls
         /// <returns>A disposable used to finish the operation.</returns>
         /// <remarks>
         /// When an auto-resize operation is in progress any resize events received will not be
-        /// cause the new size to be written to the <see cref="Width"/> and <see cref="Height"/>
-        /// properties.
+        /// cause the new size to be written to the <see cref="Layoutable.Width"/> and
+        /// <see cref="Layoutable.Height"/> properties.
         /// </remarks>
         protected IDisposable BeginAutoSizing()
         {
@@ -315,6 +300,27 @@ namespace Perspex.Controls
             }
 
             return base.ArrangeOverride(finalSize);
+        }
+
+        /// <summary>
+        /// Tries to get a service from an <see cref="IDependencyResolver"/>, throwing an
+        /// exception if not found.
+        /// </summary>
+        /// <typeparam name="T">The service type.</typeparam>
+        /// <param name="resolver">The resolver.</param>
+        /// <returns>The service.</returns>
+        private static T TryGetService<T>(IDependencyResolver resolver) where T : class
+        {
+            var result = resolver.GetService<T>();
+
+            if (result == null)
+            {
+                System.Diagnostics.Debug.WriteLineIf(
+                    result == null,
+                    $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
+            }
+
+            return result;
         }
 
         /// <summary>

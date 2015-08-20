@@ -6,13 +6,13 @@
 
 namespace Perspex.Controls.UnitTests
 {
+    using System.Collections.ObjectModel;
     using System.Linq;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
     using Perspex.LogicalTree;
     using Xunit;
-    using System.Collections.ObjectModel;
 
     public class TabControlTests
     {

@@ -37,17 +37,17 @@ namespace Perspex.Direct2D1.Media
         }
 
         public Result DrawGlyphRun(
-            object clientDrawingContext, 
-            float baselineOriginX, 
-            float baselineOriginY, 
-            MeasuringMode measuringMode, 
-            GlyphRun glyphRun, 
-            GlyphRunDescription glyphRunDescription, 
+            object clientDrawingContext,
+            float baselineOriginX,
+            float baselineOriginY,
+            MeasuringMode measuringMode,
+            GlyphRun glyphRun,
+            GlyphRunDescription glyphRunDescription,
             ComObject clientDrawingEffect)
         {
             var wrapper = clientDrawingEffect as BrushWrapper;
-            var brush = (wrapper == null) ? 
-                this.foreground : 
+            var brush = (wrapper == null) ?
+                this.foreground :
                 wrapper.Brush.ToDirect2D(this.renderTarget);
 
             this.renderTarget.DrawGlyphRun(

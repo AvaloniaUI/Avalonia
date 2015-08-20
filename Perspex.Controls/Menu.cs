@@ -9,11 +9,11 @@ namespace Perspex.Controls
     using System;
     using System.Linq;
     using System.Reactive.Disposables;
+    using Perspex.Controls.Primitives;
     using Perspex.Input;
+    using Perspex.Interactivity;
     using Perspex.LogicalTree;
     using Perspex.Rendering;
-    using Perspex.Interactivity;
-    using Perspex.Controls.Primitives;
 
     /// <summary>
     /// A top-level menu control.

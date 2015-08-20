@@ -53,7 +53,7 @@ namespace Perspex.Styling.UnitTests
         public IDisposable Subscribe(IObserver<T> observer)
         {
             this.subscribers.Add(observer);
-            observer.OnNext(initial);
+            observer.OnNext(this.initial);
             return Disposable.Create(() => this.subscribers.Remove(observer));
         }
     }

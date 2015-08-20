@@ -121,7 +121,7 @@ namespace Perspex.Controls
         /// Compares two GridLength structures for equality.
         /// </summary>
         /// <param name="a">The first GridLength.</param>
-        /// <param name="a">The first GridLength.</param>
+        /// <param name="b">The second GridLength.</param>
         /// <returns>True if the structures are equal, otherwise false.</returns>
         public static bool operator ==(GridLength a, GridLength b)
         {
@@ -131,8 +131,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Compares two GridLength structures for inequality.
         /// </summary>
-        /// <param name="a">The first GridLength.</param>
-        /// <param name="a">The first GridLength.</param>
+        /// <param name="gl1">The first GridLength.</param>
+        /// <param name="gl2">The first GridLength.</param>
         /// <returns>True if the structures are unequal, otherwise false.</returns>
         public static bool operator !=(GridLength gl1, GridLength gl2)
         {

@@ -25,7 +25,7 @@ namespace Perspex.Diagnostics
             else
             {
                 return new PerspexPropertyValue(
-                    property, 
+                    property,
                     o.GetValue(property),
                     BindingPriority.Unset,
                     "Unset");

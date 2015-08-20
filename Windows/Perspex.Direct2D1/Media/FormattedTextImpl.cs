@@ -99,9 +99,9 @@ namespace Perspex.Direct2D1.Media
             float y;
 
             var result = this.TextLayout.HitTestTextPosition(
-                index, 
-                false, 
-                out x, 
+                index,
+                false,
+                out x,
                 out y);
 
             return new Rect(result.Left, result.Top, result.Width, result.Height);
@@ -110,9 +110,9 @@ namespace Perspex.Direct2D1.Media
         public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
         {
             var result = this.TextLayout.HitTestTextRange(
-                index, 
-                length, 
-                (float)origin.X, 
+                index,
+                length,
+                (float)origin.X,
                 (float)origin.Y);
 
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));

@@ -75,8 +75,8 @@ namespace Perspex.Win32
 
         public IDisposable StartTimer(TimeSpan interval, Action callback)
         {
-            UnmanagedMethods.TimerProc timerDelegate = (UnmanagedMethods.TimerProc)
-                ((hWnd, uMsg, nIDEvent, dwTime) => callback());
+            UnmanagedMethods.TimerProc timerDelegate =
+                (hWnd, uMsg, nIDEvent, dwTime) => callback();
 
             IntPtr handle = UnmanagedMethods.SetTimer(
                 IntPtr.Zero,

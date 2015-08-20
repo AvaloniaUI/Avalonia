@@ -174,7 +174,7 @@ namespace Perspex.Media
 
                 if (!Commands.TryGetValue(c, out command))
                 {
-                    if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') && 
+                    if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') &&
                         (lastCommand != Command.None))
                     {
                         return lastCommand;
@@ -198,7 +198,7 @@ namespace Perspex.Media
             bool readPoint = false;
             bool readExponent = false;
             int i;
-            
+
             while ((i = reader.Peek()) != -1)
             {
                 char c = char.ToUpperInvariant((char)i);

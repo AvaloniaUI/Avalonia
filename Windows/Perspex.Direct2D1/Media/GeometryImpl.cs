@@ -52,8 +52,8 @@ namespace Perspex.Direct2D1.Media
                     {
                         Factory factory = Locator.Current.GetService<Factory>();
                         this.transformed = new TransformedGeometry(
-                            factory, 
-                            this.DefiningGeometry, 
+                            factory,
+                            this.DefiningGeometry,
                             value.ToDirect2D());
                     }
                 }

@@ -12,10 +12,9 @@ namespace Perspex.Controls.Presenters
     using System.Reactive.Linq;
     using System.Threading.Tasks;
     using Perspex.Animation;
-    using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
-    using Templates;
+    using Perspex.Controls.Templates;
     using Perspex.Controls.Utils;
 
     /// <summary>

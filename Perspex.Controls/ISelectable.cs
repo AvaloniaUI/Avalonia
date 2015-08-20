@@ -12,10 +12,10 @@ namespace Perspex.Controls
     /// Interface for objects that are selectable.
     /// </summary>
     /// <remarks>
-    /// Controls such as <see cref="Selector"/> use this interface to indicate the selected
-    /// control in a list. If changing the control's <see cref="IsSelected"/> property should
-    /// update the selection in a <see cref="SelectingItemsControl"/> or equivalent, then the
-    /// control should raise the <see cref="SelectingItemsControl.IsSelectedChangedEvent"/>.
+    /// Controls such as <see cref="SelectingItemsControl"/> use this interface to indicate the
+    /// selected control in a list. If changing the control's <see cref="IsSelected"/> property
+    /// should update the selection in a <see cref="SelectingItemsControl"/> or equivalent, then
+    /// the control should raise the <see cref="SelectingItemsControl.IsSelectedChangedEvent"/>.
     /// </remarks>
     public interface ISelectable
     {

@@ -32,10 +32,10 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the color of the brush.
         /// </summary>
-        public Color Color 
-        { 
-            get; 
-            private set; 
+        public Color Color
+        {
+            get;
+            private set;
         }
 
         public override string ToString()

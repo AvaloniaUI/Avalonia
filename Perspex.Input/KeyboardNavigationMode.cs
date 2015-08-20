@@ -7,7 +7,7 @@
 namespace Perspex.Input
 {
     /// <summary>
-    /// Defines the mode of keyboard traversal within a container when the tab or arrow keys are 
+    /// Defines the mode of keyboard traversal within a container when the tab or arrow keys are
     /// pressed.
     /// </summary>
     public enum KeyboardNavigationMode

@@ -198,7 +198,6 @@ namespace Perspex
             get { return this.isAttachedToVisualTree; }
         }
 
-
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
@@ -417,7 +416,8 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Called when the <see cref="RenderTransform.Changed"/> event is fired.
+        /// Called when the <see cref="RenderTransform"/>'s <see cref="Transform.Changed"/> event
+        /// is fired.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
@@ -508,7 +508,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Calls the <see cref="OnDetachedToVisualTree(IRenderRoot)"/> method for this control
+        /// Calls the <see cref="OnDetachedFromVisualTree(IRenderRoot)"/> method for this control
         /// and all of its visual descendents.
         /// </summary>
         /// <param name="root">The root of the visual tree.</param>

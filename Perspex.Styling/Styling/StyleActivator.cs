@@ -28,7 +28,7 @@ namespace Perspex.Styling
         private List<IObserver<bool>> observers = new List<IObserver<bool>>();
 
         public StyleActivator(
-            IList<IObservable<bool>> inputs, 
+            IList<IObservable<bool>> inputs,
             ActivatorMode mode = ActivatorMode.And)
         {
             int i = 0;
@@ -97,7 +97,7 @@ namespace Perspex.Styling
             this.values[index] = value;
 
             bool current;
-            
+
             switch (this.mode)
             {
                 case ActivatorMode.And:
@@ -121,10 +121,10 @@ namespace Perspex.Styling
         {
             // We can unsubscribe from everything if the completed observable:
             // - Is the only subscription.
-            // - Has finished on 'false' and we're in And mode 
+            // - Has finished on 'false' and we're in And mode
             // - Has finished on 'true' and we're in Or mode
             var value = this.values[i];
-            var unsubscribe = 
+            var unsubscribe =
                 (this.values.Length == 1) ||
                 (this.mode == ActivatorMode.And ? !value : value);
 

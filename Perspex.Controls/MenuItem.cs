@@ -75,7 +75,7 @@ namespace Perspex.Controls
             RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(SubmenuOpened), RoutingStrategies.Bubble);
 
         /// <summary>
-        /// The default value for the <see cref="ItemsPanel"/> property.
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly ItemsPanelTemplate DefaultPanel =
             new ItemsPanelTemplate(() => new StackPanel

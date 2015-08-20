@@ -81,7 +81,7 @@ namespace Perspex
         /// <summary>
         /// Scales a size.
         /// </summary>
-        /// <param name="rect">The size</param>
+        /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
         public static Size operator *(Size size, Vector scale)
@@ -92,7 +92,7 @@ namespace Perspex
         /// <summary>
         /// Scales a size.
         /// </summary>
-        /// <param name="rect">The size</param>
+        /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
         public static Size operator /(Size size, Vector scale)
@@ -125,6 +125,13 @@ namespace Perspex
                 Math.Max(0, this.height - thickness.Top - thickness.Bottom));
         }
 
+        /// <summary>
+        /// Checks for equality between a size and an object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>
+        /// True if <paramref name="obj"/> is a size that equals the current size.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (obj is Size)
@@ -136,6 +143,10 @@ namespace Perspex
             return false;
         }
 
+        /// <summary>
+        /// Returns a hash code for a <see cref="Size"/>.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             unchecked

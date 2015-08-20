@@ -23,8 +23,8 @@ namespace Perspex.Controls.UnitTests
         public void Template_Doesnt_Get_Executed_On_Set()
         {
             bool executed = false;
-            
-            var template = new ControlTemplate(_ => 
+
+            var template = new ControlTemplate(_ =>
             {
                 executed = true;
                 return new Control();
@@ -155,7 +155,7 @@ namespace Perspex.Controls.UnitTests
 
                 var root = new TestRoot
                 {
-                    Child = (target = new TestTemplatedControl
+                    Child = target = new TestTemplatedControl
                     {
                         Template = new ControlTemplate(_ =>
                         {
@@ -169,9 +169,8 @@ namespace Perspex.Controls.UnitTests
                             }
                             };
                         }),
-                    })
+                    }
                 };
-
 
                 target.ApplyTemplate();
 
@@ -218,7 +217,7 @@ namespace Perspex.Controls.UnitTests
                 {
                     return new ContentPresenter
                     {
-                        Content =  new TextBlock
+                        Content = new TextBlock
                         {
                         }
                     };
@@ -274,4 +273,3 @@ namespace Perspex.Controls.UnitTests
         }
     }
 }
-

@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using Perspex.Controls.Primitives;
     using Perspex.Styling;
 
     /// <summary>

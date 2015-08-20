@@ -128,6 +128,7 @@ namespace Perspex.Controls.Primitives
                     {
                         this.SelectedIndex = 0;
                     }
+
                     break;
 
                 case NotifyCollectionChangedAction.Remove:

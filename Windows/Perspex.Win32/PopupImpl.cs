@@ -15,10 +15,10 @@ namespace Perspex.Win32
         public void SetPosition(Point p)
         {
             UnmanagedMethods.SetWindowPos(
-                this.Handle.Handle, 
-                IntPtr.Zero, 
-                (int)p.X, 
-                (int)p.Y, 
+                this.Handle.Handle,
+                IntPtr.Zero,
+                (int)p.X,
+                (int)p.Y,
                 0,
                 0,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);

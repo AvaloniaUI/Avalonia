@@ -9,12 +9,11 @@ namespace Perspex.Controls.UnitTests
     using System;
     using System.Collections.Specialized;
     using System.Linq;
+    using LogicalTree;
     using Moq;
     using Perspex.Controls;
     using Perspex.Controls.Presenters;
     using Perspex.Controls.Templates;
-    using Perspex.Layout;
-    using LogicalTree;
     using Perspex.Platform;
     using Perspex.Styling;
     using Perspex.VisualTree;

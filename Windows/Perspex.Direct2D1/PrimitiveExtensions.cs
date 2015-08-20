@@ -38,6 +38,7 @@ namespace Perspex.Direct2D1
         /// Converts a brush to Direct2D.
         /// </summary>
         /// <param name="brush">The brush to convert.</param>
+        /// <param name="target">The render target.</param>
         /// <returns>The Direct2D brush.</returns>
         public static SharpDX.Direct2D1.Brush ToDirect2D(this Perspex.Media.Brush brush, RenderTarget target)
         {
@@ -54,6 +55,12 @@ namespace Perspex.Direct2D1
             }
         }
 
+        /// <summary>
+        /// Converts a pen to a Direct2D stroke style.
+        /// </summary>
+        /// <param name="pen">The pen to convert.</param>
+        /// <param name="target">The render target.</param>
+        /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, RenderTarget target)
         {
             if (pen.DashArray != null && pen.DashArray.Count > 0)
@@ -104,7 +111,7 @@ namespace Perspex.Direct2D1
         /// <summary>
         /// Converts a Direct2D <see cref="Matrix3x2"/> to a Perspex <see cref="Perspex.Matrix"/>.
         /// </summary>
-        /// <param name="matrix"></param>
+        /// <param name="matrix">The matrix</param>
         /// <returns>a <see cref="Perspex.Matrix"/>.</returns>
         public static Perspex.Matrix ToPerspex(this Matrix3x2 matrix)
         {

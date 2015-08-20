@@ -7,7 +7,6 @@
 namespace Perspex.Controls.Primitives
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Linq;
     using Perspex.VisualTree;
@@ -31,7 +30,7 @@ namespace Perspex.Controls.Primitives
 
         public AdornerLayer()
         {
-            this.Children.CollectionChanged += ChildrenCollectionChanged;
+            this.Children.CollectionChanged += this.ChildrenCollectionChanged;
         }
 
         public static Visual GetAdornedElement(Visual adorner)
@@ -71,6 +70,18 @@ namespace Perspex.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        private static void AdornedElementChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var adorner = (Visual)e.Sender;
+            var adorned = (Visual)e.NewValue;
+            var layer = adorner.GetVisualParent<AdornerLayer>();
+
+            if (layer != null)
+            {
+                layer.UpdateAdornedElement(adorner, adorned);
+            }
         }
 
         private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -116,18 +127,6 @@ namespace Perspex.Controls.Primitives
                     info.Bounds = x;
                     this.InvalidateArrange();
                 });
-            }
-        }
-
-        private static void AdornedElementChanged(PerspexPropertyChangedEventArgs e)
-        {
-            var adorner = (Visual)e.Sender;
-            var adorned = (Visual)e.NewValue;
-            var layer = adorner.GetVisualParent<AdornerLayer>();
-
-            if (layer != null)
-            {
-                layer.UpdateAdornedElement(adorner, adorned);
             }
         }
 

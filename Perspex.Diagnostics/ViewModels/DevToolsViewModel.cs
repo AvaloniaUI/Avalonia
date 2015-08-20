@@ -8,8 +8,8 @@ namespace Perspex.Diagnostics.ViewModels
 {
     using System;
     using Perspex.Controls;
-    using ReactiveUI;
     using Perspex.Input;
+    using ReactiveUI;
 
     internal class DevToolsViewModel : ReactiveObject
     {
@@ -25,8 +25,8 @@ namespace Perspex.Diagnostics.ViewModels
         {
             this.WhenAnyValue(x => x.Root).Subscribe(x =>
             {
-                this.LogicalTree = new LogicalTreeViewModel(root);
-                this.VisualTree = new VisualTreeViewModel(root);
+                this.LogicalTree = new LogicalTreeViewModel(this.root);
+                this.VisualTree = new VisualTreeViewModel(this.root);
             });
 
             this.focusedControl = KeyboardDevice.Instance.WhenAnyValue(x => x.FocusedElement)

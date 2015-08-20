@@ -77,8 +77,8 @@ namespace Perspex
         /// <summary>
         /// Initializes a new instance of the <see cref="Rect"/> structure.
         /// </summary>
-        /// <param name="position">The top left position of the rectangle.</param>
-        /// <param name="buttonRight">The bottom right position of the rectangle.</param>
+        /// <param name="topLeft">The top left position of the rectangle.</param>
+        /// <param name="bottomRight">The bottom right position of the rectangle.</param>
         public Rect(Point topLeft, Point bottomRight)
         {
             this.x = topLeft.X;
@@ -369,11 +369,11 @@ namespace Perspex
         public override string ToString()
         {
             return string.Format(
-                CultureInfo.InvariantCulture, 
-                "{0}, {1}, {2}, {3}", 
+                CultureInfo.InvariantCulture,
+                "{0}, {1}, {2}, {3}",
                 this.x,
                 this.y,
-                this.width, 
+                this.width,
                 this.height);
         }
     }

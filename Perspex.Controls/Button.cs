@@ -229,7 +229,7 @@ namespace Perspex.Controls
 
         private void CanExecuteChanged(object sender, EventArgs e)
         {
-            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to 
+            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
             // use IsEnabledCore etc. but it will do for now.
             this.IsEnabled = this.Command == null || this.Command.CanExecute(this.CommandParameter);
         }

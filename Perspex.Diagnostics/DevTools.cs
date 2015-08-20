@@ -37,8 +37,8 @@ namespace Perspex.Diagnostics
         public static IDisposable Attach(Window window)
         {
             return window.AddHandler(
-                Window.KeyDownEvent, 
-                WindowPreviewKeyDown, 
+                Window.KeyDownEvent,
+                WindowPreviewKeyDown,
                 Interactivity.RoutingStrategies.Tunnel);
         }
 

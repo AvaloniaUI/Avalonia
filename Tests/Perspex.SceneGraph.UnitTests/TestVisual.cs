@@ -22,14 +22,14 @@ namespace Perspex.SceneGraph.UnitTests
 
     public class TestVisual : Visual
     {
+        public event EventHandler<ParamEventArgs<IRenderRoot>> AttachedToVisualTreeCalled;
+
+        public event EventHandler<ParamEventArgs<IRenderRoot>> DetachedFromVisualTreeCalled;
+
         public new PerspexObject InheritanceParent
         {
             get { return base.InheritanceParent; }
         }
-
-        public event EventHandler<ParamEventArgs<IRenderRoot>> AttachedToVisualTreeCalled;
-
-        public event EventHandler<ParamEventArgs<IRenderRoot>> DetachedFromVisualTreeCalled;
 
         public void AddChild(Visual v)
         {

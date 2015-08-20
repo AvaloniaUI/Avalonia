@@ -6,8 +6,10 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using Perspex.Controls.Primitives;
+
     /// <summary>
-    /// Interface for controls that present a single item of data inside a 
+    /// Interface for controls that present a single item of data inside a
     /// <see cref="TemplatedControl"/> template.
     /// </summary>
     public interface IContentPresenter : IPresenter

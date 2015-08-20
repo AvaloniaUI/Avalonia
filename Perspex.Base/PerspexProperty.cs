@@ -468,7 +468,7 @@ namespace Perspex
         private static Func<PerspexObject, TValue, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
             where TOwner : PerspexObject
         {
-            return f != null ? (o, v) => f((TOwner)o, v) : (Func < PerspexObject, TValue, TValue > )null;
+            return f != null ? (o, v) => f((TOwner)o, v) : (Func<PerspexObject, TValue, TValue>)null;
         }
 
         /// <summary>

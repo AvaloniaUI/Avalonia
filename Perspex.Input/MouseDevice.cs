@@ -222,8 +222,8 @@ namespace Perspex.Input
 
         private IInteractive GetSource(IVisual hit)
         {
-            return this.Captured ?? 
-                (hit as IInteractive) ?? 
+            return this.Captured ??
+                (hit as IInteractive) ??
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
         }
 

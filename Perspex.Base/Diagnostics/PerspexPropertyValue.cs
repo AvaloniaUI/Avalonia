@@ -9,7 +9,7 @@ namespace Perspex.Diagnostics
     public class PerspexPropertyValue
     {
         public PerspexPropertyValue(
-            PerspexProperty property, 
+            PerspexProperty property,
             object value,
             BindingPriority priority,
             string diagnostic)

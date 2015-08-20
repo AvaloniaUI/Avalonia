@@ -1,16 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="VisualTreeView.cs" company="Steven Kirk">
+// <copyright file="GridRepeater.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Diagnostics.Views
 {
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Perspex.Controls;
 
     internal static class GridRepeater
     {

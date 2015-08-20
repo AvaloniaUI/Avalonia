@@ -55,17 +55,17 @@ namespace Perspex.Threading
 
         public event EventHandler Tick;
 
-        public Dispatcher Dispatcher 
-        { 
-            get; 
-            private set; 
-        }
-        
-        public TimeSpan Interval 
+        public Dispatcher Dispatcher
         {
-            get 
-            { 
-                return this.interval; 
+            get;
+            private set;
+        }
+
+        public TimeSpan Interval
+        {
+            get
+            {
+                return this.interval;
             }
 
             set
@@ -76,14 +76,14 @@ namespace Perspex.Threading
                 this.IsEnabled = enabled;
             }
         }
-        
-        public bool IsEnabled 
+
+        public bool IsEnabled
         {
             get
             {
                 return this.timer != null;
             }
-            
+
             set
             {
                 if (this.IsEnabled != value)
@@ -99,11 +99,11 @@ namespace Perspex.Threading
                 }
             }
         }
-        
-        public object Tag 
-        { 
-            get; 
-            set; 
+
+        public object Tag
+        {
+            get;
+            set;
         }
 
         public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = DispatcherPriority.Normal)
@@ -132,7 +132,7 @@ namespace Perspex.Threading
                 this.timer = threading.StartTimer(this.Interval, this.InternalTick);
             }
         }
-        
+
         public void Stop()
         {
             if (this.IsEnabled)

@@ -94,6 +94,21 @@ namespace Perspex
                 (left.offsetX * right.M12) + (left.offsetY * right.M22) + right.offsetY);
         }
 
+        public static Matrix operator -(Matrix matrix)
+        {
+            return matrix.Invert();
+        }
+
+        public static bool operator ==(Matrix matrix1, Matrix matrix2)
+        {
+            return matrix1.Equals(matrix2);
+        }
+
+        public static bool operator !=(Matrix matrix1, Matrix matrix2)
+        {
+            return !matrix1.Equals(matrix2);
+        }
+
         public static bool Equals(Matrix matrix1, Matrix matrix2)
         {
             return matrix1.Equals(matrix2);
@@ -129,21 +144,6 @@ namespace Perspex
         public static double ToRadians(double angle)
         {
             return angle * 0.0174532925;
-        }
-
-        public static Matrix operator -(Matrix matrix)
-        {
-            return matrix.Invert();
-        }
-
-        public static bool operator ==(Matrix matrix1, Matrix matrix2)
-        {
-            return matrix1.Equals(matrix2);
-        }
-
-        public static bool operator !=(Matrix matrix1, Matrix matrix2)
-        {
-            return !matrix1.Equals(matrix2);
         }
 
         public bool Equals(Matrix value)

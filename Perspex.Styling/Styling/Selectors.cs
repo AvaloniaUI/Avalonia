@@ -79,10 +79,10 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(previous != null);
 
             return new Selector(
-                previous, 
-                x => MatchTemplate(x, previous), 
-                " /deep/ ", 
-                inTemplate: true, 
+                previous,
+                x => MatchTemplate(x, previous),
+                " /deep/ ",
+                inTemplate: true,
                 stopTraversal: true);
         }
 

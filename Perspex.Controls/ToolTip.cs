@@ -17,9 +17,9 @@ namespace Perspex.Controls
     /// A tooltip control.
     /// </summary>
     /// <remarks>
-    /// You will probably not want to create a <see cref="ToolTip"/> control directly: if added to 
+    /// You will probably not want to create a <see cref="ToolTip"/> control directly: if added to
     /// the tree it will act as a simple <see cref="ContentControl"/> styled to look like a tooltip.
-    /// To add a tooltip to a control, use the <see cref="TipProperty"/> attached property, 
+    /// To add a tooltip to a control, use the <see cref="TipProperty"/> attached property,
     /// assigning the content that you want displayed.
     /// </remarks>
     public class ToolTip : ContentControl
@@ -42,7 +42,7 @@ namespace Perspex.Controls
 
         /// <summary>
         /// Observable fired when a tooltip should be displayed for a control. The output from this
-        /// observable is throttled and calls <see cref="ShowToolTip(Control)"/> when the time 
+        /// observable is throttled and calls <see cref="ShowToolTip(Control)"/> when the time
         /// period expires.
         /// </summary>
         private static Subject<Control> show = new Subject<Control>();

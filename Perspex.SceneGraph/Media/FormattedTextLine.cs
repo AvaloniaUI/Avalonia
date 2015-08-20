@@ -18,4 +18,4 @@ namespace Perspex.Media
 
         public double Height { get; private set; }
     }
-} 
+}

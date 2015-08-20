@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="BoundsTracker.cs" company="Steven Kirk">
+// <copyright file="BoundsTrackerTests.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -28,11 +28,11 @@ namespace Perspex.SceneGraph.UnitTests.VisualTree
                 Child = new Decorator
                 {
                     Padding = new Thickness(5),
-                    Child = (control = new Rectangle
+                    Child = control = new Rectangle
                     {
                         Width = 15,
                         Height = 15,
-                    }),
+                    },
                 }
             };
 

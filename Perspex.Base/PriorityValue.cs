@@ -18,7 +18,7 @@ namespace Perspex
     /// Maintains a list of prioritised bindings together with a current value.
     /// </summary>
     /// <remarks>
-    /// Bindings, in the form of <see cref="IObservable{object}"/>s are added to the object using
+    /// Bindings, in the form of <see cref="IObservable{Object}"/>s are added to the object using
     /// the <see cref="Add"/> method. With the observable is passed a priority, where lower values
     /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there

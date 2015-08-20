@@ -38,7 +38,7 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Gets the <see cref="SelectedItem"/> as a <see cref="TabItem"/>.
+        /// Gets the <see cref="SelectingItemsControl.SelectedItem"/> as a <see cref="TabItem"/>.
         /// </summary>
         public TabItem SelectedTab
         {
@@ -69,7 +69,7 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="SelectedIndex"/> property changes.
+        /// Called when the <see cref="SelectingItemsControl.SelectedIndex"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
         private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)

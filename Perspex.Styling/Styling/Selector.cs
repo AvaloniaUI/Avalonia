@@ -62,7 +62,7 @@ namespace Perspex.Styling
         {
             List<IObservable<bool>> inputs = new List<IObservable<bool>>();
             Selector selector = this;
-            
+
             while (selector != null)
             {
                 if (selector.inTemplate && control.TemplatedParent == null)

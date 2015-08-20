@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ScrollPresenterTests.cs" company="Steven Kirk">
+// <copyright file="ScrollContentPresenterTests.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -10,8 +10,8 @@ namespace Perspex.Controls.UnitTests.Presenters
     using System.Collections.Generic;
     using System.Reactive.Linq;
     using Perspex.Controls.Presenters;
-    using Xunit;
     using Perspex.Layout;
+    using Xunit;
 
     public class ScrollContentPresenterTests
     {
@@ -21,11 +21,11 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Padding = new Thickness(8),
                     HorizontalAlignment = HorizontalAlignment.Left
-                }),
+                },
             };
 
             target.Measure(new Size(100, 100));
@@ -40,10 +40,10 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Padding = new Thickness(8),
-                }),
+                },
             };
 
             target.Measure(new Size(100, 100));
@@ -58,11 +58,11 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Padding = new Thickness(8),
                     HorizontalAlignment = HorizontalAlignment.Right
-                }),
+                },
             };
 
             target.Measure(new Size(100, 100));
@@ -77,11 +77,11 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Padding = new Thickness(8),
                     VerticalAlignment = VerticalAlignment.Bottom,
-                }),
+                },
             };
 
             target.Measure(new Size(100, 100));
@@ -96,12 +96,12 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Padding = new Thickness(8),
                     HorizontalAlignment = HorizontalAlignment.Right,
                     VerticalAlignment = VerticalAlignment.Top,
-                }),
+                },
             };
 
             target.Measure(new Size(100, 100));
@@ -116,7 +116,7 @@ namespace Perspex.Controls.UnitTests.Presenters
             TestControl content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new TestControl()),
+                Content = content = new TestControl(),
             };
 
             target.Measure(new Size(100, 100));
@@ -131,11 +131,11 @@ namespace Perspex.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
-                Content = (content = new Border
+                Content = content = new Border
                 {
                     Width = 150,
                     Height = 150,
-                }),
+                },
                 Offset = new Vector(25, 25),
             };
 

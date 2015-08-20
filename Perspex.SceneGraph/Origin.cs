@@ -46,8 +46,8 @@ namespace Perspex
 
         public Point ToPixels(Size size)
         {
-            return this.unit == OriginUnit.Pixels ? 
-                this.point : 
+            return this.unit == OriginUnit.Pixels ?
+                this.point :
                 new Point(this.point.X * size.Width, this.point.Y * size.Height);
         }
     }

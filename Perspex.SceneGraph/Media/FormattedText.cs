@@ -31,10 +31,10 @@ namespace Perspex.Media
             var platform = Locator.Current.GetService<IPlatformRenderInterface>();
 
             this.PlatformImpl = platform.CreateFormattedText(
-                text, 
-                fontFamilyName, 
-                fontSize, 
-                fontStyle, 
+                text,
+                fontFamilyName,
+                fontSize,
+                fontStyle,
                 textAlignment,
                 fontWeight);
         }
@@ -122,4 +122,4 @@ namespace Perspex.Media
             this.PlatformImpl.SetForegroundBrush(brush, startIndex, count);
         }
     }
-} 
+}

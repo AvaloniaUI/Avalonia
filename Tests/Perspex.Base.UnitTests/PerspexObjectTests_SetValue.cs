@@ -203,7 +203,7 @@ namespace Perspex.Base.UnitTests
 
             public double Value { get; }
 
-            public static implicit operator double (ImplictDouble v)
+            public static implicit operator double(ImplictDouble v)
             {
                 return v.Value;
             }

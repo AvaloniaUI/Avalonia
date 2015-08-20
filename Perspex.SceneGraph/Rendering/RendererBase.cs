@@ -19,7 +19,7 @@ namespace Perspex.Rendering
     public abstract class RendererBase : IRenderer
     {
         /// <summary>
-        /// Gets the number of times <see cref="Render"/> has been called.
+        /// Gets the number of times <see cref="Render(IVisual, IPlatformHandle)"/> has been called.
         /// </summary>
         public int RenderCount
         {
@@ -50,7 +50,7 @@ namespace Perspex.Rendering
         public abstract void Resize(int width, int height);
 
         /// <summary>
-        /// When overriden by a derived class creates an <see cref="IDrawingContext"/> for a 
+        /// When overriden by a derived class creates an <see cref="IDrawingContext"/> for a
         /// rendering session.
         /// </summary>
         /// <param name="handle">The handle to use to create the context.</param>
@@ -62,6 +62,8 @@ namespace Perspex.Rendering
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="context">The drawing context.</param>
+        /// <param name="translation">The current translation.</param>
+        /// <param name="transform">The current transform.</param>
         protected virtual void Render(IVisual visual, IDrawingContext context, Matrix translation, Matrix transform)
         {
             var opacity = visual.Opacity;

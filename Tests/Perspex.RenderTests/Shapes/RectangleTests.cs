@@ -7,8 +7,8 @@
 namespace Perspex.Direct2D1.RenderTests.Shapes
 {
     using Perspex.Controls;
-    using Perspex.Media;
     using Perspex.Controls.Shapes;
+    using Perspex.Media;
     using Xunit;
 
     public class RectangleTests : TestBase

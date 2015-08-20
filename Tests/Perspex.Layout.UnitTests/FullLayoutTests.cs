@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="LayoutManagerTests.cs" company="Steven Kirk">
+// <copyright file="FullLayoutTests.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -39,20 +39,20 @@ namespace Perspex.Layout.UnitTests
 
                 var window = new Window()
                 {
-                    Content = (border = new Border
+                    Content = border = new Border
                     {
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Child = new Border
                         {
-                            Child = (textBlock = new TextBlock
+                            Child = textBlock = new TextBlock
                             {
                                 Width = 400,
                                 Height = 400,
                                 Text = "Hello World!",
-                            }),
+                            },
                         }
-                    })
+                    }
                 };
 
                 window.LayoutManager.ExecuteLayoutPass();
@@ -79,20 +79,20 @@ namespace Perspex.Layout.UnitTests
                 {
                     Width = 800,
                     Height = 600,
-                    Content = (scrollViewer = new ScrollViewer
+                    Content = scrollViewer = new ScrollViewer
                     {
                         Width = 200,
                         Height = 200,
                         CanScrollHorizontally = true,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
-                        Content = (textBlock = new TextBlock
+                        Content = textBlock = new TextBlock
                         {
                             Width = 400,
                             Height = 400,
                             Text = "Hello World!",
-                        }),
-                    })
+                        },
+                    }
                 };
 
                 window.LayoutManager.ExecuteLayoutPass();

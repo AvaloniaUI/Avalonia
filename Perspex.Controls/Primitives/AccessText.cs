@@ -161,7 +161,7 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Called when the <see cref="Text"/> property changes.
+        /// Called when the <see cref="TextBlock.Text"/> property changes.
         /// </summary>
         /// <param name="text">The new text.</param>
         private void TextChanged(string text)

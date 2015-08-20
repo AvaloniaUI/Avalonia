@@ -24,7 +24,7 @@ namespace Perspex.Interactivity
         private List<ClassEventSubscription> subscriptions = new List<ClassEventSubscription>();
 
         public RoutedEvent(
-            string name, 
+            string name,
             RoutingStrategies routingStrategies,
             Type eventArgsType,
             Type ownerType)
@@ -40,28 +40,28 @@ namespace Perspex.Interactivity
             this.RoutingStrategies = routingStrategies;
         }
 
-        public Type EventArgsType 
-        { 
-            get; 
-            private set; 
+        public Type EventArgsType
+        {
+            get;
+            private set;
         }
 
-        public string Name 
-        { 
-            get; 
-            private set; 
+        public string Name
+        {
+            get;
+            private set;
         }
 
-        public Type OwnerType 
-        { 
-            get; 
-            private set; 
+        public Type OwnerType
+        {
+            get;
+            private set;
         }
 
-        public RoutingStrategies RoutingStrategies 
-        { 
-            get; 
-            private set; 
+        public RoutingStrategies RoutingStrategies
+        {
+            get;
+            private set;
         }
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
@@ -77,7 +77,7 @@ namespace Perspex.Interactivity
         public static RoutedEvent<TEventArgs> Register<TEventArgs>(
             string name,
             RoutingStrategies routingStrategy,
-            Type ownerType) 
+            Type ownerType)
                 where TEventArgs : RoutedEventArgs
         {
             Contract.Requires<NullReferenceException>(name != null);
@@ -126,15 +126,15 @@ namespace Perspex.Interactivity
 
         public void AddClassHandler<TTarget>(
             Func<TTarget, Action<TEventArgs>> handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble) 
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble)
             where TTarget : class
         {
             this.AddClassHandler(typeof(TTarget), (s, e) => ClassHandlerAdapter<TTarget>(s, e, handler), routes);
         }
 
         private static void ClassHandlerAdapter<TTarget>(
-            object sender, 
-            RoutedEventArgs e, 
+            object sender,
+            RoutedEventArgs e,
             Func<TTarget, Action<TEventArgs>> handler) where TTarget : class
         {
             var target = sender as TTarget;

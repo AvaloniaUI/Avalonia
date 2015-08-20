@@ -10,7 +10,6 @@ namespace Perspex.Controls.Parsers
     using System.Collections.Generic;
     using System.Linq;
 
-
     /// <summary>
     /// Parses a string of <see cref="GridLength"/>s for <see cref="ColumnDefinitions"/> and
     /// <see cref="RowDefinitions"/>.

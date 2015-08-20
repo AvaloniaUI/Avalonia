@@ -6,6 +6,7 @@
 
 namespace Perspex.Controls.Presenters
 {
+    using Perspex.Controls.Primitives;
     using Perspex.Controls.Templates;
 
     /// <summary>
@@ -115,7 +116,6 @@ namespace Perspex.Controls.Presenters
                 if (result.Parent == null)
                 {
                     ((ISetLogicalParent)result).SetParent((ILogical)logicalHost ?? this);
-
                 }
 
                 logicalChildren.Remove(old);

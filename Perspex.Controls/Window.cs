@@ -91,7 +91,7 @@ namespace Perspex.Controls
                 var modal = this.PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
-                Observable.FromEventPattern(this, nameof(Closed))
+                Observable.FromEventPattern(this, nameof(this.Closed))
                     .Take(1)
                     .Subscribe(_ =>
                     {

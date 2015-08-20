@@ -32,9 +32,9 @@ namespace Perspex.Direct2D1.Media
             this.factory = factory;
             this.WicImpl = new Bitmap(
                 factory,
-                width, 
-                height, 
-                PixelFormat.Format32bppPBGRA, 
+                width,
+                height,
+                PixelFormat.Format32bppPBGRA,
                 BitmapCreateCacheOption.CacheOnLoad);
         }
 

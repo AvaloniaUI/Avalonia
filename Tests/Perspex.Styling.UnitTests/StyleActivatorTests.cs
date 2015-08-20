@@ -29,8 +29,8 @@
         [Fact]
         public void Activator_And_Should_AND_Multiple_Inputs()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
@@ -54,8 +54,8 @@
         [Fact]
         public void Activator_And_Should_Unsubscribe_All_When_Input_Completes_On_False()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
@@ -80,8 +80,8 @@
         [Fact]
         public void Activator_And_Should_Not_Unsubscribe_All_When_Input_Completes_On_True()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
@@ -121,8 +121,8 @@
         [Fact]
         public void Activator_Or_Should_OR_Multiple_Inputs()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
@@ -145,8 +145,8 @@
         [Fact]
         public void Activator_Or_Should_Unsubscribe_All_When_Input_Completes_On_True()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
@@ -170,8 +170,8 @@
         [Fact]
         public void Activator_Or_Should_Not_Unsubscribe_All_When_Input_Completes_On_False()
         {
-            var inputs = new[] 
-            { 
+            var inputs = new[]
+            {
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),

@@ -9,10 +9,9 @@ namespace Perspex.Input
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Perspex.Interactivity;
     using Perspex.VisualTree;
     using Splat;
-    using Perspex.Interactivity;
-
 
     /// <summary>
     /// Manages focus for the application.
@@ -166,7 +165,7 @@ namespace Perspex.Input
                     yield return scope;
                 }
 
-                control = control.GetVisualParent<IInputElement>() ?? 
+                control = control.GetVisualParent<IInputElement>() ??
                     ((control as IHostedVisualTreeRoot)?.Host as IInputElement);
             }
         }

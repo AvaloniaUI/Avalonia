@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="GeometryTests.cs" company="Steven Kirk">
+// <copyright file="PathTests.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -14,10 +14,10 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
 
     public class PathTests
     {
-        private static readonly RectComparer compare = new RectComparer();
+        private static readonly RectComparer Compare = new RectComparer();
 
         [Fact]
-        void Should_Measure_Expander_Triangle_Correctly()
+        public void Should_Measure_Expander_Triangle_Correctly()
         {
             using (Locator.CurrentMutable.WithResolver())
             {
@@ -35,12 +35,12 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
             }
         }
 
         [Fact]
-        void Should_Measure_Expander_Triangle_With_Stroke_Correctly()
+        public void Should_Measure_Expander_Triangle_With_Stroke_Correctly()
         {
             using (Locator.CurrentMutable.WithResolver())
             {
@@ -69,7 +69,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 //
                 // However Path.Measure doesn't correctly handle strokes currently, so testing for
                 // the (incorrect) current output for now...
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
             }
         }
     }

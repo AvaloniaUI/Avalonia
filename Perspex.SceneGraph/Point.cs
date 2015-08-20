@@ -51,6 +51,15 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Converts the <see cref="Point"/> to a <see cref="Vector"/>.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        public static implicit operator Vector(Point p)
+        {
+            return new Vector(p.x, p.y);
+        }
+
+        /// <summary>
         /// Checks for equality between two <see cref="Point"/>s.
         /// </summary>
         /// <param name="left">The first point.</param>
@@ -72,26 +81,56 @@ namespace Perspex
             return !(left == right);
         }
 
+        /// <summary>
+        /// Adds two points.
+        /// </summary>
+        /// <param name="a">The first point.</param>
+        /// <param name="b">The second point.</param>
+        /// <returns>A point that is the result of the addition.</returns>
         public static Point operator +(Point a, Point b)
         {
             return new Point(a.x + b.x, a.y + b.y);
         }
 
+        /// <summary>
+        /// Adds a vector to a point.
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">The vector.</param>
+        /// <returns>A point that is the result of the addition.</returns>
         public static Point operator +(Point a, Vector b)
         {
             return new Point(a.x + b.X, a.y + b.Y);
         }
 
+        /// <summary>
+        /// Subtracts two points.
+        /// </summary>
+        /// <param name="a">The first point.</param>
+        /// <param name="b">The second point.</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
         public static Point operator -(Point a, Point b)
         {
             return new Point(a.x - b.x, a.y - b.y);
         }
 
+        /// <summary>
+        /// Subtracts a vector from a point.
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">The vector.</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
         public static Point operator -(Point a, Vector b)
         {
             return new Point(a.x - b.X, a.y - b.Y);
         }
 
+        /// <summary>
+        /// Applies a matrix to a point.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="matrix">The matrix.</param>
+        /// <returns>The resulting point.</returns>
         public static Point operator *(Point point, Matrix matrix)
         {
             return new Point(
@@ -99,11 +138,13 @@ namespace Perspex
                 (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.OffsetY);
         }
 
-        public static implicit operator Vector(Point p)
-        {
-            return new Vector(p.x, p.y);
-        }
-
+        /// <summary>
+        /// Checks for equality between a point and an object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>
+        /// True if <paramref name="obj"/> is a point that equals the current point.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (obj is Point)
@@ -115,6 +156,10 @@ namespace Perspex
             return false;
         }
 
+        /// <summary>
+        /// Returns a hash code for a <see cref="Point"/>.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             unchecked
@@ -135,11 +180,21 @@ namespace Perspex
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
         }
 
+        /// <summary>
+        /// Returns a new point with the specified X coordinate.
+        /// </summary>
+        /// <param name="x">The X coordinate.</param>
+        /// <returns>The new point.</returns>
         public Point WithX(double x)
         {
             return new Point(x, this.y);
         }
 
+        /// <summary>
+        /// Returns a new point with the specified Y coordinate.
+        /// </summary>
+        /// <param name="y">The Y coordinate.</param>
+        /// <returns>The new point.</returns>
         public Point WithY(double y)
         {
             return new Point(this.x, y);

@@ -10,7 +10,7 @@ namespace Perspex.Controls.Presenters
     using System.Collections;
     using System.Collections.Specialized;
     using Perspex.Controls.Generators;
-    using Templates;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Styling;
 

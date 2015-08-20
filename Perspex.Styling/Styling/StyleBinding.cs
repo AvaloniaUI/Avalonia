@@ -14,8 +14,9 @@ namespace Perspex.Styling
     /// </summary>
     /// <remarks>
     /// This class takes an activator and a value. The activator is an observable which produces
-    /// a bool. When the activator produces true, this observable will produce <see cref="Value"/>.
-    /// When the activator produces false it will produce <see cref="PerspexProperty.UnsetValue"/>.
+    /// a bool. When the activator produces true, this observable will produce
+    /// <see cref="ActivatedValue"/>. When the activator produces false it will produce
+    /// <see cref="PerspexProperty.UnsetValue"/>.
     /// </remarks>
     internal class StyleBinding : ObservableBase<object>, IDescription
     {

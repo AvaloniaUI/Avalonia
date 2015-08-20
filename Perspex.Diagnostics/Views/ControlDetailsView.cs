@@ -1,19 +1,18 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DevTools.cs" company="Steven Kirk">
+// <copyright file="ControlDetailsView.cs" company="Steven Kirk">
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Diagnostics.Views
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Reactive.Linq;
     using Perspex.Controls;
     using Perspex.Diagnostics.ViewModels;
     using Perspex.Styling;
     using ReactiveUI;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Reactive.Linq;
 
     internal class ControlDetailsView : UserControl
     {

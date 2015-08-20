@@ -36,7 +36,7 @@ namespace Perspex.Styling.UnitTests
             }
 
             this.hasValue = false;
-            return value;
+            return this.value;
         }
 
         public void OnCompleted()

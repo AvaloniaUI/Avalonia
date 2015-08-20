@@ -8,6 +8,7 @@ namespace Perspex
 {
     using Perspex.Collections;
     using Perspex.Media;
+    using Perspex.VisualTree;
 
     /// <summary>
     /// Represents a node in the visual scene graph.

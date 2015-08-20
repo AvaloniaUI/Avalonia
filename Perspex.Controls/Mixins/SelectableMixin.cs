@@ -15,7 +15,7 @@ namespace Perspex.Controls.Mixins
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The <see cref="SelectableMixin{TControl}"/> adds behavior to a control which can be
+    /// The <see cref="SelectableMixin"/> adds behavior to a control which can be
     /// selected. It adds the following behavior:
     /// </para>
     /// <list type="bullet">
@@ -38,7 +38,7 @@ namespace Perspex.Controls.Mixins
     public static class SelectableMixin
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectableMixin{TControl}"/> class.
+        /// Initializes a new instance of the <see cref="SelectableMixin"/> class.
         /// </summary>
         /// <typeparam name="TControl">The control type.</typeparam>
         /// <param name="isSelected">The IsSelected property.</param>

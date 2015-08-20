@@ -71,7 +71,7 @@ namespace Perspex.Controls.Templates
 
             if (visual != null)
             {
-                // TODO: This searches the whole descendent tree - it can stop when it exits the 
+                // TODO: This searches the whole descendent tree - it can stop when it exits the
                 // template.
                 return visual.GetVisualDescendents()
                     .OfType<Control>()
