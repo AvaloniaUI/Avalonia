@@ -31,7 +31,7 @@ namespace Perspex
         /// <summary>
         /// Gets a value indicating whether the scene graph node should be clipped to its bounds.
         /// </summary>
-        bool ClipToBounds { get; }
+        bool ClipToBounds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
@@ -44,24 +44,24 @@ namespace Perspex
         bool IsEffectivelyVisible { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node is visible.
+        /// Gets or sets a value indicating whether this scene graph node is visible.
         /// </summary>
-        bool IsVisible { get; }
+        bool IsVisible { get; set; }
 
         /// <summary>
-        /// Gets the opacity of the scene graph node.
+        /// Gets or sets the opacity of the scene graph node.
         /// </summary>
-        double Opacity { get; }
+        double Opacity { get; set; }
 
         /// <summary>
-        /// Gets the render transform of the scene graph node.
+        /// Gets or sets the render transform of the scene graph node.
         /// </summary>
-        Transform RenderTransform { get; }
+        Transform RenderTransform { get; set; }
 
         /// <summary>
-        /// Gets the transform origin of the scene graph node.
+        /// Gets or sets the transform origin of the scene graph node.
         /// </summary>
-        Origin TransformOrigin { get; }
+        Origin TransformOrigin { get; set; }
 
         /// <summary>
         /// Gets the scene graph node's child nodes.
@@ -74,9 +74,9 @@ namespace Perspex
         IVisual VisualParent { get; }
 
         /// <summary>
-        /// Gets the Z index of the node.
+        /// Gets or sets the Z index of the node.
         /// </summary>
-        int ZIndex { get; }
+        int ZIndex { get; set; }
 
         /// <summary>
         /// Renders the scene graph node to a <see cref="IDrawingContext"/>.

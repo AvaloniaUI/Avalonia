@@ -25,6 +25,14 @@ namespace Perspex
         object GetValue(PerspexProperty property);
 
         /// <summary>
+        /// Gets a <see cref="PerspexProperty"/> value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <returns>The value.</returns>
+        T GetValue<T>(PerspexProperty<T> property);
+
+        /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is registered on this object.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -45,5 +53,14 @@ namespace Perspex
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
         void SetValue(PerspexProperty property, object value, BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Sets a <see cref="PerspexProperty"/> value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="priority">The priority of the value.</param>
+        void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue);
     }
 }

@@ -156,6 +156,26 @@ namespace Perspex.Styling.UnitTests
             {
                 throw new NotImplementedException();
             }
+
+            public IDisposable Bind<T>(PerspexProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public T GetValue<T>(PerspexProperty<T> property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public class TestLogical1 : TestLogical

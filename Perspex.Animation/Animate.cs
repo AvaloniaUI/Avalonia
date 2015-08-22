@@ -103,7 +103,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         public static Animation Property(
-            PerspexObject target,
+            IObservablePropertyBag target,
             PerspexProperty property,
             object start,
             object finish,
@@ -126,7 +126,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         public static Animation<T> Property<T>(
-            PerspexObject target,
+            IObservablePropertyBag target,
             PerspexProperty<T> property,
             T start,
             T finish,

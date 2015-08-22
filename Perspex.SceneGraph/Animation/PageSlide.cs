@@ -22,7 +22,7 @@ namespace Perspex.Animation
 
         public TimeSpan Duration { get; }
 
-        public async Task Start(Visual from, Visual to, bool forward)
+        public async Task Start(IVisual from, IVisual to, bool forward)
         {
             var tasks = new List<Task>();
             var parent = GetVisualParent(from, to);
