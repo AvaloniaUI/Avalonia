@@ -14,6 +14,9 @@ namespace Perspex.Win32.Threading
     using Perspex.Threading;
     using Splat;
 
+    /// <summary>
+    /// A main loop in a <see cref="Dispatcher"/>.
+    /// </summary>
     internal class MainLoop
     {
         private static IPlatformThreadingInterface platform;
@@ -21,11 +24,20 @@ namespace Perspex.Win32.Threading
         private PriorityQueue<Job, DispatcherPriority> queue =
             new PriorityQueue<Job, DispatcherPriority>(PriorityQueueType.Maximum);
 
+        /// <summary>
+        /// Initializes static members of the <see cref="MainLoop"/> class.
+        /// </summary>
         static MainLoop()
         {
             platform = Locator.Current.GetService<IPlatformThreadingInterface>();
         }
 
+        /// <summary>
+        /// Runs the main loop.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A cancellation token used to exit the main loop.
+        /// </param>
         public void Run(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -64,6 +76,12 @@ namespace Perspex.Win32.Threading
             }
         }
 
+        /// <summary>
+        /// Invokes a method on the main loop.
+        /// </summary>
+        /// <param name="action">The method.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeAsync(Action action, DispatcherPriority priority)
         {
             var job = new Job(action, priority);
@@ -77,8 +95,16 @@ namespace Perspex.Win32.Threading
             return job.TaskCompletionSource.Task;
         }
 
+        /// <summary>
+        /// A job to run.
+        /// </summary>
         private class Job
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Job"/> class.
+            /// </summary>
+            /// <param name="action">The method to call.</param>
+            /// <param name="priority">The job priority.</param>
             public Job(Action action, DispatcherPriority priority)
             {
                 this.Action = action;
@@ -86,11 +112,20 @@ namespace Perspex.Win32.Threading
                 this.TaskCompletionSource = new TaskCompletionSource<object>();
             }
 
-            public Action Action { get; private set; }
+            /// <summary>
+            /// Gets the method to call.
+            /// </summary>
+            public Action Action { get; }
 
-            public DispatcherPriority Priority { get; private set; }
+            /// <summary>
+            /// Gets the job priority.
+            /// </summary>
+            public DispatcherPriority Priority { get; }
 
-            public TaskCompletionSource<object> TaskCompletionSource { get; set; }
+            /// <summary>
+            /// Gets the task completion source.
+            /// </summary>
+            public TaskCompletionSource<object> TaskCompletionSource { get; }
         }
     }
 }

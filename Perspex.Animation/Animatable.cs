@@ -7,7 +7,6 @@
 namespace Perspex.Animation
 {
     using System.Linq;
-    using System.Reactive.Linq;
 
     /// <summary>
     /// Base class for control which can have property transitions.

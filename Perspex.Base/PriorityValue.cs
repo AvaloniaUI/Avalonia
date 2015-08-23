@@ -10,7 +10,6 @@ namespace Perspex
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Subjects;
-    using System.Reflection;
     using System.Text;
     using Perspex.Utilities;
 

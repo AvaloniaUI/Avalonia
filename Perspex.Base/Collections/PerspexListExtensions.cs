@@ -12,8 +12,25 @@ namespace Perspex.Collections
     using System.ComponentModel;
     using System.Reactive.Disposables;
 
+    /// <summary>
+    /// Defines extension methods for working with <see cref="PerspexList{T}"/>s.
+    /// </summary>
     public static class PerspexListExtensions
     {
+        /// <summary>
+        /// Invokes an action for each item in a collection and subsequently each item added or
+        /// removed from the collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the collection items.</typeparam>
+        /// <param name="collection">The collection.</param>
+        /// <param name="added">
+        /// An action called initially for each item in the collection and subsequently for each
+        /// item added to the collection.
+        /// </param>
+        /// <param name="removed">
+        /// An action called for each item removed from the collection.
+        /// </param>
+        /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable ForEachItem<T>(
             this IPerspexReadOnlyList<T> collection,
             Action<T> added,
@@ -64,6 +81,13 @@ namespace Perspex.Collections
             return Disposable.Create(() => collection.CollectionChanged -= handler);
         }
 
+        /// <summary>
+        /// Listens for property changed events from all items in a collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the collection items.</typeparam>
+        /// <param name="collection">The collection.</param>
+        /// <param name="callback">A callback to call for each property changed event.</param>
+        /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable TrackItemPropertyChanged<T>(
             this IPerspexReadOnlyList<T> collection,
             Action<Tuple<object, PropertyChangedEventArgs>> callback)

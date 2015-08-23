@@ -28,6 +28,8 @@ namespace Perspex
     /// - A global set of <see cref="Styles"/>.
     /// - A <see cref="FocusManager"/>.
     /// - An <see cref="InputManager"/>.
+    /// - Loads and initializes rendering and windowing subsystems with
+    /// <see cref="InitializeSubsystems(int)"/> and <see cref="InitializeSubsystem(string)"/>.
     /// - Registers services needed by the rest of Perspex in the <see cref="RegisterServices"/>
     /// method.
     /// - Tracks the lifetime of the application.
