@@ -79,7 +79,7 @@ namespace Perspex.Gtk
         public Point PointToScreen(Point point)
         {
             int x, y;
-            this.GdkWindow.GetDeskrelativeOrigin(out x, out y);
+            this.Window.GetRootOrigin(out x, out y);
             
             return new Point(point.X + x, point.Y + y);
         }
