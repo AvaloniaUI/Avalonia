@@ -7,6 +7,7 @@
 namespace Perspex
 {
     using System;
+    using System.Reflection;
     using System.Threading;
     using Perspex.Controls;
     using Perspex.Controls.Templates;
@@ -46,8 +47,7 @@ namespace Perspex
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
         /// </summary>
-        /// <param name="theme">The theme to use.</param>
-        public Application(Styles theme)
+        public Application()
         {
             if (Current != null)
             {
@@ -55,8 +55,6 @@ namespace Perspex
             }
 
             Current = this;
-            this.Styles = theme;
-            this.RegisterServices();
         }
 
         /// <summary>
@@ -131,7 +129,7 @@ namespace Perspex
         public Styles Styles
         {
             get;
-            private set;
+            protected set;
         }
 
         /// <summary>
@@ -162,6 +160,38 @@ namespace Perspex
             Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
             Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
             Locator.CurrentMutable.Register(() => new RenderManager(), typeof(IRenderManager));
+        }
+
+        /// <summary>
+        /// Initializes the rendering and windowing subsystems according to platform.
+        /// </summary>
+        /// <param name="platformID">The value of Environment.OSVersion.Platform.</param>
+        protected void InitializeSubsystems(int platformID)
+        {
+            if (platformID == 4 || platformID == 6)
+            {
+                this.InitializeSubsystem("Perspex.Cairo");
+                this.InitializeSubsystem("Perspex.Gtk");
+            }
+            else
+            {
+                this.InitializeSubsystem("Perspex.Direct2D1");
+                this.InitializeSubsystem("Perspex.Win32");
+            }
+        }
+
+        /// <summary>
+        /// Initializes the rendering or windowing subsystem defined by the specified assemblt.
+        /// </summary>
+        /// <param name="assemblyName">The name of the assembly.</param>
+        protected void InitializeSubsystem(string assemblyName)
+        {
+            var assembly = Assembly.Load(new AssemblyName(assemblyName));
+            var platformClassName = assemblyName.Replace("Perspex.", string.Empty) + "Platform";
+            var platformClassFullName = assemblyName + "." + platformClassName;
+            var platformClass = assembly.GetType(platformClassFullName);
+            var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
+            init.Invoke(null, null);
         }
     }
 }
