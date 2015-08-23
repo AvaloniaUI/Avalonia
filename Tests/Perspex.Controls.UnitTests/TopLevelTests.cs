@@ -97,6 +97,8 @@ namespace Perspex.Controls.UnitTests
                 Locator.CurrentMutable.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
 
                 var impl = new Mock<ITopLevelImpl>();
+                impl.SetupProperty(x => x.ClientSize);
+                impl.SetupProperty(x => x.Resized);
 
                 var target = new TestTopLevel(impl.Object)
                 {

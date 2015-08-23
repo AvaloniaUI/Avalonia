@@ -299,7 +299,7 @@ namespace Perspex.Controls
                 this.PlatformImpl.ClientSize = finalSize;
             }
 
-            return base.ArrangeOverride(finalSize);
+            return base.ArrangeOverride(this.PlatformImpl.ClientSize);
         }
 
         /// <summary>
