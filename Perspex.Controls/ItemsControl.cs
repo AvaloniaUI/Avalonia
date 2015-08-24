@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections;
+    using System.Collections.ObjectModel;
     using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
@@ -35,7 +36,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
+            PerspexProperty.Register<ItemsControl, IEnumerable>("Items", defaultValue: new Collection<object>());
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
