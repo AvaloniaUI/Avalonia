@@ -40,10 +40,6 @@
       <HintPath>..\packages\Glass.1.4.2.0\lib\portable-net451+win81+wpa81\Glass.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NGenerics, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Perspex.1.0.1\lib\portable-net451+win81+wpa81\NGenerics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="OmniXaml, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OmniXaml.1.4.2.0\lib\portable-net451+win81+wpa81\OmniXaml.dll</HintPath>
       <Private>True</Private>
@@ -133,6 +129,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
+      <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
+      <Name>NGenerics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
