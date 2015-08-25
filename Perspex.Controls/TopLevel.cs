@@ -72,11 +72,6 @@ namespace Perspex.Controls
         private IKeyboardNavigationHandler keyboardNavigationHandler;
 
         /// <summary>
-        /// Whether an auto-size operation is in progress.
-        /// </summary>
-        private bool autoSizing;
-
-        /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
         static TopLevel()
@@ -255,6 +250,15 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Whether an auto-size operation is in progress.
+        /// </summary>
+        protected bool AutoSizing
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Translates a point from window coordinates into screen coordinates.
         /// </summary>
         /// <param name="p">The point.</param>
@@ -283,8 +287,8 @@ namespace Perspex.Controls
         /// </remarks>
         protected IDisposable BeginAutoSizing()
         {
-            this.autoSizing = true;
-            return Disposable.Create(() => this.autoSizing = false);
+            this.AutoSizing = true;
+            return Disposable.Create(() => this.AutoSizing = false);
         }
 
         /// <summary>
@@ -300,6 +304,24 @@ namespace Perspex.Controls
             }
 
             return base.ArrangeOverride(this.PlatformImpl.ClientSize);
+        }
+
+        /// <summary>
+        /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// </summary>
+        /// <param name="clientSize">The new client size.</param>
+        protected virtual void HandleResized(Size clientSize)
+        {
+            if (!this.AutoSizing)
+            {
+                this.Width = clientSize.Width;
+                this.Height = clientSize.Height;
+            }
+
+            this.ClientSize = clientSize;
+            this.renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
+            this.LayoutManager.ExecuteLayoutPass();
+            this.PlatformImpl.Invalidate(new Rect(clientSize));
         }
 
         /// <summary>
@@ -411,24 +433,6 @@ namespace Perspex.Controls
         {
             this.renderer.Render(this, handle);
             this.renderManager.RenderFinished();
-        }
-
-        /// <summary>
-        /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
-        /// </summary>
-        /// <param name="clientSize">The new client size.</param>
-        private void HandleResized(Size clientSize)
-        {
-            if (!this.autoSizing)
-            {
-                this.Width = clientSize.Width;
-                this.Height = clientSize.Height;
-            }
-
-            this.ClientSize = clientSize;
-            this.renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
-            this.LayoutManager.ExecuteLayoutPass();
-            this.PlatformImpl.Invalidate(new Rect(clientSize));
         }
     }
 }

@@ -118,6 +118,7 @@ namespace TestApplication
             Window window = new Window
             {
                 Title = "Perspex Test Application",
+                SizeToContent = SizeToContent.WidthAndHeight,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
