@@ -12,12 +12,12 @@ http://www.mono-project.com/docs/getting-started/install/linux/#debian-ubuntu-an
 
 Then install the needed packages:
 
-    sudo apt-get git mono-devel referenceassemblies-pcl monodevelop
+    sudo apt-get install git mono-devel referenceassemblies-pcl monodevelop
 
 Clone the Perspex repository
 ----------------------------
 
-   git clone https://github.com/grokys/Perspex.git
+    git clone https://github.com/grokys/Perspex.git
    
 Load the Project in MonoDevelop
 -------------------------------
