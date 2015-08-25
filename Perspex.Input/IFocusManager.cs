@@ -6,16 +6,19 @@
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
+    /// <summary>
+    /// Manages focus for the application.
+    /// </summary>
     public interface IFocusManager
     {
+        /// <summary>
+        /// Gets the currently focused <see cref="IInputElement"/>.
+        /// </summary>
         IInputElement Current { get; }
 
+        /// <summary>
+        /// Gets the current focus scope.
+        /// </summary>
         IFocusScope Scope { get; }
 
         /// <summary>

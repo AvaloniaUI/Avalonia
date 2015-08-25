@@ -81,7 +81,7 @@ namespace Perspex.Controls
         /// <summary>
         /// called when the <see cref="TipProperty"/> property changes on a control.
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">The event args.</param>
         private static void TipChanged(PerspexPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;

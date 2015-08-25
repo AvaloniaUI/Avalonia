@@ -84,6 +84,7 @@ namespace Perspex.Input.UnitTests
 
             Assert.Equal(next, result);
         }
+
         [Fact]
         public void Next_Continue_Doesnt_Enter_Panel_With_TabNavigation_None()
         {
