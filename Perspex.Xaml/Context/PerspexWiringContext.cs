@@ -93,10 +93,12 @@ namespace Perspex.Xaml.Context
             var contentProperties = new Collection<ContentPropertyDefinition>
             {
                 new ContentPropertyDefinition(typeof (ContentControl), "Content"),
+                new ContentPropertyDefinition(typeof (Decorator), "Child"),
                 new ContentPropertyDefinition(typeof (ItemsControl), "Items"),
                 new ContentPropertyDefinition(typeof (Panel), "Children"),
+                new ContentPropertyDefinition(typeof (TextBlock), "Text"),
+                new ContentPropertyDefinition(typeof (TextBox), "Text"),
                 new ContentPropertyDefinition(typeof (XamlDataTemplate), "Content"),
-                new ContentPropertyDefinition(typeof (Decorator), "Child"),
             };
 
             contentPropertyProvider.AddAll(contentProperties);

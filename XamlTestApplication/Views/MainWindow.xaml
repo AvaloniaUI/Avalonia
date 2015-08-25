@@ -25,7 +25,7 @@
                         Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt."
                         TextWrapping="Wrap" TextAlignment="Center" />
                     <TextBlock Text="Italic text." TextWrapping="Wrap" TextAlignment="Left" FontStyle="Italic" />
-                    <TextBlock Text="Bold text." TextWrapping="Wrap" TextAlignment="Right" FontWeight="Bold" />
+                    <TextBlock TextWrapping="Wrap" TextAlignment="Right" FontWeight="Bold">Bold text.</TextBlock>
                     <TextBox Text="A non-wrapping text box. Lorem ipsum dolor sit amet." TextWrapping="NoWrap" />
                     <TextBox
                         Text="A wrapping text box. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt."
