@@ -156,3 +156,4 @@ $RECYCLE.BIN/
 ## Monodevelop
 #################
 *.userprefs
+*.nugetreferenceswitcher

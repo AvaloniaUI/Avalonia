@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using System;
     using System.Collections;
+    using System.Collections.ObjectModel;
     using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
@@ -59,6 +60,7 @@ namespace Perspex.Controls
         public ItemsControl()
         {
             this.Classes.Add(":empty");
+            this.Items = new PerspexList<object>();
         }
 
         /// <summary>

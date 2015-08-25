@@ -41,7 +41,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarViewportSize");
 
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
-            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>("CanScrollHorizontally", false);
+            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>("CanScrollHorizontally", true);
 
         public static readonly PerspexProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
             PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>("HorizontalScrollBarVisibility", ScrollBarVisibility.Auto);

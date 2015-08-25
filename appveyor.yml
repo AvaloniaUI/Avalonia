@@ -1,0 +1,7 @@
+version: 1.0.{build}
+os: Visual Studio 2015
+before_build:
+- nuget restore Perspex.sln
+build:
+  project: Perspex.sln
+  verbosity: minimal
