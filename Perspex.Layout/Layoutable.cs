@@ -195,9 +195,7 @@ namespace Perspex.Layout
 
                 var desiredSize = this.MeasureCore(availableSize).Constrain(availableSize);
 
-                if (desiredSize.Width < 0 || desiredSize.Height < 0 ||
-                    double.IsInfinity(desiredSize.Width) || double.IsInfinity(desiredSize.Height) ||
-                    double.IsNaN(desiredSize.Width) || double.IsNaN(desiredSize.Height))
+                if (IsInvalidSize(desiredSize))
                 {
                     throw new InvalidOperationException("Invalid size returned for Measure.");
                 }
@@ -211,9 +209,7 @@ namespace Perspex.Layout
 
         public void Arrange(Rect rect, bool force = false)
         {
-            if (rect.Width < 0 || rect.Height < 0 ||
-                double.IsInfinity(rect.Width) || double.IsInfinity(rect.Height) ||
-                double.IsNaN(rect.Width) || double.IsNaN(rect.Height))
+            if (IsInvalidRect(rect))
             {
                 throw new InvalidOperationException("Invalid Arrange rectangle.");
             }
@@ -439,6 +435,22 @@ namespace Perspex.Layout
         private static bool IsResizable(ILayoutable control)
         {
             return double.IsNaN(control.Width) || double.IsNaN(control.Height);
+        }
+
+        private static bool IsInvalidRect(Rect rect)
+        {
+            return rect.Width < 0 || rect.Height < 0 ||
+                double.IsInfinity(rect.X) || double.IsInfinity(rect.Y) ||
+                double.IsInfinity(rect.Width) || double.IsInfinity(rect.Height) ||
+                double.IsNaN(rect.X) || double.IsNaN(rect.Y) ||
+                double.IsNaN(rect.Width) || double.IsNaN(rect.Height);
+        }
+
+        private static bool IsInvalidSize(Size size)
+        {
+            return size.Width < 0 || size.Height < 0 ||
+                double.IsInfinity(size.Width) || double.IsInfinity(size.Height) ||
+                double.IsNaN(size.Width) || double.IsNaN(size.Height);
         }
 
         private Tuple<ILayoutRoot, int> GetLayoutRoot()

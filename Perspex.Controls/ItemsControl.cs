@@ -36,7 +36,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>("Items", defaultValue: new Collection<object>());
+            PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -60,6 +60,7 @@ namespace Perspex.Controls
         public ItemsControl()
         {
             this.Classes.Add(":empty");
+            this.Items = new PerspexList<object>();
         }
 
         /// <summary>
