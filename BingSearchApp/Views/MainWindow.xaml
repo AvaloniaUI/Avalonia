@@ -1,0 +1,35 @@
+﻿<Window xmlns="https://github.com/grokys/Perspex"
+        xmlns:c="clr-namespace:System.Collections;assembly=mscorlib"
+        xmlns:co="clr-namespace:System;assembly=mscorlib"        
+        xmlns:rxUiSample="clr-namespace:BingSearchApp.ViewModels;assembly=BingSearchApp"
+        Width="500"
+        Height="400"
+        Title="Perspex Test Application">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="4" FontWeight="Bold" HorizontalAlignment="Center" Text="Please, enter your query to search it using Bing"/>
+        <Grid Grid.Row="1" Margin="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="3" VerticalAlignment="Center" Text="Search query:" />
+            <TextBox Margin="3" Grid.Column="1" Text="{Binding SearchText, Mode=TwoWay}" VerticalAlignment="Center" />
+        </Grid>
+        <ListBox Grid.Row="2" Margin="8" Items="{Binding Path=SearchResults}">
+            <ListBox.DataTemplates>
+                <XamlDataTemplate DataType="{Type rxUiSample:SearchResultViewModel}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Path=Title, Mode=OneWay}" />
+                        <TextBlock Text="{Binding Path=DisplayUrl, Mode=OneWay}" />
+                        <TextBlock Margin="10" Text="{Binding Path=Description}" />                        
+                    </StackPanel>
+                </XamlDataTemplate>
+            </ListBox.DataTemplates>
+        </ListBox>
+    </Grid>
+</Window>
