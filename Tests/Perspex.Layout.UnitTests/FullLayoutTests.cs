@@ -39,6 +39,7 @@ namespace Perspex.Layout.UnitTests
 
                 var window = new Window()
                 {
+                    SizeToContent = SizeToContent.WidthAndHeight,
                     Content = border = new Border
                     {
                         HorizontalAlignment = HorizontalAlignment.Center,
@@ -79,6 +80,7 @@ namespace Perspex.Layout.UnitTests
                 {
                     Width = 800,
                     Height = 600,
+                    SizeToContent = SizeToContent.WidthAndHeight,
                     Content = scrollViewer = new ScrollViewer
                     {
                         Width = 200,
