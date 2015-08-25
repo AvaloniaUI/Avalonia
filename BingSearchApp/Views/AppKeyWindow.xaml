@@ -1,0 +1,15 @@
+﻿<Window xmlns="https://github.com/grokys/Perspex"
+        Title="AppKey For Bing" Width="300" >
+  <StackPanel Margin="5">
+    <TextBlock Text="Please, enter your App Key for the Bing API V2. It can be found at https://datamarket.azure.com/dataset/bing/searchweb" />
+    <TextBox Margin="8" Text="{Binding AppKey}" />
+    <Grid Margin="4" HorizontalAlignment="Right">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Button Content="Accept" Margin="4"  />
+      <Button Content="Cancel" Margin="4" Grid.Column="1" />
+    </Grid>
+  </StackPanel>
+</Window>
