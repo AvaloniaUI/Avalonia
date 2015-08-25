@@ -44,20 +44,20 @@ namespace Perspex.Controls.Templates
             return null;
         }
 
-        public static T FindTemplateChild<T>(this ITemplatedControl control, string id) where T : INamed
+        public static T FindTemplateChild<T>(this ITemplatedControl control, string name) where T : INamed
         {
-            return control.GetTemplateChildren().OfType<T>().SingleOrDefault(x => x.Name == id);
+            return control.GetTemplateChildren().OfType<T>().SingleOrDefault(x => x.Name == name);
         }
 
-        public static T GetTemplateChild<T>(this ITemplatedControl control, string id) where T : INamed
+        public static T GetTemplateChild<T>(this ITemplatedControl control, string name) where T : INamed
         {
-            var result = control.FindTemplateChild<T>(id);
+            var result = control.FindTemplateChild<T>(name);
 
             if (result == null)
             {
                 throw new InvalidOperationException(string.Format(
                     "Could not find template child '{0}' of type '{1}' in template for '{2}'.",
-                    id,
+                    name,
                     typeof(T).FullName,
                     control.GetType().FullName));
             }
