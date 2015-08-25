@@ -65,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplication", "Xaml
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XAML", "XAML", "{8B6A8209-894F-4BA1-B880-965FD453982C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Applications", "Test Applications", "{9B9E3891-2366-4253-A952-D08BCEB71098}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{9B9E3891-2366-4253-A952-D08BCEB71098}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
