@@ -99,8 +99,6 @@ namespace Perspex.Input
         /// </summary>
         bool IsPointerOver { get; }
 
-        bool IsTabFocused { get; }
-
         /// <summary>
         /// Focuses the control.
         /// </summary>

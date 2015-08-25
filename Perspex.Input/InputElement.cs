@@ -53,9 +53,6 @@ namespace Perspex.Input
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
             PerspexProperty.Register<InputElement, bool>("IsPointerOver");
 
-        public static readonly PerspexProperty<bool> IsTabFocusedProperty =
-            PerspexProperty.Register<InputElement, bool>("IsTabFocused");
-
         /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
         /// </summary>
@@ -295,11 +292,6 @@ namespace Perspex.Input
             get { return this.IsEnabledCore; }
         }
 
-        bool IInputElement.IsTabFocused
-        {
-            get { return this.GetValue(IsTabFocusedProperty); }
-        }
-
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.
         /// </summary>
@@ -358,7 +350,6 @@ namespace Perspex.Input
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
             this.IsFocused = e.OriginalSource == this;
-            this.SetValue(IsTabFocusedProperty, e.NavigationMethod == NavigationMethod.Tab);
         }
 
         /// <summary>
@@ -368,7 +359,6 @@ namespace Perspex.Input
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
             this.IsFocused = false;
-            this.SetValue(IsTabFocusedProperty, false);
         }
 
         /// <summary>
