@@ -56,6 +56,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ILayoutable.cs" />
     <Compile Include="ILayoutManager.cs" />
     <Compile Include="ILayoutRoot.cs" />
