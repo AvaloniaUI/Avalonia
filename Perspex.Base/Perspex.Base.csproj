@@ -37,7 +37,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Binding.cs" />
+    <Compile Include="BindingDescriptor.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />

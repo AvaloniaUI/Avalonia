@@ -199,11 +199,11 @@ namespace Perspex
         /// Gets or sets a binding for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IObservable<object> this[Binding binding]
+        public IObservable<object> this[BindingDescriptor binding]
         {
             get
             {
-                return new Binding
+                return new BindingDescriptor
                 {
                     Mode = binding.Mode,
                     Priority = binding.Priority,
@@ -214,10 +214,10 @@ namespace Perspex
 
             set
             {
-                BindingMode mode = (binding.Mode == BindingMode.Default) ?
+                var mode = (binding.Mode == BindingMode.Default) ?
                     binding.Property.DefaultBindingMode :
                     binding.Mode;
-                Binding sourceBinding = value as Binding;
+                var sourceBinding = value as BindingDescriptor;
 
                 if (sourceBinding == null && mode != BindingMode.OneWay)
                 {

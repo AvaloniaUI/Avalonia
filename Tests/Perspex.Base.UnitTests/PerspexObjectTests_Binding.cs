@@ -226,7 +226,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -240,7 +240,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
+            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -256,7 +256,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            Binding binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
+            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];

@@ -170,10 +170,10 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
-        public static Binding operator !(PerspexProperty property)
+        /// <returns>A <see cref="BindingDescriptor"/> describing the binding.</returns>
+        public static BindingDescriptor operator !(PerspexProperty property)
         {
-            return new Binding
+            return new BindingDescriptor
             {
                 Priority = BindingPriority.LocalValue,
                 Property = property,
@@ -185,10 +185,10 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="Binding"/> describing the binding.</returns>
-        public static Binding operator ~(PerspexProperty property)
+        /// <returns>A <see cref="BindingDescriptor"/> describing the binding.</returns>
+        public static BindingDescriptor operator ~(PerspexProperty property)
         {
-            return new Binding
+            return new BindingDescriptor
             {
                 Priority = BindingPriority.TemplatedParent,
                 Property = property,
@@ -305,13 +305,13 @@ namespace Perspex
         /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s []
         /// operator to initiate a binding.
         /// </summary>
-        /// <returns>A <see cref="Binding"/>.</returns>
+        /// <returns>A <see cref="BindingDescriptor"/>.</returns>
         /// <remarks>
         /// The ! and ~ operators are short forms of this.
         /// </remarks>
-        public Binding Bind()
+        public BindingDescriptor Bind()
         {
-            return new Binding
+            return new BindingDescriptor
             {
                 Property = this,
             };
