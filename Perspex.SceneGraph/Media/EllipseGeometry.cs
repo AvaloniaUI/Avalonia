@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="EllipseGeometry.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -10,8 +10,15 @@ namespace Perspex.Media
     using Perspex.Platform;
     using Splat;
 
+    /// <summary>
+    /// Represents the geometry of an ellipse or circle.
+    /// </summary>
     public class EllipseGeometry : Geometry
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EllipseGeometry"/> class.
+        /// </summary>
+        /// <param name="rect">The rectangle that the ellipse should fill.</param>
         public EllipseGeometry(Rect rect)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
@@ -46,11 +53,13 @@ namespace Perspex.Media
             this.PlatformImpl = impl;
         }
 
+        /// <inheritdoc/>
         public override Rect Bounds
         {
             get { return this.PlatformImpl.Bounds; }
         }
 
+        /// <inheritdoc/>
         public override Geometry Clone()
         {
             return new EllipseGeometry(this.Bounds);
