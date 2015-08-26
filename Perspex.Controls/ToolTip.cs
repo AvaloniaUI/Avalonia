@@ -48,7 +48,7 @@ namespace Perspex.Controls
         private static Subject<Control> show = new Subject<Control>();
 
         /// <summary>
-        /// Statically constructs the tooltip class.
+        /// Initializes static members of the <see cref="ToolTip"/> class.
         /// </summary>
         static ToolTip()
         {
