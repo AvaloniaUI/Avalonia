@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Win32", "Windows\Perspex.Win32\Perspex.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "Demos\TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1", "Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
@@ -61,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Xaml", "Perspex.Xam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Xaml.Desktop", "Perspex.Xaml.Desktop\Perspex.Xaml.Desktop.csproj", "{EB468C39-AAC4-4963-A7B2-0A405EA63EDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplication", "XamlTestApplication\XamlTestApplication.csproj", "{78CAFE33-DBEB-4132-8A28-81CFE8A4933C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplication", "Demos\XamlTestApplication\XamlTestApplication.csproj", "{78CAFE33-DBEB-4132-8A28-81CFE8A4933C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Markup", "Markup", "{8B6A8209-894F-4BA1-B880-965FD453982C}"
 EndProject
