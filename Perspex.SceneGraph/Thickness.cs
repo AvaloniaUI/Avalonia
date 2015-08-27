@@ -8,6 +8,9 @@ namespace Perspex
 {
     using System;
 
+    /// <summary>
+    /// Describes the thickness of a frame around a rectangle.
+    /// </summary>
     public struct Thickness
     {
         /// <summary>
@@ -152,6 +155,13 @@ namespace Perspex
                 a.Bottom + b.Bottom);
         }
 
+        /// <summary>
+        /// Checks for equality between a thickness and an object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>
+        /// True if <paramref name="obj"/> is a size that equals the current size.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (obj is Thickness)
@@ -166,6 +176,10 @@ namespace Perspex
             return false;
         }
 
+        /// <summary>
+        /// Returns a hash code for a <see cref="Thickness"/>.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             unchecked
@@ -179,6 +193,10 @@ namespace Perspex
             }
         }
 
+        /// <summary>
+        /// Returns the string representation of the thickness.
+        /// </summary>
+        /// <returns>The string representation of the thickness.</returns>
         public override string ToString()
         {
             return string.Format("{0},{1},{2},{3}", this.left, this.top, this.right, this.bottom);

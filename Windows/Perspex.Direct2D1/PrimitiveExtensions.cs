@@ -104,8 +104,8 @@ namespace Perspex.Direct2D1
                 (float)matrix.M12,
                 (float)matrix.M21,
                 (float)matrix.M22,
-                (float)matrix.OffsetX,
-                (float)matrix.OffsetY);
+                (float)matrix.M31,
+                (float)matrix.M32);
         }
 
         /// <summary>

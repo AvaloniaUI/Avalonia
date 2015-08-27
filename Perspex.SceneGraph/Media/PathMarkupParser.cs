@@ -12,6 +12,9 @@ namespace Perspex.Media
     using System.IO;
     using System.Text;
 
+    /// <summary>
+    /// Parses a path markup string.
+    /// </summary>
     public class PathMarkupParser
     {
         private static readonly Dictionary<char, Command> Commands = new Dictionary<char, Command>
@@ -36,12 +39,20 @@ namespace Perspex.Media
 
         private StreamGeometryContext context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
+        /// </summary>
+        /// <param name="geometry">The geometry in which the path should be stored.</param>
+        /// <param name="context">The context for <paramref name="geometry"/>.</param>
         public PathMarkupParser(StreamGeometry geometry, StreamGeometryContext context)
         {
             this.geometry = geometry;
             this.context = context;
         }
 
+        /// <summary>
+        /// Defines the command currently being processed.
+        /// </summary>
         private enum Command
         {
             None,
@@ -60,6 +71,10 @@ namespace Perspex.Media
             Eof,
         }
 
+        /// <summary>
+        /// Parses the specified markup string.
+        /// </summary>
+        /// <param name="s">The markup string.</param>
         public void Parse(string s)
         {
             bool openFigure = false;

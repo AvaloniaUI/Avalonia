@@ -52,6 +52,7 @@
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Matrix.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />
@@ -64,7 +65,6 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
     <Compile Include="IVisual.cs" />
-    <Compile Include="Matrix.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />

@@ -262,7 +262,7 @@ namespace Perspex
         {
             var thisOffset = GetOffsetFromRoot(this).Item2;
             var thatOffset = GetOffsetFromRoot(visual).Item2;
-            return Matrix.Translation(-thatOffset) * Matrix.Translation(thisOffset);
+            return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
         }
 
         /// <summary>

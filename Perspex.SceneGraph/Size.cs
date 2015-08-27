@@ -193,7 +193,7 @@ namespace Perspex
         /// <summary>
         /// Returns the string representation of the size.
         /// </summary>
-        /// <returns>The string representation of the size</returns>
+        /// <returns>The string representation of the size.</returns>
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.width, this.height);

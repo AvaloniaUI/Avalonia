@@ -134,8 +134,8 @@ namespace Perspex
         public static Point operator *(Point point, Matrix matrix)
         {
             return new Point(
-                (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.OffsetX,
-                (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.OffsetY);
+                (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.M31,
+                (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.M32);
         }
 
         /// <summary>

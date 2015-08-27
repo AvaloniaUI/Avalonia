@@ -71,16 +71,16 @@ namespace Perspex.Rendering
             if (visual.IsVisible && opacity > 0)
             {
                 // Translate any existing transform into this controls coordinate system.
-                Matrix offset = Matrix.Translation(visual.Bounds.Position);
+                Matrix offset = Matrix.CreateTranslation(visual.Bounds.Position);
                 transform = offset * transform * -offset;
 
                 // Update the current offset.
-                translation *= Matrix.Translation(visual.Bounds.Position);
+                translation *= Matrix.CreateTranslation(visual.Bounds.Position);
 
                 // Apply the control's render transform, if any.
                 if (visual.RenderTransform != null)
                 {
-                    offset = Matrix.Translation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
+                    offset = Matrix.CreateTranslation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
                     transform *= -offset * visual.RenderTransform.Value * offset;
                 }
 

@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Rect.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -221,6 +221,12 @@ namespace Perspex
             return !(left == right);
         }
 
+        /// <summary>
+        /// Multiplies a rectangle by a vector.
+        /// </summary>
+        /// <param name="rect">The rectangle.</param>
+        /// <param name="scale">The vector scale.</param>
+        /// <returns>The scaled rectangle.</returns>
         public static Rect operator *(Rect rect, Vector scale)
         {
             double centerX = rect.x + (rect.width / 2);
@@ -234,11 +240,23 @@ namespace Perspex
                 height);
         }
 
+        /// <summary>
+        /// Transforms a rectangle by a matrix and returns the axis-aligned bounding box.
+        /// </summary>
+        /// <param name="rect">The rectangle.</param>
+        /// <param name="matrix">The matrix.</param>
+        /// <returns>The axis-aligned bounding box.</returns>
         public static Rect operator *(Rect rect, Matrix matrix)
         {
             return new Rect(rect.TopLeft * matrix, rect.BottomRight * matrix);
         }
 
+        /// <summary>
+        /// Divides a rectangle by a vector.
+        /// </summary>
+        /// <param name="rect">The rectangle.</param>
+        /// <param name="scale">The vector scale.</param>
+        /// <returns>The scaled rectangle.</returns>
         public static Rect operator /(Rect rect, Vector scale)
         {
             double centerX = rect.x + (rect.width / 2);
@@ -263,6 +281,11 @@ namespace Perspex
                    p.Y >= this.y && p.Y < this.y + this.height;
         }
 
+        /// <summary>
+        /// Centers another rectangle in this rectangle.
+        /// </summary>
+        /// <param name="rect">The rectangle to center.</param>
+        /// <returns>The centered rectangle.</returns>
         public Rect CenterIn(Rect rect)
         {
             return new Rect(
@@ -318,6 +341,11 @@ namespace Perspex
                 this.Size.Deflate(thickness));
         }
 
+        /// <summary>
+        /// Returns a boolean indicating whether the given object is equal to this rectangle.
+        /// </summary>
+        /// <param name="obj">The object to compare against.</param>
+        /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Rect)
@@ -328,6 +356,10 @@ namespace Perspex
             return false;
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             unchecked
@@ -341,6 +373,11 @@ namespace Perspex
             }
         }
 
+        /// <summary>
+        /// Gets the intersection of two rectangles.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>The intersection.</returns>
         public Rect Intersect(Rect rect)
         {
             double x = Math.Max(this.x, rect.x);

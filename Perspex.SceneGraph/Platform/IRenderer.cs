@@ -1,13 +1,20 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="IRenderer.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace Perspex.Platform
 {
-    using System;
-
+    /// <summary>
+    /// Defines a renderer.
+    /// </summary>
+    /// <remarks>
+    /// The interface used to render <see cref="IVisual"/>s. You will usually want to inherit from
+    /// <see cref="Perspex.Rendering.RendererBase"/> rather than implementing the whole interface
+    /// as RenderBase has a default implementation for the non-platform specific parts of a
+    /// renderer.
+    /// </remarks>
     public interface IRenderer
     {
         /// <summary>

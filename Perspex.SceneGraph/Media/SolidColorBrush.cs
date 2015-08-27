@@ -38,6 +38,10 @@ namespace Perspex.Media
             private set;
         }
 
+        /// <summary>
+        /// Returns a string representation of the brush.
+        /// </summary>
+        /// <returns>A string representation of the brush.</returns>
         public override string ToString()
         {
             return this.Color.ToString();

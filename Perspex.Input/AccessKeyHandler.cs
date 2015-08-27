@@ -158,7 +158,7 @@ namespace Perspex.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => this.MainMenu.IsVisualParentOf(x));
+                    matches = matches.Where(x => this.MainMenu.IsVisualAncestorOf(x));
                 }
 
                 var match = matches.FirstOrDefault();

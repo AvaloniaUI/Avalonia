@@ -107,14 +107,9 @@ namespace Perspex.Direct2D1.Media
             return new Rect(result.Left, result.Top, result.Width, result.Height);
         }
 
-        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
+        public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            var result = this.TextLayout.HitTestTextRange(
-                index,
-                length,
-                (float)origin.X,
-                (float)origin.Y);
-
+            var result = this.TextLayout.HitTestTextRange(index, length, 0, 0);
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 

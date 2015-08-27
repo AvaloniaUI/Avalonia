@@ -121,7 +121,7 @@ namespace Perspex.Controls.Shapes
             if (this.Stretch != Stretch.None)
             {
                 shapeSize = shapeBounds.Size;
-                translate = Matrix.Translation(-(Vector)shapeBounds.Position);
+                translate = Matrix.CreateTranslation(-(Vector)shapeBounds.Position);
             }
 
             if (double.IsInfinity(availableSize.Width))
@@ -179,7 +179,7 @@ namespace Perspex.Controls.Shapes
                     break;
             }
 
-            var t = translate * Matrix.Scaling(sx, sy);
+            var t = translate * Matrix.CreateScale(sx, sy);
 
             if (this.transform != t)
             {
