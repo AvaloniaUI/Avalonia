@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="HighLevel\PerspexObjectAssemblerFactory.cs" />
     <Compile Include="HighLevel\PerspexLoaderFactory.cs" />

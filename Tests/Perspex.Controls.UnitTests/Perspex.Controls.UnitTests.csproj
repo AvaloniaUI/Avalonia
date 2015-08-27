@@ -90,6 +90,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />

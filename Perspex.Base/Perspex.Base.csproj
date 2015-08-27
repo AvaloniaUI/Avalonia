@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="BindingDescriptor.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />

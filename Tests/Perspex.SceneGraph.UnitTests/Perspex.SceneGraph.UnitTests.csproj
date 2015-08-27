@@ -79,6 +79,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestVisual.cs" />

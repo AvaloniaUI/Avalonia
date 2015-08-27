@@ -75,6 +75,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />

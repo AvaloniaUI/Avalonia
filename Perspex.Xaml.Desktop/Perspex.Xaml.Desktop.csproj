@@ -118,6 +118,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="PerspexInflatableTypeFactory.cs" />
     <Compile Include="PerspexParserFactory.cs" />
     <Compile Include="PerspexWindow.cs" />

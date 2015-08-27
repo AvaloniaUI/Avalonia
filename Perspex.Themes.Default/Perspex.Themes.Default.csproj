@@ -72,6 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="MenuItemStyle.cs" />
     <Compile Include="MenuStyle.cs" />
     <Compile Include="ProgressBarStyle.cs" />

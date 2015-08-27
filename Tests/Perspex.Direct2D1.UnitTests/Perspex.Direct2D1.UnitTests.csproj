@@ -62,6 +62,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Controls\Shapes\PathTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\GeometryTests.cs" />
