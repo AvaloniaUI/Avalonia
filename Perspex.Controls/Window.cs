@@ -197,36 +197,31 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = this.SizeToContent;
+            var size = this.ClientSize;
+            var desired = base.MeasureOverride(availableSize);
 
-            if (sizeToContent != SizeToContent.Manual)
+            switch (sizeToContent)
             {
-                Size size;
-
-                switch (sizeToContent)
-                {
-                    case SizeToContent.Width:
-                        size = new Size(finalSize.Width, this.ClientSize.Height);
-                        break;
-                    case SizeToContent.Height:
-                        size = new Size(this.ClientSize.Width, finalSize.Height);
-                        break;
-                    case SizeToContent.WidthAndHeight:
-                        size = new Size(finalSize.Width, finalSize.Height);
-                        break;
-                    default:
-                        throw new InvalidOperationException("Invalid value for SizeToContent.");
-                }
-
-                using (this.BeginAutoSizing())
-                {
-                    this.PlatformImpl.ClientSize = size;
-                }
+                case SizeToContent.Width:
+                    size = new Size(desired.Width, this.ClientSize.Height);
+                    break;
+                case SizeToContent.Height:
+                    size = new Size(this.ClientSize.Width, desired.Height);
+                    break;
+                case SizeToContent.WidthAndHeight:
+                    size = new Size(desired.Width, desired.Height);
+                    break;
+                case SizeToContent.Manual:
+                    size = this.ClientSize;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid value for SizeToContent.");
             }
 
-            return base.ArrangeOverride(this.PlatformImpl.ClientSize);
+            return size;
         }
 
         /// <inheritdoc/>
