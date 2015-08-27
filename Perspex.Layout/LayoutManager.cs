@@ -302,18 +302,37 @@ namespace Perspex.Layout
             }
         }
 
+        /// <summary>
+        /// An item to be layed-out.
+        /// </summary>
         private class Item : IComparable<Item>
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Item"/> class.
+            /// </summary>
+            /// <param name="control">The control.</param>
+            /// <param name="distance">The control's distance from the layout root.</param>
             public Item(ILayoutable control, int distance)
             {
                 this.Control = control;
                 this.Distance = distance;
             }
 
-            public ILayoutable Control { get; private set; }
+            /// <summary>
+            /// Gets the control.
+            /// </summary>
+            public ILayoutable Control { get; }
 
-            public int Distance { get; private set; }
+            /// <summary>
+            /// Gets the control's distance from the layout root.
+            /// </summary>
+            public int Distance { get; }
 
+            /// <summary>
+            /// Compares the distance of two items.
+            /// </summary>
+            /// <param name="other">The other item/</param>
+            /// <returns>The comparison.</returns>
             public int CompareTo(Item other)
             {
                 return this.Distance - other.Distance;
