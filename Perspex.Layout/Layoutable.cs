@@ -579,7 +579,6 @@ namespace Perspex.Layout
                 {
                     originX = Math.Floor(originX);
                     originY = Math.Floor(originY);
-                    size = this.ArrangeOverride(size).Constrain(size);
                 }
 
                 this.Bounds = new Rect(originX, originY, size.Width, size.Height);
