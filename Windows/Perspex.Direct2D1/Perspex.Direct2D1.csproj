@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Direct2D1Platform.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
