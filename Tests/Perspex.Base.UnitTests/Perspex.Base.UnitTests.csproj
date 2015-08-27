@@ -76,9 +76,6 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
@@ -100,7 +97,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>

@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EB582467-6ABB-43A1-B052-E981BA910E3A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Perspex</RootNamespace>
+    <AssemblyName>Perspex.SceneGraph</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Perspex.SceneGraph.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
+      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Name>Perspex.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Animation\PageSlide.cs" />
+    <Compile Include="Animation\CrossFade.cs" />
+    <Compile Include="Animation\IPageTransition.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Matrix.cs" />
+    <Compile Include="Media\Brush.cs" />
+    <Compile Include="Media\Brushes.cs" />
+    <Compile Include="Media\Color.cs" />
+    <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\TextAlignment.cs" />
+    <Compile Include="Media\FontWeight.cs" />
+    <Compile Include="Media\FontStyle.cs" />
+    <Compile Include="Media\FormattedTextLine.cs" />
+    <Compile Include="Media\FormattedText.cs" />
+    <Compile Include="Media\Geometry.cs" />
+    <Compile Include="Media\IDrawingContext.cs" />
+    <Compile Include="IVisual.cs" />
+    <Compile Include="Media\Imaging\Bitmap.cs" />
+    <Compile Include="Media\Imaging\IBitmap.cs" />
+    <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="Media\TranslateTransform.cs" />
+    <Compile Include="Media\PathMarkupParser.cs" />
+    <Compile Include="Media\Pen.cs" />
+    <Compile Include="Media\EllipseGeometry.cs" />
+    <Compile Include="Media\RectangleGeometry.cs" />
+    <Compile Include="Media\MatrixTransform.cs" />
+    <Compile Include="Media\RotateTransform.cs" />
+    <Compile Include="Media\SolidColorBrush.cs" />
+    <Compile Include="Media\StreamGeometry.cs" />
+    <Compile Include="Media\StreamGeometryContext.cs" />
+    <Compile Include="Media\Stretch.cs" />
+    <Compile Include="Media\SweepDirection.cs" />
+    <Compile Include="Media\TextHitTestResult.cs" />
+    <Compile Include="Media\Transform.cs" />
+    <Compile Include="Origin.cs" />
+    <Compile Include="Platform\IFormattedTextImpl.cs" />
+    <Compile Include="Platform\IBitmapImpl.cs" />
+    <Compile Include="Platform\IGeometryImpl.cs" />
+    <Compile Include="Platform\IPlatformRenderInterface.cs" />
+    <Compile Include="Platform\IRenderer.cs" />
+    <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
+    <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
+    <Compile Include="Platform\IStreamGeometryImpl.cs" />
+    <Compile Include="Point.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rect.cs" />
+    <Compile Include="Rendering\IRenderRoot.cs" />
+    <Compile Include="Rendering\IRenderManager.cs" />
+    <Compile Include="Rendering\RendererBase.cs" />
+    <Compile Include="Rendering\RenderManager.cs" />
+    <Compile Include="Size.cs" />
+    <Compile Include="Thickness.cs" />
+    <Compile Include="Vector.cs" />
+    <Compile Include="Visual.cs" />
+    <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />
+    <Compile Include="VisualTree\IVisualTreeHost.cs" />
+    <Compile Include="VisualTree\TransformedBounds.cs" />
+    <Compile Include="VisualTree\BoundsTracker.cs" />
+    <Compile Include="VisualTree\VisualExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\..\packages\Rx-Linq.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
