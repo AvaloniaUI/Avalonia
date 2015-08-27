@@ -9,7 +9,7 @@ namespace Perspex.Xaml.Desktop
 
     public class PerspexInflatableTypeFactory : InflatableTypeFactory
     {
-        public PerspexInflatableTypeFactory() : base(new TypeFactory(), new InflatableTranslator(), typeFactory => new PerspexXamlLoader(typeFactory))
+        public PerspexInflatableTypeFactory() : base(new TypeFactory(), new InflatableResourceTranslator(), typeFactory => new PerspexXamlLoader(typeFactory))
         {
             Inflatables = new Collection<Type> { typeof(Window), typeof(UserControl) };
         }

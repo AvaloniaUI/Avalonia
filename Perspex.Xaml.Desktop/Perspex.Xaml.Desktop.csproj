@@ -126,7 +126,7 @@
     <Compile Include="PerspexWindow.cs" />
     <Compile Include="PerspexXamlLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WindowsResourceProvider.cs" />
+    <Compile Include="InflatableResourceTranslator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
