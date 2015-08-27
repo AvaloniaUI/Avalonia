@@ -37,35 +37,35 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Glass, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Glass.1.4.4.0\lib\portable-net451+win81+wpa81\Glass.dll</HintPath>
+      <HintPath>..\..\packages\Glass.1.4.4.0\lib\portable-net451+win81+wpa81\Glass.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="OmniXaml, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OmniXaml.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.dll</HintPath>
+      <HintPath>..\..\packages\OmniXaml.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="OmniXaml.AppServices, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OmniXaml.AppServices.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.dll</HintPath>
+      <HintPath>..\..\packages\OmniXaml.AppServices.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="OmniXaml.AppServices.Mvvm, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OmniXaml.AppServices.Mvvm.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.Mvvm.dll</HintPath>
+      <HintPath>..\..\packages\OmniXaml.AppServices.Mvvm.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.Mvvm.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="OmniXaml.AppServices.NetCore, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OmniXaml.AppServices.NetCore.1.4.4.0\lib\net46\OmniXaml.AppServices.NetCore.dll</HintPath>
+      <HintPath>..\..\packages\OmniXaml.AppServices.NetCore.1.4.4.0\lib\net46\OmniXaml.AppServices.NetCore.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ReactiveUI, Version=6.4.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\reactiveui-core.6.4.0.1\lib\Net45\ReactiveUI.dll</HintPath>
+      <HintPath>..\..\packages\reactiveui-core.6.4.0.1\lib\Net45\ReactiveUI.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\packages\Serilog.1.5.9\lib\net45\Serilog.dll</HintPath>
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\packages\Serilog.1.5.9\lib\net45\Serilog.FullNetFx.dll</HintPath>
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.FullNetFx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
@@ -81,34 +81,34 @@
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.DXGI.dll</HintPath>
     </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Sprache, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Sprache.SuperJMN.2.0.0.46\lib\portable-net451+win81+wpa81\Sprache.dll</HintPath>
+      <HintPath>..\..\packages\Sprache.SuperJMN.2.0.0.46\lib\portable-net451+win81+wpa81\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+      <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Windows.Threading, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-XAML.2.2.5\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
+      <HintPath>..\..\packages\Rx-XAML.2.2.5\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
@@ -129,67 +129,67 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
+    <ProjectReference Include="..\..\NGenerics\NGenerics.csproj">
       <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
       <Name>NGenerics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
+    <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Application\Perspex.Application.csproj">
+    <ProjectReference Include="..\..\Perspex.Application\Perspex.Application.csproj">
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
       <Name>Perspex.Application</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Controls\Perspex.Controls.csproj">
+    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Perspex.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+    <ProjectReference Include="..\..\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Perspex.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
+    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Perspex.Input</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+    <ProjectReference Include="..\..\Perspex.Interactivity\Perspex.Interactivity.csproj">
       <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
       <Name>Perspex.Interactivity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Layout\Perspex.Layout.csproj">
+    <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Styling\Perspex.Styling.csproj">
+    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
+    <ProjectReference Include="..\..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Xaml.Desktop\Perspex.Xaml.Desktop.csproj">
+    <ProjectReference Include="..\..\Perspex.Xaml.Desktop\Perspex.Xaml.Desktop.csproj">
       <Project>{eb468c39-aac4-4963-a7b2-0a405ea63edd}</Project>
       <Name>Perspex.Xaml.Desktop</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Xaml\Perspex.Xaml.csproj">
+    <ProjectReference Include="..\..\Perspex.Xaml\Perspex.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Perspex.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
+    <ProjectReference Include="..\..\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
       <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
       <Name>Perspex.Direct2D1</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Windows\Perspex.Win32\Perspex.Win32.csproj">
+    <ProjectReference Include="..\..\Windows\Perspex.Win32\Perspex.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
       <Name>Perspex.Win32</Name>
     </ProjectReference>
@@ -206,12 +206,12 @@
     </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
+  <Import Project="..\..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
