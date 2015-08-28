@@ -29,7 +29,7 @@ namespace Perspex.Themes.Default
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(ToggleButton.BorderThicknessProperty, 2.0),
-                        new Setter(ToggleButton.FocusAdornerProperty, new AdornerTemplate(ButtonStyle.FocusAdornerTemplate)),
+                        new Setter(ToggleButton.FocusAdornerProperty, new FuncTemplate<IControl>(ButtonStyle.FocusAdornerTemplate)),
                         new Setter(ToggleButton.ForegroundProperty, new SolidColorBrush(0xff000000)),
                         new Setter(ToggleButton.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(ToggleButton.VerticalContentAlignmentProperty, VerticalAlignment.Center),

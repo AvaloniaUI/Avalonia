@@ -144,7 +144,7 @@ namespace Perspex.Controls.Presenters
             if (!this.Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
                 KeyboardNavigation.SetDirectionalNavigation(
-                    (InputElement)this.Panel, 
+                    (InputElement)this.Panel,
                     KeyboardNavigationMode.Contained);
             }
 
@@ -160,7 +160,7 @@ namespace Perspex.Controls.Presenters
             }
 
             KeyboardNavigation.SetTabNavigation(
-                (InputElement)this.Panel, 
+                (InputElement)this.Panel,
                 KeyboardNavigation.GetTabNavigation(this));
             this.createdPanel = true;
             this.CreateItemsAndListenForChanges(this.Items);

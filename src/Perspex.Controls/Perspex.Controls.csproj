@@ -43,6 +43,7 @@
     </Compile>
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
+    <Compile Include="IContentControl.cs" />
     <Compile Include="IControl.cs" />
     <Compile Include="IPanel.cs" />
     <Compile Include="IReparentingHost.cs" />
@@ -57,9 +58,7 @@
     <Compile Include="MenuItem.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />
-    <Compile Include="AdornerTemplate.cs" />
     <Compile Include="DropDown.cs" />
-    <Compile Include="IContentControl.cs" />
     <Compile Include="IReparentingControl.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />

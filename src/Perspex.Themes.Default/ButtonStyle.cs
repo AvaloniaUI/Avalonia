@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.FocusAdornerProperty, new AdornerTemplate(FocusAdornerTemplate)),
+                        new Setter(Button.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
                         new Setter(Button.TemplateProperty, new ControlTemplate<Button>(this.Template)),
                         new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),

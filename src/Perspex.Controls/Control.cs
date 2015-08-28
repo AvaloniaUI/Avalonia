@@ -43,8 +43,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
         /// </summary>
-        public static readonly PerspexProperty<AdornerTemplate> FocusAdornerProperty =
-            PerspexProperty.Register<Control, AdornerTemplate>(nameof(FocusAdorner));
+        public static readonly PerspexProperty<ITemplate<IControl>> FocusAdornerProperty =
+            PerspexProperty.Register<Control, ITemplate<IControl>>(nameof(FocusAdorner));
 
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
@@ -74,7 +74,7 @@ namespace Perspex.Controls
 
         private DataTemplates dataTemplates;
 
-        private Control focusAdorner;
+        private IControl focusAdorner;
 
         private string id;
 
@@ -141,7 +141,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the control's focus adorner.
         /// </summary>
-        public AdornerTemplate FocusAdorner
+        public ITemplate<IControl> FocusAdorner
         {
             get { return this.GetValue(FocusAdornerProperty); }
             set { this.SetValue(FocusAdornerProperty, value); }
@@ -375,7 +375,7 @@ namespace Perspex.Controls
 
                     if (this.focusAdorner != null)
                     {
-                        AdornerLayer.SetAdornedElement(this.focusAdorner, this);
+                        AdornerLayer.SetAdornedElement((Visual)this.focusAdorner, this);
                         adornerLayer.Children.Add(this.focusAdorner);
                     }
                 }

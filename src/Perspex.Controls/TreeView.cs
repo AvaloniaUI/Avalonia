@@ -70,7 +70,7 @@ namespace Perspex.Controls
             if (this.Presenter != null && this.Presenter.Panel != null)
             {
                 KeyboardNavigation.SetTabOnceActiveElement(
-                    (InputElement)this.Presenter.Panel, 
+                    (InputElement)this.Presenter.Panel,
                     selectedContainer);
             }
 

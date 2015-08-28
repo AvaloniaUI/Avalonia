@@ -9,6 +9,7 @@ namespace Perspex.Themes.Default
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Shapes;
+    using Perspex.Controls.Templates;
     using Perspex.Media;
     using Perspex.Styling;
 
@@ -22,7 +23,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Control.FocusAdornerProperty, new AdornerTemplate(this.Template)),
+                        new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(this.Template)),
                     },
                 },
             });

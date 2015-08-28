@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
                         new Setter(DropDown.TemplateProperty, new ControlTemplate<DropDown>(this.Template)),
                         new Setter(DropDown.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(DropDown.BorderThicknessProperty, 2.0),
-                        new Setter(DropDown.FocusAdornerProperty, new AdornerTemplate(FocusAdornerTemplate)),
+                        new Setter(DropDown.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
                         new Setter(DropDown.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(DropDown.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
