@@ -32,9 +32,9 @@ namespace Perspex.Direct2D1.RenderTests
         public TestBase(string outputPath)
         {
 #if PERSPEX_CAIRO
-            string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Cairo");
+            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Cairo");
 #else
-            string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Direct2D1");
+            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Direct2D1");
 #endif
             this.OutputPath = Path.Combine(testFiles, outputPath);
         }

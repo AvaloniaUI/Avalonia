@@ -1,15 +1,28 @@
-Installing Portable Class Libraries
-===================================
+Compiling Perspex on Ubuntu
+---------------------------
 
-Microsoft's PCLs are here in an installer that needs to be run on a Windows 
-machine:
+Written for Ubuntu 15.04.
 
-    http://www.microsoft.com/en-us/download/details.aspx?id=40727
+Install Latest Mono
+-------------------
 
-But someone has made available a .zip here:
+Add mono package sources by following instructions at:
 
-    https://www.dropbox.com/s/sf5fclzf2d1spfn/PortableReferenceAssemblies.zip?dl=0
+http://www.mono-project.com/docs/getting-started/install/linux/#debian-ubuntu-and-derivatives
 
-Copy them to:
+Then install the needed packages:
 
-    /usr/lib/mono/xbuild-frameworks/.NETPortable
+    sudo apt-get install git mono-devel referenceassemblies-pcl monodevelop
+
+Clone the Perspex repository
+----------------------------
+
+    git clone https://github.com/grokys/Perspex.git
+   
+Load the Project in MonoDevelop
+-------------------------------
+
+Start MonoDevelop and open the `Perspex-Mono.sln` solution. Wait for MonoDevelop to install the
+project's NuGet packages.
+
+Set the TestApplication-Mono project as the startup project and click Run.

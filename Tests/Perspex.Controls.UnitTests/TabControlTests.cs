@@ -72,7 +72,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
-        public void Logical_Child_Should_Be_SelectedContent()
+        public void Logical_Child_Should_Be_Selected_Tab_Content()
         {
             var target = new TabControl
             {
@@ -143,8 +143,8 @@ namespace Perspex.Controls.UnitTests
                     {
                         Name = "tabStrip",
                         Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
-                        [~TabStrip.ItemsProperty] = parent[~TabControl.ItemsProperty],
-                        [~~TabStrip.SelectedTabProperty] = parent[~~TabControl.SelectedTabProperty]
+                        [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                        [!!TabStrip.SelectedTabProperty] = parent[!!TabControl.SelectedTabProperty]
                     },
                     new Deck
                     {
@@ -154,8 +154,8 @@ namespace Perspex.Controls.UnitTests
                         {
                             new DataTemplate<TabItem>(x => (Control)parent.MaterializeDataTemplate(x.Content)),
                         },
-                        [~Deck.ItemsProperty] = parent[~TabControl.ItemsProperty],
-                        [~Deck.SelectedItemProperty] = parent[~TabControl.SelectedItemProperty],
+                        [!Deck.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                        [!Deck.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
                     }
                 }
             };
@@ -175,9 +175,9 @@ namespace Perspex.Controls.UnitTests
             return new DeckPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
-                [~DeckPresenter.SelectedIndexProperty] = control[~Deck.SelectedIndexProperty],
+                [!ItemsPresenter.ItemsProperty] = control[!Deck.ItemsProperty],
+                [!ItemsPresenter.ItemsPanelProperty] = control[!Deck.ItemsPanelProperty],
+                [!DeckPresenter.SelectedIndexProperty] = control[!Deck.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }
