@@ -1,4 +1,4 @@
-namespace Perspex.Xaml.Desktop
+namespace Perspex.Xaml.Context
 {
     using OmniXaml;
     using OmniXaml.ObjectAssembler;
@@ -9,6 +9,11 @@ namespace Perspex.Xaml.Desktop
     public class PerspexParserFactory : IXamlParserFactory
     {
         private readonly IWiringContext wiringContext;
+
+        public PerspexParserFactory()
+            : this(new TypeFactory())
+        {
+        }
 
         public PerspexParserFactory(ITypeFactory typeFactory)
         {

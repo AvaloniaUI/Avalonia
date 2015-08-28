@@ -1,21 +1,12 @@
-﻿#if PERSPEX_GTK
-using Perspex.Gtk;
-#endif
-
-namespace XamlTestApplication
+﻿namespace XamlTestApplication
 {
     using System;
     using System.Diagnostics;
     using System.Windows.Threading;
-    using Glass;
-    using OmniXaml.AppServices.Mvvm;
-    using OmniXaml.AppServices.NetCore;
     using Perspex;
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Xaml.Desktop;
     using ReactiveUI;
     using Views;
 
