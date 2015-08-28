@@ -26,10 +26,8 @@ copy ..\src\Perspex.Styling\bin\Release\Perspex.Styling.dll %lib%
 copy ..\src\Perspex.Styling\bin\Release\Perspex.Styling.xml %lib%
 copy ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.dll %lib%
 copy ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.xml %lib%
-copy ..\src\Markup\Perspex.Xaml\bin\Release\Perspex.Xaml.dll %lib%
-copy ..\src\Markup\Perspex.Xaml\bin\Release\Perspex.Xaml.xml %lib%
-copy ..\src\Markup\Perspex.Xaml.Desktop\bin\Release\Perspex.Xaml.Desktop.dll %lib%
-copy ..\src\Markup\Perspex.Xaml.Desktop\bin\Release\Perspex.Xaml.Desktop.xml %lib%
+copy ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.dll %lib%
+copy ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.xml %lib%
 copy ..\src\NGenerics\bin\Release\NGenerics.dll %lib%
 
 copy ..\src\Windows\Perspex.Direct2D1\bin\Release\Perspex.Direct2D1.dll %build%

@@ -1,2 +1,7 @@
-lib/
+- build/
+
+**/lib/**/*.dll
+**/lib/**/*.xml
+**/build/**/*.dll
+**/build/**/*.xml
 *.nupkg

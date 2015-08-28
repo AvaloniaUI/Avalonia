@@ -15,8 +15,6 @@
     <dependencies>
       <dependency id="Glass" version="1.4.4.0" />
       <dependency id="OmniXaml" version="1.4.4.0" />
-      <dependency id="OmniXaml.AppServices" version="1.4.4.0" />
-      <dependency id="OmniXaml.AppServices.NetCore" version="1.4.4.0" />
       <dependency id="reactiveui" version="6.5.0" />
       <dependency id="reactiveui-core" version="6.5.0" />
       <dependency id="Serilog" version="1.5.9" />
