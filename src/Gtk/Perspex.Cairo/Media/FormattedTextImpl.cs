@@ -92,7 +92,7 @@ namespace Perspex.Cairo.Media
             return this.Layout.IndexToPos(index).ToPerspex();
         }
 
-        public IEnumerable<Rect> HitTestTextRange(int index, int length, Point origin)
+        public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
             var ranges = new List<Rect>();
         

@@ -12,7 +12,7 @@ namespace Perspex.Cairo
     {
         public static Cairo.Matrix ToCairo(this Matrix m)
         {
-            return new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
+            return new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
         }
 
         public static Cairo.PointD ToCairo(this Point p)

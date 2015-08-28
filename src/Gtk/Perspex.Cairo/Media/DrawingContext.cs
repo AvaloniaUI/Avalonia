@@ -15,7 +15,6 @@ namespace Perspex.Cairo.Media
     using IBitmap = Perspex.Media.Imaging.IBitmap;
     using System.Collections.Generic;
 
-
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
