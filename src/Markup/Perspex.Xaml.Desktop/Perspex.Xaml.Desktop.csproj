@@ -121,10 +121,8 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="PerspexInflatableTypeFactory.cs" />
     <Compile Include="PerspexParserFactory.cs" />
     <Compile Include="PerspexWindow.cs" />
-    <Compile Include="PerspexXamlLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="InflatableResourceTranslator.cs" />
   </ItemGroup>
