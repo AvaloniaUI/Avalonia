@@ -316,11 +316,23 @@ namespace Perspex.Controls
             this.SetValue(ParentProperty, parent);
         }
 
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property is true.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="className">The pseudo-class.</param>
         protected static void PseudoClass(PerspexProperty<bool> property, string className)
         {
             PseudoClass(property, x => x, className);
         }
 
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property equals a certain value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="selector">Returns a boolean value based on the property value.</param>
+        /// <param name="className">The pseudo-class.</param>
         protected static void PseudoClass<T>(
             PerspexProperty<T> property,
             Func<T, bool> selector,
@@ -404,6 +416,10 @@ namespace Perspex.Controls
             styler.ApplyStyles(this);
         }
 
+        /// <summary>
+        /// Makes the control use a different control's logical children as its own.
+        /// </summary>
+        /// <param name="collection">The logical children to use.</param>
         protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
         {
             this.logicalChildren = collection;

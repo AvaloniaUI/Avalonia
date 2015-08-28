@@ -14,29 +14,60 @@ namespace Perspex.Controls
     using Perspex.Rendering;
     using Perspex.VisualTree;
 
+    /// <summary>
+    /// Defines how a <see cref="Button"/> reacts to clicks.
+    /// </summary>
     public enum ClickMode
     {
+        /// <summary>
+        /// The <see cref="Button.Click"/> event is raised when the pointer is released.
+        /// </summary>
         Release,
+
+        /// <summary>
+        /// The <see cref="Button.Click"/> event is raised when the pointer is pressed.
+        /// </summary>
         Press,
     }
 
+    /// <summary>
+    /// A button control.
+    /// </summary>
     public class Button : ContentControl
     {
+        /// <summary>
+        /// Defines the <see cref="ClickMode"/> property.
+        /// </summary>
         public static readonly PerspexProperty<ClickMode> ClickModeProperty =
-            PerspexProperty.Register<Button, ClickMode>("ClickMode");
+            PerspexProperty.Register<Button, ClickMode>(nameof(ClickMode));
 
+        /// <summary>
+        /// Defines the <see cref="Command"/> property.
+        /// </summary>
         public static readonly PerspexProperty<ICommand> CommandProperty =
-            PerspexProperty.Register<Button, ICommand>("Command");
+            PerspexProperty.Register<Button, ICommand>(nameof(Command));
 
+        /// <summary>
+        /// Defines the <see cref="CommandParameter"/> property.
+        /// </summary>
         public static readonly PerspexProperty<object> CommandParameterProperty =
-            PerspexProperty.Register<Button, object>("CommandParameter");
+            PerspexProperty.Register<Button, object>(nameof(CommandParameter));
 
+        /// <summary>
+        /// Defines the <see cref="IsDefaultProperty"/> property.
+        /// </summary>
         public static readonly PerspexProperty<bool> IsDefaultProperty =
-            PerspexProperty.Register<Button, bool>("IsDefault");
+            PerspexProperty.Register<Button, bool>(nameof(IsDefault));
 
+        /// <summary>
+        /// Defines the <see cref="Click"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Initializes static members of the <see cref="Button"/> class.
+        /// </summary>
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
@@ -45,46 +76,65 @@ namespace Perspex.Controls
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
         }
 
+        /// <summary>
+        /// Raised when the user clicks the button.
+        /// </summary>
         public event EventHandler<RoutedEventArgs> Click
         {
             add { this.AddHandler(ClickEvent, value); }
             remove { this.RemoveHandler(ClickEvent, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating how the <see cref="Button"/> should react to clicks.
+        /// </summary>
         public ClickMode ClickMode
         {
             get { return this.GetValue(ClickModeProperty); }
             set { this.SetValue(ClickModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets an <see cref="ICommand"/> to be invoked when the button is clicked.
+        /// </summary>
         public ICommand Command
         {
             get { return this.GetValue(CommandProperty); }
             set { this.SetValue(CommandProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a parameter to be passed to the <see cref="Command"/>.
+        /// </summary>
         public object CommandParameter
         {
             get { return this.GetValue(CommandParameterProperty); }
             set { this.SetValue(CommandParameterProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the button is the default button for the
+        /// window.
+        /// </summary>
         public bool IsDefault
         {
             get { return this.GetValue(IsDefaultProperty); }
             set { this.SetValue(IsDefaultProperty, value); }
         }
 
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(availableSize);
         }
 
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
             return base.ArrangeOverride(finalSize);
         }
 
+        /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
@@ -100,6 +150,7 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -120,6 +171,7 @@ namespace Perspex.Controls
             base.OnKeyDown(e);
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             if (e.Key == Key.Space)
@@ -133,6 +185,7 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
             base.OnDetachedFromVisualTree(oldRoot);
@@ -148,6 +201,10 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Invokes the <see cref="Click"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
             if (this.Command != null)
@@ -156,6 +213,7 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -170,6 +228,7 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerEventArgs e)
         {
             base.OnPointerReleased(e);
@@ -184,6 +243,10 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="Command"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         private static void CommandChanged(PerspexPropertyChangedEventArgs e)
         {
             var button = e.Sender as Button;
@@ -207,6 +270,10 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="IsDefault"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         private static void IsDefaultChanged(PerspexPropertyChangedEventArgs e)
         {
             var button = e.Sender as Button;
@@ -227,6 +294,11 @@ namespace Perspex.Controls
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object sender, EventArgs e)
         {
             // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
@@ -234,16 +306,27 @@ namespace Perspex.Controls
             this.IsEnabled = this.Command == null || this.Command.CanExecute(this.CommandParameter);
         }
 
+        /// <summary>
+        /// Starts listening for the Enter key when the button <see cref="IsDefault"/>.
+        /// </summary>
+        /// <param name="root">The input root.</param>
         private void ListenForDefault(IInputElement root)
         {
             root.AddHandler(InputElement.KeyDownEvent, this.RootKeyDown);
         }
 
+        /// <summary>
+        /// Stops listening for the Enter key when the button is no longer <see cref="IsDefault"/>.
+        /// </summary>
+        /// <param name="root">The input root.</param>
         private void StopListeningForDefault(IInputElement root)
         {
             root.RemoveHandler(InputElement.KeyDownEvent, this.RootKeyDown);
         }
 
+        /// <summary>
+        /// Raises the <see cref="Click"/> event.
+        /// </summary>
         private void RaiseClickEvent()
         {
             RoutedEventArgs click = new RoutedEventArgs
@@ -254,6 +337,11 @@ namespace Perspex.Controls
             this.RaiseEvent(click);
         }
 
+        /// <summary>
+        /// Called when a key is pressed on the input root and the button <see cref="IsDefault"/>.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
         private void RootKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && this.IsVisible && this.IsEnabled)
