@@ -6,12 +6,11 @@
     using System.Reflection;
     using System.Resources;
     using OmniXaml;
-    using OmniXaml.AppServices.Mvvm;
+    using Perspex.Controls;
     using Perspex.Diagnostics;
     using Perspex.Xaml.Desktop;
 
-    [ViewToken("Main", typeof(MainWindow))]
-    public class MainWindow : PerspexWindow
+    public class MainWindow : Window
     {
         public MainWindow()
         {

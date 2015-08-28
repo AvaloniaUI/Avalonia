@@ -1,11 +1,10 @@
 namespace Perspex.Xaml.Desktop
 {
-    using Context;
-    using HighLevel;
     using OmniXaml;
     using OmniXaml.ObjectAssembler;
     using OmniXaml.Parsers.ProtoParser;
     using OmniXaml.Parsers.XamlNodes;
+    using Perspex.Xaml.Context;
 
     public class PerspexParserFactory : IXamlParserFactory
     {
@@ -13,7 +12,7 @@ namespace Perspex.Xaml.Desktop
 
         public PerspexParserFactory(ITypeFactory typeFactory)
         {
-            wiringContext = PerspexWiringContextFactory.GetContext(typeFactory);
+            wiringContext = new PerspexWiringContext(typeFactory);
         }
 
         public IXamlParser CreateForReadingFree()

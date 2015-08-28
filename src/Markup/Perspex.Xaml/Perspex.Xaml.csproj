@@ -38,9 +38,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Converters\ThicknessConverter.cs" />
-    <Compile Include="HighLevel\PerspexObjectAssemblerFactory.cs" />
-    <Compile Include="HighLevel\PerspexLoaderFactory.cs" />
-    <Compile Include="HighLevel\IResourceProvider.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushConverter.cs" />
@@ -50,6 +47,7 @@
     <Compile Include="DataBinding\ChangeTracking\PropertyMountPoint.cs" />
     <Compile Include="DataBinding\ChangeTracking\PropertyPath.cs" />
     <Compile Include="DataBinding\ChangeTracking\TargettedProperty.cs" />
+    <Compile Include="PerspexParserFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataBinding\DataContextChangeSynchronizer.cs" />
     <Compile Include="DataBinding\IPerspexPropertyBinder.cs" />
