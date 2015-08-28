@@ -69,7 +69,9 @@ namespace Perspex.Controls
 
             if (this.Presenter != null && this.Presenter.Panel != null)
             {
-                KeyboardNavigation.SetTabOnceActiveElement(this.Presenter.Panel, selectedContainer);
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    (InputElement)this.Presenter.Panel, 
+                    selectedContainer);
             }
 
             foreach (var item in containers)

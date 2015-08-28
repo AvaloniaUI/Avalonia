@@ -325,7 +325,9 @@ namespace Perspex.Controls.Primitives
                 var inputElement = container as IInputElement;
                 if (inputElement != null && this.Presenter != null && this.Presenter.Panel != null)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(this.Presenter.Panel, inputElement);
+                    KeyboardNavigation.SetTabOnceActiveElement(
+                        (InputElement)this.Presenter.Panel, 
+                        inputElement);
                 }
             }
         }

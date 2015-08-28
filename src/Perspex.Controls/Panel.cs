@@ -19,7 +19,7 @@ namespace Perspex.Controls
     /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
     /// collection. All children are layed out to fill the panel.
     /// </remarks>
-    public class Panel : Control, IReparentingControl
+    public class Panel : Control, IReparentingControl, IPanel
     {
         private Controls children = new Controls();
 

@@ -8,6 +8,6 @@ namespace Perspex.Controls.Presenters
 {
     public interface IItemsPresenter : IPresenter
     {
-        Panel Panel { get; }
+        IPanel Panel { get; }
     }
 }

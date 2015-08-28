@@ -137,7 +137,7 @@ namespace Perspex.Controls.UnitTests.Presenters
             var panel = new Panel();
             var target = new ItemsPresenter
             {
-                ItemsPanel = new FuncTemplate<Panel>(() => panel),
+                ItemsPanel = new FuncTemplate<IPanel>(() => panel),
             };
 
             target.ApplyTemplate();
@@ -152,7 +152,7 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.Equal(KeyboardNavigationMode.Once, KeyboardNavigation.GetTabNavigation(target.Panel));
+            Assert.Equal(KeyboardNavigationMode.Once, KeyboardNavigation.GetTabNavigation((InputElement)target.Panel));
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Perspex.Controls.UnitTests.Presenters
             KeyboardNavigation.SetTabNavigation(target, KeyboardNavigationMode.Cycle);
             target.ApplyTemplate();
 
-            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(target.Panel));
+            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation((InputElement)target.Panel));
         }
 
         [Fact]

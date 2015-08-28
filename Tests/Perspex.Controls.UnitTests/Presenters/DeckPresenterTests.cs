@@ -18,7 +18,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             var target = new DeckPresenter
             {
-                ItemsPanel = new FuncTemplate<Panel>(() => new Panel()),
+                ItemsPanel = new FuncTemplate<IPanel>(() => new Panel()),
             };
 
             target.ApplyTemplate();

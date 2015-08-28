@@ -24,8 +24,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
         /// </summary>
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
+        private static readonly ITemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.

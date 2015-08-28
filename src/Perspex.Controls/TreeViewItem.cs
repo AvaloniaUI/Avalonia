@@ -33,8 +33,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel
+        private static readonly ITemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
             });
