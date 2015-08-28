@@ -44,6 +44,7 @@ namespace Perspex.Gtk
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
+            locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
         }
 
         public bool HasMessages()
