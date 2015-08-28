@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Perspex.Markup.Xaml.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
@@ -39,6 +40,7 @@
     </Compile>
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushConverter.cs" />
     <Compile Include="Converters\BitmapConverter.cs" />
@@ -151,6 +153,9 @@
       <HintPath>..\..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
