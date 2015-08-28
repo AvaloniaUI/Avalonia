@@ -173,63 +173,63 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
+    <ProjectReference Include="..\src\NGenerics\NGenerics.csproj">
       <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
       <Name>NGenerics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
+    <ProjectReference Include="..\src\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Application\Perspex.Application.csproj">
+    <ProjectReference Include="..\src\Perspex.Application\Perspex.Application.csproj">
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
       <Name>Perspex.Application</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\src\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Controls\Perspex.Controls.csproj">
+    <ProjectReference Include="..\src\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Perspex.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
+    <ProjectReference Include="..\src\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Perspex.Input</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+    <ProjectReference Include="..\src\Perspex.Interactivity\Perspex.Interactivity.csproj">
       <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
       <Name>Perspex.Interactivity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Layout\Perspex.Layout.csproj">
+    <ProjectReference Include="..\src\Perspex.Layout\Perspex.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+    <ProjectReference Include="..\src\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Styling\Perspex.Styling.csproj">
+    <ProjectReference Include="..\src\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
+    <ProjectReference Include="..\src\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Xaml.Desktop\Perspex.Xaml.Desktop.csproj">
+    <ProjectReference Include="..\src\Markup\Perspex.Xaml.Desktop\Perspex.Xaml.Desktop.csproj">
       <Project>{eb468c39-aac4-4963-a7b2-0a405ea63edd}</Project>
       <Name>Perspex.Xaml.Desktop</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Xaml\Perspex.Xaml.csproj">
+    <ProjectReference Include="..\src\Markup\Perspex.Xaml\Perspex.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Perspex.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
+    <ProjectReference Include="..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
       <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
       <Name>Perspex.Direct2D1</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Windows\Perspex.Win32\Perspex.Win32.csproj">
+    <ProjectReference Include="..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
       <Name>Perspex.Win32</Name>
     </ProjectReference>
