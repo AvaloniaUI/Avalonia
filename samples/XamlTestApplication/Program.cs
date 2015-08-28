@@ -17,6 +17,7 @@ namespace XamlTestApplication
     using Perspex.Input;
     using Perspex.Xaml.Desktop;
     using ReactiveUI;
+    using Views;
 
     class Item
     {
@@ -55,12 +56,7 @@ namespace XamlTestApplication
             var testCommand = ReactiveCommand.Create();
             testCommand.Subscribe(_ => Debug.WriteLine("Test command executed."));
             
-            var typeFactory = new PerspexInflatableTypeFactory();
-
-            var viewFactory = new ViewFactory(typeFactory);
-            viewFactory.RegisterViews(ViewRegistration.FromTypes(Assemblies.AssembliesInAppFolder.AllExportedTypes()));
-
-            var window = (Window) viewFactory.GetWindow("Main");
+            var window = new MainWindow();
             window.Show();
             Application.Current.Run(window);
         }      

@@ -9,7 +9,15 @@
     {
         public MainWindow()
         {
+            this.InitializeComponent();
+
             DevTools.Attach(this);
+        }
+
+        private void InitializeComponent()
+        {
+            var loader = new PerspexXamlLoader(new PerspexInflatableTypeFactory());
+            loader.Load(this.GetType());
         }
     }
 }
