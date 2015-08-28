@@ -7,9 +7,10 @@
 namespace Perspex.Xaml
 {
     using System;
+    using System.Reflection;
     using OmniXaml;
-    using Platform;
     using Perspex.Xaml.Context;
+    using Platform;
     using Splat;
 
     public class PerspexXamlLoader : XamlLoader
@@ -22,6 +23,17 @@ namespace Perspex.Xaml
         public PerspexXamlLoader(IXamlParserFactory xamlParserFactory)
             : base(xamlParserFactory)
         {
+        }
+
+        public static void Load(object obj)
+        {
+            var loader = new PerspexXamlLoader();
+            loader.Load(obj.GetType(), obj);
+        }
+
+        public object Load(Type type, object rootInstance = null)
+        {
+            return this.Load(GetUriFor(type), rootInstance);
         }
 
         public object Load(Uri uri, object rootInstance = null)
@@ -38,6 +50,25 @@ namespace Perspex.Xaml
             {
                 return this.Load(stream, rootInstance);
             }
+        }
+
+        private static Uri GetUriFor(Type type)
+        {
+            if (type.Namespace != null)
+            {
+                var toRemove = type.GetTypeInfo().Assembly.GetName().Name;
+                var substracted = toRemove.Length < type.Namespace.Length ? type.Namespace.Remove(0, toRemove.Length + 1) : "";
+                var replace = substracted.Replace('.', '/');
+
+                if (replace != string.Empty)
+                {
+                    replace = replace + "/";
+                }
+
+                return new Uri(replace + type.Name + ".xaml", UriKind.Relative);
+            }
+
+            return null;
         }
     }
 }

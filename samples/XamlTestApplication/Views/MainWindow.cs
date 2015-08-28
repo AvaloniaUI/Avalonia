@@ -21,8 +21,7 @@
 
         private void InitializeComponent()
         {
-            var xamlLoader = new PerspexXamlLoader();
-            xamlLoader.Load(new Uri("Views/MainWindow.xaml", UriKind.Relative), this);
+            PerspexXamlLoader.Load(this);
         }
     }
 }
