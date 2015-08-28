@@ -1,15 +1,27 @@
 ﻿namespace XamlTestApplication.Views
 {
-    using OmniXaml.AppServices.Mvvm;
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using System.Reflection;
+    using System.Resources;
+    using OmniXaml;
+    using Perspex.Controls;
     using Perspex.Diagnostics;
-    using Perspex.Xaml.Desktop;
+    using Perspex.Markup.Xaml;
 
-    [ViewToken("Main", typeof(MainWindow))]
-    public class MainWindow : PerspexWindow
+    public class MainWindow : Window
     {
         public MainWindow()
         {
+            this.InitializeComponent();
+
             DevTools.Attach(this);
+        }
+
+        private void InitializeComponent()
+        {
+            PerspexXamlLoader.Load(this);
         }
     }
 }

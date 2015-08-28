@@ -1,22 +1,14 @@
-﻿#if PERSPEX_GTK
-using Perspex.Gtk;
-#endif
-
-namespace XamlTestApplication
+﻿namespace XamlTestApplication
 {
     using System;
     using System.Diagnostics;
     using System.Windows.Threading;
-    using Glass;
-    using OmniXaml.AppServices.Mvvm;
-    using OmniXaml.AppServices.NetCore;
     using Perspex;
     using Perspex.Collections;
     using Perspex.Controls;
     using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Xaml.Desktop;
     using ReactiveUI;
+    using Views;
 
     class Item
     {
@@ -55,12 +47,7 @@ namespace XamlTestApplication
             var testCommand = ReactiveCommand.Create();
             testCommand.Subscribe(_ => Debug.WriteLine("Test command executed."));
             
-            var typeFactory = new PerspexInflatableTypeFactory();
-
-            var viewFactory = new ViewFactory(typeFactory);
-            viewFactory.RegisterViews(ViewRegistration.FromTypes(Assemblies.AssembliesInAppFolder.AllExportedTypes()));
-
-            var window = (Window) viewFactory.GetWindow("Main");
+            var window = new MainWindow();
             window.Show();
             Application.Current.Run(window);
         }      

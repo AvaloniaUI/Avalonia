@@ -1,4 +1,7 @@
-﻿<Window Title="Perspex Test Application" Height="350" Width="525" xmlns="https://github.com/grokys/Perspex">
+﻿<Window x:Class="XamlTestApplication.MainWindow"
+        xmlns="https://github.com/grokys/Perspex"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        Title="Perspex Test Application" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
