@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="SourceBindingEndpoint.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.DataBinding
 {
     using System;
@@ -6,8 +12,11 @@ namespace Perspex.Markup.Xaml.DataBinding
     public class SourceBindingEndpoint
     {
         public Type PropertyType { get; }
+
         public INotifyPropertyChanged Source { get; }
+
         public dynamic PropertyGetter { get; }
+
         public Delegate PropertySetter { get; }
 
         public SourceBindingEndpoint(INotifyPropertyChanged source, Type propertyType, dynamic propertyGetter, Delegate propertySetter)
@@ -15,7 +24,7 @@ namespace Perspex.Markup.Xaml.DataBinding
             this.Source = source;
             this.PropertyType = propertyType;
             this.PropertyGetter = propertyGetter;
-            this.PropertySetter = propertySetter;          
+            this.PropertySetter = propertySetter;
         }
     }
 }

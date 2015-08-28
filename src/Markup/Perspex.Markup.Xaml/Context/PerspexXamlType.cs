@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexXamlType.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using System;
@@ -18,11 +24,11 @@ namespace Perspex.Markup.Xaml.Context
             this.propertyBinder = propertyBinder;
         }
 
-        protected IPerspexPropertyBinder PropertyBinder => propertyBinder;
+        protected IPerspexPropertyBinder PropertyBinder => this.propertyBinder;
 
         protected override XamlMember LookupMember(string name)
         {
-            return new PerspexXamlMember(name, this, TypeRepository, FeatureProvider, propertyBinder);
+            return new PerspexXamlMember(name, this, this.TypeRepository, this.FeatureProvider, this.propertyBinder);
         }
 
         public override string ToString()

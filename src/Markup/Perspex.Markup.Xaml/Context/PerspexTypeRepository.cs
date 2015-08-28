@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexTypeRepository.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using System;
@@ -23,7 +29,7 @@ namespace Perspex.Markup.Xaml.Context
         public override XamlType GetXamlType(Type type)
         {
             Guard.ThrowIfNull(type, nameof(type));
-            return new PerspexXamlType(type, this, typeFactory, FeatureProvider, propertyBinder);
+            return new PerspexXamlType(type, this, this.typeFactory, this.FeatureProvider, this.propertyBinder);
         }
     }
 }

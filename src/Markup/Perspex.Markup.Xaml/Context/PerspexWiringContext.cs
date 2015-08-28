@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexWiringContext.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using System.Collections.Generic;
@@ -29,7 +35,7 @@ namespace Perspex.Markup.Xaml.Context
             var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
             var xamlTypeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
             var typeContext = new TypeContext(xamlTypeRepository, xamlNamespaceRegistry, typeFactory);
-            context = new WiringContext(typeContext, featureProvider);
+            this.context = new WiringContext(typeContext, featureProvider);
         }
 
         private static XamlNamespaceRegistry CreateXamlNamespaceRegistry()
@@ -106,7 +112,8 @@ namespace Perspex.Markup.Xaml.Context
             return contentPropertyProvider;
         }
 
-        public ITypeContext TypeContext => context.TypeContext;
-        public ITypeFeatureProvider FeatureProvider => context.FeatureProvider;
+        public ITypeContext TypeContext => this.context.TypeContext;
+
+        public ITypeFeatureProvider FeatureProvider => this.context.FeatureProvider;
     }
 }

@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="TemplateContent.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Templates
 {
     using System.Collections.Generic;
@@ -18,9 +24,9 @@ namespace Perspex.Markup.Xaml.Templates
 
         public Control Load()
         {
-            var assembler = new PerspexObjectAssembler(context); 
+            var assembler = new PerspexObjectAssembler(this.context);
 
-            foreach (var xamlNode in nodes)
+            foreach (var xamlNode in this.nodes)
             {
                 assembler.Process(xamlNode);
             }

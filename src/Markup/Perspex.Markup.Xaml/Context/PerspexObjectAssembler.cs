@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.Context
+﻿// -----------------------------------------------------------------------
+// <copyright file="PerspexObjectAssembler.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.Context
 {
     using System;
     using OmniXaml;
@@ -15,21 +21,24 @@
             mapping.Map<XamlDataTemplate>(template => template.Content, new TemplateLoader());
 
             var assembler = new ObjectAssembler(wiringContext, new TopDownMemberValueContext(), objectAssemblerSettings);
-            objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
+            this.objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
         }
 
 
-        public object Result => objectAssembler.Result;
+        public object Result => this.objectAssembler.Result;
+
         public EventHandler<XamlSetValueEventArgs> XamlSetValueHandler { get; set; }
-        public IWiringContext WiringContext => objectAssembler.WiringContext;
+
+        public IWiringContext WiringContext => this.objectAssembler.WiringContext;
+
         public void Process(XamlInstruction node)
         {
-            objectAssembler.Process(node);
+            this.objectAssembler.Process(node);
         }
 
         public void OverrideInstance(object instance)
         {
-            objectAssembler.OverrideInstance(instance);
+            this.objectAssembler.OverrideInstance(instance);
         }
     }
 }

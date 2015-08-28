@@ -1,11 +1,16 @@
+// -----------------------------------------------------------------------
+// <copyright file="TargettedProperty.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
     using System;
     using System.Reflection;
-    using Controls;
     using Glass;
 
-    class TargettedProperty
+    internal class TargettedProperty
     {
         private readonly object instance;
         private readonly PropertyInfo propertyInfo;
@@ -21,14 +26,19 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
         public object Value
         {
-            get { return propertyInfo.GetValue(instance); }
+            get
+            {
+                return this.propertyInfo.GetValue(this.instance);
+            }
+
             set
             {
-                propertyInfo.SetValue(instance, value);
+                this.propertyInfo.SetValue(this.instance, value);
             }
         }
 
-        public Type PropertyType => propertyInfo.PropertyType;
-        public string Name => propertyInfo.Name;
+        public Type PropertyType => this.propertyInfo.PropertyType;
+
+        public string Name => this.propertyInfo.Name;
     }
 }

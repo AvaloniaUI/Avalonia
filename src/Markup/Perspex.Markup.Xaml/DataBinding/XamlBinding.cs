@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.DataBinding
+﻿// -----------------------------------------------------------------------
+// <copyright file="XamlBinding.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.DataBinding
 {
     using System;
     using System.Diagnostics;
@@ -10,8 +16,11 @@
         private readonly ITypeConverterProvider typeConverterProvider;
 
         public PerspexObject Target { get; set; }
+
         public PerspexProperty TargetProperty { get; set; }
+
         public PropertyPath SourcePropertyPath { get; set; }
+
         public BindingMode BindingMode { get; set; }
 
         public XamlBinding(ITypeConverterProvider typeConverterProvider)
@@ -28,34 +37,34 @@
 
             try
             {
-                if (BindingMode == BindingMode.TwoWay)
+                if (this.BindingMode == BindingMode.TwoWay)
                 {
                     var changeSynchronizer = new DataContextChangeSynchronizer(
-                        Target,
-                        TargetProperty,
-                        SourcePropertyPath,
+                        this.Target,
+                        this.TargetProperty,
+                        this.SourcePropertyPath,
                         dataContext,
-                        typeConverterProvider);
+                        this.typeConverterProvider);
 
                     changeSynchronizer.SubscribeUIToModel();
                     changeSynchronizer.SubscribeModelToUI();
                 }
 
-                if (BindingMode == BindingMode.OneWay)
+                if (this.BindingMode == BindingMode.OneWay)
                 {
                     var subscriptionHandler = new DataContextChangeSynchronizer(
-                        Target,
-                        TargetProperty,
-                        SourcePropertyPath,
+                        this.Target,
+                        this.TargetProperty,
+                        this.SourcePropertyPath,
                         dataContext,
-                        typeConverterProvider);
+                        this.typeConverterProvider);
 
-                    subscriptionHandler.SubscribeUIToModel();                
+                    subscriptionHandler.SubscribeUIToModel();
                 }
 
-                if (BindingMode == BindingMode.OneWayToSource)
+                if (this.BindingMode == BindingMode.OneWayToSource)
                 {
-                    var subscriptionHandler = new DataContextChangeSynchronizer(Target, TargetProperty, SourcePropertyPath, dataContext, typeConverterProvider);
+                    var subscriptionHandler = new DataContextChangeSynchronizer(this.Target, this.TargetProperty, this.SourcePropertyPath, dataContext, this.typeConverterProvider);
                     subscriptionHandler.SubscribeModelToUI();
                 }
             }

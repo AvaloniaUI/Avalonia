@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.MarkupExtensions
+﻿// -----------------------------------------------------------------------
+// <copyright file="TypeExtension.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.MarkupExtensions
 {
     using System;
     using Glass;
@@ -12,12 +18,12 @@
         public Type Type { get; set; }
 
         public TypeExtension()
-        {            
+        {
         }
 
         public TypeExtension(Type type)
         {
-            Type = type;
+            this.Type = type;
         }
 
         public string TypeName { get; set; }
@@ -34,12 +40,12 @@
 
         public override object ProvideValue(MarkupExtensionContext markupExtensionContext)
         {
-            if (Type != null)
+            if (this.Type != null)
             {
-                return Type;
+                return this.Type;
             }
 
-            return ResolveFromString(TypeName, markupExtensionContext.TypeRepository);
+            return this.ResolveFromString(this.TypeName, markupExtensionContext.TypeRepository);
         }
     }
 }

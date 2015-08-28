@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.DataBinding
+﻿// -----------------------------------------------------------------------
+// <copyright file="XamlBindingDefinition.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.DataBinding
 {
     using ChangeTracking;
     using Controls;
@@ -18,12 +24,12 @@
             this.bindingMode = bindingMode;
         }
 
-        public Control Target => target;
+        public Control Target => this.target;
 
-        public PerspexProperty TargetProperty => targetProperty;
+        public PerspexProperty TargetProperty => this.targetProperty;
 
-        public PropertyPath SourcePropertyPath => sourcePropertyPath;
+        public PropertyPath SourcePropertyPath => this.sourcePropertyPath;
 
-        public BindingMode BindingMode => bindingMode;
+        public BindingMode BindingMode => this.bindingMode;
     }
 }

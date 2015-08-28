@@ -35,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Perspex.Controls.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
@@ -45,6 +46,7 @@
     <Compile Include="IControl.cs" />
     <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
+    <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
     <Compile Include="Parsers\GridLengthsParser.cs" />
@@ -110,7 +112,6 @@
     <Compile Include="Image.cs" />
     <Compile Include="Generators\IItemContainerGenerator.cs" />
     <Compile Include="ItemsControl.cs" />
-    <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="Presenters\ItemsPresenter.cs" />
     <Compile Include="Panel.cs" />
     <Compile Include="Primitives\ScrollBarVisibility.cs" />

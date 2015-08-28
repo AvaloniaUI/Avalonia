@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexXamlMember.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using DataBinding;
@@ -20,7 +26,7 @@ namespace Perspex.Markup.Xaml.Context
 
         protected override IXamlMemberValuePlugin LookupXamlMemberValueConnector()
         {
-            return new PerspexXamlMemberValuePlugin(this, propertyBinder);
+            return new PerspexXamlMemberValuePlugin(this, this.propertyBinder);
         }
 
         public override string ToString()

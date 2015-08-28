@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PropertyPath.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
     public class PropertyPath
@@ -10,14 +16,14 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         }
 
         public PropertyPath(string path)
-        {        
-            chunks = path.Split('.');
+        {
+            this.chunks = path.Split('.');
         }
 
         public string[] Chunks
         {
-            get { return chunks; }
-            set { chunks = value; }
+            get { return this.chunks; }
+            set { this.chunks = value; }
         }
 
         public PropertyPath Clone()

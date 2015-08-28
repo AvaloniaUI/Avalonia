@@ -1,10 +1,15 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexParserFactory.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using OmniXaml;
     using OmniXaml.ObjectAssembler;
     using OmniXaml.Parsers.ProtoParser;
     using OmniXaml.Parsers.XamlNodes;
-    using Perspex.Markup.Xaml.Context;
 
     public class PerspexParserFactory : IXamlParserFactory
     {
@@ -17,22 +22,22 @@ namespace Perspex.Markup.Xaml.Context
 
         public PerspexParserFactory(ITypeFactory typeFactory)
         {
-            wiringContext = new PerspexWiringContext(typeFactory);
+            this.wiringContext = new PerspexWiringContext(typeFactory);
         }
 
         public IXamlParser CreateForReadingFree()
         {
-            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForUndefinedRoot();
+            var objectAssemblerForUndefinedRoot = this.GetObjectAssemblerForUndefinedRoot();
 
-            return CreateParser(objectAssemblerForUndefinedRoot);
+            return this.CreateParser(objectAssemblerForUndefinedRoot);
         }
 
         private IXamlParser CreateParser(IObjectAssembler objectAssemblerForUndefinedRoot)
         {
-            var xamlInstructionParser = new OrderAwareXamlInstructionParser(new XamlInstructionParser(wiringContext));
+            var xamlInstructionParser = new OrderAwareXamlInstructionParser(new XamlInstructionParser(this.wiringContext));
 
             var phaseParserKit = new PhaseParserKit(
-                new XamlProtoInstructionParser(wiringContext),
+                new XamlProtoInstructionParser(this.wiringContext),
                 xamlInstructionParser,
                 objectAssemblerForUndefinedRoot);
 
@@ -41,19 +46,19 @@ namespace Perspex.Markup.Xaml.Context
 
         private IObjectAssembler GetObjectAssemblerForUndefinedRoot()
         {
-            return new ObjectAssembler(wiringContext, new TopDownMemberValueContext());
+            return new ObjectAssembler(this.wiringContext, new TopDownMemberValueContext());
         }
 
         public IXamlParser CreateForReadingSpecificInstance(object rootInstance)
         {
-            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForSpecificRoot(rootInstance);
+            var objectAssemblerForUndefinedRoot = this.GetObjectAssemblerForSpecificRoot(rootInstance);
 
-            return CreateParser(objectAssemblerForUndefinedRoot);
+            return this.CreateParser(objectAssemblerForUndefinedRoot);
         }
 
         private IObjectAssembler GetObjectAssemblerForSpecificRoot(object rootInstance)
         {
-            return new PerspexObjectAssembler(wiringContext, new ObjectAssemblerSettings { RootInstance = rootInstance });
+            return new PerspexObjectAssembler(this.wiringContext, new ObjectAssemblerSettings { RootInstance = rootInstance });
         }
     }
 }

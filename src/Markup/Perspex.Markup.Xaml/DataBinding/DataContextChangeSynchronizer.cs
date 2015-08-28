@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="DataContextChangeSynchronizer.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.DataBinding
 {
     using System;
@@ -23,17 +29,17 @@ namespace Perspex.Markup.Xaml.DataBinding
             Guard.ThrowIfNull(source, nameof(source));
             Guard.ThrowIfNull(typeConverterProvider, nameof(typeConverterProvider));
 
-            bindingEndpoint = new TargetBindingEndpoint(target, targetProperty);
-            sourceEndpoint = new ObservablePropertyBranch(source, sourcePropertyPath);
-            targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(targetProperty.PropertyType);
+            this.bindingEndpoint = new TargetBindingEndpoint(target, targetProperty);
+            this.sourceEndpoint = new ObservablePropertyBranch(source, sourcePropertyPath);
+            this.targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(targetProperty.PropertyType);
         }
 
         private bool CanAssignWithoutConversion
         {
             get
             {
-                var sourceTypeInfo = sourceEndpoint.Type.GetTypeInfo();
-                var targetTypeInfo = bindingEndpoint.Property.PropertyType.GetTypeInfo();
+                var sourceTypeInfo = this.sourceEndpoint.Type.GetTypeInfo();
+                var targetTypeInfo = this.bindingEndpoint.Property.PropertyType.GetTypeInfo();
                 var compatible = targetTypeInfo.IsAssignableFrom(sourceTypeInfo);
                 return compatible;
             }
@@ -41,19 +47,19 @@ namespace Perspex.Markup.Xaml.DataBinding
 
         public void SubscribeModelToUI()
         {
-            bindingEndpoint.Object.GetObservable(bindingEndpoint.Property).Subscribe(UpdateModelFromUI);
-        } 
+            this.bindingEndpoint.Object.GetObservable(this.bindingEndpoint.Property).Subscribe(this.UpdateModelFromUI);
+        }
 
         public void SubscribeUIToModel()
         {
-            sourceEndpoint.Changed.Subscribe(_ => UpdateUIFromModel());
-            UpdateUIFromModel();
+            this.sourceEndpoint.Changed.Subscribe(_ => this.UpdateUIFromModel());
+            this.UpdateUIFromModel();
         }
 
         private void UpdateUIFromModel()
         {
-            object contextGetter = sourceEndpoint.Value;
-            SetCompatibleValue(contextGetter, bindingEndpoint.Property.PropertyType, o => bindingEndpoint.Object.SetValue(bindingEndpoint.Property, o));
+            object contextGetter = this.sourceEndpoint.Value;
+            this.SetCompatibleValue(contextGetter, this.bindingEndpoint.Property.PropertyType, o => this.bindingEndpoint.Object.SetValue(this.bindingEndpoint.Property, o));
         }
 
         private void SetCompatibleValue(object originalValue, Type targetType, Action<object> setValueFunc)
@@ -64,7 +70,7 @@ namespace Perspex.Markup.Xaml.DataBinding
             }
             else
             {
-                if (CanAssignWithoutConversion)
+                if (this.CanAssignWithoutConversion)
                 {
                     setValueFunc(originalValue);
                 }
@@ -72,11 +78,11 @@ namespace Perspex.Markup.Xaml.DataBinding
                 {
                     var synchronizationOk = false;
 
-                    if (targetPropertyTypeConverter != null)
+                    if (this.targetPropertyTypeConverter != null)
                     {
-                        if (targetPropertyTypeConverter.CanConvertTo(null, targetType))
+                        if (this.targetPropertyTypeConverter.CanConvertTo(null, targetType))
                         {
-                            object convertedValue = targetPropertyTypeConverter.ConvertTo(null, CultureInfo.InvariantCulture, originalValue,
+                            object convertedValue = this.targetPropertyTypeConverter.ConvertTo(null, CultureInfo.InvariantCulture, originalValue,
                                 targetType);
 
                             if (convertedValue != null)
@@ -89,7 +95,7 @@ namespace Perspex.Markup.Xaml.DataBinding
 
                     if (!synchronizationOk)
                     {
-                        LogCannotConvertError(originalValue);
+                        this.LogCannotConvertError(originalValue);
                     }
                 }
             }
@@ -97,7 +103,7 @@ namespace Perspex.Markup.Xaml.DataBinding
 
         private void UpdateModelFromUI(object valueFromUI)
         {
-            SetCompatibleValue(valueFromUI, sourceEndpoint.Type, o => sourceEndpoint.Value = o);
+            this.SetCompatibleValue(valueFromUI, this.sourceEndpoint.Type, o => this.sourceEndpoint.Value = o);
         }
 
         private void LogCannotConvertError(object value)
@@ -107,7 +113,7 @@ namespace Perspex.Markup.Xaml.DataBinding
             var loggableValue = value.ToString();
             var valueToWrite = string.IsNullOrWhiteSpace(loggableValue) ? "'(empty/whitespace string)'" : loggableValue;
 
-            Debug.WriteLine("Cannot convert value {0} ({1}) to {2}", valueToWrite, value.GetType(), bindingEndpoint.Property.PropertyType);
-        }        
+            Debug.WriteLine("Cannot convert value {0} ({1}) to {2}", valueToWrite, value.GetType(), this.bindingEndpoint.Property.PropertyType);
+        }
     }
 }

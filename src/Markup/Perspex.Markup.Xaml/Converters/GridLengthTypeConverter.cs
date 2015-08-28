@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.Converters
+﻿// -----------------------------------------------------------------------
+// <copyright file="GridLengthTypeConverter.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.Converters
 {
     using System;
     using System.Globalization;

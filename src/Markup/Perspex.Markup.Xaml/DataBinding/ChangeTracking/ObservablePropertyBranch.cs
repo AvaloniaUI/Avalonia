@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="ObservablePropertyBranch.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
     using System;
@@ -21,9 +27,9 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
             this.root = root;
             this.propertyPath = propertyPath;
-            mountPoint = new PropertyMountPoint(root, propertyPath);
-            var subscriptions = GetInpcNodes();
-            Changed = CreateObservableFromNodes(subscriptions);
+            this.mountPoint = new PropertyMountPoint(root, propertyPath);
+            var subscriptions = this.GetInpcNodes();
+            this.Changed = this.CreateObservableFromNodes(subscriptions);
         }
 
         private IObservable<object> CreateObservableFromNodes(IEnumerable<InpcNode> subscriptions)
@@ -32,14 +38,14 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
                 subscription => Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
                     ev => subscription.Parent.PropertyChanged += ev,
                     handler => subscription.Parent.PropertyChanged -= handler)
-                    .Do(_ => mountPoint = new PropertyMountPoint(root, propertyPath))
-                    .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName))                    
+                    .Do(_ => this.mountPoint = new PropertyMountPoint(this.root, this.propertyPath))
+                    .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName))
                     .Merge();
         }
 
         private IEnumerable<InpcNode> GetInpcNodes()
         {
-            return GetSubscriptionsRecursive(root, propertyPath, 0);
+            return this.GetSubscriptionsRecursive(this.root, this.propertyPath, 0);
         }
 
         private IEnumerable<InpcNode> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
@@ -60,7 +66,7 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
                 var currentObjectTypeInfo = current.GetType().GetTypeInfo();
                 var nextProperty = currentObjectTypeInfo.GetDeclaredProperty(nextPropertyName);
                 var nextInstance = nextProperty.GetValue(current);
-                subscriptions.AddRange(GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+                subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
             }
 
             return subscriptions;
@@ -72,25 +78,27 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         {
             get
             {
-                return mountPoint.Value;
+                return this.mountPoint.Value;
             }
+
             set
             {
-                mountPoint.Value = value;
+                this.mountPoint.Value = value;
             }
         }
 
-        public Type Type => mountPoint.ProperyType;
+        public Type Type => this.mountPoint.ProperyType;
 
         private class InpcNode
         {
             public InpcNode(INotifyPropertyChanged parent, string propertyName)
             {
-                Parent = parent;
-                PropertyName = propertyName;
+                this.Parent = parent;
+                this.PropertyName = propertyName;
             }
 
             public INotifyPropertyChanged Parent { get; }
+
             public string PropertyName { get; }
         }
     }

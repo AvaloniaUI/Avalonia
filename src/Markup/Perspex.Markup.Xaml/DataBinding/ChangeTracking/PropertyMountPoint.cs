@@ -1,4 +1,10 @@
-﻿namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
+﻿// -----------------------------------------------------------------------
+// <copyright file="PropertyMountPoint.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
     using System;
     using System.Reflection;
@@ -9,7 +15,7 @@
         private readonly TargettedProperty referencedTargettedProperty;
 
         public PropertyMountPoint(object origin, PropertyPath propertyPath)
-        {   
+        {
             Guard.ThrowIfNull(origin, nameof(origin));
             Guard.ThrowIfNull(propertyPath, nameof(propertyPath));
 
@@ -35,14 +41,15 @@
         {
             get
             {
-                return referencedTargettedProperty.Value;
+                return this.referencedTargettedProperty.Value;
             }
+
             set
             {
-                referencedTargettedProperty.Value = value;
+                this.referencedTargettedProperty.Value = value;
             }
         }
 
-        public Type ProperyType => referencedTargettedProperty.PropertyType;
+        public Type ProperyType => this.referencedTargettedProperty.PropertyType;
     }
 }

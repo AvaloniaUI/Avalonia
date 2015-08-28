@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+// <copyright file="PerspexXamlMemberValuePlugin.cs" company="Steven Kirk">
+// Copyright 2015 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace Perspex.Markup.Xaml.Context
 {
     using System;
@@ -20,9 +26,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (ValueRequiresSpecialHandling(value))
+            if (this.ValueRequiresSpecialHandling(value))
             {
-                HandleSpecialValue(instance, value);
+                this.HandleSpecialValue(instance, value);
             }
             else
             {
@@ -35,11 +41,11 @@ namespace Perspex.Markup.Xaml.Context
             var definition = value as XamlBindingDefinition;
             if (definition != null)
             {
-                HandleXamlBindingDefinition(definition);
+                this.HandleXamlBindingDefinition(definition);
             }
-            else if (IsPerspexProperty)
+            else if (this.IsPerspexProperty)
             {
-                HandlePerspexProperty(instance, value);
+                this.HandlePerspexProperty(instance, value);
             }
             else
             {
@@ -49,7 +55,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private void HandlePerspexProperty(object instance, object value)
         {
-            var pp = PerspexProperty;
+            var pp = this.PerspexProperty;
             var po = (PerspexObject) instance;
             po.SetValue(pp, value);
         }
@@ -57,10 +63,10 @@ namespace Perspex.Markup.Xaml.Context
         private void HandleXamlBindingDefinition(XamlBindingDefinition xamlBindingDefinition)
         {
             PerspexObject subjectObject = xamlBindingDefinition.Target;
-            propertyBinder.Create(xamlBindingDefinition);
+            this.propertyBinder.Create(xamlBindingDefinition);
 
             var observableForDataContext = subjectObject.GetObservable(Control.DataContextProperty);
-            observableForDataContext.Where(o => o != null).Subscribe(_ => BindToDataContextWhenItsSet(xamlBindingDefinition));
+            observableForDataContext.Where(o => o != null).Subscribe(_ => this.BindToDataContextWhenItsSet(xamlBindingDefinition));
         }
 
         private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)
@@ -68,7 +74,7 @@ namespace Perspex.Markup.Xaml.Context
             var target = definition.Target;
             var dataContext = target.DataContext;
 
-            var binding = propertyBinder.GetBinding(target, definition.TargetProperty);
+            var binding = this.propertyBinder.GetBinding(target, definition.TargetProperty);
             binding.Bind(dataContext);
         }
 
@@ -77,8 +83,8 @@ namespace Perspex.Markup.Xaml.Context
         {
             get
             {
-                var underlyingType = xamlMember.DeclaringType.UnderlyingType;
-                var name = xamlMember.Name + "Property";
+                var underlyingType = this.xamlMember.DeclaringType.UnderlyingType;
+                var name = this.xamlMember.Name + "Property";
 
                 var value = ReflectionExtensions.GetValueOfStaticField(underlyingType, name);
                 return value as PerspexProperty;
@@ -87,14 +93,14 @@ namespace Perspex.Markup.Xaml.Context
 
         private bool ValueRequiresSpecialHandling(object value)
         {
-            return value is XamlBindingDefinition || IsPerspexProperty;
+            return value is XamlBindingDefinition || this.IsPerspexProperty;
         }
 
-        private bool IsPerspexProperty => PerspexProperty != null;
+        private bool IsPerspexProperty => this.PerspexProperty != null;
 
         public override string ToString()
         {
-            return $"{{Perspex Value Connector for member {xamlMember}}}";
+            return $"{{Perspex Value Connector for member {this.xamlMember}}}";
         }
     }
 }
