@@ -20,6 +20,24 @@ namespace Perspex
         /// </summary>
         /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
         /// <param name="observable">The property changed observable.</param>
+        /// <param name="action">
+        /// The method to call. The parameters are the sender and the event args.
+        /// </param>
+        /// <returns>A disposable that can be used to terminate the subscription.</returns>
+        public static IDisposable AddClassHandler<TTarget>(
+            this IObservable<PerspexPropertyChangedEventArgs> observable,
+            Action<TTarget, PerspexPropertyChangedEventArgs> action)
+            where TTarget : PerspexObject
+        {
+            return observable.Subscribe(e => action((TTarget)e.Sender, e));
+        }
+
+        /// <summary>
+        /// Subscribes to a property changed notifications for changes that originate from a
+        /// <typeparamref name="TTarget"/>.
+        /// </summary>
+        /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
+        /// <param name="observable">The property changed observable.</param>
         /// <param name="handler">Given a TTarget, returns the handler.</param>
         /// <returns>A disposable that can be used to terminate the subscription.</returns>
         public static IDisposable AddClassHandler<TTarget>(

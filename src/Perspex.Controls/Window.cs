@@ -66,7 +66,7 @@ namespace Perspex.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            TitleProperty.Changed.AddClassHandler<Window>(x => x.TitleChanged);
+            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
         }
 
         /// <summary>
@@ -234,11 +234,6 @@ namespace Perspex.Controls
             }
 
             base.HandleResized(clientSize);
-        }
-
-        private void TitleChanged(PerspexPropertyChangedEventArgs e)
-        {
-            this.PlatformImpl.SetTitle((string)e.NewValue);
         }
     }
 }
