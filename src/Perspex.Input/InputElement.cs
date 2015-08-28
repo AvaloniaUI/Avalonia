@@ -349,7 +349,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            this.IsFocused = e.OriginalSource == this;
+            this.IsFocused = e.Source == this;
         }
 
         /// <summary>

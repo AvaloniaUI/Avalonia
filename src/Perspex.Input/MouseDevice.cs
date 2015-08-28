@@ -133,7 +133,6 @@ namespace Perspex.Input
                     {
                         Device = this,
                         RoutedEvent = InputElement.PointerPressedEvent,
-                        OriginalSource = source,
                         Source = source,
                         ClickCount = this.clickCount,
                     };
@@ -171,7 +170,6 @@ namespace Perspex.Input
                 {
                     Device = this,
                     RoutedEvent = InputElement.PointerMovedEvent,
-                    OriginalSource = source,
                     Source = source,
                 });
             }
@@ -191,7 +189,6 @@ namespace Perspex.Input
                     {
                         Device = this,
                         RoutedEvent = InputElement.PointerReleasedEvent,
-                        OriginalSource = source,
                         Source = source,
                     });
                 }
@@ -212,7 +209,6 @@ namespace Perspex.Input
                     {
                         Device = this,
                         RoutedEvent = InputElement.PointerWheelChangedEvent,
-                        OriginalSource = source,
                         Source = source,
                         Delta = delta,
                     });
@@ -240,7 +236,6 @@ namespace Perspex.Input
                 {
                     RoutedEvent = InputElement.PointerLeaveEvent,
                     Device = device,
-                    OriginalSource = control,
                     Source = control,
                 };
 
@@ -259,7 +254,6 @@ namespace Perspex.Input
                 {
                     RoutedEvent = InputElement.PointerLeaveEvent,
                     Device = device,
-                    OriginalSource = control,
                     Source = control,
                 };
 
@@ -273,7 +267,6 @@ namespace Perspex.Input
                 {
                     RoutedEvent = InputElement.PointerEnterEvent,
                     Device = device,
-                    OriginalSource = control,
                     Source = control,
                 };
 

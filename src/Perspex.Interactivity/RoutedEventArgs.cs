@@ -22,12 +22,10 @@ namespace Perspex.Interactivity
         public RoutedEventArgs(RoutedEvent routedEvent, IInteractive source)
         {
             this.RoutedEvent = routedEvent;
-            this.Source = this.OriginalSource = source;
+            this.Source = source;
         }
 
         public bool Handled { get; set; }
-
-        public IInteractive OriginalSource { get; set; }
 
         public RoutedEvent RoutedEvent { get; set; }
 

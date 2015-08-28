@@ -113,7 +113,6 @@ namespace Perspex.Input
                             Key = e.Key,
                             Text = e.Text,
                             Source = element,
-                            OriginalSource = element,
                         };
 
                         element.RaiseEvent(ev);

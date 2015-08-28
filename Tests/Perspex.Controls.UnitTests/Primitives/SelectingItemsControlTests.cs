@@ -488,7 +488,6 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 RoutedEvent = SelectingItemsControl.IsSelectedChangedEvent,
                 Source = notChild,
-                OriginalSource = notChild,
             });
 
             Assert.Equal(target.SelectedItem, items[1]);
