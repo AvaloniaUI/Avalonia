@@ -29,8 +29,8 @@ namespace Perspex.Controls
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel());
 
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -41,8 +41,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
-            PerspexProperty.Register<ItemsControl, ItemsPanelTemplate>("ItemsPanel", defaultValue: DefaultPanel);
+        public static readonly PerspexProperty<ITemplate<Panel>> ItemsPanelProperty =
+            PerspexProperty.Register<ItemsControl, ITemplate<Panel>>("ItemsPanel", defaultValue: DefaultPanel);
 
         private IItemContainerGenerator itemContainerGenerator;
 
@@ -91,7 +91,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the panel used to display the items.
         /// </summary>
-        public ItemsPanelTemplate ItemsPanel
+        public ITemplate<Panel> ItemsPanel
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }

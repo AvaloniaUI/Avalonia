@@ -11,6 +11,7 @@ namespace Perspex.Controls
     using Mixins;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Rendering;
     using Perspex.VisualTree;
@@ -32,8 +33,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
             });

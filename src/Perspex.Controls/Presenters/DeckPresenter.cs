@@ -31,7 +31,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ItemsPanelTemplate> ItemsPanelProperty =
+        public static readonly PerspexProperty<ITemplate<Panel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<DeckPresenter>();
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Gets or sets the panel used to display the pages.
         /// </summary>
-        public ItemsPanelTemplate ItemsPanel
+        public ITemplate<Panel> ItemsPanel
         {
             get { return this.GetValue(ItemsPanelProperty); }
             set { this.SetValue(ItemsPanelProperty, value); }

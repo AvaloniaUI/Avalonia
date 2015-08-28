@@ -10,6 +10,7 @@ namespace Perspex.Controls.UnitTests.Presenters
     using Perspex.Collections;
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.LogicalTree;
     using Perspex.VisualTree;
@@ -136,7 +137,7 @@ namespace Perspex.Controls.UnitTests.Presenters
             var panel = new Panel();
             var target = new ItemsPresenter
             {
-                ItemsPanel = new ItemsPanelTemplate(() => panel),
+                ItemsPanel = new FuncTemplate<Panel>(() => panel),
             };
 
             target.ApplyTemplate();

@@ -46,7 +46,6 @@
     <Compile Include="IControl.cs" />
     <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
-    <Compile Include="ItemsPanelTemplate.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
     <Compile Include="Parsers\GridLengthsParser.cs" />

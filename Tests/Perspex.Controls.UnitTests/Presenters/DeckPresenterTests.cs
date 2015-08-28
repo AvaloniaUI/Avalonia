@@ -8,6 +8,7 @@ namespace Perspex.Controls.UnitTests.Presenters
 {
     using Perspex.Controls.Generators;
     using Perspex.Controls.Presenters;
+    using Perspex.Controls.Templates;
     using Xunit;
 
     public class DeckPresenterTests
@@ -17,7 +18,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             var target = new DeckPresenter
             {
-                ItemsPanel = new ItemsPanelTemplate(() => new Panel()),
+                ItemsPanel = new FuncTemplate<Panel>(() => new Panel()),
             };
 
             target.ApplyTemplate();

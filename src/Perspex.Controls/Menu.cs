@@ -10,6 +10,7 @@ namespace Perspex.Controls
     using System.Linq;
     using System.Reactive.Disposables;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Interactivity;
     using Perspex.LogicalTree;
@@ -23,8 +24,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
         /// </summary>
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel { Orientation = Orientation.Horizontal });
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.

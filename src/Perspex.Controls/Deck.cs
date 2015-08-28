@@ -8,6 +8,7 @@ namespace Perspex.Controls
 {
     using Perspex.Animation;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Templates;
     using Perspex.Controls.Utils;
     using Perspex.Input;
 
@@ -25,8 +26,8 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value of <see cref="IReparentingControl"/> for <see cref="Deck"/>.
         /// </summary>
-        private static readonly ItemsPanelTemplate PanelTemplate =
-            new ItemsPanelTemplate(() => new Panel());
+        private static readonly ITemplate<Panel> PanelTemplate =
+            new FuncTemplate<Panel>(() => new Panel());
 
         /// <summary>
         /// Initializes static members of the <see cref="Deck"/> class.

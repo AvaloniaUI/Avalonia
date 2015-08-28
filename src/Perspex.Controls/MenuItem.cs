@@ -77,8 +77,8 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ItemsPanelTemplate DefaultPanel =
-            new ItemsPanelTemplate(() => new StackPanel
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
             });
