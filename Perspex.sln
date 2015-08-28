@@ -57,7 +57,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Input.UnitTests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1.UnitTests", "tests\Perspex.Direct2D1.UnitTests\Perspex.Direct2D1.UnitTests.csproj", "{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Xaml", "src\Markup\Perspex.Xaml\Perspex.Xaml.csproj", "{3E53A01A-B331-47F3-B828-4A5717E77A24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup.Xaml", "src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj", "{3E53A01A-B331-47F3-B828-4A5717E77A24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplication", "samples\XamlTestApplication\XamlTestApplication.csproj", "{78CAFE33-DBEB-4132-8A28-81CFE8A4933C}"
 EndProject

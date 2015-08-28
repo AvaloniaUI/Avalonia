@@ -8,7 +8,7 @@
     using OmniXaml;
     using Perspex.Controls;
     using Perspex.Diagnostics;
-    using Perspex.Xaml;
+    using Perspex.Markup.Xaml;
 
     public class MainWindow : Window
     {

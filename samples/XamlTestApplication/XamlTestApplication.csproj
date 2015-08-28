@@ -177,7 +177,7 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Perspex.Xaml\Perspex.Xaml.csproj">
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Perspex.Xaml</Name>
     </ProjectReference>
