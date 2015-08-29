@@ -44,18 +44,6 @@
       <HintPath>..\..\packages\OmniXaml.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OmniXaml.AppServices, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OmniXaml.AppServices.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OmniXaml.AppServices.Mvvm, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OmniXaml.AppServices.Mvvm.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.AppServices.Mvvm.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OmniXaml.AppServices.NetCore, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OmniXaml.AppServices.NetCore.1.4.4.0\lib\net46\OmniXaml.AppServices.NetCore.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="ReactiveUI, Version=6.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\reactiveui-core.6.5.0\lib\Net45\ReactiveUI.dll</HintPath>
       <Private>True</Private>
