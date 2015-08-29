@@ -5,7 +5,7 @@
 
 ...a next generation WPF?
 
-![](Docs/screen.png)
+![](docs/screen.png)
 
 ## Background ##
 
