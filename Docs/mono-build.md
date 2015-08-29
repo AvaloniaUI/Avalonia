@@ -22,7 +22,7 @@ Clone the Perspex repository
 Load the Project in MonoDevelop
 -------------------------------
 
-Start MonoDevelop and open the `Perspex-Mono.sln` solution. Wait for MonoDevelop to install the
+Start MonoDevelop and open the `Perspex.sln` solution. Wait for MonoDevelop to install the
 project's NuGet packages.
 
 Set the TestApplication-Mono project as the startup project and click Run.
