@@ -11,7 +11,8 @@
     <AssemblyName>TestApplication</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>caf18def</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -130,14 +131,6 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
-      <Name>Perspex.Direct2D1</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
-      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
-      <Name>Perspex.Win32</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="github_icon.png">
@@ -145,13 +138,7 @@
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
-  </Target>
+  <Import Project="..\..\src\Shared\perspex.platform.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
