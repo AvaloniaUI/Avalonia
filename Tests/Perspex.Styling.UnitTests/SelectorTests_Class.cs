@@ -16,6 +16,22 @@ namespace Perspex.Styling.UnitTests
     public class SelectorTests_Class
     {
         [Fact]
+        public void Class_Selector_Should_Have_Correct_String_Representation()
+        {
+            var target = new Selector().Class("foo");
+
+            Assert.Equal(".foo", target.ToString());
+        }
+
+        [Fact]
+        public void PesudoClass_Selector_Should_Have_Correct_String_Representation()
+        {
+            var target = new Selector().Class(":foo");
+
+            Assert.Equal(":foo", target.ToString());
+        }
+
+        [Fact]
         public async Task Class_Matches_Control_With_Class()
         {
             var control = new Control1

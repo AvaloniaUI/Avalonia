@@ -25,7 +25,7 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(previous != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            return new Selector(previous, x => MatchClass(x, name), name);
+            return new Selector(previous, x => MatchClass(x, name), name[0] == ':' ? name : '.' + name);
         }
 
         public static Selector Descendent(this Selector previous)
