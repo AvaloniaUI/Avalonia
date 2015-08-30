@@ -46,7 +46,19 @@ namespace Perspex.Styling
                 {
                     foreach (Setter setter in this.Setters)
                     {
-                        control.SetValue(setter.Property, setter.Value, BindingPriority.Style);
+                        if (setter.Source != null && setter.Value != null)
+                        {
+                            throw new InvalidOperationException("Cannot set both Source and Value on a Setter.");
+                        }
+
+                        if (setter.Source == null)
+                        {
+                            control.SetValue(setter.Property, setter.Value, BindingPriority.Style);
+                        }
+                        else
+                        {
+                            control.Bind(setter.Property, setter.Source, BindingPriority.Style);
+                        }
                     }
                 }
             }
@@ -54,7 +66,22 @@ namespace Perspex.Styling
             {
                 foreach (Setter setter in this.Setters)
                 {
-                    var binding = new StyleBinding(match.ObservableResult, setter.Value, description);
+                    if (setter.Source != null && setter.Value != null)
+                    {
+                        throw new InvalidOperationException("Cannot set both Source and Value on a Setter.");
+                    }
+
+                    StyleBinding binding;
+
+                    if (setter.Source == null)
+                    {
+                        binding = new StyleBinding(match.ObservableResult, setter.Value, description);
+                    }
+                    else
+                    {
+                        binding = new StyleBinding(match.ObservableResult, setter.Source, description);
+                    }
+
                     control.Bind(setter.Property, binding, BindingPriority.StyleTrigger);
                 }
             }

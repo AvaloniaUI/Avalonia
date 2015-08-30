@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="StyleBinding.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
+// Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -8,14 +8,16 @@ namespace Perspex.Styling
 {
     using System;
     using System.Reactive;
+    using System.Reactive.Linq;
 
     /// <summary>
     /// Provides an observable for a style.
     /// </summary>
     /// <remarks>
-    /// This class takes an activator and a value. The activator is an observable which produces
-    /// a bool. When the activator produces true, this observable will produce
-    /// <see cref="ActivatedValue"/>. When the activator produces false it will produce
+    /// A <see cref="StyleBinding"/> has two inputs: an activator observable and either an
+    /// <see cref="ActivatedValue"/> or a <see cref="Source"/> observable which produces the
+    /// activated value. When the activator produces true, the <see cref="StyleBinding"/> will
+    /// produce the current activated value. When the activator produces false it will produce
     /// <see cref="PerspexProperty.UnsetValue"/>.
     /// </remarks>
     internal class StyleBinding : ObservableBase<object>, IDescription
@@ -42,12 +44,19 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Gets a description of the binding.
+        /// Initializes a new instance of the <see cref="StyleBinding"/> class.
         /// </summary>
-        public string Description
+        /// <param name="activator">The activator.</param>
+        /// <param name="source">An observable that produces the activated value.</param>
+        /// <param name="description">The binding description.</param>
+        public StyleBinding(
+            IObservable<bool> activator,
+            IObservable<object> source,
+            string description)
         {
-            get;
-            private set;
+            this.activator = activator;
+            this.Description = description;
+            this.Source = source;
         }
 
         /// <summary>
@@ -60,6 +69,22 @@ namespace Perspex.Styling
         }
 
         /// <summary>
+        /// Gets a description of the binding.
+        /// </summary>
+        public string Description
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets an observable which produces the <see cref="ActivatedValue"/>.
+        /// </summary>
+        public IObservable<object> Source
+        {
+            get;
+        }
+
+        /// <summary>
         /// Notifies the provider that an observer is to receive notifications.
         /// </summary>
         /// <param name="observer">The observer.</param>
@@ -67,10 +92,20 @@ namespace Perspex.Styling
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
             Contract.Requires<NullReferenceException>(observer != null);
-            return this.activator.Subscribe(
-                active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
-                observer.OnError,
-                observer.OnCompleted);
+
+            if (this.Source == null)
+            {
+                return this.activator.Subscribe(
+                    active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
+                    observer.OnError,
+                    observer.OnCompleted);
+            }
+            else
+            {
+                return Observable
+                    .CombineLatest(this.activator, this.Source, (x, y) => new { Active = x, Value = y })
+                    .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
+            }
         }
     }
 }
