@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for a focus adorner.
+    /// </summary>
     public class FocusAdornerStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FocusAdornerStyle"/> class.
+        /// </summary>
         public FocusAdornerStyle()
         {
             this.AddRange(new[]
@@ -23,13 +29,17 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(this.Template)),
+                        new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template()
+        /// <summary>
+        /// The default template for focus adorner.
+        /// </summary>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template()
         {
             return new Rectangle
             {

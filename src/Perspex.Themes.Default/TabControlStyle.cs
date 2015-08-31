@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TabControl"/> control.
+    /// </summary>
     public class TabControlStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TabControlStyle"/> class.
+        /// </summary>
         public TabControlStyle()
         {
             this.AddRange(new[]
@@ -23,13 +29,18 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TabControl.TemplateProperty, new ControlTemplate<TabControl>(this.Template)),
+                        new Setter(TabControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template(TabControl control)
+        /// <summary>
+        /// The default template for the <see cref="TabControl"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TabControl control)
         {
             return new Grid
             {

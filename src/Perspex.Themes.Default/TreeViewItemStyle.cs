@@ -16,8 +16,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TreeViewItem"/> control.
+    /// </summary>
     public class TreeViewItemStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TreeViewItemStyle"/> class.
+        /// </summary>
         public TreeViewItemStyle()
         {
             this.AddRange(new[]
@@ -26,7 +32,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeViewItem.TemplateProperty, new ControlTemplate<TreeViewItem>(this.Template)),
+                        new Setter(TreeViewItem.TemplateProperty, new ControlTemplate<TreeViewItem>(Template)),
                         new Setter(TreeViewItem.FocusAdornerProperty, null),
                     },
                 },
@@ -76,7 +82,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(TreeViewItem control)
+        /// <summary>
+        /// The default template for the <see cref="TreeViewItem"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TreeViewItem control)
         {
             return new StackPanel
             {

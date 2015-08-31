@@ -15,8 +15,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="CheckBox"/> control.
+    /// </summary>
     public class CheckBoxStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckBoxStyle"/> class.
+        /// </summary>
         public CheckBoxStyle()
         {
             this.AddRange(new[]
@@ -25,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, new ControlTemplate<CheckBox>(this.Template)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<CheckBox>(Template)),
                     },
                 },
                 new Style(x => x.OfType<CheckBox>().Template().Name("checkMark"))
@@ -45,7 +51,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(CheckBox control)
+        /// <summary>
+        /// The default template for a <see cref="CheckBox"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(CheckBox control)
         {
             Border result = new Border
             {

@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Input;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="Menu"/> control.
+    /// </summary>
     public class MenuStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MenuStyle"/> class.
+        /// </summary>
         public MenuStyle()
         {
             this.AddRange(new[]
@@ -23,13 +29,18 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Menu.TemplateProperty, new ControlTemplate<Menu>(this.Template)),
+                        new Setter(Menu.TemplateProperty, new ControlTemplate<Menu>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template(Menu control)
+        /// <summary>
+        /// The default template for the <see cref="Menu"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(Menu control)
         {
             return new Border
             {

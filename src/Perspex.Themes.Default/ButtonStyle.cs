@@ -16,8 +16,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="Button"/> control.
+    /// </summary>
     public class ButtonStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ButtonStyle"/> class.
+        /// </summary>
         public ButtonStyle()
         {
             this.AddRange(new[]
@@ -27,7 +33,7 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(Button.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
-                        new Setter(Button.TemplateProperty, new ControlTemplate<Button>(this.Template)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<Button>(Template)),
                         new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
@@ -74,6 +80,10 @@ namespace Perspex.Themes.Default
             });
         }
 
+        /// <summary>
+        /// The default template for the <see cref="Button"/> control's focus adorner.
+        /// </summary>
+        /// <returns>The root of the instantiated template.</returns>
         public static Control FocusAdornerTemplate()
         {
             return new Rectangle
@@ -85,7 +95,12 @@ namespace Perspex.Themes.Default
             };
         }
 
-        private Control Template(Button control)
+        /// <summary>
+        /// The default template for the <see cref="Button"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(Button control)
         {
             Border border = new Border
             {

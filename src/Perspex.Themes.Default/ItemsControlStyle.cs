@@ -12,8 +12,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ItemsControl"/> control.
+    /// </summary>
     public class ItemsControlStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsControlStyle"/> class.
+        /// </summary>
         public ItemsControlStyle()
         {
             this.AddRange(new[]
@@ -22,13 +28,18 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, new ControlTemplate<ItemsControl>(this.Template)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<ItemsControl>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template(ItemsControl control)
+        /// <summary>
+        /// The default template for an <see cref="ItemsControl"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ItemsControl control)
         {
             return new ItemsPresenter
             {

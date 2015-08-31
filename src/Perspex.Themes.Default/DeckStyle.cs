@@ -12,8 +12,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="Deck"/> control.
+    /// </summary>
     public class DeckStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeckStyle"/> class.
+        /// </summary>
         public DeckStyle()
         {
             this.AddRange(new[]
@@ -22,13 +28,18 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Deck.TemplateProperty, new ControlTemplate<Deck>(this.Template)),
+                        new Setter(Deck.TemplateProperty, new ControlTemplate<Deck>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template(Deck control)
+        /// <summary>
+        /// The default template for the <see cref="Deck"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(Deck control)
         {
             return new DeckPresenter
             {

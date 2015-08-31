@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TreeView"/> control.
+    /// </summary>
     public class TreeViewStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TreeViewStyle"/> class.
+        /// </summary>
         public TreeViewStyle()
         {
             this.AddRange(new[]
@@ -23,7 +29,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeView.TemplateProperty, new ControlTemplate<TreeView>(this.Template)),
+                        new Setter(TreeView.TemplateProperty, new ControlTemplate<TreeView>(Template)),
                         new Setter(TreeView.BorderBrushProperty, Brushes.Black),
                         new Setter(TreeView.BorderThicknessProperty, 1.0),
                     },
@@ -31,7 +37,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(TreeView control)
+        /// <summary>
+        /// The default template for the <see cref="TreeView"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TreeView control)
         {
             return new Border
             {

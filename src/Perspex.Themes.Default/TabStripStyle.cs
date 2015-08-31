@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TabStrip"/> control.
+    /// </summary>
     public class TabStripStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TabStripStyle"/> class.
+        /// </summary>
         public TabStripStyle()
         {
             this.AddRange(new[]
@@ -23,7 +29,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TabStrip.TemplateProperty, new ControlTemplate<TabStrip>(this.Template)),
+                        new Setter(TabStrip.TemplateProperty, new ControlTemplate<TabStrip>(Template)),
                     },
                 },
                 new Style(x => x.OfType<TabStrip>().Template().OfType<StackPanel>())
@@ -37,7 +43,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(TabStrip control)
+        /// <summary>
+        /// The default template for the <see cref="TabStrip"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TabStrip control)
         {
             return new ItemsPresenter
             {

@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ListBoxItem"/> control.
+    /// </summary>
     public class ListBoxItemStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ListBoxItemStyle"/> class.
+        /// </summary>
         public ListBoxItemStyle()
         {
             this.AddRange(new[]
@@ -23,7 +29,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.TemplateProperty, new ControlTemplate<ListBoxItem>(this.Template)),
+                        new Setter(ListBoxItem.TemplateProperty, new ControlTemplate<ListBoxItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ListBoxItem>().Class("selected").Template().Name("border"))
@@ -44,7 +50,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(ListBoxItem control)
+        /// <summary>
+        /// The default template for a <see cref="ListBoxItem"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ListBoxItem control)
         {
             return new Border
             {

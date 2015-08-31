@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TextBox"/> control.
+    /// </summary>
     public class TextBoxStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextBoxStyle"/> class.
+        /// </summary>
         public TextBoxStyle()
         {
             this.AddRange(new[]
@@ -23,7 +29,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBox.TemplateProperty, new ControlTemplate<TextBox>(this.Template)),
+                        new Setter(TextBox.TemplateProperty, new ControlTemplate<TextBox>(Template)),
                         new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(TextBox.BorderThicknessProperty, 2.0),
                         new Setter(TextBox.FocusAdornerProperty, null),
@@ -39,7 +45,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(TextBox control)
+        /// <summary>
+        /// The default template for the <see cref="TextBox"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TextBox control)
         {
             Border result = new Border
             {

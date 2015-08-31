@@ -14,8 +14,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ScrollBar"/> control.
+    /// </summary>
     public class ScrollBarStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScrollBarStyle"/> class.
+        /// </summary>
         public ScrollBarStyle()
         {
             this.AddRange(new[]
@@ -24,14 +30,13 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
+                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal))
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
                         new Setter(ScrollBar.HeightProperty, 10.0),
                     },
                 },
@@ -46,7 +51,6 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(this.Template)),
                         new Setter(ScrollBar.WidthProperty, 10.0),
                     },
                 },
@@ -60,7 +64,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(ScrollBar control)
+        /// <summary>
+        /// The default template for the <see cref="ScrollBar"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ScrollBar control)
         {
             return new Border
             {
@@ -76,13 +85,18 @@ namespace Perspex.Themes.Default
                     Thumb = new Thumb
                     {
                         Name = "thumb",
-                        Template = new ControlTemplate<Thumb>(this.ThumbTemplate),
+                        Template = new ControlTemplate<Thumb>(ThumbTemplate),
                     },
                 },
             };
         }
 
-        private Control ThumbTemplate(Thumb control)
+        /// <summary>
+        /// The default template for the <see cref="ScrollBar"/>'s <see cref="Thumb"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control ThumbTemplate(Thumb control)
         {
             return new Border
             {

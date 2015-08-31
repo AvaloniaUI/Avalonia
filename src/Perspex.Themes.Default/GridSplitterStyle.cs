@@ -11,8 +11,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="GridSplitter"/> control.
+    /// </summary>
     public class GridSplitterStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridSplitterStyle"/> class.
+        /// </summary>
         public GridSplitterStyle()
         {
             this.AddRange(new[]
@@ -21,14 +27,19 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(GridSplitter.TemplateProperty, new ControlTemplate<GridSplitter>(this.Template)),
+                        new Setter(GridSplitter.TemplateProperty, new ControlTemplate<GridSplitter>(Template)),
                         new Setter(GridSplitter.WidthProperty, 4.0),
                     },
                 },
             });
         }
 
-        private Control Template(GridSplitter control)
+        /// <summary>
+        /// The default template for a <see cref="GridSplitter"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(GridSplitter control)
         {
             Border border = new Border
             {

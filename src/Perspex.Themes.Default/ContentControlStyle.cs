@@ -12,8 +12,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ContentControl"/> control.
+    /// </summary>
     public class ContentControlStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentControlStyle"/> class.
+        /// </summary>
         public ContentControlStyle()
         {
             this.AddRange(new[]
@@ -22,13 +28,18 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ContentControl.TemplateProperty, new ControlTemplate<ContentControl>(this.Template)),
+                        new Setter(ContentControl.TemplateProperty, new ControlTemplate<ContentControl>(Template)),
                     },
                 },
             });
         }
 
-        private Control Template(ContentControl control)
+        /// <summary>
+        /// The default template for a <see cref="ContentControl"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ContentControl control)
         {
             return new ContentPresenter
             {

@@ -15,8 +15,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ToggleButton"/> control.
+    /// </summary>
     public class ToggleButtonStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ToggleButtonStyle"/> class.
+        /// </summary>
         public ToggleButtonStyle()
         {
             this.AddRange(new[]
@@ -25,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.TemplateProperty, new ControlTemplate<ToggleButton>(this.Template)),
+                        new Setter(ToggleButton.TemplateProperty, new ControlTemplate<ToggleButton>(Template)),
                         new Setter(ToggleButton.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ToggleButton.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(ToggleButton.BorderThicknessProperty, 2.0),
@@ -81,7 +87,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(ToggleButton control)
+        /// <summary>
+        /// The default template for the <see cref="ToggleButton"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ToggleButton control)
         {
             Border border = new Border
             {

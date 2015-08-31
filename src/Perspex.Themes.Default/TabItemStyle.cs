@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="TabItem"/> control.
+    /// </summary>
     public class TabItemStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TabItemStyle"/> class.
+        /// </summary>
         public TabItemStyle()
         {
             this.AddRange(new[]
@@ -25,7 +31,7 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(TabItem.FontSizeProperty, 28.7),
                         new Setter(TabItem.ForegroundProperty, Brushes.Gray),
-                        new Setter(TabItem.TemplateProperty, new ControlTemplate<TabItem>(this.Template)),
+                        new Setter(TabItem.TemplateProperty, new ControlTemplate<TabItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<TabItem>().Class("selected"))
@@ -38,7 +44,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(TabItem control)
+        /// <summary>
+        /// The default template for the <see cref="TabItem"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(TabItem control)
         {
             return new ContentPresenter
             {

@@ -8,8 +8,14 @@ namespace Perspex.Themes.Default
 {
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default Perspex theme.
+    /// </summary>
     public class DefaultTheme : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultTheme"/> class.
+        /// </summary>
         public DefaultTheme()
         {
             this.Add(new FocusAdornerStyle());

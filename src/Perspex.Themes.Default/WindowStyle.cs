@@ -13,8 +13,14 @@ namespace Perspex.Themes.Default
     using Perspex.Controls.Templates;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="Window"/> control.
+    /// </summary>
     public class WindowStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowStyle"/> class.
+        /// </summary>
         public WindowStyle()
         {
             this.AddRange(new[]
@@ -23,7 +29,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Window.TemplateProperty, new ControlTemplate<Window>(this.Template)),
+                        new Setter(Window.TemplateProperty, new ControlTemplate<Window>(Template)),
                         new Setter(Window.FontFamilyProperty, "Segoe UI"),
                         new Setter(Window.FontSizeProperty, 12.0),
                     },
@@ -31,7 +37,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(Window control)
+        /// <summary>
+        /// The default template for the <see cref="Window"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(Window control)
         {
             return new Border
             {

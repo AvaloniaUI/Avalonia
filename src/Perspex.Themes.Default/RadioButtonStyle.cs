@@ -15,8 +15,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="RadioButton"/> control.
+    /// </summary>
     public class RadioButtonStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RadioButtonStyle"/> class.
+        /// </summary>
         public RadioButtonStyle()
         {
             this.AddRange(new[]
@@ -25,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty,  new ControlTemplate<RadioButton>(this.Template)),
+                        new Setter(Button.TemplateProperty,  new ControlTemplate<RadioButton>(Template)),
                     },
                 },
                 new Style(x => x.OfType<RadioButton>().Template().Name("checkMark"))
@@ -45,7 +51,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(RadioButton control)
+        /// <summary>
+        /// The default template for the <see cref="RadioButton"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(RadioButton control)
         {
             Border result = new Border
             {

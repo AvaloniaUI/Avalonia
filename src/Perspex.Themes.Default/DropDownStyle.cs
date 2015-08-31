@@ -18,8 +18,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="DropDown"/> control.
+    /// </summary>
     public class DropDownStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DropDownStyle"/> class.
+        /// </summary>
         public DropDownStyle()
         {
             this.AddRange(new[]
@@ -28,7 +34,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(DropDown.TemplateProperty, new ControlTemplate<DropDown>(this.Template)),
+                        new Setter(DropDown.TemplateProperty, new ControlTemplate<DropDown>(Template)),
                         new Setter(DropDown.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(DropDown.BorderThicknessProperty, 2.0),
                         new Setter(DropDown.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
@@ -46,6 +52,10 @@ namespace Perspex.Themes.Default
             });
         }
 
+        /// <summary>
+        /// The default template for a <see cref="DropDown"/> control's focus adorner.
+        /// </summary>
+        /// <returns>The root of the instantiated template.</returns>
         public static Control FocusAdornerTemplate()
         {
             return new Rectangle
@@ -57,7 +67,12 @@ namespace Perspex.Themes.Default
             };
         }
 
-        private Control Template(DropDown control)
+        /// <summary>
+        /// The default template for a <see cref="DropDown"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(DropDown control)
         {
             Border result = new Border
             {

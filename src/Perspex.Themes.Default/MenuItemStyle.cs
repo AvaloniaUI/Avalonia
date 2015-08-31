@@ -17,11 +17,17 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="MenuItem"/> control.
+    /// </summary>
     public class MenuItemStyle : Styles
     {
         private static readonly DataTemplate AccessKeyDataTemplate =
             new DataTemplate<string>(x => new AccessText { Text = x });
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MenuItemStyle"/> class.
+        /// </summary>
         public MenuItemStyle()
         {
             this.AddRange(new[]
@@ -32,14 +38,14 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(MenuItem.BorderThicknessProperty, 1.0),
                         new Setter(MenuItem.PaddingProperty, new Thickness(6, 0)),
-                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(this.PopupTemplate)),
+                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(PopupTemplate)),
                     },
                 },
                 new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(this.TopLevelTemplate)),
+                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(TopLevelTemplate)),
                     },
                 },
                 new Style(x => x.OfType<MenuItem>().Class("selected").Template().Name("root"))
@@ -68,7 +74,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control TopLevelTemplate(MenuItem control)
+        /// <summary>
+        /// The default template for a top-level <see cref="MenuItem"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control TopLevelTemplate(MenuItem control)
         {
             Popup popup;
 
@@ -139,7 +150,12 @@ namespace Perspex.Themes.Default
             return result;
         }
 
-        private Control PopupTemplate(MenuItem control)
+        /// <summary>
+        /// The default template for a popup <see cref="MenuItem"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control PopupTemplate(MenuItem control)
         {
             Popup popup;
 

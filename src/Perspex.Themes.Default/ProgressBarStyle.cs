@@ -17,8 +17,14 @@ namespace Perspex.Themes.Default
     using Perspex.Media;
     using Perspex.Styling;
 
+    /// <summary>
+    /// The default style for the <see cref="ProgressBar"/> control.
+    /// </summary>
     public class ProgressBarStyle : Styles
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressBarStyle"/> class.
+        /// </summary>
         public ProgressBarStyle()
         {
             this.AddRange(new[]
@@ -27,7 +33,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ProgressBar.TemplateProperty, new ControlTemplate<ProgressBar>(this.Template)),
+                        new Setter(ProgressBar.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
                         new Setter(ProgressBar.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(ProgressBar.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
                     },
@@ -35,7 +41,12 @@ namespace Perspex.Themes.Default
             });
         }
 
-        private Control Template(ProgressBar control)
+        /// <summary>
+        /// The default template for the <see cref="ProgressBar"/> control.
+        /// </summary>
+        /// <param name="control">The control being styled.</param>
+        /// <returns>The root of the instantiated template.</returns>
+        public static Control Template(ProgressBar control)
         {
             Border container = new Border
             {
