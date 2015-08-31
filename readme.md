@@ -56,7 +56,7 @@ installed. However, if you're not interested in building the cross-platform bits
 can simply unload the Perspex.Cairo and Perspex.Gtk project in Visual Studio.
 
 To build with mono (even though everything's not fully working as yet) check out the
-[instructions here](docs/mono-build.png) and the [Linux issue](https://github.com/grokys/Perspex/issues/78).
+[instructions here](docs/mono-build.md) and the [Linux issue](https://github.com/grokys/Perspex/issues/78).
 
 ## Contributing ##
 
