@@ -37,8 +37,26 @@ out of date, and I've also started writing blog posts on Perspex at http://groky
 
 Contributions are always welcome!
 
+# Multi-platform you say?
+
+Well, yes, that is the intention. However unfortunately as of the time of this
+first alpha, Perspex is only shipping with a Windows backend. There *is* a
+Gtk/Cairo backend that's working pretty well (at least on Windows) but it's not
+included in this release due to packaging issues. In addition, the framework did
+work on Linux at one point but with the recent Mono 4.0 something has gone
+wrong, and we need time to work out what that is. Getting Perspex working again
+on non-windows support is the next thing we'll be concentrating on. You can
+track the progress on Linux in the [issue](https://github.com/grokys/Perspex/issues/78).
+
 ## Building and Using
-In order to build and use Perpex you need a compiler that supports C# 6 such as Visual Studio 2015.
+
+In order to build Perpex under Windows you need a compiler that supports C# 6 such
+as Visual Studio 2015. To compile the project under windows, you must have gtk-sharp 
+installed. However, if you're not interested in building the cross-platform bits you 
+can simply unload the Perspex.Cairo and Perspex.Gtk project in Visual Studio.
+
+To build with mono (even though everything's not fully working as yet) check out the
+[instructions here](docs/mono-build.png) and the [Linux issue](https://github.com/grokys/Perspex/issues/78).
 
 ## Contributing ##
 
