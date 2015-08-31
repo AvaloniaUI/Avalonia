@@ -109,7 +109,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Style_With_Value_And_Source_Should_Throw_Exception()
+        public void Style_With_ObservableSetter_Should_Update_Value()
         {
             var source = new BehaviorSubject<string>("Foo");
 
@@ -117,30 +117,7 @@ namespace Perspex.Styling.UnitTests
             {
                 Setters = new[]
                 {
-                    new Setter
-                    {
-                        Property = Class1.FooProperty,
-                        Source = source,
-                        Value = "Foo",
-                    },
-                },
-            };
-
-            var target = new Class1();
-
-            Assert.Throws<InvalidOperationException>(() => style.Attach(target));
-        }
-
-        [Fact]
-        public void Style_With_Source_Should_Update_Value()
-        {
-            var source = new BehaviorSubject<string>("Foo");
-
-            Style style = new Style(x => x.OfType<Class1>())
-            {
-                Setters = new[]
-                {
-                    new Setter(Class1.FooProperty, source),
+                    new ObservableSetter(Class1.FooProperty, source),
                 },
             };
 
@@ -149,12 +126,10 @@ namespace Perspex.Styling.UnitTests
             style.Attach(target);
 
             Assert.Equal("Foo", target.Foo);
-            source.OnNext("Bar");
-            Assert.Equal("Bar", target.Foo);
         }
 
         [Fact]
-        public void Style_With_Source_Should_Update_And_Restore_Value()
+        public void Style_With_ObservableSetter_Should_Update_And_Restore_Value()
         {
             var source = new BehaviorSubject<string>("Foo");
 
@@ -162,7 +137,7 @@ namespace Perspex.Styling.UnitTests
             {
                 Setters = new[]
                 {
-                    new Setter(Class1.FooProperty, source),
+                    new ObservableSetter(Class1.FooProperty, source),
                 },
             };
 

@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Setter.cs" company="Steven Kirk">
+// <copyright file="ObservableSetter.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,30 +9,23 @@ namespace Perspex.Styling
     using System;
 
     /// <summary>
-    /// A setter for a <see cref="Style"/>.
+    /// A setter for a <see cref="Style"/> whose source is an observable.
     /// </summary>
     /// <remarks>
     /// A <see cref="Setter"/> is used to set a <see cref="PerspexProperty"/> value on a
     /// <see cref="PerspexObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter
+    public class ObservableSetter : ISetter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Setter"/> class.
-        /// </summary>
-        public Setter()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Setter"/> class.
+        /// Initializes a new instance of the <see cref="ObservableSetter"/> class.
         /// </summary>
         /// <param name="property">The property to set.</param>
-        /// <param name="value">The property value.</param>
-        public Setter(PerspexProperty property, object value)
+        /// <param name="source">An observable which produces the value for the property.</param>
+        public ObservableSetter(PerspexProperty property, IObservable<object> source)
         {
             this.Property = property;
-            this.Value = value;
+            this.Source = source;
         }
 
         /// <summary>
@@ -45,9 +38,9 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Gets or sets the property value.
+        /// Gets or sets an observable which produces the value for the property.
         /// </summary>
-        public object Value
+        public IObservable<object> Source
         {
             get;
             set;
@@ -63,11 +56,11 @@ namespace Perspex.Styling
         {
             if (activator == null)
             {
-                control.SetValue(this.Property, this.Value, BindingPriority.Style);
+                control.Bind(this.Property, this.Source, BindingPriority.Style);
             }
             else
             {
-                var binding = new StyleBinding(activator, this.Value, style.ToString());
+                var binding = new StyleBinding(activator, this.Source, style.ToString());
                 control.Bind(this.Property, binding, BindingPriority.StyleTrigger);
             }
         }
