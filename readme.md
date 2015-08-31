@@ -1,38 +1,39 @@
-# Perspex #
+# Perspex
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/grokys/Perspex?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/grokys/perspex/branch/master)
 
-...a next generation WPF?
+A multi-platform .NET UI framework.
 
 ![](docs/screen.png)
 
-## Background ##
+## Background
 
-As everyone who's involved in client-side .NET development knows, the past half decade have been a
-very sad time. Where WPF started off as a game-changer, it now seems to have been all but forgotten.
-WinRT came along and took many of the lessons of WPF but it's currently not usable on the desktop.
+Perspex is a multi-platform windowing toolkit - somewhat like WPF - that is
+intended to be multi-platform (more about that below). It supports XAML,
+lookless controls and a flexible styling system, and runs on Windows using
+Direct2D and other operating systems using Gtk & Cairo.
 
-After a few months of trying to reverse-engineer WPF with the [Avalonia Project](https://github.com/grokys/Avalonia) I began to come to the same conclusion that I imagine Microsoft
-came to internally: for all its groundbreaking-ness at the time, WPF at its core is a dated mess,
-written for .NET 1 and barely updated to even bring it up-to-date with .NET 2 features such as
-generics.
+## Current Status
 
-So I began to think: what if we were to start anew with modern C# features such as *(gasp)*
-Generics, Observables, async, etc etc. The result of that thought is Perspex.
-
-##### DISCLAIMER
-This is really early development pre-alpha-alpha stuff. Everything is subject to
-change, I'm not even sure if the performance characteristics of Rx make Observables suitable for
-binding throughout a framework. *I'm writing this only to see if the idea of exploring these ideas
-appeals to anyone else.*
+Perspex is now in alpha. What does "alpha mean? Well, it means that it's now at a stage where you
+can have a play and hopefully create simple applications. There's now a [Visual
+Studio Extension](https://visualstudiogallery.msdn.microsoft.com/87db356c-cec9-4a07-b7db-a4ed8a921ac9)
+containing project and item templates that will help you get started, and
+there's an initial complement of controls. There's still a lot missing, and you
+*will* find bugs, and the API *will* change, but this represents the first time
+where we've made it somewhat easy to have a play and experiment with the
+framework.
 
 ## Documentation
-As mentioned above this is really an early version of Perspex and we're working hard on improving the code base and the documentation at the same time. Please feel free to have a look at our [introduction document](Docs/intro.md) to get things started real quick.
 
-There's also a high-level [architecture document](Docs/architecture.md).
+As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can 
+take a look at the alpha release announcement for an overview of how to get started but probably the
+best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask 
+questions in our [Gitter room](https://gitter.im/grokys/Perspex).
 
-I've also started writing blog posts on Perspex at http://grokys.github.io/.
+There's also a high-level [architecture document](Docs/architecture.md) that is currently a little bit
+out of date, and I've also started writing blog posts on Perspex at http://grokys.github.io/.
 
 Contributions are always welcome!
 
