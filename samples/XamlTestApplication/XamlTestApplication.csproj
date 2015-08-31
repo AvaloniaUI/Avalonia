@@ -36,12 +36,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Glass, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Glass.1.4.4.0\lib\portable-net451+win81+wpa81\Glass.dll</HintPath>
+    <Reference Include="Glass, Version=1.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Glass.1.4.8.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Glass.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OmniXaml, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OmniXaml.1.4.4.0\lib\portable-net451+win81+wpa81\OmniXaml.dll</HintPath>
+    <Reference Include="OmniXaml, Version=1.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\OmniXaml.1.4.8.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ReactiveUI, Version=6.5.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -61,7 +61,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Sprache, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Sprache.SuperJMN.2.0.0.46\lib\portable-net451+win81+wpa81\Sprache.dll</HintPath>
+      <HintPath>..\..\packages\Sprache.SuperJMN.2.0.0.50\lib\portable-net451+netcore451+wpa81\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
