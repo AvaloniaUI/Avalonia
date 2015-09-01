@@ -1,0 +1,3 @@
+[submodule "src/Perspex.ReactiveUI/src"]
+	path = src/Perspex.ReactiveUI/src
+	url = https://github.com/reactiveui/ReactiveUI.git
