@@ -9,7 +9,7 @@ namespace Perspex.Markup.Xaml.Context
     using OmniXaml;
     using OmniXaml.ObjectAssembler;
     using OmniXaml.Parsers.ProtoParser;
-    using OmniXaml.Parsers.XamlNodes;
+    using OmniXaml.Parsers.XamlInstructions;
 
     public class PerspexParserFactory : IXamlParserFactory
     {

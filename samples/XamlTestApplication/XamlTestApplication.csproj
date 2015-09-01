@@ -36,12 +36,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Glass, Version=1.4.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Glass.1.4.8.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Glass.dll</HintPath>
+    <Reference Include="Glass, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Glass.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Glass.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OmniXaml, Version=1.4.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OmniXaml.1.4.8.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
+    <Reference Include="OmniXaml, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\OmniXaml.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
