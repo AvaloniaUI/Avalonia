@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Base.UnitTests
+namespace Perspex.Base.UnitTests.Collections
 {
     using System;
     using System.Collections.Generic;

@@ -76,6 +76,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Collections\CollectionChangedTracker.cs" />
+    <Compile Include="Collections\PerspexDictionaryTests.cs" />
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
