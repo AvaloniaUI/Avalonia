@@ -121,10 +121,6 @@
       <HintPath>..\..\..\packages\OmniXaml.1.4.8.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ReactiveUI, Version=6.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\reactiveui-core.6.5.0\lib\Portable-Net45+Win8+WP8+WPA81\ReactiveUI.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
       <Private>True</Private>
