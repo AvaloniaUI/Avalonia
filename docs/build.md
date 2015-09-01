@@ -17,7 +17,7 @@ Perspex.Gtk project in Visual Studio.
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
 
-   git submodule update --init
+    git submodule update --init
 
 ## Linux
 ---------------------------
@@ -44,7 +44,7 @@ Then install the needed packages:
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
 
-   git submodule update --init
+    git submodule update --init
    
 ### Load the Project in MonoDevelop
 
