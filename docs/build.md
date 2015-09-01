@@ -20,7 +20,6 @@ is linked as a submodule in the git repository, so run:
     git submodule update --init
 
 ## Linux
----------------------------
 
 This guide Written for Ubuntu 15.04 - I'm not sure how well it applies to other distributions, but
 please submit a PR if you have anything to add.
