@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -30,10 +31,24 @@ namespace Perspex.Designer
             //Initialize sync context
             SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
             var comm = new CommChannel(Console.OpenStandardInput(), Console.OpenStandardOutput());
+            Console.SetOut(new NullTextWriter());
+            Console.SetError(new NullTextWriter());
             comm.Disposed += () => Process.GetCurrentProcess().Kill();
             var service = new PerspexAppHost(comm);
             service.Start();
             Application.Run();
+        }
+
+        class NullTextWriter : TextWriter
+        {
+            public override Encoding Encoding => Encoding.UTF8;
+            public override void Write(char[] buffer, int index, int count)
+            {
+            }
+
+            public override void Write(char value)
+            {
+            }
         }
 
         private static void DemoMain(string[] args)
