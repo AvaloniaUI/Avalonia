@@ -8,6 +8,7 @@ namespace Perspex.Markup.Xaml.Converters
 {
     using System;
     using System.Globalization;
+    using System.Reflection;
     using System.Text;
     using Media;
     using Media.Imaging;
@@ -32,10 +33,24 @@ namespace Perspex.Markup.Xaml.Converters
 
             var color = DecodeColor(colorString);
 
-            return new SolidColorBrush(color);
+            if (color != null)
+            {
+                return new SolidColorBrush(color.Value);
+            }
+            else
+            {
+                var member = typeof(Brushes).GetTypeInfo().GetDeclaredProperty(colorString);
+
+                if (member != null)
+                {
+                    return (Brush)member.GetValue(null);
+                }
+            }
+
+            throw new InvalidOperationException("Invalid color string.");
         }
 
-        private static Color DecodeColor(string colorString)
+        private static Color? DecodeColor(string colorString)
         {
             if (colorString[0] == '#')
             {
@@ -49,6 +64,7 @@ namespace Perspex.Markup.Xaml.Converters
                     var b = Convert.ToByte(restOfValue.Substring(8, 2), 16);
                     return Color.FromArgb(a, r, g, b);
                 }
+
                 if (restOfValue.Length == 6)
                 {
                     var r = Convert.ToByte(restOfValue.Substring(0, 2), 16);
@@ -59,26 +75,8 @@ namespace Perspex.Markup.Xaml.Converters
 
                 throw new InvalidOperationException("The color code format cannot be parsed");
             }
-            else
-            {
-                return DecodeFromNamedColor(colorString);
-            }
 
-            throw new InvalidOperationException($"The color cannot be decoded from the string \"{colorString}\"");
-        }
-
-        private static Color DecodeFromNamedColor(string colorString)
-        {
-            if (colorString == "Crimson")
-            {
-                return DecodeColor("#DC143C");
-            }
-            if (colorString == "Coral")
-            {
-                return DecodeColor("#FF7F50");
-            }
-
-            throw new NotImplementedException();
+            return null;
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
