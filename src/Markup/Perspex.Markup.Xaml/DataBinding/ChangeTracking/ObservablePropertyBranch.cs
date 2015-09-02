@@ -66,7 +66,11 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
                 var currentObjectTypeInfo = current.GetType().GetTypeInfo();
                 var nextProperty = currentObjectTypeInfo.GetDeclaredProperty(nextPropertyName);
                 var nextInstance = nextProperty.GetValue(current);
-                subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+
+                if (i < this.propertyPath.Chunks.Length - 1)
+                {
+                    subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+                }
             }
 
             return subscriptions;
