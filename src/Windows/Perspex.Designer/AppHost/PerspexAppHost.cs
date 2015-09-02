@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Forms;
 using Perspex.Designer.Comm;
 
 namespace Perspex.Designer.AppHost
@@ -130,7 +131,13 @@ namespace Perspex.Designer.AppHost
             LookupStaticMethod("Perspex.Direct2D1.Direct2D1Platform", "Initialize").Invoke(null, null);
             LookupStaticMethod("Perspex.Win32.Win32Platform", "InitializeEmbedded").Invoke(null, null);
 
+            dynamic dispatcher =
+                LookupType("Perspex.Threading.Dispatcher")
+                    .GetProperty("UIThread", BindingFlags.Static | BindingFlags.Public)
+                    .GetValue(null);
             
+
+
             var xamlFactory = Activator.CreateInstance(LookupType("Perspex.Markup.Xaml.Context.PerspexParserFactory"));
             
             dynamic xamlLoader =
@@ -138,6 +145,10 @@ namespace Perspex.Designer.AppHost
 
             _xamlReader = (stream, root) => xamlLoader.Load(stream, root);
             _host = new WindowHost();
+            new Timer() {Interval = 10, Enabled = true}.Tick += delegate
+            {
+                dispatcher.RunJobs();
+            };
             _comm.SendMessage(new WindowCreatedMessage(_host.Handle));
             _initSuccess = true;
         }
