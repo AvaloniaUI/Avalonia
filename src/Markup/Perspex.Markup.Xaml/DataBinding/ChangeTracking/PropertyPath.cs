@@ -30,5 +30,10 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         {
             return new PropertyPath(this);
         }
+
+        public override string ToString()
+        {
+            return string.Join(".", this.chunks);
+        }
     }
 }
