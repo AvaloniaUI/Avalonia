@@ -48,17 +48,31 @@ namespace Perspex.Win32
             get { return TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime()); }
         }
 
-        public static void Initialize()
+        private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
 
-            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
             locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
+        }
+
+        public static void Initialize()
+        {
+            var locator = Locator.CurrentMutable;
+            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
+            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
+            InitializeInternal();
+        }
+
+        public static void InitializeEmbedded()
+        {
+            var locator = Locator.CurrentMutable;
+            locator.Register(() => new EmbeddedWindowImpl(), typeof(IPopupImpl));
+            locator.Register(() => new EmbeddedWindowImpl(), typeof(IWindowImpl));
+            InitializeInternal();
         }
 
         public bool HasMessages()
