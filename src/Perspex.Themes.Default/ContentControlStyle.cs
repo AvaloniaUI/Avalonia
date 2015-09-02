@@ -41,10 +41,14 @@ namespace Perspex.Themes.Default
         /// <returns>The root of the instantiated template.</returns>
         public static Control Template(ContentControl control)
         {
-            return new ContentPresenter
+            return new Border
             {
-                Name = "contentPresenter",
-                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
+                [~Border.BackgroundProperty] = control[~ContentControl.BackgroundProperty],
+                Child = new ContentPresenter
+                {
+                    Name = "contentPresenter",
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
+                }
             };
         }
     }
