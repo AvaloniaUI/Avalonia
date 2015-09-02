@@ -8,7 +8,7 @@
     <Grid>
         <ContentControl x:Name="NativeContainer" Panel.ZIndex="1"/> 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Panel.ZIndex="0">
-            <TextBlock x:Name="State"/>
+            <TextBox IsReadOnly="True" TextWrapping="WrapWithOverflow" x:Name="State"/>
         </ScrollViewer>
     </Grid>
 </UserControl>

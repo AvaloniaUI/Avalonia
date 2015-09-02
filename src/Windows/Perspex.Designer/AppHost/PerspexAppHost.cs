@@ -16,6 +16,7 @@ namespace Perspex.Designer.AppHost
         private CommChannel _comm;
         private Func<Stream, object, object> _xamlReader;
         private WindowHost _host;
+        private bool _initSuccess;
 
         public PerspexAppHost(CommChannel channel)
         {
@@ -43,6 +44,8 @@ namespace Perspex.Designer.AppHost
 
         private void UpdateXaml(string xaml)
         {
+            if(!_initSuccess)
+                return;
             dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
             _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), window);
             var hWnd = (IntPtr) window.PlatformImpl.Handle;
@@ -76,16 +79,37 @@ namespace Perspex.Designer.AppHost
 
         private void Init(string targetExe)
         {
+            var log = new StringBuilder();
+            try
+            {
+                DoInit(targetExe, log);
+            }
+            catch (Exception e)
+            {
+                UpdateState("Unable to load Perspex:\n\n" + e + "\n\n" + log);
+            }
+        }
+        private void DoInit(string targetExe, StringBuilder logger)
+        {
             _appDir = Path.GetFullPath(Path.GetDirectoryName(targetExe));
             Directory.SetCurrentDirectory(_appDir);
-            UpdateState("Loading assemblies");
+            Action<string> log = s =>
+            {
+                UpdateState(s);
+                logger.AppendLine(s);
+            };
+            log("Loading assemblies");
             foreach(var asm in Directory.GetFiles(_appDir).Where(f=>f.ToLower().EndsWith(".dll")||f.ToLower().EndsWith(".exe")))
                 try
                 {
+                    log("Trying to load " + asm);
                     Assembly.LoadFrom(asm);
                 }
-                catch { }
-            UpdateState("Looking up Perspex types");
+                catch (Exception e)
+                {
+                    logger.AppendLine(e.ToString());
+                }
+            log("Looking up Perspex types");
 
             var app = Activator.CreateInstance(LookupType("Perspex.Application"));
             app.GetType()
@@ -107,6 +131,7 @@ namespace Perspex.Designer.AppHost
             _xamlReader = (stream, root) => xamlLoader.Load(stream, root);
             _host = new WindowHost();
             _comm.SendMessage(new WindowCreatedMessage(_host.Handle));
+            _initSuccess = true;
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

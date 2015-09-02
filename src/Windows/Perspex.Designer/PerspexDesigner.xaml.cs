@@ -58,8 +58,8 @@ namespace Perspex.Designer
         public PerspexDesigner()
         {
             InitializeComponent();
-            BindingOperations.SetBinding(State, TextBlock.TextProperty,
-                new Binding(nameof(ProcessHost.State)) {Source = _host});
+            BindingOperations.SetBinding(State, TextBox.TextProperty,
+                new Binding(nameof(ProcessHost.State)) {Source = _host, Mode = BindingMode.OneWay});
 
             _host.PropertyChanged += _host_PropertyChanged;
         }
