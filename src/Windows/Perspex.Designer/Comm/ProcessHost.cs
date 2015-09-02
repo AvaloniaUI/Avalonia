@@ -65,6 +65,7 @@ namespace Perspex.Designer.Comm
         void OnExited(object sender, EventArgs eventArgs)
         {
             _comm.Dispose();
+            _proc = null;
             _dispatcher.Post(_ =>
             {
                 IsAlive = false;
@@ -78,7 +79,11 @@ namespace Perspex.Designer.Comm
             if (_proc != null)
             {
                 _proc.Exited -= OnExited;
-                _proc.Kill();
+                try
+                {
+                    _proc.Kill();
+                }
+                catch { }
                 OnExited(null, null);
                 State = "Restarting...";
             }

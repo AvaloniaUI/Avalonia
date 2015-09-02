@@ -46,11 +46,19 @@ namespace Perspex.Designer.AppHost
         {
             if(!_initSuccess)
                 return;
-            dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
-            _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), window);
-            var hWnd = (IntPtr) window.PlatformImpl.Handle;
-            _host.SetWindow(hWnd);
-            window.Show();
+            try
+            {
+                dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
+                _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), window);
+                var hWnd = (IntPtr) window.PlatformImpl.Handle;
+                _host.SetWindow(hWnd);
+                window.Show();
+            }
+            catch(Exception e)
+            {
+               _host.SetWindow(IntPtr.Zero);
+               _host.PlaceholderText = e.ToString();
+            }
         }
 
         void UpdateState(string state)
