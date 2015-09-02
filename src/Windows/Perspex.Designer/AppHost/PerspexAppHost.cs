@@ -98,7 +98,7 @@ namespace Perspex.Designer.AppHost
                 UpdateState(s);
                 logger.AppendLine(s);
             };
-            log("Loading assemblies");
+            log("Loading assemblies from " + _appDir);
             foreach(var asm in Directory.GetFiles(_appDir).Where(f=>f.ToLower().EndsWith(".dll")||f.ToLower().EndsWith(".exe")))
                 try
                 {
