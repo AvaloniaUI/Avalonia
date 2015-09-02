@@ -15,6 +15,8 @@ namespace Perspex.Designer.AppHost
     {
         private string _appDir;
         private CommChannel _comm;
+        private string _lastXaml;
+        private string _currentXaml;
         private Func<Stream, object, object> _xamlReader;
         private WindowHost _host;
         private bool _initSuccess;
@@ -40,26 +42,7 @@ namespace Perspex.Designer.AppHost
             }
             var updateXaml = obj as UpdateXamlMessage;
             if (updateXaml != null)
-                UpdateXaml(updateXaml.Xaml);
-        }
-
-        private void UpdateXaml(string xaml)
-        {
-            if(!_initSuccess)
-                return;
-            try
-            {
-                dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
-                _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), window);
-                var hWnd = (IntPtr) window.PlatformImpl.Handle;
-                _host.SetWindow(hWnd);
-                window.Show();
-            }
-            catch(Exception e)
-            {
-               _host.SetWindow(IntPtr.Zero);
-               _host.PlaceholderText = e.ToString();
-            }
+                _currentXaml = updateXaml.Xaml;
         }
 
         void UpdateState(string state)
@@ -145,12 +128,36 @@ namespace Perspex.Designer.AppHost
 
             _xamlReader = (stream, root) => xamlLoader.Load(stream, root);
             _host = new WindowHost();
-            new Timer() {Interval = 10, Enabled = true}.Tick += delegate
+            new Timer {Interval = 10, Enabled = true}.Tick += delegate
             {
                 dispatcher.RunJobs();
             };
+            new Timer {Interval = 200, Enabled = true}.Tick += delegate { XamlUpdater(); };
             _comm.SendMessage(new WindowCreatedMessage(_host.Handle));
             _initSuccess = true;
+        }
+
+
+        void XamlUpdater()
+        {
+            if (!_initSuccess)
+                return;
+            if(_lastXaml == _currentXaml)
+                return;
+            _lastXaml = _currentXaml;
+            try
+            {
+                dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
+                _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(_currentXaml)), window);
+                var hWnd = (IntPtr)window.PlatformImpl.Handle;
+                _host.SetWindow(hWnd);
+                window.Show();
+            }
+            catch (Exception e)
+            {
+                _host.SetWindow(IntPtr.Zero);
+                _host.PlaceholderText = e.ToString();
+            }
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
