@@ -64,14 +64,20 @@ namespace Perspex.Designer.Comm
 
         void OnExited(object sender, EventArgs eventArgs)
         {
-            _comm.Dispose();
             _proc = null;
             _dispatcher.Post(_ =>
             {
-                IsAlive = false;
-                WindowHandle = IntPtr.Zero;
-                State = "Designer process crashed";
+                
+                HandleExited();
             }, null);
+        }
+
+        void HandleExited()
+        {
+            _comm.Dispose();
+            IsAlive = false;
+            WindowHandle = IntPtr.Zero;
+            State = "Designer process crashed";
         }
 
         public void Start(string targetExe, string initialXaml)
@@ -84,7 +90,7 @@ namespace Perspex.Designer.Comm
                     _proc.Kill();
                 }
                 catch { }
-                OnExited(null, null);
+                HandleExited();
                 State = "Restarting...";
             }
 
@@ -109,11 +115,11 @@ namespace Perspex.Designer.Comm
                 _comm.OnMessage += OnMessage;
                 _comm.Start();
                 _comm.SendMessage(msg);
-                return;
             }
             catch (Exception e)
             {
                 State = e.ToString();
+                HandleExited();
             }
             IsAlive = true;
 
