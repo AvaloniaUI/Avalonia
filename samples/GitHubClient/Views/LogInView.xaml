@@ -1,0 +1,24 @@
+﻿<UserControl xmlns="https://github.com/grokys/Perspex" Background="#3F51B5">
+    <Border Background="#1A237E" 
+            CornerRadius="8" 
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Center"
+            Padding="64 32 64 16">
+        <StackPanel Gap="16">
+            <TextBlock FontSize="16" Foreground="#E8EAF6">LOGIN</TextBlock>
+            <TextBox Width="200" 
+                     Background="White"
+                     BorderThickness="0" 
+                     FontSize="16"
+                     Text="{Binding Username, Mode=TwoWay}">
+            </TextBox>
+            <Control Height="8"/>
+            <Button HorizontalAlignment="Center" 
+                    MinWidth="100" 
+                    Background="#5C6BC0"
+                    BorderBrush="#7986CB"
+                    Foreground="White"
+                    Command="{Binding OkCommand}">OK</Button>
+        </StackPanel>
+    </Border>
+</UserControl>

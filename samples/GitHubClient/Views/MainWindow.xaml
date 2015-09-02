@@ -1,0 +1,3 @@
+﻿<Window xmlns="https://github.com/grokys/Perspex" Title="Perspex GitHub Client">
+    <ContentControl Content="{Binding Content}"/>
+</Window>
