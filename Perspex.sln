@@ -90,6 +90,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Cairo", "src\Gtk\Pe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.ReactiveUI", "src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj", "{6417B24E-49C2-4985-8DB2-3AB9D898EC91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Designer", "src\Windows\Perspex.Designer\Perspex.Designer.csproj", "{EC42600F-049B-43FF-AED1-8314D61B2749}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -212,6 +214,10 @@ Global
 		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -234,5 +240,6 @@ Global
 		{78CAFE33-DBEB-4132-8A28-81CFE8A4933C} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{54F237D5-A70A-4752-9656-0C70B1A7B047} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{FB05AC90-89BA-4F2F-A924-F37875FB547C} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
+		{EC42600F-049B-43FF-AED1-8314D61B2749} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 	EndGlobalSection
 EndGlobal
