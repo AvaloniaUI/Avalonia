@@ -27,7 +27,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         private static Thickness ConvertFromString(string s)
         {
-            var parts = s.Split(',')
+            var parts = s.Split(',', ' ')
                 .Take(4)
                 .Select(part => part.Trim());
 
