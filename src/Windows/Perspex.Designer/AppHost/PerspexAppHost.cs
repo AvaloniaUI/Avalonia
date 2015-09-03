@@ -102,6 +102,8 @@ namespace Perspex.Designer.AppHost
                     logger.AppendLine(e.ToString());
                 }
             log("Looking up Perspex types");
+            var syncContext = LookupType("Perspex.Threading.PerspexSynchronizationContext");
+            syncContext.GetProperty("AutoInstall", BindingFlags.Public | BindingFlags.Static).SetValue(null, false);
 
             var app = Activator.CreateInstance(LookupType("Perspex.Application"));
             app.GetType()
