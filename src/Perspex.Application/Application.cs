@@ -150,6 +150,7 @@ namespace Perspex
         /// </summary>
         protected virtual void RegisterServices()
         {
+            PerspexSynchronizationContext.InstallIfNeeded();
             this.FocusManager = new FocusManager();
             this.InputManager = new InputManager();
 

@@ -42,23 +42,40 @@ namespace Perspex.Win32.Threading
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                Job job = null;
+                RunJobs();
 
-                while (job != null || this.queue.Count > 0)
+                platform.ProcessMessage();
+            }
+        }
+
+        /// <summary>
+        /// Runs continuations pushed on the loop.
+        /// </summary>
+        public void RunJobs()
+        {
+            Job job = null;
+
+            while (job != null || this.queue.Count > 0)
+            {
+                if (job == null)
                 {
-                    if (job == null)
+                    lock (this.queue)
                     {
-                        lock (this.queue)
-                        {
-                            job = this.queue.Dequeue();
-                        }
+                        job = this.queue.Dequeue();
                     }
+                }
 
-                    if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
-                    {
-                        break;
-                    }
+                if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
+                {
+                    break;
+                }
 
+                if (job.TaskCompletionSource == null)
+                {
+                    job.Action();
+                }
+                else
+                {
                     try
                     {
                         job.Action();
@@ -68,11 +85,9 @@ namespace Perspex.Win32.Threading
                     {
                         job.TaskCompletionSource.SetException(e);
                     }
-
-                    job = null;
                 }
 
-                platform.ProcessMessage();
+                job = null;
             }
         }
 
@@ -84,15 +99,29 @@ namespace Perspex.Win32.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeAsync(Action action, DispatcherPriority priority)
         {
-            var job = new Job(action, priority);
+            var job = new Job(action, priority, false);
+            this.AddJob(job);
+            return job.TaskCompletionSource.Task;
+        }
 
+        /// <summary>
+        /// Post action that will be invoked on main thread
+        /// </summary>
+        /// <param name="action">The method.</param>
+        /// 
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post(Action action, DispatcherPriority priority)
+        {
+            this.AddJob(new Job(action, priority, true));
+        }
+
+        private void AddJob(Job job)
+        {
             lock (this.queue)
             {
-                this.queue.Add(job, priority);
+                this.queue.Add(job, job.Priority);
             }
-
             platform.Wake();
-            return job.TaskCompletionSource.Task;
         }
 
         /// <summary>
@@ -105,11 +134,12 @@ namespace Perspex.Win32.Threading
             /// </summary>
             /// <param name="action">The method to call.</param>
             /// <param name="priority">The job priority.</param>
-            public Job(Action action, DispatcherPriority priority)
+            /// <param name="throwOnUiThread">Do not wrap excepption in TaskCompletionSource</param>
+            public Job(Action action, DispatcherPriority priority, bool throwOnUiThread)
             {
                 this.Action = action;
                 this.Priority = priority;
-                this.TaskCompletionSource = new TaskCompletionSource<object>();
+                this.TaskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
             }
 
             /// <summary>

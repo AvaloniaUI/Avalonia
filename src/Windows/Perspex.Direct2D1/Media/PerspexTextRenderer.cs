@@ -53,7 +53,7 @@ namespace Perspex.Direct2D1.Media
             // TODO: Work out how to get the size below rather than passing new Size().
             var brush = (wrapper == null) ?
                 this.foreground :
-                this.context.CreateBrush(wrapper.Brush, new Size());
+                this.context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
 
             this.renderTarget.DrawGlyphRun(
                 new Vector2(baselineOriginX, baselineOriginY),

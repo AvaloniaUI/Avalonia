@@ -51,6 +51,14 @@ namespace Perspex.Threading
         }
 
         /// <summary>
+        /// Runs continuations pushed on the loop.
+        /// </summary>
+        public void RunJobs()
+        {
+            this.mainLoop.RunJobs();
+        }
+
+        /// <summary>
         /// Invokes a method on the dispatcher thread.
         /// </summary>
         /// <param name="action">The method.</param>
@@ -59,6 +67,16 @@ namespace Perspex.Threading
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             return this.mainLoop.InvokeAsync(action, priority);
+        }
+
+        /// <summary>
+        /// Post action that will be invoked on main thread
+        /// </summary>
+        /// <param name="action">The method.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            this.mainLoop.Post(action, priority);
         }
     }
 }

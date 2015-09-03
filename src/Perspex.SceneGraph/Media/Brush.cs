@@ -11,5 +11,13 @@ namespace Perspex.Media
     /// </summary>
     public abstract class Brush : PerspexObject
     {
+        public static readonly PerspexProperty<double> OpacityProperty =
+    PerspexProperty.Register<Brush, double>(nameof(Opacity), 1.0);
+
+        public double Opacity
+        {
+            get { return this.GetValue(OpacityProperty); }
+            set { this.SetValue(OpacityProperty, value); }
+        }
     }
 }

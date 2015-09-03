@@ -34,6 +34,15 @@ namespace Perspex.Direct2D1
             return new Size2F((float)p.Width, (float)p.Height);
         }
 
+        public static SharpDX.Direct2D1.ExtendMode ToDirect2D(this Perspex.Media.GradientSpreadMethod spreadMethod)
+        {
+            if (spreadMethod == Perspex.Media.GradientSpreadMethod.Pad)
+                return ExtendMode.Clamp;
+            else if (spreadMethod == Perspex.Media.GradientSpreadMethod.Reflect)
+                return ExtendMode.Mirror;
+            else
+                return ExtendMode.Wrap;
+        }
         /// <summary>
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>

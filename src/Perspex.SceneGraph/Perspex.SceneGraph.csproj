@@ -61,9 +61,14 @@
     <Compile Include="Media\AlignmentX.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
+    <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\MediaExtensions.cs" />
+    <Compile Include="Media\GradientBrush.cs" />
+    <Compile Include="Media\GradientSpreadMethod.cs" />
+    <Compile Include="Media\GradientStop.cs" />
+    <Compile Include="Media\LinearGradientBrush.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
