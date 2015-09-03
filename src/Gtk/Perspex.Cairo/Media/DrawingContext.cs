@@ -101,7 +101,9 @@ namespace Perspex.Cairo.Media
         /// <param name="p1">The second point of the line.</param>
         public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
         {
-            this.SetBrush(pen.Brush);
+            var size = new Rect(p1, p2).Size;
+            
+            this.SetBrush(pen.Brush, size);
             this.context.LineWidth = pen.Thickness;
             this.context.MoveTo(p1.ToCairo());
             this.context.LineTo(p2.ToCairo());
@@ -149,7 +151,7 @@ namespace Perspex.Cairo.Media
                 
                 if (brush != null)
                 {
-                    this.SetBrush(brush);
+                    this.SetBrush(brush, geometry.Bounds.Size);
 
                     if (pen != null)
                         this.context.FillPreserve();
@@ -160,7 +162,7 @@ namespace Perspex.Cairo.Media
 
                 if (pen != null)
                 {
-                    this.SetPen(pen);
+                    this.SetPen(pen, geometry.Bounds.Size);
                     this.context.Stroke();
                 }
             }
@@ -173,7 +175,7 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            this.SetPen(pen);
+            this.SetPen(pen, rect.Size);
             this.context.Rectangle(rect.ToCairo());
             this.context.Stroke();
         }
@@ -187,7 +189,7 @@ namespace Perspex.Cairo.Media
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
-            this.SetBrush(foreground);
+            this.SetBrush(foreground, new Size(0, 0));
             
             this.context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(this.context, layout);
@@ -200,7 +202,7 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
-            this.SetBrush(brush);
+            this.SetBrush(brush, rect.Size);
             this.context.Rectangle(rect.ToCairo());
             this.context.Fill();
         }
@@ -244,9 +246,10 @@ namespace Perspex.Cairo.Media
             });
         }
 
-        private void SetBrush(Brush brush)
+        private void SetBrush(Brush brush, Size destinationSize)
         {
             var solid = brush as SolidColorBrush;
+            var linearGradientBrush = brush as LinearGradientBrush;
 
             if (solid != null)
             {
@@ -256,11 +259,22 @@ namespace Perspex.Cairo.Media
                     solid.Color.B / 255.0,
                     solid.Color.A / 255.0);
             }
+            else if (linearGradientBrush != null)
+            {
+                Cairo.LinearGradient g = new Cairo.LinearGradient(linearGradientBrush.StartPoint.X * destinationSize.Width, linearGradientBrush.StartPoint.Y * destinationSize.Height, linearGradientBrush.EndPoint.X * destinationSize.Width, linearGradientBrush.EndPoint.Y * destinationSize.Height);
+
+                foreach (var s in linearGradientBrush.GradientStops)
+                    g.AddColorStopRgb(s.Offset, new Cairo.Color(s.Color.R, s.Color.G, s.Color.B, s.Color.A));
+
+                g.Extend = Cairo.Extend.Pad;
+
+                this.context.SetSource(g);
+            }
         }
 
-        private void SetPen(Pen pen)
+        private void SetPen(Pen pen, Size destinationSize)
         {
-            this.SetBrush(pen.Brush);
+            this.SetBrush(pen.Brush, destinationSize);
             this.context.LineWidth = pen.Thickness;
         }
     }
