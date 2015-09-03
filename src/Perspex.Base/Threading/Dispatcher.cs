@@ -51,6 +51,14 @@ namespace Perspex.Threading
         }
 
         /// <summary>
+        /// Runs continuations pushed on the loop.
+        /// </summary>
+        public void RunJobs()
+        {
+            this.mainLoop.RunJobs();
+        }
+
+        /// <summary>
         /// Invokes a method on the dispatcher thread.
         /// </summary>
         /// <param name="action">The method.</param>

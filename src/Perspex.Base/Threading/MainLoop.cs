@@ -42,37 +42,45 @@ namespace Perspex.Win32.Threading
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                Job job = null;
-
-                while (job != null || this.queue.Count > 0)
-                {
-                    if (job == null)
-                    {
-                        lock (this.queue)
-                        {
-                            job = this.queue.Dequeue();
-                        }
-                    }
-
-                    if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
-                    {
-                        break;
-                    }
-
-                    try
-                    {
-                        job.Action();
-                        job.TaskCompletionSource.SetResult(null);
-                    }
-                    catch (Exception e)
-                    {
-                        job.TaskCompletionSource.SetException(e);
-                    }
-
-                    job = null;
-                }
+                RunJobs();
 
                 platform.ProcessMessage();
+            }
+        }
+
+        /// <summary>
+        /// Runs continuations pushed on the loop.
+        /// </summary>
+        public void RunJobs()
+        {
+            Job job = null;
+
+            while (job != null || this.queue.Count > 0)
+            {
+                if (job == null)
+                {
+                    lock (this.queue)
+                    {
+                        job = this.queue.Dequeue();
+                    }
+                }
+
+                if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
+                {
+                    break;
+                }
+
+                try
+                {
+                    job.Action();
+                    job.TaskCompletionSource.SetResult(null);
+                }
+                catch (Exception e)
+                {
+                    job.TaskCompletionSource.SetException(e);
+                }
+
+                job = null;
             }
         }
 
