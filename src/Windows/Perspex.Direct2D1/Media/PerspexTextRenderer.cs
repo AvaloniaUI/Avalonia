@@ -13,14 +13,18 @@ namespace Perspex.Direct2D1.Media
 
     internal class PerspexTextRenderer : TextRenderer
     {
+        private DrawingContext context;
+
         private RenderTarget renderTarget;
 
         private Brush foreground;
 
         public PerspexTextRenderer(
+            DrawingContext context,
             RenderTarget target,
             Brush foreground)
         {
+            this.context = context;
             this.renderTarget = target;
             this.foreground = foreground;
         }
@@ -33,7 +37,6 @@ namespace Perspex.Direct2D1.Media
 
         public void Dispose()
         {
-            this.foreground.Dispose();
         }
 
         public Result DrawGlyphRun(
@@ -48,7 +51,7 @@ namespace Perspex.Direct2D1.Media
             var wrapper = clientDrawingEffect as BrushWrapper;
             var brush = (wrapper == null) ?
                 this.foreground :
-                wrapper.Brush.ToDirect2D(this.renderTarget);
+                this.context.CreateBrush(wrapper.Brush);
 
             this.renderTarget.DrawGlyphRun(
                 new Vector2(baselineOriginX, baselineOriginY),

@@ -1,0 +1,58 @@
+﻿// -----------------------------------------------------------------------
+// <copyright file="VisualBrushTests.cs" company="Steven Kirk">
+// Copyright 2014 MIT Licence. See licence.md for more information.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Perspex.Direct2D1.RenderTests.Controls
+{
+    using Perspex.Controls;
+    using Perspex.Controls.Shapes;
+    using Perspex.Layout;
+    using Perspex.Media;
+    using Xunit;
+
+    public class VisualBrushTests : TestBase
+    {
+        public VisualBrushTests()
+            : base(@"Brushes\VisualBrush")
+        {
+        }
+
+        [Fact]
+        public void VisualBrush_Should_Draw_Visual()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush
+                    {
+                        Visual = new Border
+                        {
+                            Width = 92,
+                            Height = 92,
+                            Background = Brushes.Red,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Child = new TextBlock
+                            {
+                                Text = "Perspex",
+                                FontSize = 12,
+                                FontFamily = "Arial",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            }
+                        }
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+    }
+}

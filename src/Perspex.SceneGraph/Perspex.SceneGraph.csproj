@@ -86,6 +86,7 @@
     <Compile Include="Media\SweepDirection.cs" />
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
+    <Compile Include="Media\VisualBrush.cs" />
     <Compile Include="Origin.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />

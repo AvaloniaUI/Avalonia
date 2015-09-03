@@ -9,7 +9,7 @@ namespace Perspex.Media
     /// <summary>
     /// Describes how an area is painted.
     /// </summary>
-    public abstract class Brush
+    public abstract class Brush : PerspexObject
     {
     }
 }
