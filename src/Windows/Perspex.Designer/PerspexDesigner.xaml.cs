@@ -66,11 +66,19 @@ namespace Perspex.Designer
 
         private void _host_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ProcessHost.WindowHandle) && _host.WindowHandle != IntPtr.Zero)
+            if (e.PropertyName == nameof(ProcessHost.WindowHandle))
             {
-                var host = new WindowHost();
-                host.SetWindow(_host.WindowHandle);
-                NativeContainer.Content = new WindowsFormsHost() {Child = host};
+                if (NativeContainer.Content != null)
+                {
+                    ((WindowHost)((WindowsFormsHost)NativeContainer.Content).Child).Dispose();
+                    NativeContainer.Content = null;
+                }
+                if (_host.WindowHandle != IntPtr.Zero)
+                {
+                    var host = new WindowHost();
+                    host.SetWindow(_host.WindowHandle);
+                    NativeContainer.Content = new WindowsFormsHost() {Child = host};
+                }
             }
         }
 
@@ -88,7 +96,7 @@ namespace Perspex.Designer
 
         private void OnXamlChanged()
         {
-            if (!_host.IsAlive)
+            if (!_host.IsAlive && TargetExe != null)
                 _host.Start(TargetExe, Xaml);
             else
                 _host.UpdateXaml(Xaml);
