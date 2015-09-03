@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Threading;
+
 namespace Perspex
 {
     using System;
@@ -100,6 +102,7 @@ namespace Perspex
         /// </summary>
         public PerspexObject()
         {
+            PerspexSynchronizationContext.InstallIfNeeded();
             this.propertyLog = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Property"),

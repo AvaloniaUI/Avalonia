@@ -55,7 +55,7 @@ namespace Perspex
             {
                 throw new InvalidOperationException("Cannot create more than one Application instance.");
             }
-
+            PerspexSynchronizationContext.InstallIfNeeded();
             Current = this;
         }
 
