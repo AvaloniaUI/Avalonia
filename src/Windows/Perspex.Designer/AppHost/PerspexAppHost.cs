@@ -17,7 +17,7 @@ namespace Perspex.Designer.AppHost
         private CommChannel _comm;
         private string _lastXaml;
         private string _currentXaml;
-        private Func<Stream, object, object> _xamlReader;
+        private Func<Stream, object> _xamlReader;
         private WindowHost _host;
         private bool _initSuccess;
 
@@ -128,7 +128,7 @@ namespace Perspex.Designer.AppHost
             dynamic xamlLoader =
                 LookupType("OmniXaml.XamlLoader").GetConstructors().First().Invoke(new object[] {xamlFactory});
 
-            _xamlReader = (stream, root) => xamlLoader.Load(stream, root);
+            _xamlReader = (stream) => xamlLoader.Load(stream);
             _host = new WindowHost();
             new Timer {Interval = 10, Enabled = true}.Tick += delegate
             {
@@ -149,8 +149,17 @@ namespace Perspex.Designer.AppHost
             _lastXaml = _currentXaml;
             try
             {
-                dynamic window = Activator.CreateInstance(LookupType("Perspex.Controls.Window"));
-                _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(_currentXaml)), window);
+                const string windowType = "Perspex.Controls.Window";
+                
+                var root = _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(_currentXaml)));
+                dynamic window = root;
+                if (root.GetType().FullName != windowType)
+                {
+                    window = Activator.CreateInstance(LookupType(windowType));
+                    window.Content = root;
+                }
+
+
                 var hWnd = (IntPtr)window.PlatformImpl.Handle;
                 _host.SetWindow(hWnd);
                 window.Show();
