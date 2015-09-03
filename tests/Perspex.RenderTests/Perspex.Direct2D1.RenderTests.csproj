@@ -80,6 +80,7 @@
     <Compile Include="Controls\ImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Media\LinearGradientBrushTests.cs" />
     <Compile Include="Shapes\PathTests.cs" />
     <Compile Include="Shapes\EllipseTests.cs" />
     <Compile Include="Shapes\RectangleTests.cs" />
