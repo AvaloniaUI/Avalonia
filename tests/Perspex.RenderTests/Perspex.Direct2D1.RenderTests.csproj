@@ -77,7 +77,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Brushes\VisualBrushTests.cs" />
+    <Compile Include="Media\VisualBrushTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />

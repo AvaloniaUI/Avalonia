@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex.Direct2D1.RenderTests.Controls
+namespace Perspex.Direct2D1.RenderTests.Media
 {
     using Perspex.Controls;
     using Perspex.Controls.Shapes;
@@ -15,7 +15,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
     public class VisualBrushTests : TestBase
     {
         public VisualBrushTests()
-            : base(@"Brushes\VisualBrush")
+            : base(@"Media\VisualBrush")
         {
         }
 
@@ -31,6 +31,7 @@ namespace Perspex.Direct2D1.RenderTests.Controls
                 {
                     Fill = new VisualBrush
                     {
+                        Stretch = Stretch.None,
                         Visual = new Border
                         {
                             Width = 92,
