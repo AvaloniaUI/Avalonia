@@ -49,9 +49,11 @@ namespace Perspex.Direct2D1.Media
             ComObject clientDrawingEffect)
         {
             var wrapper = clientDrawingEffect as BrushWrapper;
+
+            // TODO: Work out how to get the size below rather than passing new Size().
             var brush = (wrapper == null) ?
                 this.foreground :
-                this.context.CreateBrush(wrapper.Brush);
+                this.context.CreateBrush(wrapper.Brush, new Size());
 
             this.renderTarget.DrawGlyphRun(
                 new Vector2(baselineOriginX, baselineOriginY),

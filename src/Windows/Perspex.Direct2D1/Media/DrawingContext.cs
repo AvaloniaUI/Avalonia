@@ -90,7 +90,9 @@ namespace Perspex.Direct2D1.Media
         {
             if (pen != null)
             {
-                using (var d2dBrush = this.CreateBrush(pen.Brush))
+                var size = new Rect(p1, p2).Size;
+
+                using (var d2dBrush = this.CreateBrush(pen.Brush, size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
                     this.renderTarget.DrawLine(
@@ -113,7 +115,7 @@ namespace Perspex.Direct2D1.Media
         {
             if (brush != null)
             {
-                using (var d2dBrush = this.CreateBrush(brush))
+                using (var d2dBrush = this.CreateBrush(brush, geometry.Bounds.Size))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
                     this.renderTarget.FillGeometry(impl.Geometry, d2dBrush);
@@ -122,7 +124,7 @@ namespace Perspex.Direct2D1.Media
 
             if (pen != null)
             {
-                using (var d2dBrush = this.CreateBrush(pen.Brush))
+                using (var d2dBrush = this.CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
@@ -139,7 +141,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var brush = this.CreateBrush(pen.Brush))
+            using (var brush = this.CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
                 this.renderTarget.DrawRoundedRectangle(
@@ -162,7 +164,7 @@ namespace Perspex.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (var brush = this.CreateBrush(foreground))
+                using (var brush = this.CreateBrush(foreground, impl.Measure()))
                 using (var renderer = new PerspexTextRenderer(this, this.renderTarget, brush))
                 {
                     impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
@@ -178,7 +180,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
-            using (var b = this.CreateBrush(brush))
+            using (var b = this.CreateBrush(brush, rect.Size))
             {
                 this.renderTarget.FillRoundedRectangle(
                     new RoundedRectangle
@@ -263,8 +265,9 @@ namespace Perspex.Direct2D1.Media
         /// Creates a Direct2D brush from a Perspex brush.
         /// </summary>
         /// <param name="brush">The perspex brush.</param>
+        /// <param name="destinationSize">The size of the brush's target area.</param>
         /// <returns>The Direct2D brush.</returns>
-        public Disposable<SharpDX.Direct2D1.Brush> CreateBrush(Perspex.Media.Brush brush)
+        public Disposable<SharpDX.Direct2D1.Brush> CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
         {
             var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
             var visualBrush = brush as Perspex.Media.VisualBrush;
@@ -278,7 +281,7 @@ namespace Perspex.Direct2D1.Media
             }
             else if (visualBrush != null)
             {
-                return this.CreateBrush(visualBrush);
+                return this.CreateBrush(visualBrush, destinationSize);
             }
             else
             {
@@ -292,8 +295,9 @@ namespace Perspex.Direct2D1.Media
         /// Creates a Direct2D <see cref="BitmapBrush"/> from a Perspex <see cref="VisualBrush"/>.
         /// </summary>
         /// <param name="brush">The perspex brush.</param>
+        /// <param name="destinationSize">The size of the brush's target area.</param>
         /// <returns>The Direct2D brush.</returns>
-        private Disposable<SharpDX.Direct2D1.Brush> CreateBrush(VisualBrush brush)
+        private Disposable<SharpDX.Direct2D1.Brush> CreateBrush(VisualBrush brush, Size destinationSize)
         {
             var visual = brush.Visual;
             var layoutable = visual as ILayoutable;
@@ -304,17 +308,19 @@ namespace Perspex.Direct2D1.Media
                 layoutable.Arrange(new Rect(layoutable.DesiredSize));
             }
 
+            var sourceSize = layoutable.Bounds.Size;
+            var destinationRect = brush.DestinationRect.ToPixels(destinationSize);
+            var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceSize);
+
             using (var target = new BitmapRenderTarget(
                 this.renderTarget,
                 CompatibleRenderTargetOptions.None,
-                visual.Bounds.Size.ToSharpDX()))
+                destinationRect.Size.ToSharpDX()))
             {
                 var renderer = new Renderer(target);
-                renderer.Render(visual, null);
+                renderer.Render(visual, null, Matrix.Identity, Matrix.CreateScale(scale));
 
                 var result = new BitmapBrush(this.renderTarget, target.Bitmap);
-                result.ExtendModeX = ExtendMode.Wrap;
-                result.ExtendModeY = ExtendMode.Wrap;
                 return new Disposable<SharpDX.Direct2D1.Brush>(result, target);
             }
         }

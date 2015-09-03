@@ -57,10 +57,13 @@
     <Compile Include="Animation\IPageTransition.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Matrix.cs" />
+    <Compile Include="Media\AlignmentY.cs" />
+    <Compile Include="Media\AlignmentX.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\MediaExtensions.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
@@ -86,6 +89,7 @@
     <Compile Include="Media\SweepDirection.cs" />
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
+    <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
     <Compile Include="Origin.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
@@ -98,6 +102,7 @@
     <Compile Include="Platform\IStreamGeometryImpl.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelativeRect.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
     <Compile Include="Rendering\IRenderManager.cs" />
