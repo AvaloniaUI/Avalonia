@@ -1,12 +1,12 @@
-﻿using System.Threading;
-
-namespace Perspex.Threading
+﻿namespace Perspex.Threading
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Threading;
+
 
     /// <summary>
     /// SynchronizationContext to be used on main thread
@@ -14,7 +14,7 @@ namespace Perspex.Threading
     public class PerspexSynchronizationContext : SynchronizationContext
     {
         /// <summary>
-        /// Controls if SynchronizationContext should be installed in InstallIfNeeded
+        /// Controls if SynchronizationContext should be installed in InstallIfNeeded. Used by Designer.
         /// </summary>
         public static bool AutoInstall { get; set; } = true;
 

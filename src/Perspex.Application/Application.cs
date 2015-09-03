@@ -55,7 +55,7 @@ namespace Perspex
             {
                 throw new InvalidOperationException("Cannot create more than one Application instance.");
             }
-            PerspexSynchronizationContext.InstallIfNeeded();
+
             Current = this;
         }
 
@@ -150,6 +150,7 @@ namespace Perspex
         /// </summary>
         protected virtual void RegisterServices()
         {
+            PerspexSynchronizationContext.InstallIfNeeded();
             this.FocusManager = new FocusManager();
             this.InputManager = new InputManager();
 
