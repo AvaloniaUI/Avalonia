@@ -203,7 +203,7 @@ namespace Perspex.Threading
         /// </summary>
         private void InternalTick()
         {
-            this.Dispatcher.InvokeAsync(this.RaiseTick, this.priority);
+            this.Dispatcher.Post(this.RaiseTick, this.priority);
         }
 
         /// <summary>

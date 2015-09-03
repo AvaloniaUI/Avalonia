@@ -70,14 +70,21 @@ namespace Perspex.Win32.Threading
                     break;
                 }
 
-                try
+                if (job.TaskCompletionSource == null)
                 {
                     job.Action();
-                    job.TaskCompletionSource.SetResult(null);
                 }
-                catch (Exception e)
+                else
                 {
-                    job.TaskCompletionSource.SetException(e);
+                    try
+                    {
+                        job.Action();
+                        job.TaskCompletionSource.SetResult(null);
+                    }
+                    catch (Exception e)
+                    {
+                        job.TaskCompletionSource.SetException(e);
+                    }
                 }
 
                 job = null;
@@ -92,15 +99,29 @@ namespace Perspex.Win32.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeAsync(Action action, DispatcherPriority priority)
         {
-            var job = new Job(action, priority);
+            var job = new Job(action, priority, false);
+            this.AddJob(job);
+            return job.TaskCompletionSource.Task;
+        }
 
+        /// <summary>
+        /// Post action that will be invoked on main thread
+        /// </summary>
+        /// <param name="action">The method.</param>
+        /// 
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post(Action action, DispatcherPriority priority)
+        {
+            this.AddJob(new Job(action, priority, true));
+        }
+
+        private void AddJob(Job job)
+        {
             lock (this.queue)
             {
-                this.queue.Add(job, priority);
+                this.queue.Add(job, job.Priority);
             }
-
             platform.Wake();
-            return job.TaskCompletionSource.Task;
         }
 
         /// <summary>
@@ -113,11 +134,12 @@ namespace Perspex.Win32.Threading
             /// </summary>
             /// <param name="action">The method to call.</param>
             /// <param name="priority">The job priority.</param>
-            public Job(Action action, DispatcherPriority priority)
+            /// <param name="throwOnUiThread">Do not wrap excepption in TaskCompletionSource</param>
+            public Job(Action action, DispatcherPriority priority, bool throwOnUiThread)
             {
                 this.Action = action;
                 this.Priority = priority;
-                this.TaskCompletionSource = new TaskCompletionSource<object>();
+                this.TaskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
             }
 
             /// <summary>
