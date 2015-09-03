@@ -6,6 +6,7 @@
 
 namespace Perspex.Direct2D1.Media
 {
+    using System;
     using Perspex.Layout;
     using Perspex.Media;
     using SharpDX.Direct2D1;
@@ -30,6 +31,7 @@ namespace Perspex.Direct2D1.Media
             var sourceSize = layoutable.Bounds.Size;
             var destinationRect = brush.DestinationRect.ToPixels(destinationSize);
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceSize);
+            var translate = new Rect(destinationSize).CenterIn(new Rect(sourceSize * scale)).Position;
 
             using (var brt = new BitmapRenderTarget(
                 target,
@@ -37,7 +39,7 @@ namespace Perspex.Direct2D1.Media
                 destinationRect.Size.ToSharpDX()))
             {
                 var renderer = new Renderer(brt);
-                renderer.Render(visual, null, Matrix.Identity, Matrix.CreateScale(scale));
+                renderer.Render(visual, null, Matrix.CreateTranslation(translate), Matrix.CreateScale(scale));
                 this.PlatformBrush = new BitmapBrush(brt, brt.Bitmap);
             }
         }

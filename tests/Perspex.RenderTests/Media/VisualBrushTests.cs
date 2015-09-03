@@ -70,6 +70,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         AlignmentX = AlignmentX.Center,
                         AlignmentY = AlignmentY.Center,
+                        Stretch = Stretch.None,
                         Visual = new Border
                         {
                             Width = 92,
