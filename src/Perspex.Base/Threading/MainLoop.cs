@@ -108,9 +108,11 @@ namespace Perspex.Win32.Threading
         /// Post action that will be invoked on main thread
         /// </summary>
         /// <param name="action">The method.</param>
-        internal void Post(Action action)
+        /// 
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post(Action action, DispatcherPriority priority)
         {
-            this.AddJob(new Job(action, DispatcherPriority.Normal, true));
+            this.AddJob(new Job(action, priority, true));
         }
 
         private void AddJob(Job job)

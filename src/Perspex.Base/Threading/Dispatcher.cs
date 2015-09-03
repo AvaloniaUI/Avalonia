@@ -73,9 +73,10 @@ namespace Perspex.Threading
         /// Post action that will be invoked on main thread
         /// </summary>
         /// <param name="action">The method.</param>
-        internal void Post(Action action)
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            this.mainLoop.Post(action);
+            this.mainLoop.Post(action, priority);
         }
     }
 }
