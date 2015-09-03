@@ -1,4 +1,6 @@
 using System;
+using System.Reactive.Concurrency;
+using System.Threading;
 
 
 namespace ReactiveUI
@@ -12,7 +14,7 @@ namespace ReactiveUI
     {
         public void Register(Action<Func<object>, Type> registerFunction)
         {
-            
+            RxApp.MainThreadScheduler = new SynchronizationContextScheduler(SynchronizationContext.Current);
         }
     }
 }
