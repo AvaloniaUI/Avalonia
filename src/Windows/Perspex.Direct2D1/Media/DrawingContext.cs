@@ -144,11 +144,22 @@ namespace Perspex.Direct2D1.Media
             using (var brush = this.CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
-                this.renderTarget.DrawRoundedRectangle(
-                    new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                    brush.PlatformBrush,
-                    (float)pen.Thickness,
-                    d2dStroke);
+                if (cornerRadius == 0)
+                {
+                    this.renderTarget.DrawRectangle(
+                        rect.ToDirect2D(),
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
+                else
+                {
+                    this.renderTarget.DrawRoundedRectangle(
+                        new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
             }
         }
 
@@ -182,18 +193,25 @@ namespace Perspex.Direct2D1.Media
         {
             using (var b = this.CreateBrush(brush, rect.Size))
             {
-                this.renderTarget.FillRoundedRectangle(
-                    new RoundedRectangle
-                    {
-                        Rect = new RectangleF(
-                                (float)rect.X,
-                                (float)rect.Y,
-                                (float)rect.Width,
-                                (float)rect.Height),
-                        RadiusX = cornerRadius,
-                        RadiusY = cornerRadius
-                    },
-                    b.PlatformBrush);
+                if (cornerRadius == 0)
+                {
+                    this.renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
+                }
+                else
+                {
+                    this.renderTarget.FillRoundedRectangle(
+                        new RoundedRectangle
+                        {
+                            Rect = new RectangleF(
+                                    (float)rect.X,
+                                    (float)rect.Y,
+                                    (float)rect.Width,
+                                    (float)rect.Height),
+                            RadiusX = cornerRadius,
+                            RadiusY = cornerRadius
+                        },
+                        b.PlatformBrush);
+                }
             }
         }
 
