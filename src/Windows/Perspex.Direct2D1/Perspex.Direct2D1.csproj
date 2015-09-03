@@ -75,11 +75,14 @@
     </Compile>
     <Compile Include="Direct2D1Platform.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
+    <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\PerspexTextRenderer.cs" />
+    <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
     <Compile Include="Media\GeometryImpl.cs" />
     <Compile Include="Media\StreamGeometryImpl.cs" />
