@@ -89,13 +89,15 @@ namespace Perspex.Direct2D1.Media
         {
             if (pen != null)
             {
-                using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
+                var size = new Rect(p1, p2).Size;
+
+                using (var d2dBrush = this.CreateBrush(pen.Brush, size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
                     this.renderTarget.DrawLine(
                         p1.ToSharpDX(),
                         p2.ToSharpDX(),
-                        d2dBrush,
+                        d2dBrush.PlatformBrush,
                         (float)pen.Thickness,
                         d2dStroke);
                 }
@@ -112,20 +114,20 @@ namespace Perspex.Direct2D1.Media
         {
             if (brush != null)
             {
-                using (var d2dBrush = brush.ToDirect2D(this.renderTarget))
+                using (var d2dBrush = this.CreateBrush(brush, geometry.Bounds.Size))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    this.renderTarget.FillGeometry(impl.Geometry, d2dBrush);
+                    this.renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
                 }
             }
 
             if (pen != null)
             {
-                using (var d2dBrush = pen.Brush.ToDirect2D(this.renderTarget))
+                using (var d2dBrush = this.CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush, (float)pen.Thickness, d2dStroke);
+                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
                 }
             }
         }
@@ -138,12 +140,12 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var brush = pen.Brush.ToDirect2D(this.renderTarget))
+            using (var brush = this.CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
                 this.renderTarget.DrawRoundedRectangle(
                     new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                    brush,
+                    brush.PlatformBrush,
                     (float)pen.Thickness,
                     d2dStroke);
             }
@@ -161,7 +163,8 @@ namespace Perspex.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (var renderer = new PerspexTextRenderer(this.renderTarget, foreground.ToDirect2D(this.renderTarget)))
+                using (var brush = this.CreateBrush(foreground, impl.Measure()))
+                using (var renderer = new PerspexTextRenderer(this, this.renderTarget, brush.PlatformBrush))
                 {
                     impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
                 }
@@ -176,7 +179,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
-            using (var b = brush.ToDirect2D(this.renderTarget))
+            using (var b = this.CreateBrush(brush, rect.Size))
             {
                 this.renderTarget.FillRoundedRectangle(
                     new RoundedRectangle
@@ -189,7 +192,7 @@ namespace Perspex.Direct2D1.Media
                         RadiusX = cornerRadius,
                         RadiusY = cornerRadius
                     },
-                    b);
+                    b.PlatformBrush);
             }
         }
 
@@ -255,6 +258,25 @@ namespace Perspex.Direct2D1.Media
                 m3x2.Invert();
                 this.renderTarget.Transform = transform * m3x2;
             });
+        }
+
+        public BrushImpl CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
+        {
+            Perspex.Media.SolidColorBrush solidColorBrush = brush as Perspex.Media.SolidColorBrush;
+            Perspex.Media.LinearGradientBrush linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
+
+            if (solidColorBrush != null)
+            {
+                return new SolidColorBrushImpl(solidColorBrush, this.renderTarget, destinationSize);
+            }
+            else if (linearGradientBrush != null)
+            {
+                return new LinearGradientBrushImpl(linearGradientBrush, this.renderTarget, destinationSize);
+            }
+            else
+            {
+                return new SolidColorBrushImpl(null, this.renderTarget, destinationSize);
+            }
         }
     }
 }
