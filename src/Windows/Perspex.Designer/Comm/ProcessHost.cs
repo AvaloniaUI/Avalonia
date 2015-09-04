@@ -102,7 +102,8 @@ namespace Perspex.Designer.Comm
                 {
                     UseShellExecute = false,
                     RedirectStandardInput = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 },
                 EnableRaisingEvents = true
             };
