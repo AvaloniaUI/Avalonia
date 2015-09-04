@@ -40,11 +40,31 @@ namespace Perspex.Direct2D1.Media
                 var transform = Matrix.CreateTranslation(-sourceRect.Position) *
                                 Matrix.CreateScale(scale) *
                                 Matrix.CreateTranslation(translate);
-                renderer.Render(visual, null, transform, destinationRect);
+
+                Rect drawRect;
+
+                if (brush.TileMode == TileMode.None)
+                {
+                    drawRect = destinationRect;
+                }
+                else
+                {
+                    drawRect = new Rect(0, 0, destinationRect.Width, destinationRect.Height);
+                }
+
+                renderer.Render(visual, null, transform, drawRect);
 
                 var result = new BitmapBrush(brt, brt.Bitmap);
                 result.ExtendModeX = ExtendMode.Wrap;
                 result.ExtendModeY = ExtendMode.Wrap;
+
+                if (brush.TileMode != TileMode.None)
+                {
+                    result.Transform = SharpDX.Matrix3x2.Translation(
+                        (float)destinationRect.X,
+                        (float)destinationRect.Y);
+                }
+
                 this.PlatformBrush = result;
             }
         }
@@ -68,12 +88,12 @@ namespace Perspex.Direct2D1.Media
             Rect destinationRect,
             Vector scale)
         {
-            var x = destinationRect.X;
-            var y = destinationRect.Y;
-            var size = sourceRect.Size * scale;
-
             if (brush.TileMode == TileMode.None)
             {
+                var x = destinationRect.X;
+                var y = destinationRect.Y;
+                var size = sourceRect.Size * scale;
+
                 switch (brush.AlignmentX)
                 {
                     case AlignmentX.Center:
@@ -93,9 +113,13 @@ namespace Perspex.Direct2D1.Media
                         y += destinationRect.Height - size.Height;
                         break;
                 }
-            }
 
-            return new Vector(x, y);
+                return new Vector(x, y);
+            }
+            else
+            {
+                return new Vector();
+            }
         }
 
         public override void Dispose()
