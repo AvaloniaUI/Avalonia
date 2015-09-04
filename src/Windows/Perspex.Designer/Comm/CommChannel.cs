@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Threading;
 
 namespace Perspex.Designer.Comm
@@ -20,6 +22,7 @@ namespace Perspex.Designer.Comm
         private BlockingCollection<byte[]> _outputQueue = new BlockingCollection<byte[]>();
         public event Action<object> OnMessage;
         public event Action Disposed;
+        public event Action<Exception> Exception;
         public CommChannel(Stream input, Stream output)
         {
             _input = new BinaryReader(input);
@@ -36,7 +39,7 @@ namespace Perspex.Designer.Comm
 
         public void SendMessage(object message)
         {
-            var fmt = new BinaryFormatter();
+            var fmt = GetFormatter();
             var ms = new MemoryStream();
             fmt.Serialize(ms, message);
             _outputQueue.Add(ms.ToArray());
@@ -57,6 +60,7 @@ namespace Perspex.Designer.Comm
                 }
                 catch (Exception e)
                 {
+                    Exception?.Invoke(e);
                     Dispose();
                 }
             }
@@ -73,7 +77,8 @@ namespace Perspex.Designer.Comm
 
         async void ReaderThread()
         {
-            var fmt = new BinaryFormatter();
+            await Task.Delay(10).ConfigureAwait(false);
+            var fmt = GetFormatter();
             while (!_terminating.Task.IsCompleted)
             {
                 try
@@ -87,13 +92,28 @@ namespace Perspex.Designer.Comm
                     var message = fmt.Deserialize(new MemoryStream(data));
                     _dispatcher.Post(_ => OnMessage?.Invoke(message), null);
                 }
-                catch
+                catch(Exception e)
                 {
                     Dispose();
+                    Exception?.Invoke(e);
                     return;
                 }
             }
 
+        }
+
+        sealed class BinderFix : SerializationBinder
+        {
+            public override Type BindToType(string assemblyName, string typeName)
+            {
+                return typeof (CommChannel).Assembly.GetType(typeName, false, true);
+
+            }
+        }
+
+        BinaryFormatter GetFormatter()
+        {
+            return new BinaryFormatter() {Binder = new BinderFix()};
         }
 
         public void Dispose()

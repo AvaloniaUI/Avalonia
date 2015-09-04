@@ -34,6 +34,7 @@ namespace Perspex.Designer
             Console.SetOut(new NullTextWriter());
             Console.SetError(new NullTextWriter());
             comm.Disposed += () => Process.GetCurrentProcess().Kill();
+            comm.SendMessage(new StateMessage("Staying awhile and listening..."));
             var service = new PerspexAppHost(comm);
             service.Start();
             Application.Run();
