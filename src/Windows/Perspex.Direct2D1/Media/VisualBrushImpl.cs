@@ -40,7 +40,7 @@ namespace Perspex.Direct2D1.Media
                 var transform = Matrix.CreateTranslation(-sourceRect.Position) *
                                 Matrix.CreateScale(scale) *
                                 Matrix.CreateTranslation(translate);
-                renderer.Render(visual, null, transform);
+                renderer.Render(visual, null, transform, destinationRect);
 
                 var result = new BitmapBrush(brt, brt.Bitmap);
                 this.PlatformBrush = result;

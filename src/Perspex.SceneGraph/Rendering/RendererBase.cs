@@ -43,9 +43,11 @@ namespace Perspex.Rendering
         /// <param name="visual">The visual to render.</param>
         /// <param name="handle">An optional platform-specific handle.</param>
         /// <param name="transform">The transform.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform)
+        /// <param name="clip">An optional clip rectangle.</param>
+        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform, Rect? clip = null)
         {
             using (var context = this.CreateDrawingContext(handle))
+            using (clip.HasValue ? context.PushClip(clip.Value) : null)
             {
                 this.Render(visual, context, Matrix.Identity, transform);
             }
