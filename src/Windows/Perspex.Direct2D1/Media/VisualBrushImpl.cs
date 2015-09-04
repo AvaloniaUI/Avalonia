@@ -28,10 +28,10 @@ namespace Perspex.Direct2D1.Media
                 layoutable.Arrange(new Rect(layoutable.DesiredSize));
             }
 
-            var sourceSize = layoutable.Bounds.Size;
+            var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
             var destinationRect = brush.DestinationRect.ToPixels(destinationSize);
-            var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceSize);
-            var translate = CalculateTranslate(brush, destinationRect.Size, sourceSize * scale);
+            var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+            var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
 
             using (var brt = new BitmapRenderTarget(
                 target,
@@ -39,33 +39,41 @@ namespace Perspex.Direct2D1.Media
                 destinationRect.Size.ToSharpDX()))
             {
                 var renderer = new Renderer(brt);
-                renderer.Render(visual, null, Matrix.CreateTranslation(translate), Matrix.CreateScale(scale));
+                var transform = Matrix.CreateTranslation(-sourceRect.Position) *
+                                Matrix.CreateScale(scale) *
+                                Matrix.CreateTranslation(translate);
+                renderer.Render(visual, null, transform);
                 this.PlatformBrush = new BitmapBrush(brt, brt.Bitmap);
             }
         }
 
-        private static Vector CalculateTranslate(VisualBrush brush, Size destinationSize, Size sourceSize)
+        private static Vector CalculateTranslate(
+            VisualBrush brush,
+            Rect sourceRect,
+            Rect destinationRect,
+            Vector scale)
         {
-            double x = 0;
-            double y = 0;
+            var x = 0.0;
+            var y = 0.0;
+            var size = sourceRect.Size * scale;
 
             switch (brush.AlignmentX)
             {
                 case AlignmentX.Center:
-                    x = (destinationSize.Width - sourceSize.Width) / 2;
+                    x += (destinationRect.Width - size.Width) / 2;
                     break;
                 case AlignmentX.Right:
-                    x = destinationSize.Width - sourceSize.Width;
+                    x += destinationRect.Width - size.Width;
                     break;
             }
 
             switch (brush.AlignmentY)
             {
                 case AlignmentY.Center:
-                    y = (destinationSize.Height - sourceSize.Height) / 2;
+                    y += (destinationRect.Height - size.Height) / 2;
                     break;
                 case AlignmentY.Bottom:
-                    y = destinationSize.Height - sourceSize.Height;
+                    y += destinationRect.Height - size.Height;
                     break;
             }
 

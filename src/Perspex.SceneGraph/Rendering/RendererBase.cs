@@ -34,7 +34,7 @@ namespace Perspex.Rendering
         /// <param name="handle">An optional platform-specific handle.</param>
         public virtual void Render(IVisual visual, IPlatformHandle handle)
         {
-            this.Render(visual, handle, Matrix.Identity, Matrix.Identity);
+            this.Render(visual, handle, Matrix.Identity);
         }
 
         /// <summary>
@@ -42,14 +42,12 @@ namespace Perspex.Rendering
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="handle">An optional platform-specific handle.</param>
-        /// <param name="translation">The translation.</param>
         /// <param name="transform">The transform.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix translation, Matrix transform)
+        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform)
         {
             using (var context = this.CreateDrawingContext(handle))
             {
-                //context.PushTransform(translation * transform);
-                this.Render(visual, context, translation, transform);
+                this.Render(visual, context, Matrix.Identity, transform);
             }
 
             ++this.RenderCount;
