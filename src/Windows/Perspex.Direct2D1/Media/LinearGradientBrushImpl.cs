@@ -8,8 +8,10 @@
 
     public class LinearGradientBrushImpl : BrushImpl
     {
-        public LinearGradientBrushImpl(Perspex.Media.LinearGradientBrush brush, SharpDX.Direct2D1.RenderTarget target, Size destinationSize)
-            : base(brush, target, destinationSize)
+        public LinearGradientBrushImpl(
+            Perspex.Media.LinearGradientBrush brush, 
+            SharpDX.Direct2D1.RenderTarget target, 
+            Size destinationSize)
         {
             if (brush != null)
             {
