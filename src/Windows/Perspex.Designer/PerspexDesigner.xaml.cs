@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -30,7 +31,7 @@ namespace Perspex.Designer
 
         private static void TargetExeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((PerspexDesigner) d).OnTargetExeChanged();
+            ((PerspexDesigner) d).RestartProcess();
         }
         public string TargetExe
         {
@@ -87,8 +88,25 @@ namespace Perspex.Designer
             _host.Kill();
         }
 
-        private void OnTargetExeChanged()
+        bool CheckTargetExeOrSetError()
         {
+            if (string.IsNullOrEmpty(TargetExe))
+            {
+                State.Text = "No target exe found";
+                return false;
+            }
+
+            if (File.Exists(TargetExe ?? ""))
+                return true;
+            State.Text = "No target binary found, build your project";
+            return false;
+        }
+
+        public void RestartProcess()
+        {
+            KillProcess();
+            if(!CheckTargetExeOrSetError())
+                return;
             if(string.IsNullOrEmpty(Xaml))
                 return;
             _host.Start(TargetExe, Xaml);
@@ -96,10 +114,12 @@ namespace Perspex.Designer
 
         private void OnXamlChanged()
         {
-            if (!_host.IsAlive && TargetExe != null)
+            if (!CheckTargetExeOrSetError())
+                return;
+            if (!_host.IsAlive)
                 _host.Start(TargetExe, Xaml);
             else
-                _host.UpdateXaml(Xaml);
+                _host.UpdateXaml(Xaml ?? "");
         }
 
     }
