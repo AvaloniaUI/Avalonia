@@ -57,7 +57,7 @@ namespace Perspex.Controls
             {
                 Rect viewPort = new Rect(this.Bounds.Size);
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-                Vector scale = CalculateScaling(this.Bounds.Size, sourceSize, this.Stretch);
+                Vector scale = this.Stretch.CalculateScaling(this.Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterIn(new Rect(scaledSize))
@@ -95,41 +95,10 @@ namespace Perspex.Controls
                     availableSize = new Size(availableSize.Width, this.Height);
                 }
 
-                scale = CalculateScaling(availableSize, new Size(width, height), this.Stretch);
+                scale = this.Stretch.CalculateScaling(availableSize, new Size(width, height));
             }
 
             return new Size(width * scale.X, height * scale.Y);
-        }
-
-        /// <summary>
-        /// Calculates the scaling for the image.
-        /// </summary>
-        /// <param name="availableSize">The size available to display the image.</param>
-        /// <param name="imageSize">The pxiel size of the image.</param>
-        /// <param name="stretch">The stretch mode of the control.</param>
-        /// <returns>A vector with the X and Y scaling factors.</returns>
-        private static Vector CalculateScaling(Size availableSize, Size imageSize, Stretch stretch)
-        {
-            double scaleX = 1;
-            double scaleY = 1;
-
-            if (stretch != Stretch.None)
-            {
-                scaleX = availableSize.Width / imageSize.Width;
-                scaleY = availableSize.Height / imageSize.Height;
-
-                switch (stretch)
-                {
-                    case Stretch.Uniform:
-                        scaleX = scaleY = Math.Min(scaleX, scaleY);
-                        break;
-                    case Stretch.UniformToFill:
-                        scaleX = scaleY = Math.Max(scaleX, scaleY);
-                        break;
-                }
-            }
-
-            return new Vector(scaleX, scaleY);
         }
     }
 }

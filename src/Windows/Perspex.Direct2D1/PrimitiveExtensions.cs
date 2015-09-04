@@ -44,27 +44,6 @@ namespace Perspex.Direct2D1
                 return ExtendMode.Wrap;
         }
         /// <summary>
-        /// Converts a brush to Direct2D.
-        /// </summary>
-        /// <param name="brush">The brush to convert.</param>
-        /// <param name="target">The render target.</param>
-        /// <returns>The Direct2D brush.</returns>
-        public static SharpDX.Direct2D1.Brush ToDirect2D(this Perspex.Media.Brush brush, RenderTarget target)
-        {
-            Perspex.Media.SolidColorBrush solidColorBrush = brush as Perspex.Media.SolidColorBrush;
-
-            if (solidColorBrush != null)
-            {
-                return new SharpDX.Direct2D1.SolidColorBrush(target, solidColorBrush.Color.ToDirect2D());
-            }
-            else
-            {
-                // TODO: Implement other brushes.
-                return new SharpDX.Direct2D1.SolidColorBrush(target, new Color4());
-            }
-        }
-
-        /// <summary>
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
         /// <param name="pen">The pen to convert.</param>

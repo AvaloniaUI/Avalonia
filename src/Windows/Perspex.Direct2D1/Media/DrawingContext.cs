@@ -143,11 +143,22 @@ namespace Perspex.Direct2D1.Media
             using (var brush = this.CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
             {
-                this.renderTarget.DrawRoundedRectangle(
-                    new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                    brush.PlatformBrush,
-                    (float)pen.Thickness,
-                    d2dStroke);
+                if (cornerRadius == 0)
+                {
+                    this.renderTarget.DrawRectangle(
+                        rect.ToDirect2D(),
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
+                else
+                {
+                    this.renderTarget.DrawRoundedRectangle(
+                        new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
             }
         }
 
@@ -181,18 +192,25 @@ namespace Perspex.Direct2D1.Media
         {
             using (var b = this.CreateBrush(brush, rect.Size))
             {
-                this.renderTarget.FillRoundedRectangle(
-                    new RoundedRectangle
-                    {
-                        Rect = new RectangleF(
-                                (float)rect.X,
-                                (float)rect.Y,
-                                (float)rect.Width,
-                                (float)rect.Height),
-                        RadiusX = cornerRadius,
-                        RadiusY = cornerRadius
-                    },
-                    b.PlatformBrush);
+                if (cornerRadius == 0)
+                {
+                    this.renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
+                }
+                else
+                {
+                    this.renderTarget.FillRoundedRectangle(
+                        new RoundedRectangle
+                        {
+                            Rect = new RectangleF(
+                                    (float)rect.X,
+                                    (float)rect.Y,
+                                    (float)rect.Width,
+                                    (float)rect.Height),
+                            RadiusX = cornerRadius,
+                            RadiusY = cornerRadius
+                        },
+                        b.PlatformBrush);
+                }
             }
         }
 
@@ -260,10 +278,17 @@ namespace Perspex.Direct2D1.Media
             });
         }
 
+        /// <summary>
+        /// Creates a Direct2D brush wrapper for a Perspex brush.
+        /// </summary>
+        /// <param name="brush">The perspex brush.</param>
+        /// <param name="destinationSize">The size of the brush's target area.</param>
+        /// <returns>The Direct2D brush wrapper.</returns>
         public BrushImpl CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
         {
-            Perspex.Media.SolidColorBrush solidColorBrush = brush as Perspex.Media.SolidColorBrush;
-            Perspex.Media.LinearGradientBrush linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
+            var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
+            var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
+            var visualBrush = brush as Perspex.Media.VisualBrush;
 
             if (solidColorBrush != null)
             {
@@ -272,6 +297,10 @@ namespace Perspex.Direct2D1.Media
             else if (linearGradientBrush != null)
             {
                 return new LinearGradientBrushImpl(linearGradientBrush, this.renderTarget, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                return new VisualBrushImpl(visualBrush, this.renderTarget, destinationSize);
             }
             else
             {

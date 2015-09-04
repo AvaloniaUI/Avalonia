@@ -60,6 +60,16 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Negates a point.
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <returns>The negated point.</returns>
+        public static Point operator -(Point a)
+        {
+            return new Point(-a.x, -a.y);
+        }
+
+        /// <summary>
         /// Checks for equality between two <see cref="Point"/>s.
         /// </summary>
         /// <param name="left">The first point.</param>
