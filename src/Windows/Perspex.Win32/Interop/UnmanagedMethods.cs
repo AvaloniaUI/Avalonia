@@ -508,10 +508,10 @@ namespace Perspex.Win32.Interop
            IntPtr hInstance,
            IntPtr lpParam);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -538,7 +538,7 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool GetKeyboardState(byte[] lpKeyState);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", EntryPoint = "GetMessageW")]
         public static extern sbyte GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
         [DllImport("user32.dll")]
@@ -566,6 +566,9 @@ namespace Perspex.Win32.Interop
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern bool IsWindowUnicode(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
         [DllImport("user32.dll")]
@@ -577,7 +580,7 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr PostMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
         [DllImport("user32.dll")]

@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Input;
+
 namespace Perspex.Win32
 {
     using System;
@@ -203,6 +205,8 @@ namespace Perspex.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            bool unicode = UnmanagedMethods.IsWindowUnicode(hWnd);
+
             const double WheelDelta = 120.0;
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
@@ -252,8 +256,7 @@ namespace Perspex.Win32
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey((int)wParam),
-                            WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
+                            KeyInterop.KeyFromVirtualKey((int)wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYUP:
@@ -263,10 +266,12 @@ namespace Perspex.Win32
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey((int)wParam),
-                            WindowsKeyboardDevice.Instance.StringFromVirtualKey((uint)wParam));
+                            KeyInterop.KeyFromVirtualKey((int)wParam));
                     break;
-
+                case UnmanagedMethods.WindowsMessage.WM_CHAR:
+                    e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
+                        new string((char) wParam.ToInt32(), 1));
+                    break;
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,

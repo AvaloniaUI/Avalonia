@@ -150,7 +150,7 @@ namespace Perspex.Input
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
-                var text = e.Text.ToUpper();
+                var text = e.Key.ToString().ToUpper();
                 var matches = this.registered
                     .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
                     .Select(x => x.Item2);

@@ -82,6 +82,14 @@ namespace Perspex.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="TextInput"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
+            RoutedEvent.Register<InputElement, TextInputEventArgs>(
+                "TextInput",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="PointerEnter"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
@@ -136,6 +144,7 @@ namespace Perspex.Input
             LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
             KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
+            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
             PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
             PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
@@ -178,6 +187,15 @@ namespace Perspex.Input
         {
             add { this.AddHandler(KeyUpEvent, value); }
             remove { this.RemoveHandler(KeyUpEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a user typed some text while the control has focus.
+        /// </summary>
+        public event EventHandler<TextInputEventArgs> TextInput
+        {
+            add { this.AddHandler(TextInputEvent, value); }
+            remove { this.RemoveHandler(TextInputEvent, value); }
         }
 
         /// <summary>
@@ -374,6 +392,14 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyUp(KeyEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called before the <see cref="TextInput"/> event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTextInput(TextInputEventArgs e)
         {
         }
 

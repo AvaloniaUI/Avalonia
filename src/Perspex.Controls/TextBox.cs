@@ -128,12 +128,27 @@ namespace Perspex.Controls
             this.presenter.HideCaret();
         }
 
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            string text = this.Text ?? string.Empty;
+            int caretIndex = this.CaretIndex;
+            if (!string.IsNullOrEmpty(e.Text))
+            {
+                this.DeleteSelection();
+                caretIndex = this.CaretIndex;
+                text = this.Text ?? string.Empty;
+                this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
+                ++this.CaretIndex;
+                this.SelectionStart = this.SelectionEnd = this.CaretIndex;
+            }
+            base.OnTextInput(e);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             string text = this.Text ?? string.Empty;
             int caretIndex = this.CaretIndex;
             bool movement = false;
-            bool textEntered = false;
             bool handled = true;
             var modifiers = e.Device.Modifiers;
 
@@ -220,16 +235,6 @@ namespace Perspex.Controls
                     break;
 
                 default:
-                    if (!string.IsNullOrEmpty(e.Text) && !modifiers.HasFlag(ModifierKeys.Control) && !modifiers.HasFlag(ModifierKeys.Alt))
-                    {
-                        this.DeleteSelection();
-                        caretIndex = this.CaretIndex;
-                        text = this.Text ?? string.Empty;
-                        this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
-                        ++this.CaretIndex;
-                        textEntered = true;
-                    }
-
                     break;
             }
 
@@ -237,7 +242,7 @@ namespace Perspex.Controls
             {
                 this.SelectionEnd = this.CaretIndex;
             }
-            else if (movement || textEntered)
+            else if (movement)
             {
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
