@@ -29,7 +29,7 @@ namespace Perspex.Direct2D1.Media
 
             var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
             var destinationRect = brush.DestinationRect.ToPixels(targetSize);
-            var bitmapSize = brush.TileMode == TileMode.None ? targetSize : sourceRect.Size;
+            var bitmapSize = brush.TileMode == TileMode.None ? targetSize : destinationRect.Size;
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
             var options = CompatibleRenderTargetOptions.None;

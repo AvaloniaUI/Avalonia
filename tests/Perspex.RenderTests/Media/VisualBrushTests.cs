@@ -411,6 +411,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.Tile,
+                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, OriginUnit.Percent),
                         Visual = new Border
                         {
                             Width = 92,
@@ -436,7 +437,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
         [Fact]
-        public void VisualBrush_Tile_DestinationRect()
+        public void VisualBrush_Tile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
             {
@@ -449,7 +450,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.Tile,
-                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, OriginUnit.Percent),
+                        AlignmentX = AlignmentX.Right,
+                        AlignmentY = AlignmentY.Bottom,
                         Visual = new Border
                         {
                             Width = 92,
