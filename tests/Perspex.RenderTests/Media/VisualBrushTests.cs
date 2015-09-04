@@ -358,5 +358,43 @@ namespace Perspex.Direct2D1.RenderTests.Media
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [Fact]
+        public void VisualBrush_SourceRect_DestinationRect_Percent()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush
+                    {
+                        SourceRect = new RelativeRect(0.22, 0.22, 0.56, 0.56, OriginUnit.Percent),
+                        DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, OriginUnit.Percent),
+                        Visual = new Border
+                        {
+                            Width = 180,
+                            Height = 180,
+                            Background = Brushes.Red,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Child = new Ellipse
+                            {
+                                Width = 100,
+                                Height = 100,
+                                Fill = Brushes.Yellow,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                            }
+                        }
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }
