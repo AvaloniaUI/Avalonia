@@ -131,6 +131,14 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
+      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
+      <Name>Perspex.Direct2D1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
+      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
+      <Name>Perspex.Win32</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="github_icon.png">
