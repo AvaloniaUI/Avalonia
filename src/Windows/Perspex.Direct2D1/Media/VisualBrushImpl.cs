@@ -46,6 +46,7 @@ namespace Perspex.Direct2D1.Media
                 if (brush.TileMode == TileMode.None)
                 {
                     drawRect = destinationRect;
+                    transform *= Matrix.CreateTranslation(destinationRect.Position);
                 }
                 else
                 {
@@ -75,38 +76,31 @@ namespace Perspex.Direct2D1.Media
             Rect destinationRect,
             Vector scale)
         {
-            if (brush.TileMode == TileMode.None)
+            var x = 0.0;
+            var y = 0.0;
+            var size = sourceRect.Size * scale;
+
+            switch (brush.AlignmentX)
             {
-                var x = destinationRect.X;
-                var y = destinationRect.Y;
-                var size = sourceRect.Size * scale;
-
-                switch (brush.AlignmentX)
-                {
-                    case AlignmentX.Center:
-                        x += (destinationRect.Width - size.Width) / 2;
-                        break;
-                    case AlignmentX.Right:
-                        x += destinationRect.Width - size.Width;
-                        break;
-                }
-
-                switch (brush.AlignmentY)
-                {
-                    case AlignmentY.Center:
-                        y += (destinationRect.Height - size.Height) / 2;
-                        break;
-                    case AlignmentY.Bottom:
-                        y += destinationRect.Height - size.Height;
-                        break;
-                }
-
-                return new Vector(x, y);
+                case AlignmentX.Center:
+                    x += (destinationRect.Width - size.Width) / 2;
+                    break;
+                case AlignmentX.Right:
+                    x += destinationRect.Width - size.Width;
+                    break;
             }
-            else
+
+            switch (brush.AlignmentY)
             {
-                return new Vector();
+                case AlignmentY.Center:
+                    y += (destinationRect.Height - size.Height) / 2;
+                    break;
+                case AlignmentY.Bottom:
+                    y += destinationRect.Height - size.Height;
+                    break;
             }
+
+            return new Vector(x, y);
         }
 
         public override void Dispose()
