@@ -29,7 +29,7 @@ namespace Perspex.Direct2D1.Media
 
             var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
             var destinationRect = brush.DestinationRect.ToPixels(targetSize);
-            var bitmapSize = CalculateBitmapSize(brush.TileMode, sourceRect.Size, targetSize);
+            var bitmapSize = brush.TileMode == TileMode.None ? targetSize : sourceRect.Size;
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
             var options = CompatibleRenderTargetOptions.None;
@@ -66,19 +66,6 @@ namespace Perspex.Direct2D1.Media
                 }
 
                 this.PlatformBrush = result;
-            }
-        }
-
-        private static Size CalculateBitmapSize(TileMode tileMode, Size size, Size targetSize)
-        {
-            switch (tileMode)
-            {
-                case TileMode.None:
-                    return targetSize;
-                case TileMode.Tile:
-                    return size;
-                default:
-                    throw new NotImplementedException();
             }
         }
 
