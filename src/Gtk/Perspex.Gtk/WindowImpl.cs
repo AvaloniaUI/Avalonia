@@ -150,12 +150,13 @@ namespace Perspex.Gtk
 
         protected override bool OnKeyPressEvent(Gdk.EventKey evnt)
         {
+            var keyChar = (char)Gdk.Keyval.ToUnicode ((uint)evnt.Key);
+            var keyText = keyChar == 0 ? string.Empty : new string (keyChar, 1);
             var e = new RawKeyEventArgs(
                 GtkKeyboardDevice.Instance,
                 evnt.Time,
                 RawKeyEventType.KeyDown,
-                GtkKeyboardDevice.ConvertKey(evnt.Key),
-                new string((char)Gdk.Keyval.ToUnicode((uint)evnt.Key), 1));
+                GtkKeyboardDevice.ConvertKey(evnt.Key), keyText);
             this.Input(e);
             return true;
         }
