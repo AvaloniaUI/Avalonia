@@ -220,7 +220,7 @@ namespace Perspex.Controls
                     break;
 
                 default:
-                    if (!string.IsNullOrEmpty(e.Text))
+                    if (!string.IsNullOrEmpty(e.Text) && !modifiers.HasFlag(ModifierKeys.Control) && !modifiers.HasFlag(ModifierKeys.Alt))
                     {
                         this.DeleteSelection();
                         caretIndex = this.CaretIndex;
