@@ -51,6 +51,7 @@ namespace Perspex.Win32
         private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
 
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
@@ -62,7 +63,6 @@ namespace Perspex.Win32
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             InitializeInternal();
         }
@@ -70,7 +70,6 @@ namespace Perspex.Win32
         public static void InitializeEmbedded()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => new EmbeddedWindowImpl(), typeof(IPopupImpl));
             locator.Register(() => new EmbeddedWindowImpl(), typeof(IWindowImpl));
             InitializeInternal();
         }

@@ -267,7 +267,7 @@ namespace Perspex.Direct2D1.Media
 
             if (solidColorBrush != null)
             {
-                return new SolidColorBrushImpl(solidColorBrush, this.renderTarget, destinationSize);
+                return new SolidColorBrushImpl(solidColorBrush, this.renderTarget);
             }
             else if (linearGradientBrush != null)
             {
@@ -275,7 +275,7 @@ namespace Perspex.Direct2D1.Media
             }
             else
             {
-                return new SolidColorBrushImpl(null, this.renderTarget, destinationSize);
+                return new SolidColorBrushImpl(null, this.renderTarget);
             }
         }
     }
