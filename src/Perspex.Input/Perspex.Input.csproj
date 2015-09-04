@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="Raw\RawTextInputEventArgs.cs" />
     <Compile Include="NavigationMethod.cs" />
     <Compile Include="IInputRoot.cs" />
     <Compile Include="IMainMenu.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
     <Compile Include="Raw\RawSizeEventArgs.cs" />
     <Compile Include="KeyboardNavigationMode.cs" />
+    <Compile Include="TextInputEventArgs.cs" />
     <Compile Include="VectorEventArgs.cs" />
     <Compile Include="KeyEventArgs.cs" />
     <Compile Include="MouseDevice.cs" />

@@ -4,6 +4,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Gdk;
+using Perspex.Input;
+
 namespace Perspex.Gtk
 {
     using System;
@@ -22,25 +25,33 @@ namespace Perspex.Gtk
 
         private Size clientSize;
 
+        private Gtk.IMContext imContext;
+
+        private uint lastKeyEventTimestamp;
+
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
         {
             this.DefaultSize = new Gdk.Size(640, 480);
-            this.Events = Gdk.EventMask.PointerMotionMask | 
-                          Gdk.EventMask.ButtonPressMask | 
-                          Gdk.EventMask.ButtonReleaseMask;
-            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+            Init();
         }
 
         public WindowImpl(Gtk.WindowType type)
             : base(type)
         {
-            this.Events = Gdk.EventMask.PointerMotionMask |
-                          Gdk.EventMask.ButtonPressMask |
-                          Gdk.EventMask.ButtonReleaseMask;
-            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+            Init();
         }
-        
+
+        private void Init()
+        {
+            this.Events = Gdk.EventMask.PointerMotionMask |
+              Gdk.EventMask.ButtonPressMask |
+              Gdk.EventMask.ButtonReleaseMask;
+            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+            this.imContext =  new Gtk.IMMulticontext();
+            this.imContext.Commit += ImContext_Commit;
+        }
+
         public Size ClientSize
         {
             get;
@@ -148,17 +159,27 @@ namespace Perspex.Gtk
             this.Closed();
         }
 
-        protected override bool OnKeyPressEvent(Gdk.EventKey evnt)
+        private bool ProcessKeyEvent(Gdk.EventKey evnt)
         {
-            var keyChar = (char)Gdk.Keyval.ToUnicode ((uint)evnt.Key);
-            var keyText = keyChar == 0 ? string.Empty : new string (keyChar, 1);
+            this.lastKeyEventTimestamp = evnt.Time;
+            if (this.imContext.FilterKeypress(evnt))
+                return true;
             var e = new RawKeyEventArgs(
                 GtkKeyboardDevice.Instance,
                 evnt.Time,
-                RawKeyEventType.KeyDown,
-                GtkKeyboardDevice.ConvertKey(evnt.Key), keyText);
+                evnt.Type == EventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+                GtkKeyboardDevice.ConvertKey(evnt.Key));
             this.Input(e);
             return true;
+        }
+
+        protected override bool OnKeyPressEvent(Gdk.EventKey evnt) => ProcessKeyEvent(evnt);
+
+        protected override bool OnKeyReleaseEvent(EventKey evnt) => ProcessKeyEvent(evnt);
+
+        private void ImContext_Commit(object o, Gtk.CommitArgs args)
+        {
+            this.Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, this.lastKeyEventTimestamp, args.Str));
         }
 
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)

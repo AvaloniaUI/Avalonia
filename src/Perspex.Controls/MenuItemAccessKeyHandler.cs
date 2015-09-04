@@ -53,7 +53,7 @@ namespace Perspex.Controls
 
             this.owner = owner;
 
-            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown);
+            this.owner.AddHandler(InputElement.TextInputEvent, this.OnTextInput);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnTextInput(object sender, TextInputEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {

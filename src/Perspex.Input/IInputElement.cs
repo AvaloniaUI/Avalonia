@@ -35,6 +35,11 @@ namespace Perspex.Input
         event EventHandler<KeyEventArgs> KeyUp;
 
         /// <summary>
+        /// Occurs when a user typed some text while the control has focus.
+        /// </summary>
+        event EventHandler<TextInputEventArgs> TextInput;
+
+        /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
         event EventHandler<PointerEventArgs> PointerEnter;

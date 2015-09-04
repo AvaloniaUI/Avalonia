@@ -22,7 +22,7 @@ namespace Perspex.Input
         public KeyboardDevice()
         {
             this.InputManager.RawEventReceived
-                .OfType<RawKeyEventArgs>()
+                .OfType<RawInputEventArgs>()
                 .Where(x => x.Device == this)
                 .Subscribe(this.ProcessRawEvent);
         }
@@ -93,30 +93,45 @@ namespace Perspex.Input
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void ProcessRawEvent(RawKeyEventArgs e)
+        private void ProcessRawEvent(RawInputEventArgs e)
         {
             IInputElement element = this.FocusedElement;
 
             if (element != null)
             {
-                switch (e.Type)
+                var keyInput = e as RawKeyEventArgs;
+                if (keyInput != null)
                 {
-                    case RawKeyEventType.KeyDown:
-                    case RawKeyEventType.KeyUp:
-                        var routedEvent = e.Type == RawKeyEventType.KeyDown ?
-                            InputElement.KeyDownEvent : InputElement.KeyUpEvent;
+                    switch (keyInput.Type)
+                    {
+                        case RawKeyEventType.KeyDown:
+                        case RawKeyEventType.KeyUp:
+                            var routedEvent = keyInput.Type == RawKeyEventType.KeyDown
+                                ? InputElement.KeyDownEvent
+                                : InputElement.KeyUpEvent;
 
-                        KeyEventArgs ev = new KeyEventArgs
-                        {
-                            RoutedEvent = routedEvent,
-                            Device = this,
-                            Key = e.Key,
-                            Text = e.Text,
-                            Source = element,
-                        };
+                            KeyEventArgs ev = new KeyEventArgs
+                            {
+                                RoutedEvent = routedEvent,
+                                Device = this,
+                                Key = keyInput.Key,
+                                Source = element,
+                            };
 
-                        element.RaiseEvent(ev);
-                        break;
+                            element.RaiseEvent(ev);
+                            break;
+                    }
+                }
+                var text = e as RawTextInputEventArgs;
+                if (text != null)
+                {
+                    element.RaiseEvent(new TextInputEventArgs()
+                    {
+                        Device = this,
+                        Text = text.Text,
+                        Source = element,
+                        RoutedEvent = InputElement.TextInputEvent
+                    });
                 }
             }
         }
