@@ -18,7 +18,7 @@ namespace Perspex.Designer
         [STAThread]
         static void Main(string[] args)
         {
-            if (!Console.IsInputRedirected || !Console.IsOutputRedirected)
+            if (!args.Contains("--hosted"))
                 DemoMain(args);
             else
                 HostedMain();

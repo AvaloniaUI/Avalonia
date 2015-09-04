@@ -98,7 +98,7 @@ namespace Perspex.Designer.Comm
             var exe = typeof (ProcessHost).Assembly.GetModules()[0].FullyQualifiedName;
             _proc = new Process()
             {
-                StartInfo = new ProcessStartInfo(exe)
+                StartInfo = new ProcessStartInfo(exe, "--hosted")
                 {
                     UseShellExecute = false,
                     RedirectStandardInput = true,
