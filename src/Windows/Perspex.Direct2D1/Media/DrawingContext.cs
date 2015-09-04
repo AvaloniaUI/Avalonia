@@ -8,7 +8,6 @@ namespace Perspex.Direct2D1.Media
 {
     using System;
     using System.Reactive.Disposables;
-    using Layout;
     using Perspex.Media;
     using SharpDX;
     using SharpDX.Direct2D1;

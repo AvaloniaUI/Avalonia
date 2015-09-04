@@ -16,8 +16,7 @@ namespace Perspex.Direct2D1.Media
         public VisualBrushImpl(
             Perspex.Media.VisualBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
-            Size destinationSize)
-            : base(brush, target, destinationSize)
+            Size targetSize)
         {
             var visual = brush.Visual;
             var layoutable = visual as ILayoutable;
@@ -29,21 +28,33 @@ namespace Perspex.Direct2D1.Media
             }
 
             var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
-            var destinationRect = brush.DestinationRect.ToPixels(destinationSize);
+            var destinationRect = brush.DestinationRect.ToPixels(targetSize);
+            var bitmapSize = CalculateBitmapSize(brush.TileMode, destinationRect.Size, targetSize);
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
+            var options = CompatibleRenderTargetOptions.None;
 
-            using (var brt = new BitmapRenderTarget(
-                target,
-                CompatibleRenderTargetOptions.None,
-                destinationRect.Size.ToSharpDX()))
+            using (var brt = new BitmapRenderTarget(target, options, bitmapSize.ToSharpDX()))
             {
                 var renderer = new Renderer(brt);
                 var transform = Matrix.CreateTranslation(-sourceRect.Position) *
                                 Matrix.CreateScale(scale) *
                                 Matrix.CreateTranslation(translate);
                 renderer.Render(visual, null, transform);
-                this.PlatformBrush = new BitmapBrush(brt, brt.Bitmap);
+
+                var result = new BitmapBrush(brt, brt.Bitmap);
+                this.PlatformBrush = result;
+            }
+        }
+
+        private static Size CalculateBitmapSize(TileMode tileMode, Size size, Size targetSize)
+        {
+            switch (tileMode)
+            {
+                case TileMode.None:
+                    return targetSize;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -53,8 +64,8 @@ namespace Perspex.Direct2D1.Media
             Rect destinationRect,
             Vector scale)
         {
-            var x = 0.0;
-            var y = 0.0;
+            var x = destinationRect.X;
+            var y = destinationRect.Y;
             var size = sourceRect.Size * scale;
 
             switch (brush.AlignmentX)
