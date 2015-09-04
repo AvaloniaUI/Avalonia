@@ -475,5 +475,122 @@ namespace Perspex.Direct2D1.RenderTests.Media
             this.RenderToFile(target);
             this.CompareImages();
         }
+
+        [Fact]
+        public void VisualBrush_FlipX()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush
+                    {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.FlipX,
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        Visual = new Border
+                        {
+                            Width = 92,
+                            Height = 92,
+                            Background = Brushes.Red,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Child = new TextBlock
+                            {
+                                Text = "Perspex",
+                                FontSize = 12,
+                                FontFamily = "Arial",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            }
+                        }
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [Fact]
+        public void VisualBrush_FlipY()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush
+                    {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.FlipY,
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        Visual = new Border
+                        {
+                            Width = 92,
+                            Height = 92,
+                            Background = Brushes.Red,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Child = new TextBlock
+                            {
+                                Text = "Perspex",
+                                FontSize = 12,
+                                FontFamily = "Arial",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            }
+                        }
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
+
+        [Fact]
+        public void VisualBrush_FlipXY()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush
+                    {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.FlipXY,
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        Visual = new Border
+                        {
+                            Width = 92,
+                            Height = 92,
+                            Background = Brushes.Red,
+                            BorderBrush = Brushes.Black,
+                            BorderThickness = 2,
+                            Child = new TextBlock
+                            {
+                                Text = "Perspex",
+                                FontSize = 12,
+                                FontFamily = "Arial",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            }
+                        }
+                    }
+                }
+            };
+
+            this.RenderToFile(target);
+            this.CompareImages();
+        }
     }
 }

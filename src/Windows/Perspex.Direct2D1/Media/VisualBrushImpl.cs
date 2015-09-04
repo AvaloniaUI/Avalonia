@@ -56,8 +56,8 @@ namespace Perspex.Direct2D1.Media
                 renderer.Render(visual, null, transform, drawRect);
 
                 var result = new BitmapBrush(brt, brt.Bitmap);
-                result.ExtendModeX = ExtendMode.Wrap;
-                result.ExtendModeY = ExtendMode.Wrap;
+                result.ExtendModeX = (brush.TileMode & TileMode.FlipX) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
+                result.ExtendModeY = (brush.TileMode & TileMode.FlipY) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
 
                 if (brush.TileMode != TileMode.None)
                 {
