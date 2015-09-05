@@ -43,8 +43,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
-                        new Setter(ListBoxItem.ForegroundProperty, Brushes.White),
+                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xffd0d0d0)),
                     },
                 },
             });

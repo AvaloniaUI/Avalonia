@@ -93,7 +93,7 @@ namespace Perspex.Themes.Default
                         {
                             Name = "contentControl",
                             Margin = new Thickness(3),
-                            [~ContentControl.ContentProperty] = control[~DropDown.ContentProperty],
+                            [~ContentControl.ContentProperty] = control[~DropDown.SelectionBoxItemProperty],
                             [~ContentControl.HorizontalAlignmentProperty] = control[~DropDown.HorizontalContentAlignmentProperty],
                             [~ContentControl.VerticalAlignmentProperty] = control[~DropDown.VerticalContentAlignmentProperty],
                         },
@@ -129,7 +129,7 @@ namespace Perspex.Themes.Default
                                 Padding = new Thickness(4),
                                 Child = new ItemsPresenter
                                 {
-                                    [~ListBox.ItemsProperty] = control[~DropDown.ItemsProperty],
+                                    [~ItemsPresenter.ItemsProperty] = control[~DropDown.ItemsProperty],
                                 }
                             },
                             PlacementTarget = control,

@@ -35,10 +35,11 @@ namespace Perspex.Rendering
         public virtual void Render(IVisual visual, IPlatformHandle handle)
         {
             this.Render(visual, handle, Matrix.Identity);
+            ++this.RenderCount;
         }
 
         /// <summary>
-        /// Renders the specified visual with the specified transform.
+        /// Renders the specified visual with the specified transform and clip.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="handle">An optional platform-specific handle.</param>
@@ -51,8 +52,6 @@ namespace Perspex.Rendering
             {
                 this.Render(visual, context, Matrix.Identity, transform);
             }
-
-            ++this.RenderCount;
         }
 
         /// <summary>

@@ -10,10 +10,12 @@ namespace Perspex.Controls
     using System.Linq;
     using Generators;
     using Perspex.Controls.Primitives;
+    using Perspex.Controls.Shapes;
     using Perspex.Controls.Templates;
     using Perspex.Input;
     using Perspex.Layout;
-    using VisualTree;
+    using Perspex.Media;
+    using Perspex.VisualTree;
 
     public class DropDown : SelectingItemsControl, IContentControl
     {
@@ -29,16 +31,19 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
 
+        public static readonly PerspexProperty<object> SelectionBoxItemProperty =
+            PerspexProperty.Register<DropDown, object>("SelectionBoxItem");
+
         private Popup popup;
 
         static DropDown()
         {
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
+            SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
         }
 
         public DropDown()
         {
-            this.GetObservableWithHistory(ContentProperty).Subscribe(this.SetContentParent);
             this.Bind(ContentProperty, this.GetObservable(DropDown.SelectedItemProperty));
         }
 
@@ -64,6 +69,12 @@ namespace Perspex.Controls
         {
             get { return this.GetValue(IsDropDownOpenProperty); }
             set { this.SetValue(IsDropDownOpenProperty, value); }
+        }
+
+        public object SelectionBoxItem
+        {
+            get { return this.GetValue(SelectionBoxItemProperty); }
+            set { this.SetValue(SelectionBoxItemProperty, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -126,19 +137,27 @@ namespace Perspex.Controls
             }
         }
 
-        private void SetContentParent(Tuple<object, object> change)
+        private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
         {
-            var control1 = change.Item1 as Control;
-            var control2 = change.Item2 as Control;
+            var control = e.NewValue as IControl;
 
-            if (control1 != null)
+            if (control != null)
             {
-                ((ISetLogicalParent)control1).SetParent(null);
+                this.SelectionBoxItem = new Rectangle
+                {
+                    Width = control.DesiredSize.Width,
+                    Height = control.DesiredSize.Height,
+                    Fill = new VisualBrush
+                    {
+                        Visual = control,
+                        Stretch = Stretch.None,
+                        AlignmentX = AlignmentX.Left,
+                    }
+                };
             }
-
-            if (control2 != null)
+            else
             {
-                ((ISetLogicalParent)control2).SetParent(this);
+                this.SelectionBoxItem = e.NewValue;
             }
         }
     }
