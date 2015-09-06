@@ -4,10 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Perspex.Input.Platform;
-
-namespace 
-    Perspex
+namespace Perspex
 {
     using System;
     using System.Reflection;
@@ -15,6 +12,7 @@ namespace
     using Perspex.Controls;
     using Perspex.Controls.Templates;
     using Perspex.Input;
+    using Perspex.Input.Platform;
     using Perspex.Layout;
     using Perspex.Rendering;
     using Perspex.Styling;
