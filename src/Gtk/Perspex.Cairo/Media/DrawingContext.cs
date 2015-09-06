@@ -119,35 +119,10 @@ namespace Perspex.Cairo.Media
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
-            var clone = new Queue<GeometryOp>(impl.Operations);
       
             using (var pop = this.PushTransform(impl.Transform))
             {
-                while (clone.Count > 0)
-                {
-                    var current = clone.Dequeue();
-
-                    if (current is BeginOp)
-                    {
-                        var bo = current as BeginOp;
-                        this.context.MoveTo(bo.Point.ToCairo());
-                    }
-                    else if (current is LineToOp)
-                    {
-                        var lto = current as LineToOp;
-                        this.context.LineTo(lto.Point.ToCairo());
-                    }
-                    else if (current is EndOp)
-                    {
-                      if (((EndOp)current).IsClosed)
-                            this.context.ClosePath();
-                    }
-                    else if (current is CurveToOp)
-                    {
-                        var cto = current as CurveToOp;
-                        this.context.CurveTo(cto.Point.ToCairo(), cto.Point2.ToCairo(), cto.Point3.ToCairo());
-                    }
-                }
+                this.context.AppendPath(impl.Path);
                 
                 if (brush != null)
                 {
