@@ -15,23 +15,22 @@ namespace Perspex.Markup.Xaml.Converters
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
-            return true;
+            return sourceType == typeof(string);
         }
 
         public bool CanConvertTo(IXamlTypeConverterContext context, Type destinationType)
         {
-            return true;
+            return false;
         }
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            var path = (string)value;
-            return new Bitmap(path);
+            return new Bitmap((string)value);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
         {
-            return new Bitmap(10, 10);
+            throw new NotImplementedException();
         }
     }
 }
