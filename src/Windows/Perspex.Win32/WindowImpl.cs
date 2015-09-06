@@ -269,8 +269,13 @@ namespace Perspex.Win32
                             KeyInterop.KeyFromVirtualKey((int)wParam));
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
-                    e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
-                        new string((char) wParam.ToInt32(), 1));
+                    // Ignore control chars
+                    if (wParam.ToInt32() > 32)
+                    {
+                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
+                            new string((char) wParam.ToInt32(), 1));
+                    }
+
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                     e = new RawMouseEventArgs(
