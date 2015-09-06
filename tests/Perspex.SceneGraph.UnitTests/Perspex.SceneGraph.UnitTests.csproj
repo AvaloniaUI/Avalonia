@@ -81,6 +81,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Media\BrushTests.cs" />
+    <Compile Include="Media\ColorTests.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestVisual.cs" />
     <Compile Include="VisualTests.cs" />

@@ -6,6 +6,11 @@
 
 namespace Perspex.Media
 {
+    using System;
+    using System.Globalization;
+    using System.Linq;
+    using System.Reflection;
+
     /// <summary>
     /// An ARGB color.
     /// </summary>
@@ -82,6 +87,45 @@ namespace Perspex.Media
                 G = (byte)((value >> 8) & 0xff),
                 B = (byte)(value & 0xff),
             };
+        }
+
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        public static Color Parse(string s)
+        {
+            if (s[0] == '#')
+            {
+                var or = 0u;
+
+                if (s.Length == 7)
+                {
+                    or = 0xff000000;
+                }
+                else if (s.Length != 9)
+                {
+                    throw new FormatException($"Invalid color string: '{s}'.");
+                }
+
+                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber) | or);
+            }
+            else
+            {
+                var upper = s.ToUpperInvariant();
+                var member = typeof(Colors).GetTypeInfo().DeclaredProperties
+                    .FirstOrDefault(x => x.Name.ToUpperInvariant() == upper);
+
+                if (member != null)
+                {
+                    return (Color)member.GetValue(null);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid color string: '{s}'.");
+                }
+            }
         }
 
         /// <summary>
