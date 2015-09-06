@@ -13,57 +13,23 @@ namespace Perspex.Cairo.Media
     using Splat;
     using System.Collections.Generic;
 
-    public enum CairoGeometryType
-    {
-        Begin,
-        ArcTo,
-        LineTo,
-        End
-    }
-
-    public class BeginOp : GeometryOp
-    {
-        public Point Point { get; set; }
-        public bool IsFilled { get; set; }
-    }
-
-    public class EndOp : GeometryOp
-    {
-        public bool IsClosed { get; set; }
-    }
-
-    public class LineToOp : GeometryOp
-    {
-        public Point Point { get; set; }
-    }
-
-    public class CurveToOp : GeometryOp
-    {
-        public Point Point { get; set; }
-        public Point Point2 { get; set; }
-        public Point Point3 { get; set; }
-    }
-
-    public abstract class GeometryOp
-    {
-    }
-
     public class StreamGeometryImpl : IStreamGeometryImpl
     {
         public StreamGeometryImpl()
         {
-            this.Operations = new Queue<GeometryOp>();
+            this.impl = new StreamGeometryContextImpl(this);
         }
 
-        public StreamGeometryImpl(Queue<GeometryOp> ops)
+        public StreamGeometryImpl(Cairo.Path path)
         {
-            this.Operations = ops;
+            this.impl = new StreamGeometryContextImpl(this);
+            this.Path = path;
         }
-
-        public Queue<GeometryOp> Operations
+        
+        public Cairo.Path Path
         {
             get;
-            private set;
+            set;
         }
 
         public Rect Bounds
@@ -72,7 +38,8 @@ namespace Perspex.Cairo.Media
             set;
         }
 
-        // TODO: Implement
+        private StreamGeometryContextImpl impl;
+
         private Matrix transform = Matrix.Identity;
         public Matrix Transform
         {
@@ -91,7 +58,7 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryImpl Clone()
         {
-            return new StreamGeometryImpl(this.Operations);
+            return new StreamGeometryImpl(this.Path);
         }
 
         public Rect GetRenderBounds(double strokeThickness)
@@ -101,7 +68,7 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryContextImpl Open()
         {
-            return new StreamGeometryContextImpl(this);
+            return this.impl;
         }
     }
 }
