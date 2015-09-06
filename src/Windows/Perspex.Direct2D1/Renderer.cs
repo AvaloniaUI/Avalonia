@@ -108,5 +108,10 @@ namespace Perspex.Direct2D1
         {
             return new DrawingContext(this.renderTarget, this.DirectWriteFactory);
         }
+
+        public override void Dispose()
+        {
+            this.renderTarget.Dispose();
+        }
     }
 }

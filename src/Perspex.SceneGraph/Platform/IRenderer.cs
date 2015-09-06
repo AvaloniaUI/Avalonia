@@ -6,6 +6,8 @@
 
 namespace Perspex.Platform
 {
+    using System;
+
     /// <summary>
     /// Defines a renderer.
     /// </summary>
@@ -15,7 +17,7 @@ namespace Perspex.Platform
     /// as RenderBase has a default implementation for the non-platform specific parts of a
     /// renderer.
     /// </remarks>
-    public interface IRenderer
+    public interface IRenderer : IDisposable
     {
         /// <summary>
         /// Gets the number of times <see cref="Render"/> has been called.

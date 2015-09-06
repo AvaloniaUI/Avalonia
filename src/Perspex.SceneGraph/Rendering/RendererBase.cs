@@ -6,6 +6,7 @@
 
 namespace Perspex.Rendering
 {
+    using System;
     using System.Linq;
     using Perspex.Media;
     using Perspex.Platform;
@@ -26,6 +27,8 @@ namespace Perspex.Rendering
             get;
             private set;
         }
+
+        public abstract void Dispose();
 
         /// <summary>
         /// Renders the specified visual.
