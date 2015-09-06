@@ -17,7 +17,6 @@ namespace Perspex.Direct2D1.Media
                 { 
                     Opacity = brush != null ? (float)brush.Opacity : 1.0f, 
                     Transform = target.Transform 
-                    
                 }
             );
         }
