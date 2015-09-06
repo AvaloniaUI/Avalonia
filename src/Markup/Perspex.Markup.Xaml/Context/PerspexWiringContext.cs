@@ -83,10 +83,12 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof (Bitmap), new BitmapConverter()),
-                new TypeConverterRegistration(typeof (GridLength), new GridLengthTypeConverter()),
-                new TypeConverterRegistration(typeof (Brush), new BrushConverter()),
-                new TypeConverterRegistration(typeof (Thickness), new ThicknessConverter()),
+                new TypeConverterRegistration(typeof(Bitmap), new BitmapConverter()),
+                new TypeConverterRegistration(typeof(Brush), new BrushConverter()),
+                new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(Thickness), new ThicknessConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
@@ -98,13 +100,13 @@ namespace Perspex.Markup.Xaml.Context
             var contentPropertyProvider = new ContentPropertyProvider();
             var contentProperties = new Collection<ContentPropertyDefinition>
             {
-                new ContentPropertyDefinition(typeof (ContentControl), "Content"),
-                new ContentPropertyDefinition(typeof (Decorator), "Child"),
-                new ContentPropertyDefinition(typeof (ItemsControl), "Items"),
-                new ContentPropertyDefinition(typeof (Panel), "Children"),
-                new ContentPropertyDefinition(typeof (TextBlock), "Text"),
-                new ContentPropertyDefinition(typeof (TextBox), "Text"),
-                new ContentPropertyDefinition(typeof (XamlDataTemplate), "Content"),
+                new ContentPropertyDefinition(typeof(ContentControl), "Content"),
+                new ContentPropertyDefinition(typeof(Decorator), "Child"),
+                new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
+                new ContentPropertyDefinition(typeof(Panel), "Children"),
+                new ContentPropertyDefinition(typeof(TextBlock), "Text"),
+                new ContentPropertyDefinition(typeof(TextBox), "Text"),
+                new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),
             };
 
             contentPropertyProvider.AddAll(contentProperties);

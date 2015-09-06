@@ -38,6 +38,8 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
+    <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
