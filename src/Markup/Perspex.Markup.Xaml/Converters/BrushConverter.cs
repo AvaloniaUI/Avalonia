@@ -8,23 +8,19 @@ namespace Perspex.Markup.Xaml.Converters
 {
     using System;
     using System.Globalization;
-    using System.Reflection;
-    using System.Text;
     using Media;
-    using Media.Imaging;
     using OmniXaml.TypeConversion;
-    using Platform;
 
     public class BrushConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
-            return true;
+            return sourceType == typeof(string);
         }
 
         public bool CanConvertTo(IXamlTypeConverterContext context, Type destinationType)
         {
-            return true;
+            return false;
         }
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
