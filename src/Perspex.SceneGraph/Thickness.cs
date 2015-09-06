@@ -7,6 +7,7 @@
 namespace Perspex
 {
     using System;
+    using System.Linq;
 
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
@@ -153,6 +154,37 @@ namespace Perspex
                 a.Top + b.Top,
                 a.Right + b.Right,
                 a.Bottom + b.Bottom);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Thickness"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="Thickness"/>.</returns>
+        public static Thickness Parse(string s)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            switch (parts.Count)
+            {
+                case 1:
+                    var uniform = double.Parse(parts[0]);
+                    return new Thickness(uniform);
+                case 2:
+                    var horizontal = double.Parse(parts[0]);
+                    var vertical = double.Parse(parts[1]);
+                    return new Thickness(horizontal, vertical);
+                case 4:
+                    var left = double.Parse(parts[0]);
+                    var top = double.Parse(parts[1]);
+                    var right = double.Parse(parts[2]);
+                    var bottom = double.Parse(parts[3]);
+                    return new Thickness(left, top, right, bottom);
+            }
+
+            throw new FormatException("Invalid Thickness.");
         }
 
         /// <summary>

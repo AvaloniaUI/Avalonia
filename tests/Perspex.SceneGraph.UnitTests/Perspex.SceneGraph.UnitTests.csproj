@@ -80,6 +80,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="ThicknessTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\BrushTests.cs" />
     <Compile Include="Media\ColorTests.cs" />
