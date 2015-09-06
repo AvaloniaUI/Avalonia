@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="GridLengthTypeConverter.cs" company="Steven Kirk">
+// <copyright file="ColumnDefinitionsTypeConverter.cs" company="Steven Kirk">
 // Copyright 2015 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -11,7 +11,7 @@ namespace Perspex.Markup.Xaml.Converters
     using Controls;
     using OmniXaml.TypeConversion;
 
-    public class GridLengthTypeConverter : ITypeConverter
+    public class ColumnDefinitionsTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
@@ -25,7 +25,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return GridLength.Parse((string)value);
+            return new ColumnDefinitions((string)value);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
