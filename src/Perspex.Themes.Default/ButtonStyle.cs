@@ -32,20 +32,14 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
-                        new Setter(Button.TemplateProperty, new ControlTemplate<Button>(Template)),
-                        new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
-                        new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
-                    },
-                },
-                new Style(x => x.OfType<Button>().Template().Name("border"))
-                {
-                    Setters = new[]
-                    {
                         new Setter(Button.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xff707070)),
                         new Setter(Button.BorderThicknessProperty, 2),
                         new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff000000)),
+                        new Setter(Button.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
+                        new Setter(Button.TemplateProperty, new ControlTemplate<Button>(Template)),
+                        new Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
+                        new Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },
                 },
                 new Style(x => x.OfType<Button>().Class(":pointerover").Template().Name("border"))
@@ -70,11 +64,11 @@ namespace Perspex.Themes.Default
                         new Setter(Button.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
                     },
                 },
-                new Style(x => x.OfType<Button>().Class(":disabled").Template().Name("border"))
+                new Style(x => x.OfType<Button>().Class(":disabled").Template().Name("contentPresenter"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.ForegroundProperty, new SolidColorBrush(0xff7f7f7f)),
+                        new Setter(ContentPresenter.OpacityProperty, 0.5),
                     },
                 },
             });
@@ -110,10 +104,13 @@ namespace Perspex.Themes.Default
                 {
                     Name = "contentPresenter",
                     [~ContentPresenter.ContentProperty] = control[~Button.ContentProperty],
+                    [~TextBlock.ForegroundProperty] = control[~Button.ForegroundProperty],
                     [~ContentPresenter.HorizontalAlignmentProperty] = control[~Button.HorizontalContentAlignmentProperty],
                     [~ContentPresenter.VerticalAlignmentProperty] = control[~Button.VerticalContentAlignmentProperty],
                 },
                 [~Border.BackgroundProperty] = control[~Button.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~Button.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~Button.BorderThicknessProperty],
             };
 
             return border;

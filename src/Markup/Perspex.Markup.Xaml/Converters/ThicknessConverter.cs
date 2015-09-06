@@ -27,35 +27,26 @@ namespace Perspex.Markup.Xaml.Converters
 
         private static Thickness ConvertFromString(string s)
         {
-            var parts = s.Split(',')
-                .Take(4)
-                .Select(part => part.Trim());
+            var parts = s.Split(',', ' ');
 
-            if (parts.Count() == 1)
+            switch (parts.Length)
             {
-                var uniformLength = double.Parse(parts.First());
-                return new Thickness(uniformLength);
+                case 1:
+                    var uniform = double.Parse(parts[0]);
+                    return new Thickness(uniform);
+                case 2:
+                    var horizontal = double.Parse(parts[0]);
+                    var vertical = double.Parse(parts[1]);
+                    return new Thickness(horizontal, vertical);
+                case 4:
+                    var left = double.Parse(parts[0]);
+                    var top = double.Parse(parts[1]);
+                    var right = double.Parse(parts[2]);
+                    var bottom = double.Parse(parts[3]);
+                    return new Thickness(left, top, right, bottom);
             }
 
-            double left = 0, top = 0, right = 0, bottom = 0;
-
-            IList<Action<double>> setValue = new List<Action<double>>
-            {
-                val => left = val,
-                val => top = val,
-                val => right = val,
-                val => bottom = val,
-            };
-
-            var i = 0;
-            foreach (var part in parts)
-            {
-                var v = double.Parse(part);
-                setValue[i](v);
-                i++;
-            }
-
-            return new Thickness(left, top, right, bottom);
+            throw new InvalidOperationException("Invalid Thickness.");
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
