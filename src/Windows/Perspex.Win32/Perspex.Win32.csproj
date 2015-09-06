@@ -66,6 +66,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssetLoader.cs" />
+    <Compile Include="ClipboardImpl.cs" />
     <Compile Include="Input\KeyInterop.cs" />
     <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />

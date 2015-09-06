@@ -4,7 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Perspex
+using Perspex.Input.Platform;
+
+namespace 
+    Perspex
 {
     using System;
     using System.Reflection;
@@ -40,6 +43,9 @@ namespace Perspex
         /// The application-global data templates.
         /// </summary>
         private DataTemplates dataTemplates;
+
+        private readonly Lazy<IClipboard> clipboard =
+            new Lazy<IClipboard>(() => (IClipboard) Locator.Current.GetService(typeof(IClipboard)));
 
         /// <summary>
         /// The styler that will be used to apply styles to controls.
@@ -118,6 +124,8 @@ namespace Perspex
             get;
             private set;
         }
+
+        public IClipboard Clipboard => this.clipboard.Value;
 
         /// <summary>
         /// Gets the application's global styles.
