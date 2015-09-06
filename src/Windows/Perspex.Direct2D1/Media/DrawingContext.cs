@@ -252,6 +252,7 @@ namespace Perspex.Direct2D1.Media
                 return Disposable.Create(() =>
                 {
                     this.renderTarget.PopLayer();
+                    layer.Dispose();
                 });
             }
             else
