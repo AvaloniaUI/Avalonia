@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Window xmlns="https://github.com/grokys/Perspex" xmlns:my="http://keks-n.net/wat2">
+  <Border VerticalAlignment="Top" HorizontalAlignment="{Binding }">
+    <TextBlock/>
+  </Border>
+</Window>
