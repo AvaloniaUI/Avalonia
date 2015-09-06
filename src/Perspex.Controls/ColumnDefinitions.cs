@@ -8,7 +8,6 @@ namespace Perspex.Controls
 {
     using System.Linq;
     using Perspex.Collections;
-    using Perspex.Controls.Parsers;
 
     /// <summary>
     /// A collection of <see cref="ColumnDefinition"/>s.
@@ -28,7 +27,7 @@ namespace Perspex.Controls
         /// <param name="s">A string representation of the column definitions.</param>
         public ColumnDefinitions(string s)
         {
-            this.AddRange(GridLengthsParser.Parse(s).Select(x => new ColumnDefinition(x)));
+            this.AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
         }
     }
 }
