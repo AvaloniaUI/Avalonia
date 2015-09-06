@@ -130,18 +130,22 @@ namespace Perspex.Controls
 
         protected override void OnTextInput(TextInputEventArgs e)
         {
+            this.HandleTextInput(e.Text);
+        }
+
+        private void HandleTextInput(string input)
+        { 
             string text = this.Text ?? string.Empty;
             int caretIndex = this.CaretIndex;
-            if (!string.IsNullOrEmpty(e.Text))
+            if (!string.IsNullOrEmpty(input))
             {
                 this.DeleteSelection();
                 caretIndex = this.CaretIndex;
                 text = this.Text ?? string.Empty;
-                this.Text = text.Substring(0, caretIndex) + e.Text + text.Substring(caretIndex);
+                this.Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
                 ++this.CaretIndex;
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
-            base.OnTextInput(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -158,10 +162,6 @@ namespace Perspex.Controls
                     if (modifiers == ModifierKeys.Control)
                     {
                         this.SelectAll();
-                    }
-                    else
-                    {
-                        goto default;
                     }
 
                     break;
@@ -216,7 +216,7 @@ namespace Perspex.Controls
                 case Key.Enter:
                     if (this.AcceptsReturn)
                     {
-                        goto default;
+                        this.HandleTextInput("\r\n");
                     }
 
                     break;
@@ -224,7 +224,7 @@ namespace Perspex.Controls
                 case Key.Tab:
                     if (this.AcceptsTab)
                     {
-                        goto default;
+                        this.HandleTextInput("\t");
                     }
                     else
                     {
@@ -232,9 +232,6 @@ namespace Perspex.Controls
                         handled = false;
                     }
 
-                    break;
-
-                default:
                     break;
             }
 
