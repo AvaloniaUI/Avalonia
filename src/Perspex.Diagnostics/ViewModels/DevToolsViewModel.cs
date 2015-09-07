@@ -37,7 +37,7 @@ namespace Perspex.Diagnostics.ViewModels
                 .ToProperty(this, x => x.FocusedControl);
 
             this.pointerOverElement = this.WhenAnyValue(x => x.Root, x => x as TopLevel)
-                .Select(x => x != null ? x.GetObservable(TopLevel.PointerOverElementProperty) : Observable.Empty<IInputElement>())
+                .Select(x => x?.GetObservable(TopLevel.PointerOverElementProperty) ?? Observable.Empty<IInputElement>())
                 .Switch()
                 .ToProperty(this, x => x.PointerOverElement);
         }
