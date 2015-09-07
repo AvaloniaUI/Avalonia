@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Input.Platform;
+
 namespace Perspex.Win32
 {
     using System;
@@ -52,7 +54,7 @@ namespace Perspex.Win32
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-
+            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));

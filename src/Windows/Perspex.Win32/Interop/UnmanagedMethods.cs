@@ -627,6 +627,43 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool OpenClipboard(IntPtr hWndOwner);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool CloseClipboard();
+        
+        [DllImport("user32.dll")]
+        public static extern bool EmptyClipboard();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetClipboardData(ClipboardFormat uFormat);
+        
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalLock(IntPtr handle);
+
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern bool GlobalUnlock(IntPtr handle);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalFree(IntPtr  hMem);
+
+
+
+        public enum ClipboardFormat
+        {
+            CF_TEXT = 1,
+            CF_UNICODETEXT = 13
+        }
+
         public struct MSG
         {
             public IntPtr hwnd;
