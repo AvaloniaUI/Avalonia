@@ -4,6 +4,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Perspex.Input.Platform;
+using Splat;
+
 namespace Perspex.Controls
 {
     using System;
@@ -143,9 +146,26 @@ namespace Perspex.Controls
                 caretIndex = this.CaretIndex;
                 text = this.Text ?? string.Empty;
                 this.Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
-                ++this.CaretIndex;
+                this.CaretIndex += input.Length;
                 this.SelectionStart = this.SelectionEnd = this.CaretIndex;
             }
+        }
+
+        async void Copy()
+        {
+            await ((IClipboard) Locator.Current.GetService(typeof (IClipboard)))
+                .SetTextAsync(this.GetSelection());
+        }
+
+        async void Paste()
+        {
+            var text = await ((IClipboard) Locator.Current.GetService(typeof (IClipboard))).GetTextAsync();
+            if (text == null)
+            {
+                return;
+            }
+
+            HandleTextInput(text);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -165,7 +185,20 @@ namespace Perspex.Controls
                     }
 
                     break;
+                case Key.C:
+                    if (modifiers == ModifierKeys.Control)
+                    {
+                        this.Copy();
+                    }
 
+                    break;
+                case Key.V:
+                    if (modifiers == ModifierKeys.Control)
+                    {
+                        this.Paste();
+                    }
+
+                    break;
                 case Key.Left:
                     this.MoveHorizontal(-1, modifiers);
                     movement = true;
@@ -433,6 +466,19 @@ namespace Perspex.Controls
             {
                 return false;
             }
+        }
+
+        private string GetSelection()
+        {
+            var selectionStart = this.SelectionStart;
+            var selectionEnd = this.SelectionEnd;
+            var start = Math.Min(selectionStart, selectionEnd);
+            var end = Math.Max(selectionStart, selectionEnd);
+            if (start == end || (this.Text?.Length ?? 0) <= end)
+            {
+                return "";
+            }
+            return this.Text.Substring(start, end  - start);
         }
 
         private int GetLine(int caretIndex, IList<FormattedTextLine> lines)

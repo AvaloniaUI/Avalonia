@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="Platform\IClipboard.cs" />
     <Compile Include="Raw\RawTextInputEventArgs.cs" />
     <Compile Include="NavigationMethod.cs" />
     <Compile Include="IInputRoot.cs" />
