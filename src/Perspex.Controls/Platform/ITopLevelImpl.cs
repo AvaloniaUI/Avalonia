@@ -36,5 +36,11 @@ namespace Perspex.Platform
         void SetOwner(TopLevel owner);
 
         Point PointToScreen(Point point);
+
+        /// <summary>
+        /// Sets the cursor associated with the window.
+        /// </summary>
+        /// <param name="cursor">The cursor. Use null for default cursor</param>
+        void SetCursor(IPlatformHandle cursor);
     }
 }

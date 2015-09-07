@@ -29,6 +29,8 @@ namespace Perspex.Gtk
 
         private uint lastKeyEventTimestamp;
 
+        private static readonly Gdk.Cursor DefaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
+
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
         {
@@ -103,6 +105,12 @@ namespace Perspex.Gtk
         public void SetTitle(string title)
         {
             this.Title = title;
+        }
+
+
+        public void SetCursor(IPlatformHandle cursor)
+        {
+            GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
         }
 
         public IDisposable ShowDialog()

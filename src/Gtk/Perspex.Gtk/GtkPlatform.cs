@@ -43,6 +43,7 @@ namespace Perspex.Gtk
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof (IClipboard));
+            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));

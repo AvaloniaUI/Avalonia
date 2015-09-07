@@ -36,6 +36,12 @@ namespace Perspex.Input
             PerspexProperty.Register<InputElement, bool>("IsEnabledCore", true);
 
         /// <summary>
+        /// Gets or sets associated mouse cursor.
+        /// </summary>
+        public static readonly PerspexProperty<Cursor> CursorProperty =
+            PerspexProperty.Register<InputElement, Cursor>("Cursor", null, true);
+
+        /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsFocusedProperty =
@@ -268,6 +274,15 @@ namespace Perspex.Input
         {
             get { return this.GetValue(IsEnabledProperty); }
             set { this.SetValue(IsEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets associated mouse cursor.
+        /// </summary>
+        public Cursor Cursor
+        {
+            get { return this.GetValue(CursorProperty); }
+            set { this.SetValue(CursorProperty, value); }
         }
 
         /// <summary>
