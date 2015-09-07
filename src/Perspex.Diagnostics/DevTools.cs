@@ -98,7 +98,19 @@ namespace Perspex.Diagnostics
                             },
                             new TextBlock
                             {
-                                [!TextBlock.TextProperty] = this.viewModel.WhenAnyValue(x => x.FocusedControl).Select(x => x?.GetType().Name)
+                                [!TextBlock.TextProperty] = this.viewModel
+                                    .WhenAnyValue(x => x.FocusedControl)
+                                    .Select(x => x?.GetType().Name ?? "(null)")
+                            },
+                            new TextBlock
+                            {
+                                Text = "Pointer Over: "
+                            },
+                            new TextBlock
+                            {
+                                [!TextBlock.TextProperty] = this.viewModel
+                                    .WhenAnyValue(x => x.PointerOverElement)
+                                    .Select(x => x?.GetType().Name ?? "(null)")
                             }
                         }
                     }

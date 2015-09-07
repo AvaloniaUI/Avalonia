@@ -14,7 +14,7 @@ namespace Perspex.Input.Raw
         public RawMouseWheelEventArgs(
             IInputDevice device,
             uint timestamp,
-            IInputElement root,
+            IInputRoot root,
             Point position,
             Vector delta)
             : base(device, timestamp, root, RawMouseEventType.Wheel, position)
