@@ -12,7 +12,7 @@
         {
             var t = new Mock<ITypeConverterProvider>();
             var sut = new XamlBinding(t.Object);
-            sut.Bind(null);
+            sut.BindToDataContext(null);
         }
     }
 }
