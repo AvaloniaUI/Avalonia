@@ -42,6 +42,12 @@ namespace Perspex.Controls
             PerspexProperty.Register<TopLevel, bool>("IsActive");
 
         /// <summary>
+        /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IInputElement> PointerOverElementProperty =
+            PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
+
+        /// <summary>
         /// The dispatcher for the window.
         /// </summary>
         private Dispatcher dispatcher;
@@ -238,6 +244,15 @@ namespace Perspex.Controls
         IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler
         {
             get { return this.keyboardNavigationHandler; }
+        }
+
+        /// <summary>
+        /// Gets or sets the input element that the pointer is currently over.
+        /// </summary>
+        IInputElement IInputRoot.PointerOverElement
+        {
+            get { return this.GetValue(PointerOverElementProperty); }
+            set { this.SetValue(PointerOverElementProperty, value); }
         }
 
         /// <summary>

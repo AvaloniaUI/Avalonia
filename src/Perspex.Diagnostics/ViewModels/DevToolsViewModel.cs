@@ -7,6 +7,7 @@
 namespace Perspex.Diagnostics.ViewModels
 {
     using System;
+    using System.Reactive.Linq;
     using Perspex.Controls;
     using Perspex.Input;
     using ReactiveUI;
@@ -21,6 +22,8 @@ namespace Perspex.Diagnostics.ViewModels
 
         private ObservableAsPropertyHelper<IInputElement> focusedControl;
 
+        private ObservableAsPropertyHelper<IInputElement> pointerOverElement;
+
         public DevToolsViewModel()
         {
             this.WhenAnyValue(x => x.Root).Subscribe(x =>
@@ -29,8 +32,14 @@ namespace Perspex.Diagnostics.ViewModels
                 this.VisualTree = new VisualTreeViewModel(this.root);
             });
 
-            this.focusedControl = KeyboardDevice.Instance.WhenAnyValue(x => x.FocusedElement)
+            this.focusedControl = KeyboardDevice.Instance
+                .WhenAnyValue(x => x.FocusedElement)
                 .ToProperty(this, x => x.FocusedControl);
+
+            this.pointerOverElement = this.WhenAnyValue(x => x.Root, x => x as TopLevel)
+                .Select(x => x != null ? x.GetObservable(TopLevel.PointerOverElementProperty) : Observable.Empty<IInputElement>())
+                .Switch()
+                .ToProperty(this, x => x.PointerOverElement);
         }
 
         public Control Root
@@ -54,6 +63,11 @@ namespace Perspex.Diagnostics.ViewModels
         public IInputElement FocusedControl
         {
             get { return this.focusedControl.Value; }
+        }
+
+        public IInputElement PointerOverElement
+        {
+            get { return this.pointerOverElement.Value; }
         }
     }
 }

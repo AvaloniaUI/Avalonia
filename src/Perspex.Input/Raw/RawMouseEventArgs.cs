@@ -22,7 +22,7 @@ namespace Perspex.Input.Raw
         public RawMouseEventArgs(
             IInputDevice device,
             uint timestamp,
-            IInputElement root,
+            IInputRoot root,
             RawMouseEventType type,
             Point position)
             : base(device, timestamp)
@@ -35,7 +35,7 @@ namespace Perspex.Input.Raw
             this.Type = type;
         }
 
-        public IInputElement Root { get; private set; }
+        public IInputRoot Root { get; private set; }
 
         public Point Position { get; private set; }
 

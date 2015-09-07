@@ -22,6 +22,11 @@ namespace Perspex.Input
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
 
         /// <summary>
+        /// Gets or sets the input element that the pointer is currently over.
+        /// </summary>
+        IInputElement PointerOverElement { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
         bool ShowAccessKeys { get; set; }
