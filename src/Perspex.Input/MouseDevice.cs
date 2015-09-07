@@ -276,8 +276,6 @@ namespace Perspex.Input
                 control.RaiseEvent(e);
             }
 
-            System.Diagnostics.Debug.WriteLine(hits.FirstOrDefault());
-
             root.PointerOverElement = hits.FirstOrDefault();
         }
     }
