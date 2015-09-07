@@ -57,6 +57,7 @@ namespace Perspex.Win32
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
+            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
             locator.Register(() => instance, typeof(IPlatformSettings));
             locator.Register(() => instance, typeof(IPlatformThreadingInterface));
             locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));

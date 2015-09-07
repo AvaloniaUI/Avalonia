@@ -572,7 +572,9 @@ namespace Perspex.Win32.Interop
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr LoadCursor(IntPtr hInstance, int lpCursorName);
+        public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+
 
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
@@ -627,6 +629,27 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
+        public enum ClassLongIndex : int
+        {
+            GCL_HCURSOR = -12,
+            GCL_HICON = -14
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
+        private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLong")]
+        private static extern IntPtr SetClassLong32(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
+
+        public static IntPtr SetClassLong(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return SetClassLong32(hWnd, nIndex, dwNewLong);
+            }
+
+            return SetClassLong64(hWnd, nIndex, dwNewLong);
+        }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(IntPtr hWndOwner);

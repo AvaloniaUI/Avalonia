@@ -67,10 +67,12 @@
     </Compile>
     <Compile Include="AssetLoader.cs" />
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="CursorFactory.cs" />
     <Compile Include="Input\KeyInterop.cs" />
     <Compile Include="Input\WindowsKeyboardDevice.cs" />
     <Compile Include="Input\WindowsMouseDevice.cs" />
     <Compile Include="Interop\UnmanagedMethods.cs" />
+    <Compile Include="PlatformConstants.cs" />
     <Compile Include="PopupImpl.cs" />
     <Compile Include="WindowImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

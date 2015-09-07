@@ -26,6 +26,9 @@ namespace Perspex.Win32
     {
         private static List<WindowImpl> instances = new List<WindowImpl>();
 
+        private static readonly IntPtr DefaultCursor = UnmanagedMethods.LoadCursor(
+            IntPtr.Zero, new IntPtr((int) UnmanagedMethods.Cursor.IDC_ARROW));
+
         private UnmanagedMethods.WndProc wndProcDelegate;
 
         private string className;
@@ -185,6 +188,12 @@ namespace Perspex.Win32
             });
         }
 
+        public void SetCursor(IPlatformHandle cursor)
+        {
+            UnmanagedMethods.SetClassLong(this.hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR,
+                cursor?.Handle ?? DefaultCursor);
+        }
+
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return UnmanagedMethods.CreateWindowEx(
@@ -244,6 +253,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     if (this.Closed != null)
                     {
+                        UnmanagedMethods.UnregisterClass(this.className, Marshal.GetHINSTANCE(this.GetType().Module));
                         this.Closed();
                     }
 
@@ -384,7 +394,7 @@ namespace Perspex.Win32
                 style = 0,
                 lpfnWndProc = this.wndProcDelegate,
                 hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
-                hCursor = UnmanagedMethods.LoadCursor(IntPtr.Zero, (int)UnmanagedMethods.Cursor.IDC_ARROW),
+                hCursor = DefaultCursor,
                 hbrBackground = (IntPtr)5,
                 lpszClassName = this.className,
             };
@@ -403,7 +413,7 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.Handle = new PlatformHandle(this.hwnd, "HWND");
+            this.Handle = new PlatformHandle(this.hwnd, PlatformConstants.WindowHandleType);
         }
 
         private Point ScreenToClient(uint x, uint y)

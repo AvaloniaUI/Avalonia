@@ -115,6 +115,7 @@ namespace Perspex.Controls
         protected override void OnTemplateApplied()
         {
             this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
+            this.presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)

@@ -4,6 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Diagnostics.Contracts;
+
 namespace Perspex.Input
 {
     using System;
@@ -78,6 +80,11 @@ namespace Perspex.Input
         /// Gets or sets a value indicating whether the control is enabled for user interaction.
         /// </summary>
         bool IsEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets assicitated mouse cursor.
+        /// </summary>
+        Cursor Cursor { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.

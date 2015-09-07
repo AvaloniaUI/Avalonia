@@ -162,6 +162,10 @@ namespace Perspex.Controls
             styler?.ApplyStyles(this);
 
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);
+            this.GetObservable(TopLevel.PointerOverElementProperty)
+                .Select(
+                    x => (x as InputElement)?.GetObservable(InputElement.CursorProperty) ?? Observable.Empty<Cursor>())
+                .Switch().Subscribe(cursor => this.PlatformImpl.SetCursor(cursor?.PlatformCursor));
         }
 
         /// <summary>
