@@ -82,7 +82,7 @@ namespace Perspex.Input
         bool IsEnabled { get; }
 
         /// <summary>
-        /// Gets or sets assicitated mouse cursor.
+        /// Gets or sets the associated mouse cursor.
         /// </summary>
         Cursor Cursor { get; }
 
