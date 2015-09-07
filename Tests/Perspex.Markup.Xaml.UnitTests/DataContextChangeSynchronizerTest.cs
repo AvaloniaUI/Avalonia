@@ -27,8 +27,8 @@
         [Fact]
         public void SameTypesFromUIToModel()
         {
-            var synchronizer = new DataContextChangeSynchronizer(guiObject, SamplePerspexObject.IntProperty, new PropertyPath("IntProp"), viewModel, repo);
-            synchronizer.SubscribeModelToUI();
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("IntProp"), viewModel), new DataContextChangeSynchronizer.BindingTarget(guiObject, SamplePerspexObject.IntProperty), repo);
+            synchronizer.StartUpdatingSourceWhenTargetChanges();
 
             const int someValue = 4;
             guiObject.Int = someValue;
@@ -39,8 +39,8 @@
         [Fact]
         public void DifferentTypesFromUIToModel()
         {
-            var synchronizer = new DataContextChangeSynchronizer(guiObject, SamplePerspexObject.StringProperty, new PropertyPath("IntProp"), viewModel, repo);
-            synchronizer.SubscribeModelToUI();
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("IntProp"), viewModel), new DataContextChangeSynchronizer.BindingTarget(guiObject, SamplePerspexObject.StringProperty), repo);
+            synchronizer.StartUpdatingSourceWhenTargetChanges();
 
             guiObject.String = "2";
 
@@ -50,8 +50,8 @@
         [Fact]
         public void DifferentTypesAndNonConvertibleValueFromUIToModel()
         {
-            var synchronizer = new DataContextChangeSynchronizer(guiObject, SamplePerspexObject.StringProperty, new PropertyPath("IntProp"), viewModel, repo);
-            synchronizer.SubscribeModelToUI();
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("IntProp"), viewModel), new DataContextChangeSynchronizer.BindingTarget(guiObject, SamplePerspexObject.StringProperty), repo);
+            synchronizer.StartUpdatingSourceWhenTargetChanges();
 
             guiObject.String = "";
 
@@ -62,8 +62,8 @@
         [Fact]
         public void DifferentTypesFromModelToUI()
         {
-            var synchronizer = new DataContextChangeSynchronizer(guiObject, SamplePerspexObject.StringProperty, new PropertyPath("IntProp"), viewModel, repo);
-            synchronizer.SubscribeUIToModel();
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("IntProp"), viewModel), new DataContextChangeSynchronizer.BindingTarget(guiObject, SamplePerspexObject.StringProperty), repo);
+            synchronizer.StartUpdatingTargetWhenSourceChanges();
 
             viewModel.IntProp = 2;
             
@@ -73,8 +73,8 @@
         [Fact]
         public void SameTypesFromModelToUI()
         {
-            var synchronizer = new DataContextChangeSynchronizer(guiObject, SamplePerspexObject.IntProperty, new PropertyPath("IntProp"), viewModel, repo);
-            synchronizer.SubscribeUIToModel();
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("IntProp"), viewModel), new DataContextChangeSynchronizer.BindingTarget(guiObject, SamplePerspexObject.IntProperty), repo);
+            synchronizer.StartUpdatingTargetWhenSourceChanges();
 
             viewModel.IntProp = 2;
 
@@ -87,14 +87,9 @@
             var mainWindowViewModel = new MainWindowViewModel();
             var contentControl = new ContentControl();
 
-            var synchronizer = new DataContextChangeSynchronizer(
-                contentControl,
-                ContentControl.ContentProperty,
-                new PropertyPath("Content"),
-                mainWindowViewModel,
-                repo);
+            var synchronizer = new DataContextChangeSynchronizer(new DataContextChangeSynchronizer.BindingSource(new PropertyPath("Content"), mainWindowViewModel), new DataContextChangeSynchronizer.BindingTarget(contentControl, ContentControl.ContentProperty), repo);
 
-            synchronizer.SubscribeUIToModel();
+            synchronizer.StartUpdatingTargetWhenSourceChanges();
 
             var logInViewModel = new LogInViewModel();
             mainWindowViewModel.Content = logInViewModel;

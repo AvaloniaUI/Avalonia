@@ -58,12 +58,12 @@
             var level1 = new Level1();
 
             var branch = new ObservablePropertyBranch(level1, new PropertyPath("Level2.Level3.Property"));
-            bool hit = false;
-            ObservableExtensions.Subscribe(branch.Changed, _ => hit = true);
+            bool received = false;
+            ObservableExtensions.Subscribe(branch.Values, v => received = ((int)v == 3));
 
             level1.Level2.Level3.Property = 3;
 
-            Assert.True(hit);
+            Assert.True(received);
         }
     }
 }
