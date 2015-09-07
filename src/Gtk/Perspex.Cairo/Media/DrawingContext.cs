@@ -24,19 +24,13 @@ namespace Perspex.Cairo.Media
         /// The cairo context.
         /// </summary>
         private Cairo.Context context;
-
-        /// <summary>
-        /// The cairo surface.
-        /// </summary>
-        private Cairo.Surface surface;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
         public DrawingContext(Cairo.Surface surface)
         {
-            this.surface = surface;
             this.context = new Cairo.Context(surface);
             this.CurrentTransform = Matrix.Identity;
         }
@@ -47,18 +41,11 @@ namespace Perspex.Cairo.Media
         /// <param name="surface">The GDK drawable.</param>
         public DrawingContext(Gdk.Drawable drawable)
         {
-            this.Drawable = drawable;
             this.context = Gdk.CairoHelper.Create(drawable);
             this.CurrentTransform = Matrix.Identity;
         }
 
         public Matrix CurrentTransform
-        {
-            get;
-            private set;
-        }
-
-        public Gdk.Drawable Drawable
         {
             get;
             private set;
@@ -70,12 +57,6 @@ namespace Perspex.Cairo.Media
         public void Dispose()
         {
             this.context.Dispose();
-
-         //   if (this.surface is Cairo.Win32Surface)
-       //     {
-            if (this.surface != null)
-                this.surface.Dispose();
-           // }
         }
 
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
