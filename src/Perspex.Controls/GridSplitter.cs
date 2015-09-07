@@ -16,6 +16,14 @@ namespace Perspex.Controls
     {
         private Grid grid;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridSplitter"/> class.
+        /// </summary>
+        public GridSplitter()
+        {
+            this.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+        }
+
         protected override void OnDragDelta(VectorEventArgs e)
         {
             int col = this.GetValue(Grid.ColumnProperty);
