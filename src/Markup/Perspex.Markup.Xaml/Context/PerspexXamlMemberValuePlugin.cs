@@ -56,7 +56,7 @@ namespace Perspex.Markup.Xaml.Context
         private void HandlePerspexProperty(object instance, object value)
         {
             var pp = this.PerspexProperty;
-            var po = (PerspexObject) instance;
+            var po = (PerspexObject)instance;
             po.SetValue(pp, value);
         }
 
@@ -75,7 +75,7 @@ namespace Perspex.Markup.Xaml.Context
             var dataContext = target.DataContext;
 
             var binding = this.propertyBinder.GetBinding(target, definition.TargetProperty);
-            binding.Bind(dataContext);
+            binding.BindToDataContext(dataContext);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global

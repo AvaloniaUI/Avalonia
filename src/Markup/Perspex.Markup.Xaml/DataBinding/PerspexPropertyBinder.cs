@@ -31,8 +31,8 @@ namespace Perspex.Markup.Xaml.DataBinding
         public IEnumerable<XamlBinding> GetBindings(PerspexObject source)
         {
             return from binding in this.bindings
-                where binding.Target == source
-                select binding;
+                   where binding.Target == source
+                   select binding;
         }
 
         public XamlBinding Create(XamlBindingDefinition xamlBinding)

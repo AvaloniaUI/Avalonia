@@ -14,6 +14,12 @@ namespace Perspex.Markup.Xaml.DataBinding
     public class XamlBinding
     {
         private readonly ITypeConverterProvider typeConverterProvider;
+        private DataContextChangeSynchronizer changeSynchronizer;
+
+        public XamlBinding(ITypeConverterProvider typeConverterProvider)
+        {
+            this.typeConverterProvider = typeConverterProvider;
+        }
 
         public PerspexObject Target { get; set; }
 
@@ -23,12 +29,7 @@ namespace Perspex.Markup.Xaml.DataBinding
 
         public BindingMode BindingMode { get; set; }
 
-        public XamlBinding(ITypeConverterProvider typeConverterProvider)
-        {
-            this.typeConverterProvider = typeConverterProvider;
-        }
-
-        public void Bind(object dataContext)
+        public void BindToDataContext(object dataContext)
         {
             if (dataContext == null)
             {
@@ -37,35 +38,25 @@ namespace Perspex.Markup.Xaml.DataBinding
 
             try
             {
+                var bindingSource = new DataContextChangeSynchronizer.BindingSource(this.SourcePropertyPath, dataContext);
+                var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(this.Target, this.TargetProperty);
+
+                this.changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, this.typeConverterProvider);
+
                 if (this.BindingMode == BindingMode.TwoWay)
                 {
-                    var changeSynchronizer = new DataContextChangeSynchronizer(
-                        this.Target,
-                        this.TargetProperty,
-                        this.SourcePropertyPath,
-                        dataContext,
-                        this.typeConverterProvider);
-
-                    changeSynchronizer.SubscribeUIToModel();
-                    changeSynchronizer.SubscribeModelToUI();
+                    this.changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
+                    this.changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
 
                 if (this.BindingMode == BindingMode.OneWay)
                 {
-                    var subscriptionHandler = new DataContextChangeSynchronizer(
-                        this.Target,
-                        this.TargetProperty,
-                        this.SourcePropertyPath,
-                        dataContext,
-                        this.typeConverterProvider);
-
-                    subscriptionHandler.SubscribeUIToModel();
+                    this.changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                 }
 
                 if (this.BindingMode == BindingMode.OneWayToSource)
                 {
-                    var subscriptionHandler = new DataContextChangeSynchronizer(this.Target, this.TargetProperty, this.SourcePropertyPath, dataContext, this.typeConverterProvider);
-                    subscriptionHandler.SubscribeModelToUI();
+                    this.changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
             }
             catch (Exception e)

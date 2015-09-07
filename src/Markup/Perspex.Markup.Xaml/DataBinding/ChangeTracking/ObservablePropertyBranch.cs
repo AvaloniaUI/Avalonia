@@ -16,41 +16,46 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
     public class ObservablePropertyBranch
     {
-        private readonly object root;
+        private readonly object instance;
         private readonly PropertyPath propertyPath;
-        private PropertyMountPoint mountPoint;
+        private readonly PropertyMountPoint mountPoint;
 
-        public ObservablePropertyBranch(object root, PropertyPath propertyPath)
+        public ObservablePropertyBranch(object instance, PropertyPath propertyPath)
         {
-            Guard.ThrowIfNull(root, nameof(root));
+            Guard.ThrowIfNull(instance, nameof(instance));
             Guard.ThrowIfNull(propertyPath, nameof(propertyPath));
 
-            this.root = root;
+            this.instance = instance;
             this.propertyPath = propertyPath;
-            this.mountPoint = new PropertyMountPoint(root, propertyPath);
-            var subscriptions = this.GetInpcNodes();
-            this.Changed = this.CreateObservableFromNodes(subscriptions);
+            this.mountPoint = new PropertyMountPoint(instance, propertyPath);
+            var properties = this.GetPropertiesThatRaiseNotifications();
+            this.Values = this.CreateUnifiedObservableFromNodes(properties);
         }
 
-        private IObservable<object> CreateObservableFromNodes(IEnumerable<InpcNode> subscriptions)
+        public IObservable<object> Values { get; private set; }
+
+        private IObservable<object> CreateUnifiedObservableFromNodes(IEnumerable<PropertyDefinition> subscriptions)
         {
-            return subscriptions.Select(
-                subscription => Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                    ev => subscription.Parent.PropertyChanged += ev,
-                    handler => subscription.Parent.PropertyChanged -= handler)
-                    .Do(_ => this.mountPoint = new PropertyMountPoint(this.root, this.propertyPath))
-                    .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName))
-                    .Merge();
+            return subscriptions.Select(this.GetObservableFromProperty).Merge();
         }
 
-        private IEnumerable<InpcNode> GetInpcNodes()
+        private IObservable<object> GetObservableFromProperty(PropertyDefinition subscription)
         {
-            return this.GetSubscriptionsRecursive(this.root, this.propertyPath, 0);
+            return Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                parentOnPropertyChanged => subscription.Parent.PropertyChanged += parentOnPropertyChanged,
+                parentOnPropertyChanged => subscription.Parent.PropertyChanged -= parentOnPropertyChanged)
+                .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName)
+                .Select(pattern => this.mountPoint.Value);
         }
 
-        private IEnumerable<InpcNode> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
+        private IEnumerable<PropertyDefinition> GetPropertiesThatRaiseNotifications()
         {
-            var subscriptions = new List<InpcNode>();
+            return this.GetSubscriptionsRecursive(this.instance, this.propertyPath, 0);
+        }
+
+        private IEnumerable<PropertyDefinition> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
+        {
+            var subscriptions = new List<PropertyDefinition>();
             var inpc = current as INotifyPropertyChanged;
 
             if (inpc == null)
@@ -59,7 +64,7 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
             }
 
             var nextPropertyName = propertyPath.Chunks[i];
-            subscriptions.Add(new InpcNode(inpc, nextPropertyName));
+            subscriptions.Add(new PropertyDefinition(inpc, nextPropertyName));
 
             if (i < this.propertyPath.Chunks.Length)
             {
@@ -76,8 +81,6 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
             return subscriptions;
         }
 
-        public IObservable<object> Changed { get; }
-
         public object Value
         {
             get
@@ -93,9 +96,9 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
         public Type Type => this.mountPoint.ProperyType;
 
-        private class InpcNode
+        private class PropertyDefinition
         {
-            public InpcNode(INotifyPropertyChanged parent, string propertyName)
+            public PropertyDefinition(INotifyPropertyChanged parent, string propertyName)
             {
                 this.Parent = parent;
                 this.PropertyName = propertyName;
