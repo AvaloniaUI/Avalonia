@@ -4,7 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+#if PERSPEX_CAIRO
+namespace Perspex.Cairo.RenderTests.Controls
+#else
 namespace Perspex.Direct2D1.RenderTests.Controls
+#endif
 {
     using Perspex.Controls;
     using Perspex.Layout;

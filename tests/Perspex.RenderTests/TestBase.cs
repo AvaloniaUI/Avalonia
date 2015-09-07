@@ -3,7 +3,12 @@
 // Copyright 2014 MIT Licence. See licence.md for more information.
 // </copyright>
 // -----------------------------------------------------------------------
+
+#if PERSPEX_CAIRO
+namespace Perspex.Cairo.RenderTests
+#else
 namespace Perspex.Direct2D1.RenderTests
+#endif
 {
     using System.IO;
     using System.Runtime.CompilerServices;
