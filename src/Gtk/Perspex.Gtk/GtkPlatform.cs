@@ -21,19 +21,9 @@ namespace Perspex.Gtk
             Gtk.Application.Init();
         }
 
-        public Size DoubleClickSize
-        {
-            get
-            {
-                // TODO: Is there a setting for this somewhere?
-                return new Size(4, 4);
-            }
-        }
+        public Size DoubleClickSize => new Size(4, 4);
 
-        public TimeSpan DoubleClickTime
-        {
-            get { return TimeSpan.FromMilliseconds(Gtk.Settings.Default.DoubleClickTime); }
-        }
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(Gtk.Settings.Default.DoubleClickTime);
 
         public static void Initialize()
         {

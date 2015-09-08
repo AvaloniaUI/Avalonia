@@ -44,18 +44,12 @@ namespace Perspex.Media.Imaging
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
-        public int PixelWidth
-        {
-            get { return PlatformImpl.PixelWidth; }
-        }
+        public int PixelWidth => PlatformImpl.PixelWidth;
 
         /// <summary>
         /// Gets the height of the bitmap, in pixels.
         /// </summary>
-        public int PixelHeight
-        {
-            get { return PlatformImpl.PixelHeight; }
-        }
+        public int PixelHeight => PlatformImpl.PixelHeight;
 
         /// <summary>
         /// Gets the platform-specific bitmap implementation.

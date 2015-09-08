@@ -25,10 +25,7 @@ namespace Perspex.Media.Imaging
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public new IRenderTargetBitmapImpl PlatformImpl
-        {
-            get { return (IRenderTargetBitmapImpl)base.PlatformImpl; }
-        }
+        public new IRenderTargetBitmapImpl PlatformImpl => (IRenderTargetBitmapImpl)base.PlatformImpl;
 
         /// <summary>
         /// Renders an <see cref="IVisual"/> into the bitmap.

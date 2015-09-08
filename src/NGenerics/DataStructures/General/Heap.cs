@@ -239,13 +239,7 @@ namespace NGenerics.DataStructures.General
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Type" lang="vbnet" title="The following example shows how to use the Type property."/>
         /// </example>
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
-        public HeapType Type
-        {
-            get
-            {
-                return _thisType;
-            }
-        }
+        public HeapType Type => _thisType;
 
         #endregion
 
@@ -258,14 +252,7 @@ namespace NGenerics.DataStructures.General
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="IsEmpty" lang="cs" title="The following example shows how to use the IsEmpty property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="IsEmpty" lang="vbnet" title="The following example shows how to use the IsEmpty property."/>
         /// </example>
-        public bool IsEmpty
-        {
-            get
-            {
-                return Count == 0;
-            }
-        }
-
+        public bool IsEmpty => Count == 0;
 
 
         /// <inheritdoc />
@@ -307,13 +294,7 @@ namespace NGenerics.DataStructures.General
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Count" lang="cs" title="The following example shows how to use the Count property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Count" lang="vbnet" title="The following example shows how to use the Count property."/>
         /// </example>
-        public int Count
-        {
-            get
-            {
-                return _data.Count - 1;
-            }
-        }
+        public int Count => _data.Count - 1;
 
         /// <inheritdoc />
         /// <example>
@@ -407,13 +388,7 @@ namespace NGenerics.DataStructures.General
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="IsReadOnly" lang="cs" title="The following example shows how to use the IsReadOnly property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="IsReadOnly" lang="vbnet" title="The following example shows how to use the IsReadOnly property."/>
         /// </example>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         #endregion
 

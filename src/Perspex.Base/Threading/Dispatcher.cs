@@ -31,10 +31,7 @@ namespace Perspex.Threading
         /// <summary>
         /// Gets the <see cref="Dispatcher"/> for the UI thread.
         /// </summary>
-        public static Dispatcher UIThread
-        {
-            get { return s_instance; }
-        }
+        public static Dispatcher UIThread => s_instance;
 
         /// <summary>
         /// Runs the dispatcher's main loop.

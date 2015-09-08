@@ -57,10 +57,7 @@ namespace Perspex.Gtk
             set;
         }
 
-        IPlatformHandle ITopLevelImpl.Handle
-        {
-            get { return _windowHandle; }
-        }
+        IPlatformHandle ITopLevelImpl.Handle => _windowHandle;
 
         public Action Activated { get; set; }
 

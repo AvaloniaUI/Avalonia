@@ -144,10 +144,7 @@ namespace Perspex
         /// An observable that is fired when this property is initialized on a new
         /// <see cref="PerspexObject"/> instance.
         /// </value>
-        public IObservable<PerspexPropertyChangedEventArgs> Initialized
-        {
-            get { return _initialized; }
-        }
+        public IObservable<PerspexPropertyChangedEventArgs> Initialized => _initialized;
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any
@@ -157,10 +154,7 @@ namespace Perspex
         /// An observable that is fired when this property changes on any
         /// <see cref="PerspexObject"/> instance.
         /// </value>
-        public IObservable<PerspexPropertyChangedEventArgs> Changed
-        {
-            get { return _changed; }
-        }
+        public IObservable<PerspexPropertyChangedEventArgs> Changed => _changed;
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="PerspexObject"/>

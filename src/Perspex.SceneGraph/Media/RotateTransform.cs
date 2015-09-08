@@ -46,9 +46,6 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the tranform's <see cref="Matrix"/>.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return Matrix.CreateRotation(Matrix.ToRadians(Angle)); }
-        }
+        public override Matrix Value => Matrix.CreateRotation(Matrix.ToRadians(Angle));
     }
 }

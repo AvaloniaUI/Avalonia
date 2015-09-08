@@ -64,9 +64,6 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the tranform's <see cref="Matrix"/>.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return Matrix.CreateTranslation(X, Y); }
-        }
+        public override Matrix Value => Matrix.CreateTranslation(X, Y);
     }
 }

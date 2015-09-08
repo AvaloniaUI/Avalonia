@@ -31,20 +31,11 @@ namespace Perspex.Win32
             CreateMessageWindow();
         }
 
-        public Size DoubleClickSize
-        {
-            get
-            {
-                return new Size(
-                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
-            }
-        }
+        public Size DoubleClickSize => new Size(
+            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
+            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
-        public TimeSpan DoubleClickTime
-        {
-            get { return TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime()); }
-        }
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
 
         private static void InitializeInternal()
         {

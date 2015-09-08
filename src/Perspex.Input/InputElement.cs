@@ -317,10 +317,7 @@ namespace Perspex.Input
         /// controls. The <see cref="IsEnabledCore"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        bool IInputElement.IsEnabledCore
-        {
-            get { return IsEnabledCore; }
-        }
+        bool IInputElement.IsEnabledCore => IsEnabledCore;
 
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.

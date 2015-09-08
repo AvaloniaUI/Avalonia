@@ -130,10 +130,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
-        public PopupRoot PopupRoot
-        {
-            get { return _popupRoot; }
-        }
+        public PopupRoot PopupRoot => _popupRoot;
 
         /// <summary>
         /// Gets or sets a value indicating whether the popup should stay open when the popup is
@@ -148,10 +145,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
-        IVisual IVisualTreeHost.Root
-        {
-            get { return _popupRoot; }
-        }
+        IVisual IVisualTreeHost.Root => _popupRoot;
 
         /// <summary>
         /// Opens the popup.

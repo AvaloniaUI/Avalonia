@@ -44,13 +44,7 @@ namespace NGenerics.Patterns.Visitor
         /// Gets the tracking list.
         /// </summary>
         /// <value>The tracking list.</value>
-        public IList<TKey> TrackingList
-        {
-            get
-            {
-                return _tracks;
-            }
-        }
+        public IList<TKey> TrackingList => _tracks;
 
         #endregion
 
@@ -64,13 +58,7 @@ namespace NGenerics.Patterns.Visitor
         }
 
         /// <inheritdoc />
-        public bool HasCompleted
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool HasCompleted => false;
 
         #endregion
     }

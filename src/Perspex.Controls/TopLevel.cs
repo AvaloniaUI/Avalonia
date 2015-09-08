@@ -216,34 +216,22 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the window renderer.
         /// </summary>
-        IRenderer IRenderRoot.Renderer
-        {
-            get { return _renderer; }
-        }
+        IRenderer IRenderRoot.Renderer => _renderer;
 
         /// <summary>
         /// Gets the window render manager.
         /// </summary>
-        IRenderManager IRenderRoot.RenderManager
-        {
-            get { return _renderManager; }
-        }
+        IRenderManager IRenderRoot.RenderManager => _renderManager;
 
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        IAccessKeyHandler IInputRoot.AccessKeyHandler
-        {
-            get { return _accessKeyHandler; }
-        }
+        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
         /// </summary>
-        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler
-        {
-            get { return _keyboardNavigationHandler; }
-        }
+        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler;
 
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.

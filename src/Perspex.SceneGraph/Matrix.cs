@@ -46,66 +46,42 @@ namespace Perspex
         /// <summary>
         /// Returns the multiplicative identity matrix.
         /// </summary>
-        public static Matrix Identity
-        {
-            get { return new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0); }
-        }
+        public static Matrix Identity => new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
         /// <summary>
         /// Returns whether the matrix is the identity matrix.
         /// </summary>
-        public bool IsIdentity
-        {
-            get { return Equals(Identity); }
-        }
+        public bool IsIdentity => Equals(Identity);
 
         /// <summary>
         /// The first element of the first row
         /// </summary>
-        public double M11
-        {
-            get { return _m11; }
-        }
+        public double M11 => _m11;
 
         /// <summary>
         /// The second element of the first row
         /// </summary>
-        public double M12
-        {
-            get { return _m12; }
-        }
+        public double M12 => _m12;
 
         /// <summary>
         /// The first element of the second row
         /// </summary>
-        public double M21
-        {
-            get { return _m21; }
-        }
+        public double M21 => _m21;
 
         /// <summary>
         /// The second element of the second row
         /// </summary>
-        public double M22
-        {
-            get { return _m22; }
-        }
+        public double M22 => _m22;
 
         /// <summary>
         /// The first element of the third row
         /// </summary>
-        public double M31
-        {
-            get { return _m31; }
-        }
+        public double M31 => _m31;
 
         /// <summary>
         /// The second element of the third row
         /// </summary>
-        public double M32
-        {
-            get { return _m32; }
-        }
+        public double M32 => _m32;
 
         /// <summary>
         /// Multiplies two matrices together and returns the resulting matrix.

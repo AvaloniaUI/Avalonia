@@ -40,28 +40,16 @@ namespace Perspex.Collections
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <inheritdoc/>
-        public int Count
-        {
-            get { return _inner.Count; }
-        }
+        public int Count => _inner.Count;
 
         /// <inheritdoc/>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <inheritdoc/>
-        public ICollection<TKey> Keys
-        {
-            get { return _inner.Keys; }
-        }
+        public ICollection<TKey> Keys => _inner.Keys;
 
         /// <inheritdoc/>
-        public ICollection<TValue> Values
-        {
-            get { return _inner.Values; }
-        }
+        public ICollection<TValue> Values => _inner.Values;
 
         /// <summary>
         /// Gets or sets the named resource.

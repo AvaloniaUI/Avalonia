@@ -18,10 +18,7 @@ namespace Perspex.Styling.UnitTests
             _initial = initial;
         }
 
-        public int SubscriberCount
-        {
-            get { return _subscribers.Count; }
-        }
+        public int SubscriberCount => _subscribers.Count;
 
         public void OnCompleted()
         {

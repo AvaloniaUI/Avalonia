@@ -75,18 +75,12 @@ namespace Perspex
         /// <remarks>
         /// The old and new values may be the same, this class does not check for distinct values.
         /// </remarks>
-        public IObservable<Tuple<object, object>> Changed
-        {
-            get { return _changed; }
-        }
+        public IObservable<Tuple<object, object>> Changed => _changed;
 
         /// <summary>
         /// Gets the current value.
         /// </summary>
-        public object Value
-        {
-            get { return _value; }
-        }
+        public object Value => _value;
 
         /// <summary>
         /// Gets the priority of the binding that is currently active.

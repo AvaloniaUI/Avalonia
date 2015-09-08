@@ -8,9 +8,6 @@ namespace Perspex.Controls
 {
     public class UserControl : ContentControl, IStyleable
     {
-        Type IStyleable.StyleKey
-        {
-            get { return typeof(ContentControl); }
-        }
+        Type IStyleable.StyleKey => typeof(ContentControl);
     }
 }

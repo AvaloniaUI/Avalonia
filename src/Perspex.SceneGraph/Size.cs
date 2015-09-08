@@ -40,18 +40,12 @@ namespace Perspex
         /// <summary>
         /// Gets the width.
         /// </summary>
-        public double Width
-        {
-            get { return _width; }
-        }
+        public double Width => _width;
 
         /// <summary>
         /// Gets the height.
         /// </summary>
-        public double Height
-        {
-            get { return _height; }
-        }
+        public double Height => _height;
 
         /// <summary>
         /// Checks for equality between two <see cref="Size"/>s.

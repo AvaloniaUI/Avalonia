@@ -34,18 +34,12 @@ namespace Perspex
         /// <summary>
         /// Gets the X position.
         /// </summary>
-        public double X
-        {
-            get { return _x; }
-        }
+        public double X => _x;
 
         /// <summary>
         /// Gets the Y position.
         /// </summary>
-        public double Y
-        {
-            get { return _y; }
-        }
+        public double Y => _y;
 
         /// <summary>
         /// Converts the <see cref="Point"/> to a <see cref="Vector"/>.

@@ -181,18 +181,12 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
-        public bool HasSubMenu
-        {
-            get { return !Classes.Contains(":empty"); }
-        }
+        public bool HasSubMenu => !Classes.Contains(":empty");
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level menu item.
         /// </summary>
-        public bool IsTopLevel
-        {
-            get { return Parent is Menu; }
-        }
+        public bool IsTopLevel => Parent is Menu;
 
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.

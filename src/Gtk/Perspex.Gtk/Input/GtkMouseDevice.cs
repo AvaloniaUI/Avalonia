@@ -19,10 +19,7 @@ namespace Perspex.Gtk
         {
         }
 
-        public static new GtkMouseDevice Instance
-        {
-            get { return s_instance; }
-        }
+        public static new GtkMouseDevice Instance => s_instance;
 
         internal void SetClientPosition(Point p)
         {

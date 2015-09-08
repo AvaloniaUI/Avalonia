@@ -29,10 +29,7 @@ namespace Perspex.Gtk
         {
         }
 
-        public static new GtkKeyboardDevice Instance
-        {
-            get { return s_instance; }
-        }
+        public static new GtkKeyboardDevice Instance => s_instance;
 
         public static Key ConvertKey(Gdk.Key key)
         {

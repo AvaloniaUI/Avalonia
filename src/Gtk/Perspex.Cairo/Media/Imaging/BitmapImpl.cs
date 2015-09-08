@@ -15,15 +15,9 @@ namespace Perspex.Cairo.Media.Imaging
             Surface = surface;
         }
 
-        public int PixelWidth
-        {
-            get { return Surface.Width; }
-        }
+        public int PixelWidth => Surface.Width;
 
-        public int PixelHeight
-        {
-            get { return Surface.Height; }
-        }
+        public int PixelHeight => Surface.Height;
 
         public Cairo.ImageSurface Surface
         {

@@ -11,15 +11,9 @@ namespace Perspex.Controls.UnitTests
 {
     internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot
     {
-        public Size ClientSize
-        {
-            get { return new Size(100, 100); }
-        }
+        public Size ClientSize => new Size(100, 100);
 
-        public ILayoutManager LayoutManager
-        {
-            get { return new Mock<ILayoutManager>().Object; }
-        }
+        public ILayoutManager LayoutManager => new Mock<ILayoutManager>().Object;
 
         public IRenderer Renderer
         {

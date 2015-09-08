@@ -58,18 +58,12 @@ namespace Perspex
         /// <summary>
         /// Gets the origin point.
         /// </summary>
-        public Point Point
-        {
-            get { return _point; }
-        }
+        public Point Point => _point;
 
         /// <summary>
         /// Gets the origin unit.
         /// </summary>
-        public OriginUnit Unit
-        {
-            get { return _unit; }
-        }
+        public OriginUnit Unit => _unit;
 
         /// <summary>
         /// Converts an <see cref="Origin"/> into pixels.

@@ -46,9 +46,6 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the matrix.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return Matrix; }
-        }
+        public override Matrix Value => Matrix;
     }
 }

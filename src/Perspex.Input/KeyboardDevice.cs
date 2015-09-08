@@ -26,20 +26,11 @@ namespace Perspex.Input
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public static IKeyboardDevice Instance
-        {
-            get { return Locator.Current.GetService<IKeyboardDevice>(); }
-        }
+        public static IKeyboardDevice Instance => Locator.Current.GetService<IKeyboardDevice>();
 
-        public IInputManager InputManager
-        {
-            get { return Locator.Current.GetService<IInputManager>(); }
-        }
+        public IInputManager InputManager => Locator.Current.GetService<IInputManager>();
 
-        public IFocusManager FocusManager
-        {
-            get { return Locator.Current.GetService<IFocusManager>(); }
-        }
+        public IFocusManager FocusManager => Locator.Current.GetService<IFocusManager>();
 
         public IInputElement FocusedElement
         {

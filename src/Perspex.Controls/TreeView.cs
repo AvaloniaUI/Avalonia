@@ -29,10 +29,7 @@ namespace Perspex.Controls
             });
         }
 
-        public new ITreeItemContainerGenerator ItemContainerGenerator
-        {
-            get { return (ITreeItemContainerGenerator)base.ItemContainerGenerator; }
-        }
+        public new ITreeItemContainerGenerator ItemContainerGenerator => (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         public object SelectedItem
         {

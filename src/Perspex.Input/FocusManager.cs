@@ -35,18 +35,12 @@ namespace Perspex.Input
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance
-        {
-            get { return Locator.Current.GetService<IFocusManager>(); }
-        }
+        public static IFocusManager Instance => Locator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        public IInputElement Current
-        {
-            get { return KeyboardDevice.Instance.FocusedElement; }
-        }
+        public IInputElement Current => KeyboardDevice.Instance.FocusedElement;
 
         /// <summary>
         /// Gets the current focus scope.

@@ -85,13 +85,7 @@ namespace NGenerics.DataStructures.Trees
         /// Gets the comparer.
         /// </summary>
         /// <value>The comparer.</value>
-        public IComparer<T> Comparer
-        {
-            get
-            {
-                return _comparer;
-            }
-        }
+        public IComparer<T> Comparer => _comparer;
 
         #endregion
 
@@ -379,13 +373,7 @@ namespace NGenerics.DataStructures.Trees
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\Trees\BinarySearchTreeBaseExamples.cs" region="IsEmpty" lang="cs" title="The following example shows how to use the IsEmpty property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\Trees\BinarySearchTreeBaseExamples.vb" region="IsEmpty" lang="vbnet" title="The following example shows how to use the IsEmpty property."/>
         /// </example>
-        public bool IsEmpty
-        {
-            get
-            {
-                return Count == 0;
-            }
-        }
+        public bool IsEmpty => Count == 0;
 
         /// <inheritdoc />
         public bool Remove(T item)
@@ -534,13 +522,7 @@ namespace NGenerics.DataStructures.Trees
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\Trees\BinarySearchTreeBaseExamples.cs" region="IsReadOnly" lang="cs" title="The following example shows how to use the IsReadOnly property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\Trees\BinarySearchTreeBaseExamples.vb" region="IsReadOnly" lang="vbnet" title="The following example shows how to use the IsReadOnly property."/>
         /// </example>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         #endregion
     }

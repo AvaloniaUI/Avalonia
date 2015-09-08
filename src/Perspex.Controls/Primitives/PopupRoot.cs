@@ -50,10 +50,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public new IPopupImpl PlatformImpl
-        {
-            get { return (IPopupImpl)base.PlatformImpl; }
-        }
+        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
 
         /// <summary>
         /// Gets the parent control in the event route.
@@ -61,18 +58,12 @@ namespace Perspex.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive IInteractive.InteractiveParent
-        {
-            get { return Parent; }
-        }
+        IInteractive IInteractive.InteractiveParent => Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        IVisual IHostedVisualTreeRoot.Host
-        {
-            get { return Parent; }
-        }
+        IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <summary>
         /// Sets the position of the popup in screen coordinates.

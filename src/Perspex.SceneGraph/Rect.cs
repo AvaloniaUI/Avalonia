@@ -87,114 +87,72 @@ namespace Perspex
         /// <summary>
         /// Gets the X position.
         /// </summary>
-        public double X
-        {
-            get { return _x; }
-        }
+        public double X => _x;
 
         /// <summary>
         /// Gets the Y position.
         /// </summary>
-        public double Y
-        {
-            get { return _y; }
-        }
+        public double Y => _y;
 
         /// <summary>
         /// Gets the width.
         /// </summary>
-        public double Width
-        {
-            get { return _width; }
-        }
+        public double Width => _width;
 
         /// <summary>
         /// Gets the height.
         /// </summary>
-        public double Height
-        {
-            get { return _height; }
-        }
+        public double Height => _height;
 
         /// <summary>
         /// Gets the position of the rectangle.
         /// </summary>
-        public Point Position
-        {
-            get { return new Point(_x, _y); }
-        }
+        public Point Position => new Point(_x, _y);
 
         /// <summary>
         /// Gets the size of the rectangle.
         /// </summary>
-        public Size Size
-        {
-            get { return new Size(_width, _height); }
-        }
+        public Size Size => new Size(_width, _height);
 
         /// <summary>
         /// Gets the right position of the rectangle.
         /// </summary>
-        public double Right
-        {
-            get { return _x + _width; }
-        }
+        public double Right => _x + _width;
 
         /// <summary>
         /// Gets the bottom position of the rectangle.
         /// </summary>
-        public double Bottom
-        {
-            get { return _y + _height; }
-        }
+        public double Bottom => _y + _height;
 
         /// <summary>
         /// Gets the top left point of the rectangle.
         /// </summary>
-        public Point TopLeft
-        {
-            get { return new Point(_x, _y); }
-        }
+        public Point TopLeft => new Point(_x, _y);
 
         /// <summary>
         /// Gets the top right point of the rectangle.
         /// </summary>
-        public Point TopRight
-        {
-            get { return new Point(Right, _y); }
-        }
+        public Point TopRight => new Point(Right, _y);
 
         /// <summary>
         /// Gets the bottom left point of the rectangle.
         /// </summary>
-        public Point BottomLeft
-        {
-            get { return new Point(_x, Bottom); }
-        }
+        public Point BottomLeft => new Point(_x, Bottom);
 
         /// <summary>
         /// Gets the bottom right point of the rectangle.
         /// </summary>
-        public Point BottomRight
-        {
-            get { return new Point(Right, Bottom); }
-        }
+        public Point BottomRight => new Point(Right, Bottom);
 
         /// <summary>
         /// Gets the center point of the rectangle.
         /// </summary>
-        public Point Center
-        {
-            get { return new Point(_x + (_width / 2), _y + (_height / 2)); }
-        }
+        public Point Center => new Point(_x + (_width / 2), _y + (_height / 2));
 
         /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
-        public bool IsEmpty
-        {
-            get { return _width == 0 && _height == 0; }
-        }
+        public bool IsEmpty => _width == 0 && _height == 0;
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.

@@ -54,10 +54,7 @@ namespace Perspex.Controls.Presenters
             private set { SetValue(ViewportProperty, value); }
         }
 
-        public bool CanScrollHorizontally
-        {
-            get { return GetValue(CanScrollHorizontallyProperty); }
-        }
+        public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
 
         protected override Size MeasureOverride(Size availableSize)
         {

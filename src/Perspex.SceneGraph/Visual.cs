@@ -190,29 +190,17 @@ namespace Perspex
         /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
-        bool IVisual.IsAttachedToVisualTree
-        {
-            get { return _isAttachedToVisualTree; }
-        }
+        bool IVisual.IsAttachedToVisualTree => _isAttachedToVisualTree;
 
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
-        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren
-        {
-            get { return _visualChildren; }
-        }
+        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => _visualChildren;
 
         /// <summary>
         /// Gets the scene graph node's parent node.
         /// </summary>
-        IVisual IVisual.VisualParent
-        {
-            get
-            {
-                return _visualParent;
-            }
-        }
+        IVisual IVisual.VisualParent => _visualParent;
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.

@@ -24,10 +24,7 @@ namespace Perspex.SceneGraph.UnitTests
 
         public event EventHandler<ParamEventArgs<IRenderRoot>> DetachedFromVisualTreeCalled;
 
-        public new PerspexObject InheritanceParent
-        {
-            get { return base.InheritanceParent; }
-        }
+        public new PerspexObject InheritanceParent => base.InheritanceParent;
 
         public void AddChild(Visual v)
         {

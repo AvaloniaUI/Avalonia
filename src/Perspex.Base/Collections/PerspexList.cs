@@ -63,46 +63,25 @@ namespace Perspex.Collections
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count
-        {
-            get { return _inner.Count; }
-        }
+        public int Count => _inner.Count;
 
         /// <inheritdoc/>
-        bool IList.IsFixedSize
-        {
-            get { return false; }
-        }
+        bool IList.IsFixedSize => false;
 
         /// <inheritdoc/>
-        bool IList.IsReadOnly
-        {
-            get { return false; }
-        }
+        bool IList.IsReadOnly => false;
 
         /// <inheritdoc/>
-        int ICollection.Count
-        {
-            get { return _inner.Count; }
-        }
+        int ICollection.Count => _inner.Count;
 
         /// <inheritdoc/>
-        bool ICollection.IsSynchronized
-        {
-            get { return false; }
-        }
+        bool ICollection.IsSynchronized => false;
 
         /// <inheritdoc/>
-        object ICollection.SyncRoot
-        {
-            get { return null; }
-        }
+        object ICollection.SyncRoot => null;
 
         /// <inheritdoc/>
-        bool ICollection<T>.IsReadOnly
-        {
-            get { return false; }
-        }
+        bool ICollection<T>.IsReadOnly => false;
 
         /// <summary>
         /// Gets or sets the item at the specified index.

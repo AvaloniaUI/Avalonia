@@ -71,50 +71,32 @@ namespace Perspex.Controls
         /// Gets an instance of <see cref="GridLength"/> that indicates that a row or column should
         /// auto-size to fit its content.
         /// </summary>
-        public static GridLength Auto
-        {
-            get { return new GridLength(0, GridUnitType.Auto); }
-        }
+        public static GridLength Auto => new GridLength(0, GridUnitType.Auto);
 
         /// <summary>
         /// Gets the unit of the <see cref="GridLength"/>.
         /// </summary>
-        public GridUnitType GridUnitType
-        {
-            get { return _type; }
-        }
+        public GridUnitType GridUnitType => _type;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Pixel.
         /// </summary>
-        public bool IsAbsolute
-        {
-            get { return _type == GridUnitType.Pixel; }
-        }
+        public bool IsAbsolute => _type == GridUnitType.Pixel;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Auto.
         /// </summary>
-        public bool IsAuto
-        {
-            get { return _type == GridUnitType.Auto; }
-        }
+        public bool IsAuto => _type == GridUnitType.Auto;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Star.
         /// </summary>
-        public bool IsStar
-        {
-            get { return _type == GridUnitType.Star; }
-        }
+        public bool IsStar => _type == GridUnitType.Star;
 
         /// <summary>
         /// Gets the length.
         /// </summary>
-        public double Value
-        {
-            get { return _value; }
-        }
+        public double Value => _value;
 
         /// <summary>
         /// Compares two GridLength structures for equality.

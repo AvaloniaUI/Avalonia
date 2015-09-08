@@ -77,10 +77,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public new IWindowImpl PlatformImpl
-        {
-            get { return (IWindowImpl)base.PlatformImpl; }
-        }
+        public new IWindowImpl PlatformImpl => (IWindowImpl)base.PlatformImpl;
 
         /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
@@ -101,10 +98,7 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey
-        {
-            get { return typeof(Window); }
-        }
+        Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
         /// Closes the window.

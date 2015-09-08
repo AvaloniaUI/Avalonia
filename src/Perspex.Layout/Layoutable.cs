@@ -283,18 +283,12 @@ namespace Perspex.Layout
         /// <summary>
         /// Gets the available size passed in the previous layout pass, if any.
         /// </summary>
-        Size? ILayoutable.PreviousMeasure
-        {
-            get { return _previousMeasure; }
-        }
+        Size? ILayoutable.PreviousMeasure => _previousMeasure;
 
         /// <summary>
         /// Gets the layout rect passed in the previous layout pass, if any.
         /// </summary>
-        Rect? ILayoutable.PreviousArrange
-        {
-            get { return _previousArrange; }
-        }
+        Rect? ILayoutable.PreviousArrange => _previousArrange;
 
         /// <summary>
         /// Creates the visual children of the control, if necessary

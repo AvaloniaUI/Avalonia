@@ -228,10 +228,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        public IControl Parent
-        {
-            get { return GetValue(ParentProperty); }
-        }
+        public IControl Parent => GetValue(ParentProperty);
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
@@ -254,18 +251,12 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        ILogical ILogical.LogicalParent
-        {
-            get { return Parent; }
-        }
+        ILogical ILogical.LogicalParent => Parent;
 
         /// <summary>
         /// Gets the control's logical children.
         /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get { return LogicalChildren; }
-        }
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <summary>
         /// Gets the type by which the control is styled.
@@ -276,10 +267,7 @@ namespace Perspex.Controls
         /// derives from Button and adds extra functionality but is still styled as a regular
         /// Button.
         /// </remarks>
-        Type IStyleable.StyleKey
-        {
-            get { return GetType(); }
-        }
+        Type IStyleable.StyleKey => GetType();
 
         /// <summary>
         /// Gets the control's logical children.

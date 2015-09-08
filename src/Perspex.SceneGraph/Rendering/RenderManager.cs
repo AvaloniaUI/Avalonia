@@ -19,18 +19,12 @@ namespace Perspex.Rendering
         /// <summary>
         /// Gets an observable that is fired whenever a render is required.
         /// </summary>
-        public IObservable<Unit> RenderNeeded
-        {
-            get { return _renderNeeded; }
-        }
+        public IObservable<Unit> RenderNeeded => _renderNeeded;
 
         /// <summary>
         /// Gets a valuue indicating whether a render is queued.
         /// </summary>
-        public bool RenderQueued
-        {
-            get { return _renderQueued; }
-        }
+        public bool RenderQueued => _renderQueued;
 
         /// <summary>
         /// Invalidates the render for the specified visual and raises <see cref="RenderNeeded"/>.

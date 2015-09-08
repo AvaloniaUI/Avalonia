@@ -33,10 +33,7 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// Gets the Direct2D <see cref="Geometry"/>.
         /// </summary>
-        public Geometry Geometry
-        {
-            get { return _transformed ?? DefiningGeometry; }
-        }
+        public Geometry Geometry => _transformed ?? DefiningGeometry;
 
         /// <summary>
         /// Gets or sets the transform for the geometry.

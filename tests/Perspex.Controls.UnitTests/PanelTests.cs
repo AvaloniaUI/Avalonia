@@ -137,10 +137,7 @@ namespace Perspex.Controls.UnitTests
 
         private class TestReparent : Panel
         {
-            public new IPerspexList<ILogical> LogicalChildren
-            {
-                get { return base.LogicalChildren; }
-            }
+            public new IPerspexList<ILogical> LogicalChildren => base.LogicalChildren;
         }
     }
 }

@@ -17,10 +17,7 @@ namespace Perspex.Styling.UnitTests
 
         public virtual Classes Classes { get; set; }
 
-        public Type StyleKey
-        {
-            get { return GetType(); }
-        }
+        public Type StyleKey => GetType();
 
         public TestObservable SubscribeCheckObservable { get; private set; }
 

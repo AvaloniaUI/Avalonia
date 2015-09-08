@@ -57,14 +57,8 @@ namespace Perspex.Diagnostics.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _visualTree, value); }
         }
 
-        public IInputElement FocusedControl
-        {
-            get { return _focusedControl.Value; }
-        }
+        public IInputElement FocusedControl => _focusedControl.Value;
 
-        public IInputElement PointerOverElement
-        {
-            get { return _pointerOverElement.Value; }
-        }
+        public IInputElement PointerOverElement => _pointerOverElement.Value;
     }
 }
