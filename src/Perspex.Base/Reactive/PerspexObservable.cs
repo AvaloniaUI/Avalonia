@@ -28,7 +28,7 @@ namespace Perspex.Reactive
             }
 
             _subscribe = subscribe;
-            this.Description = description;
+            Description = description;
         }
 
         /// <summary>

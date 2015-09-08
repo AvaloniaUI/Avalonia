@@ -47,7 +47,7 @@ namespace Perspex.Controls.Utils
 
                 foreach (var i in items)
                 {
-                    if (object.ReferenceEquals(i, item))
+                    if (ReferenceEquals(i, item))
                     {
                         return index;
                     }

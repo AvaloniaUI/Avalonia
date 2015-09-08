@@ -13,17 +13,17 @@ namespace Perspex.Markup.Xaml.Templates
     {
         private bool MyMatch(object data)
         {
-            if (this.DataType == null)
+            if (DataType == null)
             {
                 throw new InvalidOperationException("XAML DataTemplates must have a DataType");
             }
 
-            return this.DataType == data.GetType();
+            return DataType == data.GetType();
         }
 
         private Control CreateVisualTreeForItem(object data)
         {
-            var visualTreeForItem = this.Content.Load();
+            var visualTreeForItem = Content.Load();
             visualTreeForItem.DataContext = data;
             return visualTreeForItem;
         }
@@ -34,12 +34,12 @@ namespace Perspex.Markup.Xaml.Templates
 
         public IControl Build(object param)
         {
-            return this.CreateVisualTreeForItem(param);
+            return CreateVisualTreeForItem(param);
         }
 
         public bool Match(object data)
         {
-            return this.MyMatch(data);
+            return MyMatch(data);
         }
     }
 }

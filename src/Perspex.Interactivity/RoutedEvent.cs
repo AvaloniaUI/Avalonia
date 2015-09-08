@@ -31,10 +31,10 @@ namespace Perspex.Interactivity
             Contract.Requires<NullReferenceException>(ownerType != null);
             Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).GetTypeInfo().IsAssignableFrom(eventArgsType.GetTypeInfo()));
 
-            this.EventArgsType = eventArgsType;
-            this.Name = name;
-            this.OwnerType = ownerType;
-            this.RoutingStrategies = routingStrategies;
+            EventArgsType = eventArgsType;
+            Name = name;
+            OwnerType = ownerType;
+            RoutingStrategies = routingStrategies;
         }
 
         public Type EventArgsType
@@ -126,7 +126,7 @@ namespace Perspex.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble)
             where TTarget : class
         {
-            this.AddClassHandler(typeof(TTarget), (s, e) => ClassHandlerAdapter<TTarget>(s, e, handler), routes);
+            AddClassHandler(typeof(TTarget), (s, e) => ClassHandlerAdapter<TTarget>(s, e, handler), routes);
         }
 
         private static void ClassHandlerAdapter<TTarget>(

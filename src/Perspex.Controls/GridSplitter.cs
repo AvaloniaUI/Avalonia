@@ -18,12 +18,12 @@ namespace Perspex.Controls
         /// </summary>
         public GridSplitter()
         {
-            this.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+            Cursor = new Cursor(StandardCursorType.SizeWestEast);
         }
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
-            int col = this.GetValue(Grid.ColumnProperty);
+            int col = GetValue(Grid.ColumnProperty);
 
             if (_grid != null && col > 0)
             {

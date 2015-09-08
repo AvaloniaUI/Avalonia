@@ -24,7 +24,7 @@ namespace Perspex.Win32
 
         public async Task<string> GetTextAsync()
         {
-            await this.OpenClipboard();
+            await OpenClipboard();
             try
             {
                 IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
@@ -56,7 +56,7 @@ namespace Perspex.Win32
                 throw new ArgumentNullException(nameof(text));
             }
 
-            await this.OpenClipboard();
+            await OpenClipboard();
             try
             {
                 var hGlobal = Marshal.StringToHGlobalUni(text);
@@ -70,7 +70,7 @@ namespace Perspex.Win32
 
         public async Task ClearAsync()
         {
-            await this.OpenClipboard();
+            await OpenClipboard();
             try
             {
                 UnmanagedMethods.EmptyClipboard();

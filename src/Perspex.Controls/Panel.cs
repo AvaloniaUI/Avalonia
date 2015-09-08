@@ -27,7 +27,7 @@ namespace Perspex.Controls
         /// </summary>
         public Panel()
         {
-            _children.CollectionChanged += this.ChildrenChanged;
+            _children.CollectionChanged += ChildrenChanged;
             _childLogicalParent = this;
         }
 
@@ -51,7 +51,7 @@ namespace Perspex.Controls
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                this.ClearVisualChildren();
+                ClearVisualChildren();
                 _children.Clear();
                 _children.AddRange(value);
             }
@@ -73,9 +73,9 @@ namespace Perspex.Controls
             Contract.Requires<ArgumentNullException>(children != null);
 
             _childLogicalParent = logicalParent;
-            this.RedirectLogicalChildren(children);
+            RedirectLogicalChildren(children);
 
-            foreach (var control in this.Children)
+            foreach (var control in Children)
             {
                 ((ISetLogicalParent)control).SetParent(null);
                 ((ISetLogicalParent)control).SetParent((IControl)logicalParent);
@@ -123,28 +123,28 @@ namespace Perspex.Controls
             {
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
-                    this.SetLogicalParent(controls);
-                    this.AddVisualChildren(e.NewItems.OfType<Visual>());
-                    this.LogicalChildren.InsertRange(e.NewStartingIndex, controls);
+                    SetLogicalParent(controls);
+                    AddVisualChildren(e.NewItems.OfType<Visual>());
+                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
-                    this.ClearLogicalParent(e.OldItems.OfType<Control>());
-                    this.LogicalChildren.RemoveAll(controls);
-                    this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
+                    ClearLogicalParent(e.OldItems.OfType<Control>());
+                    LogicalChildren.RemoveAll(controls);
+                    RemoveVisualChildren(e.OldItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
                     controls = e.OldItems.OfType<Control>().ToList();
-                    this.ClearLogicalParent(controls);
-                    this.LogicalChildren.Clear();
-                    this.ClearVisualChildren();
-                    this.AddVisualChildren(_children);
+                    ClearLogicalParent(controls);
+                    LogicalChildren.Clear();
+                    ClearVisualChildren();
+                    AddVisualChildren(_children);
                     break;
             }
 
-            this.InvalidateMeasure();
+            InvalidateMeasure();
         }
     }
 }

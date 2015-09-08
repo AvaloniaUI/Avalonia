@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;
 using Perspex.Layout;
@@ -12,7 +13,7 @@ using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="CheckBox"/> control.
@@ -24,27 +25,27 @@ namespace Perspex.Themes.Default
         /// </summary>
         public CheckBoxStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<CheckBox>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, new ControlTemplate<CheckBox>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<CheckBox>(Template)),
                     },
                 },
                 new Style(x => x.OfType<CheckBox>().Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Shape.IsVisibleProperty, false),
+                        new Setter(Visual.IsVisibleProperty, false),
                     },
                 },
                 new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Name("checkMark"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Shape.IsVisibleProperty, true),
+                        new Setter(Visual.IsVisibleProperty, true),
                     },
                 },
             });
@@ -59,7 +60,7 @@ namespace Perspex.Themes.Default
         {
             Border result = new Border
             {
-                [~Border.BackgroundProperty] = control[~CheckBox.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                 Child = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -96,7 +97,7 @@ namespace Perspex.Themes.Default
                             Name = "contentPresenter",
                             Margin = new Thickness(4, 0, 0, 0),
                             VerticalAlignment = VerticalAlignment.Center,
-                            [~ContentPresenter.ContentProperty] = control[~CheckBox.ContentProperty],
+                            [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                             [Grid.ColumnProperty] = 1,
                         },
                     },

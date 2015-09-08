@@ -17,8 +17,8 @@ namespace Perspex.Controls.Generators
         /// <param name="containers">The containers.</param>
         public ItemContainers(int startingIndex, IList<IControl> containers)
         {
-            this.StartingIndex = startingIndex;
-            this.Items = containers;
+            StartingIndex = startingIndex;
+            Items = containers;
         }
 
         /// <summary>

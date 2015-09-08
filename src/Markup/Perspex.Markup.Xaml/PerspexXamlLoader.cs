@@ -52,7 +52,7 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
-            return this.Load(GetUriFor(type), rootInstance);
+            return Load(GetUriFor(type), rootInstance);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return this.Load(stream, rootInstance);
+                return Load(stream, rootInstance);
             }
         }
 

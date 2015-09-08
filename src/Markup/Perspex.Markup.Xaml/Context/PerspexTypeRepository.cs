@@ -26,7 +26,7 @@ namespace Perspex.Markup.Xaml.Context
         public override XamlType GetXamlType(Type type)
         {
             Guard.ThrowIfNull(type, nameof(type));
-            return new PerspexXamlType(type, this, _typeFactory, this.FeatureProvider, _propertyBinder);
+            return new PerspexXamlType(type, this, _typeFactory, FeatureProvider, _propertyBinder);
         }
     }
 }

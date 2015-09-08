@@ -182,7 +182,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
+            target.Bind(Class1.FooProperty, Single("stylevalue"), BindingPriority.Style);
 
             Assert.Equal("stylevalue", target.GetValue(Class1.FooProperty));
         }

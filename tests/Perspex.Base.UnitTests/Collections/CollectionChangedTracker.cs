@@ -10,24 +10,24 @@ namespace Perspex.Base.UnitTests.Collections
     {
         public CollectionChangedTracker(INotifyCollectionChanged collection)
         {
-            collection.CollectionChanged += this.CollectionChanged;
+            collection.CollectionChanged += CollectionChanged;
         }
 
         public NotifyCollectionChangedEventArgs Args { get; private set; }
 
         public void Reset()
         {
-            this.Args = null;
+            Args = null;
         }
 
         private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (this.Args != null)
+            if (Args != null)
             {
                 throw new Exception("CollectionChanged called more than once.");
             }
 
-            this.Args = e;
+            Args = e;
         }
     }
 }

@@ -80,8 +80,8 @@ namespace Perspex.Media
         /// </summary>
         public AlignmentX AlignmentX
         {
-            get { return this.GetValue(AlignmentXProperty); }
-            set { this.SetValue(AlignmentXProperty, value); }
+            get { return GetValue(AlignmentXProperty); }
+            set { SetValue(AlignmentXProperty, value); }
         }
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace Perspex.Media
         /// </summary>
         public AlignmentY AlignmentY
         {
-            get { return this.GetValue(AlignmentYProperty); }
-            set { this.SetValue(AlignmentYProperty, value); }
+            get { return GetValue(AlignmentYProperty); }
+            set { SetValue(AlignmentYProperty, value); }
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace Perspex.Media
         /// </summary>
         public RelativeRect DestinationRect
         {
-            get { return this.GetValue(DestinationRectProperty); }
-            set { this.SetValue(DestinationRectProperty, value); }
+            get { return GetValue(DestinationRectProperty); }
+            set { SetValue(DestinationRectProperty, value); }
         }
 
         /// <summary>
@@ -107,8 +107,8 @@ namespace Perspex.Media
         /// </summary>
         public RelativeRect SourceRect
         {
-            get { return this.GetValue(SourceRectProperty); }
-            set { this.SetValue(SourceRectProperty, value); }
+            get { return GetValue(SourceRectProperty); }
+            set { SetValue(SourceRectProperty, value); }
         }
 
         /// <summary>
@@ -117,8 +117,8 @@ namespace Perspex.Media
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)this.GetValue(StretchProperty); }
-            set { this.SetValue(StretchProperty, value); }
+            get { return (Stretch)GetValue(StretchProperty); }
+            set { SetValue(StretchProperty, value); }
         }
 
         /// <summary>
@@ -126,8 +126,8 @@ namespace Perspex.Media
         /// </summary>
         public TileMode TileMode
         {
-            get { return (TileMode)this.GetValue(TileModeProperty); }
-            set { this.SetValue(TileModeProperty, value); }
+            get { return (TileMode)GetValue(TileModeProperty); }
+            set { SetValue(TileModeProperty, value); }
         }
     }
 }

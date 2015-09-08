@@ -277,7 +277,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             return new ContentPresenter
             {
                 Name = "contentPresenter",
-                [~ContentPresenter.ContentProperty] = control[~PopupRoot.ContentProperty],
+                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
         }
 
@@ -288,7 +288,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Name = "popup",
                 Child = new ContentPresenter
                 {
-                    [~ContentPresenter.ContentProperty] = control[~PopupRoot.ContentProperty],
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
             };
         }

@@ -22,20 +22,20 @@ PerspexProperty.Register<GradientBrush, List<GradientStop>>(nameof(Opacity), new
 
         public BrushMappingMode MappingMode
         {
-            get { return this.GetValue(MappingModeProperty); }
-            set { this.SetValue(MappingModeProperty, value); }
+            get { return GetValue(MappingModeProperty); }
+            set { SetValue(MappingModeProperty, value); }
         }
 
         public GradientSpreadMethod SpreadMethod
         {
-            get { return this.GetValue(SpreadMethodProperty); }
-            set { this.SetValue(SpreadMethodProperty, value); }
+            get { return GetValue(SpreadMethodProperty); }
+            set { SetValue(SpreadMethodProperty, value); }
         }
 
         public List<GradientStop> GradientStops
         {
-            get { return this.GetValue(GradientStopsProperty); }
-            set { this.SetValue(GradientStopsProperty, value); }
+            get { return GetValue(GradientStopsProperty); }
+            set { SetValue(GradientStopsProperty, value); }
         }
     }
 }

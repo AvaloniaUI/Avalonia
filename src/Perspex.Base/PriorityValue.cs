@@ -65,7 +65,7 @@ namespace Perspex
             _name = name;
             _valueType = valueType;
             _value = PerspexProperty.UnsetValue;
-            this.ValuePriority = int.MaxValue;
+            ValuePriority = int.MaxValue;
             _validate = validate;
         }
 
@@ -107,7 +107,7 @@ namespace Perspex
         /// </returns>
         public IDisposable Add(IObservable<object> binding, int priority)
         {
-            return this.GetLevel(priority).Add(binding);
+            return GetLevel(priority).Add(binding);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Perspex
         /// <param name="priority">The priority</param>
         public void SetDirectValue(object value, int priority)
         {
-            this.GetLevel(priority).DirectValue = value;
+            GetLevel(priority).DirectValue = value;
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Perspex
                     b.AppendLine();
                 }
 
-                b.Append(this.ValuePriority == level.Key ? "*" : string.Empty);
+                b.Append(ValuePriority == level.Key ? "*" : string.Empty);
                 b.Append("Priority ");
                 b.Append(level.Key);
                 b.Append(": ");
@@ -184,9 +184,9 @@ namespace Perspex
             {
                 PriorityLevel level;
 
-                if (_levels.TryGetValue(this.ValuePriority, out level))
+                if (_levels.TryGetValue(ValuePriority, out level))
                 {
-                    this.UpdateValue(level.Value, level.Priority);
+                    UpdateValue(level.Value, level.Priority);
                 }
             }
         }
@@ -204,7 +204,7 @@ namespace Perspex
             if (!_levels.TryGetValue(priority, out result))
             {
                 var mode = (LevelPrecedenceMode)(priority % 2);
-                result = new PriorityLevel(priority, mode, this.ValueChanged);
+                result = new PriorityLevel(priority, mode, ValueChanged);
                 _levels.Add(priority, result);
             }
 
@@ -234,7 +234,7 @@ namespace Perspex
                 value = _validate(value);
             }
 
-            this.ValuePriority = priority;
+            ValuePriority = priority;
             _value = value;
             _changed.OnNext(Tuple.Create(old, _value));
         }
@@ -245,11 +245,11 @@ namespace Perspex
         /// <param name="level">The priority level of the changed entry.</param>
         private void ValueChanged(PriorityLevel level)
         {
-            if (level.Priority <= this.ValuePriority)
+            if (level.Priority <= ValuePriority)
             {
                 if (level.Value != PerspexProperty.UnsetValue)
                 {
-                    this.UpdateValue(level.Value, level.Priority);
+                    UpdateValue(level.Value, level.Priority);
                 }
                 else
                 {
@@ -257,12 +257,12 @@ namespace Perspex
                     {
                         if (i.Value != PerspexProperty.UnsetValue)
                         {
-                            this.UpdateValue(i.Value, i.Priority);
+                            UpdateValue(i.Value, i.Priority);
                             return;
                         }
                     }
 
-                    this.UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
+                    UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
                 }
             }
         }

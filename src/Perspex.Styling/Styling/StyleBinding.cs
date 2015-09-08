@@ -36,8 +36,8 @@ namespace Perspex.Styling
             string description)
         {
             _activator = activator;
-            this.ActivatedValue = activatedValue;
-            this.Description = description;
+            ActivatedValue = activatedValue;
+            Description = description;
         }
 
         /// <summary>
@@ -52,8 +52,8 @@ namespace Perspex.Styling
             string description)
         {
             _activator = activator;
-            this.Description = description;
-            this.Source = source;
+            Description = description;
+            Source = source;
         }
 
         /// <summary>
@@ -61,9 +61,7 @@ namespace Perspex.Styling
         /// </summary>
         public object ActivatedValue
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets a description of the binding.
@@ -90,17 +88,17 @@ namespace Perspex.Styling
         {
             Contract.Requires<NullReferenceException>(observer != null);
 
-            if (this.Source == null)
+            if (Source == null)
             {
                 return _activator.Subscribe(
-                    active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
+                    active => observer.OnNext(active ? ActivatedValue : PerspexProperty.UnsetValue),
                     observer.OnError,
                     observer.OnCompleted);
             }
             else
             {
                 return Observable
-                    .CombineLatest(_activator, this.Source, (x, y) => new { Active = x, Value = y })
+                    .CombineLatest(_activator, Source, (x, y) => new { Active = x, Value = y })
                     .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
             }
         }

@@ -41,37 +41,37 @@ namespace Perspex.Controls
 
         public DropDown()
         {
-            this.Bind(ContentProperty, this.GetObservable(DropDown.SelectedItemProperty));
+            Bind(ContentProperty, GetObservable(SelectedItemProperty));
         }
 
         public object Content
         {
-            get { return this.GetValue(ContentProperty); }
-            set { this.SetValue(ContentProperty, value); }
+            get { return GetValue(ContentProperty); }
+            set { SetValue(ContentProperty, value); }
         }
 
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return this.GetValue(HorizontalContentAlignmentProperty); }
-            set { this.SetValue(HorizontalContentAlignmentProperty, value); }
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
         }
 
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return this.GetValue(VerticalContentAlignmentProperty); }
-            set { this.SetValue(VerticalContentAlignmentProperty, value); }
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
         public bool IsDropDownOpen
         {
-            get { return this.GetValue(IsDropDownOpenProperty); }
-            set { this.SetValue(IsDropDownOpenProperty, value); }
+            get { return GetValue(IsDropDownOpenProperty); }
+            set { SetValue(IsDropDownOpenProperty, value); }
         }
 
         public object SelectionBoxItem
         {
-            get { return this.GetValue(SelectionBoxItemProperty); }
-            set { this.SetValue(SelectionBoxItemProperty, value); }
+            get { return GetValue(SelectionBoxItemProperty); }
+            set { SetValue(SelectionBoxItemProperty, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -88,12 +88,12 @@ namespace Perspex.Controls
                 if (e.Key == Key.F4 ||
                     (e.Key == Key.Down && ((e.Modifiers & ModifierKeys.Alt) != 0)))
                 {
-                    this.IsDropDownOpen = !this.IsDropDownOpen;
+                    IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;
                 }
-                else if (this.IsDropDownOpen && (e.Key == Key.Escape || e.Key == Key.Enter))
+                else if (IsDropDownOpen && (e.Key == Key.Escape || e.Key == Key.Enter))
                 {
-                    this.IsDropDownOpen = false;
+                    IsDropDownOpen = false;
                     e.Handled = true;
                 }
             }
@@ -101,11 +101,11 @@ namespace Perspex.Controls
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
-            if (!this.IsDropDownOpen)
+            if (!IsDropDownOpen)
             {
                 if (((IVisual)e.Source).GetVisualAncestors().Last().GetType() != typeof(PopupRoot))
                 {
-                    this.IsDropDownOpen = true;
+                    IsDropDownOpen = true;
                 }
             }
 
@@ -116,20 +116,20 @@ namespace Perspex.Controls
         {
             if (_popup != null)
             {
-                _popup.Opened -= this.PopupOpened;
+                _popup.Opened -= PopupOpened;
             }
 
             _popup = this.GetTemplateChild<Popup>("popup");
-            _popup.Opened += this.PopupOpened;
+            _popup.Opened += PopupOpened;
         }
 
         private void PopupOpened(object sender, EventArgs e)
         {
-            var selectedIndex = this.SelectedIndex;
+            var selectedIndex = SelectedIndex;
 
             if (selectedIndex != -1)
             {
-                var container = this.ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 container.Focus();
             }
         }
@@ -140,7 +140,7 @@ namespace Perspex.Controls
 
             if (control != null)
             {
-                this.SelectionBoxItem = new Rectangle
+                SelectionBoxItem = new Rectangle
                 {
                     Width = control.DesiredSize.Width,
                     Height = control.DesiredSize.Height,
@@ -154,7 +154,7 @@ namespace Perspex.Controls
             }
             else
             {
-                this.SelectionBoxItem = e.NewValue;
+                SelectionBoxItem = e.NewValue;
             }
         }
     }

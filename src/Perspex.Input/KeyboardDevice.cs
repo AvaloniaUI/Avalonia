@@ -18,10 +18,10 @@ namespace Perspex.Input
 
         public KeyboardDevice()
         {
-            this.InputManager.RawEventReceived
+            InputManager.RawEventReceived
                 .OfType<RawInputEventArgs>()
                 .Where(x => x.Device == this)
-                .Subscribe(this.ProcessRawEvent);
+                .Subscribe(ProcessRawEvent);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -51,15 +51,15 @@ namespace Perspex.Input
             private set
             {
                 _focusedElement = value;
-                this.RaisePropertyChanged();
+                RaisePropertyChanged();
             }
         }
 
         public void SetFocusedElement(IInputElement element, NavigationMethod method)
         {
-            if (element != this.FocusedElement)
+            if (element != FocusedElement)
             {
-                var interactive = this.FocusedElement as IInteractive;
+                var interactive = FocusedElement as IInteractive;
 
                 if (interactive != null)
                 {
@@ -69,7 +69,7 @@ namespace Perspex.Input
                     });
                 }
 
-                this.FocusedElement = element;
+                FocusedElement = element;
                 interactive = element as IInteractive;
 
                 if (interactive != null)
@@ -85,12 +85,12 @@ namespace Perspex.Input
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void ProcessRawEvent(RawInputEventArgs e)
         {
-            IInputElement element = this.FocusedElement;
+            IInputElement element = FocusedElement;
 
             if (element != null)
             {

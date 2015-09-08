@@ -81,13 +81,13 @@ namespace Perspex.Direct2D1.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2)
         {
             if (pen != null)
             {
                 var size = new Rect(p1, p2).Size;
 
-                using (var d2dBrush = this.CreateBrush(pen.Brush, size))
+                using (var d2dBrush = CreateBrush(pen.Brush, size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
                     _renderTarget.DrawLine(
@@ -106,11 +106,11 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
+        public void DrawGeometry(Perspex.Media.Brush brush, Pen pen, Perspex.Media.Geometry geometry)
         {
             if (brush != null)
             {
-                using (var d2dBrush = this.CreateBrush(brush, geometry.Bounds.Size))
+                using (var d2dBrush = CreateBrush(brush, geometry.Bounds.Size))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
                     _renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
@@ -119,7 +119,7 @@ namespace Perspex.Direct2D1.Media
 
             if (pen != null)
             {
-                using (var d2dBrush = this.CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
+                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
@@ -136,7 +136,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var brush = this.CreateBrush(pen.Brush, rect.Size))
+            using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
             {
                 if (cornerRadius == 0)
@@ -164,13 +164,13 @@ namespace Perspex.Direct2D1.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Perspex.Media.Brush foreground, Perspex.Point origin, FormattedText text)
+        public void DrawText(Perspex.Media.Brush foreground, Point origin, FormattedText text)
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (var brush = this.CreateBrush(foreground, impl.Measure()))
+                using (var brush = CreateBrush(foreground, impl.Measure()))
                 using (var renderer = new PerspexTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
                     impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
@@ -186,7 +186,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
-            using (var b = this.CreateBrush(brush, rect.Size))
+            using (var b = CreateBrush(brush, rect.Size))
             {
                 if (cornerRadius == 0)
                 {
@@ -285,7 +285,7 @@ namespace Perspex.Direct2D1.Media
         {
             var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
             var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
-            var visualBrush = brush as Perspex.Media.VisualBrush;
+            var visualBrush = brush as VisualBrush;
 
             if (solidColorBrush != null)
             {

@@ -20,7 +20,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public TypeExtension(Type type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         public string TypeName { get; set; }
@@ -37,12 +37,12 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext markupExtensionContext)
         {
-            if (this.Type != null)
+            if (Type != null)
             {
-                return this.Type;
+                return Type;
             }
 
-            return this.ResolveFromString(this.TypeName, markupExtensionContext.TypeRepository);
+            return ResolveFromString(TypeName, markupExtensionContext.TypeRepository);
         }
     }
 }

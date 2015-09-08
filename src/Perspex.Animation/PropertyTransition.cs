@@ -18,9 +18,9 @@ namespace Perspex.Animation
         /// <param name="easing">The easing function to use.</param>
         public PropertyTransition(PerspexProperty property, TimeSpan duration, IEasing easing)
         {
-            this.Property = property;
-            this.Duration = duration;
-            this.Easing = easing;
+            Property = property;
+            Duration = duration;
+            Easing = easing;
         }
 
         /// <summary>

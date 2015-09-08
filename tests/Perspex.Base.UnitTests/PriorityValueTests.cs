@@ -24,7 +24,7 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
 
             Assert.Equal("foo", target.Value);
         }
@@ -46,7 +46,7 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
             target.SetDirectValue("bar", 0);
 
             Assert.Equal("bar", target.Value);
@@ -119,9 +119,9 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 1);
-            target.Add(this.Single("bar"), 0);
-            target.Add(this.Single("baz"), 1);
+            target.Add(Single("foo"), 1);
+            target.Add(Single("bar"), 0);
+            target.Add(Single("baz"), 1);
 
             Assert.Equal("bar", target.Value);
         }
@@ -131,10 +131,10 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 1);
-            target.Add(this.Single("bar"), 0);
-            target.Add(this.Single("baz"), 0);
-            target.Add(this.Single("qux"), 1);
+            target.Add(Single("foo"), 1);
+            target.Add(Single("bar"), 0);
+            target.Add(Single("baz"), 0);
+            target.Add(Single("qux"), 1);
 
             Assert.Equal("baz", target.Value);
         }
@@ -145,7 +145,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
             var subject = new BehaviorSubject<string>("bar");
 
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
             target.Add(subject, 1);
             Assert.Equal("foo", target.Value);
             subject.OnNext("baz");
@@ -159,7 +159,7 @@ namespace Perspex.Base.UnitTests
             var subject = new BehaviorSubject<object>("bar");
 
             target.Add(subject, 0);
-            target.Add(this.Single("foo"), 1);
+            target.Add(Single("foo"), 1);
 
             Assert.Equal("bar", target.Value);
 
@@ -175,7 +175,7 @@ namespace Perspex.Base.UnitTests
             bool called = false;
 
             target.Changed.Subscribe(value => called = value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo");
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
 
             Assert.True(called);
         }
@@ -199,8 +199,8 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 0);
-            var disposable = target.Add(this.Single("bar"), 0);
+            target.Add(Single("foo"), 0);
+            var disposable = target.Add(Single("bar"), 0);
 
             Assert.Equal("bar", target.Value);
             disposable.Dispose();
@@ -212,8 +212,8 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(string));
 
-            target.Add(this.Single("foo"), 0);
-            var disposable = target.Add(this.Single("bar"), 0);
+            target.Add(Single("foo"), 0);
+            var disposable = target.Add(Single("bar"), 0);
 
             Assert.Equal(2, target.GetBindings().Count());
             disposable.Dispose();
@@ -226,7 +226,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
             var source = new BehaviorSubject<object>("bar");
 
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
             target.Add(source, 0);
 
             Assert.Equal("bar", target.Value);
@@ -240,7 +240,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
             var source = new BehaviorSubject<object>("bar");
 
-            target.Add(this.Single("foo"), 1);
+            target.Add(Single("foo"), 1);
             target.Add(source, 0);
 
             Assert.Equal("bar", target.Value);
@@ -254,7 +254,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
             var subject = new BehaviorSubject<object>("bar");
 
-            target.Add(this.Single("foo"), 0);
+            target.Add(Single("foo"), 0);
             target.Add(subject, 0);
 
             Assert.Equal(2, target.GetBindings().Count());

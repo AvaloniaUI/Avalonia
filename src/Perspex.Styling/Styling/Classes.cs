@@ -68,12 +68,12 @@ namespace Perspex.Styling
 
         public void Add(string item)
         {
-            this.Add(Enumerable.Repeat(item, 1));
+            Add(Enumerable.Repeat(item, 1));
         }
 
         public void Add(params string[] items)
         {
-            this.Add((IEnumerable<string>)items);
+            Add((IEnumerable<string>)items);
         }
 
         public void Add(IEnumerable<string> items)
@@ -86,7 +86,7 @@ namespace Perspex.Styling
 
             _beforeChanged.OnNext(e);
             _inner.AddRange(items);
-            this.RaiseChanged(e);
+            RaiseChanged(e);
         }
 
         public void Clear()
@@ -96,7 +96,7 @@ namespace Perspex.Styling
 
             _beforeChanged.OnNext(e);
             _inner.Clear();
-            this.RaiseChanged(e);
+            RaiseChanged(e);
         }
 
         public bool Contains(string item)
@@ -126,12 +126,12 @@ namespace Perspex.Styling
 
         public bool Remove(string item)
         {
-            return this.Remove(Enumerable.Repeat(item, 1));
+            return Remove(Enumerable.Repeat(item, 1));
         }
 
         public bool Remove(params string[] items)
         {
-            return this.Remove((IEnumerable<string>)items);
+            return Remove((IEnumerable<string>)items);
         }
 
         public bool Remove(IEnumerable<string> items)
@@ -151,7 +151,7 @@ namespace Perspex.Styling
                     _inner.Remove(item);
                 }
 
-                this.RaiseChanged(e);
+                RaiseChanged(e);
                 return true;
             }
             else
@@ -162,9 +162,9 @@ namespace Perspex.Styling
 
         private void RaiseChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
 
             _changed.OnNext(e);

@@ -21,10 +21,10 @@ namespace Perspex.Cairo.Media
         public StreamGeometryImpl(Cairo.Path path)
         {
             _impl = new StreamGeometryContextImpl(this);
-            this.Path = path;
+            Path = path;
         }
 
-        public global::Cairo.Path Path
+        public Cairo.Path Path
         {
             get;
             set;
@@ -44,7 +44,7 @@ namespace Perspex.Cairo.Media
             get { return _transform; }
             set
             {
-                if (value != this.Transform)
+                if (value != Transform)
                 {
                     if (!value.IsIdentity)
                     {
@@ -56,12 +56,12 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryImpl Clone()
         {
-            return new StreamGeometryImpl(this.Path);
+            return new StreamGeometryImpl(Path);
         }
 
         public Rect GetRenderBounds(double strokeThickness)
         {
-            return this.Bounds;
+            return Bounds;
         }
 
         public IStreamGeometryContextImpl Open()

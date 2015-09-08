@@ -18,12 +18,12 @@ namespace Perspex.Cairo.Media.Imaging
 
         public void Dispose()
         {
-            this.Surface.Dispose();
+            Surface.Dispose();
         }
 
         public void Render(IVisual visual)
         {
-            Renderer renderer = new Renderer(this.Surface);
+            Renderer renderer = new Renderer(Surface);
             renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"));
         }
     }

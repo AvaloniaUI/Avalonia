@@ -18,22 +18,22 @@ namespace Perspex.Diagnostics.Views
 
         public ControlDetailsView()
         {
-            this.InitializeComponent();
-            this.GetObservable(DataContextProperty)
-                .Subscribe(x => this.ViewModel = (ControlDetailsViewModel)x);
+            InitializeComponent();
+            GetObservable(DataContextProperty)
+                .Subscribe(x => ViewModel = (ControlDetailsViewModel)x);
         }
 
         public ControlDetailsViewModel ViewModel
         {
-            get { return this.GetValue(s_viewModelProperty); }
-            private set { this.SetValue(s_viewModelProperty, value); }
+            get { return GetValue(s_viewModelProperty); }
+            private set { SetValue(s_viewModelProperty, value); }
         }
 
         private void InitializeComponent()
         {
-            Func<object, IEnumerable<Control>> pt = this.PropertyTemplate;
+            Func<object, IEnumerable<Control>> pt = PropertyTemplate;
 
-            this.Content = new ScrollViewer
+            Content = new ScrollViewer
             {
                 Content = new Grid
                 {
@@ -49,7 +49,7 @@ namespace Perspex.Diagnostics.Views
                         {
                             Setters = new[]
                             {
-                                new Setter(Control.MarginProperty, new Thickness(2)),
+                                new Setter(MarginProperty, new Thickness(2)),
                             }
                         },
                     },

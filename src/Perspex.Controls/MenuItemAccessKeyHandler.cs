@@ -50,7 +50,7 @@ namespace Perspex.Controls
 
             _owner = owner;
 
-            _owner.AddHandler(InputElement.TextInputEvent, this.OnTextInput);
+            _owner.AddHandler(InputElement.TextInputEvent, OnTextInput);
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
@@ -34,7 +34,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
@@ -51,7 +51,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ItemsControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { child };
             target.ApplyTemplate();
 
@@ -65,7 +65,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ItemsControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { child };
             target.ApplyTemplate();
             target.Items = null;
@@ -80,7 +80,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ItemsControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { child };
             target.ApplyTemplate();
 
@@ -93,7 +93,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ItemsControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
@@ -108,7 +108,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ItemsControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
             target.Items = null;
@@ -123,7 +123,7 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
@@ -141,7 +141,7 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { child };
             target.ApplyTemplate();
 
@@ -160,7 +160,7 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = new[] { child };
             target.ApplyTemplate();
 
@@ -178,7 +178,7 @@ namespace Perspex.Controls.UnitTests
             var items = new PerspexList<string> { "Foo" };
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
 
@@ -197,7 +197,7 @@ namespace Perspex.Controls.UnitTests
             var items = new PerspexList<string> { "Foo", "Bar" };
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
 
@@ -214,13 +214,13 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl()
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
             };
 
             var before = ((ILogical)target).LogicalChildren;
 
             target.Template = null;
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
 
             var after = ((ILogical)target).LogicalChildren;
 
@@ -234,7 +234,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl()
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
             };
 
             Assert.True(target.Classes.Contains(":empty"));
@@ -245,7 +245,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl()
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
                 Items = new[] { 1, 2, 3 },
             };
 
@@ -257,7 +257,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ItemsControl()
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
                 Items = new[] { 1, 2, 3 },
             };
 
@@ -293,7 +293,7 @@ namespace Perspex.Controls.UnitTests
             {
                 return new Border
                 {
-                    Background = new Perspex.Media.SolidColorBrush(0xffffffff),
+                    Background = new Media.SolidColorBrush(0xffffffff),
                     Child = new ItemsPresenter
                     {
                         Name = "itemsPresenter",

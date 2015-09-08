@@ -39,8 +39,8 @@ namespace Perspex.Controls
         /// </summary>
         static Border()
         {
-            Control.AffectsRender(Border.BackgroundProperty);
-            Control.AffectsRender(Border.BorderBrushProperty);
+            AffectsRender(BackgroundProperty);
+            AffectsRender(BorderBrushProperty);
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Perspex.Controls
         /// </summary>
         public Brush Background
         {
-            get { return this.GetValue(BackgroundProperty); }
-            set { this.SetValue(BackgroundProperty, value); }
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Perspex.Controls
         /// </summary>
         public Brush BorderBrush
         {
-            get { return this.GetValue(BorderBrushProperty); }
-            set { this.SetValue(BorderBrushProperty, value); }
+            get { return GetValue(BorderBrushProperty); }
+            set { SetValue(BorderBrushProperty, value); }
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace Perspex.Controls
         /// </summary>
         public double BorderThickness
         {
-            get { return this.GetValue(BorderThicknessProperty); }
-            set { this.SetValue(BorderThicknessProperty, value); }
+            get { return GetValue(BorderThicknessProperty); }
+            set { SetValue(BorderThicknessProperty, value); }
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace Perspex.Controls
         /// </summary>
         public float CornerRadius
         {
-            get { return this.GetValue(CornerRadiusProperty); }
-            set { this.SetValue(CornerRadiusProperty, value); }
+            get { return GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
         }
 
         /// <summary>
@@ -85,11 +85,11 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(IDrawingContext context)
         {
-            var background = this.Background;
-            var borderBrush = this.BorderBrush;
-            var borderThickness = this.BorderThickness;
-            var cornerRadius = this.CornerRadius;
-            var rect = new Rect(this.Bounds.Size).Deflate(this.BorderThickness);
+            var background = Background;
+            var borderBrush = BorderBrush;
+            var borderThickness = BorderThickness;
+            var cornerRadius = CornerRadius;
+            var rect = new Rect(Bounds.Size).Deflate(BorderThickness);
 
             if (background != null)
             {
@@ -109,8 +109,8 @@ namespace Perspex.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = this.Child;
-            var padding = this.Padding + new Thickness(this.BorderThickness);
+            var child = Child;
+            var padding = Padding + new Thickness(BorderThickness);
 
             if (child != null)
             {
@@ -130,11 +130,11 @@ namespace Perspex.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var child = this.Child;
+            var child = Child;
 
             if (child != null)
             {
-                var padding = this.Padding + new Thickness(this.BorderThickness);
+                var padding = Padding + new Thickness(BorderThickness);
                 child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 

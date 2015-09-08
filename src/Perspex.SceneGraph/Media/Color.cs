@@ -133,7 +133,7 @@ namespace Perspex.Media
         /// </returns>
         public override string ToString()
         {
-            uint rgb = ((uint)this.A << 24) | ((uint)this.R << 16) | ((uint)this.G << 8) | (uint)this.B;
+            uint rgb = ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
             return string.Format("#{0:x8}", rgb);
         }
 
@@ -145,7 +145,7 @@ namespace Perspex.Media
         /// </returns>
         public uint ToUint32()
         {
-            return ((uint)this.A << 24) | ((uint)this.R << 16) | ((uint)this.G << 8) | (uint)this.B;
+            return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
         }
     }
 }

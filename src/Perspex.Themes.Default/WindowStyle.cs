@@ -20,15 +20,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public WindowStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<Window>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Window.TemplateProperty, new ControlTemplate<Window>(Template)),
-                        new Setter(Window.FontFamilyProperty, "Segoe UI"),
-                        new Setter(Window.FontSizeProperty, 12.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Window>(Template)),
+                        new Setter(TemplatedControl.FontFamilyProperty, "Segoe UI"),
+                        new Setter(TemplatedControl.FontSizeProperty, 12.0),
                     },
                 },
             });
@@ -43,13 +43,13 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                [~Border.BackgroundProperty] = control[~Window.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                 Child = new AdornerDecorator
                 {
                     Child = new ContentPresenter
                     {
                         Name = "contentPresenter",
-                        [~ContentPresenter.ContentProperty] = control[~Window.ContentProperty],
+                        [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                     }
                 }
             };

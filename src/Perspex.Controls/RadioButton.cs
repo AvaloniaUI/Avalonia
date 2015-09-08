@@ -12,14 +12,14 @@ namespace Perspex.Controls
     {
         public RadioButton()
         {
-            this.GetObservable(IsCheckedProperty).Subscribe(this.IsCheckedChanged);
+            GetObservable(IsCheckedProperty).Subscribe(IsCheckedChanged);
         }
 
         protected override void Toggle()
         {
-            if (!this.IsChecked)
+            if (!IsChecked)
             {
-                this.IsChecked = true;
+                IsChecked = true;
             }
         }
 

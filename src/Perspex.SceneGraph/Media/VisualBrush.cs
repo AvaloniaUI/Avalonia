@@ -27,7 +27,7 @@ namespace Perspex.Media
         /// <param name="visual">The visual to draw.</param>
         public VisualBrush(IVisual visual)
         {
-            this.Visual = visual;
+            Visual = visual;
         }
 
         /// <summary>
@@ -35,8 +35,8 @@ namespace Perspex.Media
         /// </summary>
         public IVisual Visual
         {
-            get { return this.GetValue(VisualProperty); }
-            set { this.SetValue(VisualProperty, value); }
+            get { return GetValue(VisualProperty); }
+            set { SetValue(VisualProperty, value); }
         }
     }
 }

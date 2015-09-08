@@ -20,21 +20,21 @@ namespace Perspex.Diagnostics
         public DevTools()
         {
             _viewModel = new DevToolsViewModel();
-            this.GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
+            GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
 
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         public Control Root
         {
-            get { return this.GetValue(RootProperty); }
-            set { this.SetValue(RootProperty, value); }
+            get { return GetValue(RootProperty); }
+            set { SetValue(RootProperty, value); }
         }
 
         public static IDisposable Attach(Window window)
         {
             return window.AddHandler(
-                Window.KeyDownEvent,
+                KeyDownEvent,
                 WindowPreviewKeyDown,
                 Interactivity.RoutingStrategies.Tunnel);
         }
@@ -59,12 +59,12 @@ namespace Perspex.Diagnostics
 
         private void InitializeComponent()
         {
-            this.DataTemplates.Add(new ViewLocator<ReactiveObject>());
+            DataTemplates.Add(new ViewLocator<ReactiveObject>());
 
-            this.Child = new Grid
+            Child = new Grid
             {
                 RowDefinitions = new RowDefinitions("*,Auto"),
-                Children = new Perspex.Controls.Controls
+                Children = new Controls.Controls
                 {
                     new TabControl
                     {
@@ -73,12 +73,12 @@ namespace Perspex.Diagnostics
                             new TabItem
                             {
                                 Header = "Logical Tree",
-                                [!TabItem.ContentProperty] = _viewModel.WhenAnyValue(x => x.LogicalTree),
+                                [!ContentControl.ContentProperty] = _viewModel.WhenAnyValue(x => x.LogicalTree),
                             },
                             new TabItem
                             {
                                 Header = "Visual Tree",
-                                [!TabItem.ContentProperty] = _viewModel.WhenAnyValue(x => x.VisualTree),
+                                [!ContentControl.ContentProperty] = _viewModel.WhenAnyValue(x => x.VisualTree),
                             }
                         },
                     },
@@ -87,7 +87,7 @@ namespace Perspex.Diagnostics
                         Orientation = Orientation.Horizontal,
                         Gap = 4,
                         [Grid.RowProperty] = 1,
-                        Children = new Perspex.Controls.Controls
+                        Children = new Controls.Controls
                         {
                             new TextBlock
                             {

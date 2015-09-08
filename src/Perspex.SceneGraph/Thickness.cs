@@ -113,7 +113,7 @@ namespace Perspex
         /// </summary>
         public bool IsEmpty
         {
-            get { return this.Left == 0 && this.Top == 0 && this.Right == 0 && this.Bottom == 0; }
+            get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
         }
 
         /// <summary>
@@ -196,10 +196,10 @@ namespace Perspex
             if (obj is Thickness)
             {
                 Thickness other = (Thickness)obj;
-                return this.Left == other.Left &&
-                       this.Top == other.Top &&
-                       this.Right == other.Right &&
-                       this.Bottom == other.Bottom;
+                return Left == other.Left &&
+                       Top == other.Top &&
+                       Right == other.Right &&
+                       Bottom == other.Bottom;
             }
 
             return false;
@@ -214,10 +214,10 @@ namespace Perspex
             unchecked
             {
                 int hash = 17;
-                hash = (hash * 23) + this.Left.GetHashCode();
-                hash = (hash * 23) + this.Top.GetHashCode();
-                hash = (hash * 23) + this.Right.GetHashCode();
-                hash = (hash * 23) + this.Bottom.GetHashCode();
+                hash = (hash * 23) + Left.GetHashCode();
+                hash = (hash * 23) + Top.GetHashCode();
+                hash = (hash * 23) + Right.GetHashCode();
+                hash = (hash * 23) + Bottom.GetHashCode();
                 return hash;
             }
         }

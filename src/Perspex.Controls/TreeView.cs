@@ -36,8 +36,8 @@ namespace Perspex.Controls
 
         public object SelectedItem
         {
-            get { return this.GetValue(SelectedItemProperty); }
-            set { this.SetValue(SelectedItemProperty, value); }
+            get { return GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -48,26 +48,26 @@ namespace Perspex.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             var control = (IControl)e.Source;
-            var item = this.ItemContainerGenerator.ItemFromContainer(control);
+            var item = ItemContainerGenerator.ItemFromContainer(control);
 
             if (item != null)
             {
-                this.SelectedItem = item;
+                SelectedItem = item;
                 e.Handled = true;
             }
         }
 
         private void SelectedItemChanged(object selected)
         {
-            var containers = this.ItemContainerGenerator.GetAllContainers().OfType<ISelectable>();
+            var containers = ItemContainerGenerator.GetAllContainers().OfType<ISelectable>();
             var selectedContainer = (selected != null) ?
-                this.ItemContainerGenerator.ContainerFromItem(selected) :
+                ItemContainerGenerator.ContainerFromItem(selected) :
                 null;
 
-            if (this.Presenter != null && this.Presenter.Panel != null)
+            if (Presenter != null && Presenter.Panel != null)
             {
                 KeyboardNavigation.SetTabOnceActiveElement(
-                    (InputElement)this.Presenter.Panel,
+                    (InputElement)Presenter.Panel,
                     selectedContainer);
             }
 

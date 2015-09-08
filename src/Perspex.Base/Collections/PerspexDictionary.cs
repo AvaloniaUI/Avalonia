@@ -83,23 +83,23 @@ namespace Perspex.Collections
 
                 if (replace)
                 {
-                    if (this.PropertyChanged != null)
+                    if (PropertyChanged != null)
                     {
-                        this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                        PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
                     }
 
-                    if (this.CollectionChanged != null)
+                    if (CollectionChanged != null)
                     {
                         var e = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Replace,
                             new KeyValuePair<TKey, TValue>(key, value),
                             new KeyValuePair<TKey, TValue>(key, old));
-                        this.CollectionChanged(this, e);
+                        CollectionChanged(this, e);
                     }
                 }
                 else
                 {
-                    this.NotifyAdd(key, value);
+                    NotifyAdd(key, value);
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace Perspex.Collections
         public void Add(TKey key, TValue value)
         {
             _inner.Add(key, value);
-            this.NotifyAdd(key, value);
+            NotifyAdd(key, value);
         }
 
         /// <inheritdoc/>
@@ -118,19 +118,19 @@ namespace Perspex.Collections
 
             _inner = new Dictionary<TKey, TValue>();
 
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[]"));
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged(this, new PropertyChangedEventArgs($"Item[]"));
             }
 
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Remove,
                     old.ToList(),
                     -1);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
         }
 
@@ -159,19 +159,19 @@ namespace Perspex.Collections
 
             if (_inner.TryGetValue(key, out value))
             {
-                if (this.PropertyChanged != null)
+                if (PropertyChanged != null)
                 {
-                    this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                    this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                    PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                    PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
                 }
 
-                if (this.CollectionChanged != null)
+                if (CollectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Remove,
                         new[] { new KeyValuePair<TKey, TValue>(key, value) },
                         -1);
-                    this.CollectionChanged(this, e);
+                    CollectionChanged(this, e);
                 }
 
                 return true;
@@ -197,7 +197,7 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            this.Add(item.Key, item.Value);
+            Add(item.Key, item.Value);
         }
 
         /// <inheritdoc/>
@@ -209,25 +209,25 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            return this.Remove(item.Key);
+            return Remove(item.Key);
         }
 
         private void NotifyAdd(TKey key, TValue value)
         {
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
             }
 
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var val = new KeyValuePair<TKey, TValue>(key, value);
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Add,
                     new[] { new KeyValuePair<TKey, TValue>(key, value) },
                     -1);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
         }
     }

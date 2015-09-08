@@ -134,7 +134,7 @@ namespace Perspex
             if (obj is Size)
             {
                 var other = (Size)obj;
-                return this.Width == other.Width && this.Height == other.Height;
+                return Width == other.Width && Height == other.Height;
             }
 
             return false;
@@ -149,8 +149,8 @@ namespace Perspex
             unchecked
             {
                 int hash = 17;
-                hash = (hash * 23) + this.Width.GetHashCode();
-                hash = (hash * 23) + this.Height.GetHashCode();
+                hash = (hash * 23) + Width.GetHashCode();
+                hash = (hash * 23) + Height.GetHashCode();
                 return hash;
             }
         }

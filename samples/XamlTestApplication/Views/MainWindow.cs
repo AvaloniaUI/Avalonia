@@ -17,7 +17,7 @@ namespace XamlTestApplication.Views
     {
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             DevTools.Attach(this);
         }

@@ -34,19 +34,19 @@ namespace Perspex.Gtk
             get { return s_instance; }
         }
 
-        public static Perspex.Input.Key ConvertKey(Gdk.Key key)
+        public static Key ConvertKey(Gdk.Key key)
         {
             // TODO: Don't use reflection for this! My eyes!!!
             if (key == Gdk.Key.BackSpace)
             {
-                return Perspex.Input.Key.Back;
+                return Key.Back;
             }
             else
             {
                 string s;
                 if (!s_nameDic.TryGetValue(key, out s))
                     s = "Unknown";
-                Perspex.Input.Key result;
+                Key result;
 
                 if (Enum.TryParse(s, true, out result))
                 {
@@ -54,7 +54,7 @@ namespace Perspex.Gtk
                 }
                 else
                 {
-                    return Perspex.Input.Key.None;
+                    return Key.None;
                 }
             }
         }

@@ -15,8 +15,8 @@ namespace Perspex.Diagnostics.ViewModels
 
         public TreeNode(Control control)
         {
-            this.Control = control;
-            this.Type = control.GetType().Name;
+            Control = control;
+            Type = control.GetType().Name;
 
             control.Classes.Changed.Select(_ => Unit.Default)
                 .StartWith(Unit.Default)
@@ -24,11 +24,11 @@ namespace Perspex.Diagnostics.ViewModels
                 {
                     if (control.Classes.Count > 0)
                     {
-                        this.Classes = "(" + string.Join(" ", control.Classes) + ")";
+                        Classes = "(" + string.Join(" ", control.Classes) + ")";
                     }
                     else
                     {
-                        this.Classes = string.Empty;
+                        Classes = string.Empty;
                     }
                 });
         }

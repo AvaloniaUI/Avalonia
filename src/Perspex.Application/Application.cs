@@ -154,14 +154,14 @@ namespace Perspex
         protected virtual void RegisterServices()
         {
             PerspexSynchronizationContext.InstallIfNeeded();
-            this.FocusManager = new FocusManager();
-            this.InputManager = new InputManager();
+            FocusManager = new FocusManager();
+            InputManager = new InputManager();
 
             Locator.CurrentMutable.Register(() => new AccessKeyHandler(), typeof(IAccessKeyHandler));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
-            Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
-            Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
+            Locator.CurrentMutable.Register(() => FocusManager, typeof(IFocusManager));
+            Locator.CurrentMutable.Register(() => InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => new KeyboardNavigationHandler(), typeof(IKeyboardNavigationHandler));
             Locator.CurrentMutable.Register(() => _styler, typeof(IStyler));
             Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
@@ -176,13 +176,13 @@ namespace Perspex
         {
             if (platformID == 4 || platformID == 6)
             {
-                this.InitializeSubsystem("Perspex.Cairo");
-                this.InitializeSubsystem("Perspex.Gtk");
+                InitializeSubsystem("Perspex.Cairo");
+                InitializeSubsystem("Perspex.Gtk");
             }
             else
             {
-                this.InitializeSubsystem("Perspex.Direct2D1");
-                this.InitializeSubsystem("Perspex.Win32");
+                InitializeSubsystem("Perspex.Direct2D1");
+                InitializeSubsystem("Perspex.Win32");
             }
         }
 

@@ -53,8 +53,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return this.GetValue(IsExpandedProperty); }
-            set { this.SetValue(IsExpandedProperty, value); }
+            get { return GetValue(IsExpandedProperty); }
+            set { SetValue(IsExpandedProperty, value); }
         }
 
         /// <summary>
@@ -62,8 +62,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return this.GetValue(IsSelectedProperty); }
-            set { this.SetValue(IsSelectedProperty, value); }
+            get { return GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -106,16 +106,16 @@ namespace Perspex.Controls
                 switch (e.Key)
                 {
                     case Key.Right:
-                        if (this.Items != null && this.Items.Cast<object>().Any())
+                        if (Items != null && Items.Cast<object>().Any())
                         {
-                            this.IsExpanded = true;
+                            IsExpanded = true;
                         }
 
                         e.Handled = true;
                         break;
 
                     case Key.Left:
-                        this.IsExpanded = false;
+                        IsExpanded = false;
                         e.Handled = true;
                         break;
                 }

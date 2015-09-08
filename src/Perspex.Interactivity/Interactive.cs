@@ -80,7 +80,7 @@ namespace Perspex.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            return this.AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+            return AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Perspex.Interactivity
         public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
             where TEventArgs : RoutedEventArgs
         {
-            this.RemoveHandler(routedEvent, (Delegate)handler);
+            RemoveHandler(routedEvent, (Delegate)handler);
         }
 
         /// <summary>
@@ -126,17 +126,17 @@ namespace Perspex.Interactivity
             if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
                 e.Route = RoutingStrategies.Direct;
-                this.RaiseEventImpl(e);
+                RaiseEventImpl(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
             {
-                this.TunnelEvent(e);
+                TunnelEvent(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
             {
-                this.BubbleEvent(e);
+                BubbleEvent(e);
             }
         }
 

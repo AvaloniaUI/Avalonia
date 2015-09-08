@@ -16,7 +16,7 @@ namespace Perspex.Input.Raw
             Vector delta, ModifierKeys modifierKeys)
             : base(device, timestamp, root, RawMouseEventType.Wheel, position, modifierKeys)
         {
-            this.Delta = delta;
+            Delta = delta;
         }
 
         public Vector Delta { get; private set; }

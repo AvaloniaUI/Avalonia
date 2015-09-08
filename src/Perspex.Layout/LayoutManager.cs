@@ -71,8 +71,8 @@ namespace Perspex.Layout
             _log = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Layout"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
 
             _layoutNeeded = new Subject<Unit>();
@@ -127,7 +127,7 @@ namespace Perspex.Layout
             using (Disposable.Create(() => _running = false))
             {
                 _running = true;
-                this.LayoutQueued = false;
+                LayoutQueued = false;
 
                 _log.Information(
                     "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
@@ -141,11 +141,11 @@ namespace Perspex.Layout
                 {
                     if (_measureNeeded)
                     {
-                        this.ExecuteMeasure();
+                        ExecuteMeasure();
                         _measureNeeded = false;
                     }
 
-                    this.ExecuteArrange();
+                    ExecuteArrange();
 
                     if (_toMeasure.Count == 0)
                     {
@@ -173,11 +173,11 @@ namespace Perspex.Layout
 
             _measureNeeded = true;
 
-            if (!this.LayoutQueued)
+            if (!LayoutQueued)
             {
                 IVisual visual = control as IVisual;
                 _layoutNeeded.OnNext(Unit.Default);
-                this.LayoutQueued = true;
+                LayoutQueued = true;
             }
         }
 
@@ -190,11 +190,11 @@ namespace Perspex.Layout
         {
             _toArrange.Add(new Item(control, distance));
 
-            if (!this.LayoutQueued)
+            if (!LayoutQueued)
             {
                 IVisual visual = control as IVisual;
                 _layoutNeeded.OnNext(Unit.Default);
-                this.LayoutQueued = true;
+                LayoutQueued = true;
             }
         }
 
@@ -209,19 +209,19 @@ namespace Perspex.Layout
 
                 _toMeasure = new Heap<Item>(HeapType.Minimum);
 
-                if (!this.Root.IsMeasureValid)
+                if (!Root.IsMeasureValid)
                 {
                     var size = new Size(
-                        double.IsNaN(this.Root.Width) ? double.PositiveInfinity : this.Root.Width,
-                        double.IsNaN(this.Root.Height) ? double.PositiveInfinity : this.Root.Height);
-                    this.Root.Measure(size);
+                        double.IsNaN(Root.Width) ? double.PositiveInfinity : Root.Width,
+                        double.IsNaN(Root.Height) ? double.PositiveInfinity : Root.Height);
+                    Root.Measure(size);
                 }
 
                 foreach (var item in measure)
                 {
                     if (!item.Control.IsMeasureValid)
                     {
-                        if (item.Control != this.Root)
+                        if (item.Control != Root)
                         {
                             var parent = item.Control.GetVisualParent<ILayoutable>();
 
@@ -230,7 +230,7 @@ namespace Perspex.Layout
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            if (parent.GetVisualRoot() == this.Root)
+                            if (parent.GetVisualRoot() == Root)
                             {
                                 parent.Measure(parent.PreviousMeasure.Value, true);
                             }
@@ -256,9 +256,9 @@ namespace Perspex.Layout
 
                 _toArrange = new Heap<Item>(HeapType.Minimum);
 
-                if (!this.Root.IsArrangeValid && this.Root.IsMeasureValid)
+                if (!Root.IsArrangeValid && Root.IsMeasureValid)
                 {
-                    this.Root.Arrange(new Rect(this.Root.DesiredSize));
+                    Root.Arrange(new Rect(Root.DesiredSize));
                 }
 
                 if (_toMeasure.Count > 0)
@@ -270,7 +270,7 @@ namespace Perspex.Layout
                 {
                     if (!item.Control.IsArrangeValid)
                     {
-                        if (item.Control != this.Root)
+                        if (item.Control != Root)
                         {
                             var control = item.Control;
 
@@ -279,7 +279,7 @@ namespace Perspex.Layout
                                 control = control.GetVisualParent<ILayoutable>();
                             }
 
-                            if (control.GetVisualRoot() == this.Root)
+                            if (control.GetVisualRoot() == Root)
                             {
                                 control.Arrange(control.PreviousArrange.Value, true);
                             }
@@ -311,8 +311,8 @@ namespace Perspex.Layout
             /// <param name="distance">The control's distance from the layout root.</param>
             public Item(ILayoutable control, int distance)
             {
-                this.Control = control;
-                this.Distance = distance;
+                Control = control;
+                Distance = distance;
             }
 
             /// <summary>
@@ -332,7 +332,7 @@ namespace Perspex.Layout
             /// <returns>The comparison.</returns>
             public int CompareTo(Item other)
             {
-                return this.Distance - other.Distance;
+                return Distance - other.Distance;
             }
         }
     }

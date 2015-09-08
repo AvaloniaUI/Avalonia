@@ -161,7 +161,7 @@ namespace Perspex
         /// </summary>
         public Point TopRight
         {
-            get { return new Point(this.Right, _y); }
+            get { return new Point(Right, _y); }
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Perspex
         /// </summary>
         public Point BottomLeft
         {
-            get { return new Point(_x, this.Bottom); }
+            get { return new Point(_x, Bottom); }
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Perspex
         /// </summary>
         public Point BottomRight
         {
-            get { return new Point(this.Right, this.Bottom); }
+            get { return new Point(Right, Bottom); }
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace Perspex
         /// <returns>The inflated rectangle.</returns>
         public Rect Inflate(double thickness)
         {
-            return this.Inflate(thickness);
+            return Inflate(thickness);
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace Perspex
         {
             return new Rect(
                 new Point(_x - thickness.Left, _y - thickness.Top),
-                this.Size.Inflate(thickness));
+                Size.Inflate(thickness));
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace Perspex
         /// <remarks>The deflated rectangle size cannot be less than 0.</remarks>
         public Rect Deflate(double thickness)
         {
-            return this.Deflate(new Thickness(thickness / 2));
+            return Deflate(new Thickness(thickness / 2));
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Perspex
         {
             return new Rect(
                 new Point(_x + thickness.Left, _y + thickness.Top),
-                this.Size.Deflate(thickness));
+                Size.Deflate(thickness));
         }
 
         /// <summary>
@@ -362,10 +362,10 @@ namespace Perspex
             unchecked
             {
                 int hash = 17;
-                hash = (hash * 23) + this.X.GetHashCode();
-                hash = (hash * 23) + this.Y.GetHashCode();
-                hash = (hash * 23) + this.Width.GetHashCode();
-                hash = (hash * 23) + this.Height.GetHashCode();
+                hash = (hash * 23) + X.GetHashCode();
+                hash = (hash * 23) + Y.GetHashCode();
+                hash = (hash * 23) + Width.GetHashCode();
+                hash = (hash * 23) + Height.GetHashCode();
                 return hash;
             }
         }
@@ -379,8 +379,8 @@ namespace Perspex
         {
             double x = Math.Max(_x, rect._x);
             double y = Math.Max(_y, rect._y);
-            double width = Math.Min(this.Right, rect.Right) - x;
-            double height = Math.Min(this.Bottom, rect.Bottom) - y;
+            double width = Math.Min(Right, rect.Right) - x;
+            double height = Math.Min(Bottom, rect.Bottom) - y;
 
             if (width < 0 || height < 0)
             {

@@ -47,19 +47,19 @@ namespace Perspex.Media
                 ctx.EndFigure(true);
             }
 
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
         }
 
         /// <inheritdoc/>
         public override Rect Bounds
         {
-            get { return this.PlatformImpl.Bounds; }
+            get { return PlatformImpl.Bounds; }
         }
 
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new EllipseGeometry(this.Bounds);
+            return new EllipseGeometry(Bounds);
         }
     }
 }

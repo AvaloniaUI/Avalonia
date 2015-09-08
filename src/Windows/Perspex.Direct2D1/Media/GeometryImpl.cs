@@ -35,7 +35,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public Geometry Geometry
         {
-            get { return _transformed ?? this.DefiningGeometry; }
+            get { return _transformed ?? DefiningGeometry; }
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Perspex.Direct2D1.Media
 
             set
             {
-                if (value != this.Transform)
+                if (value != Transform)
                 {
                     if (_transformed != null)
                     {
@@ -65,7 +65,7 @@ namespace Perspex.Direct2D1.Media
                         Factory factory = Locator.Current.GetService<Factory>();
                         _transformed = new TransformedGeometry(
                             factory,
-                            this.DefiningGeometry,
+                            DefiningGeometry,
                             value.ToDirect2D());
                     }
                 }
@@ -85,7 +85,7 @@ namespace Perspex.Direct2D1.Media
             }
             else
             {
-                return this.DefiningGeometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
+                return DefiningGeometry.GetWidenedBounds((float)strokeThickness).ToPerspex();
             }
         }
     }

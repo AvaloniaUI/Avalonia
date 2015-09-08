@@ -11,8 +11,8 @@ namespace Perspex.Direct2D1.Media
     public class VisualBrushImpl : BrushImpl
     {
         public VisualBrushImpl(
-            Perspex.Media.VisualBrush brush,
-            SharpDX.Direct2D1.RenderTarget target,
+            VisualBrush brush,
+            RenderTarget target,
             Size targetSize)
         {
             var visual = brush.Visual;
@@ -63,7 +63,7 @@ namespace Perspex.Direct2D1.Media
                         (float)destinationRect.Y);
                 }
 
-                this.PlatformBrush = result;
+                PlatformBrush = result;
             }
         }
 
@@ -102,7 +102,7 @@ namespace Perspex.Direct2D1.Media
 
         public override void Dispose()
         {
-            ((BitmapBrush)this.PlatformBrush).Bitmap.Dispose();
+            ((BitmapBrush)PlatformBrush).Bitmap.Dispose();
             base.Dispose();
         }
     }

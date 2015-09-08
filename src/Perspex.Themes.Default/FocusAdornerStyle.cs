@@ -20,7 +20,7 @@ namespace Perspex.Themes.Default
         /// </summary>
         public FocusAdornerStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.Is<Control>())
                 {

@@ -28,7 +28,7 @@ namespace Perspex.Styling
         /// <param name="match">The immediate match value.</param>
         public SelectorMatch(bool match)
         {
-            this.ImmediateResult = match;
+            ImmediateResult = match;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Perspex.Styling
         /// <param name="match">The observable match value.</param>
         public SelectorMatch(IObservable<bool> match)
         {
-            this.ObservableResult = match;
+            ObservableResult = match;
         }
 
         /// <summary>

@@ -117,9 +117,9 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Child = new Track
                 {
                     Name = "track",
-                    [!Track.MinimumProperty] = control[!ScrollBar.MinimumProperty],
-                    [!Track.MaximumProperty] = control[!ScrollBar.MaximumProperty],
-                    [!!Track.ValueProperty] = control[!!ScrollBar.ValueProperty],
+                    [!Track.MinimumProperty] = control[!RangeBase.MinimumProperty],
+                    [!Track.MaximumProperty] = control[!RangeBase.MaximumProperty],
+                    [!!Track.ValueProperty] = control[!!RangeBase.ValueProperty],
                     [!Track.ViewportSizeProperty] = control[!ScrollBar.ViewportSizeProperty],
                     [!Track.OrientationProperty] = control[!ScrollBar.OrientationProperty],
                     Thumb = new Thumb

@@ -31,7 +31,7 @@ namespace TestApplication
     {
         public Node()
         {
-            this.Children = new PerspexList<Node>();
+            Children = new PerspexList<Node>();
         }
 
         public string Name { get; set; }
@@ -446,15 +446,15 @@ namespace TestApplication
                             Content = new Image
                             {
                                 Source = new Bitmap("github_icon.png"),
-                                [!Image.WidthProperty] = size[!ScrollBar.ValueProperty],
-                                [!Image.HeightProperty] = size[!ScrollBar.ValueProperty],
+                                [!Layoutable.WidthProperty] = size[!RangeBase.ValueProperty],
+                                [!Layoutable.HeightProperty] = size[!RangeBase.ValueProperty],
                             },
                         },
                         new ProgressBar
                         {
-                            [!ProgressBar.MinimumProperty] = size[!ScrollBar.MinimumProperty],
-                            [!ProgressBar.MaximumProperty] = size[!ScrollBar.MaximumProperty],
-                            [!ProgressBar.ValueProperty] = size[!ScrollBar.ValueProperty],
+                            [!RangeBase.MinimumProperty] = size[!RangeBase.MinimumProperty],
+                            [!RangeBase.MaximumProperty] = size[!RangeBase.MaximumProperty],
+                            [!RangeBase.ValueProperty] = size[!RangeBase.ValueProperty],
                         }
                     }
                 },
@@ -617,8 +617,8 @@ namespace TestApplication
                             }),
                             PropertyTransitions = new PropertyTransitions
                             {
-                                Rectangle.WidthProperty.Transition(300),
-                                Rectangle.HeightProperty.Transition(1000),
+                                Layoutable.WidthProperty.Transition(300),
+                                Layoutable.HeightProperty.Transition(1000),
                             },
                             [Grid.ColumnProperty] = 1,
                         }),

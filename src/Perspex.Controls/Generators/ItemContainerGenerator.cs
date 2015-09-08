@@ -25,7 +25,7 @@ namespace Perspex.Controls.Generators
         /// <param name="owner">The owner control.</param>
         public ItemContainerGenerator(IControl owner)
         {
-            this.Owner = owner;
+            Owner = owner;
         }
 
         /// <summary>
@@ -59,11 +59,11 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                IControl container = this.CreateContainer(item, itemTemplate);
+                IControl container = CreateContainer(item, itemTemplate);
                 result.Add(container);
             }
 
-            this.AddContainers(startingIndex, result);
+            AddContainers(startingIndex, result);
             _containersInitialized.OnNext(new ItemContainers(startingIndex, result));
 
             return result.Where(x => x != null).ToList();
@@ -157,7 +157,7 @@ namespace Perspex.Controls.Generators
             }
             else
             {
-                return this.Owner.MaterializeDataTemplate(item);
+                return Owner.MaterializeDataTemplate(item);
             }
         }
 

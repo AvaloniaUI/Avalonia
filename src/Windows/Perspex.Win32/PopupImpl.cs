@@ -12,7 +12,7 @@ namespace Perspex.Win32
         public void SetPosition(Point p)
         {
             UnmanagedMethods.SetWindowPos(
-                this.Handle.Handle,
+                Handle.Handle,
                 IntPtr.Zero,
                 (int)p.X,
                 (int)p.Y,
@@ -23,7 +23,7 @@ namespace Perspex.Win32
 
         public override void Show()
         {
-            UnmanagedMethods.ShowWindow(this.Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+            UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)

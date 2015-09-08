@@ -11,8 +11,8 @@ namespace Perspex.Markup.Xaml.DataBinding
 
         public TargetBindingEndpoint(PerspexObject obj, PerspexProperty property)
         {
-            this.Object = obj;
-            this.Property = property;
+            Object = obj;
+            Property = property;
         }
     }
 }

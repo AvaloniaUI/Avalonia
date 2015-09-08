@@ -23,8 +23,8 @@ namespace Perspex
         /// <param name="unit">The unit of the rect.</param>
         public RelativeRect(double x, double y, double width, double height, OriginUnit unit)
         {
-            this.Rect = new Rect(x, y, width, height);
-            this.Unit = unit;
+            Rect = new Rect(x, y, width, height);
+            Unit = unit;
         }
 
         /// <summary>
@@ -34,8 +34,8 @@ namespace Perspex
         /// <param name="unit">The unit of the rect.</param>
         public RelativeRect(Rect rect, OriginUnit unit)
         {
-            this.Rect = rect;
-            this.Unit = unit;
+            Rect = rect;
+            Unit = unit;
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace Perspex
         /// <param name="unit">The unit of the rect.</param>
         public RelativeRect(Size size, OriginUnit unit)
         {
-            this.Rect = new Rect(size);
-            this.Unit = unit;
+            Rect = new Rect(size);
+            Unit = unit;
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Perspex
         /// <param name="unit">The unit of the rect.</param>
         public RelativeRect(Point position, Size size, OriginUnit unit)
         {
-            this.Rect = new Rect(position, size);
-            this.Unit = unit;
+            Rect = new Rect(position, size);
+            Unit = unit;
         }
 
         /// <summary>
@@ -69,8 +69,8 @@ namespace Perspex
         /// <param name="unit">The unit of the rect.</param>
         public RelativeRect(Point topLeft, Point bottomRight, OriginUnit unit)
         {
-            this.Rect = new Rect(topLeft, bottomRight);
-            this.Unit = unit;
+            Rect = new Rect(topLeft, bottomRight);
+            Unit = unit;
         }
 
         /// <summary>
@@ -90,13 +90,13 @@ namespace Perspex
         /// <returns>The origin point in pixels.</returns>
         public Rect ToPixels(Size size)
         {
-            return this.Unit == OriginUnit.Pixels ?
-                this.Rect :
+            return Unit == OriginUnit.Pixels ?
+                Rect :
                 new Rect(
-                    this.Rect.X * size.Width,
-                    this.Rect.Y * size.Height,
-                    this.Rect.Width * size.Width,
-                    this.Rect.Height * size.Height);
+                    Rect.X * size.Width,
+                    Rect.Y * size.Height,
+                    Rect.Width * size.Width,
+                    Rect.Height * size.Height);
         }
     }
 }

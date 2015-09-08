@@ -76,20 +76,20 @@ namespace Perspex.Markup.Xaml.DataBinding
             _bindingTarget.Value = ConvertedValue(_sourceEndpoint.Value, _bindingTarget.Property.PropertyType);
 
             // We use the native Bind method from PerspexObject to subscribe to the SourceValues observable
-            _bindingTarget.Object.Bind(_bindingTarget.Property, this.SourceValues);
+            _bindingTarget.Object.Bind(_bindingTarget.Property, SourceValues);
         }
 
         public void StartUpdatingSourceWhenTargetChanges()
         {
             // We subscribe to the TargetValues and each time we have a new value, we update the source with it
-            this.TargetValues.Subscribe(newValue => _sourceEndpoint.Value = newValue);
+            TargetValues.Subscribe(newValue => _sourceEndpoint.Value = newValue);
         }
 
         private IObservable<object> SourceValues
         {
             get
             {
-                return _sourceEndpoint.Values.Select(originalValue => this.ConvertedValue(originalValue, _bindingTarget.Property.PropertyType));
+                return _sourceEndpoint.Values.Select(originalValue => ConvertedValue(originalValue, _bindingTarget.Property.PropertyType));
             }
         }
 
@@ -98,7 +98,7 @@ namespace Perspex.Markup.Xaml.DataBinding
             get
             {
                 return _bindingEndpoint.Object
-                    .GetObservable(_bindingEndpoint.Property).Select(o => this.ConvertedValue(o, _sourceEndpoint.Type));
+                    .GetObservable(_bindingEndpoint.Property).Select(o => ConvertedValue(o, _sourceEndpoint.Type));
             }
         }
 
@@ -116,7 +116,7 @@ namespace Perspex.Markup.Xaml.DataBinding
         private object ConvertedValue(object originalValue, Type propertyType)
         {
             object converted;
-            if (this.TryConvert(originalValue, propertyType, out converted))
+            if (TryConvert(originalValue, propertyType, out converted))
             {
                 return converted;
             }
@@ -128,7 +128,7 @@ namespace Perspex.Markup.Xaml.DataBinding
         {
             if (originalValue != null)
             {
-                if (this.CanAssignWithoutConversion)
+                if (CanAssignWithoutConversion)
                 {
                     finalValue = originalValue;
                     return true;

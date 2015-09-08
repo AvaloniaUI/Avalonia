@@ -25,8 +25,8 @@ namespace Perspex.Diagnostics.ViewModels
         {
             this.WhenAnyValue(x => x.Root).Subscribe(x =>
             {
-                this.LogicalTree = new LogicalTreeViewModel(_root);
-                this.VisualTree = new VisualTreeViewModel(_root);
+                LogicalTree = new LogicalTreeViewModel(_root);
+                VisualTree = new VisualTreeViewModel(_root);
             });
 
             _focusedControl = KeyboardDevice.Instance

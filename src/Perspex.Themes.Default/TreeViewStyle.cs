@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Media;
 using Perspex.Styling;
@@ -20,15 +21,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TreeViewStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TreeView>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeView.TemplateProperty, new ControlTemplate<TreeView>(Template)),
-                        new Setter(TreeView.BorderBrushProperty, Brushes.Black),
-                        new Setter(TreeView.BorderThicknessProperty, 1.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TreeView>(Template)),
+                        new Setter(TemplatedControl.BorderBrushProperty, Brushes.Black),
+                        new Setter(TemplatedControl.BorderThicknessProperty, 1.0),
                     },
                 },
             });
@@ -44,17 +45,17 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 Padding = new Thickness(4),
-                [~Border.BackgroundProperty] = control[~TreeView.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~TreeView.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~TreeView.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new ScrollViewer
                 {
                     CanScrollHorizontally = true,
                     Content = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = control[~TreeView.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~TreeView.ItemsPanelProperty],
+                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                     }
                 }
             };

@@ -40,7 +40,7 @@ namespace Perspex.Cairo
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            Locator.CurrentMutable.RegisterConstant(this.GetPangoContext(handle), typeof(Pango.Context));
+            Locator.CurrentMutable.RegisterConstant(GetPangoContext(handle), typeof(Pango.Context));
             return new Renderer(handle, width, height);
         }
 

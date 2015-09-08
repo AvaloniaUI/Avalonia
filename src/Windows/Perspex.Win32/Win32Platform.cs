@@ -28,7 +28,7 @@ namespace Perspex.Win32
 
         public Win32Platform()
         {
-            this.CreateMessageWindow();
+            CreateMessageWindow();
         }
 
         public Size DoubleClickSize
@@ -126,13 +126,13 @@ namespace Perspex.Win32
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
+                hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 lpszClassName = "PerspexMessageWindow",
             };
 

@@ -28,8 +28,8 @@ namespace Perspex.Direct2D1
         /// <param name="height">The height of the window.</param>
         public Renderer(IntPtr hwnd, double width, double height)
         {
-            this.Direct2DFactory = Locator.Current.GetService<Factory>();
-            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            Direct2DFactory = Locator.Current.GetService<Factory>();
+            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
 
             RenderTargetProperties renderTargetProperties = new RenderTargetProperties
             {
@@ -43,7 +43,7 @@ namespace Perspex.Direct2D1
             };
 
             _renderTarget = new WindowRenderTarget(
-                this.Direct2DFactory,
+                Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
         }
@@ -54,8 +54,8 @@ namespace Perspex.Direct2D1
         /// <param name="renderTarget">The render target.</param>
         public Renderer(RenderTarget renderTarget)
         {
-            this.Direct2DFactory = Locator.Current.GetService<Factory>();
-            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            Direct2DFactory = Locator.Current.GetService<Factory>();
+            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
             _renderTarget = renderTarget;
         }
 
@@ -64,18 +64,14 @@ namespace Perspex.Direct2D1
         /// </summary>
         public Factory Direct2DFactory
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets the DirectWrite factory.
         /// </summary>
         public DwFactory DirectWriteFactory
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Resizes the renderer.
@@ -103,7 +99,7 @@ namespace Perspex.Direct2D1
         /// <returns>An <see cref="IDrawingContext"/>.</returns>
         protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
-            return new DrawingContext(_renderTarget, this.DirectWriteFactory);
+            return new DrawingContext(_renderTarget, DirectWriteFactory);
         }
 
         public override void Dispose()

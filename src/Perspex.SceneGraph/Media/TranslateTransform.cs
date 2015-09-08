@@ -27,8 +27,8 @@ namespace Perspex.Media
         /// </summary>
         public TranslateTransform()
         {
-            this.GetObservable(XProperty).Subscribe(_ => this.RaiseChanged());
-            this.GetObservable(YProperty).Subscribe(_ => this.RaiseChanged());
+            GetObservable(XProperty).Subscribe(_ => RaiseChanged());
+            GetObservable(YProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -39,8 +39,8 @@ namespace Perspex.Media
         public TranslateTransform(double x, double y)
             : this()
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Perspex.Media
         /// </summary>
         public double X
         {
-            get { return this.GetValue(XProperty); }
-            set { this.SetValue(XProperty, value); }
+            get { return GetValue(XProperty); }
+            set { SetValue(XProperty, value); }
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Perspex.Media
         /// </summary>
         public double Y
         {
-            get { return this.GetValue(YProperty); }
-            set { this.SetValue(YProperty, value); }
+            get { return GetValue(YProperty); }
+            set { SetValue(YProperty, value); }
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Perspex.Media
         /// </summary>
         public override Matrix Value
         {
-            get { return Matrix.CreateTranslation(this.X, this.Y); }
+            get { return Matrix.CreateTranslation(X, Y); }
         }
     }
 }

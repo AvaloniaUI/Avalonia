@@ -27,8 +27,8 @@ namespace Perspex.Controls.Templates
             Func<T, IEnumerable> itemsSelector)
             : base(
                 typeof(T),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector))
+                Cast(build),
+                Cast(itemsSelector))
         {
         }
 
@@ -52,9 +52,9 @@ namespace Perspex.Controls.Templates
             Func<T, bool> isExpanded)
             : base(
                 typeof(T),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector),
-                TreeDataTemplate<T>.Cast(isExpanded))
+                Cast(build),
+                Cast(itemsSelector),
+                Cast(isExpanded))
         {
         }
 
@@ -75,9 +75,9 @@ namespace Perspex.Controls.Templates
             Func<T, Control> build,
             Func<T, IEnumerable> itemsSelector)
             : base(
-                TreeDataTemplate<T>.CastMatch(match),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector))
+                CastMatch(match),
+                Cast(build),
+                Cast(itemsSelector))
         {
         }
 
@@ -103,10 +103,10 @@ namespace Perspex.Controls.Templates
             Func<T, IEnumerable> itemsSelector,
             Func<T, bool> isExpanded)
             : base(
-                TreeDataTemplate<T>.CastMatch(match),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector),
-                TreeDataTemplate<T>.Cast(isExpanded))
+                CastMatch(match),
+                Cast(build),
+                Cast(itemsSelector),
+                Cast(isExpanded))
         {
         }
 

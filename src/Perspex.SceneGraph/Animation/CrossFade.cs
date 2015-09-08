@@ -19,7 +19,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         public CrossFade(TimeSpan duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Perspex.Animation
                     from.Opacity,
                     0,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             if (to != null)
@@ -70,7 +70,7 @@ namespace Perspex.Animation
                     0,
                     1,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             await Task.WhenAll(tasks.ToArray());
@@ -101,7 +101,7 @@ namespace Perspex.Animation
         /// </returns>
         Task IPageTransition.Start(IVisual from, IVisual to, bool forward)
         {
-            return this.Start(from, to);
+            return Start(from, to);
         }
     }
 }

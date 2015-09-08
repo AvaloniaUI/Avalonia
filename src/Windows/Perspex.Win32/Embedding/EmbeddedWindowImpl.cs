@@ -27,7 +27,7 @@ namespace Perspex.Win32
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
-            this.Handle = hWnd;
+            Handle = hWnd;
             return hWnd;
         }
     }

@@ -16,7 +16,7 @@ namespace Perspex.Controls.UnitTests
 
         protected override void OnTemplateApplied()
         {
-            this.OnTemplateAppliedCalled = true;
+            OnTemplateAppliedCalled = true;
         }
     }
 }

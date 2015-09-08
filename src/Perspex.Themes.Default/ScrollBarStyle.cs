@@ -6,6 +6,7 @@ using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Styling;
 
@@ -21,41 +22,41 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ScrollBarStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ScrollBar>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.TemplateProperty, new ControlTemplate<ScrollBar>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ScrollBar>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal))
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.HeightProperty, 10.0),
+                        new Setter(Layoutable.HeightProperty, 10.0),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal).Template().Name("thumb"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Thumb.MinWidthProperty, 10.0),
+                        new Setter(Layoutable.MinWidthProperty, 10.0),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Vertical))
                 {
                     Setters = new[]
                     {
-                        new Setter(ScrollBar.WidthProperty, 10.0),
+                        new Setter(Layoutable.WidthProperty, 10.0),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Vertical).Template().Name("thumb"))
                 {
                     Setters = new[]
                     {
-                        new Setter(Thumb.MinHeightProperty, 10.0),
+                        new Setter(Layoutable.MinHeightProperty, 10.0),
                     },
                 },
             });
@@ -74,9 +75,9 @@ namespace Perspex.Themes.Default
                 Child = new Track
                 {
                     Name = "track",
-                    [!Track.MinimumProperty] = control[!ScrollBar.MinimumProperty],
-                    [!Track.MaximumProperty] = control[!ScrollBar.MaximumProperty],
-                    [!!Track.ValueProperty] = control[!!ScrollBar.ValueProperty],
+                    [!Track.MinimumProperty] = control[!RangeBase.MinimumProperty],
+                    [!Track.MaximumProperty] = control[!RangeBase.MaximumProperty],
+                    [!!Track.ValueProperty] = control[!!RangeBase.ValueProperty],
                     [!Track.ViewportSizeProperty] = control[!ScrollBar.ViewportSizeProperty],
                     [!Track.OrientationProperty] = control[!ScrollBar.OrientationProperty],
                     Thumb = new Thumb

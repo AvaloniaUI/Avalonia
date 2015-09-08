@@ -108,12 +108,12 @@ namespace Perspex
             _visualLogger = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Visual"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
 
             _visualChildren = new PerspexList<IVisual>();
-            _visualChildren.CollectionChanged += this.VisualChildrenChanged;
+            _visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 
         /// <summary>
@@ -121,8 +121,8 @@ namespace Perspex
         /// </summary>
         public Rect Bounds
         {
-            get { return this.GetValue(BoundsProperty); }
-            protected set { this.SetValue(BoundsProperty, value); }
+            get { return GetValue(BoundsProperty); }
+            protected set { SetValue(BoundsProperty, value); }
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace Perspex
         /// </summary>
         public bool ClipToBounds
         {
-            get { return this.GetValue(ClipToBoundsProperty); }
-            set { this.SetValue(ClipToBoundsProperty, value); }
+            get { return GetValue(ClipToBoundsProperty); }
+            set { SetValue(ClipToBoundsProperty, value); }
         }
 
         /// <summary>
@@ -147,8 +147,8 @@ namespace Perspex
         /// </summary>
         public bool IsVisible
         {
-            get { return this.GetValue(IsVisibleProperty); }
-            set { this.SetValue(IsVisibleProperty, value); }
+            get { return GetValue(IsVisibleProperty); }
+            set { SetValue(IsVisibleProperty, value); }
         }
 
         /// <summary>
@@ -156,8 +156,8 @@ namespace Perspex
         /// </summary>
         public double Opacity
         {
-            get { return this.GetValue(OpacityProperty); }
-            set { this.SetValue(OpacityProperty, value); }
+            get { return GetValue(OpacityProperty); }
+            set { SetValue(OpacityProperty, value); }
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Perspex
         /// </summary>
         public Transform RenderTransform
         {
-            get { return this.GetValue(RenderTransformProperty); }
-            set { this.SetValue(RenderTransformProperty, value); }
+            get { return GetValue(RenderTransformProperty); }
+            set { SetValue(RenderTransformProperty, value); }
         }
 
         /// <summary>
@@ -174,8 +174,8 @@ namespace Perspex
         /// </summary>
         public Origin TransformOrigin
         {
-            get { return this.GetValue(TransformOriginProperty); }
-            set { this.SetValue(TransformOriginProperty, value); }
+            get { return GetValue(TransformOriginProperty); }
+            set { SetValue(TransformOriginProperty, value); }
         }
 
         /// <summary>
@@ -183,8 +183,8 @@ namespace Perspex
         /// </summary>
         public int ZIndex
         {
-            get { return this.GetValue(ZIndexProperty); }
-            set { this.SetValue(ZIndexProperty, value); }
+            get { return GetValue(ZIndexProperty); }
+            set { SetValue(ZIndexProperty, value); }
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace Perspex
         /// <param name="e">The event args.</param>
         private void RenderTransformChanged(object sender, EventArgs e)
         {
-            this.InvalidateVisual();
+            InvalidateVisual();
         }
 
         /// <summary>
@@ -444,12 +444,12 @@ namespace Perspex
 
                 if (oldRoot != null)
                 {
-                    this.NotifyDetachedFromVisualTree(oldRoot);
+                    NotifyDetachedFromVisualTree(oldRoot);
                 }
 
                 if (newRoot != null)
                 {
-                    this.NotifyAttachedToVisualTree(newRoot);
+                    NotifyAttachedToVisualTree(newRoot);
                 }
             }
         }
@@ -493,7 +493,7 @@ namespace Perspex
             _visualLogger.Verbose("Attached to visual tree");
 
             _isAttachedToVisualTree = true;
-            this.OnAttachedToVisualTree(root);
+            OnAttachedToVisualTree(root);
 
             if (_visualChildren != null)
             {
@@ -514,7 +514,7 @@ namespace Perspex
             _visualLogger.Verbose("Detached from visual tree");
 
             _isAttachedToVisualTree = false;
-            this.OnDetachedFromVisualTree(root);
+            OnDetachedFromVisualTree(root);
 
             if (_visualChildren != null)
             {

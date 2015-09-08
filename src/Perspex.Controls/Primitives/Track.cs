@@ -10,13 +10,13 @@ namespace Perspex.Controls.Primitives
     public class Track : Control
     {
         public static readonly PerspexProperty<double> MinimumProperty =
-            ScrollBar.MinimumProperty.AddOwner<Track>();
+            RangeBase.MinimumProperty.AddOwner<Track>();
 
         public static readonly PerspexProperty<double> MaximumProperty =
-            ScrollBar.MaximumProperty.AddOwner<Track>();
+            RangeBase.MaximumProperty.AddOwner<Track>();
 
         public static readonly PerspexProperty<double> ValueProperty =
-            ScrollBar.ValueProperty.AddOwner<Track>();
+            RangeBase.ValueProperty.AddOwner<Track>();
 
         public static readonly PerspexProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
@@ -29,76 +29,76 @@ namespace Perspex.Controls.Primitives
 
         static Track()
         {
-            Control.AffectsArrange(MinimumProperty);
-            Control.AffectsArrange(MaximumProperty);
-            Control.AffectsArrange(ValueProperty);
-            Control.AffectsMeasure(OrientationProperty);
+            AffectsArrange(MinimumProperty);
+            AffectsArrange(MaximumProperty);
+            AffectsArrange(ValueProperty);
+            AffectsMeasure(OrientationProperty);
         }
 
         public Track()
         {
-            this.GetObservableWithHistory(ThumbProperty).Subscribe(val =>
+            GetObservableWithHistory(ThumbProperty).Subscribe(val =>
             {
                 if (val.Item1 != null)
                 {
-                    val.Item1.DragDelta -= this.ThumbDragged;
+                    val.Item1.DragDelta -= ThumbDragged;
                 }
 
-                this.ClearVisualChildren();
+                ClearVisualChildren();
 
                 if (val.Item2 != null)
                 {
-                    val.Item2.DragDelta += this.ThumbDragged;
-                    this.AddVisualChild(val.Item2);
+                    val.Item2.DragDelta += ThumbDragged;
+                    AddVisualChild(val.Item2);
                 }
             });
         }
 
         public double Minimum
         {
-            get { return this.GetValue(MinimumProperty); }
-            set { this.SetValue(MinimumProperty, value); }
+            get { return GetValue(MinimumProperty); }
+            set { SetValue(MinimumProperty, value); }
         }
 
         public double Maximum
         {
-            get { return this.GetValue(MaximumProperty); }
-            set { this.SetValue(MaximumProperty, value); }
+            get { return GetValue(MaximumProperty); }
+            set { SetValue(MaximumProperty, value); }
         }
 
         public double Value
         {
-            get { return this.GetValue(ValueProperty); }
-            set { this.SetValue(ValueProperty, value); }
+            get { return GetValue(ValueProperty); }
+            set { SetValue(ValueProperty, value); }
         }
 
         public double ViewportSize
         {
-            get { return this.GetValue(ViewportSizeProperty); }
-            set { this.SetValue(ViewportSizeProperty, value); }
+            get { return GetValue(ViewportSizeProperty); }
+            set { SetValue(ViewportSizeProperty, value); }
         }
 
         public Orientation Orientation
         {
-            get { return this.GetValue(OrientationProperty); }
-            set { this.SetValue(OrientationProperty, value); }
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
         }
 
         public Thumb Thumb
         {
-            get { return this.GetValue(ThumbProperty); }
-            set { this.SetValue(ThumbProperty, value); }
+            get { return GetValue(ThumbProperty); }
+            set { SetValue(ThumbProperty, value); }
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var thumb = this.Thumb;
+            var thumb = Thumb;
 
             if (thumb != null)
             {
                 thumb.Measure(availableSize);
 
-                if (this.Orientation == Orientation.Horizontal)
+                if (Orientation == Orientation.Horizontal)
                 {
                     return new Size(0, thumb.DesiredSize.Height);
                 }
@@ -113,13 +113,13 @@ namespace Perspex.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var thumb = this.Thumb;
+            var thumb = Thumb;
 
             if (thumb != null)
             {
-                var range = this.Maximum - this.Minimum;
-                var thumbFraction = this.ViewportSize / range;
-                var valueFraction = (this.Value - this.Minimum) / range;
+                var range = Maximum - Minimum;
+                var thumbFraction = ViewportSize / range;
+                var valueFraction = (Value - Minimum) / range;
 
                 if (double.IsNaN(valueFraction) || double.IsInfinity(valueFraction))
                 {
@@ -131,7 +131,7 @@ namespace Perspex.Controls.Primitives
                     thumbFraction = 0;
                 }
 
-                if (this.Orientation == Orientation.Horizontal)
+                if (Orientation == Orientation.Horizontal)
                 {
                     var width = Math.Max(finalSize.Width * thumbFraction, thumb.MinWidth);
                     var x = (finalSize.Width - width) * valueFraction;
@@ -150,25 +150,25 @@ namespace Perspex.Controls.Primitives
 
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
-            double range = this.Maximum - this.Minimum;
-            double value = this.Value;
+            double range = Maximum - Minimum;
+            double value = Value;
             double offset;
 
-            if (this.Orientation == Orientation.Horizontal)
+            if (Orientation == Orientation.Horizontal)
             {
-                offset = e.Vector.X / ((this.Bounds.Size.Width - this.Thumb.Bounds.Size.Width) / range);
+                offset = e.Vector.X / ((Bounds.Size.Width - Thumb.Bounds.Size.Width) / range);
             }
             else
             {
-                offset = e.Vector.Y * (range / (this.Bounds.Size.Height - this.Thumb.Bounds.Size.Height));
+                offset = e.Vector.Y * (range / (Bounds.Size.Height - Thumb.Bounds.Size.Height));
             }
 
             if (!double.IsNaN(offset) && !double.IsInfinity(offset))
             {
                 value += offset;
-                value = Math.Max(value, this.Minimum);
-                value = Math.Min(value, this.Maximum);
-                this.Value = value;
+                value = Math.Max(value, Minimum);
+                value = Math.Min(value, Maximum);
+                Value = value;
             }
         }
     }

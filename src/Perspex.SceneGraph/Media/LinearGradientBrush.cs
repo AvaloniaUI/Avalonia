@@ -13,14 +13,14 @@ PerspexProperty.Register<LinearGradientBrush, Point>(nameof(EndPoint), new Point
 
         public Point StartPoint
         {
-            get { return this.GetValue(StartPointProperty); }
-            set { this.SetValue(StartPointProperty, value); }
+            get { return GetValue(StartPointProperty); }
+            set { SetValue(StartPointProperty, value); }
         }
 
         public Point EndPoint
         {
-            get { return this.GetValue(EndPointProperty); }
-            set { this.SetValue(EndPointProperty, value); }
+            get { return GetValue(EndPointProperty); }
+            set { SetValue(EndPointProperty, value); }
         }
     }
 }

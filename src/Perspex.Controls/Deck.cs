@@ -40,8 +40,8 @@ namespace Perspex.Controls
         /// </summary>
         public IPageTransition Transition
         {
-            get { return this.GetValue(TransitionProperty); }
-            set { this.SetValue(TransitionProperty, value); }
+            get { return GetValue(TransitionProperty); }
+            set { SetValue(TransitionProperty, value); }
         }
 
         /// <inheritdoc/>

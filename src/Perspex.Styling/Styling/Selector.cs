@@ -31,18 +31,16 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(previous != null);
 
-            this.Previous = previous;
+            Previous = previous;
             _evaluate = evaluate;
-            this.SelectorString = selectorString;
+            SelectorString = selectorString;
             _inTemplate = inTemplate || previous._inTemplate;
             _stopTraversal = stopTraversal;
         }
 
         public Selector Previous
         {
-            get;
-            private set;
-        }
+            get; }
 
         public string SelectorString
         {
@@ -52,7 +50,7 @@ namespace Perspex.Styling
 
         public Selector MovePrevious()
         {
-            return _stopTraversal ? null : this.Previous;
+            return _stopTraversal ? null : Previous;
         }
 
         public SelectorMatch Match(IStyleable control)
@@ -97,12 +95,12 @@ namespace Perspex.Styling
             {
                 string result = string.Empty;
 
-                if (this.Previous != null)
+                if (Previous != null)
                 {
-                    result = this.Previous.ToString();
+                    result = Previous.ToString();
                 }
 
-                _description = result + this.SelectorString;
+                _description = result + SelectorString;
             }
 
             return _description;

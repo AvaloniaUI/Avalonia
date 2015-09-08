@@ -21,17 +21,17 @@ namespace Perspex.Direct2D1
             return new RectangleF((float)r.X, (float)r.Y, (float)r.Width, (float)r.Height);
         }
 
-        public static Vector2 ToSharpDX(this Perspex.Point p)
+        public static Vector2 ToSharpDX(this Point p)
         {
             return new Vector2((float)p.X, (float)p.Y);
         }
 
-        public static Size2F ToSharpDX(this Perspex.Size p)
+        public static Size2F ToSharpDX(this Size p)
         {
             return new Size2F((float)p.Width, (float)p.Height);
         }
 
-        public static SharpDX.Direct2D1.ExtendMode ToDirect2D(this Perspex.Media.GradientSpreadMethod spreadMethod)
+        public static ExtendMode ToDirect2D(this Perspex.Media.GradientSpreadMethod spreadMethod)
         {
             if (spreadMethod == Perspex.Media.GradientSpreadMethod.Pad)
                 return ExtendMode.Clamp;
@@ -82,7 +82,7 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="matrix">The <see cref="Matrix"/>.</param>
         /// <returns>The <see cref="Matrix3x2"/>.</returns>
-        public static Matrix3x2 ToDirect2D(this Perspex.Matrix matrix)
+        public static Matrix3x2 ToDirect2D(this Matrix matrix)
         {
             return new Matrix3x2(
                 (float)matrix.M11,
@@ -98,9 +98,9 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>a <see cref="Perspex.Matrix"/>.</returns>
-        public static Perspex.Matrix ToPerspex(this Matrix3x2 matrix)
+        public static Matrix ToPerspex(this Matrix3x2 matrix)
         {
-            return new Perspex.Matrix(
+            return new Matrix(
                 matrix.M11,
                 matrix.M12,
                 matrix.M21,

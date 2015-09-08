@@ -11,8 +11,8 @@ namespace Perspex.Input.Raw
         {
             Contract.Requires<ArgumentNullException>(device != null);
 
-            this.Device = device;
-            this.Timestamp = timestamp;
+            Device = device;
+            Timestamp = timestamp;
         }
 
         public IInputDevice Device { get; private set; }

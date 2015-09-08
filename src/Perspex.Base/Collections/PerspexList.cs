@@ -121,13 +121,13 @@ namespace Perspex.Collections
                 T old = _inner[index];
                 _inner[index] = value;
 
-                if (this.CollectionChanged != null)
+                if (CollectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Replace,
                         value,
                         old);
-                    this.CollectionChanged(this, e);
+                    CollectionChanged(this, e);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace Perspex.Collections
         {
             int index = _inner.Count;
             _inner.Add(item);
-            this.NotifyAdd(new[] { item }, index);
+            NotifyAdd(new[] { item }, index);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Perspex.Collections
 
             int index = _inner.Count;
             _inner.AddRange(items);
-            this.NotifyAdd((items as IList) ?? items.ToList(), index);
+            NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Perspex.Collections
         {
             var old = _inner;
             _inner = new List<T>();
-            this.NotifyRemove(old, 0);
+            NotifyRemove(old, 0);
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace Perspex.Collections
         public void Insert(int index, T item)
         {
             _inner.Insert(index, item);
-            this.NotifyAdd(new[] { item }, index);
+            NotifyAdd(new[] { item }, index);
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Perspex.Collections
             Contract.Requires<ArgumentNullException>(items != null);
 
             _inner.InsertRange(index, items);
-            this.NotifyAdd((items as IList) ?? items.ToList(), index);
+            NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Perspex.Collections
             if (index != -1)
             {
                 _inner.RemoveAt(index);
-                this.NotifyRemove(new[] { item }, index);
+                NotifyRemove(new[] { item }, index);
                 return true;
             }
 
@@ -274,7 +274,7 @@ namespace Perspex.Collections
             foreach (var i in items)
             {
                 // TODO: Optimize to only send as many notifications as necessary.
-                this.Remove(i);
+                Remove(i);
             }
         }
 
@@ -286,51 +286,51 @@ namespace Perspex.Collections
         {
             T item = _inner[index];
             _inner.RemoveAt(index);
-            this.NotifyRemove(new[] { item }, index);
+            NotifyRemove(new[] { item }, index);
         }
 
         /// <inheritdoc/>
         int IList.Add(object value)
         {
-            int index = this.Count;
-            this.Add((T)value);
+            int index = Count;
+            Add((T)value);
             return index;
         }
 
         /// <inheritdoc/>
         bool IList.Contains(object value)
         {
-            return this.Contains((T)value);
+            return Contains((T)value);
         }
 
         /// <inheritdoc/>
         void IList.Clear()
         {
-            this.Clear();
+            Clear();
         }
 
         /// <inheritdoc/>
         int IList.IndexOf(object value)
         {
-            return this.IndexOf((T)value);
+            return IndexOf((T)value);
         }
 
         /// <inheritdoc/>
         void IList.Insert(int index, object value)
         {
-            this.Insert(index, (T)value);
+            Insert(index, (T)value);
         }
 
         /// <inheritdoc/>
         void IList.Remove(object value)
         {
-            this.Remove((T)value);
+            Remove((T)value);
         }
 
         /// <inheritdoc/>
         void IList.RemoveAt(int index)
         {
-            this.RemoveAt(index);
+            RemoveAt(index);
         }
 
         /// <inheritdoc/>
@@ -352,13 +352,13 @@ namespace Perspex.Collections
         /// <param name="index">The starting index.</param>
         private void NotifyAdd(IList t, int index)
         {
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, t, index);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
 
-            this.NotifyCountChanged();
+            NotifyCountChanged();
         }
 
         /// <summary>
@@ -367,9 +367,9 @@ namespace Perspex.Collections
         /// </summary>
         private void NotifyCountChanged()
         {
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
             }
         }
 
@@ -380,13 +380,13 @@ namespace Perspex.Collections
         /// <param name="index">The starting index.</param>
         private void NotifyRemove(IList t, int index)
         {
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, index);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
 
-            this.NotifyCountChanged();
+            NotifyCountChanged();
         }
     }
 }

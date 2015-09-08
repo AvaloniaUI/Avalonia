@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(this.CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -38,7 +38,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(this.CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -54,11 +54,11 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate(this.CreateScrollViewerTemplate),
+                Template = new ControlTemplate(CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ListBox.ItemsProperty),
+                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
                 }
             };
         }
@@ -67,7 +67,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollContentPresenter
             {
-                [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty),
+                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
             };
         }
     }

@@ -28,7 +28,7 @@ namespace Perspex.Direct2D1.Media
 
             using (BitmapDecoder decoder = new BitmapDecoder(factory, fileName, DecodeOptions.CacheOnDemand))
             {
-                this.WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
+                WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
             }
         }
 
@@ -41,7 +41,7 @@ namespace Perspex.Direct2D1.Media
         public BitmapImpl(ImagingFactory factory, int width, int height)
         {
             _factory = factory;
-            this.WicImpl = new Bitmap(
+            WicImpl = new Bitmap(
                 factory,
                 width,
                 height,
@@ -54,7 +54,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public int PixelWidth
         {
-            get { return this.WicImpl.Size.Height; }
+            get { return WicImpl.Size.Height; }
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public int PixelHeight
         {
-            get { return this.WicImpl.Size.Width; }
+            get { return WicImpl.Size.Width; }
         }
 
         /// <summary>
@@ -70,9 +70,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public Bitmap WicImpl
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets a Direct2D bitmap to use on the specified render target.
@@ -84,7 +82,7 @@ namespace Perspex.Direct2D1.Media
             if (_direct2D == null)
             {
                 FormatConverter converter = new FormatConverter(_factory);
-                converter.Initialize(this.WicImpl, PixelFormat.Format32bppPBGRA);
+                converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
                 _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
             }
 
@@ -110,7 +108,7 @@ namespace Perspex.Direct2D1.Media
 
                 BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
                 frame.Initialize();
-                frame.WriteSource(this.WicImpl);
+                frame.WriteSource(WicImpl);
                 frame.Commit();
                 encoder.Commit();
             }

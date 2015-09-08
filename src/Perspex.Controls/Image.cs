@@ -29,8 +29,8 @@ namespace Perspex.Controls
         /// </summary>
         public Bitmap Source
         {
-            get { return this.GetValue(SourceProperty); }
-            set { this.SetValue(SourceProperty, value); }
+            get { return GetValue(SourceProperty); }
+            set { SetValue(SourceProperty, value); }
         }
 
         /// <summary>
@@ -38,8 +38,8 @@ namespace Perspex.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)this.GetValue(StretchProperty); }
-            set { this.SetValue(StretchProperty, value); }
+            get { return (Stretch)GetValue(StretchProperty); }
+            set { SetValue(StretchProperty, value); }
         }
 
         /// <summary>
@@ -48,13 +48,13 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(IDrawingContext context)
         {
-            Bitmap source = this.Source;
+            Bitmap source = Source;
 
             if (source != null)
             {
-                Rect viewPort = new Rect(this.Bounds.Size);
+                Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-                Vector scale = this.Stretch.CalculateScaling(this.Bounds.Size, sourceSize);
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterIn(new Rect(scaledSize))
@@ -77,22 +77,22 @@ namespace Perspex.Controls
             double height = 0;
             Vector scale = new Vector();
 
-            if (this.Source != null)
+            if (Source != null)
             {
-                width = this.Source.PixelWidth;
-                height = this.Source.PixelHeight;
+                width = Source.PixelWidth;
+                height = Source.PixelHeight;
 
-                if (this.Width > 0)
+                if (Width > 0)
                 {
-                    availableSize = new Size(this.Width, availableSize.Height);
+                    availableSize = new Size(Width, availableSize.Height);
                 }
 
-                if (this.Height > 0)
+                if (Height > 0)
                 {
-                    availableSize = new Size(availableSize.Width, this.Height);
+                    availableSize = new Size(availableSize.Width, Height);
                 }
 
-                scale = this.Stretch.CalculateScaling(availableSize, new Size(width, height));
+                scale = Stretch.CalculateScaling(availableSize, new Size(width, height));
             }
 
             return new Size(width * scale.X, height * scale.Y);

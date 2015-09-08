@@ -26,7 +26,7 @@ namespace Perspex.Styling
 
             if (styleContainer != null)
             {
-                this.ApplyStyles(control, styleContainer);
+                ApplyStyles(control, styleContainer);
             }
         }
 
@@ -46,7 +46,7 @@ namespace Perspex.Styling
 
                 if (parentContainer != null)
                 {
-                    this.ApplyStyles(control, parentContainer);
+                    ApplyStyles(control, parentContainer);
                 }
             }
 

@@ -17,7 +17,7 @@ namespace Perspex.Media
         public StreamGeometry()
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.CreateStreamGeometry();
+            PlatformImpl = factory.CreateStreamGeometry();
         }
 
         /// <summary>
@@ -26,13 +26,13 @@ namespace Perspex.Media
         /// <param name="impl">The platform-specific implementation.</param>
         private StreamGeometry(IGeometryImpl impl)
         {
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
         }
 
         /// <inheritdoc/>
         public override Rect Bounds
         {
-            get { return this.PlatformImpl.Bounds; }
+            get { return PlatformImpl.Bounds; }
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Perspex.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(((IStreamGeometryImpl)this.PlatformImpl).Clone());
+            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl).Clone());
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Perspex.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(((IStreamGeometryImpl)this.PlatformImpl).Open());
+            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl).Open());
         }
     }
 }

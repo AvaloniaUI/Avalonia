@@ -12,28 +12,26 @@ namespace Perspex.Cairo.Media.Imaging
     {
         public BitmapImpl(Cairo.ImageSurface surface)
         {
-            this.Surface = surface;
+            Surface = surface;
         }
 
         public int PixelWidth
         {
-            get { return this.Surface.Width; }
+            get { return Surface.Width; }
         }
 
         public int PixelHeight
         {
-            get { return this.Surface.Height; }
+            get { return Surface.Height; }
         }
 
         public Cairo.ImageSurface Surface
         {
-            get;
-            private set;
-        }
+            get; }
 
         public void Save(string fileName)
         {
-            this.Surface.WriteToPng(fileName);
+            Surface.WriteToPng(fileName);
         }
     }
 }

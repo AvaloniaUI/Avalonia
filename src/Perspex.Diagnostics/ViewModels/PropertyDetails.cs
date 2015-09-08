@@ -16,20 +16,20 @@ namespace Perspex.Diagnostics.ViewModels
 
         public PropertyDetails(PerspexObject o, PerspexProperty property)
         {
-            this.Name = property.IsAttached ?
+            Name = property.IsAttached ?
                 string.Format("[{0}.{1}]", property.OwnerType.Name, property.Name) :
                 property.Name;
-            this.IsAttached = property.IsAttached;
+            IsAttached = property.IsAttached;
 
             // TODO: Unsubscribe when view model is deactivated.
             o.GetObservable(property).Subscribe(x =>
             {
                 var diagnostic = o.GetDiagnostic(property);
-                this.Value = diagnostic.Value ?? "(null)";
-                this.Priority = (diagnostic.Priority != BindingPriority.Unset) ?
+                Value = diagnostic.Value ?? "(null)";
+                Priority = (diagnostic.Priority != BindingPriority.Unset) ?
                     diagnostic.Priority.ToString() :
                     diagnostic.Property.Inherits ? "Inherited" : "Unset";
-                this.Diagnostic = diagnostic.Diagnostic;
+                Diagnostic = diagnostic.Diagnostic;
             });
         }
 

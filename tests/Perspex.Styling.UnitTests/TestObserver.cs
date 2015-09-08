@@ -22,12 +22,12 @@ namespace Perspex.Styling.UnitTests
                 throw new Exception("Observable provided no value.");
             }
 
-            if (this.Completed)
+            if (Completed)
             {
                 throw new Exception("Observable completed unexpectedly.");
             }
 
-            if (this.Error != null)
+            if (Error != null)
             {
                 throw new Exception("Observable errored unexpectedly.");
             }
@@ -38,12 +38,12 @@ namespace Perspex.Styling.UnitTests
 
         public void OnCompleted()
         {
-            this.Completed = true;
+            Completed = true;
         }
 
         public void OnError(Exception error)
         {
-            this.Error = error;
+            Error = error;
         }
 
         public void OnNext(T value)

@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Styling;
 
@@ -19,13 +20,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ContentControlStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ContentControl>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ContentControl.TemplateProperty, new ControlTemplate<ContentControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ContentControl>(Template)),
                     },
                 },
             });
@@ -40,7 +41,7 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                [~Border.BackgroundProperty] = control[~ContentControl.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                 Child = new ContentPresenter
                 {
                     Name = "contentPresenter",

@@ -14,7 +14,7 @@ namespace Perspex.Xaml.Base.UnitTest.SampleModel
 
         public async Task Load(string username)
         {
-            this.Repositories = await new Task<IReadOnlyList<Repository>>(() => new List<Repository> { new Repository("Blah"), new Repository("Bleh") });
+            Repositories = await new Task<IReadOnlyList<Repository>>(() => new List<Repository> { new Repository("Blah"), new Repository("Bleh") });
         }
 
         public IReadOnlyList<Repository> Repositories

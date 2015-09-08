@@ -12,9 +12,9 @@ namespace Perspex.Styling.UnitTests
 
         public IDisposable Subscribe(IObserver<bool> observer)
         {
-            ++this.SubscribedCount;
+            ++SubscribedCount;
             observer.OnNext(true);
-            return Disposable.Create(() => --this.SubscribedCount);
+            return Disposable.Create(() => --SubscribedCount);
         }
     }
 }

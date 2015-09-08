@@ -50,8 +50,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Minimum
         {
-            get { return this.GetValue(MinimumProperty); }
-            set { this.SetValue(MinimumProperty, value); }
+            get { return GetValue(MinimumProperty); }
+            set { SetValue(MinimumProperty, value); }
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Maximum
         {
-            get { return this.GetValue(MaximumProperty); }
-            set { this.SetValue(MaximumProperty, value); }
+            get { return GetValue(MaximumProperty); }
+            set { SetValue(MaximumProperty, value); }
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Value
         {
-            get { return this.GetValue(ValueProperty); }
-            set { this.SetValue(ValueProperty, value); }
+            get { return GetValue(ValueProperty); }
+            set { SetValue(ValueProperty, value); }
         }
 
         /// <summary>

@@ -11,9 +11,9 @@ namespace Perspex.Direct2D1.Media
 
         public virtual void Dispose()
         {
-            if (this.PlatformBrush != null)
+            if (PlatformBrush != null)
             {
-                this.PlatformBrush.Dispose();
+                PlatformBrush.Dispose();
             }
         }
     }

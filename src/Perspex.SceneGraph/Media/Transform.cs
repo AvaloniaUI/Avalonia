@@ -26,9 +26,9 @@ namespace Perspex.Media
         /// </summary>
         protected void RaiseChanged()
         {
-            if (this.Changed != null)
+            if (Changed != null)
             {
-                this.Changed(this, EventArgs.Empty);
+                Changed(this, EventArgs.Empty);
             }
         }
     }

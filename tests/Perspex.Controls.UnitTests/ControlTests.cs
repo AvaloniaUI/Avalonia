@@ -69,12 +69,12 @@ namespace Perspex.Controls.UnitTests
         {
             public Size ClientSize
             {
-                get { throw new System.NotImplementedException(); }
+                get { throw new NotImplementedException(); }
             }
 
             public ILayoutManager LayoutManager
             {
-                get { throw new System.NotImplementedException(); }
+                get { throw new NotImplementedException(); }
             }
 
             public IRenderer Renderer

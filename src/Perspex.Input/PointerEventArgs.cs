@@ -12,7 +12,7 @@ namespace Perspex.Input
 
         public Point GetPosition(IVisual relativeTo)
         {
-            return this.Device.GetPosition(relativeTo);
+            return Device.GetPosition(relativeTo);
         }
     }
 }

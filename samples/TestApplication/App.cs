@@ -11,9 +11,9 @@ namespace TestApplication
     {
         public App()
         {
-            this.RegisterServices();
-            this.InitializeSubsystems((int)Environment.OSVersion.Platform);
-            this.Styles = new DefaultTheme();
+            RegisterServices();
+            InitializeSubsystems((int)Environment.OSVersion.Platform);
+            Styles = new DefaultTheme();
         }
     }
 }

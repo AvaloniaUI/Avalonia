@@ -16,7 +16,7 @@ namespace Perspex.Cairo.Media
         public StreamGeometryContextImpl(StreamGeometryImpl imp)
         {
             _impl = imp;
-            _surf = new Cairo.ImageSurface(global::Cairo.Format.Argb32, 0, 0);
+            _surf = new Cairo.ImageSurface(Cairo.Format.Argb32, 0, 0);
             _context = new Cairo.Context(_surf);
         }
 

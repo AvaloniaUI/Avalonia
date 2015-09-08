@@ -79,7 +79,7 @@ namespace Perspex.Controls
         /// </summary>
         static TopLevel()
         {
-            TopLevel.AffectsMeasure(TopLevel.ClientSizeProperty);
+            AffectsMeasure(ClientSizeProperty);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Perspex.Controls
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
 
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
 
             dependencyResolver = dependencyResolver ?? Locator.Current;
             var renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
@@ -114,36 +114,36 @@ namespace Perspex.Controls
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            this.LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
+            LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
             _renderManager = TryGetService<IRenderManager>(dependencyResolver);
 
-            this.PlatformImpl.SetOwner(this);
-            this.PlatformImpl.Activated = this.HandleActivated;
-            this.PlatformImpl.Deactivated = this.HandleDeactivated;
-            this.PlatformImpl.Closed = this.HandleClosed;
-            this.PlatformImpl.Input = this.HandleInput;
-            this.PlatformImpl.Paint = this.HandlePaint;
-            this.PlatformImpl.Resized = this.HandleResized;
+            PlatformImpl.SetOwner(this);
+            PlatformImpl.Activated = HandleActivated;
+            PlatformImpl.Deactivated = HandleDeactivated;
+            PlatformImpl.Closed = HandleClosed;
+            PlatformImpl.Input = HandleInput;
+            PlatformImpl.Paint = HandlePaint;
+            PlatformImpl.Resized = HandleResized;
 
-            Size clientSize = this.ClientSize = this.PlatformImpl.ClientSize;
+            Size clientSize = ClientSize = PlatformImpl.ClientSize;
 
             _dispatcher = Dispatcher.UIThread;
 
             if (renderInterface != null)
             {
-                _renderer = renderInterface.CreateRenderer(this.PlatformImpl.Handle, clientSize.Width, clientSize.Height);
+                _renderer = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
             }
 
-            if (this.LayoutManager != null)
+            if (LayoutManager != null)
             {
-                this.LayoutManager.Root = this;
-                this.LayoutManager.LayoutNeeded.Subscribe(_ => this.HandleLayoutNeeded());
-                this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
+                LayoutManager.Root = this;
+                LayoutManager.LayoutNeeded.Subscribe(_ => HandleLayoutNeeded());
+                LayoutManager.LayoutCompleted.Subscribe(_ => HandleLayoutCompleted());
             }
 
             if (_renderManager != null)
             {
-                _renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
+                _renderManager.RenderNeeded.Subscribe(_ => HandleRenderNeeded());
             }
 
             if (_keyboardNavigationHandler != null)
@@ -158,11 +158,11 @@ namespace Perspex.Controls
 
             styler?.ApplyStyles(this);
 
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => this.PlatformImpl.ClientSize = x);
-            this.GetObservable(TopLevel.PointerOverElementProperty)
+            GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.ClientSize = x);
+            GetObservable(PointerOverElementProperty)
                 .Select(
-                    x => (x as InputElement)?.GetObservable(InputElement.CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => this.PlatformImpl.SetCursor(cursor?.PlatformCursor));
+                    x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
+                .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
         }
 
         /// <summary>
@@ -185,8 +185,8 @@ namespace Perspex.Controls
         /// </summary>
         public Size ClientSize
         {
-            get { return this.GetValue(ClientSizeProperty); }
-            private set { this.SetValue(ClientSizeProperty, value); }
+            get { return GetValue(ClientSizeProperty); }
+            private set { SetValue(ClientSizeProperty, value); }
         }
 
         /// <summary>
@@ -194,8 +194,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsActive
         {
-            get { return this.GetValue(IsActiveProperty); }
-            private set { this.SetValue(IsActiveProperty, value); }
+            get { return GetValue(IsActiveProperty); }
+            private set { SetValue(IsActiveProperty, value); }
         }
 
         /// <summary>
@@ -203,9 +203,7 @@ namespace Perspex.Controls
         /// </summary>
         public ILayoutManager LayoutManager
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
@@ -252,8 +250,8 @@ namespace Perspex.Controls
         /// </summary>
         IInputElement IInputRoot.PointerOverElement
         {
-            get { return this.GetValue(PointerOverElementProperty); }
-            set { this.SetValue(PointerOverElementProperty, value); }
+            get { return GetValue(PointerOverElementProperty); }
+            set { SetValue(PointerOverElementProperty, value); }
         }
 
         /// <summary>
@@ -261,8 +259,8 @@ namespace Perspex.Controls
         /// </summary>
         bool IInputRoot.ShowAccessKeys
         {
-            get { return this.GetValue(AccessText.ShowAccessKeyProperty); }
-            set { this.SetValue(AccessText.ShowAccessKeyProperty, value); }
+            get { return GetValue(AccessText.ShowAccessKeyProperty); }
+            set { SetValue(AccessText.ShowAccessKeyProperty, value); }
         }
 
         /// <summary>
@@ -281,7 +279,7 @@ namespace Perspex.Controls
         /// <returns>The point in screen coordinates.</returns>
         Point IRenderRoot.TranslatePointToScreen(Point p)
         {
-            return this.PlatformImpl.PointToScreen(p);
+            return PlatformImpl.PointToScreen(p);
         }
 
         /// <summary>
@@ -289,7 +287,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Activate()
         {
-            this.PlatformImpl.Activate();
+            PlatformImpl.Activate();
         }
 
         /// <summary>
@@ -303,8 +301,8 @@ namespace Perspex.Controls
         /// </remarks>
         protected IDisposable BeginAutoSizing()
         {
-            this.AutoSizing = true;
-            return Disposable.Create(() => this.AutoSizing = false);
+            AutoSizing = true;
+            return Disposable.Create(() => AutoSizing = false);
         }
 
         /// <summary>
@@ -314,12 +312,12 @@ namespace Perspex.Controls
         /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            using (this.BeginAutoSizing())
+            using (BeginAutoSizing())
             {
-                this.PlatformImpl.ClientSize = finalSize;
+                PlatformImpl.ClientSize = finalSize;
             }
 
-            return base.ArrangeOverride(this.PlatformImpl.ClientSize);
+            return base.ArrangeOverride(PlatformImpl.ClientSize);
         }
 
         /// <summary>
@@ -328,16 +326,16 @@ namespace Perspex.Controls
         /// <param name="clientSize">The new client size.</param>
         protected virtual void HandleResized(Size clientSize)
         {
-            if (!this.AutoSizing)
+            if (!AutoSizing)
             {
-                this.Width = clientSize.Width;
-                this.Height = clientSize.Height;
+                Width = clientSize.Width;
+                Height = clientSize.Height;
             }
 
-            this.ClientSize = clientSize;
+            ClientSize = clientSize;
             _renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
-            this.LayoutManager.ExecuteLayoutPass();
-            this.PlatformImpl.Invalidate(new Rect(clientSize));
+            LayoutManager.ExecuteLayoutPass();
+            PlatformImpl.Invalidate(new Rect(clientSize));
         }
 
         /// <summary>
@@ -366,9 +364,9 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleActivated()
         {
-            if (this.Activated != null)
+            if (Activated != null)
             {
-                this.Activated(this, EventArgs.Empty);
+                Activated(this, EventArgs.Empty);
             }
 
             var scope = this as IFocusScope;
@@ -378,7 +376,7 @@ namespace Perspex.Controls
                 FocusManager.Instance.SetFocusScope(scope);
             }
 
-            this.IsActive = true;
+            IsActive = true;
         }
 
         /// <summary>
@@ -386,9 +384,9 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleClosed()
         {
-            if (this.Closed != null)
+            if (Closed != null)
             {
-                this.Closed(this, EventArgs.Empty);
+                Closed(this, EventArgs.Empty);
             }
         }
 
@@ -397,11 +395,11 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleDeactivated()
         {
-            this.IsActive = false;
+            IsActive = false;
 
-            if (this.Deactivated != null)
+            if (Deactivated != null)
             {
-                this.Deactivated(this, EventArgs.Empty);
+                Deactivated(this, EventArgs.Empty);
             }
         }
 
@@ -419,7 +417,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            _dispatcher.InvokeAsync(this.LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            _dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -436,7 +434,7 @@ namespace Perspex.Controls
         private void HandleRenderNeeded()
         {
             _dispatcher.InvokeAsync(
-                () => this.PlatformImpl.Invalidate(new Rect(this.ClientSize)),
+                () => PlatformImpl.Invalidate(new Rect(ClientSize)),
                 DispatcherPriority.Render);
         }
 

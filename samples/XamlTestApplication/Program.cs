@@ -23,7 +23,7 @@ namespace XamlTestApplication
     {
         public Node()
         {
-            this.Children = new PerspexList<Node>();
+            Children = new PerspexList<Node>();
         }
 
         public string Name { get; set; }

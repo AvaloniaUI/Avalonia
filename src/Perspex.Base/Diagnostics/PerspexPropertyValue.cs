@@ -22,10 +22,10 @@ namespace Perspex.Diagnostics
             BindingPriority priority,
             string diagnostic)
         {
-            this.Property = property;
-            this.Value = value;
-            this.Priority = priority;
-            this.Diagnostic = diagnostic;
+            Property = property;
+            Value = value;
+            Priority = priority;
+            Diagnostic = diagnostic;
         }
 
         /// <summary>

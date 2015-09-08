@@ -18,9 +18,9 @@ namespace Perspex.Input.Raw
             Key key, ModifierKeys modifiers)
             : base(device, timestamp)
         {
-            this.Key = key;
-            this.Type = type;
-            this.Modifiers = modifiers;
+            Key = key;
+            Type = type;
+            Modifiers = modifiers;
         }
 
         public Key Key { get; set; }

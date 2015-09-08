@@ -53,8 +53,8 @@ namespace Perspex.Controls
         /// </summary>
         public double Gap
         {
-            get { return this.GetValue(GapProperty); }
-            set { this.SetValue(GapProperty, value); }
+            get { return GetValue(GapProperty); }
+            set { SetValue(GapProperty, value); }
         }
 
         /// <summary>
@@ -62,8 +62,8 @@ namespace Perspex.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return this.GetValue(OrientationProperty); }
-            set { this.SetValue(OrientationProperty, value); }
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace Perspex.Controls
         /// <returns>The control.</returns>
         IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
         {
-            var horiz = this.Orientation == Orientation.Horizontal;
-            int index = this.Children.IndexOf((IControl)from);
+            var horiz = Orientation == Orientation.Horizontal;
+            int index = Children.IndexOf((IControl)from);
 
             switch (direction)
             {
@@ -83,7 +83,7 @@ namespace Perspex.Controls
                     index = 0;
                     break;
                 case FocusNavigationDirection.Last:
-                    index = this.Children.Count - 1;
+                    index = Children.Count - 1;
                     break;
                 case FocusNavigationDirection.Next:
                     ++index;
@@ -105,9 +105,9 @@ namespace Perspex.Controls
                     break;
             }
 
-            if (index >= 0 && index < this.Children.Count)
+            if (index >= 0 && index < Children.Count)
             {
-                return this.Children[index];
+                return Children[index];
             }
             else
             {
@@ -125,41 +125,41 @@ namespace Perspex.Controls
             double childAvailableWidth = double.PositiveInfinity;
             double childAvailableHeight = double.PositiveInfinity;
 
-            if (this.Orientation == Orientation.Vertical)
+            if (Orientation == Orientation.Vertical)
             {
                 childAvailableWidth = availableSize.Width;
 
-                if (!double.IsNaN(this.Width))
+                if (!double.IsNaN(Width))
                 {
-                    childAvailableWidth = this.Width;
+                    childAvailableWidth = Width;
                 }
 
-                childAvailableWidth = Math.Min(childAvailableWidth, this.MaxWidth);
-                childAvailableWidth = Math.Max(childAvailableWidth, this.MinWidth);
+                childAvailableWidth = Math.Min(childAvailableWidth, MaxWidth);
+                childAvailableWidth = Math.Max(childAvailableWidth, MinWidth);
             }
             else
             {
                 childAvailableHeight = availableSize.Height;
 
-                if (!double.IsNaN(this.Height))
+                if (!double.IsNaN(Height))
                 {
-                    childAvailableHeight = this.Height;
+                    childAvailableHeight = Height;
                 }
 
-                childAvailableHeight = Math.Min(childAvailableHeight, this.MaxHeight);
-                childAvailableHeight = Math.Max(childAvailableHeight, this.MinHeight);
+                childAvailableHeight = Math.Min(childAvailableHeight, MaxHeight);
+                childAvailableHeight = Math.Max(childAvailableHeight, MinHeight);
             }
 
             double measuredWidth = 0;
             double measuredHeight = 0;
-            double gap = this.Gap;
+            double gap = Gap;
 
-            foreach (Control child in this.Children)
+            foreach (Control child in Children)
             {
                 child.Measure(new Size(childAvailableWidth, childAvailableHeight));
                 Size size = child.DesiredSize;
 
-                if (this.Orientation == Orientation.Vertical)
+                if (Orientation == Orientation.Vertical)
                 {
                     measuredHeight += size.Height + gap;
                     measuredWidth = Math.Max(measuredWidth, size.Width);
@@ -183,9 +183,9 @@ namespace Perspex.Controls
         {
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
-            double gap = this.Gap;
+            double gap = Gap;
 
-            if (this.Orientation == Orientation.Vertical)
+            if (Orientation == Orientation.Vertical)
             {
                 arrangedHeight = 0;
             }
@@ -194,12 +194,12 @@ namespace Perspex.Controls
                 arrangedWidth = 0;
             }
 
-            foreach (Control child in this.Children)
+            foreach (Control child in Children)
             {
                 double childWidth = child.DesiredSize.Width;
                 double childHeight = child.DesiredSize.Height;
 
-                if (this.Orientation == Orientation.Vertical)
+                if (Orientation == Orientation.Vertical)
                 {
                     double width = Math.Max(childWidth, arrangedWidth);
                     Rect childFinal = new Rect(0, arrangedHeight, width, childHeight);
@@ -217,7 +217,7 @@ namespace Perspex.Controls
                 }
             }
 
-            if (this.Orientation == Orientation.Vertical)
+            if (Orientation == Orientation.Vertical)
             {
                 arrangedHeight = Math.Max(arrangedHeight - gap, finalSize.Height);
             }

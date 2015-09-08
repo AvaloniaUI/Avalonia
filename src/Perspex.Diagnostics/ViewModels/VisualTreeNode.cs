@@ -16,16 +16,16 @@ namespace Perspex.Diagnostics.ViewModels
 
             if (host == null || host.Root == null)
             {
-                this.Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
+                Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
             }
             else
             {
-                this.Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root) });
+                Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root) });
             }
 
-            if (this.Control != null)
+            if (Control != null)
             {
-                this.IsInTemplate = this.Control.TemplatedParent != null;
+                IsInTemplate = Control.TemplatedParent != null;
             }
         }
 

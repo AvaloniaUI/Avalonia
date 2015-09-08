@@ -17,7 +17,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -42,7 +42,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -67,7 +67,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -108,7 +108,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = list
             };
 
@@ -127,7 +127,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             return new ItemsPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
+                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             };
         }
     }

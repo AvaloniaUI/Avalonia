@@ -35,23 +35,23 @@ namespace Perspex.Markup.Xaml.DataBinding
 
             try
             {
-                var bindingSource = new DataContextChangeSynchronizer.BindingSource(this.SourcePropertyPath, dataContext);
-                var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(this.Target, this.TargetProperty);
+                var bindingSource = new DataContextChangeSynchronizer.BindingSource(SourcePropertyPath, dataContext);
+                var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(Target, TargetProperty);
 
                 _changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, _typeConverterProvider);
 
-                if (this.BindingMode == BindingMode.TwoWay)
+                if (BindingMode == BindingMode.TwoWay)
                 {
                     _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                     _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
 
-                if (this.BindingMode == BindingMode.OneWay)
+                if (BindingMode == BindingMode.OneWay)
                 {
                     _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                 }
 
-                if (this.BindingMode == BindingMode.OneWayToSource)
+                if (BindingMode == BindingMode.OneWayToSource)
                 {
                     _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }

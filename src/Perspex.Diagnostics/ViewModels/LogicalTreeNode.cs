@@ -12,7 +12,7 @@ namespace Perspex.Diagnostics.ViewModels
         public LogicalTreeNode(ILogical logical)
             : base((Control)logical)
         {
-            this.Children = logical.LogicalChildren.CreateDerivedCollection(x => new LogicalTreeNode(x));
+            Children = logical.LogicalChildren.CreateDerivedCollection(x => new LogicalTreeNode(x));
         }
 
         public static LogicalTreeNode[] Create(object control)

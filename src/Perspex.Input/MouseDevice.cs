@@ -25,10 +25,10 @@ namespace Perspex.Input
 
         public MouseDevice()
         {
-            this.InputManager.RawEventReceived
+            InputManager.RawEventReceived
                 .OfType<RawMouseEventArgs>()
                 .Where(x => x.Device == this)
-                .Subscribe(this.ProcessRawEvent);
+                .Subscribe(ProcessRawEvent);
         }
 
         public static IMouseDevice Instance
@@ -55,12 +55,12 @@ namespace Perspex.Input
 
         public virtual void Capture(IInputElement control)
         {
-            this.Captured = control;
+            Captured = control;
         }
 
         public Point GetPosition(IVisual relativeTo)
         {
-            Point p = this.Position;
+            Point p = Position;
             IVisual v = relativeTo;
 
             while (v != null)
@@ -76,40 +76,40 @@ namespace Perspex.Input
         {
             var mouse = (IMouseDevice)e.Device;
 
-            this.Position = e.Position;
+            Position = e.Position;
 
             switch (e.Type)
             {
                 case RawMouseEventType.LeaveWindow:
-                    this.LeaveWindow(mouse, e.Root);
+                    LeaveWindow(mouse, e.Root);
                     break;
                 case RawMouseEventType.LeftButtonDown:
-                    this.MouseDown(mouse, e.Timestamp, e.Root, e.Position);
+                    MouseDown(mouse, e.Timestamp, e.Root, e.Position);
                     break;
                 case RawMouseEventType.LeftButtonUp:
-                    this.MouseUp(mouse, e.Root, e.Position);
+                    MouseUp(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.Move:
-                    this.MouseMove(mouse, e.Root, e.Position);
+                    MouseMove(mouse, e.Root, e.Position);
                     break;
                 case RawMouseEventType.Wheel:
-                    this.MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta);
+                    MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta);
                     break;
             }
         }
 
         private void LeaveWindow(IMouseDevice device, IInputRoot root)
         {
-            this.ClearPointerOver(this, root);
+            ClearPointerOver(this, root);
         }
 
         private void MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p)
         {
-            var hit = this.HitTest(root, p);
+            var hit = HitTest(root, p);
 
             if (hit != null)
             {
-                IInteractive source = this.GetSource(hit);
+                IInteractive source = GetSource(hit);
 
                 if (source != null)
                 {
@@ -143,22 +143,22 @@ namespace Perspex.Input
         {
             IInteractive source;
 
-            if (this.Captured == null)
+            if (Captured == null)
             {
-                this.SetPointerOver(this, root, root, p);
+                SetPointerOver(this, root, root, p);
                 source = root as IInteractive;
             }
             else
             {
                 Point offset = new Point();
 
-                foreach (IVisual ancestor in this.Captured.GetVisualAncestors())
+                foreach (IVisual ancestor in Captured.GetVisualAncestors())
                 {
                     offset += ancestor.Bounds.Position;
                 }
 
-                this.SetPointerOver(this, root, this.Captured, p - offset);
-                source = this.Captured as IInteractive;
+                SetPointerOver(this, root, Captured, p - offset);
+                source = Captured as IInteractive;
             }
 
             if (source != null)
@@ -174,11 +174,11 @@ namespace Perspex.Input
 
         private void MouseUp(IMouseDevice device, IInputRoot root, Point p)
         {
-            var hit = this.HitTest(root, p);
+            var hit = HitTest(root, p);
 
             if (hit != null)
             {
-                IInteractive source = this.GetSource(hit);
+                IInteractive source = GetSource(hit);
 
                 if (source != null)
                 {
@@ -194,11 +194,11 @@ namespace Perspex.Input
 
         private void MouseWheel(IMouseDevice device, IInputRoot root, Point p, Vector delta)
         {
-            var hit = this.HitTest(root, p);
+            var hit = HitTest(root, p);
 
             if (hit != null)
             {
-                IInteractive source = this.GetSource(hit);
+                IInteractive source = GetSource(hit);
 
                 if (source != null)
                 {
@@ -215,14 +215,14 @@ namespace Perspex.Input
 
         private IInteractive GetSource(IVisual hit)
         {
-            return this.Captured ??
+            return Captured ??
                 (hit as IInteractive) ??
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
         }
 
         private IInputElement HitTest(IInputElement root, Point p)
         {
-            return this.Captured ?? root.InputHitTest(p);
+            return Captured ?? root.InputHitTest(p);
         }
 
         private void ClearPointerOver(IPointerDevice device, IInputRoot root)

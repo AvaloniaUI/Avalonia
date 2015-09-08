@@ -21,19 +21,19 @@ namespace Perspex.Controls.Primitives
 
         public TabStrip()
         {
-            this.GetObservable(SelectedItemProperty).Subscribe(x => this.SelectedTab = x as TabItem);
-            this.GetObservable(SelectedTabProperty).Subscribe(x => this.SelectedItem = x as TabItem);
+            GetObservable(SelectedItemProperty).Subscribe(x => SelectedTab = x as TabItem);
+            GetObservable(SelectedTabProperty).Subscribe(x => SelectedItem = x as TabItem);
         }
 
         public TabItem SelectedTab
         {
-            get { return this.GetValue(SelectedTabProperty); }
-            set { this.SetValue(SelectedTabProperty, value); }
+            get { return GetValue(SelectedTabProperty); }
+            set { SetValue(SelectedTabProperty, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            TabControl tabControl = this.TemplatedParent as TabControl;
+            TabControl tabControl = TemplatedParent as TabControl;
             IItemContainerGenerator result;
 
             if (tabControl != null)

@@ -21,8 +21,8 @@ namespace Perspex.Styling
         /// <param name="source">An observable which produces the value for the property.</param>
         public ObservableSetter(PerspexProperty property, IObservable<object> source)
         {
-            this.Property = property;
-            this.Source = source;
+            Property = property;
+            Source = source;
         }
 
         /// <summary>
@@ -53,12 +53,12 @@ namespace Perspex.Styling
         {
             if (activator == null)
             {
-                control.Bind(this.Property, this.Source, BindingPriority.Style);
+                control.Bind(Property, Source, BindingPriority.Style);
             }
             else
             {
-                var binding = new StyleBinding(activator, this.Source, style.ToString());
-                control.Bind(this.Property, binding, BindingPriority.StyleTrigger);
+                var binding = new StyleBinding(activator, Source, style.ToString());
+                control.Bind(Property, binding, BindingPriority.StyleTrigger);
             }
         }
     }

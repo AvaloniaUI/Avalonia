@@ -15,8 +15,8 @@ namespace Perspex.Media
         /// <param name="height">The height of the line, in pixels.</param>
         public FormattedTextLine(int length, double height)
         {
-            this.Length = length;
-            this.Height = height;
+            Length = length;
+            Height = height;
         }
 
         /// <summary>

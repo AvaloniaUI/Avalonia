@@ -31,11 +31,11 @@ namespace Perspex.Controls.Shapes
 
         static Shape()
         {
-            Control.AffectsRender(FillProperty);
-            Control.AffectsMeasure(StretchProperty);
-            Control.AffectsRender(StrokeProperty);
-            Control.AffectsRender(StrokeDashArrayProperty);
-            Control.AffectsMeasure(StrokeThicknessProperty);
+            AffectsRender(FillProperty);
+            AffectsMeasure(StretchProperty);
+            AffectsRender(StrokeProperty);
+            AffectsRender(StrokeDashArrayProperty);
+            AffectsMeasure(StrokeThicknessProperty);
         }
 
         public abstract Geometry DefiningGeometry
@@ -45,8 +45,8 @@ namespace Perspex.Controls.Shapes
 
         public Brush Fill
         {
-            get { return this.GetValue(FillProperty); }
-            set { this.SetValue(FillProperty, value); }
+            get { return GetValue(FillProperty); }
+            set { SetValue(FillProperty, value); }
         }
 
         public Geometry RenderedGeometry
@@ -55,9 +55,9 @@ namespace Perspex.Controls.Shapes
             {
                 if (_renderedGeometry == null)
                 {
-                    if (this.DefiningGeometry != null)
+                    if (DefiningGeometry != null)
                     {
-                        _renderedGeometry = this.DefiningGeometry.Clone();
+                        _renderedGeometry = DefiningGeometry.Clone();
                         _renderedGeometry.Transform = new MatrixTransform(_transform);
                     }
                 }
@@ -68,36 +68,36 @@ namespace Perspex.Controls.Shapes
 
         public Stretch Stretch
         {
-            get { return this.GetValue(StretchProperty); }
-            set { this.SetValue(StretchProperty, value); }
+            get { return GetValue(StretchProperty); }
+            set { SetValue(StretchProperty, value); }
         }
 
         public Brush Stroke
         {
-            get { return this.GetValue(StrokeProperty); }
-            set { this.SetValue(StrokeProperty, value); }
+            get { return GetValue(StrokeProperty); }
+            set { SetValue(StrokeProperty, value); }
         }
 
         public PerspexList<double> StrokeDashArray
         {
-            get { return this.GetValue(StrokeDashArrayProperty); }
-            set { this.SetValue(StrokeDashArrayProperty, value); }
+            get { return GetValue(StrokeDashArrayProperty); }
+            set { SetValue(StrokeDashArrayProperty, value); }
         }
 
         public double StrokeThickness
         {
-            get { return this.GetValue(StrokeThicknessProperty); }
-            set { this.SetValue(StrokeThicknessProperty, value); }
+            get { return GetValue(StrokeThicknessProperty); }
+            set { SetValue(StrokeThicknessProperty, value); }
         }
 
         public override void Render(IDrawingContext context)
         {
-            var geometry = this.RenderedGeometry;
+            var geometry = RenderedGeometry;
 
             if (geometry != null)
             {
-                var pen = new Pen(this.Stroke, this.StrokeThickness, this.StrokeDashArray);
-                context.DrawGeometry(this.Fill, pen, geometry);
+                var pen = new Pen(Stroke, StrokeThickness, StrokeDashArray);
+                context.DrawGeometry(Fill, pen, geometry);
             }
         }
 
@@ -105,17 +105,17 @@ namespace Perspex.Controls.Shapes
         {
             // This should probably use GetRenderBounds(strokeThickness) but then the calculations
             // will multiply the stroke thickness as well, which isn't correct.
-            Rect shapeBounds = this.DefiningGeometry.Bounds;
+            Rect shapeBounds = DefiningGeometry.Bounds;
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
             Matrix translate = Matrix.Identity;
-            double width = this.Width;
-            double height = this.Height;
+            double width = Width;
+            double height = Height;
             double desiredX = availableSize.Width;
             double desiredY = availableSize.Height;
             double sx = 0.0;
             double sy = 0.0;
 
-            if (this.Stretch != Stretch.None)
+            if (Stretch != Stretch.None)
             {
                 shapeSize = shapeBounds.Size;
                 translate = Matrix.CreateTranslation(-(Vector)shapeBounds.Position);
@@ -151,7 +151,7 @@ namespace Perspex.Controls.Shapes
                 sy = sx;
             }
 
-            switch (this.Stretch)
+            switch (Stretch)
             {
                 case Stretch.Uniform:
                     sx = sy = Math.Min(sx, sy);

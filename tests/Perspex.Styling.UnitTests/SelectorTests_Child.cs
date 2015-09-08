@@ -72,7 +72,7 @@ namespace Perspex.Styling.UnitTests
         {
             public TestLogical()
             {
-                this.Classes = new Classes();
+                Classes = new Classes();
             }
 
             public Classes Classes { get; }

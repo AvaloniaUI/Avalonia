@@ -79,10 +79,10 @@ namespace Perspex
 
             _mode = mode;
             _changed = changed;
-            this.Priority = priority;
-            this.Value = _directValue = PerspexProperty.UnsetValue;
-            this.ActiveBindingIndex = -1;
-            this.Bindings = new LinkedList<PriorityBindingEntry>();
+            Priority = priority;
+            Value = _directValue = PerspexProperty.UnsetValue;
+            ActiveBindingIndex = -1;
+            Bindings = new LinkedList<PriorityBindingEntry>();
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Perspex
 
             set
             {
-                this.Value = _directValue = value;
+                Value = _directValue = value;
                 _changed(this);
             }
         }
@@ -133,17 +133,17 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(binding != null);
 
             var entry = new PriorityBindingEntry(_nextIndex++);
-            var node = this.Bindings.AddFirst(entry);
+            var node = Bindings.AddFirst(entry);
 
-            entry.Start(binding, this.Changed, this.Completed);
+            entry.Start(binding, Changed, Completed);
 
             return Disposable.Create(() =>
             {
-                this.Bindings.Remove(node);
+                Bindings.Remove(node);
 
-                if (entry.Index >= this.ActiveBindingIndex)
+                if (entry.Index >= ActiveBindingIndex)
                 {
-                    this.ActivateFirstBinding();
+                    ActivateFirstBinding();
                 }
             });
         }
@@ -154,17 +154,17 @@ namespace Perspex
         /// <param name="entry">The entry that changed.</param>
         private void Changed(PriorityBindingEntry entry)
         {
-            if (_mode == LevelPrecedenceMode.Latest || entry.Index >= this.ActiveBindingIndex)
+            if (_mode == LevelPrecedenceMode.Latest || entry.Index >= ActiveBindingIndex)
             {
                 if (entry.Value != PerspexProperty.UnsetValue)
                 {
-                    this.Value = entry.Value;
-                    this.ActiveBindingIndex = entry.Index;
+                    Value = entry.Value;
+                    ActiveBindingIndex = entry.Index;
                     _changed(this);
                 }
                 else
                 {
-                    this.ActivateFirstBinding();
+                    ActivateFirstBinding();
                 }
             }
         }
@@ -175,11 +175,11 @@ namespace Perspex
         /// <param name="entry">The entry that completed.</param>
         private void Completed(PriorityBindingEntry entry)
         {
-            this.Bindings.Remove(entry);
+            Bindings.Remove(entry);
 
-            if (entry.Index >= this.ActiveBindingIndex)
+            if (entry.Index >= ActiveBindingIndex)
             {
-                this.ActivateFirstBinding();
+                ActivateFirstBinding();
             }
         }
 
@@ -188,19 +188,19 @@ namespace Perspex
         /// </summary>
         private void ActivateFirstBinding()
         {
-            foreach (var binding in this.Bindings)
+            foreach (var binding in Bindings)
             {
                 if (binding.Value != PerspexProperty.UnsetValue)
                 {
-                    this.Value = binding.Value;
-                    this.ActiveBindingIndex = binding.Index;
+                    Value = binding.Value;
+                    ActiveBindingIndex = binding.Index;
                     _changed(this);
                     return;
                 }
             }
 
-            this.Value = this.DirectValue;
-            this.ActiveBindingIndex = -1;
+            Value = DirectValue;
+            ActiveBindingIndex = -1;
             _changed(this);
         }
     }

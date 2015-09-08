@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Styling;
 
@@ -19,13 +20,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ItemsControlStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ItemsControl>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Button.TemplateProperty, new ControlTemplate<ItemsControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ItemsControl>(Template)),
                     },
                 },
             });

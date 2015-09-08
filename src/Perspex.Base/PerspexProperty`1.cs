@@ -61,7 +61,7 @@ namespace Perspex
         /// <returns>The default value.</returns>
         public TValue GetDefaultValue<T>()
         {
-            return (TValue)this.GetDefaultValue(typeof(T));
+            return (TValue)GetDefaultValue(typeof(T));
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Perspex
             var f = validation != null ?
                 (o, v) => validation((T)o, (TValue)v) :
                 (Func<PerspexObject, object, object>)null;
-            this.OverrideValidation(typeof(T), f);
+            OverrideValidation(typeof(T), f);
         }
 
         /// <summary>

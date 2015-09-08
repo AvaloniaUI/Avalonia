@@ -27,10 +27,10 @@ namespace Perspex.Input.Raw
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            this.Root = root;
-            this.Position = position;
-            this.Type = type;
-            this.ModifierKeys = modifierKeys;
+            Root = root;
+            Position = position;
+            Type = type;
+            ModifierKeys = modifierKeys;
         }
 
         public IInputRoot Root { get; private set; }

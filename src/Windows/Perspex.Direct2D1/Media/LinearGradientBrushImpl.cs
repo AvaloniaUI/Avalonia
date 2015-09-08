@@ -36,7 +36,7 @@ namespace Perspex.Direct2D1.Media
                         break;
                 }
 
-                this.PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+                PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
                     target,
                     new SharpDX.Direct2D1.LinearGradientBrushProperties { StartPoint = startPoint.ToSharpDX(), EndPoint = endPoint.ToSharpDX() },
                     new SharpDX.Direct2D1.BrushProperties { Opacity = (float)brush.Opacity, Transform = target.Transform },

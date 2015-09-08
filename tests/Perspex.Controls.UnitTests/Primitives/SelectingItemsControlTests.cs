@@ -26,7 +26,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             Assert.Equal(-1, target.SelectedIndex);
@@ -44,7 +44,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -65,7 +65,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -87,7 +87,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.SelectedItem = items[1];
@@ -109,7 +109,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.SelectedIndex = 1;
@@ -131,7 +131,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -153,7 +153,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -180,7 +180,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -201,7 +201,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -215,7 +215,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new SelectingItemsControl
             {
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -237,7 +237,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -259,7 +259,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -286,7 +286,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -315,7 +315,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -335,7 +335,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new SelectingItemsControl
             {
-                Template = this.Template(),
+                Template = Template(),
                 Items = new[] { "foo", "bar" },
             };
 
@@ -360,7 +360,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new SelectingItemsControl
             {
-                Template = this.Template(),
+                Template = Template(),
                 Items = new[] { "foo", "bar" },
             };
 
@@ -383,7 +383,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new SelectingItemsControl
             {
-                Template = this.Template(),
+                Template = Template(),
                 Items = new[] { "foo", "bar" },
             };
 
@@ -412,7 +412,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -442,7 +442,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -470,7 +470,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -496,8 +496,8 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 });
         }
 

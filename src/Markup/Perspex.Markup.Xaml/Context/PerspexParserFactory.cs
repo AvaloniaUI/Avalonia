@@ -24,9 +24,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public IXamlParser CreateForReadingFree()
         {
-            var objectAssemblerForUndefinedRoot = this.GetObjectAssemblerForUndefinedRoot();
+            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForUndefinedRoot();
 
-            return this.CreateParser(objectAssemblerForUndefinedRoot);
+            return CreateParser(objectAssemblerForUndefinedRoot);
         }
 
         private IXamlParser CreateParser(IObjectAssembler objectAssemblerForUndefinedRoot)
@@ -48,9 +48,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public IXamlParser CreateForReadingSpecificInstance(object rootInstance)
         {
-            var objectAssemblerForUndefinedRoot = this.GetObjectAssemblerForSpecificRoot(rootInstance);
+            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForSpecificRoot(rootInstance);
 
-            return this.CreateParser(objectAssemblerForUndefinedRoot);
+            return CreateParser(objectAssemblerForUndefinedRoot);
         }
 
         private IObjectAssembler GetObjectAssemblerForSpecificRoot(object rootInstance)

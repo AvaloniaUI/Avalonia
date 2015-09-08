@@ -19,8 +19,8 @@ namespace Perspex.Controls
         /// </summary>
         public string SharedSizeGroup
         {
-            get { return this.GetValue(SharedSizeGroupProperty); }
-            set { this.SetValue(SharedSizeGroupProperty, value); }
+            get { return GetValue(SharedSizeGroupProperty); }
+            set { SetValue(SharedSizeGroupProperty, value); }
         }
     }
 }

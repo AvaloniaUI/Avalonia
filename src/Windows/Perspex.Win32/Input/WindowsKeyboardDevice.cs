@@ -26,22 +26,22 @@ namespace Perspex.Win32.Input
                 UpdateKeyStates();
                 ModifierKeys result = 0;
 
-                if (this.IsDown(Key.LeftAlt) || this.IsDown(Key.RightAlt))
+                if (IsDown(Key.LeftAlt) || IsDown(Key.RightAlt))
                 {
                     result |= ModifierKeys.Alt;
                 }
 
-                if (this.IsDown(Key.LeftCtrl) || this.IsDown(Key.RightCtrl))
+                if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
                 {
                     result |= ModifierKeys.Control;
                 }
 
-                if (this.IsDown(Key.LeftShift) || this.IsDown(Key.RightShift))
+                if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
                 {
                     result |= ModifierKeys.Shift;
                 }
 
-                if (this.IsDown(Key.LWin) || this.IsDown(Key.RWin))
+                if (IsDown(Key.LWin) || IsDown(Key.RWin))
                 {
                     result |= ModifierKeys.Windows;
                 }
@@ -52,7 +52,7 @@ namespace Perspex.Win32.Input
 
         public void WindowActivated(Window window)
         {
-            this.SetFocusedElement(window, NavigationMethod.Unspecified);
+            SetFocusedElement(window, NavigationMethod.Unspecified);
         }
 
         public string StringFromVirtualKey(uint virtualKey)
@@ -75,7 +75,7 @@ namespace Perspex.Win32.Input
 
         private bool IsDown(Key key)
         {
-            return (this.GetKeyStates(key) & KeyStates.Down) != 0;
+            return (GetKeyStates(key) & KeyStates.Down) != 0;
         }
 
         private KeyStates GetKeyStates(Key key)

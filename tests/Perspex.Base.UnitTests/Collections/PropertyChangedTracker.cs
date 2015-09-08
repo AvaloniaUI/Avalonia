@@ -11,20 +11,20 @@ namespace Perspex.Base.UnitTests.Collections
     {
         public PropertyChangedTracker(INotifyPropertyChanged obj)
         {
-            this.Names = new List<string>();
-            obj.PropertyChanged += this.PropertyChanged;
+            Names = new List<string>();
+            obj.PropertyChanged += PropertyChanged;
         }
 
-        public List<string> Names { get; private set; }
+        public List<string> Names { get; }
 
         public void Reset()
         {
-            this.Names.Clear();
+            Names.Clear();
         }
 
         private void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            this.Names.Add(e.PropertyName);
+            Names.Add(e.PropertyName);
         }
     }
 }

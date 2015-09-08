@@ -38,8 +38,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IControl Child
         {
-            get { return this.GetValue(ChildProperty); }
-            private set { this.SetValue(ChildProperty, value); }
+            get { return GetValue(ChildProperty); }
+            private set { SetValue(ChildProperty, value); }
         }
 
         /// <summary>
@@ -47,8 +47,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public object Content
         {
-            get { return this.GetValue(ContentProperty); }
-            set { this.SetValue(ContentProperty, value); }
+            get { return GetValue(ContentProperty); }
+            set { SetValue(ContentProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -56,7 +56,7 @@ namespace Perspex.Controls.Presenters
         {
             if (!_createdChild)
             {
-                this.CreateChild();
+                CreateChild();
             }
         }
 
@@ -69,7 +69,7 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = this.Child;
+            var child = Child;
 
             if (child != null)
             {
@@ -87,7 +87,7 @@ namespace Perspex.Controls.Presenters
         private void ContentChanged(PerspexPropertyChangedEventArgs e)
         {
             _createdChild = false;
-            this.InvalidateMeasure();
+            InvalidateMeasure();
         }
 
         /// <summary>
@@ -95,20 +95,20 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         private void CreateChild()
         {
-            var old = this.Child;
-            var content = this.Content;
+            var old = Child;
+            var content = Content;
             var result = content != null ? this.MaterializeDataTemplate(content) : null;
             var logicalHost = this.FindReparentingHost();
-            var logicalChildren = logicalHost?.LogicalChildren ?? this.LogicalChildren;
+            var logicalChildren = logicalHost?.LogicalChildren ?? LogicalChildren;
 
             logicalChildren.Remove(old);
-            this.ClearVisualChildren();
+            ClearVisualChildren();
 
-            this.Child = result;
+            Child = result;
 
             if (result != null)
             {
-                this.AddVisualChild(result);
+                AddVisualChild(result);
 
                 if (result.Parent == null)
                 {

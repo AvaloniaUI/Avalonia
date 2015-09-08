@@ -20,7 +20,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         public PageSlide(TimeSpan duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Perspex.Animation
                     0.0,
                     forward ? -distance : distance,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             if (to != null)
@@ -73,7 +73,7 @@ namespace Perspex.Animation
                     forward ? distance : -distance,
                     0.0,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             await Task.WhenAll(tasks.ToArray());

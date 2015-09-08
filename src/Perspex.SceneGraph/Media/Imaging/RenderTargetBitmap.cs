@@ -39,7 +39,7 @@ namespace Perspex.Media.Imaging
         /// </remarks>
         public void Render(IVisual visual)
         {
-            this.PlatformImpl.Render(visual);
+            PlatformImpl.Render(visual);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Perspex.Media.Imaging
         /// </summary>
         public void Dispose()
         {
-            this.PlatformImpl.Dispose();
+            PlatformImpl.Dispose();
         }
 
         /// <summary>

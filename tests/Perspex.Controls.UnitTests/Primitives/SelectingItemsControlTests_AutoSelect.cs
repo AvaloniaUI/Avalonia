@@ -18,7 +18,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = new[] { "foo", "bar" },
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -35,7 +35,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -54,7 +54,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -74,7 +74,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -92,8 +92,8 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 });
         }
 

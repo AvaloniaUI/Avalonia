@@ -15,7 +15,7 @@ namespace GitHubClient.ViewModels
 
         public MainWindowViewModel()
         {
-            this.ShowLogin();
+            ShowLogin();
         }
 
         public object Content
@@ -27,15 +27,15 @@ namespace GitHubClient.ViewModels
         private void ShowLogin()
         {
             _login = new LogInViewModel();
-            _login.OkCommand.Subscribe(_ => this.ShowRepositories());
-            this.Content = _login;
+            _login.OkCommand.Subscribe(_ => ShowRepositories());
+            Content = _login;
         }
 
         private void ShowRepositories()
         {
             var vm = new UserRepositoriesViewModel();
             var task = vm.Load(_login.Username);
-            this.Content = vm;
+            Content = vm;
         }
     }
 }

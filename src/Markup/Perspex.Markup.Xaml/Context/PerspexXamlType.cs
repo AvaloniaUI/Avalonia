@@ -25,7 +25,7 @@ namespace Perspex.Markup.Xaml.Context
 
         protected override XamlMember LookupMember(string name)
         {
-            return new PerspexXamlMember(name, this, this.TypeRepository, this.FeatureProvider, _propertyBinder);
+            return new PerspexXamlMember(name, this, TypeRepository, FeatureProvider, _propertyBinder);
         }
 
         public override string ToString()

@@ -16,9 +16,9 @@ namespace Perspex.VisualTree
         /// <param name="transform">The control's transform.</param>
         public TransformedBounds(Rect bounds, Rect clip, Matrix transform)
         {
-            this.Bounds = bounds;
-            this.Clip = clip;
-            this.Transform = transform;
+            Bounds = bounds;
+            Clip = clip;
+            Transform = transform;
         }
 
         /// <summary>

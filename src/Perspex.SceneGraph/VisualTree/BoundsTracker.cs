@@ -23,7 +23,7 @@ namespace Perspex.VisualTree
         /// <returns>An observable that returns the tracked bounds.</returns>
         public IObservable<TransformedBounds> Track(Visual visual)
         {
-            return this.Track(visual, (Visual)visual.GetVisualRoot());
+            return Track(visual, (Visual)visual.GetVisualRoot());
         }
 
         /// <summary>

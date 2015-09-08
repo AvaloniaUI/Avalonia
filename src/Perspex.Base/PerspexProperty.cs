@@ -68,13 +68,13 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(valueType != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
 
-            this.Name = name;
-            this.PropertyType = valueType;
-            this.OwnerType = ownerType;
+            Name = name;
+            PropertyType = valueType;
+            OwnerType = ownerType;
             _defaultValues.Add(ownerType, defaultValue);
-            this.Inherits = inherits;
-            this.DefaultBindingMode = defaultBindingMode;
-            this.IsAttached = isAttached;
+            Inherits = inherits;
+            DefaultBindingMode = defaultBindingMode;
+            IsAttached = isAttached;
 
             if (validate != null)
             {
@@ -335,7 +335,7 @@ namespace Perspex
                 type = type.GetTypeInfo().BaseType;
             }
 
-            return _defaultValues[this.OwnerType];
+            return _defaultValues[OwnerType];
         }
 
         /// <summary>
@@ -371,7 +371,7 @@ namespace Perspex
         /// <returns>True if the value is valid, otherwise false.</returns>
         public bool IsValidValue(object value)
         {
-            return TypeUtilities.TryCast(this.PropertyType, value, out value);
+            return TypeUtilities.TryCast(PropertyType, value, out value);
         }
 
         /// <summary>
@@ -381,7 +381,7 @@ namespace Perspex
         /// <param name="defaultValue">The default value.</param>
         public void OverrideDefaultValue<T>(object defaultValue)
         {
-            this.OverrideDefaultValue(typeof(T), defaultValue);
+            OverrideDefaultValue(typeof(T), defaultValue);
         }
 
         /// <summary>
@@ -393,11 +393,11 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(type != null);
 
-            if (!TypeUtilities.TryCast(this.PropertyType, defaultValue, out defaultValue))
+            if (!TypeUtilities.TryCast(PropertyType, defaultValue, out defaultValue))
             {
                 throw new InvalidOperationException(string.Format(
                     "Invalid value for Property '{0}': {1} ({2})",
-                    this.Name,
+                    Name,
                     defaultValue,
                     defaultValue.GetType().FullName));
             }
@@ -433,7 +433,7 @@ namespace Perspex
         /// <returns>The property's string representation.</returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         /// <summary>

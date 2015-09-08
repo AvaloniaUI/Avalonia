@@ -9,12 +9,12 @@ namespace Perspex.Input.Raw
     {
         public RawSizeEventArgs(Size size)
         {
-            this.Size = size;
+            Size = size;
         }
 
         public RawSizeEventArgs(double width, double height)
         {
-            this.Size = new Size(width, height);
+            Size = new Size(width, height);
         }
 
         public Size Size { get; private set; }

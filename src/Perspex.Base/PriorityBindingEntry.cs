@@ -23,7 +23,7 @@ namespace Perspex
         /// </param>
         public PriorityBindingEntry(int index)
         {
-            this.Index = index;
+            Index = index;
         }
 
         /// <summary>
@@ -77,18 +77,18 @@ namespace Perspex
                 throw new Exception("PriorityValue.Entry.Start() called more than once.");
             }
 
-            this.Observable = binding;
-            this.Value = PerspexProperty.UnsetValue;
+            Observable = binding;
+            Value = PerspexProperty.UnsetValue;
 
             if (binding is IDescription)
             {
-                this.Description = ((IDescription)binding).Description;
+                Description = ((IDescription)binding).Description;
             }
 
             _subscription = binding.Subscribe(
                 value =>
                 {
-                    this.Value = value;
+                    Value = value;
                     changed(this);
                 },
                 () => completed(this));

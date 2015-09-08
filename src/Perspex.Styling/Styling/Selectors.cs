@@ -162,7 +162,7 @@ namespace Perspex.Styling
             }
             else
             {
-                return new SelectorMatch(x.GetObservable(property).Select(v => object.Equals(v, value)));
+                return new SelectorMatch(x.GetObservable(property).Select(v => Equals(v, value)));
             }
         }
 

@@ -28,7 +28,7 @@ namespace Perspex.Cairo.Media
         public DrawingContext(Cairo.Surface surface)
         {
             _context = new Cairo.Context(surface);
-            this.CurrentTransform = Matrix.Identity;
+            CurrentTransform = Matrix.Identity;
         }
 
         /// <summary>
@@ -38,14 +38,12 @@ namespace Perspex.Cairo.Media
         public DrawingContext(Gdk.Drawable drawable)
         {
             _context = Gdk.CairoHelper.Create(drawable);
-            this.CurrentTransform = Matrix.Identity;
+            CurrentTransform = Matrix.Identity;
         }
 
         public Matrix CurrentTransform
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Ends a draw operation.
@@ -76,11 +74,11 @@ namespace Perspex.Cairo.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p1">The second point of the line.</param>
-        public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var size = new Rect(p1, p2).Size;
 
-            this.SetBrush(pen.Brush, size);
+            SetBrush(pen.Brush, size);
             _context.LineWidth = pen.Thickness;
             _context.MoveTo(p1.ToCairo());
             _context.LineTo(p2.ToCairo());
@@ -93,17 +91,17 @@ namespace Perspex.Cairo.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
+        public void DrawGeometry(Brush brush, Pen pen, Geometry geometry)
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
 
-            using (var pop = this.PushTransform(impl.Transform))
+            using (var pop = PushTransform(impl.Transform))
             {
                 _context.AppendPath(impl.Path);
 
                 if (brush != null)
                 {
-                    this.SetBrush(brush, geometry.Bounds.Size);
+                    SetBrush(brush, geometry.Bounds.Size);
 
                     if (pen != null)
                         _context.FillPreserve();
@@ -114,7 +112,7 @@ namespace Perspex.Cairo.Media
 
                 if (pen != null)
                 {
-                    this.SetPen(pen, geometry.Bounds.Size);
+                    SetPen(pen, geometry.Bounds.Size);
                     _context.Stroke();
                 }
             }
@@ -127,7 +125,7 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            this.SetPen(pen, rect.Size);
+            SetPen(pen, rect.Size);
             _context.Rectangle(rect.ToCairo());
             _context.Stroke();
         }
@@ -141,7 +139,7 @@ namespace Perspex.Cairo.Media
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
-            this.SetBrush(foreground, new Size(0, 0));
+            SetBrush(foreground, new Size(0, 0));
 
             _context.MoveTo(origin.X, origin.Y);
             Pango.CairoHelper.ShowLayout(_context, layout);
@@ -152,9 +150,9 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectange(Brush brush, Rect rect, float cornerRadius)
         {
-            this.SetBrush(brush, rect.Size);
+            SetBrush(brush, rect.Size);
             _context.Rectangle(rect.ToCairo());
             _context.Fill();
         }
@@ -226,7 +224,7 @@ namespace Perspex.Cairo.Media
 
         private void SetPen(Pen pen, Size destinationSize)
         {
-            this.SetBrush(pen.Brush, destinationSize);
+            SetBrush(pen.Brush, destinationSize);
             _context.LineWidth = pen.Thickness;
         }
     }

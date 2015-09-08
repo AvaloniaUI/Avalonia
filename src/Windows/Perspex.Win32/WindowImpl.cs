@@ -37,7 +37,7 @@ namespace Perspex.Win32
 
         public WindowImpl()
         {
-            this.CreateWindow();
+            CreateWindow();
             s_instances.Add(this);
         }
 
@@ -64,7 +64,7 @@ namespace Perspex.Win32
 
             set
             {
-                if (value != this.ClientSize)
+                if (value != ClientSize)
                 {
                     var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
                     var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
@@ -168,7 +168,7 @@ namespace Perspex.Win32
                 window.IsEnabled = false;
             }
 
-            this.Show();
+            Show();
 
             return Disposable.Create(() =>
             {
@@ -228,17 +228,17 @@ namespace Perspex.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
-                            if (this.Activated != null)
+                            if (Activated != null)
                             {
-                                this.Activated();
+                                Activated();
                             }
 
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
-                            if (this.Deactivated != null)
+                            if (Deactivated != null)
                             {
-                                this.Deactivated();
+                                Deactivated();
                             }
 
                             break;
@@ -247,10 +247,10 @@ namespace Perspex.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    if (this.Closed != null)
+                    if (Closed != null)
                     {
-                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(this.GetType().Module));
-                        this.Closed();
+                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(GetType().Module));
+                        Closed();
                     }
 
                     return IntPtr.Zero;
@@ -326,7 +326,7 @@ namespace Perspex.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
+                        ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
                         new Vector(0, ((int)wParam >> 16) / WheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
@@ -341,7 +341,7 @@ namespace Perspex.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    if (this.Paint != null)
+                    if (Paint != null)
                     {
                         UnmanagedMethods.PAINTSTRUCT ps;
 
@@ -349,7 +349,7 @@ namespace Perspex.Win32
                         {
                             UnmanagedMethods.RECT r;
                             UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
-                            this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
+                            Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), Handle);
                             UnmanagedMethods.EndPaint(_hwnd, ref ps);
                         }
                     }
@@ -357,18 +357,18 @@ namespace Perspex.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                    if (this.Resized != null)
+                    if (Resized != null)
                     {
                         var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
-                        this.Resized(clientSize);
+                        Resized(clientSize);
                     }
 
                     return IntPtr.Zero;
             }
 
-            if (e != null && this.Input != null)
+            if (e != null && Input != null)
             {
-                this.Input(e);
+                Input(e);
                 return IntPtr.Zero;
             }
 
@@ -378,7 +378,7 @@ namespace Perspex.Win32
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
 
             _className = Guid.NewGuid().ToString();
 
@@ -387,7 +387,7 @@ namespace Perspex.Win32
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
+                hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 hCursor = s_defaultCursor,
                 hbrBackground = (IntPtr)5,
                 lpszClassName = _className,
@@ -400,14 +400,14 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            _hwnd = this.CreateWindowOverride(atom);
+            _hwnd = CreateWindowOverride(atom);
 
             if (_hwnd == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
 
-            this.Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+            Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
         }
 
         private Point ScreenToClient(uint x, uint y)

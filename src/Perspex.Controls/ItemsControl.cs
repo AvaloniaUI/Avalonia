@@ -56,8 +56,8 @@ namespace Perspex.Controls
         /// </summary>
         public ItemsControl()
         {
-            this.Classes.Add(":empty");
-            this.Items = new PerspexList<object>();
+            Classes.Add(":empty");
+            Items = new PerspexList<object>();
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Perspex.Controls
             {
                 if (_itemContainerGenerator == null)
                 {
-                    _itemContainerGenerator = this.CreateItemContainerGenerator();
+                    _itemContainerGenerator = CreateItemContainerGenerator();
                 }
 
                 return _itemContainerGenerator;
@@ -81,8 +81,8 @@ namespace Perspex.Controls
         /// </summary>
         public IEnumerable Items
         {
-            get { return this.GetValue(ItemsProperty); }
-            set { this.SetValue(ItemsProperty, value); }
+            get { return GetValue(ItemsProperty); }
+            set { SetValue(ItemsProperty, value); }
         }
 
         /// <summary>
@@ -90,8 +90,8 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplate<IPanel> ItemsPanel
         {
-            get { return this.GetValue(ItemsPanelProperty); }
-            set { this.SetValue(ItemsPanelProperty, value); }
+            get { return GetValue(ItemsPanelProperty); }
+            set { SetValue(ItemsPanelProperty, value); }
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         IPerspexList<ILogical> IReparentingHost.LogicalChildren
         {
-            get { return this.LogicalChildren; }
+            get { return LogicalChildren; }
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
-            this.Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
+            Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
         }
 
         /// <summary>
@@ -147,25 +147,25 @@ namespace Perspex.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged += this.ItemsCollectionChanged;
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
 
             var newValue = e.NewValue as IEnumerable;
 
             if (newValue == null || newValue.Count() == 0)
             {
-                this.Classes.Add(":empty");
+                Classes.Add(":empty");
             }
             else
             {
-                this.Classes.Remove(":empty");
+                Classes.Remove(":empty");
             }
 
             incc = newValue as INotifyCollectionChanged;
 
             if (incc != null)
             {
-                incc.CollectionChanged += this.ItemsCollectionChanged;
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
         }
 
@@ -181,11 +181,11 @@ namespace Perspex.Controls
 
             if (collection.Count == 0)
             {
-                this.Classes.Add(":empty");
+                Classes.Add(":empty");
             }
             else
             {
-                this.Classes.Remove(":empty");
+                Classes.Remove(":empty");
             }
         }
     }

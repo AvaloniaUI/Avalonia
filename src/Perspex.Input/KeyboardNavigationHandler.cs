@@ -34,7 +34,7 @@ namespace Perspex.Input
 
             _owner = owner;
 
-            _owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown);
+            _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Perspex.Input
 
                 if (direction.HasValue)
                 {
-                    this.Move(current, direction.Value);
+                    Move(current, direction.Value);
                     e.Handled = true;
                 }
             }

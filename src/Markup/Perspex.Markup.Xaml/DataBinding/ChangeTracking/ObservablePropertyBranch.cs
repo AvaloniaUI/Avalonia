@@ -25,15 +25,15 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
             _instance = instance;
             _propertyPath = propertyPath;
             _mountPoint = new PropertyMountPoint(instance, propertyPath);
-            var properties = this.GetPropertiesThatRaiseNotifications();
-            this.Values = this.CreateUnifiedObservableFromNodes(properties);
+            var properties = GetPropertiesThatRaiseNotifications();
+            Values = CreateUnifiedObservableFromNodes(properties);
         }
 
         public IObservable<object> Values { get; private set; }
 
         private IObservable<object> CreateUnifiedObservableFromNodes(IEnumerable<PropertyDefinition> subscriptions)
         {
-            return subscriptions.Select(this.GetObservableFromProperty).Merge();
+            return subscriptions.Select(GetObservableFromProperty).Merge();
         }
 
         private IObservable<object> GetObservableFromProperty(PropertyDefinition subscription)
@@ -47,7 +47,7 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
         private IEnumerable<PropertyDefinition> GetPropertiesThatRaiseNotifications()
         {
-            return this.GetSubscriptionsRecursive(_instance, _propertyPath, 0);
+            return GetSubscriptionsRecursive(_instance, _propertyPath, 0);
         }
 
         private IEnumerable<PropertyDefinition> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
@@ -71,7 +71,7 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 
                 if (i < _propertyPath.Chunks.Length - 1)
                 {
-                    subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+                    subscriptions.AddRange(GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
                 }
             }
 
@@ -97,8 +97,8 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         {
             public PropertyDefinition(INotifyPropertyChanged parent, string propertyName)
             {
-                this.Parent = parent;
-                this.PropertyName = propertyName;
+                Parent = parent;
+                PropertyName = propertyName;
             }
 
             public INotifyPropertyChanged Parent { get; }

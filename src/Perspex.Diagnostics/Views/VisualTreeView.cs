@@ -11,7 +11,7 @@ using ReactiveUI;
 
 namespace Perspex.Diagnostics.Views
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     internal class VisualTreeView : TreePage
     {
@@ -20,22 +20,22 @@ namespace Perspex.Diagnostics.Views
 
         public VisualTreeView()
         {
-            this.InitializeComponent();
-            this.GetObservable(DataContextProperty)
-                .Subscribe(x => this.ViewModel = (VisualTreeViewModel)x);
+            InitializeComponent();
+            GetObservable(DataContextProperty)
+                .Subscribe(x => ViewModel = (VisualTreeViewModel)x);
         }
 
         public VisualTreeViewModel ViewModel
         {
-            get { return this.GetValue(s_viewModelProperty); }
-            private set { this.SetValue(s_viewModelProperty, value); }
+            get { return GetValue(s_viewModelProperty); }
+            private set { SetValue(s_viewModelProperty, value); }
         }
 
         private void InitializeComponent()
         {
             TreeView tree;
 
-            this.Content = new Grid
+            Content = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions
                 {
@@ -49,9 +49,9 @@ namespace Perspex.Diagnostics.Views
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<VisualTreeNode>(this.GetHeader, x => x.Children),
+                            new TreeDataTemplate<VisualTreeNode>(GetHeader, x => x.Children),
                         },
-                        [!TreeView.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
+                        [!ItemsControl.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
                     }),
                     new GridSplitter
                     {
@@ -60,7 +60,7 @@ namespace Perspex.Diagnostics.Views
                     },
                     new ContentControl
                     {
-                        [!ContentControl.ContentProperty] = this.WhenAnyValue(x => x.ViewModel.Details),
+                        [!ContentProperty] = this.WhenAnyValue(x => x.ViewModel.Details),
                         [Grid.ColumnProperty] = 2,
                     }
                 }
@@ -68,7 +68,7 @@ namespace Perspex.Diagnostics.Views
 
             tree.GetObservable(TreeView.SelectedItemProperty)
                 .OfType<VisualTreeNode>()
-                .Subscribe(x => this.ViewModel.SelectedNode = x);
+                .Subscribe(x => ViewModel.SelectedNode = x);
         }
 
         private Control GetHeader(VisualTreeNode node)
@@ -91,8 +91,8 @@ namespace Perspex.Diagnostics.Views
                 }
             };
 
-            result.PointerEnter += this.AddAdorner;
-            result.PointerLeave += this.RemoveAdorner;
+            result.PointerEnter += AddAdorner;
+            result.PointerLeave += RemoveAdorner;
 
             return result;
         }

@@ -35,7 +35,7 @@ namespace Perspex.Animation
         /// </returns>
         object IEasing.Ease(double progress, object start, object finish)
         {
-            return this.Ease(progress, (double)start, (double)finish);
+            return Ease(progress, (double)start, (double)finish);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Perspex.SceneGraph.UnitTests
     {
         public ParamEventArgs(T param)
         {
-            this.Param = param;
+            Param = param;
         }
 
         public T Param { get; set; }
@@ -31,37 +31,37 @@ namespace Perspex.SceneGraph.UnitTests
 
         public void AddChild(Visual v)
         {
-            this.AddVisualChild(v);
+            AddVisualChild(v);
         }
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            this.AddVisualChildren(v);
+            AddVisualChildren(v);
         }
 
         public void RemoveChild(Visual v)
         {
-            this.RemoveVisualChild(v);
+            RemoveVisualChild(v);
         }
 
         public void ClearChildren()
         {
-            this.ClearVisualChildren();
+            ClearVisualChildren();
         }
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
-            if (this.AttachedToVisualTreeCalled != null)
+            if (AttachedToVisualTreeCalled != null)
             {
-                this.AttachedToVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(root));
+                AttachedToVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(root));
             }
         }
 
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
-            if (this.DetachedFromVisualTreeCalled != null)
+            if (DetachedFromVisualTreeCalled != null)
             {
-                this.DetachedFromVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(oldRoot));
+                DetachedFromVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(oldRoot));
             }
         }
     }

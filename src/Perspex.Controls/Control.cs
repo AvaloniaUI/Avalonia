@@ -84,10 +84,10 @@ namespace Perspex.Controls
         /// </summary>
         static Control()
         {
-            Control.AffectsMeasure(Control.IsVisibleProperty);
-            PseudoClass(InputElement.IsEnabledCoreProperty, x => !x, ":disabled");
-            PseudoClass(InputElement.IsFocusedProperty, ":focus");
-            PseudoClass(InputElement.IsPointerOverProperty, ":pointerover");
+            AffectsMeasure(IsVisibleProperty);
+            PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass(IsFocusedProperty, ":focus");
+            PseudoClass(IsPointerOverProperty, ":pointerover");
         }
 
         /// <summary>
@@ -131,8 +131,8 @@ namespace Perspex.Controls
         /// </remarks>
         public object DataContext
         {
-            get { return this.GetValue(DataContextProperty); }
-            set { this.SetValue(DataContextProperty, value); }
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
         }
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplate<IControl> FocusAdorner
         {
-            get { return this.GetValue(FocusAdornerProperty); }
-            set { this.SetValue(FocusAdornerProperty, value); }
+            get { return GetValue(FocusAdornerProperty); }
+            set { SetValue(FocusAdornerProperty, value); }
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Perspex.Controls
         /// </summary>
         public IControl Parent
         {
-            get { return this.GetValue(ParentProperty); }
+            get { return GetValue(ParentProperty); }
         }
 
         /// <summary>
@@ -238,8 +238,8 @@ namespace Perspex.Controls
         /// </summary>
         public object Tag
         {
-            get { return this.GetValue(TagProperty); }
-            set { this.SetValue(TagProperty, value); }
+            get { return GetValue(TagProperty); }
+            set { SetValue(TagProperty, value); }
         }
 
         /// <summary>
@@ -247,8 +247,8 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplatedControl TemplatedParent
         {
-            get { return this.GetValue(TemplatedParentProperty); }
-            internal set { this.SetValue(TemplatedParentProperty, value); }
+            get { return GetValue(TemplatedParentProperty); }
+            internal set { SetValue(TemplatedParentProperty, value); }
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace Perspex.Controls
         /// </summary>
         ILogical ILogical.LogicalParent
         {
-            get { return this.Parent; }
+            get { return Parent; }
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Perspex.Controls
         /// </summary>
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
         {
-            get { return this.LogicalChildren; }
+            get { return LogicalChildren; }
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace Perspex.Controls
         /// </remarks>
         Type IStyleable.StyleKey
         {
-            get { return this.GetType(); }
+            get { return GetType(); }
         }
 
         /// <summary>
@@ -303,14 +303,14 @@ namespace Perspex.Controls
         /// <param name="parent">The parent.</param>
         void ISetLogicalParent.SetParent(ILogical parent)
         {
-            var old = this.Parent;
+            var old = Parent;
 
             if (old != null && parent != null)
             {
                 throw new InvalidOperationException("The Control already has a parent.");
             }
 
-            this.SetValue(ParentProperty, parent);
+            SetValue(ParentProperty, parent);
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace Perspex.Controls
         {
             base.OnGotFocus(e);
 
-            if (this.IsFocused &&
+            if (IsFocused &&
                 (e.NavigationMethod == NavigationMethod.Tab ||
                  e.NavigationMethod == NavigationMethod.Directional))
             {
@@ -374,7 +374,7 @@ namespace Perspex.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = this.GetValue(FocusAdornerProperty);
+                        var template = GetValue(FocusAdornerProperty);
 
                         if (template != null)
                         {

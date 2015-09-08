@@ -24,7 +24,7 @@ namespace Perspex.Styling
         /// <param name="selector">The style selector.</param>
         public Style(Func<Selector, Selector> selector)
         {
-            this.Selector = selector(new Selector());
+            Selector = selector(new Selector());
         }
 
         /// <summary>
@@ -43,12 +43,12 @@ namespace Perspex.Styling
         /// <param name="control">The control to attach to.</param>
         public void Attach(IStyleable control)
         {
-            var description = "Style " + this.Selector.ToString();
-            var match = this.Selector.Match(control);
+            var description = "Style " + Selector.ToString();
+            var match = Selector.Match(control);
 
             if (match.ImmediateResult != false)
             {
-                foreach (var setter in this.Setters)
+                foreach (var setter in Setters)
                 {
                     setter.Apply(this, control, match.ObservableResult);
                 }
@@ -61,7 +61,7 @@ namespace Perspex.Styling
         /// <returns>A string representation of the style.</returns>
         public override string ToString()
         {
-            return "Style: " + this.Selector.ToString();
+            return "Style: " + Selector.ToString();
         }
     }
 }

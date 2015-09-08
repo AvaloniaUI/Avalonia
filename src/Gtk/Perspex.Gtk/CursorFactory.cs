@@ -48,7 +48,7 @@ namespace Perspex.Gtk
             {
                 var theme = Gtk.IconTheme.Default;
                 var icon = theme.LoadIcon(name, 32, default(Gtk.IconLookupFlags));
-                rv = icon == null ? new Gdk.Cursor(CursorType.XCursor) : new Gdk.Cursor(Gdk.Display.Default, icon, 0, 0);
+                rv = icon == null ? new Gdk.Cursor(CursorType.XCursor) : new Gdk.Cursor(Display.Default, icon, 0, 0);
             }
             else
             {

@@ -24,7 +24,7 @@ namespace Perspex.Controls
         /// <param name="s">A string representation of the row definitions.</param>
         public RowDefinitions(string s)
         {
-            this.AddRange(GridLength.ParseLengths(s).Select(x => new RowDefinition(x)));
+            AddRange(GridLength.ParseLengths(s).Select(x => new RowDefinition(x)));
         }
     }
 }

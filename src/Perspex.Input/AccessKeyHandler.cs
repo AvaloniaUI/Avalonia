@@ -66,10 +66,10 @@ namespace Perspex.Input
 
             _owner = owner;
 
-            _owner.AddHandler(InputElement.KeyDownEvent, this.OnPreviewKeyDown, RoutingStrategies.Tunnel);
-            _owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown, RoutingStrategies.Bubble);
-            _owner.AddHandler(InputElement.KeyUpEvent, this.OnPreviewKeyUp, RoutingStrategies.Tunnel);
-            _owner.AddHandler(InputElement.PointerPressedEvent, this.OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
+            _owner.AddHandler(InputElement.KeyUpEvent, OnPreviewKeyUp, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Perspex.Input
         {
             if (e.Key == Key.LeftAlt)
             {
-                if (this.MainMenu == null || !this.MainMenu.IsOpen)
+                if (MainMenu == null || !MainMenu.IsOpen)
                 {
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
@@ -119,7 +119,7 @@ namespace Perspex.Input
                 else
                 {
                     // If the Alt key is pressed and the main menu is open, close the main menu.
-                    this.CloseMenu();
+                    CloseMenu();
                     _ignoreAltUp = true;
                 }
 
@@ -135,12 +135,12 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyDown(object sender, KeyEventArgs e)
         {
-            bool menuIsOpen = this.MainMenu?.IsOpen == true;
+            bool menuIsOpen = MainMenu?.IsOpen == true;
 
             if (e.Key == Key.Escape && menuIsOpen)
             {
                 // When the Escape key is pressed with the main menu open, close it.
-                this.CloseMenu();
+                CloseMenu();
                 e.Handled = true;
             }
             else if ((e.Modifiers & ModifierKeys.Alt) != 0 || menuIsOpen)
@@ -155,7 +155,7 @@ namespace Perspex.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => this.MainMenu.IsVisualAncestorOf(x));
+                    matches = matches.Where(x => MainMenu.IsVisualAncestorOf(x));
                 }
 
                 var match = matches.FirstOrDefault();
@@ -183,9 +183,9 @@ namespace Perspex.Input
                     {
                         _ignoreAltUp = false;
                     }
-                    else if (_showingAccessKeys && this.MainMenu != null)
+                    else if (_showingAccessKeys && MainMenu != null)
                     {
-                        this.MainMenu.Open();
+                        MainMenu.Open();
                         e.Handled = true;
                     }
 
@@ -193,7 +193,7 @@ namespace Perspex.Input
 
                 case Key.F10:
                     _owner.ShowAccessKeys = _showingAccessKeys = true;
-                    this.MainMenu.Open();
+                    MainMenu.Open();
                     e.Handled = true;
                     break;
             }
@@ -217,7 +217,7 @@ namespace Perspex.Input
         /// </summary>
         private void CloseMenu()
         {
-            this.MainMenu.Close();
+            MainMenu.Close();
             _owner.ShowAccessKeys = _showingAccessKeys = false;
         }
     }

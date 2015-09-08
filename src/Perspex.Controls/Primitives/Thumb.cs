@@ -29,20 +29,20 @@ namespace Perspex.Controls.Primitives
 
         public event EventHandler<VectorEventArgs> DragStarted
         {
-            add { this.AddHandler(DragStartedEvent, value); }
-            remove { this.RemoveHandler(DragStartedEvent, value); }
+            add { AddHandler(DragStartedEvent, value); }
+            remove { RemoveHandler(DragStartedEvent, value); }
         }
 
         public event EventHandler<VectorEventArgs> DragDelta
         {
-            add { this.AddHandler(DragDeltaEvent, value); }
-            remove { this.RemoveHandler(DragDeltaEvent, value); }
+            add { AddHandler(DragDeltaEvent, value); }
+            remove { RemoveHandler(DragDeltaEvent, value); }
         }
 
         public event EventHandler<VectorEventArgs> DragCompleted
         {
-            add { this.AddHandler(DragCompletedEvent, value); }
-            remove { this.RemoveHandler(DragCompletedEvent, value); }
+            add { AddHandler(DragCompletedEvent, value); }
+            remove { RemoveHandler(DragCompletedEvent, value); }
         }
 
         protected virtual void OnDragStarted(VectorEventArgs e)
@@ -67,7 +67,7 @@ namespace Perspex.Controls.Primitives
                     Vector = e.GetPosition(this) - _lastPoint.Value,
                 };
 
-                this.RaiseEvent(ev);
+                RaiseEvent(ev);
             }
         }
 
@@ -82,7 +82,7 @@ namespace Perspex.Controls.Primitives
                 Vector = (Vector)_lastPoint,
             };
 
-            this.RaiseEvent(ev);
+            RaiseEvent(ev);
         }
 
         protected override void OnPointerReleased(PointerEventArgs e)
@@ -98,7 +98,7 @@ namespace Perspex.Controls.Primitives
                     Vector = (Vector)e.GetPosition(this),
                 };
 
-                this.RaiseEvent(ev);
+                RaiseEvent(ev);
             }
         }
     }

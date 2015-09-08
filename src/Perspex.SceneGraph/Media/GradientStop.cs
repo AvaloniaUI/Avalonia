@@ -20,8 +20,8 @@ namespace Perspex.Media
         /// <param name="offset">The offset</param>
         public GradientStop(Color color, double offset)
         {
-            this.Color = color;
-            this.Offset = offset;
+            Color = color;
+            Offset = offset;
         }
 
         // TODO: Make these dependency properties.

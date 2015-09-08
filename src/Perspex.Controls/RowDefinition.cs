@@ -40,7 +40,7 @@ namespace Perspex.Controls
         /// <param name="type">The height unit of the column.</param>
         public RowDefinition(double value, GridUnitType type)
         {
-            this.Height = new GridLength(value, type);
+            Height = new GridLength(value, type);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Perspex.Controls
         /// <param name="height">The height of the column.</param>
         public RowDefinition(GridLength height)
         {
-            this.Height = height;
+            Height = height;
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace Perspex.Controls
         /// </summary>
         public double MaxHeight
         {
-            get { return this.GetValue(MaxHeightProperty); }
-            set { this.SetValue(MaxHeightProperty, value); }
+            get { return GetValue(MaxHeightProperty); }
+            set { SetValue(MaxHeightProperty, value); }
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace Perspex.Controls
         /// </summary>
         public double MinHeight
         {
-            get { return this.GetValue(MinHeightProperty); }
-            set { this.SetValue(MinHeightProperty, value); }
+            get { return GetValue(MinHeightProperty); }
+            set { SetValue(MinHeightProperty, value); }
         }
 
         /// <summary>
@@ -84,8 +84,8 @@ namespace Perspex.Controls
         /// </summary>
         public GridLength Height
         {
-            get { return this.GetValue(HeightProperty); }
-            set { this.SetValue(HeightProperty, value); }
+            get { return GetValue(HeightProperty); }
+            set { SetValue(HeightProperty, value); }
         }
     }
 }

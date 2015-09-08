@@ -34,8 +34,8 @@ namespace Perspex.Rendering
         /// <param name="handle">An optional platform-specific handle.</param>
         public virtual void Render(IVisual visual, IPlatformHandle handle)
         {
-            this.Render(visual, handle, Matrix.Identity);
-            ++this.RenderCount;
+            Render(visual, handle, Matrix.Identity);
+            ++RenderCount;
         }
 
         /// <summary>
@@ -47,10 +47,10 @@ namespace Perspex.Rendering
         /// <param name="clip">An optional clip rectangle.</param>
         public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform, Rect? clip = null)
         {
-            using (var context = this.CreateDrawingContext(handle))
+            using (var context = CreateDrawingContext(handle))
             using (clip.HasValue ? context.PushClip(clip.Value) : null)
             {
-                this.Render(visual, context, Matrix.Identity, transform);
+                Render(visual, context, Matrix.Identity, transform);
             }
         }
 
@@ -108,7 +108,7 @@ namespace Perspex.Rendering
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
-                        this.Render(child, context, translation, transform);
+                        Render(child, context, translation, transform);
                     }
                 }
             }

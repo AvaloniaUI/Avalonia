@@ -20,15 +20,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public PopupRootStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<PopupRoot>())
                 {
                     Setters = new[]
                     {
-                        new Setter(PopupRoot.TemplateProperty, new ControlTemplate<PopupRoot>(Template)),
-                        new Setter(PopupRoot.FontFamilyProperty, "Segoe UI"),
-                        new Setter(PopupRoot.FontSizeProperty, 12.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<PopupRoot>(Template)),
+                        new Setter(TemplatedControl.FontFamilyProperty, "Segoe UI"),
+                        new Setter(TemplatedControl.FontSizeProperty, 12.0),
                     },
                 },
             });
@@ -43,11 +43,11 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                [~Border.BackgroundProperty] = control[~PopupRoot.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                 Child = new ContentPresenter
                 {
                     Name = "contentPresenter",
-                    [~ContentPresenter.ContentProperty] = control[~PopupRoot.ContentProperty],
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
             };
         }

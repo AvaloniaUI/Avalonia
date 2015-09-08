@@ -62,8 +62,8 @@ namespace Perspex.Base.UnitTests
 
             public Class1 Parent
             {
-                get { return (Class1)this.InheritanceParent; }
-                set { this.InheritanceParent = value; }
+                get { return (Class1)InheritanceParent; }
+                set { InheritanceParent = value; }
             }
         }
     }

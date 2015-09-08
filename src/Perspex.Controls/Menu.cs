@@ -50,8 +50,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsOpen
         {
-            get { return this.GetValue(IsOpenProperty); }
-            private set { this.SetValue(IsOpenProperty, value); }
+            get { return GetValue(IsOpenProperty); }
+            private set { SetValue(IsOpenProperty, value); }
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace Perspex.Controls
         {
             get
             {
-                var index = this.SelectedIndex;
+                var index = SelectedIndex;
                 return (index != -1) ?
-                    (MenuItem)this.ItemContainerGenerator.ContainerFromIndex(index) :
+                    (MenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
                     null;
             }
         }
@@ -78,8 +78,8 @@ namespace Perspex.Controls
                 i.IsSubMenuOpen = false;
             }
 
-            this.IsOpen = false;
-            this.SelectedIndex = -1;
+            IsOpen = false;
+            SelectedIndex = -1;
         }
 
         /// <summary>
@@ -87,9 +87,9 @@ namespace Perspex.Controls
         /// </summary>
         public void Open()
         {
-            this.SelectedIndex = 0;
-            this.SelectedMenuItem.Focus();
-            this.IsOpen = true;
+            SelectedIndex = 0;
+            SelectedMenuItem.Focus();
+            IsOpen = true;
         }
 
         /// <summary>
@@ -102,16 +102,16 @@ namespace Perspex.Controls
 
             var topLevel = root as TopLevel;
 
-            topLevel.Deactivated += this.Deactivated;
+            topLevel.Deactivated += Deactivated;
 
             var pointerPress = topLevel.AddHandler(
-                InputElement.PointerPressedEvent,
-                this.TopLevelPreviewPointerPress,
+                PointerPressedEvent,
+                TopLevelPreviewPointerPress,
                 RoutingStrategies.Tunnel);
 
             _subscription = new CompositeDisposable(
                 pointerPress,
-                Disposable.Create(() => topLevel.Deactivated -= this.Deactivated));
+                Disposable.Create(() => topLevel.Deactivated -= Deactivated));
 
             var inputRoot = root as IInputRoot;
 
@@ -137,7 +137,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            bool menuWasOpen = this.SelectedMenuItem?.IsSubMenuOpen ?? false;
+            bool menuWasOpen = SelectedMenuItem?.IsSubMenuOpen ?? false;
 
             base.OnKeyDown(e);
 
@@ -145,7 +145,7 @@ namespace Perspex.Controls
             {
                 // If a menu item was open and we navigate to a new one with the arrow keys, open
                 // that menu and select the first item.
-                var selection = this.SelectedMenuItem;
+                var selection = SelectedMenuItem;
 
                 if (selection != null && !selection.IsSubMenuOpen)
                 {
@@ -162,7 +162,7 @@ namespace Perspex.Controls
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            this.SelectedItem = null;
+            SelectedItem = null;
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace Perspex.Controls
                 }
             }
 
-            this.IsOpen = true;
+            IsOpen = true;
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void Deactivated(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void OnMenuClick(RoutedEventArgs e)
         {
-            this.Close();
+            Close();
             FocusManager.Instance.Focus(null);
             e.Handled = true;
         }
@@ -215,13 +215,13 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void TopLevelPreviewPointerPress(object sender, PointerPressEventArgs e)
         {
-            if (this.IsOpen)
+            if (IsOpen)
             {
                 var control = e.Source as ILogical;
 
                 if (!this.IsLogicalParentOf(control))
                 {
-                    this.Close();
+                    Close();
                 }
             }
         }

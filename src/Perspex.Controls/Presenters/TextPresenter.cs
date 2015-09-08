@@ -31,54 +31,54 @@ namespace Perspex.Controls.Presenters
         {
             _caretTimer = new DispatcherTimer();
             _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
-            _caretTimer.Tick += this.CaretTimerTick;
+            _caretTimer.Tick += CaretTimerTick;
 
-            _canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+            _canScrollHorizontally = GetObservable(TextWrappingProperty)
                 .Select(x => x == TextWrapping.NoWrap);
 
             Observable.Merge(
-                this.GetObservable(SelectionStartProperty),
-                this.GetObservable(SelectionEndProperty))
-                .Subscribe(_ => this.InvalidateFormattedText());
+                GetObservable(SelectionStartProperty),
+                GetObservable(SelectionEndProperty))
+                .Subscribe(_ => InvalidateFormattedText());
 
-            this.GetObservable(TextPresenter.CaretIndexProperty)
-                .Subscribe(this.CaretIndexChanged);
+            GetObservable(CaretIndexProperty)
+                .Subscribe(CaretIndexChanged);
         }
 
         public int CaretIndex
         {
-            get { return this.GetValue(CaretIndexProperty); }
-            set { this.SetValue(CaretIndexProperty, value); }
+            get { return GetValue(CaretIndexProperty); }
+            set { SetValue(CaretIndexProperty, value); }
         }
 
         public int SelectionStart
         {
-            get { return this.GetValue(SelectionStartProperty); }
-            set { this.SetValue(SelectionStartProperty, value); }
+            get { return GetValue(SelectionStartProperty); }
+            set { SetValue(SelectionStartProperty, value); }
         }
 
         public int SelectionEnd
         {
-            get { return this.GetValue(SelectionEndProperty); }
-            set { this.SetValue(SelectionEndProperty, value); }
+            get { return GetValue(SelectionEndProperty); }
+            set { SetValue(SelectionEndProperty, value); }
         }
 
         public int GetCaretIndex(Point point)
         {
-            var hit = this.FormattedText.HitTestPoint(point);
+            var hit = FormattedText.HitTestPoint(point);
             return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
         }
 
         public override void Render(IDrawingContext context)
         {
-            var selectionStart = this.SelectionStart;
-            var selectionEnd = this.SelectionEnd;
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
 
             if (selectionStart != selectionEnd)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-                var rects = this.FormattedText.HitTestTextRange(start, length);
+                var rects = FormattedText.HitTestTextRange(start, length);
 
                 var brush = new SolidColorBrush(0xff086f9e);
 
@@ -92,7 +92,7 @@ namespace Perspex.Controls.Presenters
 
             if (selectionStart == selectionEnd)
             {
-                var charPos = this.FormattedText.HitTestTextPosition(this.CaretIndex);
+                var charPos = FormattedText.HitTestTextPosition(CaretIndex);
                 Brush caretBrush = Brushes.Black;
 
                 if (_caretBlink)
@@ -113,14 +113,14 @@ namespace Perspex.Controls.Presenters
         {
             _caretBlink = true;
             _caretTimer.Start();
-            this.InvalidateVisual();
+            InvalidateVisual();
         }
 
         public void HideCaret()
         {
             _caretBlink = false;
             _caretTimer.Stop();
-            this.InvalidateVisual();
+            InvalidateVisual();
         }
 
         internal void CaretIndexChanged(int caretIndex)
@@ -130,9 +130,9 @@ namespace Perspex.Controls.Presenters
                 _caretBlink = true;
                 _caretTimer.Stop();
                 _caretTimer.Start();
-                this.InvalidateVisual();
+                InvalidateVisual();
 
-                var rect = this.FormattedText.HitTestTextPosition(caretIndex);
+                var rect = FormattedText.HitTestTextPosition(caretIndex);
                 this.BringIntoView(rect);
             }
         }
@@ -140,8 +140,8 @@ namespace Perspex.Controls.Presenters
         protected override FormattedText CreateFormattedText(Size constraint)
         {
             var result = base.CreateFormattedText(constraint);
-            var selectionStart = this.SelectionStart;
-            var selectionEnd = this.SelectionEnd;
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -155,7 +155,7 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var text = this.Text;
+            var text = Text;
 
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -166,11 +166,11 @@ namespace Perspex.Controls.Presenters
                 // TODO: Pretty sure that measuring "X" isn't the right way to do this...
                 using (var formattedText = new FormattedText(
                     "X",
-                    this.FontFamily,
-                    this.FontSize,
-                    this.FontStyle,
+                    FontFamily,
+                    FontSize,
+                    FontStyle,
                     TextAlignment.Left,
-                    this.FontWeight))
+                    FontWeight))
                 {
                     return formattedText.Measure();
                 }
@@ -180,7 +180,7 @@ namespace Perspex.Controls.Presenters
         private void CaretTimerTick(object sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
-            this.InvalidateVisual();
+            InvalidateVisual();
         }
     }
 }

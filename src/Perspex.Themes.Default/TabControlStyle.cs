@@ -10,7 +10,7 @@ using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="TabControl"/> control.
@@ -22,13 +22,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TabControlStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TabControl>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TabControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
                     },
                 },
             });
@@ -53,8 +53,8 @@ namespace Perspex.Themes.Default
                     new TabStrip
                     {
                         Name = "tabStrip",
-                        [!TabStrip.ItemsProperty] = control[!TabControl.ItemsProperty],
-                        [!!TabStrip.SelectedItemProperty] = control[!!TabControl.SelectedItemProperty],
+                        [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
                     },
                     new Deck
                     {
@@ -63,8 +63,8 @@ namespace Perspex.Themes.Default
                         {
                             new DataTemplate<TabItem>(x => (Control)control.MaterializeDataTemplate(x.Content)),
                         },
-                        [!Deck.ItemsProperty] = control[!TabControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],
+                        [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!SelectingItemsControl.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
                         [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [Grid.RowProperty] = 1,
                     }

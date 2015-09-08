@@ -24,7 +24,7 @@ namespace Perspex.Controls
         /// <param name="s">A string representation of the column definitions.</param>
         public ColumnDefinitions(string s)
         {
-            this.AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
+            AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
         }
     }
 }

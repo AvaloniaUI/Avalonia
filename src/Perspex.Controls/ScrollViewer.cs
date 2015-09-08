@@ -48,80 +48,80 @@ namespace Perspex.Controls
 
         static ScrollViewer()
         {
-            PerspexObject.AffectsValidation(ExtentProperty, OffsetProperty);
-            PerspexObject.AffectsValidation(ViewportProperty, OffsetProperty);
+            AffectsValidation(ExtentProperty, OffsetProperty);
+            AffectsValidation(ViewportProperty, OffsetProperty);
         }
 
         public ScrollViewer()
         {
             var extentAndViewport = Observable.CombineLatest(
-                this.GetObservable(ExtentProperty),
-                this.GetObservable(ViewportProperty))
+                GetObservable(ExtentProperty),
+                GetObservable(ViewportProperty))
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
-            this.Bind(
+            Bind(
                 VerticalScrollBarViewportSizeProperty,
                 extentAndViewport.Select(x => Max((x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height), 0)));
 
-            this.Bind(
+            Bind(
                 HorizontalScrollBarViewportSizeProperty,
                 extentAndViewport.Select(x => Max((x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width), 0)));
 
-            this.Bind(
+            Bind(
                 HorizontalScrollBarMaximumProperty,
                 extentAndViewport.Select(x => Max(x.Extent.Width - x.Viewport.Width, 0)));
 
-            this.Bind(
+            Bind(
                 VerticalScrollBarMaximumProperty,
                 extentAndViewport.Select(x => Max(x.Extent.Height - x.Viewport.Height, 0)));
 
-            this.GetObservable(OffsetProperty).Subscribe(x =>
+            GetObservable(OffsetProperty).Subscribe(x =>
             {
-                this.SetValue(HorizontalScrollBarValueProperty, x.X);
-                this.SetValue(VerticalScrollBarValueProperty, x.Y);
+                SetValue(HorizontalScrollBarValueProperty, x.X);
+                SetValue(VerticalScrollBarValueProperty, x.Y);
             });
 
             var scrollBarOffset = Observable.CombineLatest(
-                this.GetObservable(HorizontalScrollBarValueProperty),
-                this.GetObservable(VerticalScrollBarValueProperty))
+                GetObservable(HorizontalScrollBarValueProperty),
+                GetObservable(VerticalScrollBarValueProperty))
                 .Select(x => new Vector(x[0], x[1]))
-                .Subscribe(x => this.Offset = x);
+                .Subscribe(x => Offset = x);
         }
 
         public Size Extent
         {
-            get { return this.GetValue(ExtentProperty); }
-            private set { this.SetValue(ExtentProperty, value); }
+            get { return GetValue(ExtentProperty); }
+            private set { SetValue(ExtentProperty, value); }
         }
 
         public Vector Offset
         {
-            get { return this.GetValue(OffsetProperty); }
-            set { this.SetValue(OffsetProperty, value); }
+            get { return GetValue(OffsetProperty); }
+            set { SetValue(OffsetProperty, value); }
         }
 
         public Size Viewport
         {
-            get { return this.GetValue(ViewportProperty); }
-            private set { this.SetValue(ViewportProperty, value); }
+            get { return GetValue(ViewportProperty); }
+            private set { SetValue(ViewportProperty, value); }
         }
 
         public bool CanScrollHorizontally
         {
-            get { return this.GetValue(CanScrollHorizontallyProperty); }
-            set { this.SetValue(CanScrollHorizontallyProperty, value); }
+            get { return GetValue(CanScrollHorizontallyProperty); }
+            set { SetValue(CanScrollHorizontallyProperty, value); }
         }
 
         public ScrollBarVisibility HorizontalScrollBarVisibility
         {
-            get { return this.GetValue(HorizontalScrollBarVisibilityProperty); }
-            set { this.SetValue(HorizontalScrollBarVisibilityProperty, value); }
+            get { return GetValue(HorizontalScrollBarVisibilityProperty); }
+            set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
         }
 
         public ScrollBarVisibility VerticalScrollBarVisibility
         {
-            get { return this.GetValue(VerticalScrollBarVisibilityProperty); }
-            set { this.SetValue(VerticalScrollBarVisibilityProperty, value); }
+            get { return GetValue(VerticalScrollBarVisibilityProperty); }
+            set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
         protected override Size MeasureOverride(Size availableSize)

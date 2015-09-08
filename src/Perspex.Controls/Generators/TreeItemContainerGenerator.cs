@@ -26,7 +26,7 @@ namespace Perspex.Controls.Generators
         /// <param name="owner">The owner control.</param>
         public TreeItemContainerGenerator(IControl owner)
         {
-            this.Owner = owner;
+            Owner = owner;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                var container = this.CreateContainer(item, itemTemplate);
+                var container = CreateContainer(item, itemTemplate);
                 _containers.Add(item, container);
                 result.Add(container);
             }
@@ -85,7 +85,7 @@ namespace Perspex.Controls.Generators
 
                 if (_containers.TryGetValue(item, out container))
                 {
-                    this.Remove(container, result);
+                    Remove(container, result);
                 }
             }
 
@@ -164,7 +164,7 @@ namespace Perspex.Controls.Generators
 
             if (result == null)
             {
-                var template = this.GetTreeDataTemplate(item);
+                var template = GetTreeDataTemplate(item);
 
                 result = new T
                 {
@@ -185,7 +185,7 @@ namespace Perspex.Controls.Generators
         /// <returns>The template.</returns>
         private ITreeDataTemplate GetTreeDataTemplate(object item)
         {
-            IDataTemplate template = this.Owner.FindDataTemplate(item);
+            IDataTemplate template = Owner.FindDataTemplate(item);
 
             if (template == null)
             {
@@ -212,7 +212,7 @@ namespace Perspex.Controls.Generators
 
                     if (_containers.TryGetValue(childItem, out childContainer))
                     {
-                        this.Remove(childContainer, removed);
+                        Remove(childContainer, removed);
                     }
                 }
             }

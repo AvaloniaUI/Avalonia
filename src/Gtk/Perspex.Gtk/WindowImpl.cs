@@ -31,7 +31,7 @@ namespace Perspex.Gtk
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
         {
-            this.DefaultSize = new Gdk.Size(640, 480);
+            DefaultSize = new Gdk.Size(640, 480);
             Init();
         }
 
@@ -43,10 +43,10 @@ namespace Perspex.Gtk
 
         private void Init()
         {
-            this.Events = Gdk.EventMask.PointerMotionMask |
-              Gdk.EventMask.ButtonPressMask |
-              Gdk.EventMask.ButtonReleaseMask;
-            _windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+            Events = EventMask.PointerMotionMask |
+              EventMask.ButtonPressMask |
+              EventMask.ButtonReleaseMask;
+            _windowHandle = new PlatformHandle(Handle, "GtkWindow");
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
         }
@@ -82,14 +82,14 @@ namespace Perspex.Gtk
         public void Invalidate(Rect rect)
         {
 #pragma warning disable CS0612 // Type or member is obsolete
-            this.Draw(new Gdk.Rectangle { X = (int)rect.X, Y = (int)rect.Y, Width = (int)rect.Width, Height = (int)rect.Height });
+            Draw(new Rectangle { X = (int)rect.X, Y = (int)rect.Y, Width = (int)rect.Width, Height = (int)rect.Height });
 #pragma warning restore CS0612 // Type or member is obsolete
         }
 
         public Point PointToScreen(Point point)
         {
             int x, y;
-            this.GdkWindow.GetDeskrelativeOrigin(out x, out y);
+            GdkWindow.GetDeskrelativeOrigin(out x, out y);
 
             return new Point(point.X + x, point.Y + y);
         }
@@ -101,7 +101,7 @@ namespace Perspex.Gtk
 
         public void SetTitle(string title)
         {
-            this.Title = title;
+            Title = title;
         }
 
 
@@ -112,15 +112,15 @@ namespace Perspex.Gtk
 
         public IDisposable ShowDialog()
         {
-            this.Modal = true;
-            this.Show();
+            Modal = true;
+            Show();
 
             return Disposable.Empty;
         }
 
         void ITopLevelImpl.Activate()
         {
-            this.Activate();
+            Activate();
         }
 
         private static ModifierKeys GetModifierKeys(ModifierType state)
@@ -136,7 +136,7 @@ namespace Perspex.Gtk
             return rv;
         }
 
-        protected override bool OnButtonPressEvent(Gdk.EventButton evnt)
+        protected override bool OnButtonPressEvent(EventButton evnt)
         {
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
@@ -144,11 +144,11 @@ namespace Perspex.Gtk
                 _owner,
                 RawMouseEventType.LeftButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
-            this.Input(e);
+            Input(e);
             return true;
         }
 
-        protected override bool OnButtonReleaseEvent(Gdk.EventButton evnt)
+        protected override bool OnButtonReleaseEvent(EventButton evnt)
         {
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
@@ -156,17 +156,17 @@ namespace Perspex.Gtk
                 _owner,
                 RawMouseEventType.LeftButtonUp,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
-            this.Input(e);
+            Input(e);
             return true;
         }
 
-        protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
+        protected override bool OnConfigureEvent(EventConfigure evnt)
         {
             var newSize = new Size(evnt.Width, evnt.Height);
 
             if (newSize != _clientSize)
             {
-                this.Resized(newSize);
+                Resized(newSize);
             }
 
             return true;
@@ -174,10 +174,10 @@ namespace Perspex.Gtk
 
         protected override void OnDestroyed()
         {
-            this.Closed();
+            Closed();
         }
 
-        private bool ProcessKeyEvent(Gdk.EventKey evnt)
+        private bool ProcessKeyEvent(EventKey evnt)
         {
             _lastKeyEventTimestamp = evnt.Time;
             if (_imContext.FilterKeypress(evnt))
@@ -187,31 +187,31 @@ namespace Perspex.Gtk
                 evnt.Time,
                 evnt.Type == EventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                 GtkKeyboardDevice.ConvertKey(evnt.Key), GetModifierKeys(evnt.State));
-            this.Input(e);
+            Input(e);
             return true;
         }
 
-        protected override bool OnKeyPressEvent(Gdk.EventKey evnt) => ProcessKeyEvent(evnt);
+        protected override bool OnKeyPressEvent(EventKey evnt) => ProcessKeyEvent(evnt);
 
         protected override bool OnKeyReleaseEvent(EventKey evnt) => ProcessKeyEvent(evnt);
 
         private void ImContext_Commit(object o, Gtk.CommitArgs args)
         {
-            this.Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, _lastKeyEventTimestamp, args.Str));
+            Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, _lastKeyEventTimestamp, args.Str));
         }
 
-        protected override bool OnExposeEvent(Gdk.EventExpose evnt)
+        protected override bool OnExposeEvent(EventExpose evnt)
         {
-            this.Paint(evnt.Area.ToPerspex(), this.GetHandle(evnt.Window));
+            Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
             return true;
         }
 
         protected override void OnFocusActivated()
         {
-            this.Activated();
+            Activated();
         }
 
-        protected override bool OnMotionNotifyEvent(Gdk.EventMotion evnt)
+        protected override bool OnMotionNotifyEvent(EventMotion evnt)
         {
             var position = new Point(evnt.X, evnt.Y);
 
@@ -223,7 +223,7 @@ namespace Perspex.Gtk
                 _owner,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt.State));
-            this.Input(e);
+            Input(e);
             return true;
         }
 

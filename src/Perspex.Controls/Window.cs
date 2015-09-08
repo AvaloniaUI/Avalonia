@@ -87,8 +87,8 @@ namespace Perspex.Controls
         /// </summary>
         public SizeToContent SizeToContent
         {
-            get { return this.GetValue(SizeToContentProperty); }
-            set { this.SetValue(SizeToContentProperty, value); }
+            get { return GetValue(SizeToContentProperty); }
+            set { SetValue(SizeToContentProperty, value); }
         }
 
         /// <summary>
@@ -96,8 +96,8 @@ namespace Perspex.Controls
         /// </summary>
         public string Title
         {
-            get { return this.GetValue(TitleProperty); }
-            set { this.SetValue(TitleProperty, value); }
+            get { return GetValue(TitleProperty); }
+            set { SetValue(TitleProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -111,7 +111,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Close()
         {
-            this.PlatformImpl.Dispose();
+            PlatformImpl.Dispose();
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Perspex.Controls
         public void Close(object dialogResult)
         {
             _dialogResult = dialogResult;
-            this.Close();
+            Close();
         }
 
         /// <summary>
@@ -134,9 +134,9 @@ namespace Perspex.Controls
         /// </summary>
         public void Hide()
         {
-            using (this.BeginAutoSizing())
+            using (BeginAutoSizing())
             {
-                this.PlatformImpl.Hide();
+                PlatformImpl.Hide();
             }
         }
 
@@ -145,11 +145,11 @@ namespace Perspex.Controls
         /// </summary>
         public void Show()
         {
-            this.LayoutManager.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
 
-            using (this.BeginAutoSizing())
+            using (BeginAutoSizing())
             {
-                this.PlatformImpl.Show();
+                PlatformImpl.Show();
             }
         }
 
@@ -161,7 +161,7 @@ namespace Perspex.Controls
         /// </returns>
         public Task ShowDialog()
         {
-            return this.ShowDialog<object>();
+            return ShowDialog<object>();
         }
 
         /// <summary>
@@ -175,14 +175,14 @@ namespace Perspex.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
-            this.LayoutManager.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
 
-            using (this.BeginAutoSizing())
+            using (BeginAutoSizing())
             {
-                var modal = this.PlatformImpl.ShowDialog();
+                var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
-                Observable.FromEventPattern(this, nameof(this.Closed))
+                Observable.FromEventPattern(this, nameof(Closed))
                     .Take(1)
                     .Subscribe(_ =>
                     {
@@ -197,23 +197,23 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var sizeToContent = this.SizeToContent;
-            var size = this.ClientSize;
+            var sizeToContent = SizeToContent;
+            var size = ClientSize;
             var desired = base.MeasureOverride(availableSize);
 
             switch (sizeToContent)
             {
                 case SizeToContent.Width:
-                    size = new Size(desired.Width, this.ClientSize.Height);
+                    size = new Size(desired.Width, ClientSize.Height);
                     break;
                 case SizeToContent.Height:
-                    size = new Size(this.ClientSize.Width, desired.Height);
+                    size = new Size(ClientSize.Width, desired.Height);
                     break;
                 case SizeToContent.WidthAndHeight:
                     size = new Size(desired.Width, desired.Height);
                     break;
                 case SizeToContent.Manual:
-                    size = this.ClientSize;
+                    size = ClientSize;
                     break;
                 default:
                     throw new InvalidOperationException("Invalid value for SizeToContent.");
@@ -225,9 +225,9 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
-            if (!this.AutoSizing)
+            if (!AutoSizing)
             {
-                this.SizeToContent = SizeToContent.Manual;
+                SizeToContent = SizeToContent.Manual;
             }
 
             base.HandleResized(clientSize);

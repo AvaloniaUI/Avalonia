@@ -38,9 +38,9 @@ namespace Perspex.Styling
                 int capturedIndex = i;
 
                 IDisposable subscription = input.Subscribe(
-                    x => this.Update(capturedIndex, x),
-                    x => this.Finish(capturedIndex),
-                    () => this.Finish(capturedIndex));
+                    x => Update(capturedIndex, x),
+                    x => Finish(capturedIndex),
+                    () => Finish(capturedIndex));
                 _subscriptions.Add(subscription);
                 ++i;
             }
@@ -75,9 +75,9 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(observer != null);
 
-            observer.OnNext(this.CurrentValue);
+            observer.OnNext(CurrentValue);
 
-            if (this.HasCompleted)
+            if (HasCompleted)
             {
                 observer.OnCompleted();
                 return Disposable.Empty;
@@ -107,10 +107,10 @@ namespace Perspex.Styling
                     throw new InvalidOperationException("Invalid Activator mode.");
             }
 
-            if (current != this.CurrentValue)
+            if (current != CurrentValue)
             {
-                this.Push(current);
-                this.CurrentValue = current;
+                Push(current);
+                CurrentValue = current;
             }
         }
 
@@ -132,7 +132,7 @@ namespace Perspex.Styling
                     subscription.Dispose();
                 }
 
-                this.HasCompleted = true;
+                HasCompleted = true;
             }
         }
 

@@ -15,11 +15,11 @@ namespace Perspex.Controls.Shapes
         {
             get
             {
-                if (_geometry == null || _geometrySize != this.Bounds.Size)
+                if (_geometry == null || _geometrySize != Bounds.Size)
                 {
-                    var rect = new Rect(this.Bounds.Size).Deflate(this.StrokeThickness);
+                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
                     _geometry = new RectangleGeometry(rect);
-                    _geometrySize = this.Bounds.Size;
+                    _geometrySize = Bounds.Size;
                 }
 
                 return _geometry;
@@ -28,7 +28,7 @@ namespace Perspex.Controls.Shapes
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            return new Size(this.StrokeThickness, this.StrokeThickness);
+            return new Size(StrokeThickness, StrokeThickness);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Perspex.Win32.Input
 
             if (control != null)
             {
-                UnmanagedMethods.SetCapture(this.CurrentWindow.Handle.Handle);
+                UnmanagedMethods.SetCapture(CurrentWindow.Handle.Handle);
             }
             else
             {

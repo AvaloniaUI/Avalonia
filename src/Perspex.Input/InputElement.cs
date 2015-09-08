@@ -161,8 +161,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<RoutedEventArgs> GotFocus
         {
-            add { this.AddHandler(GotFocusEvent, value); }
-            remove { this.RemoveHandler(GotFocusEvent, value); }
+            add { AddHandler(GotFocusEvent, value); }
+            remove { RemoveHandler(GotFocusEvent, value); }
         }
 
         /// <summary>
@@ -170,8 +170,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<RoutedEventArgs> LostFocus
         {
-            add { this.AddHandler(LostFocusEvent, value); }
-            remove { this.RemoveHandler(LostFocusEvent, value); }
+            add { AddHandler(LostFocusEvent, value); }
+            remove { RemoveHandler(LostFocusEvent, value); }
         }
 
         /// <summary>
@@ -179,8 +179,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<KeyEventArgs> KeyDown
         {
-            add { this.AddHandler(KeyDownEvent, value); }
-            remove { this.RemoveHandler(KeyDownEvent, value); }
+            add { AddHandler(KeyDownEvent, value); }
+            remove { RemoveHandler(KeyDownEvent, value); }
         }
 
         /// <summary>
@@ -188,8 +188,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<KeyEventArgs> KeyUp
         {
-            add { this.AddHandler(KeyUpEvent, value); }
-            remove { this.RemoveHandler(KeyUpEvent, value); }
+            add { AddHandler(KeyUpEvent, value); }
+            remove { RemoveHandler(KeyUpEvent, value); }
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<TextInputEventArgs> TextInput
         {
-            add { this.AddHandler(TextInputEvent, value); }
-            remove { this.RemoveHandler(TextInputEvent, value); }
+            add { AddHandler(TextInputEvent, value); }
+            remove { RemoveHandler(TextInputEvent, value); }
         }
 
         /// <summary>
@@ -206,8 +206,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerEnter
         {
-            add { this.AddHandler(PointerEnterEvent, value); }
-            remove { this.RemoveHandler(PointerEnterEvent, value); }
+            add { AddHandler(PointerEnterEvent, value); }
+            remove { RemoveHandler(PointerEnterEvent, value); }
         }
 
         /// <summary>
@@ -215,8 +215,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerLeave
         {
-            add { this.AddHandler(PointerLeaveEvent, value); }
-            remove { this.RemoveHandler(PointerLeaveEvent, value); }
+            add { AddHandler(PointerLeaveEvent, value); }
+            remove { RemoveHandler(PointerLeaveEvent, value); }
         }
 
         /// <summary>
@@ -224,8 +224,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerMoved
         {
-            add { this.AddHandler(PointerMovedEvent, value); }
-            remove { this.RemoveHandler(PointerMovedEvent, value); }
+            add { AddHandler(PointerMovedEvent, value); }
+            remove { RemoveHandler(PointerMovedEvent, value); }
         }
 
         /// <summary>
@@ -233,8 +233,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerPressEventArgs> PointerPressed
         {
-            add { this.AddHandler(PointerPressedEvent, value); }
-            remove { this.RemoveHandler(PointerPressedEvent, value); }
+            add { AddHandler(PointerPressedEvent, value); }
+            remove { RemoveHandler(PointerPressedEvent, value); }
         }
 
         /// <summary>
@@ -242,8 +242,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerReleased
         {
-            add { this.AddHandler(PointerReleasedEvent, value); }
-            remove { this.RemoveHandler(PointerReleasedEvent, value); }
+            add { AddHandler(PointerReleasedEvent, value); }
+            remove { RemoveHandler(PointerReleasedEvent, value); }
         }
 
         /// <summary>
@@ -251,8 +251,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
         {
-            add { this.AddHandler(PointerWheelChangedEvent, value); }
-            remove { this.RemoveHandler(PointerWheelChangedEvent, value); }
+            add { AddHandler(PointerWheelChangedEvent, value); }
+            remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
 
         /// <summary>
@@ -260,8 +260,8 @@ namespace Perspex.Input
         /// </summary>
         public bool Focusable
         {
-            get { return this.GetValue(FocusableProperty); }
-            set { this.SetValue(FocusableProperty, value); }
+            get { return GetValue(FocusableProperty); }
+            set { SetValue(FocusableProperty, value); }
         }
 
         /// <summary>
@@ -269,8 +269,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsEnabled
         {
-            get { return this.GetValue(IsEnabledProperty); }
-            set { this.SetValue(IsEnabledProperty, value); }
+            get { return GetValue(IsEnabledProperty); }
+            set { SetValue(IsEnabledProperty, value); }
         }
 
         /// <summary>
@@ -278,8 +278,8 @@ namespace Perspex.Input
         /// </summary>
         public Cursor Cursor
         {
-            get { return this.GetValue(CursorProperty); }
-            set { this.SetValue(CursorProperty, value); }
+            get { return GetValue(CursorProperty); }
+            set { SetValue(CursorProperty, value); }
         }
 
         /// <summary>
@@ -287,8 +287,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsFocused
         {
-            get { return this.GetValue(IsFocusedProperty); }
-            private set { this.SetValue(IsFocusedProperty, value); }
+            get { return GetValue(IsFocusedProperty); }
+            private set { SetValue(IsFocusedProperty, value); }
         }
 
         /// <summary>
@@ -296,8 +296,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsHitTestVisible
         {
-            get { return this.GetValue(IsHitTestVisibleProperty); }
-            set { this.SetValue(IsHitTestVisibleProperty, value); }
+            get { return GetValue(IsHitTestVisibleProperty); }
+            set { SetValue(IsHitTestVisibleProperty, value); }
         }
 
         /// <summary>
@@ -305,8 +305,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsPointerOver
         {
-            get { return this.GetValue(IsPointerOverProperty); }
-            internal set { this.SetValue(IsPointerOverProperty, value); }
+            get { return GetValue(IsPointerOverProperty); }
+            internal set { SetValue(IsPointerOverProperty, value); }
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace Perspex.Input
         /// </remarks>
         bool IInputElement.IsEnabledCore
         {
-            get { return this.IsEnabledCore; }
+            get { return IsEnabledCore; }
         }
 
         /// <summary>
@@ -332,8 +332,8 @@ namespace Perspex.Input
         /// </remarks>
         protected bool IsEnabledCore
         {
-            get { return this.GetValue(IsEnabledCoreProperty); }
-            set { this.SetValue(IsEnabledCoreProperty, value); }
+            get { return GetValue(IsEnabledCoreProperty); }
+            set { SetValue(IsEnabledCoreProperty, value); }
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace Perspex.Input
         {
             base.OnDetachedFromVisualTree(oldRoot);
 
-            if (this.IsFocused)
+            if (IsFocused)
             {
                 FocusManager.Instance.Focus(null);
             }
@@ -370,7 +370,7 @@ namespace Perspex.Input
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-            this.UpdateIsEnabledCore();
+            UpdateIsEnabledCore();
         }
 
         /// <summary>
@@ -379,7 +379,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            this.IsFocused = e.Source == this;
+            IsFocused = e.Source == this;
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
-            this.IsFocused = false;
+            IsFocused = false;
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerEnter(PointerEventArgs e)
         {
-            this.IsPointerOver = true;
+            IsPointerOver = true;
         }
 
         /// <summary>
@@ -430,7 +430,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerLeave(PointerEventArgs e)
         {
-            this.IsPointerOver = false;
+            IsPointerOver = false;
         }
 
         /// <summary>
@@ -475,7 +475,7 @@ namespace Perspex.Input
         /// </summary>
         private void UpdateIsEnabledCore()
         {
-            this.UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
+            UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
         }
 
         /// <summary>
@@ -487,11 +487,11 @@ namespace Perspex.Input
         {
             if (parent != null)
             {
-                this.IsEnabledCore = this.IsEnabled && parent.IsEnabledCore;
+                IsEnabledCore = IsEnabled && parent.IsEnabledCore;
             }
             else
             {
-                this.IsEnabledCore = this.IsEnabled;
+                IsEnabledCore = IsEnabled;
             }
 
             foreach (var child in this.GetVisualChildren().OfType<InputElement>())

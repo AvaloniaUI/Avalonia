@@ -9,8 +9,8 @@ namespace Perspex.Styling.UnitTests
     {
         public TestControlBase()
         {
-            this.Classes = new Classes();
-            this.SubscribeCheckObservable = new TestObservable();
+            Classes = new Classes();
+            SubscribeCheckObservable = new TestObservable();
         }
 
         public string Name { get; set; }
@@ -19,7 +19,7 @@ namespace Perspex.Styling.UnitTests
 
         public Type StyleKey
         {
-            get { return this.GetType(); }
+            get { return GetType(); }
         }
 
         public TestObservable SubscribeCheckObservable { get; private set; }

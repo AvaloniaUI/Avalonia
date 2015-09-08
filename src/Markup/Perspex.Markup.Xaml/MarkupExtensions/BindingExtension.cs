@@ -17,7 +17,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public BindingExtension(string path)
         {
-            this.Path = path;
+            Path = path;
         }
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
@@ -31,8 +31,8 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 (
                 target,
                 perspexProperty,
-                new PropertyPath(this.Path),
-                this.Mode == BindingMode.Default ? BindingMode.OneWay : this.Mode
+                new PropertyPath(Path),
+                Mode == BindingMode.Default ? BindingMode.OneWay : Mode
                 );
         }
 

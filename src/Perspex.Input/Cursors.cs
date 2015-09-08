@@ -45,7 +45,7 @@ namespace Perspex.Input
 
         internal Cursor(IPlatformHandle platformCursor)
         {
-            this.PlatformCursor = platformCursor;
+            PlatformCursor = platformCursor;
         }
 
         public Cursor(StandardCursorType cursorType)

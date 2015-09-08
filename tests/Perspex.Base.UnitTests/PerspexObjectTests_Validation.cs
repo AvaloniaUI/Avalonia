@@ -64,13 +64,13 @@ namespace Perspex.Base.UnitTests
 
             public Class1()
             {
-                this.MaxQux = 10;
-                this.ErrorQux = 20;
+                MaxQux = 10;
+                ErrorQux = 20;
             }
 
             public int MaxQux { get; set; }
 
-            public int ErrorQux { get; set; }
+            public int ErrorQux { get; }
 
             private static int Validate(Class1 instance, int value)
             {

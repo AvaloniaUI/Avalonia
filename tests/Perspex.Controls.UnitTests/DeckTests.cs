@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
 using Xunit;
@@ -16,7 +17,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = new ControlTemplate<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -35,7 +36,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = new ControlTemplate<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -57,9 +58,9 @@ namespace Perspex.Controls.UnitTests
             return new DeckPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
-                [~DeckPresenter.SelectedIndexProperty] = control[~Deck.SelectedIndexProperty],
+                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                [~DeckPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }

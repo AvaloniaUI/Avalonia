@@ -16,13 +16,13 @@ namespace Perspex.Xaml.Base.UnitTest
         public int Int
         {
             get { return GetValue(IntProperty); }
-            set { this.SetValue(IntProperty, value); }
+            set { SetValue(IntProperty, value); }
         }
 
         public string String
         {
             get { return GetValue(StringProperty); }
-            set { this.SetValue(StringProperty, value); }
+            set { SetValue(StringProperty, value); }
         }
     }
 }

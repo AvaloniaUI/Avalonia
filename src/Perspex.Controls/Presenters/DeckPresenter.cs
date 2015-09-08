@@ -65,7 +65,7 @@ namespace Perspex.Controls.Presenters
             {
                 if (_generator == null)
                 {
-                    var i = this.TemplatedParent as ItemsControl;
+                    var i = TemplatedParent as ItemsControl;
                     _generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
                 }
 
@@ -88,8 +88,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IEnumerable Items
         {
-            get { return this.GetValue(ItemsProperty); }
-            set { this.SetValue(ItemsProperty, value); }
+            get { return GetValue(ItemsProperty); }
+            set { SetValue(ItemsProperty, value); }
         }
 
         /// <summary>
@@ -97,8 +97,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public ITemplate<IPanel> ItemsPanel
         {
-            get { return this.GetValue(ItemsPanelProperty); }
-            set { this.SetValue(ItemsPanelProperty, value); }
+            get { return GetValue(ItemsPanelProperty); }
+            set { SetValue(ItemsPanelProperty, value); }
         }
 
         /// <summary>
@@ -106,8 +106,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public int SelectedIndex
         {
-            get { return this.GetValue(SelectedIndexProperty); }
-            set { this.SetValue(SelectedIndexProperty, value); }
+            get { return GetValue(SelectedIndexProperty); }
+            set { SetValue(SelectedIndexProperty, value); }
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IPageTransition Transition
         {
-            get { return this.GetValue(TransitionProperty); }
-            set { this.SetValue(TransitionProperty, value); }
+            get { return GetValue(TransitionProperty); }
+            set { SetValue(TransitionProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -133,7 +133,7 @@ namespace Perspex.Controls.Presenters
         {
             if (!_createdPanel)
             {
-                this.CreatePanel();
+                CreatePanel();
             }
         }
 
@@ -144,21 +144,21 @@ namespace Perspex.Controls.Presenters
         {
             var logicalHost = this.FindReparentingHost();
 
-            this.ClearVisualChildren();
-            this.Panel = this.ItemsPanel.Build();
-            this.Panel.SetValue(TemplatedParentProperty, this.TemplatedParent);
+            ClearVisualChildren();
+            Panel = ItemsPanel.Build();
+            Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
-            this.AddVisualChild(this.Panel);
+            AddVisualChild(Panel);
 
             if (logicalHost != null)
             {
-                ((IReparentingControl)this.Panel).ReparentLogicalChildren(
+                ((IReparentingControl)Panel).ReparentLogicalChildren(
                     logicalHost,
                     logicalHost.LogicalChildren);
             }
 
             _createdPanel = true;
-            var task = this.MoveToPage(-1, this.SelectedIndex);
+            var task = MoveToPage(-1, SelectedIndex);
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Perspex.Controls.Presenters
         /// <returns>A task tracking the animation.</returns>
         private async Task MoveToPage(int fromIndex, int toIndex)
         {
-            var generator = this.ItemContainerGenerator;
+            var generator = ItemContainerGenerator;
             IControl from = null;
             IControl to = null;
 
@@ -180,23 +180,23 @@ namespace Perspex.Controls.Presenters
 
             if (toIndex != -1)
             {
-                var item = this.Items.Cast<object>().ElementAt(toIndex);
+                var item = Items.Cast<object>().ElementAt(toIndex);
                 to = generator.CreateContainers(toIndex, new[] { item }, null).FirstOrDefault();
 
                 if (to != null)
                 {
-                    this.Panel.Children.Add(to);
+                    Panel.Children.Add(to);
                 }
             }
 
-            if (this.Transition != null)
+            if (Transition != null)
             {
-                await this.Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
+                await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
             }
 
             if (from != null)
             {
-                this.Panel.Children.Remove(from);
+                Panel.Children.Remove(from);
                 generator.RemoveContainers(fromIndex, new[] { from });
             }
         }
@@ -207,9 +207,9 @@ namespace Perspex.Controls.Presenters
         /// <param name="e">The event args.</param>
         private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (this.Panel != null)
+            if (Panel != null)
             {
-                var task = this.MoveToPage((int)e.OldValue, (int)e.NewValue);
+                var task = MoveToPage((int)e.OldValue, (int)e.NewValue);
             }
         }
     }

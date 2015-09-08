@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Media;
 using Perspex.Styling;
@@ -20,27 +21,27 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ListBoxItemStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ListBoxItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.TemplateProperty, new ControlTemplate<ListBoxItem>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ListBoxItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ListBoxItem>().Class("selected").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
                     },
                 },
                 new Style(x => x.OfType<ListBoxItem>().Class("selected").Class(":focus").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBoxItem.BackgroundProperty, new SolidColorBrush(0xffd0d0d0)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffd0d0d0)),
                     },
                 },
             });
@@ -56,12 +57,12 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 Name = "border",
-                [~Border.BackgroundProperty] = control[~ListBoxItem.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~ListBoxItem.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~ListBoxItem.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new ContentPresenter
                 {
-                    [~ContentPresenter.ContentProperty] = control[~ListBoxItem.ContentProperty],
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 },
             };
         }

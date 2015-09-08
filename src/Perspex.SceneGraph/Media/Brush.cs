@@ -23,8 +23,8 @@ namespace Perspex.Media
         /// </summary>
         public double Opacity
         {
-            get { return this.GetValue(OpacityProperty); }
-            set { this.SetValue(OpacityProperty, value); }
+            get { return GetValue(OpacityProperty); }
+            set { SetValue(OpacityProperty, value); }
         }
 
         /// <summary>

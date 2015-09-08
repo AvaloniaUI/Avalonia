@@ -56,7 +56,7 @@ namespace Perspex
         /// </summary>
         public bool IsIdentity
         {
-            get { return this.Equals(Matrix.Identity); }
+            get { return Equals(Identity); }
         }
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace Perspex
                 return false;
             }
 
-            return this.Equals((Matrix)obj);
+            return Equals((Matrix)obj);
         }
 
         /// <summary>
@@ -269,9 +269,9 @@ namespace Perspex
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            return this.M11.GetHashCode() + this.M12.GetHashCode() +
-                   this.M21.GetHashCode() + this.M22.GetHashCode() +
-                   this.M31.GetHashCode() + this.M32.GetHashCode();
+            return M11.GetHashCode() + M12.GetHashCode() +
+                   M21.GetHashCode() + M22.GetHashCode() +
+                   M31.GetHashCode() + M32.GetHashCode();
         }
 
         /// <summary>
@@ -284,12 +284,12 @@ namespace Perspex
             return string.Format(
                 ci,
                 "{{ {{M11:{0} M12:{1}}} {{M21:{2} M22:{3}}} {{M31:{4} M32:{5}}} }}",
-                this.M11.ToString(ci),
-                this.M12.ToString(ci),
-                this.M21.ToString(ci),
-                this.M22.ToString(ci),
-                this.M31.ToString(ci),
-                this.M32.ToString(ci));
+                M11.ToString(ci),
+                M12.ToString(ci),
+                M21.ToString(ci),
+                M22.ToString(ci),
+                M31.ToString(ci),
+                M32.ToString(ci));
         }
 
         /// <summary>
@@ -298,12 +298,12 @@ namespace Perspex
         /// <returns>The inverted matrix.</returns>
         public Matrix Invert()
         {
-            if (this.GetDeterminant() == 0)
+            if (GetDeterminant() == 0)
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
 
-            double d = this.GetDeterminant();
+            double d = GetDeterminant();
 
             return new Matrix(
                 _m22 / d,

@@ -25,7 +25,7 @@ namespace Perspex.Threading
         public DispatcherTimer()
         {
             _priority = DispatcherPriority.Normal;
-            this.Dispatcher = Dispatcher.UIThread;
+            Dispatcher = Dispatcher.UIThread;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Perspex.Threading
         public DispatcherTimer(DispatcherPriority priority)
         {
             _priority = priority;
-            this.Dispatcher = Dispatcher.UIThread;
+            Dispatcher = Dispatcher.UIThread;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Perspex.Threading
         public DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher)
         {
             _priority = priority;
-            this.Dispatcher = dispatcher;
+            Dispatcher = dispatcher;
         }
 
         /// <summary>
@@ -59,9 +59,9 @@ namespace Perspex.Threading
         public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback, Dispatcher dispatcher)
         {
             _priority = priority;
-            this.Dispatcher = dispatcher;
-            this.Interval = interval;
-            this.Tick += callback;
+            Dispatcher = dispatcher;
+            Interval = interval;
+            Tick += callback;
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Perspex.Threading
         {
             if (_timer != null)
             {
-                this.Stop();
+                Stop();
             }
         }
 
@@ -85,9 +85,7 @@ namespace Perspex.Threading
         /// </summary>
         public Dispatcher Dispatcher
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets or sets the interval at which the timer ticks.
@@ -101,10 +99,10 @@ namespace Perspex.Threading
 
             set
             {
-                bool enabled = this.IsEnabled;
-                this.Stop();
+                bool enabled = IsEnabled;
+                Stop();
                 _interval = value;
-                this.IsEnabled = enabled;
+                IsEnabled = enabled;
             }
         }
 
@@ -120,15 +118,15 @@ namespace Perspex.Threading
 
             set
             {
-                if (this.IsEnabled != value)
+                if (IsEnabled != value)
                 {
                     if (value)
                     {
-                        this.Start();
+                        Start();
                     }
                     else
                     {
-                        this.Stop();
+                        Stop();
                     }
                 }
             }
@@ -175,10 +173,10 @@ namespace Perspex.Threading
         /// </summary>
         public void Start()
         {
-            if (!this.IsEnabled)
+            if (!IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
-                _timer = threading.StartTimer(this.Interval, this.InternalTick);
+                _timer = threading.StartTimer(Interval, InternalTick);
             }
         }
 
@@ -187,7 +185,7 @@ namespace Perspex.Threading
         /// </summary>
         public void Stop()
         {
-            if (this.IsEnabled)
+            if (IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
                 _timer.Dispose();
@@ -200,7 +198,7 @@ namespace Perspex.Threading
         /// </summary>
         private void InternalTick()
         {
-            this.Dispatcher.Post(this.RaiseTick, _priority);
+            Dispatcher.Post(RaiseTick, _priority);
         }
 
         /// <summary>
@@ -208,9 +206,9 @@ namespace Perspex.Threading
         /// </summary>
         private void RaiseTick()
         {
-            if (this.Tick != null)
+            if (Tick != null)
             {
-                this.Tick(this, EventArgs.Empty);
+                Tick(this, EventArgs.Empty);
             }
         }
     }

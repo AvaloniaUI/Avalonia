@@ -10,8 +10,8 @@ namespace Perspex.Controls.Primitives
 
         public object Header
         {
-            get { return this.GetValue(HeaderProperty); }
-            set { this.SetValue(HeaderProperty, value); }
+            get { return GetValue(HeaderProperty); }
+            set { SetValue(HeaderProperty, value); }
         }
     }
 }

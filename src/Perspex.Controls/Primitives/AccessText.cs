@@ -37,7 +37,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public AccessText()
         {
-            this.GetObservable(TextProperty).Subscribe(this.TextChanged);
+            GetObservable(TextProperty).Subscribe(TextChanged);
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool ShowAccessKey
         {
-            get { return this.GetValue(ShowAccessKeyProperty); }
-            set { this.SetValue(ShowAccessKeyProperty, value); }
+            get { return GetValue(ShowAccessKeyProperty); }
+            set { SetValue(ShowAccessKeyProperty, value); }
         }
 
         /// <summary>
@@ -66,14 +66,14 @@ namespace Perspex.Controls.Primitives
         {
             base.Render(context);
 
-            int underscore = this.Text?.IndexOf('_') ?? -1;
+            int underscore = Text?.IndexOf('_') ?? -1;
 
-            if (underscore != -1 && this.ShowAccessKey)
+            if (underscore != -1 && ShowAccessKey)
             {
-                var rect = this.FormattedText.HitTestTextPosition(underscore);
+                var rect = FormattedText.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -0.5);
                 context.DrawLine(
-                    new Pen(this.Foreground, 1),
+                    new Pen(Foreground, 1),
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
             }
@@ -87,12 +87,12 @@ namespace Perspex.Controls.Primitives
         protected override FormattedText CreateFormattedText(Size constraint)
         {
             var result = new FormattedText(
-                this.StripAccessKey(this.Text),
-                this.FontFamily,
-                this.FontSize,
-                this.FontStyle,
-                this.TextAlignment,
-                this.FontWeight);
+                StripAccessKey(Text),
+                FontFamily,
+                FontSize,
+                FontStyle,
+                TextAlignment,
+                FontWeight);
             result.Constraint = constraint;
             return result;
         }
@@ -117,9 +117,9 @@ namespace Perspex.Controls.Primitives
             base.OnAttachedToVisualTree(root);
             _accessKeys = (root as IInputRoot)?.AccessKeyHandler;
 
-            if (_accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
-                _accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(AccessKey, this);
             }
         }
 
@@ -131,7 +131,7 @@ namespace Perspex.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(root);
 
-            if (_accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
                 _accessKeys.Unregister(this);
                 _accessKeys = null;
@@ -175,11 +175,11 @@ namespace Perspex.Controls.Primitives
                 }
             }
 
-            this.AccessKey = key;
+            AccessKey = key;
 
-            if (_accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
-                _accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(AccessKey, this);
             }
         }
     }

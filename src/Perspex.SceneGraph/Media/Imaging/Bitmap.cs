@@ -18,7 +18,7 @@ namespace Perspex.Media.Imaging
         public Bitmap(string fileName)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.LoadBitmap(fileName);
+            PlatformImpl = factory.LoadBitmap(fileName);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Perspex.Media.Imaging
         public Bitmap(int width, int height)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.CreateBitmap(width, height);
+            PlatformImpl = factory.CreateBitmap(width, height);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Perspex.Media.Imaging
         /// <param name="impl">A platform-specific bitmap implementation.</param>
         protected Bitmap(IBitmapImpl impl)
         {
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Perspex.Media.Imaging
         /// </summary>
         public int PixelWidth
         {
-            get { return this.PlatformImpl.PixelWidth; }
+            get { return PlatformImpl.PixelWidth; }
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Perspex.Media.Imaging
         /// </summary>
         public int PixelHeight
         {
-            get { return this.PlatformImpl.PixelHeight; }
+            get { return PlatformImpl.PixelHeight; }
         }
 
         /// <summary>
@@ -62,9 +62,7 @@ namespace Perspex.Media.Imaging
         /// </summary>
         public IBitmapImpl PlatformImpl
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Saves the bitmap to a file.
@@ -72,7 +70,7 @@ namespace Perspex.Media.Imaging
         /// <param name="fileName">The filename.</param>
         public void Save(string fileName)
         {
-            this.PlatformImpl.Save(fileName);
+            PlatformImpl.Save(fileName);
         }
     }
 }

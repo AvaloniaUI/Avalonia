@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Perspex.Input.UnitTests
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     public class KeyboardNavigationTests_Tab
     {

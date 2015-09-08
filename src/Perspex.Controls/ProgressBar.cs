@@ -28,8 +28,8 @@ namespace Perspex.Controls
         {
             if (_indicator != null)
             {
-                double percent = this.Maximum == this.Minimum ? 1.0 : ((double)e.NewValue - this.Minimum) / (this.Maximum - this.Minimum);
-                _indicator.Width = this.Bounds.Width * percent;
+                double percent = Maximum == Minimum ? 1.0 : ((double)e.NewValue - Minimum) / (Maximum - Minimum);
+                _indicator.Width = Bounds.Width * percent;
             }
         }
     }

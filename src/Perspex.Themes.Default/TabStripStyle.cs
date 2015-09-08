@@ -20,13 +20,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TabStripStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TabStrip>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TabStrip.TemplateProperty, new ControlTemplate<TabStrip>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabStrip>(Template)),
                     },
                 },
                 new Style(x => x.OfType<TabStrip>().Template().OfType<StackPanel>())

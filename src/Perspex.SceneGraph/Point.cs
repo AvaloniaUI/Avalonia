@@ -157,7 +157,7 @@ namespace Perspex
             if (obj is Point)
             {
                 var other = (Point)obj;
-                return this.X == other.X && this.Y == other.Y;
+                return X == other.X && Y == other.Y;
             }
 
             return false;

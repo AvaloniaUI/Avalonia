@@ -13,13 +13,13 @@ namespace Perspex.Controls.Shapes
 
         public Geometry Data
         {
-            get { return this.GetValue(DataProperty); }
-            set { this.SetValue(DataProperty, value); }
+            get { return GetValue(DataProperty); }
+            set { SetValue(DataProperty, value); }
         }
 
         public override Geometry DefiningGeometry
         {
-            get { return this.Data; }
+            get { return Data; }
         }
     }
 }

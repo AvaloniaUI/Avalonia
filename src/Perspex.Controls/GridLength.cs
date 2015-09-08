@@ -183,13 +183,13 @@ namespace Perspex.Controls
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            if (this.IsAuto)
+            if (IsAuto)
             {
                 return "Auto";
             }
 
             string s = _value.ToString();
-            return this.IsStar ? s + "*" : s;
+            return IsStar ? s + "*" : s;
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Perspex.Controls
 
             if (s == "AUTO")
             {
-                return GridLength.Auto;
+                return Auto;
             }
             else if (s.EndsWith("*"))
             {

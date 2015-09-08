@@ -78,8 +78,8 @@ namespace Perspex.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs> Click
         {
-            add { this.AddHandler(ClickEvent, value); }
-            remove { this.RemoveHandler(ClickEvent, value); }
+            add { AddHandler(ClickEvent, value); }
+            remove { RemoveHandler(ClickEvent, value); }
         }
 
         /// <summary>
@@ -87,8 +87,8 @@ namespace Perspex.Controls
         /// </summary>
         public ClickMode ClickMode
         {
-            get { return this.GetValue(ClickModeProperty); }
-            set { this.SetValue(ClickModeProperty, value); }
+            get { return GetValue(ClickModeProperty); }
+            set { SetValue(ClickModeProperty, value); }
         }
 
         /// <summary>
@@ -96,8 +96,8 @@ namespace Perspex.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return this.GetValue(CommandProperty); }
-            set { this.SetValue(CommandProperty, value); }
+            get { return GetValue(CommandProperty); }
+            set { SetValue(CommandProperty, value); }
         }
 
         /// <summary>
@@ -105,8 +105,8 @@ namespace Perspex.Controls
         /// </summary>
         public object CommandParameter
         {
-            get { return this.GetValue(CommandParameterProperty); }
-            set { this.SetValue(CommandParameterProperty, value); }
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
         }
 
         /// <summary>
@@ -115,8 +115,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsDefault
         {
-            get { return this.GetValue(IsDefaultProperty); }
-            set { this.SetValue(IsDefaultProperty, value); }
+            get { return GetValue(IsDefaultProperty); }
+            set { SetValue(IsDefaultProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -136,13 +136,13 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(root);
 
-            if (this.IsDefault)
+            if (IsDefault)
             {
                 var inputElement = root as IInputElement;
 
                 if (inputElement != null)
                 {
-                    this.ListenForDefault(inputElement);
+                    ListenForDefault(inputElement);
                 }
             }
         }
@@ -152,14 +152,14 @@ namespace Perspex.Controls
         {
             if (e.Key == Key.Enter)
             {
-                this.RaiseClickEvent();
+                RaiseClickEvent();
                 e.Handled = true;
             }
             else if (e.Key == Key.Space)
             {
-                if (this.ClickMode == ClickMode.Press)
+                if (ClickMode == ClickMode.Press)
                 {
-                    this.RaiseClickEvent();
+                    RaiseClickEvent();
                 }
 
                 e.Handled = true;
@@ -173,9 +173,9 @@ namespace Perspex.Controls
         {
             if (e.Key == Key.Space)
             {
-                if (this.ClickMode == ClickMode.Release)
+                if (ClickMode == ClickMode.Release)
                 {
-                    this.RaiseClickEvent();
+                    RaiseClickEvent();
                 }
 
                 e.Handled = true;
@@ -187,13 +187,13 @@ namespace Perspex.Controls
         {
             base.OnDetachedFromVisualTree(oldRoot);
 
-            if (this.IsDefault)
+            if (IsDefault)
             {
                 var inputElement = oldRoot as IInputElement;
 
                 if (inputElement != null)
                 {
-                    this.StopListeningForDefault(inputElement);
+                    StopListeningForDefault(inputElement);
                 }
             }
         }
@@ -204,9 +204,9 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (this.Command != null)
+            if (Command != null)
             {
-                this.Command.Execute(this.CommandParameter);
+                Command.Execute(CommandParameter);
             }
         }
 
@@ -215,13 +215,13 @@ namespace Perspex.Controls
         {
             base.OnPointerPressed(e);
 
-            this.Classes.Add(":pressed");
+            Classes.Add(":pressed");
             e.Device.Capture(this);
             e.Handled = true;
 
-            if (this.ClickMode == ClickMode.Press)
+            if (ClickMode == ClickMode.Press)
             {
-                this.RaiseClickEvent();
+                RaiseClickEvent();
             }
         }
 
@@ -231,12 +231,12 @@ namespace Perspex.Controls
             base.OnPointerReleased(e);
 
             e.Device.Capture(null);
-            this.Classes.Remove(":pressed");
+            Classes.Remove(":pressed");
             e.Handled = true;
 
-            if (this.ClickMode == ClickMode.Release && this.Classes.Contains(":pointerover"))
+            if (ClickMode == ClickMode.Release && Classes.Contains(":pointerover"))
             {
-                this.RaiseClickEvent();
+                RaiseClickEvent();
             }
         }
 
@@ -300,7 +300,7 @@ namespace Perspex.Controls
         {
             // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
             // use IsEnabledCore etc. but it will do for now.
-            this.IsEnabled = this.Command == null || this.Command.CanExecute(this.CommandParameter);
+            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Perspex.Controls
         /// <param name="root">The input root.</param>
         private void ListenForDefault(IInputElement root)
         {
-            root.AddHandler(InputElement.KeyDownEvent, this.RootKeyDown);
+            root.AddHandler(KeyDownEvent, RootKeyDown);
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Perspex.Controls
         /// <param name="root">The input root.</param>
         private void StopListeningForDefault(IInputElement root)
         {
-            root.RemoveHandler(InputElement.KeyDownEvent, this.RootKeyDown);
+            root.RemoveHandler(KeyDownEvent, RootKeyDown);
         }
 
         /// <summary>
@@ -331,7 +331,7 @@ namespace Perspex.Controls
                 RoutedEvent = ClickEvent,
             };
 
-            this.RaiseEvent(click);
+            RaiseEvent(click);
         }
 
         /// <summary>
@@ -341,9 +341,9 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void RootKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && this.IsVisible && this.IsEnabled)
+            if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
-                this.RaiseClickEvent();
+                RaiseClickEvent();
             }
         }
     }

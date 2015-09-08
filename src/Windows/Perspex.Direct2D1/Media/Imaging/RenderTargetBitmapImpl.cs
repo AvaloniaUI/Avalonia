@@ -27,7 +27,7 @@ namespace Perspex.Direct2D1.Media
 
             _target = new WicRenderTarget(
                 d2dFactory,
-                this.WicImpl,
+                WicImpl,
                 props);
         }
 

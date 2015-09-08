@@ -28,7 +28,7 @@ namespace Perspex.Controls.Generators
             if (result == null)
             {
                 result = new T();
-                result.Content = this.Owner.MaterializeDataTemplate(item);
+                result.Content = Owner.MaterializeDataTemplate(item);
             }
 
             return result;

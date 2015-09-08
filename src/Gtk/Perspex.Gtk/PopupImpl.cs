@@ -15,7 +15,7 @@ namespace Perspex.Gtk
 
         public void SetPosition(Point p)
         {
-            this.Move((int)p.X, (int)p.Y);
+            Move((int)p.X, (int)p.Y);
         }
     }
 }

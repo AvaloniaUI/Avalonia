@@ -21,7 +21,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new DropDown();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.ApplyTemplate();
 
             var childIds = ((ILogical)target).LogicalChildren.Cast<Control>().Select(x => x.Name);

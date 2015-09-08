@@ -28,7 +28,7 @@ namespace Perspex.Input
         {
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
-                new EventHandler<RoutedEventArgs>(this.OnPreviewPointerPressed),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
                 RoutingStrategies.Tunnel);
         }
 
@@ -71,20 +71,20 @@ namespace Perspex.Input
 
                 if (scope != null)
                 {
-                    this.Scope = scope;
-                    this.SetFocusedElement(scope, control, method);
+                    Scope = scope;
+                    SetFocusedElement(scope, control, method);
                 }
             }
-            else if (this.Current != null)
+            else if (Current != null)
             {
                 // If control is null, set focus to the topmost focus scope.
-                foreach (var scope in GetFocusScopeAncestors(this.Current).Reverse().ToList())
+                foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
                 {
                     IInputElement element;
 
                     if (_focusScopes.TryGetValue(scope, out element))
                     {
-                        this.Focus(element, method);
+                        Focus(element, method);
                         break;
                     }
                 }
@@ -110,7 +110,7 @@ namespace Perspex.Input
 
             _focusScopes[scope] = element;
 
-            if (this.Scope == scope)
+            if (Scope == scope)
             {
                 KeyboardDevice.Instance.SetFocusedElement(element, method);
             }
@@ -135,8 +135,8 @@ namespace Perspex.Input
                 _focusScopes.Add(scope, e);
             }
 
-            this.Scope = scope;
-            this.Focus(e);
+            Scope = scope;
+            Focus(e);
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace Perspex.Input
 
                 if (element != null)
                 {
-                    this.Focus(element, NavigationMethod.Pointer);
+                    Focus(element, NavigationMethod.Pointer);
                 }
             }
         }

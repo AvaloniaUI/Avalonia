@@ -35,8 +35,8 @@ namespace Perspex.Controls
         /// </summary>
         public Control Child
         {
-            get { return this.GetValue(ChildProperty); }
-            set { this.SetValue(ChildProperty, value); }
+            get { return GetValue(ChildProperty); }
+            set { SetValue(ChildProperty, value); }
         }
 
         /// <summary>
@@ -44,15 +44,15 @@ namespace Perspex.Controls
         /// </summary>
         public Thickness Padding
         {
-            get { return this.GetValue(PaddingProperty); }
-            set { this.SetValue(PaddingProperty, value); }
+            get { return GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
         }
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = this.Child;
-            var padding = this.Padding;
+            var content = Child;
+            var padding = Padding;
 
             if (content != null)
             {
@@ -68,11 +68,11 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Control content = this.Child;
+            Control content = Child;
 
             if (content != null)
             {
-                content.Arrange(new Rect(finalSize).Deflate(this.Padding));
+                content.Arrange(new Rect(finalSize).Deflate(Padding));
             }
 
             return finalSize;
@@ -90,14 +90,14 @@ namespace Perspex.Controls
             if (oldChild != null)
             {
                 ((ISetLogicalParent)oldChild).SetParent(null);
-                this.LogicalChildren.Clear();
-                this.RemoveVisualChild(oldChild);
+                LogicalChildren.Clear();
+                RemoveVisualChild(oldChild);
             }
 
             if (newChild != null)
             {
-                this.AddVisualChild(newChild);
-                this.LogicalChildren.Add(newChild);
+                AddVisualChild(newChild);
+                LogicalChildren.Add(newChild);
                 ((ISetLogicalParent)newChild).SetParent(this);
             }
         }

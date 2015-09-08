@@ -12,7 +12,7 @@ namespace Perspex.Gtk
 
     internal class ClipboardImpl : IClipboard
     {
-        private static Gtk.Clipboard GetClipboard() => Gtk.Clipboard.GetForDisplay(Gdk.Display.Default, new Atom(IntPtr.Zero));
+        private static Gtk.Clipboard GetClipboard() => Gtk.Clipboard.GetForDisplay(Display.Default, new Atom(IntPtr.Zero));
 
         public Task<string> GetTextAsync()
         {

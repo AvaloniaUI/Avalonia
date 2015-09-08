@@ -18,9 +18,9 @@ namespace Perspex.Media
         /// <param name="dashArray">The length of alternating dashes and gaps.</param>
         public Pen(Brush brush, double thickness, IReadOnlyList<double> dashArray = null)
         {
-            this.Brush = brush;
-            this.Thickness = thickness;
-            this.DashArray = dashArray;
+            Brush = brush;
+            Thickness = thickness;
+            DashArray = dashArray;
         }
 
         /// <summary>
@@ -31,9 +31,9 @@ namespace Perspex.Media
         /// <param name="dashArray">The length of alternating dashes and gaps.</param>
         public Pen(uint color, double thickness, IReadOnlyList<double> dashArray = null)
         {
-            this.Brush = new SolidColorBrush(color);
-            this.Thickness = thickness;
-            this.DashArray = dashArray;
+            Brush = new SolidColorBrush(color);
+            Thickness = thickness;
+            DashArray = dashArray;
         }
 
         /// <summary>

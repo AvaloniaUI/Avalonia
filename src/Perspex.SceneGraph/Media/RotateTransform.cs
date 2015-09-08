@@ -21,7 +21,7 @@ namespace Perspex.Media
         /// </summary>
         public RotateTransform()
         {
-            this.GetObservable(AngleProperty).Subscribe(_ => this.RaiseChanged());
+            GetObservable(AngleProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Perspex.Media
         public RotateTransform(double angle)
             : this()
         {
-            this.Angle = angle;
+            Angle = angle;
         }
 
         /// <summary>
@@ -39,8 +39,8 @@ namespace Perspex.Media
         /// </summary>
         public double Angle
         {
-            get { return this.GetValue(AngleProperty); }
-            set { this.SetValue(AngleProperty, value); }
+            get { return GetValue(AngleProperty); }
+            set { SetValue(AngleProperty, value); }
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Perspex.Media
         /// </summary>
         public override Matrix Value
         {
-            get { return Matrix.CreateRotation(Matrix.ToRadians(this.Angle)); }
+            get { return Matrix.CreateRotation(Matrix.ToRadians(Angle)); }
         }
     }
 }

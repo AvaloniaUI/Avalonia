@@ -14,7 +14,7 @@ using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="ProgressBar"/> control.
@@ -26,15 +26,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ProgressBarStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ProgressBar>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ProgressBar.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
-                        new Setter(ProgressBar.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
-                        new Setter(ProgressBar.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
+                        new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
                     },
                 }
             });
@@ -49,9 +49,9 @@ namespace Perspex.Themes.Default
         {
             Border container = new Border
             {
-                [~Border.BackgroundProperty] = control[~ProgressBar.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~ProgressBar.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~ProgressBar.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
 
                 Child = new Grid
                 {
@@ -64,7 +64,7 @@ namespace Perspex.Themes.Default
                         {
                             Name = "PART_Track",
                             BorderThickness = 1,
-                            [~Border.BorderBrushProperty] = control[~ProgressBar.BackgroundProperty],
+                            [~Border.BorderBrushProperty] = control[~TemplatedControl.BackgroundProperty],
                         },
 
                         new Border
@@ -72,7 +72,7 @@ namespace Perspex.Themes.Default
                             Name = "PART_Indicator",
                             BorderThickness = 1,
                             HorizontalAlignment = HorizontalAlignment.Left,
-                            [~Border.BackgroundProperty] = control[~ProgressBar.ForegroundProperty],
+                            [~Border.BackgroundProperty] = control[~TemplatedControl.ForegroundProperty],
                             Child = new Grid
                             {
                                 Name = "Animation",

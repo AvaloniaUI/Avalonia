@@ -97,7 +97,7 @@ namespace Perspex.Win32.Threading
         public Task InvokeAsync(Action action, DispatcherPriority priority)
         {
             var job = new Job(action, priority, false);
-            this.AddJob(job);
+            AddJob(job);
             return job.TaskCompletionSource.Task;
         }
 
@@ -109,7 +109,7 @@ namespace Perspex.Win32.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority)
         {
-            this.AddJob(new Job(action, priority, true));
+            AddJob(new Job(action, priority, true));
         }
 
         private void AddJob(Job job)
@@ -134,9 +134,9 @@ namespace Perspex.Win32.Threading
             /// <param name="throwOnUiThread">Do not wrap excepption in TaskCompletionSource</param>
             public Job(Action action, DispatcherPriority priority, bool throwOnUiThread)
             {
-                this.Action = action;
-                this.Priority = priority;
-                this.TaskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
+                Action = action;
+                Priority = priority;
+                TaskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
             }
 
             /// <summary>

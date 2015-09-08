@@ -11,7 +11,7 @@ namespace Perspex.Xaml.Base.UnitTest.SampleModel
 
         public LogInViewModel()
         {
-            this.OkCommand = ReactiveCommand.Create(
+            OkCommand = ReactiveCommand.Create(
                 this.WhenAnyValue(
                     x => x.Username,
                     x => !string.IsNullOrWhiteSpace(x)));

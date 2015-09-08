@@ -50,8 +50,8 @@ namespace Perspex.Media
         /// </summary>
         public Transform Transform
         {
-            get { return this.GetValue(TransformProperty); }
-            set { this.SetValue(TransformProperty, value); }
+            get { return GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Perspex.Media
         /// <returns>The bounding rectangle.</returns>
         public Rect GetRenderBounds(double strokeThickness)
         {
-            return this.PlatformImpl.GetRenderBounds(strokeThickness);
+            return PlatformImpl.GetRenderBounds(strokeThickness);
         }
     }
 }

@@ -28,8 +28,8 @@ namespace Perspex.Styling
         /// <param name="value">The property value.</param>
         public Setter(PerspexProperty property, object value)
         {
-            this.Property = property;
-            this.Value = value;
+            Property = property;
+            Value = value;
         }
 
         /// <summary>
@@ -60,12 +60,12 @@ namespace Perspex.Styling
         {
             if (activator == null)
             {
-                control.SetValue(this.Property, this.Value, BindingPriority.Style);
+                control.SetValue(Property, Value, BindingPriority.Style);
             }
             else
             {
-                var binding = new StyleBinding(activator, this.Value, style.ToString());
-                control.Bind(this.Property, binding, BindingPriority.StyleTrigger);
+                var binding = new StyleBinding(activator, Value, style.ToString());
+                control.Bind(Property, binding, BindingPriority.StyleTrigger);
             }
         }
     }

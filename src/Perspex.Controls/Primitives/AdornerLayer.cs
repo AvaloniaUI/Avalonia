@@ -27,7 +27,7 @@ namespace Perspex.Controls.Primitives
 
         public AdornerLayer()
         {
-            this.Children.CollectionChanged += this.ChildrenCollectionChanged;
+            Children.CollectionChanged += ChildrenCollectionChanged;
         }
 
         public static Visual GetAdornedElement(Visual adorner)
@@ -50,9 +50,9 @@ namespace Perspex.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var parent = this.Parent;
+            var parent = Parent;
 
-            foreach (var child in this.Children)
+            foreach (var child in Children)
             {
                 var info = (AdornedElementInfo)child.GetValue(s_adornedElementInfoProperty);
 
@@ -88,13 +88,13 @@ namespace Perspex.Controls.Primitives
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual i in e.NewItems)
                     {
-                        this.UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                        UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
                     }
 
                     break;
             }
 
-            this.InvalidateArrange();
+            InvalidateArrange();
         }
 
         private void UpdateAdornedElement(Visual adorner, Visual adorned)
@@ -122,7 +122,7 @@ namespace Perspex.Controls.Primitives
                 info.Subscription = _tracker.Track(adorned).Subscribe(x =>
                 {
                     info.Bounds = x;
-                    this.InvalidateArrange();
+                    InvalidateArrange();
                 });
             }
         }

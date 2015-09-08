@@ -83,8 +83,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Control Child
         {
-            get { return this.GetValue(ChildProperty); }
-            set { this.SetValue(ChildProperty, value); }
+            get { return GetValue(ChildProperty); }
+            set { SetValue(ChildProperty, value); }
         }
 
         /// <summary>
@@ -105,8 +105,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool IsOpen
         {
-            get { return this.GetValue(IsOpenProperty); }
-            set { this.SetValue(IsOpenProperty, value); }
+            get { return GetValue(IsOpenProperty); }
+            set { SetValue(IsOpenProperty, value); }
         }
 
         /// <summary>
@@ -114,8 +114,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public PlacementMode PlacementMode
         {
-            get { return this.GetValue(PlacementModeProperty); }
-            set { this.SetValue(PlacementModeProperty, value); }
+            get { return GetValue(PlacementModeProperty); }
+            set { SetValue(PlacementModeProperty, value); }
         }
 
         /// <summary>
@@ -123,8 +123,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Control PlacementTarget
         {
-            get { return this.GetValue(PlacementTargetProperty); }
-            set { this.SetValue(PlacementTargetProperty, value); }
+            get { return GetValue(PlacementTargetProperty); }
+            set { SetValue(PlacementTargetProperty, value); }
         }
 
         /// <summary>
@@ -141,8 +141,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool StaysOpen
         {
-            get { return this.GetValue(StaysOpenProperty); }
-            set { this.SetValue(StaysOpenProperty, value); }
+            get { return GetValue(StaysOpenProperty); }
+            set { SetValue(StaysOpenProperty, value); }
         }
 
         /// <summary>
@@ -160,34 +160,34 @@ namespace Perspex.Controls.Primitives
         {
             if (_popupRoot == null)
             {
-                _popupRoot = new PopupRoot(this.DependencyResolver)
+                _popupRoot = new PopupRoot(DependencyResolver)
                 {
-                    [~PopupRoot.ContentProperty] = this[~ChildProperty],
-                    [~PopupRoot.WidthProperty] = this[~WidthProperty],
-                    [~PopupRoot.HeightProperty] = this[~HeightProperty],
-                    [~PopupRoot.MinWidthProperty] = this[~MinWidthProperty],
-                    [~PopupRoot.MaxWidthProperty] = this[~MaxWidthProperty],
-                    [~PopupRoot.MinHeightProperty] = this[~MinHeightProperty],
-                    [~PopupRoot.MaxHeightProperty] = this[~MaxHeightProperty],
+                    [~ContentControl.ContentProperty] = this[~ChildProperty],
+                    [~WidthProperty] = this[~WidthProperty],
+                    [~HeightProperty] = this[~HeightProperty],
+                    [~MinWidthProperty] = this[~MinWidthProperty],
+                    [~MaxWidthProperty] = this[~MaxWidthProperty],
+                    [~MinHeightProperty] = this[~MinHeightProperty],
+                    [~MaxHeightProperty] = this[~MaxHeightProperty],
                 };
 
                 ((ISetLogicalParent)_popupRoot).SetParent(this);
             }
 
-            _popupRoot.SetPosition(this.GetPosition());
-            _popupRoot.AddHandler(PopupRoot.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Bubble, true);
+            _popupRoot.SetPosition(GetPosition());
+            _popupRoot.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Bubble, true);
 
             if (_topLevel != null)
             {
-                _topLevel.Deactivated += this.MaybeClose;
-                _topLevel.AddHandler(TopLevel.PointerPressedEvent, this.MaybeClose, RoutingStrategies.Tunnel);
+                _topLevel.Deactivated += MaybeClose;
+                _topLevel.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Tunnel);
             }
 
-            this.PopupRootCreated?.Invoke(this, EventArgs.Empty);
+            PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
-            this.IsOpen = true;
-            this.Opened?.Invoke(this, EventArgs.Empty);
+            IsOpen = true;
+            Opened?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -197,14 +197,14 @@ namespace Perspex.Controls.Primitives
         {
             if (_popupRoot != null)
             {
-                this._popupRoot.PointerPressed -= this.MaybeClose;
-                _topLevel.RemoveHandler(TopLevel.PointerPressedEvent, this.MaybeClose);
-                _topLevel.Deactivated -= this.MaybeClose;
+                _popupRoot.PointerPressed -= MaybeClose;
+                _topLevel.RemoveHandler(PointerPressedEvent, MaybeClose);
+                _topLevel.Deactivated -= MaybeClose;
                 _popupRoot.Hide();
             }
 
-            this.IsOpen = false;
-            this.Closed?.Invoke(this, EventArgs.Empty);
+            IsOpen = false;
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -245,11 +245,11 @@ namespace Perspex.Controls.Primitives
         {
             if ((bool)e.NewValue)
             {
-                this.Open();
+                Open();
             }
             else
             {
-                this.Close();
+                Close();
             }
         }
 
@@ -259,7 +259,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void ChildChanged(PerspexPropertyChangedEventArgs e)
         {
-            this.LogicalChildren.Clear();
+            LogicalChildren.Clear();
 
             if (e.OldValue != null)
             {
@@ -269,7 +269,7 @@ namespace Perspex.Controls.Primitives
             if (e.NewValue != null)
             {
                 ((ISetLogicalParent)e.NewValue).SetParent(this);
-                this.LogicalChildren.Add((ILogical)e.NewValue);
+                LogicalChildren.Add((ILogical)e.NewValue);
             }
         }
 
@@ -279,12 +279,12 @@ namespace Perspex.Controls.Primitives
         /// <returns>The popup's position in screen coordinates.</returns>
         private Point GetPosition()
         {
-            var target = this.PlacementTarget ?? this.GetVisualParent<Control>();
+            var target = PlacementTarget ?? this.GetVisualParent<Control>();
             Point point;
 
             if (target != null)
             {
-                switch (this.PlacementMode)
+                switch (PlacementMode)
                 {
                     case PlacementMode.Bottom:
                         point = new Point(0, target.Bounds.Height);
@@ -312,9 +312,9 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void MaybeClose(object sender, EventArgs e)
         {
-            if (!this.StaysOpen)
+            if (!StaysOpen)
             {
-                this.Close();
+                Close();
             }
         }
     }

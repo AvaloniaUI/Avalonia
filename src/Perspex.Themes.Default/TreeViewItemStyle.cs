@@ -13,7 +13,7 @@ using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Controls = Perspex.Controls.Controls;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="TreeViewItem"/> control.
@@ -25,57 +25,57 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TreeViewItemStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TreeViewItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeViewItem.TemplateProperty, new ControlTemplate<TreeViewItem>(Template)),
-                        new Setter(TreeViewItem.FocusAdornerProperty, null),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TreeViewItem>(Template)),
+                        new Setter(Control.FocusAdornerProperty, null),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().Name("header"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeViewItem.PaddingProperty, new Thickness(2)),
+                        new Setter(TemplatedControl.PaddingProperty, new Thickness(2)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Class("selected").Template().Name("header"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeViewItem.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Class("selected").Class(":focus").Template().Name("header"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TreeViewItem.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
-                        new Setter(TreeViewItem.ForegroundProperty, Brushes.White),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff086f9e)),
+                        new Setter(TemplatedControl.ForegroundProperty, Brushes.White),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander"))
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.TemplateProperty, new ControlTemplate<ToggleButton>(this.ToggleButtonTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ToggleButton>(ToggleButtonTemplate)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander").Class(":checked").Template().OfType<Path>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.RenderTransformProperty, new RotateTransform(45)),
+                        new Setter(Visual.RenderTransformProperty, new RotateTransform(45)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Class(":empty").Template().OfType<ToggleButton>().Class("expander"))
                 {
                     Setters = new[]
                     {
-                        new Setter(ToggleButton.IsVisibleProperty, false),
+                        new Setter(Visual.IsVisibleProperty, false),
                     },
                 },
             });
@@ -110,11 +110,11 @@ namespace Perspex.Themes.Default
                             new Border
                             {
                                 Name = "header",
-                                [~Border.BackgroundProperty] = control[~TreeViewItem.BackgroundProperty],
+                                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                                 [Grid.ColumnProperty] = 1,
                                 Child = new ContentPresenter
                                 {
-                                    [~ContentPresenter.ContentProperty] = control[~TreeViewItem.HeaderProperty],
+                                    [~ContentPresenter.ContentProperty] = control[~HeaderedItemsControl.HeaderProperty],
                                 },
                             }
                         }
@@ -123,9 +123,9 @@ namespace Perspex.Themes.Default
                     {
                         Name = "itemsPresenter",
                         Margin = new Thickness(24, 0, 0, 0),
-                        [~ItemsPresenter.ItemsProperty] = control[~TreeViewItem.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~TreeViewItem.ItemsPanelProperty],
-                        [~ItemsPresenter.IsVisibleProperty] = control[~TreeViewItem.IsExpandedProperty],
+                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                        [~Visual.IsVisibleProperty] = control[~TreeViewItem.IsExpandedProperty],
                     }
                 }
             };

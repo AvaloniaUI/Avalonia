@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Media;
 using Perspex.Styling;
@@ -20,23 +21,23 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TextBoxStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TextBox>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBox.TemplateProperty, new ControlTemplate<TextBox>(Template)),
-                        new Setter(TextBox.BorderBrushProperty, new SolidColorBrush(0xff707070)),
-                        new Setter(TextBox.BorderThicknessProperty, 2.0),
-                        new Setter(TextBox.FocusAdornerProperty, null),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TextBox>(Template)),
+                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff707070)),
+                        new Setter(TemplatedControl.BorderThicknessProperty, 2.0),
+                        new Setter(Control.FocusAdornerProperty, null),
                     },
                 },
                 new Style(x => x.OfType<TextBox>().Class(":focus").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TextBox.BorderBrushProperty, Brushes.Black),
+                        new Setter(TemplatedControl.BorderBrushProperty, Brushes.Black),
                     },
                 }
             });
@@ -53,9 +54,9 @@ namespace Perspex.Themes.Default
             {
                 Name = "border",
                 Padding = new Thickness(2),
-                [~Border.BackgroundProperty] = control[~TextBox.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~TextBox.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~TextBox.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new ScrollViewer
                 {
                     [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
@@ -67,8 +68,8 @@ namespace Perspex.Themes.Default
                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
                         [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
                         [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
-                        [~TextPresenter.TextProperty] = control[~TextBox.TextProperty],
-                        [~TextPresenter.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
+                        [~TextBlock.TextProperty] = control[~TextBox.TextProperty],
+                        [~TextBlock.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
                     }
                 }
             };

@@ -157,8 +157,8 @@ namespace Perspex.Styling.UnitTests
 
             public string Foo
             {
-                get { return this.GetValue(FooProperty); }
-                set { this.SetValue(FooProperty, value); }
+                get { return GetValue(FooProperty); }
+                set { SetValue(FooProperty, value); }
             }
 
             protected override Size MeasureOverride(Size availableSize)

@@ -15,7 +15,7 @@ namespace Perspex.Diagnostics.ViewModels
 
         public LogicalTreeViewModel(Control root)
         {
-            this.Nodes = LogicalTreeNode.Create(root);
+            Nodes = LogicalTreeNode.Create(root);
             _details = this.WhenAnyValue(x => x.SelectedNode)
                 .Select(x => x != null ? new ControlDetailsViewModel(x.Control) : null)
                 .ToProperty(this, x => x.Details);

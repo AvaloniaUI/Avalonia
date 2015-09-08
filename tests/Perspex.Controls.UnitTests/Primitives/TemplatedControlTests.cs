@@ -173,8 +173,8 @@ namespace Perspex.Controls.UnitTests.Primitives
                     Content = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                     }
                 }
             };
@@ -185,7 +185,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var result = new ScrollContentPresenter
             {
                 Name = "contentPresenter",
-                [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
+                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
 
             return result;
@@ -198,7 +198,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             public override void ApplyTemplate()
             {
                 base.ApplyTemplate();
-                this.Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
+                Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
             }
         }
     }

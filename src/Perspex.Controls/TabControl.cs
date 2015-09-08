@@ -39,8 +39,8 @@ namespace Perspex.Controls
         /// </summary>
         public TabItem SelectedTab
         {
-            get { return this.GetValue(SelectedTabProperty); }
-            private set { this.SetValue(SelectedTabProperty, value); }
+            get { return GetValue(SelectedTabProperty); }
+            private set { SetValue(SelectedTabProperty, value); }
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Perspex.Controls
         /// </summary>
         public IPageTransition Transition
         {
-            get { return this.GetValue(TransitionProperty); }
-            set { this.SetValue(TransitionProperty, value); }
+            get { return GetValue(TransitionProperty); }
+            set { SetValue(TransitionProperty, value); }
         }
 
         /// <summary>
@@ -73,9 +73,9 @@ namespace Perspex.Controls
         {
             if ((int)e.NewValue != -1)
             {
-                var item = this.SelectedItem as IContentControl;
+                var item = SelectedItem as IContentControl;
                 var content = item?.Content ?? item;
-                this.SelectedTab = item as TabItem;
+                SelectedTab = item as TabItem;
             }
         }
     }

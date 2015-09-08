@@ -65,8 +65,8 @@ namespace Perspex.Controls.UnitTests.Mixins
 
             public bool IsSelected
             {
-                get { return this.GetValue(IsSelectedProperty); }
-                set { this.SetValue(IsSelectedProperty, value); }
+                get { return GetValue(IsSelectedProperty); }
+                set { SetValue(IsSelectedProperty, value); }
             }
         }
     }

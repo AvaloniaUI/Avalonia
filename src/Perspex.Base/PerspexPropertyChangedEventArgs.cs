@@ -23,11 +23,11 @@ namespace Perspex
             object newValue,
             BindingPriority priority)
         {
-            this.Sender = sender;
-            this.Property = property;
-            this.OldValue = oldValue;
-            this.NewValue = newValue;
-            this.Priority = priority;
+            Sender = sender;
+            Property = property;
+            OldValue = oldValue;
+            NewValue = newValue;
+            Priority = priority;
         }
 
         /// <summary>

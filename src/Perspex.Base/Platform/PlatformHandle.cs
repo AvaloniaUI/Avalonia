@@ -19,8 +19,8 @@ namespace Perspex.Platform
         /// </param>
         public PlatformHandle(IntPtr handle, string descriptor)
         {
-            this.Handle = handle;
-            this.HandleDescriptor = descriptor;
+            Handle = handle;
+            HandleDescriptor = descriptor;
         }
 
         /// <summary>

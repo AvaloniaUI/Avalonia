@@ -4,6 +4,7 @@
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Media;
 using Perspex.Styling;
@@ -20,15 +21,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ListBoxStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ListBox>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ListBox.TemplateProperty, new ControlTemplate<ListBox>(Template)),
-                        new Setter(ListBox.BorderBrushProperty, Brushes.Black),
-                        new Setter(ListBox.BorderThicknessProperty, 1.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ListBox>(Template)),
+                        new Setter(TemplatedControl.BorderBrushProperty, Brushes.Black),
+                        new Setter(TemplatedControl.BorderThicknessProperty, 1.0),
                     },
                 },
             });
@@ -44,16 +45,16 @@ namespace Perspex.Themes.Default
             return new Border
             {
                 Padding = new Thickness(4),
-                [~Border.BackgroundProperty] = control[~ListBox.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~ListBox.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~ListBox.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new ScrollViewer
                 {
                     Content = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                     }
                 }
             };

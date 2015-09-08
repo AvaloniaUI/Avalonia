@@ -40,7 +40,7 @@ namespace Perspex.Controls
         /// <param name="type">The width unit of the column.</param>
         public ColumnDefinition(double value, GridUnitType type)
         {
-            this.Width = new GridLength(value, type);
+            Width = new GridLength(value, type);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Perspex.Controls
         /// <param name="width">The width of the column.</param>
         public ColumnDefinition(GridLength width)
         {
-            this.Width = width;
+            Width = width;
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace Perspex.Controls
         /// </summary>
         public double MaxWidth
         {
-            get { return this.GetValue(MaxWidthProperty); }
-            set { this.SetValue(MaxWidthProperty, value); }
+            get { return GetValue(MaxWidthProperty); }
+            set { SetValue(MaxWidthProperty, value); }
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace Perspex.Controls
         /// </summary>
         public double MinWidth
         {
-            get { return this.GetValue(MinWidthProperty); }
-            set { this.SetValue(MinWidthProperty, value); }
+            get { return GetValue(MinWidthProperty); }
+            set { SetValue(MinWidthProperty, value); }
         }
 
         /// <summary>
@@ -84,8 +84,8 @@ namespace Perspex.Controls
         /// </summary>
         public GridLength Width
         {
-            get { return this.GetValue(WidthProperty); }
-            set { this.SetValue(WidthProperty, value); }
+            get { return GetValue(WidthProperty); }
+            set { SetValue(WidthProperty, value); }
         }
     }
 }

@@ -7,10 +7,10 @@ namespace Perspex.Controls.Primitives
     {
         public AdornerDecorator()
         {
-            this.AdornerLayer = new AdornerLayer();
-            ((ISetLogicalParent)this.AdornerLayer).SetParent(this);
-            this.AdornerLayer.ZIndex = int.MaxValue;
-            this.AddVisualChild(this.AdornerLayer);
+            AdornerLayer = new AdornerLayer();
+            ((ISetLogicalParent)AdornerLayer).SetParent(this);
+            AdornerLayer.ZIndex = int.MaxValue;
+            AddVisualChild(AdornerLayer);
         }
 
         public AdornerLayer AdornerLayer
@@ -20,13 +20,13 @@ namespace Perspex.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            this.AdornerLayer.Measure(availableSize);
+            AdornerLayer.Measure(availableSize);
             return base.MeasureOverride(availableSize);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            this.AdornerLayer.Arrange(new Rect(finalSize));
+            AdornerLayer.Arrange(new Rect(finalSize));
             return base.ArrangeOverride(finalSize);
         }
     }

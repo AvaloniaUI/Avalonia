@@ -10,7 +10,7 @@ namespace Perspex.Direct2D1.Media
     {
         public BrushWrapper(Brush brush)
         {
-            this.Brush = brush;
+            Brush = brush;
         }
 
         public Brush Brush { get; private set; }

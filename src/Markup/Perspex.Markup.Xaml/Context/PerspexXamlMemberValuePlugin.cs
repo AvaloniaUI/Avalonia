@@ -23,9 +23,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (this.ValueRequiresSpecialHandling(value))
+            if (ValueRequiresSpecialHandling(value))
             {
-                this.HandleSpecialValue(instance, value);
+                HandleSpecialValue(instance, value);
             }
             else
             {
@@ -38,11 +38,11 @@ namespace Perspex.Markup.Xaml.Context
             var definition = value as XamlBindingDefinition;
             if (definition != null)
             {
-                this.HandleXamlBindingDefinition(definition);
+                HandleXamlBindingDefinition(definition);
             }
-            else if (this.IsPerspexProperty)
+            else if (IsPerspexProperty)
             {
-                this.HandlePerspexProperty(instance, value);
+                HandlePerspexProperty(instance, value);
             }
             else
             {
@@ -52,7 +52,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private void HandlePerspexProperty(object instance, object value)
         {
-            var pp = this.PerspexProperty;
+            var pp = PerspexProperty;
             var po = (PerspexObject)instance;
             po.SetValue(pp, value);
         }
@@ -63,7 +63,7 @@ namespace Perspex.Markup.Xaml.Context
             _propertyBinder.Create(xamlBindingDefinition);
 
             var observableForDataContext = subjectObject.GetObservable(Control.DataContextProperty);
-            observableForDataContext.Where(o => o != null).Subscribe(_ => this.BindToDataContextWhenItsSet(xamlBindingDefinition));
+            observableForDataContext.Where(o => o != null).Subscribe(_ => BindToDataContextWhenItsSet(xamlBindingDefinition));
         }
 
         private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)
@@ -90,10 +90,10 @@ namespace Perspex.Markup.Xaml.Context
 
         private bool ValueRequiresSpecialHandling(object value)
         {
-            return value is XamlBindingDefinition || this.IsPerspexProperty;
+            return value is XamlBindingDefinition || IsPerspexProperty;
         }
 
-        private bool IsPerspexProperty => this.PerspexProperty != null;
+        private bool IsPerspexProperty => PerspexProperty != null;
 
         public override string ToString()
         {

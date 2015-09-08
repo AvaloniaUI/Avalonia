@@ -11,12 +11,12 @@ namespace Perspex.Direct2D1
 
         public Disposable(T inner)
         {
-            this.Inner = inner;
+            Inner = inner;
         }
 
         public Disposable(T inner, IDisposable extra)
         {
-            this.Inner = inner;
+            Inner = inner;
             _extra = extra;
         }
 
@@ -29,7 +29,7 @@ namespace Perspex.Direct2D1
 
         public void Dispose()
         {
-            this.Inner.Dispose();
+            Inner.Dispose();
             _extra?.Dispose();
         }
     }

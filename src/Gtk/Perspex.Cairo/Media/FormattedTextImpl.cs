@@ -21,9 +21,9 @@ namespace Perspex.Cairo.Media
             FontWeight fontWeight)
         {
             var context = Locator.Current.GetService<Pango.Context>();
-            this.Layout = new Pango.Layout(context);
-            this.Layout.SetText(text);
-            this.Layout.FontDescription = new Pango.FontDescription
+            Layout = new Pango.Layout(context);
+            Layout.SetText(text);
+            Layout.FontDescription = new Pango.FontDescription
             {
                 Family = fontFamily,
                 Size = Pango.Units.FromDouble(fontSize * 0.73),
@@ -31,7 +31,7 @@ namespace Perspex.Cairo.Media
                 Weight = fontWeight.ToCairo()
             };
 
-            this.Layout.Alignment = textAlignment.ToCairo();
+            Layout.Alignment = textAlignment.ToCairo();
         }
 
         private Size _size;
@@ -45,19 +45,17 @@ namespace Perspex.Cairo.Media
             set
             {
                 _size = value;
-                this.Layout.Width = Pango.Units.FromDouble(value.Width);
+                Layout.Width = Pango.Units.FromDouble(value.Width);
             }
         }
 
         public Pango.Layout Layout
         {
-            get;
-            private set;
-        }
+            get; }
 
         public void Dispose()
         {
-            this.Layout.Dispose();
+            Layout.Dispose();
         }
 
         public IEnumerable<FormattedTextLine> GetLines()
@@ -70,7 +68,7 @@ namespace Perspex.Cairo.Media
             int textPosition;
             int trailing;
 
-            var isInside = this.Layout.XyToIndex(
+            var isInside = Layout.XyToIndex(
                 Pango.Units.FromDouble(point.X),
                 Pango.Units.FromDouble(point.Y),
                 out textPosition,
@@ -86,7 +84,7 @@ namespace Perspex.Cairo.Media
 
         public Rect HitTestTextPosition(int index)
         {
-            return this.Layout.IndexToPos(index).ToPerspex();
+            return Layout.IndexToPos(index).ToPerspex();
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
@@ -95,7 +93,7 @@ namespace Perspex.Cairo.Media
 
             for (var i = 0; i < length; i++)
             {
-                ranges.Add(this.HitTestTextPosition(index + i));
+                ranges.Add(HitTestTextPosition(index + i));
             }
 
             return ranges;
@@ -105,7 +103,7 @@ namespace Perspex.Cairo.Media
         {
             int width;
             int height;
-            this.Layout.GetPixelSize(out width, out height);
+            Layout.GetPixelSize(out width, out height);
 
             return new Size(width, height);
         }

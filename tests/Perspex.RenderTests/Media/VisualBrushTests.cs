@@ -51,8 +51,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -90,8 +90,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -129,8 +129,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -166,8 +166,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -203,8 +203,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -240,8 +240,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -277,8 +277,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -314,8 +314,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -352,8 +352,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -390,8 +390,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -429,8 +429,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -469,8 +469,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -508,8 +508,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -547,8 +547,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
@@ -586,8 +586,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
     }
 }

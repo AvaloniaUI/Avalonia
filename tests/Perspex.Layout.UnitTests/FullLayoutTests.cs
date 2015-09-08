@@ -29,7 +29,7 @@ namespace Perspex.Layout.UnitTests
         {
             using (var context = Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 Border border;
                 TextBlock textBlock;
@@ -68,7 +68,7 @@ namespace Perspex.Layout.UnitTests
         {
             using (var context = Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 ScrollViewer scrollViewer;
                 TextBlock textBlock;

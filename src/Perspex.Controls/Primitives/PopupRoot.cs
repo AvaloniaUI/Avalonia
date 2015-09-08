@@ -44,7 +44,7 @@ namespace Perspex.Controls.Primitives
         public PopupRoot(IDependencyResolver dependencyResolver)
             : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
         {
-            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = (PerspexObject)x);
+            GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Perspex.Controls.Primitives
         /// </remarks>
         IInteractive IInteractive.InteractiveParent
         {
-            get { return this.Parent; }
+            get { return Parent; }
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         IVisual IHostedVisualTreeRoot.Host
         {
-            get { return this.Parent; }
+            get { return Parent; }
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="p">The position.</param>
         public void SetPosition(Point p)
         {
-            this.PlatformImpl.SetPosition(p);
+            PlatformImpl.SetPosition(p);
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public void Hide()
         {
-            this.PlatformImpl.Hide();
-            this.IsVisible = false;
+            PlatformImpl.Hide();
+            IsVisible = false;
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public void Show()
         {
-            this.PlatformImpl.Show();
-            this.LayoutManager?.ExecuteLayoutPass();
-            this.IsVisible = true;
+            PlatformImpl.Show();
+            LayoutManager?.ExecuteLayoutPass();
+            IsVisible = true;
         }
 
         /// <inheritdoc/>
@@ -107,7 +107,7 @@ namespace Perspex.Controls.Primitives
         {
             base.OnTemplateApplied();
 
-            if (this.Parent.TemplatedParent != null)
+            if (Parent.TemplatedParent != null)
             {
                 if (_presenterSubscription != null)
                 {
@@ -115,19 +115,19 @@ namespace Perspex.Controls.Primitives
                     _presenterSubscription = null;
                 }
 
-                var presenter = this.Presenter;
+                var presenter = Presenter;
 
                 if (presenter != null)
                 {
                     presenter.GetObservable(ContentPresenter.ChildProperty)
-                        .Subscribe(this.SetTemplatedParentAndApplyChildTemplates);
+                        .Subscribe(SetTemplatedParentAndApplyChildTemplates);
                 }
             }
         }
 
         private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            var templatedParent = this.Parent.TemplatedParent;
+            var templatedParent = Parent.TemplatedParent;
 
             if (control.TemplatedParent == null)
             {
@@ -140,7 +140,7 @@ namespace Perspex.Controls.Primitives
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                    SetTemplatedParentAndApplyChildTemplates(child);
                 }
             }
         }
