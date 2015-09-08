@@ -14,7 +14,7 @@ namespace Perspex.Media
     /// </summary>
     public class PathMarkupParser
     {
-        private static readonly Dictionary<char, Command> s_commands = new Dictionary<char, Command>
+        private static readonly Dictionary<char, Command> Commands = new Dictionary<char, Command>
         {
             { 'F', Command.FillRule },
             { 'f', Command.FillRule },
@@ -184,7 +184,7 @@ namespace Perspex.Media
                 char c = (char)i;
                 Command command = Command.None;
 
-                if (!s_commands.TryGetValue(c, out command))
+                if (!Commands.TryGetValue(c, out command))
                 {
                     if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') &&
                         (lastCommand != Command.None))

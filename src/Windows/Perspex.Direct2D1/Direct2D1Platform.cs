@@ -13,7 +13,7 @@ namespace Perspex.Direct2D1
     {
         private static Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static SharpDX.Direct2D1.Factory s_d2d1Factory = new SharpDX.Direct2D1.Factory();
+        private static SharpDX.Direct2D1.Factory s_d2D1Factory = new SharpDX.Direct2D1.Factory();
 
         private static SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
@@ -23,7 +23,7 @@ namespace Perspex.Direct2D1
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => s_instance, typeof(IPlatformRenderInterface));
-            locator.Register(() => s_d2d1Factory, typeof(SharpDX.Direct2D1.Factory));
+            locator.Register(() => s_d2D1Factory, typeof(SharpDX.Direct2D1.Factory));
             locator.Register(() => s_dwfactory, typeof(SharpDX.DirectWrite.Factory));
             locator.Register(() => s_imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
         }
@@ -60,7 +60,7 @@ namespace Perspex.Direct2D1
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
-            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2d1Factory, width, height);
+            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Factory, width, height);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

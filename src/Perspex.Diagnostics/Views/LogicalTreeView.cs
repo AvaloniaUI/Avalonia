@@ -14,7 +14,7 @@ namespace Perspex.Diagnostics.Views
 
     internal class LogicalTreeView : TreePage
     {
-        private static readonly PerspexProperty<LogicalTreeViewModel> s_viewModelProperty =
+        private static readonly PerspexProperty<LogicalTreeViewModel> ViewModelProperty =
             PerspexProperty.Register<LogicalTreeView, LogicalTreeViewModel>("ViewModel");
 
         public LogicalTreeView()
@@ -26,8 +26,8 @@ namespace Perspex.Diagnostics.Views
 
         public LogicalTreeViewModel ViewModel
         {
-            get { return GetValue(s_viewModelProperty); }
-            private set { SetValue(s_viewModelProperty, value); }
+            get { return GetValue(ViewModelProperty); }
+            private set { SetValue(ViewModelProperty, value); }
         }
 
         private void InitializeComponent()

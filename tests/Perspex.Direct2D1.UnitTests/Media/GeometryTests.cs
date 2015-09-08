@@ -9,7 +9,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
 {
     public class GeometryTests
     {
-        private static readonly RectComparer s_compare = new RectComparer();
+        private static readonly RectComparer Compare = new RectComparer();
 
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
@@ -20,7 +20,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
 
                 var target = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z");
 
-                Assert.Equal(new Rect(0, 2, 4, 8), target.Bounds, s_compare);
+                Assert.Equal(new Rect(0, 2, 4, 8), target.Bounds, Compare);
             }
         }
 
@@ -33,7 +33,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
 
                 var target = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z");
 
-                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(2), s_compare);
+                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(2), Compare);
             }
         }
     }

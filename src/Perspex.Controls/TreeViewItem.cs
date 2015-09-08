@@ -30,7 +30,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
-        private static readonly ITemplate<IPanel> s_defaultPanel =
+        private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
@@ -45,7 +45,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
-            ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(s_defaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
         }
 
         /// <summary>

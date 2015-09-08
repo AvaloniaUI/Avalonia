@@ -11,7 +11,7 @@ namespace Perspex.Gtk
     public class GtkKeyboardDevice : KeyboardDevice
     {
         private static GtkKeyboardDevice s_instance;
-        private static readonly Dictionary<Gdk.Key, string> s_nameDic = new Dictionary<Gdk.Key, string>();
+        private static readonly Dictionary<Gdk.Key, string> NameDic = new Dictionary<Gdk.Key, string>();
 
         static GtkKeyboardDevice()
         {
@@ -19,9 +19,9 @@ namespace Perspex.Gtk
             foreach (var f in typeof(Gdk.Key).GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 var key = (Gdk.Key)f.GetValue(null);
-                if (s_nameDic.ContainsKey(key))
+                if (NameDic.ContainsKey(key))
                     continue;
-                s_nameDic[key] = f.Name;
+                NameDic[key] = f.Name;
             }
         }
 
@@ -41,7 +41,7 @@ namespace Perspex.Gtk
             else
             {
                 string s;
-                if (!s_nameDic.TryGetValue(key, out s))
+                if (!NameDic.TryGetValue(key, out s))
                     s = "Unknown";
                 Key result;
 

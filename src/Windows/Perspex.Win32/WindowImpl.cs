@@ -22,7 +22,7 @@ namespace Perspex.Win32
     {
         private static List<WindowImpl> s_instances = new List<WindowImpl>();
 
-        private static readonly IntPtr s_defaultCursor = UnmanagedMethods.LoadCursor(
+        private static readonly IntPtr DefaultCursor = UnmanagedMethods.LoadCursor(
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
@@ -187,7 +187,7 @@ namespace Perspex.Win32
         public void SetCursor(IPlatformHandle cursor)
         {
             UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR,
-                cursor?.Handle ?? s_defaultCursor);
+                cursor?.Handle ?? DefaultCursor);
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)
@@ -212,7 +212,7 @@ namespace Perspex.Win32
         {
             bool unicode = UnmanagedMethods.IsWindowUnicode(hWnd);
 
-            const double WheelDelta = 120.0;
+            const double wheelDelta = 120.0;
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
@@ -327,7 +327,7 @@ namespace Perspex.Win32
                         timestamp,
                         _owner,
                         ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
-                        new Vector(0, ((int)wParam >> 16) / WheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
+                        new Vector(0, ((int)wParam >> 16) / wheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -388,7 +388,7 @@ namespace Perspex.Win32
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
-                hCursor = s_defaultCursor,
+                hCursor = DefaultCursor,
                 hbrBackground = (IntPtr)5,
                 lpszClassName = _className,
             };

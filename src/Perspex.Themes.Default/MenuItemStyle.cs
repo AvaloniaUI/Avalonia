@@ -21,7 +21,7 @@ namespace Perspex.Themes.Default
     /// </summary>
     public class MenuItemStyle : Styles
     {
-        private static readonly DataTemplate s_accessKeyDataTemplate =
+        private static readonly DataTemplate AccessKeyDataTemplate =
             new DataTemplate<string>(x => new AccessText { Text = x });
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Perspex.Themes.Default
                         {
                             DataTemplates = new DataTemplates
                             {
-                                s_accessKeyDataTemplate,
+                                AccessKeyDataTemplate,
                             },
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
                             [~Layoutable.MarginProperty] = control[~TemplatedControl.PaddingProperty],
@@ -197,7 +197,7 @@ namespace Perspex.Themes.Default
                         {
                             DataTemplates = new DataTemplates
                             {
-                                s_accessKeyDataTemplate,
+                                AccessKeyDataTemplate,
                             },
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],

@@ -18,7 +18,7 @@ namespace Perspex.Gtk
         {
         }
 
-        private static readonly Dictionary<StandardCursorType, object> s_cursorTypeMapping = new Dictionary
+        private static readonly Dictionary<StandardCursorType, object> CursorTypeMapping = new Dictionary
             <StandardCursorType, object>
         {
             { StandardCursorType.AppStarting, CursorType.Watch },
@@ -37,7 +37,7 @@ namespace Perspex.Gtk
             { StandardCursorType.Help, Gtk.Stock.Help }
         };
 
-        private static readonly Dictionary<StandardCursorType, IPlatformHandle> s_cache =
+        private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
             new Dictionary<StandardCursorType, IPlatformHandle>();
 
         private Gdk.Cursor GetCursor(object desc)
@@ -62,12 +62,12 @@ namespace Perspex.Gtk
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
             IPlatformHandle rv;
-            if (!s_cache.TryGetValue(cursorType, out rv))
+            if (!Cache.TryGetValue(cursorType, out rv))
             {
-                s_cache[cursorType] =
+                Cache[cursorType] =
                     rv =
                         new PlatformHandle(
-                            GetCursor(s_cursorTypeMapping[cursorType]).Handle,
+                            GetCursor(CursorTypeMapping[cursorType]).Handle,
                             "GTKCURSOR");
             }
 

@@ -23,7 +23,7 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value of <see cref="IReparentingControl"/> for <see cref="Deck"/>.
         /// </summary>
-        private static readonly ITemplate<IPanel> s_panelTemplate =
+        private static readonly ITemplate<IPanel> PanelTemplate =
             new FuncTemplate<IPanel>(() => new Panel());
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Perspex.Controls
         static Deck()
         {
             AutoSelectProperty.OverrideDefaultValue<Deck>(true);
-            ItemsPanelProperty.OverrideDefaultValue<Deck>(s_panelTemplate);
+            ItemsPanelProperty.OverrideDefaultValue<Deck>(PanelTemplate);
         }
 
         /// <summary>

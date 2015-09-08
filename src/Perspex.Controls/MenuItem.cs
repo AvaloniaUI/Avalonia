@@ -74,7 +74,7 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<IPanel> s_defaultPanel =
+        private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
@@ -97,7 +97,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
-            ItemsPanelProperty.OverrideDefaultValue<MenuItem>(s_defaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);

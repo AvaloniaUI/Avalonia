@@ -13,7 +13,7 @@ namespace Perspex.Utilities
     /// </summary>
     internal static class TypeUtilities
     {
-        private static readonly Dictionary<Type, List<Type>> s_conversions = new Dictionary<Type, List<Type>>()
+        private static readonly Dictionary<Type, List<Type>> Conversions = new Dictionary<Type, List<Type>>()
         {
             { typeof(decimal), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
             { typeof(double), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
@@ -56,7 +56,7 @@ namespace Perspex.Utilities
                 result = value;
                 return true;
             }
-            else if (s_conversions.ContainsKey(to) && s_conversions[to].Contains(from))
+            else if (Conversions.ContainsKey(to) && Conversions[to].Contains(from))
             {
                 result = Convert.ChangeType(value, to);
                 return true;

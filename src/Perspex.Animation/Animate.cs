@@ -22,7 +22,7 @@ namespace Perspex.Animation
         /// <summary>
         /// The time span of each frame.
         /// </summary>
-        private static readonly TimeSpan s_tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
+        private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
         /// <summary>
         /// Initializes static members of the <see cref="Animate"/> class.
@@ -31,7 +31,7 @@ namespace Perspex.Animation
         {
             Stopwatch = new Stopwatch();
             Stopwatch.Start();
-            Timer = Observable.Interval(s_tick, PerspexScheduler.Instance)
+            Timer = Observable.Interval(Tick, PerspexScheduler.Instance)
                 .Select(_ => Stopwatch.Elapsed)
                 .Publish()
                 .RefCount();

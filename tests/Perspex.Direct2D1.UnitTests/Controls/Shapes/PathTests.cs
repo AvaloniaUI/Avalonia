@@ -11,7 +11,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
 {
     public class PathTests
     {
-        private static readonly RectComparer s_compare = new RectComparer();
+        private static readonly RectComparer Compare = new RectComparer();
 
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
@@ -32,7 +32,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, s_compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
             }
         }
 
@@ -66,7 +66,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 //
                 // However Path.Measure doesn't correctly handle strokes currently, so testing for
                 // the (incorrect) current output for now...
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, s_compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
             }
         }
     }

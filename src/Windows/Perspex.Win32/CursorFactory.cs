@@ -20,7 +20,7 @@ namespace Perspex.Win32
         {
         }
 
-        private static readonly Dictionary<StandardCursorType, int> s_cursorTypeMapping = new Dictionary
+        private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
             <StandardCursorType, int>
         {
             { StandardCursorType.AppStarting, 32650 },
@@ -41,18 +41,18 @@ namespace Perspex.Win32
             { StandardCursorType.Wait, 32514 }
         };
 
-        private static readonly Dictionary<StandardCursorType, IPlatformHandle> s_cache =
+        private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
             new Dictionary<StandardCursorType, IPlatformHandle>();
 
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
             IPlatformHandle rv;
-            if (!s_cache.TryGetValue(cursorType, out rv))
+            if (!Cache.TryGetValue(cursorType, out rv))
             {
-                s_cache[cursorType] =
+                Cache[cursorType] =
                     rv =
                         new PlatformHandle(
-                            UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(s_cursorTypeMapping[cursorType])),
+                            UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])),
                             PlatformConstants.CursorHandleType);
             }
 

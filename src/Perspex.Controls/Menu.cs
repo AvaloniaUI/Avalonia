@@ -21,7 +21,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
         /// </summary>
-        private static readonly ITemplate<IPanel> s_defaultPanel =
+        private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Perspex.Controls
         /// </summary>
         static Menu()
         {
-            ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), s_defaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
             MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick);
             MenuItem.SubmenuOpenedEvent.AddClassHandler<Menu>(x => x.OnSubmenuOpened);
         }

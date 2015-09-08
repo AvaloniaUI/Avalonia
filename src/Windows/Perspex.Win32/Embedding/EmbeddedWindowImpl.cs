@@ -8,7 +8,7 @@ namespace Perspex.Win32
 {
     public class EmbeddedWindowImpl : WindowImpl
     {
-        private static readonly System.Windows.Forms.UserControl s_winFormsControl = new System.Windows.Forms.UserControl();
+        private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
 
         public IntPtr Handle { get; private set; }
 
@@ -23,7 +23,7 @@ namespace Perspex.Win32
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
-                s_winFormsControl.Handle,
+                WinFormsControl.Handle,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
