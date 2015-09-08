@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Input;
+using Perspex.Media;
+using Perspex.Rendering;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Perspex.Input;
-    using Perspex.Media;
-    using Perspex.Rendering;
-
     /// <summary>
     /// A text block that displays a character prefixed with an underscore as an access key.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// The access key handler for the current window.
         /// </summary>
-        private IAccessKeyHandler accessKeys;
+        private IAccessKeyHandler _accessKeys;
 
         /// <summary>
         /// Initializes static members of the <see cref="AccessText"/> class.
@@ -118,11 +115,11 @@ namespace Perspex.Controls.Primitives
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-            this.accessKeys = (root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (root as IInputRoot)?.AccessKeyHandler;
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && this.AccessKey != 0)
             {
-                this.accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(this.AccessKey, this);
             }
         }
 
@@ -134,10 +131,10 @@ namespace Perspex.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(root);
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && this.AccessKey != 0)
             {
-                this.accessKeys.Unregister(this);
-                this.accessKeys = null;
+                _accessKeys.Unregister(this);
+                _accessKeys = null;
             }
         }
 
@@ -180,9 +177,9 @@ namespace Perspex.Controls.Primitives
 
             this.AccessKey = key;
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && this.AccessKey != 0)
             {
-                this.accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(this.AccessKey, this);
             }
         }
     }

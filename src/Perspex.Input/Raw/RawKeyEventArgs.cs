@@ -1,8 +1,5 @@
-﻿
-// <copyright file="RawKeyEventArgs.cs" company="Tricycle">
-// Copyright 2014 Tricycle. All rights reserved.
-
-
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Input.Raw
 {
@@ -29,7 +26,7 @@ namespace Perspex.Input.Raw
         public Key Key { get; set; }
 
         public ModifierKeys Modifiers { get; set; }
-        
+
         public RawKeyEventType Type { get; set; }
     }
 }

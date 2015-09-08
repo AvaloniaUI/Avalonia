@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Interactivity;
+using Perspex.VisualTree;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Interactivity;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Handles access keys for a window.
     /// </summary>
@@ -29,22 +26,22 @@ namespace Perspex.Input
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private List<Tuple<string, IInputElement>> registered = new List<Tuple<string, IInputElement>>();
+        private List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
 
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot owner;
+        private IInputRoot _owner;
 
         /// <summary>
         /// Whether access keys are currently being shown;
         /// </summary>
-        private bool showingAccessKeys;
+        private bool _showingAccessKeys;
 
         /// <summary>
         /// Whether to ignore the Alt KeyUp event.
         /// </summary>
-        private bool ignoreAltUp;
+        private bool _ignoreAltUp;
 
         /// <summary>
         /// Gets or sets the window's main menu.
@@ -62,17 +59,17 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(owner != null);
 
-            if (this.owner != null)
+            if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            this.owner = owner;
+            _owner = owner;
 
-            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnPreviewKeyDown, RoutingStrategies.Tunnel);
-            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown, RoutingStrategies.Bubble);
-            this.owner.AddHandler(InputElement.KeyUpEvent, this.OnPreviewKeyUp, RoutingStrategies.Tunnel);
-            this.owner.AddHandler(InputElement.PointerPressedEvent, this.OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.KeyDownEvent, this.OnPreviewKeyDown, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown, RoutingStrategies.Bubble);
+            _owner.AddHandler(InputElement.KeyUpEvent, this.OnPreviewKeyUp, RoutingStrategies.Tunnel);
+            _owner.AddHandler(InputElement.PointerPressedEvent, this.OnPreviewPointerPressed, RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -82,14 +79,14 @@ namespace Perspex.Input
         /// <param name="element">The input element.</param>
         public void Register(char accessKey, IInputElement element)
         {
-            var existing = this.registered.FirstOrDefault(x => x.Item2 == element);
+            var existing = _registered.FirstOrDefault(x => x.Item2 == element);
 
             if (existing != null)
             {
-                this.registered.Remove(existing);
+                _registered.Remove(existing);
             }
 
-            this.registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
+            _registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
         }
 
         /// <summary>
@@ -98,9 +95,9 @@ namespace Perspex.Input
         /// <param name="element">The input element.</param>
         public void Unregister(IInputElement element)
         {
-            foreach (var i in this.registered.Where(x => x.Item2 == element).ToList())
+            foreach (var i in _registered.Where(x => x.Item2 == element).ToList())
             {
-                this.registered.Remove(i);
+                _registered.Remove(i);
             }
         }
 
@@ -117,13 +114,13 @@ namespace Perspex.Input
                 {
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    this.owner.ShowAccessKeys = this.showingAccessKeys = true;
+                    _owner.ShowAccessKeys = _showingAccessKeys = true;
                 }
                 else
                 {
                     // If the Alt key is pressed and the main menu is open, close the main menu.
                     this.CloseMenu();
-                    this.ignoreAltUp = true;
+                    _ignoreAltUp = true;
                 }
 
                 // We always handle the Alt key.
@@ -151,7 +148,7 @@ namespace Perspex.Input
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
                 var text = e.Key.ToString().ToUpper();
-                var matches = this.registered
+                var matches = _registered
                     .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
                     .Select(x => x.Item2);
 
@@ -182,11 +179,11 @@ namespace Perspex.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
-                    if (this.ignoreAltUp)
+                    if (_ignoreAltUp)
                     {
-                        this.ignoreAltUp = false;
+                        _ignoreAltUp = false;
                     }
-                    else if (this.showingAccessKeys && this.MainMenu != null)
+                    else if (_showingAccessKeys && this.MainMenu != null)
                     {
                         this.MainMenu.Open();
                         e.Handled = true;
@@ -195,7 +192,7 @@ namespace Perspex.Input
                     break;
 
                 case Key.F10:
-                    this.owner.ShowAccessKeys = this.showingAccessKeys = true;
+                    _owner.ShowAccessKeys = _showingAccessKeys = true;
                     this.MainMenu.Open();
                     e.Handled = true;
                     break;
@@ -209,9 +206,9 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPreviewPointerPressed(object sender, PointerEventArgs e)
         {
-            if (this.showingAccessKeys)
+            if (_showingAccessKeys)
             {
-                this.owner.ShowAccessKeys = false;
+                _owner.ShowAccessKeys = false;
             }
         }
 
@@ -221,7 +218,7 @@ namespace Perspex.Input
         private void CloseMenu()
         {
             this.MainMenu.Close();
-            this.owner.ShowAccessKeys = this.showingAccessKeys = false;
+            _owner.ShowAccessKeys = _showingAccessKeys = false;
         }
     }
 }

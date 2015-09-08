@@ -1,35 +1,32 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System;
+using System.Reactive.Disposables;
 using Gdk;
+using Perspex.Controls;
+using Perspex.Input.Raw;
+using Perspex.Platform;
 using Perspex.Input;
+using Action = System.Action;
 
 namespace Perspex.Gtk
 {
-    using System;
-    using System.Threading.Tasks;
-    using Perspex.Controls;
-    using Perspex.Input.Raw;
-    using Perspex.Platform;
     using Gtk = global::Gtk;
-    using System.Reactive.Disposables;
 
     public class WindowImpl : Gtk.Window, IWindowImpl
     {
-        private TopLevel owner;
+        private TopLevel _owner;
 
-        private IPlatformHandle windowHandle;
+        private IPlatformHandle _windowHandle;
 
-        private Size clientSize;
+        private Size _clientSize;
 
-        private Gtk.IMContext imContext;
+        private Gtk.IMContext _imContext;
 
-        private uint lastKeyEventTimestamp;
+        private uint _lastKeyEventTimestamp;
 
-        private static readonly Gdk.Cursor DefaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
+        private static readonly Gdk.Cursor s_defaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
 
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
@@ -49,9 +46,9 @@ namespace Perspex.Gtk
             this.Events = Gdk.EventMask.PointerMotionMask |
               Gdk.EventMask.ButtonPressMask |
               Gdk.EventMask.ButtonReleaseMask;
-            this.windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
-            this.imContext =  new Gtk.IMMulticontext();
-            this.imContext.Commit += ImContext_Commit;
+            _windowHandle = new PlatformHandle(this.Handle, "GtkWindow");
+            _imContext = new Gtk.IMMulticontext();
+            _imContext.Commit += ImContext_Commit;
         }
 
         public Size ClientSize
@@ -62,7 +59,7 @@ namespace Perspex.Gtk
 
         IPlatformHandle ITopLevelImpl.Handle
         {
-            get { return this.windowHandle; }
+            get { return _windowHandle; }
         }
 
         public Action Activated { get; set; }
@@ -93,13 +90,13 @@ namespace Perspex.Gtk
         {
             int x, y;
             this.GdkWindow.GetDeskrelativeOrigin(out x, out y);
-            
+
             return new Point(point.X + x, point.Y + y);
         }
 
         public void SetOwner(TopLevel owner)
         {
-            this.owner = owner;
+            _owner = owner;
         }
 
         public void SetTitle(string title)
@@ -110,7 +107,7 @@ namespace Perspex.Gtk
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
+            GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : s_defaultCursor;
         }
 
         public IDisposable ShowDialog()
@@ -144,7 +141,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                this.owner,
+                _owner,
                 RawMouseEventType.LeftButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             this.Input(e);
@@ -156,7 +153,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                this.owner,
+                _owner,
                 RawMouseEventType.LeftButtonUp,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             this.Input(e);
@@ -166,8 +163,8 @@ namespace Perspex.Gtk
         protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
         {
             var newSize = new Size(evnt.Width, evnt.Height);
-            
-            if (newSize != this.clientSize)
+
+            if (newSize != _clientSize)
             {
                 this.Resized(newSize);
             }
@@ -182,8 +179,8 @@ namespace Perspex.Gtk
 
         private bool ProcessKeyEvent(Gdk.EventKey evnt)
         {
-            this.lastKeyEventTimestamp = evnt.Time;
-            if (this.imContext.FilterKeypress(evnt))
+            _lastKeyEventTimestamp = evnt.Time;
+            if (_imContext.FilterKeypress(evnt))
                 return true;
             var e = new RawKeyEventArgs(
                 GtkKeyboardDevice.Instance,
@@ -200,7 +197,7 @@ namespace Perspex.Gtk
 
         private void ImContext_Commit(object o, Gtk.CommitArgs args)
         {
-            this.Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, this.lastKeyEventTimestamp, args.Str));
+            this.Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, _lastKeyEventTimestamp, args.Str));
         }
 
         protected override bool OnExposeEvent(Gdk.EventExpose evnt)
@@ -223,7 +220,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                this.owner,
+                _owner,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt.State));
             this.Input(e);

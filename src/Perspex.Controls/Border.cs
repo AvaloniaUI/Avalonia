@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    using Perspex.Media;
-
     /// <summary>
     /// A control which decorates a child with a border and background.
     /// </summary>

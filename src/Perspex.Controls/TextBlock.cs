@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using Perspex.Media;
-
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
@@ -85,12 +82,12 @@ namespace Perspex.Controls
         /// <summary>
         /// The formatted text used for rendering.
         /// </summary>
-        private FormattedText formattedText;
+        private FormattedText _formattedText;
 
         /// <summary>
         /// Stores the last constraint passed to MeasureOverride.
         /// </summary>
-        private Size constraint;
+        private Size _constraint;
 
         /// <summary>
         /// Initializes static members of the <see cref="TextBlock"/> class.
@@ -186,12 +183,12 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.formattedText == null)
+                if (_formattedText == null)
                 {
-                    this.formattedText = this.CreateFormattedText(this.constraint);
+                    _formattedText = this.CreateFormattedText(_constraint);
                 }
 
-                return this.formattedText;
+                return _formattedText;
             }
         }
 
@@ -253,11 +250,11 @@ namespace Perspex.Controls
         /// </summary>
         protected void InvalidateFormattedText()
         {
-            if (this.formattedText != null)
+            if (_formattedText != null)
             {
-                this.constraint = this.formattedText.Constraint;
-                this.formattedText.Dispose();
-                this.formattedText = null;
+                _constraint = _formattedText.Constraint;
+                _formattedText.Dispose();
+                _formattedText = null;
             }
 
             this.InvalidateMeasure();

@@ -1,27 +1,24 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System;
+using System.Reactive.Linq;
+using Glass;
+using OmniXaml.Typing;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.DataBinding;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using System;
-    using System.Reactive.Linq;
-    using Controls;
-    using DataBinding;
-    using Glass;
-    using OmniXaml.Typing;
-
     public class PerspexXamlMemberValuePlugin : MemberValuePlugin
     {
-        private readonly XamlMember xamlMember;
-        private readonly IPerspexPropertyBinder propertyBinder;
+        private readonly XamlMember _xamlMember;
+        private readonly IPerspexPropertyBinder _propertyBinder;
 
         public PerspexXamlMemberValuePlugin(XamlMember xamlMember, IPerspexPropertyBinder propertyBinder) : base(xamlMember)
         {
-            this.xamlMember = xamlMember;
-            this.propertyBinder = propertyBinder;
+            _xamlMember = xamlMember;
+            _propertyBinder = propertyBinder;
         }
 
         public override void SetValue(object instance, object value)
@@ -63,7 +60,7 @@ namespace Perspex.Markup.Xaml.Context
         private void HandleXamlBindingDefinition(XamlBindingDefinition xamlBindingDefinition)
         {
             PerspexObject subjectObject = xamlBindingDefinition.Target;
-            this.propertyBinder.Create(xamlBindingDefinition);
+            _propertyBinder.Create(xamlBindingDefinition);
 
             var observableForDataContext = subjectObject.GetObservable(Control.DataContextProperty);
             observableForDataContext.Where(o => o != null).Subscribe(_ => this.BindToDataContextWhenItsSet(xamlBindingDefinition));
@@ -74,7 +71,7 @@ namespace Perspex.Markup.Xaml.Context
             var target = definition.Target;
             var dataContext = target.DataContext;
 
-            var binding = this.propertyBinder.GetBinding(target, definition.TargetProperty);
+            var binding = _propertyBinder.GetBinding(target, definition.TargetProperty);
             binding.BindToDataContext(dataContext);
         }
 
@@ -83,8 +80,8 @@ namespace Perspex.Markup.Xaml.Context
         {
             get
             {
-                var underlyingType = this.xamlMember.DeclaringType.UnderlyingType;
-                var name = this.xamlMember.Name + "Property";
+                var underlyingType = _xamlMember.DeclaringType.UnderlyingType;
+                var name = _xamlMember.Name + "Property";
 
                 var value = ReflectionExtensions.GetValueOfStaticField(underlyingType, name);
                 return value as PerspexProperty;
@@ -100,7 +97,7 @@ namespace Perspex.Markup.Xaml.Context
 
         public override string ToString()
         {
-            return $"{{Perspex Value Connector for member {this.xamlMember}}}";
+            return $"{{Perspex Value Connector for member {_xamlMember}}}";
         }
     }
 }

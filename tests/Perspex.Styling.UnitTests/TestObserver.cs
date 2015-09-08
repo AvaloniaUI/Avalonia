@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System;
-
     internal class TestObserver<T> : IObserver<T>
     {
-        private bool hasValue;
+        private bool _hasValue;
 
-        private T value;
+        private T _value;
 
         public bool Completed { get; private set; }
 
@@ -20,7 +17,7 @@ namespace Perspex.Styling.UnitTests
 
         public T GetValue()
         {
-            if (!this.hasValue)
+            if (!_hasValue)
             {
                 throw new Exception("Observable provided no value.");
             }
@@ -35,8 +32,8 @@ namespace Perspex.Styling.UnitTests
                 throw new Exception("Observable errored unexpectedly.");
             }
 
-            this.hasValue = false;
-            return this.value;
+            _hasValue = false;
+            return _value;
         }
 
         public void OnCompleted()
@@ -51,10 +48,10 @@ namespace Perspex.Styling.UnitTests
 
         public void OnNext(T value)
         {
-            if (!this.hasValue)
+            if (!_hasValue)
             {
-                this.value = value;
-                this.hasValue = true;
+                _value = value;
+                _hasValue = true;
             }
             else
             {

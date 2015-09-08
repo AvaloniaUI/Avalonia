@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Perspex.Controls.Primitives;
+using Perspex.Input;
+using Perspex.Threading;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Perspex.Controls.Primitives;
-    using Perspex.Input;
-    using Perspex.Threading;
-
     /// <summary>
     /// A tooltip control.
     /// </summary>
@@ -33,19 +30,19 @@ namespace Perspex.Controls
         /// <summary>
         /// The popup window used to display the active tooltip.
         /// </summary>
-        private static PopupRoot popup;
+        private static PopupRoot s_popup;
 
         /// <summary>
         /// The control that the currently visible tooltip is attached to.
         /// </summary>
-        private static Control current;
+        private static Control s_current;
 
         /// <summary>
         /// Observable fired when a tooltip should be displayed for a control. The output from this
         /// observable is throttled and calls <see cref="ShowToolTip(Control)"/> when the time
         /// period expires.
         /// </summary>
-        private static Subject<Control> show = new Subject<Control>();
+        private static Subject<Control> s_show = new Subject<Control>();
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -53,7 +50,7 @@ namespace Perspex.Controls
         static ToolTip()
         {
             TipProperty.Changed.Subscribe(TipChanged);
-            show.Throttle(TimeSpan.FromSeconds(0.5), PerspexScheduler.Instance).Subscribe(ShowToolTip);
+            s_show.Throttle(TimeSpan.FromSeconds(0.5), PerspexScheduler.Instance).Subscribe(ShowToolTip);
         }
 
         /// <summary>
@@ -107,24 +104,24 @@ namespace Perspex.Controls
         {
             if (control != null)
             {
-                if (popup == null)
+                if (s_popup == null)
                 {
-                    popup = new PopupRoot
+                    s_popup = new PopupRoot
                     {
                         Content = new ToolTip(),
                     };
 
-                    ((ISetLogicalParent)popup).SetParent(control);
+                    ((ISetLogicalParent)s_popup).SetParent(control);
                 }
 
                 var cp = MouseDevice.Instance?.GetPosition(control);
                 var position = control.PointToScreen(cp.HasValue ? cp.Value : new Point(0, 0)) + new Vector(0, 22);
 
-                ((ToolTip)popup.Content).Content = GetTip(control);
-                popup.SetPosition(position);
-                popup.Show();
+                ((ToolTip)s_popup.Content).Content = GetTip(control);
+                s_popup.SetPosition(position);
+                s_popup.Show();
 
-                current = control;
+                s_current = control;
             }
         }
 
@@ -135,8 +132,8 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private static void ControlPointerEnter(object sender, PointerEventArgs e)
         {
-            current = (Control)sender;
-            show.OnNext(current);
+            s_current = (Control)sender;
+            s_show.OnNext(s_current);
         }
 
         /// <summary>
@@ -148,14 +145,14 @@ namespace Perspex.Controls
         {
             var control = (Control)sender;
 
-            if (control == current)
+            if (control == s_current)
             {
-                if (popup != null && popup.IsVisible)
+                if (s_popup != null && s_popup.IsVisible)
                 {
-                    popup.Hide();
+                    s_popup.Hide();
                 }
 
-                show.OnNext(null);
+                s_show.OnNext(null);
             }
         }
     }

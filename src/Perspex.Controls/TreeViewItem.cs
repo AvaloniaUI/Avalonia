@@ -1,21 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Rendering;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using Mixins;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Rendering;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
@@ -33,13 +30,13 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
+        private static readonly ITemplate<IPanel> s_defaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
             });
 
-        private TreeView treeView;
+        private TreeView _treeView;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -48,7 +45,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
-            ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(s_defaultPanel);
         }
 
         /// <summary>
@@ -72,14 +69,14 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            if (this.treeView == null)
+            if (_treeView == null)
             {
                 throw new InvalidOperationException(
                     "Cannot get the ItemContainerGenerator for a TreeViewItem " +
                     "before it is added to a TreeView.");
             }
 
-            return this.treeView.ItemContainerGenerator;
+            return _treeView.ItemContainerGenerator;
         }
 
         /// <inheritdoc/>
@@ -89,16 +86,16 @@ namespace Perspex.Controls
 
             if (this.GetVisualParent() != null)
             {
-                this.treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
+                _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
 
-                if (this.treeView == null)
+                if (_treeView == null)
                 {
                     throw new InvalidOperationException("TreeViewItems must be added to a TreeView.");
                 }
             }
             else
             {
-                this.treeView = null;
+                _treeView = null;
             }
         }
 

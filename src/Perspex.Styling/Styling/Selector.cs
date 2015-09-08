@@ -1,27 +1,24 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Collections.Generic;
-
     public class Selector
     {
-        private Func<IStyleable, SelectorMatch> evaluate;
+        private Func<IStyleable, SelectorMatch> _evaluate;
 
-        private bool inTemplate;
+        private bool _inTemplate;
 
-        private bool stopTraversal;
+        private bool _stopTraversal;
 
-        private string description;
+        private string _description;
 
         public Selector()
         {
-            this.evaluate = _ => SelectorMatch.True;
+            _evaluate = _ => SelectorMatch.True;
         }
 
         public Selector(
@@ -35,10 +32,10 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(previous != null);
 
             this.Previous = previous;
-            this.evaluate = evaluate;
+            _evaluate = evaluate;
             this.SelectorString = selectorString;
-            this.inTemplate = inTemplate || previous.inTemplate;
-            this.stopTraversal = stopTraversal;
+            _inTemplate = inTemplate || previous._inTemplate;
+            _stopTraversal = stopTraversal;
         }
 
         public Selector Previous
@@ -55,7 +52,7 @@ namespace Perspex.Styling
 
         public Selector MovePrevious()
         {
-            return this.stopTraversal ? null : this.Previous;
+            return _stopTraversal ? null : this.Previous;
         }
 
         public SelectorMatch Match(IStyleable control)
@@ -65,12 +62,12 @@ namespace Perspex.Styling
 
             while (selector != null)
             {
-                if (selector.inTemplate && control.TemplatedParent == null)
+                if (selector._inTemplate && control.TemplatedParent == null)
                 {
                     return SelectorMatch.False;
                 }
 
-                var match = selector.evaluate(control);
+                var match = selector._evaluate(control);
 
                 if (match.ImmediateResult == false)
                 {
@@ -96,7 +93,7 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            if (this.description == null)
+            if (_description == null)
             {
                 string result = string.Empty;
 
@@ -105,10 +102,10 @@ namespace Perspex.Styling
                     result = this.Previous.ToString();
                 }
 
-                this.description = result + this.SelectorString;
+                _description = result + this.SelectorString;
             }
 
-            return this.description;
+            return _description;
         }
     }
 }

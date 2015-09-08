@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive;
 
 namespace Perspex.Layout
 {
-    using System;
-    using System.Reactive;
-
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>

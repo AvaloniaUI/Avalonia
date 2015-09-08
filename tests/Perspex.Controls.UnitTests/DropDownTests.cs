@@ -1,27 +1,19 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Platform;
+using Ploeh.AutoFixture;
+using Ploeh.AutoFixture.AutoMoq;
+using Splat;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Moq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
-    using Xunit;
-
     public class DropDownTests
     {
         [Fact(Skip = "Need to decide if this is right")]

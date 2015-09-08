@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using SharpDX;
+using SharpDX.Direct2D1;
+using DWrite = SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1
 {
-    using System;
-    using System.Linq;
-    using SharpDX;
-    using SharpDX.Direct2D1;
-    using DWrite = SharpDX.DirectWrite;
-
     public static class PrimitiveExtensions
     {
         public static Rect ToPerspex(this RectangleF r)

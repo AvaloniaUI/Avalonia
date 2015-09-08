@@ -1,25 +1,22 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Reactive.Linq;
+using Perspex.Controls;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using ReactiveUI;
-
     internal class VisualTreeViewModel : ReactiveObject
     {
-        private VisualTreeNode selected;
+        private VisualTreeNode _selected;
 
-        private ObservableAsPropertyHelper<ControlDetailsViewModel> details;
+        private ObservableAsPropertyHelper<ControlDetailsViewModel> _details;
 
         public VisualTreeViewModel(Control root)
         {
             this.Nodes = VisualTreeNode.Create(root);
-            this.details = this.WhenAnyValue(x => x.SelectedNode)
+            _details = this.WhenAnyValue(x => x.SelectedNode)
                 .Select(x => x != null ? new ControlDetailsViewModel(x.Control) : null)
                 .ToProperty(this, x => x.Details);
         }
@@ -28,13 +25,13 @@ namespace Perspex.Diagnostics.ViewModels
 
         public VisualTreeNode SelectedNode
         {
-            get { return this.selected; }
-            set { this.RaiseAndSetIfChanged(ref this.selected, value); }
+            get { return _selected; }
+            set { this.RaiseAndSetIfChanged(ref _selected, value); }
         }
 
         public ControlDetailsViewModel Details
         {
-            get { return this.details.Value; }
+            get { return _details.Value; }
         }
     }
 }

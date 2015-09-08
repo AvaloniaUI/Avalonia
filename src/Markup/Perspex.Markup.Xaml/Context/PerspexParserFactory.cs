@@ -1,19 +1,16 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using OmniXaml;
+using OmniXaml.ObjectAssembler;
+using OmniXaml.Parsers.ProtoParser;
+using OmniXaml.Parsers.XamlInstructions;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using OmniXaml;
-    using OmniXaml.ObjectAssembler;
-    using OmniXaml.Parsers.ProtoParser;
-    using OmniXaml.Parsers.XamlInstructions;
-
     public class PerspexParserFactory : IXamlParserFactory
     {
-        private readonly IWiringContext wiringContext;
+        private readonly IWiringContext _wiringContext;
 
         public PerspexParserFactory()
             : this(new TypeFactory())
@@ -22,7 +19,7 @@ namespace Perspex.Markup.Xaml.Context
 
         public PerspexParserFactory(ITypeFactory typeFactory)
         {
-            this.wiringContext = new PerspexWiringContext(typeFactory);
+            _wiringContext = new PerspexWiringContext(typeFactory);
         }
 
         public IXamlParser CreateForReadingFree()
@@ -34,10 +31,10 @@ namespace Perspex.Markup.Xaml.Context
 
         private IXamlParser CreateParser(IObjectAssembler objectAssemblerForUndefinedRoot)
         {
-            var xamlInstructionParser = new OrderAwareXamlInstructionParser(new XamlInstructionParser(this.wiringContext));
+            var xamlInstructionParser = new OrderAwareXamlInstructionParser(new XamlInstructionParser(_wiringContext));
 
             var phaseParserKit = new PhaseParserKit(
-                new XamlProtoInstructionParser(this.wiringContext),
+                new XamlProtoInstructionParser(_wiringContext),
                 xamlInstructionParser,
                 objectAssemblerForUndefinedRoot);
 
@@ -46,7 +43,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private IObjectAssembler GetObjectAssemblerForUndefinedRoot()
         {
-            return new ObjectAssembler(this.wiringContext, new TopDownMemberValueContext());
+            return new ObjectAssembler(_wiringContext, new TopDownMemberValueContext());
         }
 
         public IXamlParser CreateForReadingSpecificInstance(object rootInstance)
@@ -58,7 +55,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private IObjectAssembler GetObjectAssemblerForSpecificRoot(object rootInstance)
         {
-            return new PerspexObjectAssembler(this.wiringContext, new ObjectAssemblerSettings { RootInstance = rootInstance });
+            return new PerspexObjectAssembler(_wiringContext, new ObjectAssemblerSettings { RootInstance = rootInstance });
         }
     }
 }

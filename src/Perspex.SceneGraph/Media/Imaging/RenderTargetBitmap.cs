@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Media.Imaging
 {
-    using System;
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
     /// </summary>

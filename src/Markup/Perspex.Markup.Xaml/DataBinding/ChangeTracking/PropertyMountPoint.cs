@@ -1,25 +1,22 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reflection;
+using Glass;
 
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
-    using System;
-    using System.Reflection;
-    using Glass;
-
     public class PropertyMountPoint
     {
-        private readonly TargettedProperty referencedTargettedProperty;
+        private readonly TargettedProperty _referencedTargettedProperty;
 
         public PropertyMountPoint(object origin, PropertyPath propertyPath)
         {
             Guard.ThrowIfNull(origin, nameof(origin));
             Guard.ThrowIfNull(propertyPath, nameof(propertyPath));
 
-            this.referencedTargettedProperty = GetReferencedPropertyInfo(origin, propertyPath, 0);
+            _referencedTargettedProperty = GetReferencedPropertyInfo(origin, propertyPath, 0);
         }
 
         private static TargettedProperty GetReferencedPropertyInfo(object current, PropertyPath propertyPath, int level)
@@ -41,15 +38,15 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         {
             get
             {
-                return this.referencedTargettedProperty.Value;
+                return _referencedTargettedProperty.Value;
             }
 
             set
             {
-                this.referencedTargettedProperty.Value = value;
+                _referencedTargettedProperty.Value = value;
             }
         }
 
-        public Type ProperyType => this.referencedTargettedProperty.PropertyType;
+        public Type ProperyType => _referencedTargettedProperty.PropertyType;
     }
 }

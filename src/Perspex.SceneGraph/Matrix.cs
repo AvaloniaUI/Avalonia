@@ -1,25 +1,22 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Globalization;
 
 namespace Perspex
 {
-    using System;
-    using System.Globalization;
-
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
     public struct Matrix
     {
-        private double m11;
-        private double m12;
-        private double m21;
-        private double m22;
-        private double m31;
-        private double m32;
+        private double _m11;
+        private double _m12;
+        private double _m21;
+        private double _m22;
+        private double _m31;
+        private double _m32;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Matrix"/> struct.
@@ -38,12 +35,12 @@ namespace Perspex
             double offsetX,
             double offsetY)
         {
-            this.m11 = m11;
-            this.m12 = m12;
-            this.m21 = m21;
-            this.m22 = m22;
-            this.m31 = offsetX;
-            this.m32 = offsetY;
+            _m11 = m11;
+            _m12 = m12;
+            _m21 = m21;
+            _m22 = m22;
+            _m31 = offsetX;
+            _m32 = offsetY;
         }
 
         /// <summary>
@@ -67,7 +64,7 @@ namespace Perspex
         /// </summary>
         public double M11
         {
-            get { return this.m11; }
+            get { return _m11; }
         }
 
         /// <summary>
@@ -75,7 +72,7 @@ namespace Perspex
         /// </summary>
         public double M12
         {
-            get { return this.m12; }
+            get { return _m12; }
         }
 
         /// <summary>
@@ -83,7 +80,7 @@ namespace Perspex
         /// </summary>
         public double M21
         {
-            get { return this.m21; }
+            get { return _m21; }
         }
 
         /// <summary>
@@ -91,7 +88,7 @@ namespace Perspex
         /// </summary>
         public double M22
         {
-            get { return this.m22; }
+            get { return _m22; }
         }
 
         /// <summary>
@@ -99,7 +96,7 @@ namespace Perspex
         /// </summary>
         public double M31
         {
-            get { return this.m31; }
+            get { return _m31; }
         }
 
         /// <summary>
@@ -107,7 +104,7 @@ namespace Perspex
         /// </summary>
         public double M32
         {
-            get { return this.m32; }
+            get { return _m32; }
         }
 
         /// <summary>
@@ -123,8 +120,8 @@ namespace Perspex
                 (value1.M11 * value2.M12) + (value1.M12 * value2.M22),
                 (value1.M21 * value2.M11) + (value1.M22 * value2.M21),
                 (value1.M21 * value2.M12) + (value1.M22 * value2.M22),
-                (value1.m31 * value2.M11) + (value1.m32 * value2.M21) + value2.m31,
-                (value1.m31 * value2.M12) + (value1.m32 * value2.M22) + value2.m32);
+                (value1._m31 * value2.M11) + (value1._m32 * value2.M21) + value2._m31,
+                (value1._m31 * value2.M12) + (value1._m32 * value2.M22) + value2._m32);
         }
 
         /// <summary>
@@ -233,7 +230,7 @@ namespace Perspex
         /// </remarks>
         public double GetDeterminant()
         {
-            return (this.m11 * this.m22) - (this.m12 * this.m21);
+            return (_m11 * _m22) - (_m12 * _m21);
         }
 
         /// <summary>
@@ -243,12 +240,12 @@ namespace Perspex
         /// <returns>True if this matrix is equal to other; False otherwise.</returns>
         public bool Equals(Matrix other)
         {
-            return this.m11 == other.M11 &&
-                   this.m12 == other.M12 &&
-                   this.m21 == other.M21 &&
-                   this.m22 == other.M22 &&
-                   this.m31 == other.M31 &&
-                   this.m32 == other.M32;
+            return _m11 == other.M11 &&
+                   _m12 == other.M12 &&
+                   _m21 == other.M21 &&
+                   _m22 == other.M22 &&
+                   _m31 == other.M31 &&
+                   _m32 == other.M32;
         }
 
         /// <summary>
@@ -309,12 +306,12 @@ namespace Perspex
             double d = this.GetDeterminant();
 
             return new Matrix(
-                this.m22 / d,
-                -this.m12 / d,
-                -this.m21 / d,
-                this.m11 / d,
-                ((this.m21 * this.m32) - (this.m22 * this.m31)) / d,
-                ((this.m12 * this.m31) - (this.m11 * this.m32)) / d);
+                _m22 / d,
+                -_m12 / d,
+                -_m21 / d,
+                _m11 / d,
+                ((_m21 * _m32) - (_m22 * _m31)) / d,
+                ((_m12 * _m31) - (_m11 * _m32)) / d);
         }
     }
 }

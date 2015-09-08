@@ -1,22 +1,25 @@
-﻿namespace XamlTestApplication
-{
-    using System;
-    using System.Diagnostics;
-    using System.Windows.Threading;
-    using Perspex;
-    using Perspex.Collections;
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
-    using ReactiveUI;
-    using Views;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-    class Item
+using System;
+using System.Diagnostics;
+using System.Windows.Threading;
+using Perspex;
+using Perspex.Collections;
+using Perspex.Controls;
+using Perspex.Controls.Templates;
+using ReactiveUI;
+using XamlTestApplication.Views;
+
+namespace XamlTestApplication
+{
+    internal class Item
     {
         public string Name { get; set; }
         public string Value { get; set; }
     }
 
-    class Node
+    internal class Node
     {
         public Node()
         {
@@ -27,9 +30,9 @@
         public PerspexList<Node> Children { get; set; }
     }
 
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             var foo = Dispatcher.CurrentDispatcher;
 
@@ -46,10 +49,10 @@
 
             var testCommand = ReactiveCommand.Create();
             testCommand.Subscribe(_ => Debug.WriteLine("Test command executed."));
-            
+
             var window = new MainWindow();
             window.Show();
             Application.Current.Run(window);
-        }      
+        }
     }
 }

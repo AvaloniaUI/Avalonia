@@ -1,48 +1,44 @@
-﻿
-
-
-
-
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Runtime.InteropServices;
+using Perspex.Controls;
+using Perspex.Input.Raw;
+using Perspex.Platform;
+using Perspex.Win32.Input;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using System.Runtime.InteropServices;
-    using Perspex.Controls;
-    using Perspex.Input.Raw;
-    using Perspex.Platform;
-    using Perspex.Win32.Input;
-    using Perspex.Win32.Interop;
-
     public class WindowImpl : IWindowImpl
     {
-        private static List<WindowImpl> instances = new List<WindowImpl>();
+        private static List<WindowImpl> s_instances = new List<WindowImpl>();
 
-        private static readonly IntPtr DefaultCursor = UnmanagedMethods.LoadCursor(
-            IntPtr.Zero, new IntPtr((int) UnmanagedMethods.Cursor.IDC_ARROW));
+        private static readonly IntPtr s_defaultCursor = UnmanagedMethods.LoadCursor(
+            IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
-        private UnmanagedMethods.WndProc wndProcDelegate;
+        private UnmanagedMethods.WndProc _wndProcDelegate;
 
-        private string className;
+        private string _className;
 
-        private IntPtr hwnd;
+        private IntPtr _hwnd;
 
-        private TopLevel owner;
+        private TopLevel _owner;
 
-        private bool trackingMouse;
+        private bool _trackingMouse;
 
         public WindowImpl()
         {
             this.CreateWindow();
-            instances.Add(this);
+            s_instances.Add(this);
         }
 
         public Action Activated { get; set; }
@@ -62,7 +58,7 @@ namespace Perspex.Win32
             get
             {
                 UnmanagedMethods.RECT rect;
-                UnmanagedMethods.GetClientRect(this.hwnd, out rect);
+                UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom);
             }
 
@@ -70,14 +66,14 @@ namespace Perspex.Win32
             {
                 if (value != this.ClientSize)
                 {
-                    var style = UnmanagedMethods.GetWindowLong(this.hwnd, -16);
-                    var exStyle = UnmanagedMethods.GetWindowLong(this.hwnd, -20);
+                    var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
+                    var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
                     var padding = new UnmanagedMethods.RECT();
 
                     if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
                     {
                         UnmanagedMethods.SetWindowPos(
-                            this.hwnd,
+                            _hwnd,
                             IntPtr.Zero,
                             0,
                             0,
@@ -97,13 +93,13 @@ namespace Perspex.Win32
 
         public bool IsEnabled
         {
-            get { return UnmanagedMethods.IsWindowEnabled(this.hwnd); }
-            set { UnmanagedMethods.EnableWindow(this.hwnd, value); }
+            get { return UnmanagedMethods.IsWindowEnabled(_hwnd); }
+            set { UnmanagedMethods.EnableWindow(_hwnd, value); }
         }
 
         public void Activate()
         {
-            UnmanagedMethods.SetActiveWindow(this.hwnd);
+            UnmanagedMethods.SetActiveWindow(_hwnd);
         }
 
         public IPopupImpl CreatePopup()
@@ -113,13 +109,13 @@ namespace Perspex.Win32
 
         public void Dispose()
         {
-            instances.Remove(this);
-            UnmanagedMethods.DestroyWindow(this.hwnd);
+            s_instances.Remove(this);
+            UnmanagedMethods.DestroyWindow(_hwnd);
         }
 
         public void Hide()
         {
-            UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
+            UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
         public void Invalidate(Rect rect)
@@ -132,41 +128,41 @@ namespace Perspex.Win32
                 bottom = (int)rect.Bottom,
             };
 
-            UnmanagedMethods.InvalidateRect(this.hwnd, ref r, false);
+            UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);
         }
 
         public Point PointToScreen(Point point)
         {
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
-            UnmanagedMethods.ClientToScreen(this.hwnd, ref p);
+            UnmanagedMethods.ClientToScreen(_hwnd, ref p);
             return new Point(p.X, p.Y);
         }
 
         public void SetOwner(TopLevel owner)
         {
-            this.owner = owner;
+            _owner = owner;
         }
 
         public void SetTitle(string title)
         {
-            UnmanagedMethods.SetWindowText(this.hwnd, title);
+            UnmanagedMethods.SetWindowText(_hwnd, title);
         }
 
         public virtual void Show()
         {
-            UnmanagedMethods.ShowWindow(this.hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
+            UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
         }
 
         public virtual IDisposable ShowDialog()
         {
-            var disabled = instances.Where(x => x != this && x.IsEnabled).ToList();
+            var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
             TopLevel activated = null;
 
             foreach (var window in disabled)
             {
-                if (window.owner.IsActive)
+                if (window._owner.IsActive)
                 {
-                    activated = window.owner;
+                    activated = window._owner;
                 }
 
                 window.IsEnabled = false;
@@ -190,8 +186,8 @@ namespace Perspex.Win32
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            UnmanagedMethods.SetClassLong(this.hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR,
-                cursor?.Handle ?? DefaultCursor);
+            UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR,
+                cursor?.Handle ?? s_defaultCursor);
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)
@@ -253,7 +249,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     if (this.Closed != null)
                     {
-                        UnmanagedMethods.UnregisterClass(this.className, Marshal.GetHINSTANCE(this.GetType().Module));
+                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(this.GetType().Module));
                         this.Closed();
                     }
 
@@ -281,7 +277,7 @@ namespace Perspex.Win32
                     if (wParam.ToInt32() > 32)
                     {
                         e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
-                            new string((char) wParam.ToInt32(), 1));
+                            new string((char)wParam.ToInt32(), 1));
                     }
 
                     break;
@@ -289,7 +285,7 @@ namespace Perspex.Win32
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
-                        this.owner,
+                        _owner,
                         RawMouseEventType.LeftButtonDown,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -298,19 +294,19 @@ namespace Perspex.Win32
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
-                        this.owner,
+                        _owner,
                         RawMouseEventType.LeftButtonUp,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
-                    if (!this.trackingMouse)
+                    if (!_trackingMouse)
                     {
                         var tm = new UnmanagedMethods.TRACKMOUSEEVENT
                         {
                             cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.TRACKMOUSEEVENT)),
                             dwFlags = 2,
-                            hwndTrack = this.hwnd,
+                            hwndTrack = _hwnd,
                             dwHoverTime = 0,
                         };
 
@@ -320,7 +316,7 @@ namespace Perspex.Win32
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
-                        this.owner,
+                        _owner,
                         RawMouseEventType.Move,
                         new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -329,17 +325,17 @@ namespace Perspex.Win32
                     e = new RawMouseWheelEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
-                        this.owner,
+                        _owner,
                         this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
                         new Vector(0, ((int)wParam >> 16) / WheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
-                    this.trackingMouse = false;
+                    _trackingMouse = false;
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
-                        this.owner,
+                        _owner,
                         RawMouseEventType.LeaveWindow,
                         new Point(), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -349,12 +345,12 @@ namespace Perspex.Win32
                     {
                         UnmanagedMethods.PAINTSTRUCT ps;
 
-                        if (UnmanagedMethods.BeginPaint(this.hwnd, out ps) != IntPtr.Zero)
+                        if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
                         {
                             UnmanagedMethods.RECT r;
-                            UnmanagedMethods.GetUpdateRect(this.hwnd, out r, false);
+                            UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
                             this.Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), this.Handle);
-                            UnmanagedMethods.EndPaint(this.hwnd, ref ps);
+                            UnmanagedMethods.EndPaint(_hwnd, ref ps);
                         }
                     }
 
@@ -382,19 +378,19 @@ namespace Perspex.Win32
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            this.wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+            _wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
 
-            this.className = Guid.NewGuid().ToString();
+            _className = Guid.NewGuid().ToString();
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 style = 0,
-                lpfnWndProc = this.wndProcDelegate,
+                lpfnWndProc = _wndProcDelegate,
                 hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
-                hCursor = DefaultCursor,
+                hCursor = s_defaultCursor,
                 hbrBackground = (IntPtr)5,
-                lpszClassName = this.className,
+                lpszClassName = _className,
             };
 
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
@@ -404,20 +400,20 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.hwnd = this.CreateWindowOverride(atom);
+            _hwnd = this.CreateWindowOverride(atom);
 
-            if (this.hwnd == IntPtr.Zero)
+            if (_hwnd == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
 
-            this.Handle = new PlatformHandle(this.hwnd, PlatformConstants.WindowHandleType);
+            this.Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
         }
 
         private Point ScreenToClient(uint x, uint y)
         {
             var p = new UnmanagedMethods.POINT { X = (int)x, Y = (int)y };
-            UnmanagedMethods.ScreenToClient(this.hwnd, ref p);
+            UnmanagedMethods.ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y);
         }
     }

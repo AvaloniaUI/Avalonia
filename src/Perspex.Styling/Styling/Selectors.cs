@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Reflection;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Linq;
-    using System.Reflection;
-
     public static class Selectors
     {
         public static Selector Child(this Selector previous)

@@ -1,30 +1,27 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Moq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Diagnostics;
+using Perspex.Input;
+using Perspex.Platform;
+using Perspex.Rendering;
+using Perspex.Styling;
+using Perspex.Themes.Default;
+using Ploeh.AutoFixture;
+using Ploeh.AutoFixture.AutoMoq;
+using Splat;
+using Xunit;
 
 namespace Perspex.Layout.UnitTests
 {
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using Moq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Diagnostics;
-    using Perspex.Input;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Perspex.Styling;
-    using Perspex.Themes.Default;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
-    using Xunit;
-
     public class FullLayoutTests
     {
         [Fact]

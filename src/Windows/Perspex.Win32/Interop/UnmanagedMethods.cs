@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Perspex.Win32.Interop
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.InteropServices;
-    using System.Text;
-
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Using Win32 naming for consistency.")]
@@ -656,13 +653,13 @@ namespace Perspex.Win32.Interop
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool CloseClipboard();
-        
+
         [DllImport("user32.dll")]
         public static extern bool EmptyClipboard();
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetClipboardData(ClipboardFormat uFormat);
-        
+
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
@@ -677,7 +674,7 @@ namespace Perspex.Win32.Interop
         public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        public static extern IntPtr GlobalFree(IntPtr  hMem);
+        public static extern IntPtr GlobalFree(IntPtr hMem);
 
 
 

@@ -1,32 +1,29 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using SharpDX;
+using SharpDX.Direct2D1;
+using SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using SharpDX;
-    using SharpDX.Direct2D1;
-    using SharpDX.DirectWrite;
-
     internal class PerspexTextRenderer : TextRenderer
     {
-        private DrawingContext context;
+        private DrawingContext _context;
 
-        private RenderTarget renderTarget;
+        private RenderTarget _renderTarget;
 
-        private Brush foreground;
+        private Brush _foreground;
 
         public PerspexTextRenderer(
             DrawingContext context,
             RenderTarget target,
             Brush foreground)
         {
-            this.context = context;
-            this.renderTarget = target;
-            this.foreground = foreground;
+            _context = context;
+            _renderTarget = target;
+            _foreground = foreground;
         }
 
         public IDisposable Shadow
@@ -52,10 +49,10 @@ namespace Perspex.Direct2D1.Media
 
             // TODO: Work out how to get the size below rather than passing new Size().
             var brush = (wrapper == null) ?
-                this.foreground :
-                this.context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
+                _foreground :
+                _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
 
-            this.renderTarget.DrawGlyphRun(
+            _renderTarget.DrawGlyphRun(
                 new Vector2(baselineOriginX, baselineOriginY),
                 glyphRun,
                 brush,
@@ -86,12 +83,12 @@ namespace Perspex.Direct2D1.Media
 
         public Matrix3x2 GetCurrentTransform(object clientDrawingContext)
         {
-            return this.renderTarget.Transform;
+            return _renderTarget.Transform;
         }
 
         public float GetPixelsPerDip(object clientDrawingContext)
         {
-            return this.renderTarget.DotsPerInch.Width / 96;
+            return _renderTarget.DotsPerInch.Width / 96;
         }
 
         public bool IsPixelSnappingDisabled(object clientDrawingContext)

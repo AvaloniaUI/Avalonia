@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Collections;
+using Perspex.Controls;
+using Perspex.Media;
 
 namespace Perspex.Controls.Shapes
 {
-    using System;
-    using Perspex.Collections;
-    using Perspex.Controls;
-    using Perspex.Media;
-
     public abstract class Shape : Control
     {
         public static readonly PerspexProperty<Brush> FillProperty =
@@ -28,9 +25,9 @@ namespace Perspex.Controls.Shapes
         public static readonly PerspexProperty<double> StrokeThicknessProperty =
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
-        private Matrix transform = Matrix.Identity;
+        private Matrix _transform = Matrix.Identity;
 
-        private Geometry renderedGeometry;
+        private Geometry _renderedGeometry;
 
         static Shape()
         {
@@ -56,16 +53,16 @@ namespace Perspex.Controls.Shapes
         {
             get
             {
-                if (this.renderedGeometry == null)
+                if (_renderedGeometry == null)
                 {
                     if (this.DefiningGeometry != null)
                     {
-                        this.renderedGeometry = this.DefiningGeometry.Clone();
-                        this.renderedGeometry.Transform = new MatrixTransform(this.transform);
+                        _renderedGeometry = this.DefiningGeometry.Clone();
+                        _renderedGeometry.Transform = new MatrixTransform(_transform);
                     }
                 }
 
-                return this.renderedGeometry;
+                return _renderedGeometry;
             }
         }
 
@@ -181,10 +178,10 @@ namespace Perspex.Controls.Shapes
 
             var t = translate * Matrix.CreateScale(sx, sy);
 
-            if (this.transform != t)
+            if (_transform != t)
             {
-                this.transform = t;
-                this.renderedGeometry = null;
+                _transform = t;
+                _renderedGeometry = null;
             }
 
             return new Size(shapeSize.Width * sx, shapeSize.Height * sy);

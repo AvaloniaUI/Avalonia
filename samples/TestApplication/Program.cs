@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Reactive.Linq;
 using Perspex;
 using Perspex.Animation;
@@ -18,13 +21,13 @@ using ReactiveUI;
 
 namespace TestApplication
 {
-    class Item
+    internal class Item
     {
         public string Name { get; set; }
         public string Value { get; set; }
     }
 
-    class Node
+    internal class Node
     {
         public Node()
         {
@@ -35,9 +38,9 @@ namespace TestApplication
         public PerspexList<Node> Children { get; set; }
     }
 
-    class Program
+    internal class Program
     {
-        private static PerspexList<Node> treeData = new PerspexList<Node>
+        private static PerspexList<Node> s_treeData = new PerspexList<Node>
         {
             new Node
             {
@@ -75,7 +78,7 @@ namespace TestApplication
             },
         };
 
-        private static PerspexList<Item> listBoxData = new PerspexList<Item>
+        private static PerspexList<Item> s_listBoxData = new PerspexList<Item>
         {
             new Item { Name = "Item 1", Value = "Item 1 Value" },
             new Item { Name = "Item 2", Value = "Item 2 Value" },
@@ -87,7 +90,7 @@ namespace TestApplication
             new Item { Name = "Item 8", Value = "Item 8 Value" },
         };
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //Log.Logger = new LoggerConfiguration()
             //    .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
@@ -264,7 +267,7 @@ namespace TestApplication
 
             var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
-            
+
             var result = new TabItem
             {
                 Header = "Buttons",
@@ -356,7 +359,7 @@ namespace TestApplication
 
                 close.Subscribe(x => dialog.Close(x));
 
-                showDialogButton.Content =  await dialog.ShowDialog<string>();
+                showDialogButton.Content = await dialog.ShowDialog<string>();
             });
 
             return result;
@@ -402,7 +405,7 @@ namespace TestApplication
                         new TextBox
                         {
                             AcceptsReturn = true,
-                            Text = "A wrapping text box. " + 
+                            Text = "A wrapping text box. " +
                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. " +
                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
@@ -488,17 +491,17 @@ namespace TestApplication
                         new TreeView
                         {
                             Name = "treeView",
-                            Items = treeData,
+                            Items = s_treeData,
                         },
                         (listBox = new ListBox
                         {
-                            Items = listBoxData,
+                            Items = s_listBoxData,
                             MaxHeight = 300,
                         }),
                         new DropDown
                         {
-                            Items = listBoxData,
-                            SelectedItem = listBoxData[0],
+                            Items = s_listBoxData,
+                            SelectedItem = s_listBoxData[0],
                             VerticalAlignment = VerticalAlignment.Center,
                         }
                     }

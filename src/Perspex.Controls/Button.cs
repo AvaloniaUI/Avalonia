@@ -1,19 +1,16 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using System.Windows.Input;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Rendering;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using System.Windows.Input;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Rendering;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Defines how a <see cref="Button"/> reacts to clicks.
     /// </summary>

@@ -1,21 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Platform;
+using SharpDX.Direct2D1;
+using Splat;
 
 namespace Perspex.Direct2D1.Media
 {
-    using Perspex.Platform;
-    using SharpDX.Direct2D1;
-    using Splat;
-
     /// <summary>
     /// The platform-specific interface for <see cref="Perspex.Media.Geometry"/>.
     /// </summary>
     public abstract class GeometryImpl : IGeometryImpl
     {
-        private TransformedGeometry transformed;
+        private TransformedGeometry _transformed;
 
         /// <summary>
         /// Gets the geometry's bounding rectangle.
@@ -38,7 +35,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public Geometry Geometry
         {
-            get { return this.transformed ?? this.DefiningGeometry; }
+            get { return _transformed ?? this.DefiningGeometry; }
         }
 
         /// <summary>
@@ -48,8 +45,8 @@ namespace Perspex.Direct2D1.Media
         {
             get
             {
-                return this.transformed != null ?
-                    this.transformed.Transform.ToPerspex() :
+                return _transformed != null ?
+                    _transformed.Transform.ToPerspex() :
                     Matrix.Identity;
             }
 
@@ -57,16 +54,16 @@ namespace Perspex.Direct2D1.Media
             {
                 if (value != this.Transform)
                 {
-                    if (this.transformed != null)
+                    if (_transformed != null)
                     {
-                        this.transformed.Dispose();
-                        this.transformed = null;
+                        _transformed.Dispose();
+                        _transformed = null;
                     }
 
                     if (!value.IsIdentity)
                     {
                         Factory factory = Locator.Current.GetService<Factory>();
-                        this.transformed = new TransformedGeometry(
+                        _transformed = new TransformedGeometry(
                             factory,
                             this.DefiningGeometry,
                             value.ToDirect2D());
@@ -82,9 +79,9 @@ namespace Perspex.Direct2D1.Media
         /// <returns>The bounding rectangle.</returns>
         public Rect GetRenderBounds(double strokeThickness)
         {
-            if (this.transformed != null)
+            if (_transformed != null)
             {
-                return this.transformed.GetWidenedBounds((float)strokeThickness).ToPerspex();
+                return _transformed.GetWidenedBounds((float)strokeThickness).ToPerspex();
             }
             else
             {

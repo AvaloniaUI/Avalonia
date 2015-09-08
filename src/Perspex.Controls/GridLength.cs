@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
     /// Defines the valid units for a <see cref="GridLength"/>.
     /// </summary>
@@ -36,9 +33,9 @@ namespace Perspex.Controls
     /// </summary>
     public struct GridLength : IEquatable<GridLength>
     {
-        private GridUnitType type;
+        private GridUnitType _type;
 
-        private double value;
+        private double _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GridLength"/> struct.
@@ -66,8 +63,8 @@ namespace Perspex.Controls
                 throw new ArgumentException("Invalid value", "type");
             }
 
-            this.type = type;
-            this.value = value;
+            _type = type;
+            _value = value;
         }
 
         /// <summary>
@@ -84,7 +81,7 @@ namespace Perspex.Controls
         /// </summary>
         public GridUnitType GridUnitType
         {
-            get { return this.type; }
+            get { return _type; }
         }
 
         /// <summary>
@@ -92,7 +89,7 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsAbsolute
         {
-            get { return this.type == GridUnitType.Pixel; }
+            get { return _type == GridUnitType.Pixel; }
         }
 
         /// <summary>
@@ -100,7 +97,7 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsAuto
         {
-            get { return this.type == GridUnitType.Auto; }
+            get { return _type == GridUnitType.Auto; }
         }
 
         /// <summary>
@@ -108,7 +105,7 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsStar
         {
-            get { return this.type == GridUnitType.Star; }
+            get { return _type == GridUnitType.Star; }
         }
 
         /// <summary>
@@ -116,7 +113,7 @@ namespace Perspex.Controls
         /// </summary>
         public double Value
         {
-            get { return this.value; }
+            get { return _value; }
         }
 
         /// <summary>
@@ -127,7 +124,7 @@ namespace Perspex.Controls
         /// <returns>True if the structures are equal, otherwise false.</returns>
         public static bool operator ==(GridLength a, GridLength b)
         {
-            return (a.IsAuto && b.IsAuto) || (a.value == b.value && a.type == b.type);
+            return (a.IsAuto && b.IsAuto) || (a._value == b._value && a._type == b._type);
         }
 
         /// <summary>
@@ -177,7 +174,7 @@ namespace Perspex.Controls
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            return this.value.GetHashCode() ^ this.type.GetHashCode();
+            return _value.GetHashCode() ^ _type.GetHashCode();
         }
 
         /// <summary>
@@ -191,7 +188,7 @@ namespace Perspex.Controls
                 return "Auto";
             }
 
-            string s = this.value.ToString();
+            string s = _value.ToString();
             return this.IsStar ? s + "*" : s;
         }
 

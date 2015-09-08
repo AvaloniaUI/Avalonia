@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Animation;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
+using Perspex.Input;
 
 namespace Perspex.Controls
 {
-    using Perspex.Animation;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-    using Perspex.Input;
-
     /// <summary>
     /// An items control that displays its items as pages that fill the control.
     /// </summary>
@@ -26,7 +23,7 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value of <see cref="IReparentingControl"/> for <see cref="Deck"/>.
         /// </summary>
-        private static readonly ITemplate<IPanel> PanelTemplate =
+        private static readonly ITemplate<IPanel> s_panelTemplate =
             new FuncTemplate<IPanel>(() => new Panel());
 
         /// <summary>
@@ -35,7 +32,7 @@ namespace Perspex.Controls
         static Deck()
         {
             AutoSelectProperty.OverrideDefaultValue<Deck>(true);
-            ItemsPanelProperty.OverrideDefaultValue<Deck>(PanelTemplate);
+            ItemsPanelProperty.OverrideDefaultValue<Deck>(s_panelTemplate);
         }
 
         /// <summary>

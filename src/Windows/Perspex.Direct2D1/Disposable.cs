@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
 
 namespace Perspex.Direct2D1
 {
-    using System;
-
     public class Disposable<T> : IDisposable where T : IDisposable
     {
-        private IDisposable extra;
+        private IDisposable _extra;
 
         public Disposable(T inner)
         {
@@ -20,7 +17,7 @@ namespace Perspex.Direct2D1
         public Disposable(T inner, IDisposable extra)
         {
             this.Inner = inner;
-            this.extra = extra;
+            _extra = extra;
         }
 
         public T Inner { get; }
@@ -33,7 +30,7 @@ namespace Perspex.Direct2D1
         public void Dispose()
         {
             this.Inner.Dispose();
-            this.extra?.Dispose();
+            _extra?.Dispose();
         }
     }
 }

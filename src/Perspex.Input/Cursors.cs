@@ -1,13 +1,16 @@
-﻿namespace Perspex.Input
-{
-    using Splat;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Perspex.Platform;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Splat;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Perspex.Platform;
+
+namespace Perspex.Input
+{
     /*
     =========================================================================================
         NOTE: Cursors are NOT disposable and are cached in platform implementation.
@@ -34,7 +37,6 @@
         // We might enable them later, preferably, by loading pixmax direclty from theme with fallback image
         // SizeNorthWestSouthEast,
         // SizeNorthEastSouthWest,
-
     }
 
     public class Cursor
@@ -48,7 +50,7 @@
 
         public Cursor(StandardCursorType cursorType)
             : this(
-                ((IStandardCursorFactory) Locator.Current.GetService(typeof(IStandardCursorFactory))).GetCursor(
+                ((IStandardCursorFactory)Locator.Current.GetService(typeof(IStandardCursorFactory))).GetCursor(
                     cursorType))
         {
         }

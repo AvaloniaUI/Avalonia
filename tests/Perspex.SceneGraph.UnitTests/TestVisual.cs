@@ -1,15 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Rendering;
 
 namespace Perspex.SceneGraph.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Rendering;
-
     public class ParamEventArgs<T> : EventArgs
     {
         public ParamEventArgs(T param)

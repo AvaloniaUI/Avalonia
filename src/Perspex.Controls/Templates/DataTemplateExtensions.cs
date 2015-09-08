@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.LogicalTree;
+using Splat;
 
 namespace Perspex.Controls.Templates
 {
-    using System.Linq;
-    using Perspex.LogicalTree;
-    using Splat;
-
     /// <summary>
     /// Defines extension methods for working with <see cref="IDataTemplate"/>s.
     /// </summary>

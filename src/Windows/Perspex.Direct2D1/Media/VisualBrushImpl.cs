@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Layout;
+using Perspex.Media;
+using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using SharpDX.Direct2D1;
-
     public class VisualBrushImpl : BrushImpl
     {
         public VisualBrushImpl(

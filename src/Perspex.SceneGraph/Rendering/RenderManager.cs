@@ -1,30 +1,27 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive;
+using System.Reactive.Subjects;
 
 namespace Perspex.Rendering
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Subjects;
-
     /// <summary>
     /// Schedules the rendering of a tree.
     /// </summary>
     public class RenderManager : IRenderManager
     {
-        private Subject<Unit> renderNeeded = new Subject<Unit>();
+        private Subject<Unit> _renderNeeded = new Subject<Unit>();
 
-        private bool renderQueued;
+        private bool _renderQueued;
 
         /// <summary>
         /// Gets an observable that is fired whenever a render is required.
         /// </summary>
         public IObservable<Unit> RenderNeeded
         {
-            get { return this.renderNeeded; }
+            get { return _renderNeeded; }
         }
 
         /// <summary>
@@ -32,7 +29,7 @@ namespace Perspex.Rendering
         /// </summary>
         public bool RenderQueued
         {
-            get { return this.renderQueued; }
+            get { return _renderQueued; }
         }
 
         /// <summary>
@@ -41,10 +38,10 @@ namespace Perspex.Rendering
         /// <param name="visual">The visual.</param>
         public void InvalidateRender(IVisual visual)
         {
-            if (!this.renderQueued)
+            if (!_renderQueued)
             {
-                this.renderNeeded.OnNext(Unit.Default);
-                this.renderQueued = true;
+                _renderNeeded.OnNext(Unit.Default);
+                _renderQueued = true;
             }
         }
 
@@ -53,7 +50,7 @@ namespace Perspex.Rendering
         /// </summary>
         public void RenderFinished()
         {
-            this.renderQueued = false;
+            _renderQueued = false;
         }
     }
 }

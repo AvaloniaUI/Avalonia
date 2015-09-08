@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Perspex.Collections
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Linq;
-
     /// <summary>
     /// A notifying dictionary.
     /// </summary>
@@ -22,14 +19,14 @@ namespace Perspex.Collections
         INotifyCollectionChanged,
         INotifyPropertyChanged
     {
-        private Dictionary<TKey, TValue> inner;
+        private Dictionary<TKey, TValue> _inner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexDictionary{TKey, TValue}"/> class.
         /// </summary>
         public PerspexDictionary()
         {
-            this.inner = new Dictionary<TKey, TValue>();
+            _inner = new Dictionary<TKey, TValue>();
         }
 
         /// <summary>
@@ -45,7 +42,7 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public int Count
         {
-            get { return this.inner.Count; }
+            get { return _inner.Count; }
         }
 
         /// <inheritdoc/>
@@ -57,13 +54,13 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public ICollection<TKey> Keys
         {
-            get { return this.inner.Keys; }
+            get { return _inner.Keys; }
         }
 
         /// <inheritdoc/>
         public ICollection<TValue> Values
         {
-            get { return this.inner.Values; }
+            get { return _inner.Values; }
         }
 
         /// <summary>
@@ -75,14 +72,14 @@ namespace Perspex.Collections
         {
             get
             {
-                return this.inner[key];
+                return _inner[key];
             }
 
             set
             {
                 TValue old;
-                bool replace = this.inner.TryGetValue(key, out old);
-                this.inner[key] = value;
+                bool replace = _inner.TryGetValue(key, out old);
+                _inner[key] = value;
 
                 if (replace)
                 {
@@ -110,16 +107,16 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public void Add(TKey key, TValue value)
         {
-            this.inner.Add(key, value);
+            _inner.Add(key, value);
             this.NotifyAdd(key, value);
         }
 
         /// <inheritdoc/>
         public void Clear()
         {
-            var old = this.inner;
+            var old = _inner;
 
-            this.inner = new Dictionary<TKey, TValue>();
+            _inner = new Dictionary<TKey, TValue>();
 
             if (this.PropertyChanged != null)
             {
@@ -140,19 +137,19 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public bool ContainsKey(TKey key)
         {
-            return this.inner.ContainsKey(key);
+            return _inner.ContainsKey(key);
         }
 
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            ((IDictionary<TKey, TValue>)this.inner).CopyTo(array, arrayIndex);
+            ((IDictionary<TKey, TValue>)_inner).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc/>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <inheritdoc/>
@@ -160,7 +157,7 @@ namespace Perspex.Collections
         {
             TValue value;
 
-            if (this.inner.TryGetValue(key, out value))
+            if (_inner.TryGetValue(key, out value))
             {
                 if (this.PropertyChanged != null)
                 {
@@ -188,13 +185,13 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return this.inner.TryGetValue(key, out value);
+            return _inner.TryGetValue(key, out value);
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <inheritdoc/>
@@ -206,7 +203,7 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            return this.inner.Contains(item);
+            return _inner.Contains(item);
         }
 
         /// <inheritdoc/>

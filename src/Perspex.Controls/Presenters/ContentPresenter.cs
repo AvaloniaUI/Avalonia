@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Presenters
 {
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-
     /// <summary>
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
@@ -26,7 +23,7 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
-        private bool createdChild;
+        private bool _createdChild;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -57,7 +54,7 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
-            if (!this.createdChild)
+            if (!_createdChild)
             {
                 this.CreateChild();
             }
@@ -89,7 +86,7 @@ namespace Perspex.Controls.Presenters
         /// <param name="e">The event args.</param>
         private void ContentChanged(PerspexPropertyChangedEventArgs e)
         {
-            this.createdChild = false;
+            _createdChild = false;
             this.InvalidateMeasure();
         }
 
@@ -122,7 +119,7 @@ namespace Perspex.Controls.Presenters
                 logicalChildren.Add(result);
             }
 
-            this.createdChild = true;
+            _createdChild = true;
         }
     }
 }

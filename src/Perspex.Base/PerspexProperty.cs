@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Reactive.Subjects;
+using System.Reflection;
+using Perspex.Utilities;
 
 namespace Perspex
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Subjects;
-    using System.Reflection;
-    using Perspex.Utilities;
-
     /// <summary>
     /// A perspex property.
     /// </summary>
@@ -28,22 +25,22 @@ namespace Perspex
         /// <summary>
         /// The default values for the property, by type.
         /// </summary>
-        private Dictionary<Type, object> defaultValues = new Dictionary<Type, object>();
+        private Dictionary<Type, object> _defaultValues = new Dictionary<Type, object>();
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private Subject<PerspexPropertyChangedEventArgs> initialized = new Subject<PerspexPropertyChangedEventArgs>();
+        private Subject<PerspexPropertyChangedEventArgs> _initialized = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private Subject<PerspexPropertyChangedEventArgs> changed = new Subject<PerspexPropertyChangedEventArgs>();
+        private Subject<PerspexPropertyChangedEventArgs> _changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
         /// The validation functions for the property, by type.
         /// </summary>
-        private Dictionary<Type, Func<PerspexObject, object, object>> validation =
+        private Dictionary<Type, Func<PerspexObject, object, object>> _validation =
             new Dictionary<Type, Func<PerspexObject, object, object>>();
 
         /// <summary>
@@ -74,14 +71,14 @@ namespace Perspex
             this.Name = name;
             this.PropertyType = valueType;
             this.OwnerType = ownerType;
-            this.defaultValues.Add(ownerType, defaultValue);
+            _defaultValues.Add(ownerType, defaultValue);
             this.Inherits = inherits;
             this.DefaultBindingMode = defaultBindingMode;
             this.IsAttached = isAttached;
 
             if (validate != null)
             {
-                this.validation.Add(ownerType, validate);
+                _validation.Add(ownerType, validate);
             }
         }
 
@@ -149,7 +146,7 @@ namespace Perspex
         /// </value>
         public IObservable<PerspexPropertyChangedEventArgs> Initialized
         {
-            get { return this.initialized; }
+            get { return _initialized; }
         }
 
         /// <summary>
@@ -162,7 +159,7 @@ namespace Perspex
         /// </value>
         public IObservable<PerspexPropertyChangedEventArgs> Changed
         {
-            get { return this.changed; }
+            get { return _changed; }
         }
 
         /// <summary>
@@ -330,7 +327,7 @@ namespace Perspex
             {
                 object result;
 
-                if (this.defaultValues.TryGetValue(type, out result))
+                if (_defaultValues.TryGetValue(type, out result))
                 {
                     return result;
                 }
@@ -338,7 +335,7 @@ namespace Perspex
                 type = type.GetTypeInfo().BaseType;
             }
 
-            return this.defaultValues[this.OwnerType];
+            return _defaultValues[this.OwnerType];
         }
 
         /// <summary>
@@ -356,7 +353,7 @@ namespace Perspex
             {
                 Func<PerspexObject, object, object> result;
 
-                if (this.validation.TryGetValue(type, out result))
+                if (_validation.TryGetValue(type, out result))
                 {
                     return result;
                 }
@@ -405,12 +402,12 @@ namespace Perspex
                     defaultValue.GetType().FullName));
             }
 
-            if (this.defaultValues.ContainsKey(type))
+            if (_defaultValues.ContainsKey(type))
             {
                 throw new InvalidOperationException("Default value is already set for this property.");
             }
 
-            this.defaultValues.Add(type, defaultValue);
+            _defaultValues.Add(type, defaultValue);
         }
 
         /// <summary>
@@ -422,12 +419,12 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(type != null);
 
-            if (this.validation.ContainsKey(type))
+            if (_validation.ContainsKey(type))
             {
                 throw new InvalidOperationException("Validation is already set for this property.");
             }
 
-            this.validation.Add(type, validation);
+            _validation.Add(type, validation);
         }
 
         /// <summary>
@@ -445,7 +442,7 @@ namespace Perspex
         /// <param name="e">The observable arguments.</param>
         internal void NotifyInitialized(PerspexPropertyChangedEventArgs e)
         {
-            this.initialized.OnNext(e);
+            _initialized.OnNext(e);
         }
 
         /// <summary>
@@ -454,7 +451,7 @@ namespace Perspex
         /// <param name="e">The observable arguments.</param>
         internal void NotifyChanged(PerspexPropertyChangedEventArgs e)
         {
-            this.changed.OnNext(e);
+            _changed.OnNext(e);
         }
 
         /// <summary>

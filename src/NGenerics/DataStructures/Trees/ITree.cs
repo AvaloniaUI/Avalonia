@@ -1,4 +1,7 @@
-﻿/*  
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+/*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
 
@@ -9,12 +12,14 @@
 
 using System;
 
-namespace NGenerics.DataStructures.Trees {
+namespace NGenerics.DataStructures.Trees
+{
     /// <summary>
     /// An interface for the tree data structure
     /// </summary>
     /// <typeparam name="T">The type of elements in the tree.</typeparam>
-    public interface ITree<T> {
+    public interface ITree<T>
+    {
         /// <summary>
         /// Adds the specified child to the tree.
         /// </summary>
@@ -72,6 +77,6 @@ namespace NGenerics.DataStructures.Trees {
         /// Gets the parent of the current node.
         /// </summary>
         /// <value>The parent of the current node.</value>
-        ITree<T> Parent { get;}
+        ITree<T> Parent { get; }
     }
 }

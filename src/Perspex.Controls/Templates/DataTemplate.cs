@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reflection;
 
 namespace Perspex.Controls.Templates
 {
-    using System;
-    using System.Reflection;
-
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
@@ -23,7 +20,7 @@ namespace Perspex.Controls.Templates
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
         /// </summary>
-        private Func<object, bool> match;
+        private Func<object, bool> _match;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataTemplate"/> class.
@@ -51,7 +48,7 @@ namespace Perspex.Controls.Templates
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
-            this.match = match;
+            _match = match;
         }
 
         /// <summary>
@@ -63,7 +60,7 @@ namespace Perspex.Controls.Templates
         /// </returns>
         public bool Match(object data)
         {
-            return this.match(data);
+            return _match(data);
         }
 
         /// <summary>

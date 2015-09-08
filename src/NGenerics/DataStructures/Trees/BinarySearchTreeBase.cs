@@ -1,4 +1,7 @@
-﻿/*  
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+/*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
 
@@ -18,7 +21,6 @@ using NGenerics.Util;
 
 namespace NGenerics.DataStructures.Trees
 {
-
     /// <summary>
     /// A base class for Binary Search Trees that store a single value in each node.
     /// </summary>
@@ -26,12 +28,11 @@ namespace NGenerics.DataStructures.Trees
     //[Serializable]
     public abstract class BinarySearchTreeBase<T> : ISearchTree<T>
     {
-
         #region Globals
 
         internal const string alreadyContainedInTheTree = "The item is already contained in the tree.";
-        private BinaryTree<T> tree;
-        private readonly IComparer<T> comparer;
+        private BinaryTree<T> _tree;
+        private readonly IComparer<T> _comparer;
 
         #endregion
 
@@ -52,7 +53,7 @@ namespace NGenerics.DataStructures.Trees
         /// </summary>
         protected BinarySearchTreeBase()
         {
-            comparer = Comparer<T>.Default;
+            _comparer = Comparer<T>.Default;
         }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace NGenerics.DataStructures.Trees
         protected BinarySearchTreeBase(IComparer<T> comparer)
         {
             Guard.ArgumentNotNull(comparer, "comparer");
-            this.comparer = comparer;
+            _comparer = comparer;
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace NGenerics.DataStructures.Trees
         protected BinarySearchTreeBase(Comparison<T> comparison)
         {
             Guard.ArgumentNotNull(comparison, "comparison");
-            comparer = new ComparisonComparer<T>(comparison);
+            _comparer = new ComparisonComparer<T>(comparison);
         }
 
         #endregion
@@ -88,7 +89,7 @@ namespace NGenerics.DataStructures.Trees
         {
             get
             {
-                return comparer;
+                return _comparer;
             }
         }
 
@@ -106,16 +107,16 @@ namespace NGenerics.DataStructures.Trees
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         protected virtual BinaryTree<T> FindNode(T item)
         {
-            if (tree == null)
+            if (_tree == null)
             {
                 return null;
             }
 
-            var currentNode = tree;
+            var currentNode = _tree;
 
             while (currentNode != null)
             {
-                var nodeResult = comparer.Compare(item, currentNode.Data);
+                var nodeResult = _comparer.Compare(item, currentNode.Data);
 
                 if (nodeResult == 0)
                 {
@@ -137,12 +138,12 @@ namespace NGenerics.DataStructures.Trees
         /// <returns>The item if  found, else null.</returns>
         protected virtual BinaryTree<T> FindNode<TSearch>(TSearch value, CustomComparison<TSearch> customComparison)
         {
-            if (tree == null)
+            if (_tree == null)
             {
                 return null;
             }
 
-            var currentNode = tree;
+            var currentNode = _tree;
 
             while (currentNode != null)
             {
@@ -182,11 +183,11 @@ namespace NGenerics.DataStructures.Trees
         {
             #region Debug
 
-            Debug.Assert(tree != null);
+            Debug.Assert(_tree != null);
 
             #endregion
 
-            return FindMaximumNode(tree);
+            return FindMaximumNode(_tree);
         }
 
 
@@ -199,11 +200,11 @@ namespace NGenerics.DataStructures.Trees
         {
             #region Debug
 
-            Debug.Assert(tree != null);
+            Debug.Assert(_tree != null);
 
             #endregion
 
-            return FindMinimumNode(tree);
+            return FindMinimumNode(_tree);
         }
 
         /// <summary>
@@ -264,11 +265,11 @@ namespace NGenerics.DataStructures.Trees
         {
             get
             {
-                return tree;
+                return _tree;
             }
             set
             {
-                tree = value;
+                _tree = value;
             }
         }
 
@@ -343,18 +344,13 @@ namespace NGenerics.DataStructures.Trees
 
                 return FindMaximumNode().Data;
             }
-        }
-
-
-
-
-        /// <inheritdoc/>
+        }        /// <inheritdoc/>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public void DepthFirstTraversal(OrderedVisitor<T> visitor)
         {
             Guard.ArgumentNotNull(visitor, "visitor");
 
-            VisitNode(tree, visitor);
+            VisitNode(_tree, visitor);
         }
 
         /// <inheritdoc/>
@@ -362,12 +358,12 @@ namespace NGenerics.DataStructures.Trees
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public IEnumerator<T> GetOrderedEnumerator()
         {
-            if (tree != null)
+            if (_tree != null)
             {
                 var trackingVisitor = new TrackingVisitor<T>();
                 var inOrderVisitor = new InOrderVisitor<T>(trackingVisitor);
 
-                tree.DepthFirstTraversal(inOrderVisitor);
+                _tree.DepthFirstTraversal(inOrderVisitor);
 
                 var trackingList = trackingVisitor.TrackingList;
 
@@ -423,7 +419,7 @@ namespace NGenerics.DataStructures.Trees
         /// </remarks>
         protected virtual void ClearItems()
         {
-            tree = null;
+            _tree = null;
             Count = 0;
         }
 
@@ -457,11 +453,11 @@ namespace NGenerics.DataStructures.Trees
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public IEnumerator<T> GetEnumerator()
         {
-            if (tree != null)
+            if (_tree != null)
             {
                 var stack = new Stack<BinaryTree<T>>();
 
-                stack.Push(tree);
+                stack.Push(_tree);
 
                 while (stack.Count > 0)
                 {
@@ -528,7 +524,7 @@ namespace NGenerics.DataStructures.Trees
 
             #endregion
 
-            foreach (var association in tree)
+            foreach (var association in _tree)
             {
                 array[arrayIndex++] = association;
             }

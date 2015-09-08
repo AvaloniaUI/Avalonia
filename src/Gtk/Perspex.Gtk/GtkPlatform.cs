@@ -1,22 +1,20 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Disposables;
+using Perspex.Input.Platform;
+using Perspex.Input;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Gtk
 {
-    using System;
-    using System.Reactive.Disposables;
-    using Perspex.Input.Platform;
-    using Perspex.Input;
-    using Perspex.Platform;
-    using Splat;
     using Gtk = global::Gtk;
 
     public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings
     {
-        private static GtkPlatform instance = new GtkPlatform();
+        private static GtkPlatform s_instance = new GtkPlatform();
 
         public GtkPlatform()
         {
@@ -42,11 +40,11 @@ namespace Perspex.Gtk
             var locator = Locator.CurrentMutable;
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-            locator.Register(() => new ClipboardImpl(), typeof (IClipboard));
+            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
-            locator.Register(() => instance, typeof(IPlatformSettings));
-            locator.Register(() => instance, typeof(IPlatformThreadingInterface));
+            locator.Register(() => s_instance, typeof(IPlatformSettings));
+            locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
             locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
         }
 
@@ -64,7 +62,7 @@ namespace Perspex.Gtk
         {
             var result = true;
             var handle = GLib.Timeout.Add(
-                (uint)interval.TotalMilliseconds, 
+                (uint)interval.TotalMilliseconds,
                 () =>
                 {
                     tick();

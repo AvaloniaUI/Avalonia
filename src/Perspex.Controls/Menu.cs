@@ -1,21 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using System.Reactive.Disposables;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.LogicalTree;
+using Perspex.Rendering;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Disposables;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.LogicalTree;
-    using Perspex.Rendering;
-
     /// <summary>
     /// A top-level menu control.
     /// </summary>
@@ -24,7 +21,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the default items panel used by a <see cref="Menu"/>.
         /// </summary>
-        private static readonly ITemplate<IPanel> DefaultPanel =
+        private static readonly ITemplate<IPanel> s_defaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
@@ -36,14 +33,14 @@ namespace Perspex.Controls
         /// <summary>
         /// Tracks event handlers added to the root of the visual tree.
         /// </summary>
-        private IDisposable subscription;
+        private IDisposable _subscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="Menu"/> class.
         /// </summary>
         static Menu()
         {
-            ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), s_defaultPanel);
             MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick);
             MenuItem.SubmenuOpenedEvent.AddClassHandler<Menu>(x => x.OnSubmenuOpened);
         }
@@ -112,7 +109,7 @@ namespace Perspex.Controls
                 this.TopLevelPreviewPointerPress,
                 RoutingStrategies.Tunnel);
 
-            this.subscription = new CompositeDisposable(
+            _subscription = new CompositeDisposable(
                 pointerPress,
                 Disposable.Create(() => topLevel.Deactivated -= this.Deactivated));
 
@@ -131,7 +128,7 @@ namespace Perspex.Controls
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
             base.OnDetachedFromVisualTree(oldRoot);
-            this.subscription.Dispose();
+            _subscription.Dispose();
         }
 
         /// <summary>

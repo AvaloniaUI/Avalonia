@@ -1,22 +1,21 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Templates;
+using Perspex.Diagnostics.ViewModels;
+using Perspex.Media;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.Views
 {
-    using System;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
-    using Perspex.Diagnostics.ViewModels;
-    using Perspex.Media;
-    using ReactiveUI;
+    using Controls = Perspex.Controls.Controls;
 
     internal class VisualTreeView : TreePage
     {
-        private static readonly PerspexProperty<VisualTreeViewModel> ViewModelProperty =
+        private static readonly PerspexProperty<VisualTreeViewModel> s_viewModelProperty =
             PerspexProperty.Register<VisualTreeView, VisualTreeViewModel>("ViewModel");
 
         public VisualTreeView()
@@ -28,8 +27,8 @@ namespace Perspex.Diagnostics.Views
 
         public VisualTreeViewModel ViewModel
         {
-            get { return this.GetValue(ViewModelProperty); }
-            private set { this.SetValue(ViewModelProperty, value); }
+            get { return this.GetValue(s_viewModelProperty); }
+            private set { this.SetValue(s_viewModelProperty, value); }
         }
 
         private void InitializeComponent()

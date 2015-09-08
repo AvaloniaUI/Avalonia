@@ -1,33 +1,30 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Disposables;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Threading
 {
-    using System;
-    using System.Reactive.Disposables;
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// A timer that uses a <see cref="Dispatcher"/> to fire at a specified interval.
     /// </summary>
     public class DispatcherTimer
     {
-        private IDisposable timer;
+        private IDisposable _timer;
 
-        private DispatcherPriority priority;
+        private DispatcherPriority _priority;
 
-        private TimeSpan interval;
+        private TimeSpan _interval;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
         /// </summary>
         public DispatcherTimer()
         {
-            this.priority = DispatcherPriority.Normal;
+            _priority = DispatcherPriority.Normal;
             this.Dispatcher = Dispatcher.UIThread;
         }
 
@@ -37,7 +34,7 @@ namespace Perspex.Threading
         /// <param name="priority">The priority to use.</param>
         public DispatcherTimer(DispatcherPriority priority)
         {
-            this.priority = priority;
+            _priority = priority;
             this.Dispatcher = Dispatcher.UIThread;
         }
 
@@ -48,7 +45,7 @@ namespace Perspex.Threading
         /// <param name="dispatcher">The dispatcher to use.</param>
         public DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher)
         {
-            this.priority = priority;
+            _priority = priority;
             this.Dispatcher = dispatcher;
         }
 
@@ -61,7 +58,7 @@ namespace Perspex.Threading
         /// <param name="callback">The event to call when the timer ticks.</param>
         public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback, Dispatcher dispatcher)
         {
-            this.priority = priority;
+            _priority = priority;
             this.Dispatcher = dispatcher;
             this.Interval = interval;
             this.Tick += callback;
@@ -72,7 +69,7 @@ namespace Perspex.Threading
         /// </summary>
         ~DispatcherTimer()
         {
-            if (this.timer != null)
+            if (_timer != null)
             {
                 this.Stop();
             }
@@ -99,14 +96,14 @@ namespace Perspex.Threading
         {
             get
             {
-                return this.interval;
+                return _interval;
             }
 
             set
             {
                 bool enabled = this.IsEnabled;
                 this.Stop();
-                this.interval = value;
+                _interval = value;
                 this.IsEnabled = enabled;
             }
         }
@@ -118,7 +115,7 @@ namespace Perspex.Threading
         {
             get
             {
-                return this.timer != null;
+                return _timer != null;
             }
 
             set
@@ -181,7 +178,7 @@ namespace Perspex.Threading
             if (!this.IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
-                this.timer = threading.StartTimer(this.Interval, this.InternalTick);
+                _timer = threading.StartTimer(this.Interval, this.InternalTick);
             }
         }
 
@@ -193,8 +190,8 @@ namespace Perspex.Threading
             if (this.IsEnabled)
             {
                 IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
-                this.timer.Dispose();
-                this.timer = null;
+                _timer.Dispose();
+                _timer = null;
             }
         }
 
@@ -203,7 +200,7 @@ namespace Perspex.Threading
         /// </summary>
         private void InternalTick()
         {
-            this.Dispatcher.Post(this.RaiseTick, this.priority);
+            this.Dispatcher.Post(this.RaiseTick, _priority);
         }
 
         /// <summary>

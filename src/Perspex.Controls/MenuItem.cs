@@ -1,26 +1,23 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Windows.Input;
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Threading;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Windows.Input;
-    using Perspex.Controls.Mixins;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Threading;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// A menu item control.
     /// </summary>
@@ -77,7 +74,7 @@ namespace Perspex.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<IPanel> DefaultPanel =
+        private static readonly ITemplate<IPanel> s_defaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel
             {
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
@@ -86,12 +83,12 @@ namespace Perspex.Controls
         /// <summary>
         /// The timer used to display submenus.
         /// </summary>
-        private IDisposable submenuTimer;
+        private IDisposable _submenuTimer;
 
         /// <summary>
         /// The submenu popup.
         /// </summary>
-        private Popup popup;
+        private Popup _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -100,7 +97,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
-            ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<MenuItem>(s_defaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
@@ -302,7 +299,7 @@ namespace Perspex.Controls
             }
             else if (this.HasSubMenu && !this.IsSubMenuOpen)
             {
-                this.submenuTimer = DispatcherTimer.Run(
+                _submenuTimer = DispatcherTimer.Run(
                     () => this.IsSubMenuOpen = true,
                     TimeSpan.FromMilliseconds(400));
             }
@@ -316,10 +313,10 @@ namespace Perspex.Controls
         {
             base.OnPointerLeave(e);
 
-            if (this.submenuTimer != null)
+            if (_submenuTimer != null)
             {
-                this.submenuTimer.Dispose();
-                this.submenuTimer = null;
+                _submenuTimer.Dispose();
+                _submenuTimer = null;
             }
         }
 
@@ -374,11 +371,11 @@ namespace Perspex.Controls
         {
             base.OnTemplateApplied();
 
-            this.popup = this.GetTemplateChild<Popup>("popup");
-            this.popup.DependencyResolver = DependencyResolver.Instance;
-            this.popup.PopupRootCreated += this.PopupRootCreated;
-            this.popup.Opened += this.PopupOpened;
-            this.popup.Closed += this.PopupClosed;
+            _popup = this.GetTemplateChild<Popup>("popup");
+            _popup.DependencyResolver = DependencyResolver.Instance;
+            _popup.PopupRootCreated += this.PopupRootCreated;
+            _popup.Opened += this.PopupOpened;
+            _popup.Closed += this.PopupClosed;
         }
 
         /// <summary>

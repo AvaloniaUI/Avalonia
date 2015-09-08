@@ -1,14 +1,16 @@
-﻿namespace Perspex.Gtk
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Threading.Tasks;
+using Gdk;
+using Perspex.Input.Platform;
+
+namespace Perspex.Gtk
 {
-    using Gdk;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Perspex.Input.Platform;
     using Gtk = global::Gtk;
-    class ClipboardImpl : IClipboard
+
+    internal class ClipboardImpl : IClipboard
     {
         private static Gtk.Clipboard GetClipboard() => Gtk.Clipboard.GetForDisplay(Gdk.Display.Default, new Atom(IntPtr.Zero));
 

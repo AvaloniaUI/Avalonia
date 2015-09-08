@@ -1,28 +1,25 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Cairo.Media;
+using Perspex.Cairo.Media.Imaging;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Cairo
 {
-    using System;
     using global::Cairo;
-    using Perspex.Cairo.Media;
-    using Perspex.Cairo.Media.Imaging;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Threading;
-    using Splat;
 
     public class CairoPlatform : IPlatformRenderInterface
     {
-        private static CairoPlatform instance = new CairoPlatform();
+        private static CairoPlatform s_instance = new CairoPlatform();
 
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => instance, typeof(IPlatformRenderInterface));
+            locator.Register(() => s_instance, typeof(IPlatformRenderInterface));
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
@@ -31,9 +28,9 @@ namespace Perspex.Cairo
         }
 
         public IFormattedTextImpl CreateFormattedText(
-            string text, 
-            string fontFamily, 
-            double fontSize, 
+            string text,
+            string fontFamily,
+            double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
             Perspex.Media.FontWeight fontWeight)

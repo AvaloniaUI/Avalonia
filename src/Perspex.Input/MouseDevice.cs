@@ -1,30 +1,27 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Input.Raw;
+using Perspex.Interactivity;
+using Perspex.Platform;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Input.Raw;
-    using Perspex.Interactivity;
-    using Perspex.Platform;
-    using Perspex.VisualTree;
-    using Splat;
-
     public abstract class MouseDevice : IMouseDevice
     {
-        private int clickCount;
+        private int _clickCount;
 
-        private Rect lastClickRect;
+        private Rect _lastClickRect;
 
-        private uint lastClickTime;
+        private uint _lastClickTime;
 
-        private List<IInputElement> pointerOvers = new List<IInputElement>();
+        private List<IInputElement> _pointerOvers = new List<IInputElement>();
 
         public MouseDevice()
         {
@@ -119,14 +116,14 @@ namespace Perspex.Input
                     var settings = Locator.Current.GetService<IPlatformSettings>();
                     var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
 
-                    if (!this.lastClickRect.Contains(p) || timestamp - this.lastClickTime > doubleClickTime)
+                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
                     {
-                        this.clickCount = 0;
+                        _clickCount = 0;
                     }
 
-                    ++this.clickCount;
-                    this.lastClickTime = timestamp;
-                    this.lastClickRect = new Rect(p, new Size())
+                    ++_clickCount;
+                    _lastClickTime = timestamp;
+                    _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
 
                     var e = new PointerPressEventArgs
@@ -134,7 +131,7 @@ namespace Perspex.Input
                         Device = this,
                         RoutedEvent = InputElement.PointerPressedEvent,
                         Source = source,
-                        ClickCount = this.clickCount,
+                        ClickCount = _clickCount,
                     };
 
                     source.RaiseEvent(e);
@@ -195,7 +192,7 @@ namespace Perspex.Input
             }
         }
 
-        private void MouseWheel(IMouseDevice device, IInputRoot root, Point p,  Vector delta)
+        private void MouseWheel(IMouseDevice device, IInputRoot root, Point p, Vector delta)
         {
             var hit = this.HitTest(root, p);
 
@@ -230,7 +227,7 @@ namespace Perspex.Input
 
         private void ClearPointerOver(IPointerDevice device, IInputRoot root)
         {
-            foreach (var control in this.pointerOvers.ToList())
+            foreach (var control in _pointerOvers.ToList())
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
@@ -239,7 +236,7 @@ namespace Perspex.Input
                     Source = control,
                 };
 
-                this.pointerOvers.Remove(control);
+                _pointerOvers.Remove(control);
                 control.RaiseEvent(e);
             }
 
@@ -250,7 +247,7 @@ namespace Perspex.Input
         {
             IEnumerable<IInputElement> hits = element.GetInputElementsAt(p);
 
-            foreach (var control in this.pointerOvers.Except(hits).ToList())
+            foreach (var control in _pointerOvers.Except(hits).ToList())
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
@@ -259,11 +256,11 @@ namespace Perspex.Input
                     Source = control,
                 };
 
-                this.pointerOvers.Remove(control);
+                _pointerOvers.Remove(control);
                 control.RaiseEvent(e);
             }
 
-            foreach (var control in hits.Except(this.pointerOvers))
+            foreach (var control in hits.Except(_pointerOvers))
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
@@ -272,7 +269,7 @@ namespace Perspex.Input
                     Source = control,
                 };
 
-                this.pointerOvers.Add(control);
+                _pointerOvers.Add(control);
                 control.RaiseEvent(e);
             }
 

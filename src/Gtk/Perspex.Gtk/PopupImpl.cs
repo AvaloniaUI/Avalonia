@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Gtk;
+using Perspex.Platform;
 
 namespace Perspex.Gtk
 {
-    using System;
-    using Perspex.Platform;
-    using global::Gtk;
-
     public class PopupImpl : WindowImpl, IPopupImpl
     {
         public PopupImpl()
             : base(WindowType.Popup)
-        { 
+        {
         }
-        
+
         public void SetPosition(Point p)
         {
             this.Move((int)p.X, (int)p.Y);

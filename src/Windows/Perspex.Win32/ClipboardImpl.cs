@@ -1,17 +1,20 @@
-﻿namespace Perspex.Win32
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Perspex.Input.Platform;
-    using Perspex.Win32.Interop;
-    using System.Runtime.InteropServices;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-    class ClipboardImpl : IClipboard
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Perspex.Input.Platform;
+using Perspex.Win32.Interop;
+using System.Runtime.InteropServices;
+
+namespace Perspex.Win32
+{
+    internal class ClipboardImpl : IClipboard
     {
-        async Task OpenClipboard()
+        private async Task OpenClipboard()
         {
             while (!UnmanagedMethods.OpenClipboard(IntPtr.Zero))
             {
@@ -56,7 +59,7 @@
             await this.OpenClipboard();
             try
             {
-                var hGlobal  = Marshal.StringToHGlobalUni(text);
+                var hGlobal = Marshal.StringToHGlobalUni(text);
                 UnmanagedMethods.SetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, hGlobal);
             }
             finally

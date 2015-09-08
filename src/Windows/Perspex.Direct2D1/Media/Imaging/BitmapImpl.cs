@@ -1,24 +1,21 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.IO;
+using Perspex.Platform;
+using SharpDX.WIC;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using System.IO;
-    using Perspex.Platform;
-    using SharpDX.WIC;
-
     /// <summary>
     /// A Direct2D implementation of a <see cref="Perspex.Media.Imaging.Bitmap"/>.
     /// </summary>
     public class BitmapImpl : IBitmapImpl
     {
-        private ImagingFactory factory;
+        private ImagingFactory _factory;
 
-        private SharpDX.Direct2D1.Bitmap direct2D;
+        private SharpDX.Direct2D1.Bitmap _direct2D;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
@@ -27,7 +24,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="fileName">The filename of the bitmap to load.</param>
         public BitmapImpl(ImagingFactory factory, string fileName)
         {
-            this.factory = factory;
+            _factory = factory;
 
             using (BitmapDecoder decoder = new BitmapDecoder(factory, fileName, DecodeOptions.CacheOnDemand))
             {
@@ -43,7 +40,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="height">The height of the bitmap.</param>
         public BitmapImpl(ImagingFactory factory, int width, int height)
         {
-            this.factory = factory;
+            _factory = factory;
             this.WicImpl = new Bitmap(
                 factory,
                 width,
@@ -84,14 +81,14 @@ namespace Perspex.Direct2D1.Media
         /// <returns>The Direct2D bitmap.</returns>
         public SharpDX.Direct2D1.Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            if (this.direct2D == null)
+            if (_direct2D == null)
             {
-                FormatConverter converter = new FormatConverter(this.factory);
+                FormatConverter converter = new FormatConverter(_factory);
                 converter.Initialize(this.WicImpl, PixelFormat.Format32bppPBGRA);
-                this.direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
+                _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
             }
 
-            return this.direct2D;
+            return _direct2D;
         }
 
         /// <summary>
@@ -108,7 +105,7 @@ namespace Perspex.Direct2D1.Media
 
             using (FileStream s = new FileStream(fileName, FileMode.Create))
             {
-                PngBitmapEncoder encoder = new PngBitmapEncoder(this.factory);
+                PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
                 encoder.Initialize(s);
 
                 BitmapFrameEncode frame = new BitmapFrameEncode(encoder);

@@ -1,29 +1,26 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Diagnostics.ViewModels;
+using Perspex.Input;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics
 {
-    using System;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Diagnostics.ViewModels;
-    using Perspex.Input;
-    using ReactiveUI;
-
     public class DevTools : Decorator
     {
         public static readonly PerspexProperty<Control> RootProperty =
             PerspexProperty.Register<DevTools, Control>("Root");
 
-        private DevToolsViewModel viewModel;
+        private DevToolsViewModel _viewModel;
 
         public DevTools()
         {
-            this.viewModel = new DevToolsViewModel();
-            this.GetObservable(RootProperty).Subscribe(x => this.viewModel.Root = x);
+            _viewModel = new DevToolsViewModel();
+            this.GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
 
             this.InitializeComponent();
         }
@@ -67,7 +64,7 @@ namespace Perspex.Diagnostics
             this.Child = new Grid
             {
                 RowDefinitions = new RowDefinitions("*,Auto"),
-                Children = new Controls
+                Children = new Perspex.Controls.Controls
                 {
                     new TabControl
                     {
@@ -76,12 +73,12 @@ namespace Perspex.Diagnostics
                             new TabItem
                             {
                                 Header = "Logical Tree",
-                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.LogicalTree),
+                                [!TabItem.ContentProperty] = _viewModel.WhenAnyValue(x => x.LogicalTree),
                             },
                             new TabItem
                             {
                                 Header = "Visual Tree",
-                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.VisualTree),
+                                [!TabItem.ContentProperty] = _viewModel.WhenAnyValue(x => x.VisualTree),
                             }
                         },
                     },
@@ -90,7 +87,7 @@ namespace Perspex.Diagnostics
                         Orientation = Orientation.Horizontal,
                         Gap = 4,
                         [Grid.RowProperty] = 1,
-                        Children = new Controls
+                        Children = new Perspex.Controls.Controls
                         {
                             new TextBlock
                             {
@@ -98,7 +95,7 @@ namespace Perspex.Diagnostics
                             },
                             new TextBlock
                             {
-                                [!TextBlock.TextProperty] = this.viewModel
+                                [!TextBlock.TextProperty] = _viewModel
                                     .WhenAnyValue(x => x.FocusedControl)
                                     .Select(x => x?.GetType().Name ?? "(null)")
                             },
@@ -108,7 +105,7 @@ namespace Perspex.Diagnostics
                             },
                             new TextBlock
                             {
-                                [!TextBlock.TextProperty] = this.viewModel
+                                [!TextBlock.TextProperty] = _viewModel
                                     .WhenAnyValue(x => x.PointerOverElement)
                                     .Select(x => x?.GetType().Name ?? "(null)")
                             }

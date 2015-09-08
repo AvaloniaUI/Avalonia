@@ -1,17 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Xunit;
-
     public class ContentPresenterTests
     {
         [Fact]

@@ -1,26 +1,22 @@
-﻿
-
-
-
-
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input.Platform;
 using Splat;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Media;
-
     public class TextBox : TemplatedControl
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
@@ -44,7 +40,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
-        private TextPresenter presenter;
+        private TextPresenter _presenter;
 
         static TextBox()
         {
@@ -114,14 +110,14 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            this.presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
-            this.presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
+            _presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
+            _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            this.presenter.ShowCaret();
+            _presenter.ShowCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -129,7 +125,7 @@ namespace Perspex.Controls
             base.OnLostFocus(e);
             this.SelectionStart = 0;
             this.SelectionEnd = 0;
-            this.presenter.HideCaret();
+            _presenter.HideCaret();
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -138,7 +134,7 @@ namespace Perspex.Controls
         }
 
         private void HandleTextInput(string input)
-        { 
+        {
             string text = this.Text ?? string.Empty;
             int caretIndex = this.CaretIndex;
             if (!string.IsNullOrEmpty(input))
@@ -152,15 +148,15 @@ namespace Perspex.Controls
             }
         }
 
-        async void Copy()
+        private async void Copy()
         {
-            await ((IClipboard) Locator.Current.GetService(typeof (IClipboard)))
+            await ((IClipboard)Locator.Current.GetService(typeof(IClipboard)))
                 .SetTextAsync(this.GetSelection());
         }
 
-        async void Paste()
+        private async void Paste()
         {
-            var text = await ((IClipboard) Locator.Current.GetService(typeof (IClipboard))).GetTextAsync();
+            var text = await ((IClipboard)Locator.Current.GetService(typeof(IClipboard))).GetTextAsync();
             if (text == null)
             {
                 return;
@@ -286,10 +282,10 @@ namespace Perspex.Controls
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
-            if (e.Source == this.presenter)
+            if (e.Source == _presenter)
             {
-                var point = e.GetPosition(this.presenter);
-                var index = this.CaretIndex = this.presenter.GetCaretIndex(point);
+                var point = e.GetPosition(_presenter);
+                var index = this.CaretIndex = _presenter.GetCaretIndex(point);
                 var text = this.Text;
 
                 switch (e.ClickCount)
@@ -311,23 +307,23 @@ namespace Perspex.Controls
                         break;
                 }
 
-                e.Device.Capture(this.presenter);
+                e.Device.Capture(_presenter);
                 e.Handled = true;
             }
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (e.Device.Captured == this.presenter)
+            if (e.Device.Captured == _presenter)
             {
-                var point = e.GetPosition(this.presenter);
-                this.CaretIndex = this.SelectionEnd = this.presenter.GetCaretIndex(point);
+                var point = e.GetPosition(_presenter);
+                this.CaretIndex = this.SelectionEnd = _presenter.GetCaretIndex(point);
             }
         }
 
         protected override void OnPointerReleased(PointerEventArgs e)
         {
-            if (e.Device.Captured == this.presenter)
+            if (e.Device.Captured == _presenter)
             {
                 e.Device.Capture(null);
             }
@@ -362,7 +358,7 @@ namespace Perspex.Controls
 
         private void MoveVertical(int count, ModifierKeys modifiers)
         {
-            var formattedText = this.presenter.FormattedText;
+            var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
             var caretIndex = this.CaretIndex;
             var lineIndex = this.GetLine(caretIndex, lines) + count;
@@ -389,7 +385,7 @@ namespace Perspex.Controls
             }
             else
             {
-                var lines = this.presenter.FormattedText.GetLines();
+                var lines = _presenter.FormattedText.GetLines();
                 var pos = 0;
 
                 foreach (var line in lines)
@@ -419,7 +415,7 @@ namespace Perspex.Controls
             }
             else
             {
-                var lines = this.presenter.FormattedText.GetLines();
+                var lines = _presenter.FormattedText.GetLines();
                 var pos = 0;
 
                 foreach (var line in lines)
@@ -479,7 +475,7 @@ namespace Perspex.Controls
             {
                 return "";
             }
-            return this.Text.Substring(start, end  - start);
+            return this.Text.Substring(start, end - start);
         }
 
         private int GetLine(int caretIndex, IList<FormattedTextLine> lines)

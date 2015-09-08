@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -14,16 +17,16 @@ using NGenerics.Util;
 
 namespace NGenerics.Comparers
 {
-	/// <summary>
-	/// A comparer that wraps the IComparable interface to reproduce the opposite comparison result.
-	/// </summary>
-	/// <typeparam name="T">The type of the objects to compare.</typeparam>
+    /// <summary>
+    /// A comparer that wraps the IComparable interface to reproduce the opposite comparison result.
+    /// </summary>
+    /// <typeparam name="T">The type of the objects to compare.</typeparam>
     //[Serializable]
     public sealed class ReverseComparer<T> : IComparer<T>
     {
         #region Globals
 
-        private IComparer<T> comparerToUse;
+        private IComparer<T> _comparerToUse;
 
         #endregion
 
@@ -31,27 +34,26 @@ namespace NGenerics.Comparers
         /// <inheritdoc />
         public ReverseComparer()
         {
-            comparerToUse = Comparer<T>.Default;
+            _comparerToUse = Comparer<T>.Default;
         }
 
- 
+
         /// <param name="comparer">The comparer to reverse.</param>
         /// <exception cref="ArgumentNullException"><paramref name="comparer"/> is a null reference (<c>Nothing</c> in Visual Basic).</exception>
         public ReverseComparer(IComparer<T> comparer)
         {
-
             Guard.ArgumentNotNull(comparer, "comparer");
-            comparerToUse = comparer;
+            _comparerToUse = comparer;
         }
 
         #endregion
 
         #region IComparer<T> Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public int Compare(T x, T y)
         {
-            return (comparerToUse.Compare(y, x));
+            return (_comparerToUse.Compare(y, x));
         }
 
         #endregion
@@ -67,14 +69,13 @@ namespace NGenerics.Comparers
         {
             get
             {
-                return comparerToUse;
+                return _comparerToUse;
             }
             set
             {
-
                 Guard.ArgumentNotNull(value, "value");
 
-                comparerToUse = value;
+                _comparerToUse = value;
             }
         }
 

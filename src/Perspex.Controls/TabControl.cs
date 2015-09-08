@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Animation;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 
 namespace Perspex.Controls
 {
-    using Perspex.Animation;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>

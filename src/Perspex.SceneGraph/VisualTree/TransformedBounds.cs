@@ -1,8 +1,5 @@
-﻿
-
-
-
-
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.VisualTree
 {
@@ -37,6 +34,6 @@ namespace Perspex.VisualTree
         /// <summary>
         /// Gets the control's transform.
         /// </summary>
-        public Matrix Transform { get;  }
+        public Matrix Transform { get; }
     }
 }

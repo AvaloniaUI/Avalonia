@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Cairo.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Splat;
-
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -33,21 +30,21 @@ namespace Perspex.Cairo.Media
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };
-            
+
             this.Layout.Alignment = textAlignment.ToCairo();
         }
 
-        private Size size;
+        private Size _size;
         public Size Constraint
         {
             get
             {
-                return size;
+                return _size;
             }
 
             set
             {
-                this.size = value;
+                _size = value;
                 this.Layout.Width = Pango.Units.FromDouble(value.Width);
             }
         }
@@ -95,12 +92,12 @@ namespace Perspex.Cairo.Media
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
             var ranges = new List<Rect>();
-        
+
             for (var i = 0; i < length; i++)
             {
-                ranges.Add(this.HitTestTextPosition(index+i));
+                ranges.Add(this.HitTestTextPosition(index + i));
             }
-            
+
             return ranges;
         }
 
@@ -109,7 +106,7 @@ namespace Perspex.Cairo.Media
             int width;
             int height;
             this.Layout.GetPixelSize(out width, out height);
-        
+
             return new Size(width, height);
         }
 

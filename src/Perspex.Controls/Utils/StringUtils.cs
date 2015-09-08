@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Globalization;
 
 namespace Perspex.Controls.Utils
 {
-    using System.Globalization;
-
     internal static class StringUtils
     {
         private enum CharClass

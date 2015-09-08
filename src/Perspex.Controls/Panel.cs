@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Collections;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Collections;
-
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
@@ -21,17 +18,17 @@ namespace Perspex.Controls
     /// </remarks>
     public class Panel : Control, IReparentingControl, IPanel
     {
-        private Controls children = new Controls();
+        private Controls _children = new Controls();
 
-        private ILogical childLogicalParent;
+        private ILogical _childLogicalParent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
         /// </summary>
         public Panel()
         {
-            this.children.CollectionChanged += this.ChildrenChanged;
-            this.childLogicalParent = this;
+            _children.CollectionChanged += this.ChildrenChanged;
+            _childLogicalParent = this;
         }
 
         /// <summary>
@@ -47,7 +44,7 @@ namespace Perspex.Controls
         {
             get
             {
-                return this.children;
+                return _children;
             }
 
             set
@@ -55,8 +52,8 @@ namespace Perspex.Controls
                 Contract.Requires<ArgumentNullException>(value != null);
 
                 this.ClearVisualChildren();
-                this.children.Clear();
-                this.children.AddRange(value);
+                _children.Clear();
+                _children.AddRange(value);
             }
         }
 
@@ -75,7 +72,7 @@ namespace Perspex.Controls
             Contract.Requires<ArgumentNullException>(logicalParent != null);
             Contract.Requires<ArgumentNullException>(children != null);
 
-            this.childLogicalParent = logicalParent;
+            _childLogicalParent = logicalParent;
             this.RedirectLogicalChildren(children);
 
             foreach (var control in this.Children)
@@ -104,7 +101,7 @@ namespace Perspex.Controls
         /// <param name="controls">The controls.</param>
         private void SetLogicalParent(IEnumerable<IControl> controls)
         {
-            var parent = this.childLogicalParent as Control;
+            var parent = _childLogicalParent as Control;
 
             foreach (var control in controls)
             {
@@ -143,7 +140,7 @@ namespace Perspex.Controls
                     this.ClearLogicalParent(controls);
                     this.LogicalChildren.Clear();
                     this.ClearVisualChildren();
-                    this.AddVisualChildren(this.children);
+                    this.AddVisualChildren(_children);
                     break;
             }
 

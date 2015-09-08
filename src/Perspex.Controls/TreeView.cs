@@ -1,19 +1,16 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Controls.Generators;
+using Perspex.Input;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Controls.Generators;
-    using Perspex.Input;
-    using Perspex.VisualTree;
-
     public class TreeView : ItemsControl
     {
         public static readonly PerspexProperty<object> SelectedItemProperty =

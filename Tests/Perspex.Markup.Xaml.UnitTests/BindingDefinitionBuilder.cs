@@ -1,37 +1,39 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Xaml.Base.UnitTest
 {
-    using Controls;
-    using Markup.Xaml.DataBinding;
-    using Markup.Xaml.DataBinding.ChangeTracking;
-
     public class BindingDefinitionBuilder
     {
-        private readonly BindingMode bindingMode;
-        private readonly PropertyPath sourcePropertyPath;
-        private Control target;
-        private PerspexProperty targetProperty;
+        private readonly BindingMode _bindingMode;
+        private readonly PropertyPath _sourcePropertyPath;
+        private Control _target;
+        private PerspexProperty _targetProperty;
 
         public BindingDefinitionBuilder()
         {
-            bindingMode = BindingMode.Default;
-            sourcePropertyPath = new PropertyPath(string.Empty);
+            _bindingMode = BindingMode.Default;
+            _sourcePropertyPath = new PropertyPath(string.Empty);
         }
 
         public BindingDefinitionBuilder WithNullTarget()
         {
-            target = null;
+            _target = null;
             return this;
         }
 
         public XamlBindingDefinition Build()
         {
             return new XamlBindingDefinition(
-                bindingMode: bindingMode,
-                sourcePropertyPath: sourcePropertyPath,
-                target: target,
-                targetProperty: targetProperty);
+                bindingMode: _bindingMode,
+                sourcePropertyPath: _sourcePropertyPath,
+                target: _target,
+                targetProperty: _targetProperty);
         }
     }
 }

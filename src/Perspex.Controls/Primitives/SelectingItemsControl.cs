@@ -1,21 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Controls.Generators;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Styling;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Controls.Generators;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// An <see cref="ItemsControl"/> that maintains a selection.
     /// </summary>

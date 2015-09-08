@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Input;
+using Perspex.Interactivity;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-
     public class Thumb : TemplatedControl
     {
         public static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
@@ -21,7 +18,7 @@ namespace Perspex.Controls.Primitives
         public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
             RoutedEvent.Register<Thumb, VectorEventArgs>("DragCompleted", RoutingStrategies.Bubble);
 
-        private Point? lastPoint;
+        private Point? _lastPoint;
 
         static Thumb()
         {
@@ -62,12 +59,12 @@ namespace Perspex.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (this.lastPoint.HasValue)
+            if (_lastPoint.HasValue)
             {
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,
-                    Vector = e.GetPosition(this) - this.lastPoint.Value,
+                    Vector = e.GetPosition(this) - _lastPoint.Value,
                 };
 
                 this.RaiseEvent(ev);
@@ -77,12 +74,12 @@ namespace Perspex.Controls.Primitives
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             e.Device.Capture(this);
-            this.lastPoint = e.GetPosition(this);
+            _lastPoint = e.GetPosition(this);
 
             var ev = new VectorEventArgs
             {
                 RoutedEvent = DragStartedEvent,
-                Vector = (Vector)this.lastPoint,
+                Vector = (Vector)_lastPoint,
             };
 
             this.RaiseEvent(ev);
@@ -90,10 +87,10 @@ namespace Perspex.Controls.Primitives
 
         protected override void OnPointerReleased(PointerEventArgs e)
         {
-            if (this.lastPoint.HasValue)
+            if (_lastPoint.HasValue)
             {
                 e.Device.Capture(null);
-                this.lastPoint = null;
+                _lastPoint = null;
 
                 var ev = new VectorEventArgs
                 {

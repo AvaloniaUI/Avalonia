@@ -1,24 +1,21 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Perspex.Controls.Primitives;
+using Perspex.Input;
+using Perspex.Input.Raw;
+using Perspex.Layout;
+using Perspex.Platform;
+using Perspex.Rendering;
+using Perspex.Styling;
+using Perspex.Threading;
+using Splat;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using Perspex.Controls.Primitives;
-    using Perspex.Input;
-    using Perspex.Input.Raw;
-    using Perspex.Layout;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Perspex.Styling;
-    using Perspex.Threading;
-    using Splat;
-
     /// <summary>
     /// Base class for top-level windows.
     /// </summary>
@@ -50,32 +47,32 @@ namespace Perspex.Controls
         /// <summary>
         /// The dispatcher for the window.
         /// </summary>
-        private Dispatcher dispatcher;
+        private Dispatcher _dispatcher;
 
         /// <summary>
         /// The render manager for the window.s
         /// </summary>
-        private IRenderManager renderManager;
+        private IRenderManager _renderManager;
 
         /// <summary>
         /// The window renderer.
         /// </summary>
-        private IRenderer renderer;
+        private IRenderer _renderer;
 
         /// <summary>
         /// The input manager for the window.
         /// </summary>
-        private IInputManager inputManager;
+        private IInputManager _inputManager;
 
         /// <summary>
         /// The access key handler for the window.
         /// </summary>
-        private IAccessKeyHandler accessKeyHandler;
+        private IAccessKeyHandler _accessKeyHandler;
 
         /// <summary>
         /// The access keyboard navigation handler for the window.
         /// </summary>
-        private IKeyboardNavigationHandler keyboardNavigationHandler;
+        private IKeyboardNavigationHandler _keyboardNavigationHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -114,11 +111,11 @@ namespace Perspex.Controls
             dependencyResolver = dependencyResolver ?? Locator.Current;
             var renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             var styler = TryGetService<IStyler>(dependencyResolver);
-            this.accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
-            this.inputManager = TryGetService<IInputManager>(dependencyResolver);
-            this.keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
+            _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
+            _inputManager = TryGetService<IInputManager>(dependencyResolver);
+            _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             this.LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
-            this.renderManager = TryGetService<IRenderManager>(dependencyResolver);
+            _renderManager = TryGetService<IRenderManager>(dependencyResolver);
 
             this.PlatformImpl.SetOwner(this);
             this.PlatformImpl.Activated = this.HandleActivated;
@@ -130,11 +127,11 @@ namespace Perspex.Controls
 
             Size clientSize = this.ClientSize = this.PlatformImpl.ClientSize;
 
-            this.dispatcher = Dispatcher.UIThread;
+            _dispatcher = Dispatcher.UIThread;
 
             if (renderInterface != null)
             {
-                this.renderer = renderInterface.CreateRenderer(this.PlatformImpl.Handle, clientSize.Width, clientSize.Height);
+                _renderer = renderInterface.CreateRenderer(this.PlatformImpl.Handle, clientSize.Width, clientSize.Height);
             }
 
             if (this.LayoutManager != null)
@@ -144,19 +141,19 @@ namespace Perspex.Controls
                 this.LayoutManager.LayoutCompleted.Subscribe(_ => this.HandleLayoutCompleted());
             }
 
-            if (this.renderManager != null)
+            if (_renderManager != null)
             {
-                this.renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
+                _renderManager.RenderNeeded.Subscribe(_ => this.HandleRenderNeeded());
             }
 
-            if (this.keyboardNavigationHandler != null)
+            if (_keyboardNavigationHandler != null)
             {
-                this.keyboardNavigationHandler.SetOwner(this);
+                _keyboardNavigationHandler.SetOwner(this);
             }
 
-            if (this.accessKeyHandler != null)
+            if (_accessKeyHandler != null)
             {
-                this.accessKeyHandler.SetOwner(this);
+                _accessKeyHandler.SetOwner(this);
             }
 
             styler?.ApplyStyles(this);
@@ -223,7 +220,7 @@ namespace Perspex.Controls
         /// </summary>
         IRenderer IRenderRoot.Renderer
         {
-            get { return this.renderer; }
+            get { return _renderer; }
         }
 
         /// <summary>
@@ -231,7 +228,7 @@ namespace Perspex.Controls
         /// </summary>
         IRenderManager IRenderRoot.RenderManager
         {
-            get { return this.renderManager; }
+            get { return _renderManager; }
         }
 
         /// <summary>
@@ -239,7 +236,7 @@ namespace Perspex.Controls
         /// </summary>
         IAccessKeyHandler IInputRoot.AccessKeyHandler
         {
-            get { return this.accessKeyHandler; }
+            get { return _accessKeyHandler; }
         }
 
         /// <summary>
@@ -247,7 +244,7 @@ namespace Perspex.Controls
         /// </summary>
         IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler
         {
-            get { return this.keyboardNavigationHandler; }
+            get { return _keyboardNavigationHandler; }
         }
 
         /// <summary>
@@ -338,7 +335,7 @@ namespace Perspex.Controls
             }
 
             this.ClientSize = clientSize;
-            this.renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
+            _renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
             this.LayoutManager.ExecuteLayoutPass();
             this.PlatformImpl.Invalidate(new Rect(clientSize));
         }
@@ -414,7 +411,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            this.inputManager.Process(e);
+            _inputManager.Process(e);
         }
 
         /// <summary>
@@ -422,7 +419,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            this.dispatcher.InvokeAsync(this.LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            _dispatcher.InvokeAsync(this.LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -430,7 +427,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutCompleted()
         {
-            this.renderManager?.InvalidateRender(this);
+            _renderManager?.InvalidateRender(this);
         }
 
         /// <summary>
@@ -438,7 +435,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleRenderNeeded()
         {
-            this.dispatcher.InvokeAsync(
+            _dispatcher.InvokeAsync(
                 () => this.PlatformImpl.Invalidate(new Rect(this.ClientSize)),
                 DispatcherPriority.Render);
         }
@@ -450,8 +447,8 @@ namespace Perspex.Controls
         /// <param name="handle">An optional platform-specific handle.</param>
         private void HandlePaint(Rect rect, IPlatformHandle handle)
         {
-            this.renderer.Render(this, handle);
-            this.renderManager.RenderFinished();
+            _renderer.Render(this, handle);
+            _renderManager.RenderFinished();
         }
     }
 }

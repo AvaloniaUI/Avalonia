@@ -1,18 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Perspex.Controls;
+using Xunit;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-    using Perspex.Controls;
-    using Perspex.Styling;
-    using Xunit;
-
     public class SelectorTests_PropertyEquals
     {
         [Fact]

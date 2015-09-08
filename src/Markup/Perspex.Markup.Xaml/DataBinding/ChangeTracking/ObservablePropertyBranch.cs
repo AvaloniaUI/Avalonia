@@ -1,33 +1,30 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reflection;
+using Glass;
 
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using Glass;
-
     public class ObservablePropertyBranch
     {
-        private readonly object instance;
-        private readonly PropertyPath propertyPath;
-        private readonly PropertyMountPoint mountPoint;
+        private readonly object _instance;
+        private readonly PropertyPath _propertyPath;
+        private readonly PropertyMountPoint _mountPoint;
 
         public ObservablePropertyBranch(object instance, PropertyPath propertyPath)
         {
             Guard.ThrowIfNull(instance, nameof(instance));
             Guard.ThrowIfNull(propertyPath, nameof(propertyPath));
 
-            this.instance = instance;
-            this.propertyPath = propertyPath;
-            this.mountPoint = new PropertyMountPoint(instance, propertyPath);
+            _instance = instance;
+            _propertyPath = propertyPath;
+            _mountPoint = new PropertyMountPoint(instance, propertyPath);
             var properties = this.GetPropertiesThatRaiseNotifications();
             this.Values = this.CreateUnifiedObservableFromNodes(properties);
         }
@@ -45,12 +42,12 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
                 parentOnPropertyChanged => subscription.Parent.PropertyChanged += parentOnPropertyChanged,
                 parentOnPropertyChanged => subscription.Parent.PropertyChanged -= parentOnPropertyChanged)
                 .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName)
-                .Select(pattern => this.mountPoint.Value);
+                .Select(pattern => _mountPoint.Value);
         }
 
         private IEnumerable<PropertyDefinition> GetPropertiesThatRaiseNotifications()
         {
-            return this.GetSubscriptionsRecursive(this.instance, this.propertyPath, 0);
+            return this.GetSubscriptionsRecursive(_instance, _propertyPath, 0);
         }
 
         private IEnumerable<PropertyDefinition> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
@@ -66,13 +63,13 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
             var nextPropertyName = propertyPath.Chunks[i];
             subscriptions.Add(new PropertyDefinition(inpc, nextPropertyName));
 
-            if (i < this.propertyPath.Chunks.Length)
+            if (i < _propertyPath.Chunks.Length)
             {
                 var currentObjectTypeInfo = current.GetType().GetTypeInfo();
                 var nextProperty = currentObjectTypeInfo.GetDeclaredProperty(nextPropertyName);
                 var nextInstance = nextProperty.GetValue(current);
 
-                if (i < this.propertyPath.Chunks.Length - 1)
+                if (i < _propertyPath.Chunks.Length - 1)
                 {
                     subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
                 }
@@ -85,16 +82,16 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
         {
             get
             {
-                return this.mountPoint.Value;
+                return _mountPoint.Value;
             }
 
             set
             {
-                this.mountPoint.Value = value;
+                _mountPoint.Value = value;
             }
         }
 
-        public Type Type => this.mountPoint.ProperyType;
+        public Type Type => _mountPoint.ProperyType;
 
         private class PropertyDefinition
         {

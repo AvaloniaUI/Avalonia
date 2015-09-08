@@ -1,17 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Xunit;
-
     public class PerspexObjectTests_SetValue
     {
         [Fact]
@@ -203,7 +197,7 @@ namespace Perspex.Base.UnitTests
 
             public double Value { get; }
 
-            public static implicit operator double(ImplictDouble v)
+            public static implicit operator double (ImplictDouble v)
             {
                 return v.Value;
             }

@@ -1,19 +1,16 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using OmniXaml;
+using OmniXaml.ObjectAssembler;
+using Perspex.Markup.Xaml.Templates;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using System;
-    using OmniXaml;
-    using OmniXaml.ObjectAssembler;
-    using Templates;
-
     public class PerspexObjectAssembler : IObjectAssembler
     {
-        private readonly TemplateHostingObjectAssembler objectAssembler;
+        private readonly TemplateHostingObjectAssembler _objectAssembler;
 
         public PerspexObjectAssembler(IWiringContext wiringContext, ObjectAssemblerSettings objectAssemblerSettings = null)
         {
@@ -21,24 +18,24 @@ namespace Perspex.Markup.Xaml.Context
             mapping.Map<XamlDataTemplate>(template => template.Content, new TemplateLoader());
 
             var assembler = new ObjectAssembler(wiringContext, new TopDownMemberValueContext(), objectAssemblerSettings);
-            this.objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
+            _objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
         }
 
 
-        public object Result => this.objectAssembler.Result;
+        public object Result => _objectAssembler.Result;
 
         public EventHandler<XamlSetValueEventArgs> XamlSetValueHandler { get; set; }
 
-        public IWiringContext WiringContext => this.objectAssembler.WiringContext;
+        public IWiringContext WiringContext => _objectAssembler.WiringContext;
 
         public void Process(XamlInstruction node)
         {
-            this.objectAssembler.Process(node);
+            _objectAssembler.Process(node);
         }
 
         public void OverrideInstance(object instance)
         {
-            this.objectAssembler.OverrideInstance(instance);
+            _objectAssembler.OverrideInstance(instance);
         }
     }
 }

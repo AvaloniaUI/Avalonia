@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Perspex.Win32.Threading;
 
 namespace Perspex.Threading
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Perspex.Win32.Threading;
-
     /// <summary>
     /// Provides services for managing work items on a thread.
     /// </summary>
@@ -20,9 +17,9 @@ namespace Perspex.Threading
     /// </remarks>
     public class Dispatcher
     {
-        private static Dispatcher instance = new Dispatcher();
+        private static Dispatcher s_instance = new Dispatcher();
 
-        private MainLoop mainLoop = new MainLoop();
+        private MainLoop _mainLoop = new MainLoop();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dispatcher"/> class.
@@ -36,7 +33,7 @@ namespace Perspex.Threading
         /// </summary>
         public static Dispatcher UIThread
         {
-            get { return instance; }
+            get { return s_instance; }
         }
 
         /// <summary>
@@ -47,7 +44,7 @@ namespace Perspex.Threading
         /// </param>
         public void MainLoop(CancellationToken cancellationToken)
         {
-            this.mainLoop.Run(cancellationToken);
+            _mainLoop.Run(cancellationToken);
         }
 
         /// <summary>
@@ -55,7 +52,7 @@ namespace Perspex.Threading
         /// </summary>
         public void RunJobs()
         {
-            this.mainLoop.RunJobs();
+            _mainLoop.RunJobs();
         }
 
         /// <summary>
@@ -66,7 +63,7 @@ namespace Perspex.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            return this.mainLoop.InvokeAsync(action, priority);
+            return _mainLoop.InvokeAsync(action, priority);
         }
 
         /// <summary>
@@ -76,7 +73,7 @@ namespace Perspex.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            this.mainLoop.Post(action, priority);
+            _mainLoop.Post(action, priority);
         }
     }
 }

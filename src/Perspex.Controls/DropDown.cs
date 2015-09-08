@@ -1,22 +1,19 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Layout;
+using Perspex.Media;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using Generators;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.VisualTree;
-
     public class DropDown : SelectingItemsControl, IContentControl
     {
         public static readonly PerspexProperty<object> ContentProperty =
@@ -34,7 +31,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<object> SelectionBoxItemProperty =
             PerspexProperty.Register<DropDown, object>("SelectionBoxItem");
 
-        private Popup popup;
+        private Popup _popup;
 
         static DropDown()
         {
@@ -117,13 +114,13 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            if (this.popup != null)
+            if (_popup != null)
             {
-                this.popup.Opened -= this.PopupOpened;
+                _popup.Opened -= this.PopupOpened;
             }
 
-            this.popup = this.GetTemplateChild<Popup>("popup");
-            this.popup.Opened += this.PopupOpened;
+            _popup = this.GetTemplateChild<Popup>("popup");
+            _popup.Opened += this.PopupOpened;
         }
 
         private void PopupOpened(object sender, EventArgs e)

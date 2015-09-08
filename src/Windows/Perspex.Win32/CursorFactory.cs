@@ -1,16 +1,18 @@
-﻿using Perspex.Win32.Interop;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Win32.Interop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Perspex.Input;
+using Perspex.Platform;
 
 namespace Perspex.Win32
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Perspex.Input;
-    using Perspex.Platform;
-
-    class CursorFactory : IStandardCursorFactory
+    internal class CursorFactory : IStandardCursorFactory
     {
         public static CursorFactory Instance { get; } = new CursorFactory();
 
@@ -18,10 +20,9 @@ namespace Perspex.Win32
         {
         }
 
-        private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
+        private static readonly Dictionary<StandardCursorType, int> s_cursorTypeMapping = new Dictionary
             <StandardCursorType, int>
         {
-
             { StandardCursorType.AppStarting, 32650 },
             { StandardCursorType.Arrow, 32512 },
             { StandardCursorType.Cross, 32515 },
@@ -40,18 +41,18 @@ namespace Perspex.Win32
             { StandardCursorType.Wait, 32514 }
         };
 
-        private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
+        private static readonly Dictionary<StandardCursorType, IPlatformHandle> s_cache =
             new Dictionary<StandardCursorType, IPlatformHandle>();
 
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
             IPlatformHandle rv;
-            if (!Cache.TryGetValue(cursorType, out rv))
+            if (!s_cache.TryGetValue(cursorType, out rv))
             {
-                Cache[cursorType] =
+                s_cache[cursorType] =
                     rv =
                         new PlatformHandle(
-                            UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])),
+                            UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(s_cursorTypeMapping[cursorType])),
                             PlatformConstants.CursorHandleType);
             }
 

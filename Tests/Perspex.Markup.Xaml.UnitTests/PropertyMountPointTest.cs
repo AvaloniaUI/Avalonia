@@ -1,9 +1,12 @@
-﻿namespace Perspex.Xaml.Base.UnitTest
-{
-    using Markup.Xaml.DataBinding.ChangeTracking;
-    using System;
-    using Xunit;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
+using System;
+using Xunit;
+
+namespace Perspex.Xaml.Base.UnitTest
+{
     public class PropertyMountPointTest
     {
         [Fact]

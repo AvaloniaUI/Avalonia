@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Threading;
 
 namespace Perspex.Animation
 {
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Threading;
-
     /// <summary>
     /// Utilities for creating animations.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Animation
         /// <summary>
         /// The time span of each frame.
         /// </summary>
-        private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
+        private static readonly TimeSpan s_tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
         /// <summary>
         /// Initializes static members of the <see cref="Animate"/> class.
@@ -34,7 +31,7 @@ namespace Perspex.Animation
         {
             Stopwatch = new Stopwatch();
             Stopwatch.Start();
-            Timer = Observable.Interval(Tick, PerspexScheduler.Instance)
+            Timer = Observable.Interval(s_tick, PerspexScheduler.Instance)
                 .Select(_ => Stopwatch.Elapsed)
                 .Publish()
                 .RefCount();

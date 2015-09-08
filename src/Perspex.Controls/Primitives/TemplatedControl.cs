@@ -1,21 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.Media;
+using Perspex.Styling;
+using Perspex.VisualTree;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Media;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
@@ -75,9 +72,9 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
-        private bool templateApplied;
+        private bool _templateApplied;
 
-        private ILogger templateLog;
+        private ILogger _templateLog;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -87,7 +84,7 @@ namespace Perspex.Controls.Primitives
             TemplateProperty.Changed.Subscribe(e =>
             {
                 var templatedControl = (TemplatedControl)e.Sender;
-                templatedControl.templateApplied = false;
+                templatedControl._templateApplied = false;
                 templatedControl.InvalidateMeasure();
             });
         }
@@ -97,7 +94,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public TemplatedControl()
         {
-            this.templateLog = Log.ForContext(new[]
+            _templateLog = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Template"),
                 new PropertyEnricher("SourceContext", this.GetType()),
@@ -189,13 +186,13 @@ namespace Perspex.Controls.Primitives
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
-            if (!this.templateApplied)
+            if (!_templateApplied)
             {
                 this.ClearVisualChildren();
 
                 if (this.Template != null)
                 {
-                    this.templateLog.Verbose("Creating control template");
+                    _templateLog.Verbose("Creating control template");
 
                     var child = this.Template.Build(this);
 
@@ -213,7 +210,7 @@ namespace Perspex.Controls.Primitives
                     this.OnTemplateApplied();
                 }
 
-                this.templateApplied = true;
+                _templateApplied = true;
             }
         }
 

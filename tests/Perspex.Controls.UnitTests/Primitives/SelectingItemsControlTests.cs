@@ -1,20 +1,17 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Collections.ObjectModel;
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using System.Collections.ObjectModel;
-    using Perspex.Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Xunit;
-
     public class SelectingItemsControlTests
     {
         [Fact]

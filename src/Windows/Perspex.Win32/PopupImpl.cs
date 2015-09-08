@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Platform;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
-    using System;
-    using Perspex.Platform;
-    using Perspex.Win32.Interop;
-
     public class PopupImpl : WindowImpl, IPopupImpl
     {
         public void SetPosition(Point p)

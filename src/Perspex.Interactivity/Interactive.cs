@@ -1,26 +1,23 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Perspex.Layout;
+using Perspex.VisualTree;
 
 namespace Perspex.Interactivity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using Perspex.Layout;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Base class for objects that raise routed events.
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers =
+        private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers =
             new Dictionary<RoutedEvent, List<EventSubscription>>();
 
         /// <summary>
@@ -50,10 +47,10 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (!this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (!_eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
                 subscriptions = new List<EventSubscription>();
-                this.eventHandlers.Add(routedEvent, subscriptions);
+                _eventHandlers.Add(routedEvent, subscriptions);
             }
 
             var sub = new EventSubscription
@@ -98,7 +95,7 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (_eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
                 subscriptions.RemoveAll(x => x.Handler == handler);
             }
@@ -187,7 +184,7 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
+            if (_eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
                 foreach (var sub in subscriptions.ToList())
                 {

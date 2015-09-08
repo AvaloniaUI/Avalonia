@@ -1,44 +1,41 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System;
+using System.Reflection;
+using Glass;
 
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
-    using System;
-    using System.Reflection;
-    using Glass;
-
     internal class TargettedProperty
     {
-        private readonly object instance;
-        private readonly PropertyInfo propertyInfo;
+        private readonly object _instance;
+        private readonly PropertyInfo _propertyInfo;
 
         public TargettedProperty(object instance, PropertyInfo propertyInfo)
         {
             Guard.ThrowIfNull(instance, nameof(instance));
             Guard.ThrowIfNull(propertyInfo, nameof(propertyInfo));
 
-            this.instance = instance;
-            this.propertyInfo = propertyInfo;
+            _instance = instance;
+            _propertyInfo = propertyInfo;
         }
 
         public object Value
         {
             get
             {
-                return this.propertyInfo.GetValue(this.instance);
+                return _propertyInfo.GetValue(_instance);
             }
 
             set
             {
-                this.propertyInfo.SetValue(this.instance, value);
+                _propertyInfo.SetValue(_instance, value);
             }
         }
 
-        public Type PropertyType => this.propertyInfo.PropertyType;
+        public Type PropertyType => _propertyInfo.PropertyType;
 
-        public string Name => this.propertyInfo.Name;
+        public string Name => _propertyInfo.Name;
     }
 }

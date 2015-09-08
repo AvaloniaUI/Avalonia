@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Controls;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Controls;
-    using ReactiveUI;
-
     internal class ControlDetailsViewModel : ReactiveObject
     {
         public ControlDetailsViewModel(Control control)

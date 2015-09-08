@@ -1,25 +1,22 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Perspex.Collections;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
+using Perspex.Styling;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Collections.ObjectModel;
-    using System.Collections.Specialized;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-    using Perspex.Styling;
-
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
@@ -29,7 +26,7 @@ namespace Perspex.Controls
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
+        private static readonly FuncTemplate<IPanel> s_defaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
         /// <summary>
@@ -42,9 +39,9 @@ namespace Perspex.Controls
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
-            PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>("ItemsPanel", defaultValue: DefaultPanel);
+            PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>("ItemsPanel", defaultValue: s_defaultPanel);
 
-        private IItemContainerGenerator itemContainerGenerator;
+        private IItemContainerGenerator _itemContainerGenerator;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -70,12 +67,12 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.itemContainerGenerator == null)
+                if (_itemContainerGenerator == null)
                 {
-                    this.itemContainerGenerator = this.CreateItemContainerGenerator();
+                    _itemContainerGenerator = this.CreateItemContainerGenerator();
                 }
 
-                return this.itemContainerGenerator;
+                return _itemContainerGenerator;
             }
         }
 

@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-
     /// <summary>
     /// Provides an observable for a style.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Styling
         /// <summary>
         /// The activator.
         /// </summary>
-        private IObservable<bool> activator;
+        private IObservable<bool> _activator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleBinding"/> class.
@@ -38,7 +35,7 @@ namespace Perspex.Styling
             object activatedValue,
             string description)
         {
-            this.activator = activator;
+            _activator = activator;
             this.ActivatedValue = activatedValue;
             this.Description = description;
         }
@@ -54,7 +51,7 @@ namespace Perspex.Styling
             IObservable<object> source,
             string description)
         {
-            this.activator = activator;
+            _activator = activator;
             this.Description = description;
             this.Source = source;
         }
@@ -95,7 +92,7 @@ namespace Perspex.Styling
 
             if (this.Source == null)
             {
-                return this.activator.Subscribe(
+                return _activator.Subscribe(
                     active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
                     observer.OnError,
                     observer.OnCompleted);
@@ -103,7 +100,7 @@ namespace Perspex.Styling
             else
             {
                 return Observable
-                    .CombineLatest(this.activator, this.Source, (x, y) => new { Active = x, Value = y })
+                    .CombineLatest(_activator, this.Source, (x, y) => new { Active = x, Value = y })
                     .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
             }
         }

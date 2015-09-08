@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Interactivity;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Interactivity;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
@@ -21,7 +18,7 @@ namespace Perspex.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private Dictionary<IFocusScope, IInputElement> focusScopes =
+        private Dictionary<IFocusScope, IInputElement> _focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
 
         /// <summary>
@@ -85,7 +82,7 @@ namespace Perspex.Input
                 {
                     IInputElement element;
 
-                    if (this.focusScopes.TryGetValue(scope, out element))
+                    if (_focusScopes.TryGetValue(scope, out element))
                     {
                         this.Focus(element, method);
                         break;
@@ -111,7 +108,7 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
-            this.focusScopes[scope] = element;
+            _focusScopes[scope] = element;
 
             if (this.Scope == scope)
             {
@@ -129,13 +126,13 @@ namespace Perspex.Input
 
             IInputElement e;
 
-            if (!this.focusScopes.TryGetValue(scope, out e))
+            if (!_focusScopes.TryGetValue(scope, out e))
             {
                 // TODO: Make this do something useful, i.e. select the first focusable
                 // control, select a control that the user has specified to have default
                 // focus etc.
                 e = scope as IInputElement;
-                this.focusScopes.Add(scope, e);
+                _focusScopes.Add(scope, e);
             }
 
             this.Scope = scope;

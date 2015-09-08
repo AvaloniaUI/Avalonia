@@ -1,26 +1,23 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Specialized;
+using System.Linq;
+using Moq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Layout;
+using Perspex.LogicalTree;
+using Perspex.Platform;
+using Perspex.Styling;
+using Perspex.VisualTree;
+using Splat;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Layout;
-    using Moq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.LogicalTree;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Splat;
-    using Templates;
-    using Xunit;
-
     public class PopupTests
     {
         [Fact]

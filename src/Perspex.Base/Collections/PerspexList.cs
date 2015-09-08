@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Perspex.Collections
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Linq;
-
     /// <summary>
     /// A notifying list.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Collections
     /// </remarks>
     public class PerspexList<T> : IPerspexList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged
     {
-        private List<T> inner;
+        private List<T> _inner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexList{T}"/> class.
@@ -41,7 +38,7 @@ namespace Perspex.Collections
         /// <param name="items">The initial items for the collection.</param>
         public PerspexList(IEnumerable<T> items)
         {
-            this.inner = new List<T>(items);
+            _inner = new List<T>(items);
         }
 
         /// <summary>
@@ -50,7 +47,7 @@ namespace Perspex.Collections
         /// <param name="items">The initial items for the collection.</param>
         public PerspexList(params T[] items)
         {
-            this.inner = new List<T>(items);
+            _inner = new List<T>(items);
         }
 
         /// <summary>
@@ -68,7 +65,7 @@ namespace Perspex.Collections
         /// </summary>
         public int Count
         {
-            get { return this.inner.Count; }
+            get { return _inner.Count; }
         }
 
         /// <inheritdoc/>
@@ -86,7 +83,7 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         int ICollection.Count
         {
-            get { return this.inner.Count; }
+            get { return _inner.Count; }
         }
 
         /// <inheritdoc/>
@@ -116,13 +113,13 @@ namespace Perspex.Collections
         {
             get
             {
-                return this.inner[index];
+                return _inner[index];
             }
 
             set
             {
-                T old = this.inner[index];
-                this.inner[index] = value;
+                T old = _inner[index];
+                _inner[index] = value;
 
                 if (this.CollectionChanged != null)
                 {
@@ -152,8 +149,8 @@ namespace Perspex.Collections
         /// <param name="item">The item.</param>
         public void Add(T item)
         {
-            int index = this.inner.Count;
-            this.inner.Add(item);
+            int index = _inner.Count;
+            _inner.Add(item);
             this.NotifyAdd(new[] { item }, index);
         }
 
@@ -165,8 +162,8 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            int index = this.inner.Count;
-            this.inner.AddRange(items);
+            int index = _inner.Count;
+            _inner.AddRange(items);
             this.NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
@@ -175,8 +172,8 @@ namespace Perspex.Collections
         /// </summary>
         public void Clear()
         {
-            var old = this.inner;
-            this.inner = new List<T>();
+            var old = _inner;
+            _inner = new List<T>();
             this.NotifyRemove(old, 0);
         }
 
@@ -187,7 +184,7 @@ namespace Perspex.Collections
         /// <returns>True if the collection contains the item; otherwise false.</returns>
         public bool Contains(T item)
         {
-            return this.inner.Contains(item);
+            return _inner.Contains(item);
         }
 
         /// <summary>
@@ -197,7 +194,7 @@ namespace Perspex.Collections
         /// <param name="arrayIndex">The first index of the array to copy to.</param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            this.inner.CopyTo(array, arrayIndex);
+            _inner.CopyTo(array, arrayIndex);
         }
 
         /// <summary>
@@ -206,7 +203,7 @@ namespace Perspex.Collections
         /// <returns>An <see cref="IEnumerator{T}"/>.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <summary>
@@ -218,7 +215,7 @@ namespace Perspex.Collections
         /// </returns>
         public int IndexOf(T item)
         {
-            return this.inner.IndexOf(item);
+            return _inner.IndexOf(item);
         }
 
         /// <summary>
@@ -228,7 +225,7 @@ namespace Perspex.Collections
         /// <param name="item">The item.</param>
         public void Insert(int index, T item)
         {
-            this.inner.Insert(index, item);
+            _inner.Insert(index, item);
             this.NotifyAdd(new[] { item }, index);
         }
 
@@ -241,7 +238,7 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            this.inner.InsertRange(index, items);
+            _inner.InsertRange(index, items);
             this.NotifyAdd((items as IList) ?? items.ToList(), index);
         }
 
@@ -252,11 +249,11 @@ namespace Perspex.Collections
         /// <returns>True if the item was found and removed, otherwise false.</returns>
         public bool Remove(T item)
         {
-            int index = this.inner.IndexOf(item);
+            int index = _inner.IndexOf(item);
 
             if (index != -1)
             {
-                this.inner.RemoveAt(index);
+                _inner.RemoveAt(index);
                 this.NotifyRemove(new[] { item }, index);
                 return true;
             }
@@ -287,8 +284,8 @@ namespace Perspex.Collections
         /// <param name="index">The index.</param>
         public void RemoveAt(int index)
         {
-            T item = this.inner[index];
-            this.inner.RemoveAt(index);
+            T item = _inner[index];
+            _inner.RemoveAt(index);
             this.NotifyRemove(new[] { item }, index);
         }
 
@@ -339,13 +336,13 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         void ICollection.CopyTo(Array array, int index)
         {
-            this.inner.CopyTo((T[])array, index);
+            _inner.CopyTo((T[])array, index);
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <summary>

@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Perspex.Interactivity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
-    using System.Reflection;
-
     [Flags]
     public enum RoutingStrategies
     {
@@ -21,7 +18,7 @@ namespace Perspex.Interactivity
 
     public class RoutedEvent
     {
-        private List<ClassEventSubscription> subscriptions = new List<ClassEventSubscription>();
+        private List<ClassEventSubscription> _subscriptions = new List<ClassEventSubscription>();
 
         public RoutedEvent(
             string name,
@@ -87,7 +84,7 @@ namespace Perspex.Interactivity
 
         public void AddClassHandler(Type type, EventHandler<RoutedEventArgs> handler, RoutingStrategies routes)
         {
-            this.subscriptions.Add(new ClassEventSubscription
+            _subscriptions.Add(new ClassEventSubscription
             {
                 TargetType = type,
                 Handler = handler,
@@ -97,7 +94,7 @@ namespace Perspex.Interactivity
 
         internal void InvokeClassHandlers(object sender, RoutedEventArgs e)
         {
-            foreach (var sub in this.subscriptions)
+            foreach (var sub in _subscriptions)
             {
                 if (sub.TargetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
                     ((e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0) &&

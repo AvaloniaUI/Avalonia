@@ -1,22 +1,19 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Perspex.Animation;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
-    using System.Collections;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-    using Perspex.Animation;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-
     /// <summary>
     /// Displays pages inside an <see cref="ItemsControl"/>.
     /// </summary>
@@ -46,9 +43,9 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<DeckPresenter>();
 
-        private bool createdPanel;
+        private bool _createdPanel;
 
-        private IItemContainerGenerator generator;
+        private IItemContainerGenerator _generator;
 
         /// <summary>
         /// Initializes static members of the <see cref="DeckPresenter"/> class.
@@ -66,23 +63,23 @@ namespace Perspex.Controls.Presenters
         {
             get
             {
-                if (this.generator == null)
+                if (_generator == null)
                 {
                     var i = this.TemplatedParent as ItemsControl;
-                    this.generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
+                    _generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
                 }
 
-                return this.generator;
+                return _generator;
             }
 
             set
             {
-                if (this.generator != null)
+                if (_generator != null)
                 {
                     throw new InvalidOperationException("ItemContainerGenerator is already set.");
                 }
 
-                this.generator = value;
+                _generator = value;
             }
         }
 
@@ -134,7 +131,7 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
-            if (!this.createdPanel)
+            if (!_createdPanel)
             {
                 this.CreatePanel();
             }
@@ -160,7 +157,7 @@ namespace Perspex.Controls.Presenters
                     logicalHost.LogicalChildren);
             }
 
-            this.createdPanel = true;
+            _createdPanel = true;
             var task = this.MoveToPage(-1, this.SelectedIndex);
         }
 

@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
 
 namespace Perspex.Animation
 {
-    using System;
-
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
@@ -17,12 +14,12 @@ namespace Perspex.Animation
         /// <summary>
         /// The animation being tracked.
         /// </summary>
-        private IObservable<T> inner;
+        private IObservable<T> _inner;
 
         /// <summary>
         /// The disposable used to cancel the animation.
         /// </summary>
-        private IDisposable subscription;
+        private IDisposable _subscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animation{T}"/> class.
@@ -31,8 +28,8 @@ namespace Perspex.Animation
         /// <param name="subscription">A disposable used to cancel the animation.</param>
         public Animation(IObservable<T> inner, IDisposable subscription)
         {
-            this.inner = inner;
-            this.subscription = subscription;
+            _inner = inner;
+            _subscription = subscription;
         }
 
         /// <summary>
@@ -40,7 +37,7 @@ namespace Perspex.Animation
         /// </summary>
         public void Dispose()
         {
-            this.subscription.Dispose();
+            _subscription.Dispose();
         }
 
         /// <summary>
@@ -53,7 +50,7 @@ namespace Perspex.Animation
         /// </returns>
         public IDisposable Subscribe(IObserver<T> observer)
         {
-            return this.inner.Subscribe(observer);
+            return _inner.Subscribe(observer);
         }
     }
 }

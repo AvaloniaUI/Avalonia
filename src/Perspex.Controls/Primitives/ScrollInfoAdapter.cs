@@ -1,124 +1,126 @@
-﻿namespace Perspex.Controls.Primitives
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+namespace Perspex.Controls.Primitives
 {
     public class ScrollInfoAdapter : IScrollInfo
     {
-        private readonly IScrollInfoBase nfo;
+        private readonly IScrollInfoBase _nfo;
         public ScrollInfoAdapter(IScrollInfoBase nfo)
         {
-            this.nfo = nfo;
+            _nfo = nfo;
         }
 
         public ScrollViewer ScrollOwner
         {
-            get { return this.nfo.ScrollOwner; }
-            set { this.nfo.ScrollOwner = value; }
+            get { return _nfo.ScrollOwner; }
+            set { _nfo.ScrollOwner = value; }
         }
 
-        public double ExtentWidth => (this.nfo as IHorizontalScrollInfo)?.ExtentWidth ?? 0;
+        public double ExtentWidth => (_nfo as IHorizontalScrollInfo)?.ExtentWidth ?? 0;
 
-        public double ViewportWidth => (this.nfo as IHorizontalScrollInfo)?.ViewportWidth ?? 0;
+        public double ViewportWidth => (_nfo as IHorizontalScrollInfo)?.ViewportWidth ?? 0;
 
-        public double ExtentHeight => (this.nfo as IVerticalScrollInfo)?.ExtentHeight ?? 0;
+        public double ExtentHeight => (_nfo as IVerticalScrollInfo)?.ExtentHeight ?? 0;
 
-        public double ViewportHeight => (this.nfo as IVerticalScrollInfo)?.ViewportHeight ?? 0;
+        public double ViewportHeight => (_nfo as IVerticalScrollInfo)?.ViewportHeight ?? 0;
 
-        private double horizontalOffset;
+        private double _horizontalOffset;
         public double HorizontalOffset
         {
             get
             {
-                return (this.nfo as IHorizontalScrollInfo)?.HorizontalOffset ?? this.horizontalOffset;
+                return (_nfo as IHorizontalScrollInfo)?.HorizontalOffset ?? _horizontalOffset;
             }
 
             set
             {
-                var info = (this.nfo as IHorizontalScrollInfo);
+                var info = (_nfo as IHorizontalScrollInfo);
                 if (info == null)
-                    this.horizontalOffset = value;
+                    _horizontalOffset = value;
                 else
                     info.HorizontalOffset = value;
             }
         }
 
-        private double verticalOffset;
+        private double _verticalOffset;
         public double VerticalOffset
         {
             get
             {
-                return (this.nfo as IVerticalScrollInfo)?.VerticalOffset ?? this.verticalOffset;
+                return (_nfo as IVerticalScrollInfo)?.VerticalOffset ?? _verticalOffset;
             }
 
             set
             {
-                var info = (this.nfo as IVerticalScrollInfo);
+                var info = (_nfo as IVerticalScrollInfo);
                 if (info == null)
-                    this.verticalOffset = value;
+                    _verticalOffset = value;
                 else
                     info.VerticalOffset = value;
             }
         }
-        
-        public void LineLeft() => (this.nfo as IHorizontalScrollInfo)?.LineLeft();
 
-        public void LineRight() => (this.nfo as IHorizontalScrollInfo)?.LineRight();
+        public void LineLeft() => (_nfo as IHorizontalScrollInfo)?.LineLeft();
 
-        public void MouseWheelLeft() => (this.nfo as IHorizontalScrollInfo)?.MouseWheelLeft();
+        public void LineRight() => (_nfo as IHorizontalScrollInfo)?.LineRight();
 
-        public void MouseWheelRight() => (this.nfo as IHorizontalScrollInfo)?.MouseWheelRight();
+        public void MouseWheelLeft() => (_nfo as IHorizontalScrollInfo)?.MouseWheelLeft();
 
-        public void PageLeft() => (this.nfo as IHorizontalScrollInfo)?.PageLeft();
+        public void MouseWheelRight() => (_nfo as IHorizontalScrollInfo)?.MouseWheelRight();
 
-        public Rect MakeVisible(Visual visual, Rect rectangle) => this.nfo.MakeVisible(visual, rectangle);
+        public void PageLeft() => (_nfo as IHorizontalScrollInfo)?.PageLeft();
 
-        public void PageRight() => (this.nfo as IHorizontalScrollInfo)?.PageRight();
+        public Rect MakeVisible(Visual visual, Rect rectangle) => _nfo.MakeVisible(visual, rectangle);
 
-        public void LineDown() => (this.nfo as IVerticalScrollInfo)?.LineDown();
+        public void PageRight() => (_nfo as IHorizontalScrollInfo)?.PageRight();
 
-        public void LineUp() => (this.nfo as IVerticalScrollInfo)?.LineUp();
+        public void LineDown() => (_nfo as IVerticalScrollInfo)?.LineDown();
 
-        public void MouseWheelDown() => (this.nfo as IVerticalScrollInfo)?.MouseWheelDown();
+        public void LineUp() => (_nfo as IVerticalScrollInfo)?.LineUp();
 
-        public void MouseWheelUp() => (this.nfo as IVerticalScrollInfo)?.MouseWheelUp();
+        public void MouseWheelDown() => (_nfo as IVerticalScrollInfo)?.MouseWheelDown();
 
-        public void PageDown() => (this.nfo as IVerticalScrollInfo)?.PageDown();
+        public void MouseWheelUp() => (_nfo as IVerticalScrollInfo)?.MouseWheelUp();
 
-        public void PageUp() => (this.nfo as IVerticalScrollInfo)?.PageUp();
+        public void PageDown() => (_nfo as IVerticalScrollInfo)?.PageDown();
 
-        private bool canVerticallyScroll;
+        public void PageUp() => (_nfo as IVerticalScrollInfo)?.PageUp();
+
+        private bool _canVerticallyScroll;
         public bool CanVerticallyScroll
         {
             get
             {
-                return (this.nfo as IVerticalScrollInfo)?.CanVerticallyScroll ?? this.canVerticallyScroll;
+                return (_nfo as IVerticalScrollInfo)?.CanVerticallyScroll ?? _canVerticallyScroll;
             }
 
             set
             {
-                var info = (this.nfo as IVerticalScrollInfo);
+                var info = (_nfo as IVerticalScrollInfo);
                 if (info == null)
-                    this.canVerticallyScroll = value;
+                    _canVerticallyScroll = value;
                 else
                     info.CanVerticallyScroll = value;
             }
         }
 
-        private bool canHorizontallyScroll;
+        private bool _canHorizontallyScroll;
         public bool CanHorizontallyScroll
         {
             get
             {
-                return (this.nfo as IHorizontalScrollInfo)?.CanHorizontallyScroll ?? this.canHorizontallyScroll;
+                return (_nfo as IHorizontalScrollInfo)?.CanHorizontallyScroll ?? _canHorizontallyScroll;
             }
 
             set
             {
-                var info = (this.nfo as IHorizontalScrollInfo);
+                var info = (_nfo as IHorizontalScrollInfo);
                 if (info == null)
-                    this.canHorizontallyScroll = value;
+                    _canHorizontallyScroll = value;
                 else
                     info.CanHorizontallyScroll = value;
             }
         }
-
     }
 }

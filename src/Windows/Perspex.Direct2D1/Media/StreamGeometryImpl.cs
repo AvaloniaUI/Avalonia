@@ -1,23 +1,20 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Media;
+using Perspex.Platform;
+using SharpDX.Direct2D1;
+using Splat;
+using D2DGeometry = SharpDX.Direct2D1.Geometry;
 
 namespace Perspex.Direct2D1.Media
 {
-    using Perspex.Media;
-    using Perspex.Platform;
-    using SharpDX.Direct2D1;
-    using Splat;
-    using D2DGeometry = SharpDX.Direct2D1.Geometry;
-
     /// <summary>
     /// A Direct2D implementation of a <see cref="StreamGeometry"/>.
     /// </summary>
     public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
-        private PathGeometry path;
+        private PathGeometry _path;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
@@ -25,7 +22,7 @@ namespace Perspex.Direct2D1.Media
         public StreamGeometryImpl()
         {
             Factory factory = Locator.Current.GetService<Factory>();
-            this.path = new PathGeometry(factory);
+            _path = new PathGeometry(factory);
         }
 
         /// <summary>
@@ -34,19 +31,19 @@ namespace Perspex.Direct2D1.Media
         /// <param name="geometry">An existing Direct2D <see cref="PathGeometry"/>.</param>
         protected StreamGeometryImpl(PathGeometry geometry)
         {
-            this.path = geometry;
+            _path = geometry;
         }
 
         /// <inheritdoc/>
         public override Rect Bounds
         {
-            get { return this.path.GetBounds().ToPerspex(); }
+            get { return _path.GetBounds().ToPerspex(); }
         }
 
         /// <inheritdoc/>
         public override D2DGeometry DefiningGeometry
         {
-            get { return this.path; }
+            get { return _path; }
         }
 
         /// <summary>
@@ -58,7 +55,7 @@ namespace Perspex.Direct2D1.Media
             Factory factory = Locator.Current.GetService<Factory>();
             var result = new PathGeometry(factory);
             var sink = result.Open();
-            this.path.Stream(sink);
+            _path.Stream(sink);
             sink.Close();
             return new StreamGeometryImpl(result);
         }
@@ -71,7 +68,7 @@ namespace Perspex.Direct2D1.Media
         /// </returns>
         public IStreamGeometryContextImpl Open()
         {
-            return new StreamGeometryContextImpl(this.path.Open());
+            return new StreamGeometryContextImpl(_path.Open());
         }
     }
 }

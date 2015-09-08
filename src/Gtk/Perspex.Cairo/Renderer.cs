@@ -1,27 +1,24 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Runtime.InteropServices;
+using Perspex.Cairo.Media;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo
 {
-    using System;
-    using System.Runtime.InteropServices;
     using global::Cairo;
-    using Perspex.Cairo.Media;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Matrix = Perspex.Matrix;
 
     /// <summary>
     /// A cairo renderer.
     /// </summary>
     public class Renderer : RendererBase
     {
-        private Surface surface;
-        private Gdk.Window window;
+        private Surface _surface;
+        private Gdk.Window _window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -35,7 +32,7 @@ namespace Perspex.Cairo
 
         public Renderer(ImageSurface surface)
         {
-            this.surface = surface;
+            _surface = surface;
         }
 
         /// <summary>
@@ -47,7 +44,7 @@ namespace Perspex.Cairo
         {
             // Don't need to do anything here.
         }
-        
+
 
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
@@ -56,16 +53,15 @@ namespace Perspex.Cairo
         /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
         protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
-            
             switch (handle.HandleDescriptor)
             {
                 case "RTB":
-                    return new DrawingContext(this.surface);
+                    return new DrawingContext(_surface);
                 case "GdkWindow":
-                    if (this.window == null)
-                        this.window = new Gdk.Window(handle.Handle);
+                    if (_window == null)
+                        _window = new Gdk.Window(handle.Handle);
 
-                    return new DrawingContext(this.window);
+                    return new DrawingContext(_window);
                 default:
                     throw new NotSupportedException(string.Format(
                         "Don't know how to create a Cairo renderer from a '{0}' handle",

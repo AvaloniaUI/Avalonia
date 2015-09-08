@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.Collections;
+using Perspex.LogicalTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Linq;
-    using Perspex.Collections;
-    using Perspex.LogicalTree;
-    using Xunit;
-
     public class PanelTests
     {
         [Fact]

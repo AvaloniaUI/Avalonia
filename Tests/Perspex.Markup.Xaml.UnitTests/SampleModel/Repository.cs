@@ -1,17 +1,20 @@
-﻿namespace GitHubClient.ViewModels
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+namespace GitHubClient.ViewModels
 {
     public class Repository
     {
-        private readonly string name;
+        private readonly string _name;
 
         public Repository(string name)
         {
-            this.name = name;
+            _name = name;
         }
 
         public string Name
         {
-            get { return name; }
+            get { return _name; }
         }
     }
 }

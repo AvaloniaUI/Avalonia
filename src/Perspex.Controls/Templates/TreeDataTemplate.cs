@@ -1,23 +1,20 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Reflection;
 
 namespace Perspex.Controls.Templates
 {
-    using System;
-    using System.Collections;
-    using System.Reflection;
-
     /// <summary>
     /// A template used to build hierachical data.
     /// </summary>
     public class TreeDataTemplate : DataTemplate, ITreeDataTemplate
     {
-        private Func<object, IEnumerable> itemsSelector;
+        private Func<object, IEnumerable> _itemsSelector;
 
-        private Func<object, bool> isExpanded;
+        private Func<object, bool> _isExpanded;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.
@@ -80,7 +77,7 @@ namespace Perspex.Controls.Templates
             Func<object, IEnumerable> itemsSelector)
             : this(match, build, itemsSelector, _ => false)
         {
-            this.itemsSelector = itemsSelector;
+            _itemsSelector = itemsSelector;
         }
 
         /// <summary>
@@ -106,8 +103,8 @@ namespace Perspex.Controls.Templates
             Func<object, bool> isExpanded)
             : base(match, build)
         {
-            this.itemsSelector = itemsSelector;
-            this.isExpanded = isExpanded;
+            _itemsSelector = itemsSelector;
+            _isExpanded = isExpanded;
         }
 
         /// <summary>
@@ -117,7 +114,7 @@ namespace Perspex.Controls.Templates
         /// <returns>True if the item should be initially expanded, otherwise false.</returns>
         public bool IsExpanded(object item)
         {
-            return this?.isExpanded(item) ?? false;
+            return this?._isExpanded(item) ?? false;
         }
 
         /// <summary>
@@ -127,7 +124,7 @@ namespace Perspex.Controls.Templates
         /// <returns>The child items, or null if no child items.</returns>
         public IEnumerable ItemsSelector(object item)
         {
-            return this?.itemsSelector(item);
+            return this?._itemsSelector(item);
         }
 
         /// <summary>

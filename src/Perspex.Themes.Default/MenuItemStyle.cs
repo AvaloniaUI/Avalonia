@@ -1,28 +1,27 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Layout;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Styling;
+    using Controls = Perspex.Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="MenuItem"/> control.
     /// </summary>
     public class MenuItemStyle : Styles
     {
-        private static readonly DataTemplate AccessKeyDataTemplate =
+        private static readonly DataTemplate s_accessKeyDataTemplate =
             new DataTemplate<string>(x => new AccessText { Text = x });
 
         /// <summary>
@@ -97,7 +96,7 @@ namespace Perspex.Themes.Default
                         {
                             DataTemplates = new DataTemplates
                             {
-                                AccessKeyDataTemplate,
+                                s_accessKeyDataTemplate,
                             },
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
                             [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
@@ -198,7 +197,7 @@ namespace Perspex.Themes.Default
                         {
                             DataTemplates = new DataTemplates
                             {
-                                AccessKeyDataTemplate,
+                                s_accessKeyDataTemplate,
                             },
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],

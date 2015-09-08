@@ -1,30 +1,27 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using Glass;
+using OmniXaml;
+using OmniXaml.Builder;
+using OmniXaml.TypeConversion;
+using OmniXaml.Typing;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.Templates;
+using Perspex.Markup.Xaml.Converters;
+using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.MarkupExtensions;
+using Perspex.Media;
+using Perspex.Media.Imaging;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Reflection;
-    using Controls;
-    using Converters;
-    using DataBinding;
-    using Glass;
-    using MarkupExtensions;
-    using Media;
-    using Media.Imaging;
-    using OmniXaml;
-    using OmniXaml.Builder;
-    using OmniXaml.TypeConversion;
-    using OmniXaml.Typing;
-    using Templates;
-
     public class PerspexWiringContext : IWiringContext
     {
-        private readonly WiringContext context;
+        private readonly WiringContext _context;
         private const string PerspexNs = "https://github.com/grokys/Perspex";
 
         public PerspexWiringContext(ITypeFactory typeFactory)
@@ -35,7 +32,7 @@ namespace Perspex.Markup.Xaml.Context
             var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
             var xamlTypeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
             var typeContext = new TypeContext(xamlTypeRepository, xamlNamespaceRegistry, typeFactory);
-            this.context = new WiringContext(typeContext, featureProvider);
+            _context = new WiringContext(typeContext, featureProvider);
         }
 
         private static XamlNamespaceRegistry CreateXamlNamespaceRegistry()
@@ -114,8 +111,8 @@ namespace Perspex.Markup.Xaml.Context
             return contentPropertyProvider;
         }
 
-        public ITypeContext TypeContext => this.context.TypeContext;
+        public ITypeContext TypeContext => _context.TypeContext;
 
-        public ITypeFeatureProvider FeatureProvider => this.context.FeatureProvider;
+        public ITypeFeatureProvider FeatureProvider => _context.FeatureProvider;
     }
 }

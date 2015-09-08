@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Media;
+using Perspex.Threading;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Media;
-    using Perspex.Threading;
-    using Perspex.VisualTree;
-
     public class TextPresenter : TextBlock
     {
         public static readonly PerspexProperty<int> CaretIndexProperty =
@@ -24,19 +21,19 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
-        private DispatcherTimer caretTimer;
+        private DispatcherTimer _caretTimer;
 
-        private bool caretBlink;
+        private bool _caretBlink;
 
-        private IObservable<bool> canScrollHorizontally;
+        private IObservable<bool> _canScrollHorizontally;
 
         public TextPresenter()
         {
-            this.caretTimer = new DispatcherTimer();
-            this.caretTimer.Interval = TimeSpan.FromMilliseconds(500);
-            this.caretTimer.Tick += this.CaretTimerTick;
+            _caretTimer = new DispatcherTimer();
+            _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _caretTimer.Tick += this.CaretTimerTick;
 
-            this.canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+            _canScrollHorizontally = this.GetObservable(TextWrappingProperty)
                 .Select(x => x == TextWrapping.NoWrap);
 
             Observable.Merge(
@@ -98,7 +95,7 @@ namespace Perspex.Controls.Presenters
                 var charPos = this.FormattedText.HitTestTextPosition(this.CaretIndex);
                 Brush caretBrush = Brushes.Black;
 
-                if (this.caretBlink)
+                if (_caretBlink)
                 {
                     var x = Math.Floor(charPos.X) + 0.5;
                     var y = Math.Floor(charPos.Y) + 0.5;
@@ -114,15 +111,15 @@ namespace Perspex.Controls.Presenters
 
         public void ShowCaret()
         {
-            this.caretBlink = true;
-            this.caretTimer.Start();
+            _caretBlink = true;
+            _caretTimer.Start();
             this.InvalidateVisual();
         }
 
         public void HideCaret()
         {
-            this.caretBlink = false;
-            this.caretTimer.Stop();
+            _caretBlink = false;
+            _caretTimer.Stop();
             this.InvalidateVisual();
         }
 
@@ -130,9 +127,9 @@ namespace Perspex.Controls.Presenters
         {
             if (this.GetVisualParent() != null)
             {
-                this.caretBlink = true;
-                this.caretTimer.Stop();
-                this.caretTimer.Start();
+                _caretBlink = true;
+                _caretTimer.Stop();
+                _caretTimer.Start();
                 this.InvalidateVisual();
 
                 var rect = this.FormattedText.HitTestTextPosition(caretIndex);
@@ -182,7 +179,7 @@ namespace Perspex.Controls.Presenters
 
         private void CaretTimerTick(object sender, EventArgs e)
         {
-            this.caretBlink = !this.caretBlink;
+            _caretBlink = !_caretBlink;
             this.InvalidateVisual();
         }
     }

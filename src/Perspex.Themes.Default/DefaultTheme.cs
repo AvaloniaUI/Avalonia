@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Perspex.Styling;
-
     /// <summary>
     /// The default Perspex theme.
     /// </summary>

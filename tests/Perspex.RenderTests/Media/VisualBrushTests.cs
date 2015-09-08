@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Controls;
+using Perspex.Controls.Shapes;
+using Perspex.Layout;
+using Perspex.Media;
+using Xunit;
 
 namespace Perspex.Direct2D1.RenderTests.Media
 {
-    using Perspex.Controls;
-    using Perspex.Controls.Shapes;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Xunit;
-
     public class VisualBrushTests : TestBase
     {
         public VisualBrushTests()

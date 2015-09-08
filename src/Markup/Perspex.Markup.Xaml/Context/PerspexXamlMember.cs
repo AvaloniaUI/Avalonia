@@ -1,18 +1,15 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using Perspex.Markup.Xaml.DataBinding;
+using OmniXaml;
+using OmniXaml.Typing;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using DataBinding;
-    using OmniXaml;
-    using OmniXaml.Typing;
-
     public class PerspexXamlMember : XamlMember
     {
-        private readonly IPerspexPropertyBinder propertyBinder;
+        private readonly IPerspexPropertyBinder _propertyBinder;
 
         public PerspexXamlMember(string name,
             XamlType owner,
@@ -21,12 +18,12 @@ namespace Perspex.Markup.Xaml.Context
             IPerspexPropertyBinder propertyBinder)
             : base(name, owner, xamlTypeRepository, featureProvider)
         {
-            this.propertyBinder = propertyBinder;
+            _propertyBinder = propertyBinder;
         }
 
         protected override IXamlMemberValuePlugin LookupXamlMemberValueConnector()
         {
-            return new PerspexXamlMemberValuePlugin(this, this.propertyBinder);
+            return new PerspexXamlMemberValuePlugin(this, _propertyBinder);
         }
 
         public override string ToString()

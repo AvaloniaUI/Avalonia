@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Input;
+using Perspex.Interactivity;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-
     /// <summary>
     /// Handles access keys within a <see cref="MenuItem"/>
     /// </summary>
@@ -20,12 +17,12 @@ namespace Perspex.Controls
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private List<Tuple<string, IInputElement>> registered = new List<Tuple<string, IInputElement>>();
+        private List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
 
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot owner;
+        private IInputRoot _owner;
 
         /// <summary>
         /// Gets or sets the window's main menu.
@@ -46,14 +43,14 @@ namespace Perspex.Controls
         {
             Contract.Requires<ArgumentNullException>(owner != null);
 
-            if (this.owner != null)
+            if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            this.owner = owner;
+            _owner = owner;
 
-            this.owner.AddHandler(InputElement.TextInputEvent, this.OnTextInput);
+            _owner.AddHandler(InputElement.TextInputEvent, this.OnTextInput);
         }
 
         /// <summary>
@@ -63,14 +60,14 @@ namespace Perspex.Controls
         /// <param name="element">The input element.</param>
         public void Register(char accessKey, IInputElement element)
         {
-            var existing = this.registered.FirstOrDefault(x => x.Item2 == element);
+            var existing = _registered.FirstOrDefault(x => x.Item2 == element);
 
             if (existing != null)
             {
-                this.registered.Remove(existing);
+                _registered.Remove(existing);
             }
 
-            this.registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
+            _registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
         }
 
         /// <summary>
@@ -79,9 +76,9 @@ namespace Perspex.Controls
         /// <param name="element">The input element.</param>
         public void Unregister(IInputElement element)
         {
-            foreach (var i in this.registered.Where(x => x.Item2 == element).ToList())
+            foreach (var i in _registered.Where(x => x.Item2 == element).ToList())
             {
-                this.registered.Remove(i);
+                _registered.Remove(i);
             }
         }
 
@@ -95,7 +92,7 @@ namespace Perspex.Controls
             if (!string.IsNullOrWhiteSpace(e.Text))
             {
                 var text = e.Text.ToUpper();
-                var focus = this.registered
+                var focus = _registered
                     .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
                     .FirstOrDefault()?.Item2;
 

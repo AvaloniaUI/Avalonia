@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -34,24 +37,27 @@ namespace NGenerics.DataStructures.Trees
         /// Initializes a new instance of the <see cref="RedBlackTreeList&lt;TKey, TValue&gt;"/> class.
         /// </summary>
         /// <inheritdoc/>
-        public RedBlackTreeList() {
+        public RedBlackTreeList()
+        {
             // Do nothing else.
         }
 
         /// <inheritdoc/>
         public RedBlackTreeList(IComparer<TKey> comparer)
-            : base(comparer) {
+            : base(comparer)
+        {
             // Do nothing else.
         }
 
         /// <inheritdoc/>
         public RedBlackTreeList(Comparison<TKey> comparison)
-            : base(comparison) {
+            : base(comparison)
+        {
             // Do nothing else.
         }
 
         #endregion
-        
+
         #region Public Members
 
         /// <summary>
@@ -153,7 +159,8 @@ namespace NGenerics.DataStructures.Trees
             var foundKey = default(TKey);
 
             var ret = TraverseItems(
-                delegate(TKey itemKey, LinkedList<TValue> list) {
+                delegate (TKey itemKey, LinkedList<TValue> list)
+                {
                     if (list.Remove(value))
                     {
                         if (list.Count == 0)
@@ -200,12 +207,12 @@ namespace NGenerics.DataStructures.Trees
             while (stack.Count > 0)
             {
                 var currentNode = stack.Pop();
-                                
+
                 if (shouldStop(currentNode.Data.Key, currentNode.Data.Value))
                 {
                     return true;
                 }
-                
+
                 if (currentNode.Left != null)
                 {
                     stack.Push(currentNode.Left);

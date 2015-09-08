@@ -1,21 +1,24 @@
-﻿namespace Perspex.Xaml.Base.UnitTest
-{
-    using OmniXaml;
-    using System;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-    class TypeProviderMock : ITypeProvider
+using OmniXaml;
+using System;
+
+namespace Perspex.Xaml.Base.UnitTest
+{
+    internal class TypeProviderMock : ITypeProvider
     {
-        private readonly string typeName;
-        private readonly string clrNamespace;
-        private readonly string assemblyName;
-        private readonly Type typeToReturn;
+        private readonly string _typeName;
+        private readonly string _clrNamespace;
+        private readonly string _assemblyName;
+        private readonly Type _typeToReturn;
 
         public TypeProviderMock(string typeName, string clrNamespace, string assemblyName, Type typeToReturn)
         {
-            this.typeName = typeName;
-            this.clrNamespace = clrNamespace;
-            this.assemblyName = assemblyName;
-            this.typeToReturn = typeToReturn;
+            _typeName = typeName;
+            _clrNamespace = clrNamespace;
+            _assemblyName = assemblyName;
+            _typeToReturn = typeToReturn;
         }
 
         public TypeProviderMock()
@@ -24,10 +27,10 @@
 
         public Type GetType(string typeName, string clrNamespace, string assemblyName)
         {
-            if (this.typeName == typeName && this.clrNamespace == clrNamespace && this.assemblyName == assemblyName)
+            if (_typeName == typeName && _clrNamespace == clrNamespace && _assemblyName == assemblyName)
             {
-                return typeToReturn;
-            }            
+                return _typeToReturn;
+            }
 
             throw new TypeNotFoundException("The Type cannot be found");
         }

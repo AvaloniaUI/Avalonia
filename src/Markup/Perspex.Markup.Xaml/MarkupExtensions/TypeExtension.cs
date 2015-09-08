@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Glass;
+using OmniXaml;
+using OmniXaml.Attributes;
+using OmniXaml.Typing;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
-    using System;
-    using Glass;
-    using OmniXaml;
-    using OmniXaml.Attributes;
-    using OmniXaml.Typing;
-
     [ContentProperty("TargetType")]
     public class TypeExtension : MarkupExtension
     {

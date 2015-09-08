@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
 
 namespace Perspex.Controls.Templates
 {
-    using System;
-
     /// <summary>
     /// Creates a control from a <see cref="Func{TParam, TControl}"/>.
     /// </summary>
@@ -16,7 +13,7 @@ namespace Perspex.Controls.Templates
     public class FuncTemplate<TParam, TControl> : ITemplate<TParam, TControl>
         where TControl : IControl
     {
-        private Func<TParam, TControl> func;
+        private Func<TParam, TControl> _func;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncTemplate{TControl, TParam}"/> class.
@@ -26,7 +23,7 @@ namespace Perspex.Controls.Templates
         {
             Contract.Requires<ArgumentNullException>(func != null);
 
-            this.func = func;
+            _func = func;
         }
 
         /// <summary>
@@ -38,7 +35,7 @@ namespace Perspex.Controls.Templates
         /// </returns>
         public TControl Build(TParam param)
         {
-            return this.func(param);
+            return _func(param);
         }
     }
 }

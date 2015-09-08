@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.Input;
+using Perspex.Layout;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
-    using System.Linq;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.VisualTree;
-
     public class ScrollContentPresenter : ContentPresenter, IPresenter
     {
         public static readonly PerspexProperty<Size> ExtentProperty =
@@ -26,7 +23,7 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
-        private Size measuredExtent;
+        private Size _measuredExtent;
 
         static ScrollContentPresenter()
         {
@@ -77,7 +74,7 @@ namespace Perspex.Controls.Presenters
 
                 content.Measure(measureSize);
                 var size = content.DesiredSize;
-                this.measuredExtent = size;
+                _measuredExtent = size;
                 return size.Constrain(availableSize);
             }
             else
@@ -91,7 +88,7 @@ namespace Perspex.Controls.Presenters
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
 
             this.Viewport = finalSize;
-            this.Extent = this.measuredExtent;
+            this.Extent = _measuredExtent;
 
             if (child != null)
             {

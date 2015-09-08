@@ -1,27 +1,24 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Subjects;
+using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Generators
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Subjects;
-    using Perspex.Controls.Templates;
-
     /// <summary>
     /// Creates containers for tree items and maintains a list of created containers.
     /// </summary>
     /// <typeparam name="T">The type of the container.</typeparam>
     public class TreeItemContainerGenerator<T> : ITreeItemContainerGenerator where T : TreeViewItem, new()
     {
-        private Dictionary<object, T> containers = new Dictionary<object, T>();
+        private Dictionary<object, T> _containers = new Dictionary<object, T>();
 
-        private Subject<ItemContainers> containersInitialized = new Subject<ItemContainers>();
+        private Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.
@@ -35,7 +32,7 @@ namespace Perspex.Controls.Generators
         /// <summary>
         /// Signalled whenever new containers are initialized.
         /// </summary>
-        public IObservable<ItemContainers> ContainersInitialized => this.containersInitialized;
+        public IObservable<ItemContainers> ContainersInitialized => _containersInitialized;
 
         /// <summary>
         /// Gets the owner control.
@@ -61,11 +58,11 @@ namespace Perspex.Controls.Generators
             foreach (var item in items)
             {
                 var container = this.CreateContainer(item, itemTemplate);
-                this.containers.Add(item, container);
+                _containers.Add(item, container);
                 result.Add(container);
             }
 
-            this.containersInitialized.OnNext(new ItemContainers(startingIndex, result));
+            _containersInitialized.OnNext(new ItemContainers(startingIndex, result));
 
             return result.Where(x => x != null).ToList();
         }
@@ -86,7 +83,7 @@ namespace Perspex.Controls.Generators
             {
                 T container;
 
-                if (this.containers.TryGetValue(item, out container))
+                if (_containers.TryGetValue(item, out container))
                 {
                     this.Remove(container, result);
                 }
@@ -130,7 +127,7 @@ namespace Perspex.Controls.Generators
         /// <returns>The containers.</returns>
         public IEnumerable<IControl> GetAllContainers()
         {
-            return this.containers.Values;
+            return _containers.Values;
         }
 
         /// <summary>
@@ -151,7 +148,7 @@ namespace Perspex.Controls.Generators
         public IControl ContainerFromItem(object item)
         {
             T result;
-            this.containers.TryGetValue(item, out result);
+            _containers.TryGetValue(item, out result);
             return result;
         }
 
@@ -213,7 +210,7 @@ namespace Perspex.Controls.Generators
                 {
                     T childContainer;
 
-                    if (this.containers.TryGetValue(childItem, out childContainer))
+                    if (_containers.TryGetValue(childItem, out childContainer))
                     {
                         this.Remove(childContainer, removed);
                     }
@@ -221,11 +218,11 @@ namespace Perspex.Controls.Generators
             }
 
             // TODO: Dual index.
-            var i = this.containers.FirstOrDefault(x => x.Value == container);
+            var i = _containers.FirstOrDefault(x => x.Value == container);
 
             if (i.Key != null)
             {
-                this.containers.Remove(i.Key);
+                _containers.Remove(i.Key);
             }
         }
     }

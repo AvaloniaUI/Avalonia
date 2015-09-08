@@ -1,10 +1,13 @@
-﻿namespace Perspex.Xaml.Base.UnitTest
-{
-    using System;
-    using Markup.Xaml.DataBinding.ChangeTracking;
-    using SampleModel;
-    using Xunit;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
+using Perspex.Xaml.Base.UnitTest.SampleModel;
+using Xunit;
+
+namespace Perspex.Xaml.Base.UnitTest
+{
     public class ChangeBranchTest
     {
         [Fact]
@@ -23,11 +26,11 @@
         public void OnePathOnly()
         {
             var level1 = new Level1();
-            
+
             var branch = new ObservablePropertyBranch(level1, new PropertyPath("Text"));
             var newValue = "Hey now";
             branch.Value = newValue;
-            
+
             Assert.Equal(level1.Text, newValue);
         }
 

@@ -1,15 +1,16 @@
-﻿namespace Perspex.Gtk
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
+using Gdk;
+using Perspex.Input;
+using Perspex.Platform;
+
+namespace Perspex.Gtk
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Gdk;
     using Gtk = global::Gtk;
-    using Perspex.Input;
-    using Perspex.Platform;
-    class CursorFactory : IStandardCursorFactory
+
+    internal class CursorFactory : IStandardCursorFactory
     {
         public static CursorFactory Instance { get; } = new CursorFactory();
 
@@ -17,7 +18,7 @@
         {
         }
 
-        private static readonly Dictionary<StandardCursorType, object> CursorTypeMapping = new Dictionary
+        private static readonly Dictionary<StandardCursorType, object> s_cursorTypeMapping = new Dictionary
             <StandardCursorType, object>
         {
             { StandardCursorType.AppStarting, CursorType.Watch },
@@ -36,10 +37,10 @@
             { StandardCursorType.Help, Gtk.Stock.Help }
         };
 
-        private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
+        private static readonly Dictionary<StandardCursorType, IPlatformHandle> s_cache =
             new Dictionary<StandardCursorType, IPlatformHandle>();
 
-        Gdk.Cursor GetCursor(object desc)
+        private Gdk.Cursor GetCursor(object desc)
         {
             Gdk.Cursor rv;
             var name = desc as string;
@@ -51,23 +52,22 @@
             }
             else
             {
-                rv = new Gdk.Cursor((CursorType) desc);
+                rv = new Gdk.Cursor((CursorType)desc);
             }
 
             rv.Owned = false;
             return rv;
-
         }
 
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
             IPlatformHandle rv;
-            if (!Cache.TryGetValue(cursorType, out rv))
+            if (!s_cache.TryGetValue(cursorType, out rv))
             {
-                Cache[cursorType] =
+                s_cache[cursorType] =
                     rv =
                         new PlatformHandle(
-                            GetCursor(CursorTypeMapping[cursorType]).Handle,
+                            GetCursor(s_cursorTypeMapping[cursorType]).Handle,
                             "GTKCURSOR");
             }
 

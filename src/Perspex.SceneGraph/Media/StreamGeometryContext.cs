@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Platform;
 
 namespace Perspex.Media
 {
-    using System;
-    using Perspex.Platform;
-
     /// <summary>
     /// Describes a geometry using drawing commands.
     /// </summary>
@@ -20,7 +17,7 @@ namespace Perspex.Media
     /// TODO: This class is just a wrapper around IStreamGeometryContextImpl: is it needed?
     public class StreamGeometryContext : IDisposable
     {
-        private IStreamGeometryContextImpl impl;
+        private IStreamGeometryContextImpl _impl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryContext"/> class.
@@ -28,7 +25,7 @@ namespace Perspex.Media
         /// <param name="impl">The platform-specific implementation.</param>
         public StreamGeometryContext(IStreamGeometryContextImpl impl)
         {
-            this.impl = impl;
+            _impl = impl;
         }
 
         /// <summary>
@@ -43,7 +40,7 @@ namespace Perspex.Media
         /// </param>
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            this.impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+            _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
         }
 
         /// <summary>
@@ -53,7 +50,7 @@ namespace Perspex.Media
         /// <param name="isFilled">Whether the figure is filled.</param>
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            this.impl.BeginFigure(startPoint, isFilled);
+            _impl.BeginFigure(startPoint, isFilled);
         }
 
         /// <summary>
@@ -64,7 +61,7 @@ namespace Perspex.Media
         /// <param name="point3">The destination point for the end of the curve.</param>
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-            this.impl.BezierTo(point1, point2, point3);
+            _impl.BezierTo(point1, point2, point3);
         }
 
         /// <summary>
@@ -73,7 +70,7 @@ namespace Perspex.Media
         /// <param name="point">The destination point.</param>
         public void LineTo(Point point)
         {
-            this.impl.LineTo(point);
+            _impl.LineTo(point);
         }
 
         /// <summary>
@@ -82,7 +79,7 @@ namespace Perspex.Media
         /// <param name="isClosed">Whether the figure is closed.</param>
         public void EndFigure(bool isClosed)
         {
-            this.impl.EndFigure(isClosed);
+            _impl.EndFigure(isClosed);
         }
 
         /// <summary>
@@ -90,7 +87,7 @@ namespace Perspex.Media
         /// </summary>
         public void Dispose()
         {
-            this.impl.Dispose();
+            _impl.Dispose();
         }
     }
 }

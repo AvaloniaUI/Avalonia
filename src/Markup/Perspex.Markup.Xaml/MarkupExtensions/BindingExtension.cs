@@ -1,17 +1,14 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System.Linq;
+using OmniXaml;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
-    using System.Linq;
-    using Controls;
-    using DataBinding;
-    using DataBinding.ChangeTracking;
-    using OmniXaml;
-
     public class BindingExtension : MarkupExtension
     {
         public BindingExtension()

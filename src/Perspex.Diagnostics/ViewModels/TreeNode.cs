@@ -1,20 +1,17 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using ReactiveUI;
-
     internal class TreeNode : ReactiveObject
     {
-        private string classes;
+        private string _classes;
 
         public TreeNode(Control control)
         {
@@ -44,8 +41,8 @@ namespace Perspex.Diagnostics.ViewModels
 
         public string Classes
         {
-            get { return this.classes; }
-            private set { this.RaiseAndSetIfChanged(ref this.classes, value); }
+            get { return _classes; }
+            private set { this.RaiseAndSetIfChanged(ref _classes, value); }
         }
 
         public string Type

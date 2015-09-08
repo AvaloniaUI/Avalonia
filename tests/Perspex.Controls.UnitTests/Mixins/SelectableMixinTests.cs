@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Primitives;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Mixins
 {
-    using Perspex.Controls.Mixins;
-    using Perspex.Controls.Primitives;
-    using Xunit;
-
     public class SelectableMixinTests
     {
         [Fact]

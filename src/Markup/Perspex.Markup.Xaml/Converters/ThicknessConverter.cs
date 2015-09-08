@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Globalization;
+using OmniXaml.TypeConversion;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    using System;
-    using System.Globalization;
-    using OmniXaml.TypeConversion;
-
     public class ThicknessConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)

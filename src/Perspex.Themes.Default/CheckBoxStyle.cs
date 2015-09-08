@@ -1,19 +1,18 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Layout;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Styling;
+    using Controls = Perspex.Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="CheckBox"/> control.

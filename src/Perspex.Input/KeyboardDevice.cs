@@ -1,23 +1,20 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using Perspex.Input.Raw;
+using Perspex.Interactivity;
+using Splat;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Runtime.CompilerServices;
-    using Perspex.Input.Raw;
-    using Perspex.Interactivity;
-    using Splat;
-
     public abstract class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
-        private IInputElement focusedElement;
+        private IInputElement _focusedElement;
 
         public KeyboardDevice()
         {
@@ -48,16 +45,16 @@ namespace Perspex.Input
         {
             get
             {
-                return this.focusedElement;
+                return _focusedElement;
             }
 
             private set
             {
-                this.focusedElement = value;
+                _focusedElement = value;
                 this.RaisePropertyChanged();
             }
         }
-        
+
         public void SetFocusedElement(IInputElement element, NavigationMethod method)
         {
             if (element != this.FocusedElement)

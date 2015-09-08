@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -28,10 +31,10 @@ namespace NGenerics.DataStructures.General
     {
         #region Globals
 
-        const string heapIsEmpty = "The heap is empty.";
-        private readonly List<T> data;
-        private readonly IComparer<T> comparerToUse;
-        private readonly HeapType thisType;
+        private const string heapIsEmpty = "The heap is empty.";
+        private readonly List<T> _data;
+        private readonly IComparer<T> _comparerToUse;
+        private readonly HeapType _thisType;
 
         #endregion
 
@@ -70,7 +73,7 @@ namespace NGenerics.DataStructures.General
         /// <param name="type">The type of heap.</param>
         /// <param name="comparer">The comparer.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="type"/> is not either <see cref="HeapType.Maximum"/> or <see cref="HeapType.Minimum"/> .</exception>
-        public Heap(HeapType type, Comparison<T> comparer) : this(type, new ComparisonComparer<T>(comparer)){}
+        public Heap(HeapType type, Comparison<T> comparer) : this(type, new ComparisonComparer<T>(comparer)) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Heap&lt;T&gt;"/> class.
@@ -102,11 +105,11 @@ namespace NGenerics.DataStructures.General
                 throw new ArgumentOutOfRangeException("type");
             }
 
-            thisType = type;
+            _thisType = type;
 
-            data = new List<T> {default(T)};
+            _data = new List<T> { default(T) };
 
-            comparerToUse = type == HeapType.Minimum ? comparer : new ReverseComparer<T>(comparer);
+            _comparerToUse = type == HeapType.Minimum ? comparer : new ReverseComparer<T>(comparer);
         }
 
 
@@ -124,11 +127,11 @@ namespace NGenerics.DataStructures.General
             {
                 throw new ArgumentOutOfRangeException("type");
             }
-            thisType = type;
+            _thisType = type;
 
-            data = new List<T>(capacity) {default(T)};
+            _data = new List<T>(capacity) { default(T) };
 
-            comparerToUse = type == HeapType.Minimum ? comparer : new ReverseComparer<T>(comparer);
+            _comparerToUse = type == HeapType.Minimum ? comparer : new ReverseComparer<T>(comparer);
         }
 
         #endregion
@@ -136,7 +139,7 @@ namespace NGenerics.DataStructures.General
         #region Public Members
 
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Root" lang="cs" title="The following example shows how to use the Root property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Root" lang="vbnet" title="The following example shows how to use the Root property."/>
@@ -154,12 +157,12 @@ namespace NGenerics.DataStructures.General
 
                 #endregion
 
-                return data[1];
+                return _data[1];
             }
         }
 
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="RemoveRoot" lang="cs" title="The following example shows how to use the RemoveRoot method."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="RemoveRoot" lang="vbnet" title="The following example shows how to use the RemoveRoot method."/>
@@ -176,9 +179,9 @@ namespace NGenerics.DataStructures.General
             #endregion
 
             // The minimum item to return.
-            var minimum = data[1];
+            var minimum = _data[1];
 
-			RemoveRootItem(minimum);
+            RemoveRootItem(minimum);
             return minimum;
         }
 
@@ -193,10 +196,9 @@ namespace NGenerics.DataStructures.General
         /// </remarks>
         protected virtual void RemoveRootItem(T item)
         {
-
             // The last item in the heap
-            var last = data[Count];
-            data.RemoveAt(Count);
+            var last = _data[Count];
+            _data.RemoveAt(Count);
 
             // If there's still items left in this heap, re-heapify it.
             if (Count > 0)
@@ -204,28 +206,27 @@ namespace NGenerics.DataStructures.General
                 // Re-heapify the binary tree to conform to the heap property 
                 var counter = 1;
 
-                while ((counter * 2) < (data.Count))
+                while ((counter * 2) < (_data.Count))
                 {
                     var child = counter * 2;
 
-                    if (((child + 1) < (data.Count)) &&
-                        (comparerToUse.Compare(data[child + 1], data[child]) < 0))
+                    if (((child + 1) < (_data.Count)) &&
+                        (_comparerToUse.Compare(_data[child + 1], _data[child]) < 0))
                     {
                         child++;
                     }
 
-                    if (comparerToUse.Compare(last, data[child]) <= 0)
+                    if (_comparerToUse.Compare(last, _data[child]) <= 0)
                     {
                         break;
                     }
 
-                    data[counter] = data[child];
+                    _data[counter] = _data[child];
                     counter = child;
                 }
 
-                data[counter] = last;
+                _data[counter] = last;
             }
-
         }
 
 
@@ -242,7 +243,7 @@ namespace NGenerics.DataStructures.General
         {
             get
             {
-                return thisType;
+                return _thisType;
             }
         }
 
@@ -250,9 +251,9 @@ namespace NGenerics.DataStructures.General
 
         #region ICollection<T> Members
 
-		
 
-		/// <inheritdoc />
+
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="IsEmpty" lang="cs" title="The following example shows how to use the IsEmpty property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="IsEmpty" lang="vbnet" title="The following example shows how to use the IsEmpty property."/>
@@ -265,19 +266,19 @@ namespace NGenerics.DataStructures.General
             }
         }
 
-		
 
-		/// <inheritdoc />
+
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Contains" lang="cs" title="The following example shows how to use the Contains method."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Contains" lang="vbnet" title="The following example shows how to use the Contains method."/>
         /// </example>
         public bool Contains(T item)
         {
-            return data.Contains(item);
+            return _data.Contains(item);
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="CopyTo" lang="cs" title="The following example shows how to use the CopyTo method."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="CopyTo" lang="vbnet" title="The following example shows how to use the CopyTo method."/>
@@ -295,13 +296,13 @@ namespace NGenerics.DataStructures.General
 
             #endregion
 
-            for (var i = 1; i < data.Count; i++)
+            for (var i = 1; i < _data.Count; i++)
             {
-                array[arrayIndex++] = data[i];
+                array[arrayIndex++] = _data[i];
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Count" lang="cs" title="The following example shows how to use the Count property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Count" lang="vbnet" title="The following example shows how to use the Count property."/>
@@ -310,18 +311,18 @@ namespace NGenerics.DataStructures.General
         {
             get
             {
-                return data.Count - 1;
+                return _data.Count - 1;
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Add" lang="cs" title="The following example shows how to use the Add method."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Add" lang="vbnet" title="The following example shows how to use the Add method."/>
         /// </example>
         public void Add(T item)
         {
-          AddItem(item);
+            AddItem(item);
         }
 
         /// <summary>
@@ -333,24 +334,24 @@ namespace NGenerics.DataStructures.General
         /// Derived classes can override this method to change the behavior of the <see cref="Add"/> method.
         /// </remarks>
 		protected virtual void AddItem(T item)
-		{
-			// Add a dummy to the end of the list (it will be replaced)
-			data.Add(default(T));
+        {
+            // Add a dummy to the end of the list (it will be replaced)
+            _data.Add(default(T));
 
-			var counter = data.Count - 1;
+            var counter = _data.Count - 1;
 
-			while ((counter > 1) && (comparerToUse.Compare(data[counter / 2], item) > 0))
-			{
-				data[counter] = data[counter / 2];
-				counter = counter / 2;
-			}
+            while ((counter > 1) && (_comparerToUse.Compare(_data[counter / 2], item) > 0))
+            {
+                _data[counter] = _data[counter / 2];
+                counter = counter / 2;
+            }
 
-			data[counter] = item;
-		}
+            _data[counter] = item;
+        }
 
-		
 
-		/// <inheritdoc />
+
+        /// <inheritdoc />
         /// <exception cref="NotSupportedException">Always.</exception>
         [SuppressMessage("Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes")]
         bool ICollection<T>.Remove(T item)
@@ -370,38 +371,38 @@ namespace NGenerics.DataStructures.General
         /// </example>
         public IEnumerator<T> GetEnumerator()
         {
-            for (var i = 1; i < data.Count; i++)
+            for (var i = 1; i < _data.Count; i++)
             {
-                yield return data[i];
+                yield return _data[i];
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="Clear" lang="cs" title="The following example shows how to use the Clear method."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="Clear" lang="vbnet" title="The following example shows how to use the Clear method."/>
         /// </example>
         public void Clear()
         {
-            ClearItems();            
+            ClearItems();
         }
-		/// <summary>
-		/// Clears all the objects in this instance.
-		/// </summary>
-		/// <remarks>
-		/// <b>Notes to Inheritors: </b>
-		///  Derived classes can override this method to change the behavior of the <see cref="Clear"/> method.
-		/// </remarks>
-		protected virtual void ClearItems()
-		{
-			data.RemoveRange(1, data.Count - 1); // Clears all objects in this instance except the first dummy one.
-		}
+        /// <summary>
+        /// Clears all the objects in this instance.
+        /// </summary>
+        /// <remarks>
+        /// <b>Notes to Inheritors: </b>
+        ///  Derived classes can override this method to change the behavior of the <see cref="Clear"/> method.
+        /// </remarks>
+        protected virtual void ClearItems()
+        {
+            _data.RemoveRange(1, _data.Count - 1); // Clears all objects in this instance except the first dummy one.
+        }
 
         #endregion
 
         #region ICollection<T> Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         /// <example>
         /// <code source="..\..\Source\Examples\ExampleLibraryCSharp\DataStructures\General\HeapExamples.cs" region="IsReadOnly" lang="cs" title="The following example shows how to use the IsReadOnly property."/>
         /// <code source="..\..\Source\Examples\ExampleLibraryVB\DataStructures\General\HeapExamples.vb" region="IsReadOnly" lang="vbnet" title="The following example shows how to use the IsReadOnly property."/>
@@ -418,7 +419,7 @@ namespace NGenerics.DataStructures.General
 
         #region IEnumerable Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Media;
+using Splat;
+using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Media
 {
-    using Perspex.Media;
-    using Splat;
-    using Xunit;
-
     public class GeometryTests
     {
-        private static readonly RectComparer Compare = new RectComparer();
+        private static readonly RectComparer s_compare = new RectComparer();
 
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
@@ -23,7 +20,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
 
                 var target = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z");
 
-                Assert.Equal(new Rect(0, 2, 4, 8), target.Bounds, Compare);
+                Assert.Equal(new Rect(0, 2, 4, 8), target.Bounds, s_compare);
             }
         }
 
@@ -36,7 +33,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
 
                 var target = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z");
 
-                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(2), Compare);
+                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(2), s_compare);
             }
         }
     }

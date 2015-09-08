@@ -1,23 +1,20 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
 
 namespace Perspex.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
-    using System.Text;
-
     /// <summary>
     /// Parses a path markup string.
     /// </summary>
     public class PathMarkupParser
     {
-        private static readonly Dictionary<char, Command> Commands = new Dictionary<char, Command>
+        private static readonly Dictionary<char, Command> s_commands = new Dictionary<char, Command>
         {
             { 'F', Command.FillRule },
             { 'f', Command.FillRule },
@@ -35,9 +32,9 @@ namespace Perspex.Media
             { 'z', Command.Close },
         };
 
-        private StreamGeometry geometry;
+        private StreamGeometry _geometry;
 
-        private StreamGeometryContext context;
+        private StreamGeometryContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
@@ -46,8 +43,8 @@ namespace Perspex.Media
         /// <param name="context">The context for <paramref name="geometry"/>.</param>
         public PathMarkupParser(StreamGeometry geometry, StreamGeometryContext context)
         {
-            this.geometry = geometry;
-            this.context = context;
+            _geometry = geometry;
+            _context = context;
         }
 
         /// <summary>
@@ -98,7 +95,7 @@ namespace Perspex.Media
                         case Command.MoveRelative:
                             if (openFigure)
                             {
-                                this.context.EndFigure(false);
+                                _context.EndFigure(false);
                             }
 
                             if (command == Command.Move)
@@ -110,38 +107,38 @@ namespace Perspex.Media
                                 point = ReadRelativePoint(reader, point);
                             }
 
-                            this.context.BeginFigure(point, true);
+                            _context.BeginFigure(point, true);
                             openFigure = true;
                             break;
 
                         case Command.Line:
                             point = ReadPoint(reader);
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.LineRelative:
                             point = ReadRelativePoint(reader, point);
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.HorizontalLine:
                             point = point.WithX(ReadDouble(reader));
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.HorizontalLineRelative:
                             point = new Point(point.X + ReadDouble(reader), point.Y);
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.VerticalLine:
                             point = point.WithY(ReadDouble(reader));
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.VerticalLineRelative:
                             point = new Point(point.X, point.Y + ReadDouble(reader));
-                            this.context.LineTo(point);
+                            _context.LineTo(point);
                             break;
 
                         case Command.CubicBezierCurve:
@@ -149,12 +146,12 @@ namespace Perspex.Media
                                 Point point1 = ReadPoint(reader);
                                 Point point2 = ReadPoint(reader);
                                 point = ReadPoint(reader);
-                                this.context.BezierTo(point1, point2, point);
+                                _context.BezierTo(point1, point2, point);
                                 break;
                             }
 
                         case Command.Close:
-                            this.context.EndFigure(true);
+                            _context.EndFigure(true);
                             openFigure = false;
                             break;
 
@@ -167,7 +164,7 @@ namespace Perspex.Media
 
                 if (openFigure)
                 {
-                    this.context.EndFigure(false);
+                    _context.EndFigure(false);
                 }
             }
         }
@@ -187,7 +184,7 @@ namespace Perspex.Media
                 char c = (char)i;
                 Command command = Command.None;
 
-                if (!Commands.TryGetValue(c, out command))
+                if (!s_commands.TryGetValue(c, out command))
                 {
                     if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') &&
                         (lastCommand != Command.None))
@@ -203,7 +200,7 @@ namespace Perspex.Media
                 reader.Read();
                 return command;
             }
-       }
+        }
 
         private static double ReadDouble(TextReader reader)
         {

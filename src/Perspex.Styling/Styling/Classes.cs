@@ -1,52 +1,49 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Subjects;
-
     public class Classes : ICollection<string>, INotifyCollectionChanged
     {
-        private List<string> inner;
+        private List<string> _inner;
 
-        private Subject<NotifyCollectionChangedEventArgs> beforeChanged
+        private Subject<NotifyCollectionChangedEventArgs> _beforeChanged
             = new Subject<NotifyCollectionChangedEventArgs>();
 
-        private Subject<NotifyCollectionChangedEventArgs> changed
+        private Subject<NotifyCollectionChangedEventArgs> _changed
             = new Subject<NotifyCollectionChangedEventArgs>();
 
-        private Subject<NotifyCollectionChangedEventArgs> afterChanged
+        private Subject<NotifyCollectionChangedEventArgs> _afterChanged
             = new Subject<NotifyCollectionChangedEventArgs>();
 
         public Classes()
         {
-            this.inner = new List<string>();
+            _inner = new List<string>();
         }
 
         public Classes(params string[] classes)
         {
-            this.inner = new List<string>(classes);
+            _inner = new List<string>(classes);
         }
 
         public Classes(IEnumerable<string> classes)
         {
-            this.inner = new List<string>(classes);
+            _inner = new List<string>(classes);
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public int Count
         {
-            get { return this.inner.Count; }
+            get { return _inner.Count; }
         }
 
         public bool IsReadOnly
@@ -56,17 +53,17 @@ namespace Perspex.Styling
 
         public IObservable<NotifyCollectionChangedEventArgs> BeforeChanged
         {
-            get { return this.beforeChanged; }
+            get { return _beforeChanged; }
         }
 
         public IObservable<NotifyCollectionChangedEventArgs> Changed
         {
-            get { return this.changed; }
+            get { return _changed; }
         }
 
         public IObservable<NotifyCollectionChangedEventArgs> AfterChanged
         {
-            get { return this.afterChanged; }
+            get { return _afterChanged; }
         }
 
         public void Add(string item)
@@ -81,14 +78,14 @@ namespace Perspex.Styling
 
         public void Add(IEnumerable<string> items)
         {
-            items = items.Except(this.inner);
+            items = items.Except(_inner);
 
             NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(
                 NotifyCollectionChangedAction.Add,
                 items);
 
-            this.beforeChanged.OnNext(e);
-            this.inner.AddRange(items);
+            _beforeChanged.OnNext(e);
+            _inner.AddRange(items);
             this.RaiseChanged(e);
         }
 
@@ -97,24 +94,24 @@ namespace Perspex.Styling
             NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(
                 NotifyCollectionChangedAction.Reset);
 
-            this.beforeChanged.OnNext(e);
-            this.inner.Clear();
+            _beforeChanged.OnNext(e);
+            _inner.Clear();
             this.RaiseChanged(e);
         }
 
         public bool Contains(string item)
         {
-            return this.inner.Contains(item);
+            return _inner.Contains(item);
         }
 
         public void CopyTo(string[] array, int arrayIndex)
         {
-            this.inner.CopyTo(array, arrayIndex);
+            _inner.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<string> GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         public override string ToString()
@@ -124,7 +121,7 @@ namespace Perspex.Styling
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         public bool Remove(string item)
@@ -139,7 +136,7 @@ namespace Perspex.Styling
 
         public bool Remove(IEnumerable<string> items)
         {
-            items = items.Intersect(this.inner);
+            items = items.Intersect(_inner);
 
             if (items.Any())
             {
@@ -147,11 +144,11 @@ namespace Perspex.Styling
                     NotifyCollectionChangedAction.Remove,
                     items);
 
-                this.beforeChanged.OnNext(e);
+                _beforeChanged.OnNext(e);
 
                 foreach (string item in items)
                 {
-                    this.inner.Remove(item);
+                    _inner.Remove(item);
                 }
 
                 this.RaiseChanged(e);
@@ -170,8 +167,8 @@ namespace Perspex.Styling
                 this.CollectionChanged(this, e);
             }
 
-            this.changed.OnNext(e);
-            this.afterChanged.OnNext(e);
+            _changed.OnNext(e);
+            _afterChanged.OnNext(e);
         }
     }
 }

@@ -1,29 +1,32 @@
-﻿using System.ComponentModel;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Perspex.Xaml.Base.UnitTest
 {
-    class ViewModelMock : INotifyPropertyChanged
+    internal class ViewModelMock : INotifyPropertyChanged
     {
-        private string str;
-        private int intProp;
+        private string _str;
+        private int _intProp;
 
         public int IntProp
         {
-            get { return intProp; }
+            get { return _intProp; }
             set
             {
-                intProp = value;
+                _intProp = value;
                 OnPropertyChanged();
             }
         }
 
         public string StrProp
         {
-            get { return str; }
+            get { return _str; }
             set
             {
-                str = value;
+                _str = value;
                 OnPropertyChanged();
             }
         }

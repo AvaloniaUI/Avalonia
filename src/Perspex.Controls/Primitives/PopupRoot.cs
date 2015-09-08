@@ -1,26 +1,23 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Interactivity;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Interactivity;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
     public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot
     {
-        private IDisposable presenterSubscription;
+        private IDisposable _presenterSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -112,10 +109,10 @@ namespace Perspex.Controls.Primitives
 
             if (this.Parent.TemplatedParent != null)
             {
-                if (this.presenterSubscription != null)
+                if (_presenterSubscription != null)
                 {
-                    this.presenterSubscription.Dispose();
-                    this.presenterSubscription = null;
+                    _presenterSubscription.Dispose();
+                    _presenterSubscription = null;
                 }
 
                 var presenter = this.Presenter;

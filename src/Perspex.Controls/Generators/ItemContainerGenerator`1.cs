@@ -1,13 +1,10 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Generators
 {
-    using Perspex.Controls.Templates;
-
     /// <summary>
     /// Creates containers for items and maintains a list of created containers.
     /// </summary>

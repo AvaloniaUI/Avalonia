@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections;
+using System.Globalization;
+using System.Linq;
 
 namespace Perspex.Controls.Utils
 {
-    using System;
-    using System.Collections;
-    using System.Globalization;
-    using System.Linq;
-
     internal static class IEnumerableUtils
     {
         public static bool Contains(this IEnumerable items, object item)

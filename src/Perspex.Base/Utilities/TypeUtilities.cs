@@ -1,22 +1,19 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Perspex.Utilities
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
     /// <summary>
     /// Provides utilities for working with types at runtime.
     /// </summary>
     internal static class TypeUtilities
     {
-        private static readonly Dictionary<Type, List<Type>> Conversions = new Dictionary<Type, List<Type>>()
+        private static readonly Dictionary<Type, List<Type>> s_conversions = new Dictionary<Type, List<Type>>()
         {
             { typeof(decimal), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
             { typeof(double), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
@@ -59,7 +56,7 @@ namespace Perspex.Utilities
                 result = value;
                 return true;
             }
-            else if (Conversions.ContainsKey(to) && Conversions[to].Contains(from))
+            else if (s_conversions.ContainsKey(to) && s_conversions[to].Contains(from))
             {
                 result = Convert.ChangeType(value, to);
                 return true;

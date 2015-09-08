@@ -1,29 +1,26 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Layout;
+using Splat;
 
 namespace Perspex.Diagnostics
 {
-    using System;
-    using Perspex.Layout;
-    using Splat;
-
     public class LogManager : ILogManager
     {
-        private static LogManager instance;
+        private static LogManager s_instance;
 
         public static LogManager Instance
         {
             get
             {
-                if (instance == null)
+                if (s_instance == null)
                 {
-                    instance = new LogManager();
+                    s_instance = new LogManager();
                 }
 
-                return instance;
+                return s_instance;
             }
         }
 

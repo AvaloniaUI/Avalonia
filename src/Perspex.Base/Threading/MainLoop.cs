@@ -1,27 +1,24 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using NGenerics.DataStructures.Queues;
+using Perspex.Platform;
+using Perspex.Threading;
+using Splat;
 
 namespace Perspex.Win32.Threading
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using NGenerics.DataStructures.Queues;
-    using Perspex.Platform;
-    using Perspex.Threading;
-    using Splat;
-
     /// <summary>
     /// A main loop in a <see cref="Dispatcher"/>.
     /// </summary>
     internal class MainLoop
     {
-        private static IPlatformThreadingInterface platform;
+        private static IPlatformThreadingInterface s_platform;
 
-        private PriorityQueue<Job, DispatcherPriority> queue =
+        private PriorityQueue<Job, DispatcherPriority> _queue =
             new PriorityQueue<Job, DispatcherPriority>(PriorityQueueType.Maximum);
 
         /// <summary>
@@ -29,7 +26,7 @@ namespace Perspex.Win32.Threading
         /// </summary>
         static MainLoop()
         {
-            platform = Locator.Current.GetService<IPlatformThreadingInterface>();
+            s_platform = Locator.Current.GetService<IPlatformThreadingInterface>();
         }
 
         /// <summary>
@@ -44,7 +41,7 @@ namespace Perspex.Win32.Threading
             {
                 RunJobs();
 
-                platform.ProcessMessage();
+                s_platform.ProcessMessage();
             }
         }
 
@@ -55,17 +52,17 @@ namespace Perspex.Win32.Threading
         {
             Job job = null;
 
-            while (job != null || this.queue.Count > 0)
+            while (job != null || _queue.Count > 0)
             {
                 if (job == null)
                 {
-                    lock (this.queue)
+                    lock (_queue)
                     {
-                        job = this.queue.Dequeue();
+                        job = _queue.Dequeue();
                     }
                 }
 
-                if (job.Priority < DispatcherPriority.Input && platform.HasMessages())
+                if (job.Priority < DispatcherPriority.Input && s_platform.HasMessages())
                 {
                     break;
                 }
@@ -117,11 +114,11 @@ namespace Perspex.Win32.Threading
 
         private void AddJob(Job job)
         {
-            lock (this.queue)
+            lock (_queue)
             {
-                this.queue.Add(job, job.Priority);
+                _queue.Add(job, job.Priority);
             }
-            platform.Wake();
+            s_platform.Wake();
         }
 
         /// <summary>

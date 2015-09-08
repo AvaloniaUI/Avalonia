@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reflection;
+using OmniXaml;
+using Perspex.Markup.Xaml.Context;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Markup.Xaml
 {
-    using System;
-    using System.Reflection;
-    using OmniXaml;
-    using Perspex.Markup.Xaml.Context;
-    using Platform;
-    using Splat;
-
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>

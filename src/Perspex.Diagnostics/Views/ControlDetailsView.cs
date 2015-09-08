@@ -1,22 +1,19 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Diagnostics.ViewModels;
+using Perspex.Styling;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.Views
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Diagnostics.ViewModels;
-    using Perspex.Styling;
-    using ReactiveUI;
-
     internal class ControlDetailsView : UserControl
     {
-        private static readonly PerspexProperty<ControlDetailsViewModel> ViewModelProperty =
+        private static readonly PerspexProperty<ControlDetailsViewModel> s_viewModelProperty =
             PerspexProperty.Register<ControlDetailsView, ControlDetailsViewModel>("ViewModel");
 
         public ControlDetailsView()
@@ -28,8 +25,8 @@ namespace Perspex.Diagnostics.Views
 
         public ControlDetailsViewModel ViewModel
         {
-            get { return this.GetValue(ViewModelProperty); }
-            private set { this.SetValue(ViewModelProperty, value); }
+            get { return this.GetValue(s_viewModelProperty); }
+            private set { this.SetValue(s_viewModelProperty, value); }
         }
 
         private void InitializeComponent()

@@ -1,16 +1,13 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using ReactiveUI;
 
 namespace Perspex.Xaml.Base.UnitTest.SampleModel
 {
-    using ReactiveUI;
-
     public class LogInViewModel : ReactiveObject
     {
-        private string username;
+        private string _username;
 
         public LogInViewModel()
         {
@@ -22,8 +19,8 @@ namespace Perspex.Xaml.Base.UnitTest.SampleModel
 
         public string Username
         {
-            get { return this.username; }
-            set { this.RaiseAndSetIfChanged(ref this.username, value); }
+            get { return _username; }
+            set { this.RaiseAndSetIfChanged(ref _username, value); }
         }
 
         public ReactiveCommand<object> OkCommand

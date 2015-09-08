@@ -1,20 +1,17 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using Perspex.Controls.Shapes;
+using Perspex.Layout;
+using Perspex.Media;
+using Splat;
+using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
 {
-    using Perspex.Controls.Shapes;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Splat;
-    using Xunit;
-
     public class PathTests
     {
-        private static readonly RectComparer Compare = new RectComparer();
+        private static readonly RectComparer s_compare = new RectComparer();
 
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
@@ -35,7 +32,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, s_compare);
             }
         }
 
@@ -69,7 +66,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
                 //
                 // However Path.Measure doesn't correctly handle strokes currently, so testing for
                 // the (incorrect) current output for now...
-                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, Compare);
+                Assert.Equal(new Rect(0, 0, 4, 10), target.Bounds, s_compare);
             }
         }
     }

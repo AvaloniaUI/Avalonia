@@ -1,8 +1,5 @@
-﻿
-
-
-
-
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Layout
 {
@@ -24,7 +21,7 @@ namespace Perspex.Layout
         /// <summary>
         /// Gets the height of the element.
         /// </summary>
-        double Height { get;  }
+        double Height { get; }
 
         /// <summary>
         /// Gets the minimum width of the element.

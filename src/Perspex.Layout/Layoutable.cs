@@ -1,17 +1,14 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
+using Perspex.VisualTree;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex.Layout
 {
-    using System;
-    using System.Linq;
-    using Perspex.VisualTree;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// Defines how a control aligns itself horizontally in its parent control.
     /// </summary>
@@ -129,11 +126,11 @@ namespace Perspex.Layout
         public static readonly PerspexProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
-        private Size? previousMeasure;
+        private Size? _previousMeasure;
 
-        private Rect? previousArrange;
+        private Rect? _previousArrange;
 
-        private ILogger layoutLog;
+        private ILogger _layoutLog;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -157,7 +154,7 @@ namespace Perspex.Layout
         /// </summary>
         public Layoutable()
         {
-            this.layoutLog = Log.ForContext(new[]
+            _layoutLog = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Layout"),
                 new PropertyEnricher("SourceContext", this.GetType()),
@@ -288,7 +285,7 @@ namespace Perspex.Layout
         /// </summary>
         Size? ILayoutable.PreviousMeasure
         {
-            get { return this.previousMeasure; }
+            get { return _previousMeasure; }
         }
 
         /// <summary>
@@ -296,7 +293,7 @@ namespace Perspex.Layout
         /// </summary>
         Rect? ILayoutable.PreviousArrange
         {
-            get { return this.previousArrange; }
+            get { return _previousArrange; }
         }
 
         /// <summary>
@@ -321,7 +318,7 @@ namespace Perspex.Layout
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            if (force || !this.IsMeasureValid || this.previousMeasure != availableSize)
+            if (force || !this.IsMeasureValid || _previousMeasure != availableSize)
             {
                 this.IsMeasureValid = true;
 
@@ -333,9 +330,9 @@ namespace Perspex.Layout
                 }
 
                 this.DesiredSize = desiredSize;
-                this.previousMeasure = availableSize;
+                _previousMeasure = availableSize;
 
-                this.layoutLog.Verbose("Measure requested {DesiredSize}", this.DesiredSize);
+                _layoutLog.Verbose("Measure requested {DesiredSize}", this.DesiredSize);
             }
         }
 
@@ -361,13 +358,13 @@ namespace Perspex.Layout
                 return;
             }
 
-            if (force || !this.IsArrangeValid || this.previousArrange != rect)
+            if (force || !this.IsArrangeValid || _previousArrange != rect)
             {
-                this.layoutLog.Verbose("Arrange to {Rect} ", rect);
+                _layoutLog.Verbose("Arrange to {Rect} ", rect);
 
                 this.IsArrangeValid = true;
                 this.ArrangeCore(rect);
-                this.previousArrange = rect;
+                _previousArrange = rect;
             }
         }
 
@@ -380,13 +377,13 @@ namespace Perspex.Layout
 
             if (this.IsMeasureValid)
             {
-                this.layoutLog.Verbose("Invalidated measure");
+                _layoutLog.Verbose("Invalidated measure");
             }
 
             this.IsMeasureValid = false;
             this.IsArrangeValid = false;
-            this.previousMeasure = null;
-            this.previousArrange = null;
+            _previousMeasure = null;
+            _previousArrange = null;
 
             if (parent != null && IsResizable(parent))
             {
@@ -412,11 +409,11 @@ namespace Perspex.Layout
 
             if (this.IsArrangeValid)
             {
-                this.layoutLog.Verbose("Arrange measure");
+                _layoutLog.Verbose("Arrange measure");
             }
 
             this.IsArrangeValid = false;
-            this.previousArrange = null;
+            _previousArrange = null;
 
             if (root != null && root.Item1.LayoutManager != null)
             {

@@ -1,24 +1,21 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Diagnostics;
+using OmniXaml.TypeConversion;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
-    using System;
-    using System.Diagnostics;
-    using ChangeTracking;
-    using OmniXaml.TypeConversion;
-
     public class XamlBinding
     {
-        private readonly ITypeConverterProvider typeConverterProvider;
-        private DataContextChangeSynchronizer changeSynchronizer;
+        private readonly ITypeConverterProvider _typeConverterProvider;
+        private DataContextChangeSynchronizer _changeSynchronizer;
 
         public XamlBinding(ITypeConverterProvider typeConverterProvider)
         {
-            this.typeConverterProvider = typeConverterProvider;
+            _typeConverterProvider = typeConverterProvider;
         }
 
         public PerspexObject Target { get; set; }
@@ -41,22 +38,22 @@ namespace Perspex.Markup.Xaml.DataBinding
                 var bindingSource = new DataContextChangeSynchronizer.BindingSource(this.SourcePropertyPath, dataContext);
                 var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(this.Target, this.TargetProperty);
 
-                this.changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, this.typeConverterProvider);
+                _changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, _typeConverterProvider);
 
                 if (this.BindingMode == BindingMode.TwoWay)
                 {
-                    this.changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
-                    this.changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
+                    _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
+                    _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
 
                 if (this.BindingMode == BindingMode.OneWay)
                 {
-                    this.changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
+                    _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                 }
 
                 if (this.BindingMode == BindingMode.OneWayToSource)
                 {
-                    this.changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
+                    _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
             }
             catch (Exception e)

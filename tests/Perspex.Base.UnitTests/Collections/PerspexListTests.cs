@@ -1,18 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Collections;
+using Xunit;
 
 namespace Perspex.Base.UnitTests.Collections
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Collections;
-    using Xunit;
-
     public class PerspexListTests
     {
         [Fact]

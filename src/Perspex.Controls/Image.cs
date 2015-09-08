@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Media;
+using Perspex.Media.Imaging;
 
 namespace Perspex.Controls
 {
-    using System;
-    using Perspex.Media;
-    using Perspex.Media.Imaging;
-
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>

@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Globalization;
 
 namespace Perspex
 {
-    using System;
-    using System.Globalization;
-
     /// <summary>
     /// Defines a size.
     /// </summary>
@@ -22,12 +19,12 @@ namespace Perspex
         /// <summary>
         /// The width.
         /// </summary>
-        private double width;
+        private double _width;
 
         /// <summary>
         /// The height.
         /// </summary>
-        private double height;
+        private double _height;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Size"/> structure.
@@ -36,8 +33,8 @@ namespace Perspex
         /// <param name="height">The height.</param>
         public Size(double width, double height)
         {
-            this.width = width;
-            this.height = height;
+            _width = width;
+            _height = height;
         }
 
         /// <summary>
@@ -45,7 +42,7 @@ namespace Perspex
         /// </summary>
         public double Width
         {
-            get { return this.width; }
+            get { return _width; }
         }
 
         /// <summary>
@@ -53,7 +50,7 @@ namespace Perspex
         /// </summary>
         public double Height
         {
-            get { return this.height; }
+            get { return _height; }
         }
 
         /// <summary>
@@ -64,7 +61,7 @@ namespace Perspex
         /// <returns>True if the sizes are equal; otherwise false.</returns>
         public static bool operator ==(Size left, Size right)
         {
-            return left.width == right.width && left.height == right.height;
+            return left._width == right._width && left._height == right._height;
         }
 
         /// <summary>
@@ -86,7 +83,7 @@ namespace Perspex
         /// <returns>The scaled size.</returns>
         public static Size operator *(Size size, Vector scale)
         {
-            return new Size(size.width * scale.X, size.height * scale.Y);
+            return new Size(size._width * scale.X, size._height * scale.Y);
         }
 
         /// <summary>
@@ -97,7 +94,7 @@ namespace Perspex
         /// <returns>The scaled size.</returns>
         public static Size operator /(Size size, Vector scale)
         {
-            return new Size(size.width / scale.X, size.height / scale.Y);
+            return new Size(size._width / scale.X, size._height / scale.Y);
         }
 
         /// <summary>
@@ -108,8 +105,8 @@ namespace Perspex
         public Size Constrain(Size constraint)
         {
             return new Size(
-                Math.Min(this.width, constraint.width),
-                Math.Min(this.height, constraint.height));
+                Math.Min(_width, constraint._width),
+                Math.Min(_height, constraint._height));
         }
 
         /// <summary>
@@ -121,8 +118,8 @@ namespace Perspex
         public Size Deflate(Thickness thickness)
         {
             return new Size(
-                Math.Max(0, this.width - thickness.Left - thickness.Right),
-                Math.Max(0, this.height - thickness.Top - thickness.Bottom));
+                Math.Max(0, _width - thickness.Left - thickness.Right),
+                Math.Max(0, _height - thickness.Top - thickness.Bottom));
         }
 
         /// <summary>
@@ -166,8 +163,8 @@ namespace Perspex
         public Size Inflate(Thickness thickness)
         {
             return new Size(
-                this.width + thickness.Left + thickness.Right,
-                this.height + thickness.Top + thickness.Bottom);
+                _width + thickness.Left + thickness.Right,
+                _height + thickness.Top + thickness.Bottom);
         }
 
         /// <summary>
@@ -177,7 +174,7 @@ namespace Perspex
         /// <returns>The new <see cref="Size"/>.</returns>
         public Size WithWidth(double width)
         {
-            return new Size(width, this.height);
+            return new Size(width, _height);
         }
 
         /// <summary>
@@ -187,7 +184,7 @@ namespace Perspex
         /// <returns>The new <see cref="Size"/>.</returns>
         public Size WithHeight(double height)
         {
-            return new Size(this.width, height);
+            return new Size(_width, height);
         }
 
         /// <summary>
@@ -196,7 +193,7 @@ namespace Perspex
         /// <returns>The string representation of the size.</returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.width, this.height);
+            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", _width, _height);
         }
     }
 }

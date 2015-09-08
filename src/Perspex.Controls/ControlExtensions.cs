@@ -1,15 +1,12 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.LogicalTree;
+using Perspex.Styling;
 
 namespace Perspex.Controls
 {
-    using System.Linq;
-    using Perspex.LogicalTree;
-    using Perspex.Styling;
-
     /// <summary>
     /// Adds common functionality to <see cref="IControl"/>.
     /// </summary>

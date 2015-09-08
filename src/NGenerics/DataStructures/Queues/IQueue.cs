@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -19,25 +22,25 @@ namespace NGenerics.DataStructures.Queues
 	/// <typeparam name="T">The type of the elements in the queue.</typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
     public interface IQueue<T>
-	{
-		/// <summary>
-		/// Enqueues the item at the back of the queue.
-		/// </summary>
-		/// <param name="item">The item.</param>
-		void Enqueue(T item);
+    {
+        /// <summary>
+        /// Enqueues the item at the back of the queue.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        void Enqueue(T item);
 
-		/// <summary>
-		/// Dequeues the item at the front of the queue.
-		/// </summary>
-		/// <returns>The item at the front of the queue.</returns>
-		/// <exception cref="InvalidOperationException">The <see cref="Deque{T}"/> is empty.</exception>
-		T Dequeue();
+        /// <summary>
+        /// Dequeues the item at the front of the queue.
+        /// </summary>
+        /// <returns>The item at the front of the queue.</returns>
+        /// <exception cref="InvalidOperationException">The <see cref="Deque{T}"/> is empty.</exception>
+        T Dequeue();
 
-		/// <summary>
-		/// Peeks at the item in the front of the queue, without removing it.
-		/// </summary>
-		/// <returns>The item at the front of the queue.</returns>
-		/// <exception cref="InvalidOperationException">The <see cref="Deque{T}"/> is empty.</exception>
-		T Peek();
-	}
+        /// <summary>
+        /// Peeks at the item in the front of the queue, without removing it.
+        /// </summary>
+        /// <returns>The item at the front of the queue.</returns>
+        /// <exception cref="InvalidOperationException">The <see cref="Deque{T}"/> is empty.</exception>
+        T Peek();
+    }
 }

@@ -1,19 +1,15 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
+using System;
+using System.Reactive.Disposables;
+using Perspex.Cairo.Media.Imaging;
+using Perspex.Media;
+using IBitmap = Perspex.Media.Imaging.IBitmap;
 
 namespace Perspex.Cairo.Media
 {
-    using System;
-    using System.Reactive.Disposables;
-    using Perspex.Cairo.Media.Imaging;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Splat;
     using Cairo = global::Cairo;
-    using IBitmap = Perspex.Media.Imaging.IBitmap;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Draws using Direct2D1.
@@ -23,15 +19,15 @@ namespace Perspex.Cairo.Media
         /// <summary>
         /// The cairo context.
         /// </summary>
-        private Cairo.Context context;
-        
+        private Cairo.Context _context;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
         public DrawingContext(Cairo.Surface surface)
         {
-            this.context = new Cairo.Context(surface);
+            _context = new Cairo.Context(surface);
             this.CurrentTransform = Matrix.Identity;
         }
 
@@ -41,7 +37,7 @@ namespace Perspex.Cairo.Media
         /// <param name="surface">The GDK drawable.</param>
         public DrawingContext(Gdk.Drawable drawable)
         {
-            this.context = Gdk.CairoHelper.Create(drawable);
+            _context = Gdk.CairoHelper.Create(drawable);
             this.CurrentTransform = Matrix.Identity;
         }
 
@@ -56,7 +52,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         public void Dispose()
         {
-            this.context.Dispose();
+            _context.Dispose();
         }
 
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
@@ -66,12 +62,12 @@ namespace Perspex.Cairo.Media
             var scaleX = destRect.Size.Width / sourceRect.Size.Width;
             var scaleY = destRect.Size.Height / sourceRect.Size.Height;
 
-            this.context.Save();
-            this.context.Scale(scaleX, scaleY);
-            this.context.SetSourceSurface(impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
-            this.context.Rectangle(sourceRect.ToCairo());
-            this.context.Fill();
-            this.context.Restore();
+            _context.Save();
+            _context.Scale(scaleX, scaleY);
+            _context.SetSourceSurface(impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
+            _context.Rectangle(sourceRect.ToCairo());
+            _context.Fill();
+            _context.Restore();
         }
 
         /// <summary>
@@ -83,12 +79,12 @@ namespace Perspex.Cairo.Media
         public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
         {
             var size = new Rect(p1, p2).Size;
-            
+
             this.SetBrush(pen.Brush, size);
-            this.context.LineWidth = pen.Thickness;
-            this.context.MoveTo(p1.ToCairo());
-            this.context.LineTo(p2.ToCairo());
-            this.context.Stroke();
+            _context.LineWidth = pen.Thickness;
+            _context.MoveTo(p1.ToCairo());
+            _context.LineTo(p2.ToCairo());
+            _context.Stroke();
         }
 
         /// <summary>
@@ -100,26 +96,26 @@ namespace Perspex.Cairo.Media
         public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
-      
+
             using (var pop = this.PushTransform(impl.Transform))
             {
-                this.context.AppendPath(impl.Path);
-                
+                _context.AppendPath(impl.Path);
+
                 if (brush != null)
                 {
                     this.SetBrush(brush, geometry.Bounds.Size);
 
                     if (pen != null)
-                        this.context.FillPreserve();
+                        _context.FillPreserve();
                     else
-                        this.context.Fill();
+                        _context.Fill();
                 }
 
 
                 if (pen != null)
                 {
                     this.SetPen(pen, geometry.Bounds.Size);
-                    this.context.Stroke();
+                    _context.Stroke();
                 }
             }
         }
@@ -132,8 +128,8 @@ namespace Perspex.Cairo.Media
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
             this.SetPen(pen, rect.Size);
-            this.context.Rectangle(rect.ToCairo());
-            this.context.Stroke();
+            _context.Rectangle(rect.ToCairo());
+            _context.Stroke();
         }
 
         /// <summary>
@@ -146,9 +142,9 @@ namespace Perspex.Cairo.Media
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             this.SetBrush(foreground, new Size(0, 0));
-            
-            this.context.MoveTo(origin.X, origin.Y);
-            Pango.CairoHelper.ShowLayout(this.context, layout);
+
+            _context.MoveTo(origin.X, origin.Y);
+            Pango.CairoHelper.ShowLayout(_context, layout);
         }
 
         /// <summary>
@@ -159,8 +155,8 @@ namespace Perspex.Cairo.Media
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             this.SetBrush(brush, rect.Size);
-            this.context.Rectangle(rect.ToCairo());
-            this.context.Fill();
+            _context.Rectangle(rect.ToCairo());
+            _context.Fill();
         }
 
         /// <summary>
@@ -170,10 +166,10 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
-            this.context.Rectangle(clip.ToCairo());
-            this.context.Clip();
+            _context.Rectangle(clip.ToCairo());
+            _context.Clip();
 
-            return Disposable.Create(() => this.context.ResetClip());
+            return Disposable.Create(() => _context.ResetClip());
         }
 
         /// <summary>
@@ -194,11 +190,11 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            this.context.Transform(matrix.ToCairo());
+            _context.Transform(matrix.ToCairo());
 
             return Disposable.Create(() =>
             {
-                this.context.Transform(matrix.Invert().ToCairo());
+                _context.Transform(matrix.Invert().ToCairo());
             });
         }
 
@@ -209,7 +205,7 @@ namespace Perspex.Cairo.Media
 
             if (solid != null)
             {
-                this.context.SetSourceRGBA(
+                _context.SetSourceRGBA(
                     solid.Color.R / 255.0,
                     solid.Color.G / 255.0,
                     solid.Color.B / 255.0,
@@ -224,14 +220,14 @@ namespace Perspex.Cairo.Media
 
                 g.Extend = Cairo.Extend.Pad;
 
-                this.context.SetSource(g);
+                _context.SetSource(g);
             }
         }
 
         private void SetPen(Pen pen, Size destinationSize)
         {
             this.SetBrush(pen.Brush, destinationSize);
-            this.context.LineWidth = pen.Thickness;
+            _context.LineWidth = pen.Thickness;
         }
     }
 }

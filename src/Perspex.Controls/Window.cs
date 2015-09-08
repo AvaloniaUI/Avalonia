@@ -1,20 +1,17 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Perspex.Input;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.Styling;
+using Splat;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Reactive.Linq;
-    using System.Threading.Tasks;
-    using Perspex.Input;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Splat;
-
     /// <summary>
     /// Determines how a <see cref="Window"/> will size itself to fit its content.
     /// </summary>
@@ -58,7 +55,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>(nameof(Title), "Window");
 
-        private object dialogResult;
+        private object _dialogResult;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -123,12 +120,12 @@ namespace Perspex.Controls
         /// <param name="dialogResult">The dialog result.</param>
         /// <remarks>
         /// When the window is shown with the <see cref="ShowDialog{TResult}"/> method, the
-        /// resulting task will produce the <see cref="dialogResult"/> value when the window
+        /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
         public void Close(object dialogResult)
         {
-            this.dialogResult = dialogResult;
+            _dialogResult = dialogResult;
             this.Close();
         }
 
@@ -190,7 +187,7 @@ namespace Perspex.Controls
                     .Subscribe(_ =>
                     {
                         modal.Dispose();
-                        result.SetResult((TResult)this.dialogResult);
+                        result.SetResult((TResult)_dialogResult);
                     });
 
                 return result.Task;

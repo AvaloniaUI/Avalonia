@@ -1,14 +1,11 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Linq;
 
 namespace Perspex
 {
-    using System;
-    using System.Linq;
-
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
@@ -17,22 +14,22 @@ namespace Perspex
         /// <summary>
         /// The thickness on the left.
         /// </summary>
-        private double left;
+        private double _left;
 
         /// <summary>
         /// The thickness on the top.
         /// </summary>
-        private double top;
+        private double _top;
 
         /// <summary>
         /// The thickness on the right.
         /// </summary>
-        private double right;
+        private double _right;
 
         /// <summary>
         /// The thickness on the bottom.
         /// </summary>
-        private double bottom;
+        private double _bottom;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Thickness"/> structure.
@@ -42,7 +39,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentException>(uniformLength >= 0);
 
-            this.left = this.top = this.right = this.bottom = uniformLength;
+            _left = _top = _right = _bottom = uniformLength;
         }
 
         /// <summary>
@@ -55,8 +52,8 @@ namespace Perspex
             Contract.Requires<ArgumentException>(horizontal >= 0);
             Contract.Requires<ArgumentException>(vertical >= 0);
 
-            this.left = this.right = horizontal;
-            this.top = this.bottom = vertical;
+            _left = _right = horizontal;
+            _top = _bottom = vertical;
         }
 
         /// <summary>
@@ -73,10 +70,10 @@ namespace Perspex
             Contract.Requires<ArgumentException>(right >= 0);
             Contract.Requires<ArgumentException>(bottom >= 0);
 
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
+            _left = left;
+            _top = top;
+            _right = right;
+            _bottom = bottom;
         }
 
         /// <summary>
@@ -84,7 +81,7 @@ namespace Perspex
         /// </summary>
         public double Left
         {
-            get { return this.left; }
+            get { return _left; }
         }
 
         /// <summary>
@@ -92,7 +89,7 @@ namespace Perspex
         /// </summary>
         public double Top
         {
-            get { return this.top; }
+            get { return _top; }
         }
 
         /// <summary>
@@ -100,7 +97,7 @@ namespace Perspex
         /// </summary>
         public double Right
         {
-            get { return this.right; }
+            get { return _right; }
         }
 
         /// <summary>
@@ -108,7 +105,7 @@ namespace Perspex
         /// </summary>
         public double Bottom
         {
-            get { return this.bottom; }
+            get { return _bottom; }
         }
 
         /// <summary>
@@ -231,7 +228,7 @@ namespace Perspex
         /// <returns>The string representation of the thickness.</returns>
         public override string ToString()
         {
-            return string.Format("{0},{1},{2},{3}", this.left, this.top, this.right, this.bottom);
+            return string.Format("{0},{1},{2},{3}", _left, _top, _right, _bottom);
         }
     }
 }

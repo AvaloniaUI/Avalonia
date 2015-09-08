@@ -1,30 +1,27 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Perspex.Input;
 
 namespace Perspex.Gtk
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using Perspex.Input;
-    
     public class GtkKeyboardDevice : KeyboardDevice
     {
-        private static GtkKeyboardDevice instance;
-        private static readonly Dictionary<Gdk.Key, string> NameDic = new Dictionary<Gdk.Key, string>();
+        private static GtkKeyboardDevice s_instance;
+        private static readonly Dictionary<Gdk.Key, string> s_nameDic = new Dictionary<Gdk.Key, string>();
 
         static GtkKeyboardDevice()
         {
-            instance = new GtkKeyboardDevice();
-            foreach (var f in typeof (Gdk.Key).GetFields(BindingFlags.Public | BindingFlags.Static))
+            s_instance = new GtkKeyboardDevice();
+            foreach (var f in typeof(Gdk.Key).GetFields(BindingFlags.Public | BindingFlags.Static))
             {
-                var key = (Gdk.Key) f.GetValue(null);
-                if(NameDic.ContainsKey(key))
+                var key = (Gdk.Key)f.GetValue(null);
+                if (s_nameDic.ContainsKey(key))
                     continue;
-                NameDic[key] = f.Name;
+                s_nameDic[key] = f.Name;
             }
         }
 
@@ -34,7 +31,7 @@ namespace Perspex.Gtk
 
         public static new GtkKeyboardDevice Instance
         {
-            get { return instance; }
+            get { return s_instance; }
         }
 
         public static Perspex.Input.Key ConvertKey(Gdk.Key key)
@@ -47,7 +44,7 @@ namespace Perspex.Gtk
             else
             {
                 string s;
-                if (!NameDic.TryGetValue(key, out s))
+                if (!s_nameDic.TryGetValue(key, out s))
                     s = "Unknown";
                 Perspex.Input.Key result;
 

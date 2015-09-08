@@ -1,25 +1,22 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Text;
+using Perspex.Controls;
+using Perspex.Input;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32.Input
 {
-    using System.Text;
-    using Perspex.Controls;
-    using Perspex.Input;
-    using Perspex.Win32.Interop;
-
     public class WindowsKeyboardDevice : KeyboardDevice
     {
-        private static WindowsKeyboardDevice instance = new WindowsKeyboardDevice();
+        private static WindowsKeyboardDevice s_instance = new WindowsKeyboardDevice();
 
-        private byte[] keyStates = new byte[256];
+        private byte[] _keyStates = new byte[256];
 
         public static new WindowsKeyboardDevice Instance
         {
-            get { return instance; }
+            get { return s_instance; }
         }
 
         public ModifierKeys Modifiers
@@ -64,7 +61,7 @@ namespace Perspex.Win32.Input
             int length = UnmanagedMethods.ToUnicode(
                 virtualKey,
                 0,
-                this.keyStates,
+                _keyStates,
                 result,
                 256,
                 0);
@@ -73,7 +70,7 @@ namespace Perspex.Win32.Input
 
         private void UpdateKeyStates()
         {
-            UnmanagedMethods.GetKeyboardState(this.keyStates);
+            UnmanagedMethods.GetKeyboardState(_keyStates);
         }
 
         private bool IsDown(Key key)
@@ -84,7 +81,7 @@ namespace Perspex.Win32.Input
         private KeyStates GetKeyStates(Key key)
         {
             int vk = KeyInterop.VirtualKeyFromKey(key);
-            byte state = this.keyStates[vk];
+            byte state = _keyStates[vk];
             KeyStates result = 0;
 
             if ((state & 0x80) != 0)

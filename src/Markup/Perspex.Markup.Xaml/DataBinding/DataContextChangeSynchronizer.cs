@@ -1,98 +1,95 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
-
+using System;
+using System.Globalization;
+using System.Reactive.Linq;
+using System.Reflection;
+using Glass;
+using OmniXaml.TypeConversion;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
-    using System;
-    using System.Globalization;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using ChangeTracking;
-    using Glass;
-    using OmniXaml.TypeConversion;
-
     public class DataContextChangeSynchronizer
     {
-        private readonly BindingTarget bindingTarget;
-        private readonly ITypeConverter targetPropertyTypeConverter;
-        private readonly TargetBindingEndpoint bindingEndpoint;
-        private readonly ObservablePropertyBranch sourceEndpoint;
+        private readonly BindingTarget _bindingTarget;
+        private readonly ITypeConverter _targetPropertyTypeConverter;
+        private readonly TargetBindingEndpoint _bindingEndpoint;
+        private readonly ObservablePropertyBranch _sourceEndpoint;
 
         public DataContextChangeSynchronizer(BindingSource bindingSource, BindingTarget bindingTarget, ITypeConverterProvider typeConverterProvider)
         {
-            this.bindingTarget = bindingTarget;
+            _bindingTarget = bindingTarget;
             Guard.ThrowIfNull(bindingTarget.Object, nameof(bindingTarget.Object));
             Guard.ThrowIfNull(bindingTarget.Property, nameof(bindingTarget.Property));
             Guard.ThrowIfNull(bindingSource.SourcePropertyPath, nameof(bindingSource.SourcePropertyPath));
             Guard.ThrowIfNull(bindingSource.Source, nameof(bindingSource.Source));
             Guard.ThrowIfNull(typeConverterProvider, nameof(typeConverterProvider));
 
-            this.bindingEndpoint = new TargetBindingEndpoint(bindingTarget.Object, bindingTarget.Property);
-            this.sourceEndpoint = new ObservablePropertyBranch(bindingSource.Source, bindingSource.SourcePropertyPath);
-            this.targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(bindingTarget.Property.PropertyType);
+            _bindingEndpoint = new TargetBindingEndpoint(bindingTarget.Object, bindingTarget.Property);
+            _sourceEndpoint = new ObservablePropertyBranch(bindingSource.Source, bindingSource.SourcePropertyPath);
+            _targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(bindingTarget.Property.PropertyType);
         }
 
         public class BindingTarget
         {
-            private readonly PerspexObject obj;
-            private readonly PerspexProperty property;
+            private readonly PerspexObject _obj;
+            private readonly PerspexProperty _property;
 
             public BindingTarget(PerspexObject @object, PerspexProperty property)
             {
-                this.obj = @object;
-                this.property = property;
+                _obj = @object;
+                _property = property;
             }
 
-            public PerspexObject Object => obj;
+            public PerspexObject Object => _obj;
 
-            public PerspexProperty Property => property;
+            public PerspexProperty Property => _property;
 
             public object Value
             {
-                get { return obj.GetValue(property); }
-                set { obj.SetValue(property, value); }
+                get { return _obj.GetValue(_property); }
+                set { _obj.SetValue(_property, value); }
             }
         }
 
         public class BindingSource
         {
-            private readonly PropertyPath sourcePropertyPath;
-            private readonly object source;
+            private readonly PropertyPath _sourcePropertyPath;
+            private readonly object _source;
 
             public BindingSource(PropertyPath sourcePropertyPath, object source)
             {
-                this.sourcePropertyPath = sourcePropertyPath;
-                this.source = source;
+                _sourcePropertyPath = sourcePropertyPath;
+                _source = source;
             }
 
-            public PropertyPath SourcePropertyPath => this.sourcePropertyPath;
+            public PropertyPath SourcePropertyPath => _sourcePropertyPath;
 
-            public object Source => source;
+            public object Source => _source;
         }
 
         public void StartUpdatingTargetWhenSourceChanges()
         {
             // TODO: commenting out this line will make the existing value to be skipped from the SourceValues. This is not supposed to happen. Is it?
-            bindingTarget.Value = ConvertedValue(sourceEndpoint.Value, bindingTarget.Property.PropertyType);
+            _bindingTarget.Value = ConvertedValue(_sourceEndpoint.Value, _bindingTarget.Property.PropertyType);
 
             // We use the native Bind method from PerspexObject to subscribe to the SourceValues observable
-            this.bindingTarget.Object.Bind(this.bindingTarget.Property, this.SourceValues);
+            _bindingTarget.Object.Bind(_bindingTarget.Property, this.SourceValues);
         }
 
         public void StartUpdatingSourceWhenTargetChanges()
         {
             // We subscribe to the TargetValues and each time we have a new value, we update the source with it
-            this.TargetValues.Subscribe(newValue => this.sourceEndpoint.Value = newValue);
+            this.TargetValues.Subscribe(newValue => _sourceEndpoint.Value = newValue);
         }
 
         private IObservable<object> SourceValues
         {
             get
             {
-                return this.sourceEndpoint.Values.Select(originalValue => this.ConvertedValue(originalValue, this.bindingTarget.Property.PropertyType));
+                return _sourceEndpoint.Values.Select(originalValue => this.ConvertedValue(originalValue, _bindingTarget.Property.PropertyType));
             }
         }
 
@@ -100,8 +97,8 @@ namespace Perspex.Markup.Xaml.DataBinding
         {
             get
             {
-                return this.bindingEndpoint.Object
-                    .GetObservable(this.bindingEndpoint.Property).Select(o => this.ConvertedValue(o, this.sourceEndpoint.Type));
+                return _bindingEndpoint.Object
+                    .GetObservable(_bindingEndpoint.Property).Select(o => this.ConvertedValue(o, _sourceEndpoint.Type));
             }
         }
 
@@ -109,8 +106,8 @@ namespace Perspex.Markup.Xaml.DataBinding
         {
             get
             {
-                var sourceTypeInfo = this.sourceEndpoint.Type.GetTypeInfo();
-                var targetTypeInfo = this.bindingEndpoint.Property.PropertyType.GetTypeInfo();
+                var sourceTypeInfo = _sourceEndpoint.Type.GetTypeInfo();
+                var targetTypeInfo = _bindingEndpoint.Property.PropertyType.GetTypeInfo();
                 var compatible = targetTypeInfo.IsAssignableFrom(sourceTypeInfo);
                 return compatible;
             }
@@ -137,11 +134,11 @@ namespace Perspex.Markup.Xaml.DataBinding
                     return true;
                 }
 
-                if (this.targetPropertyTypeConverter != null)
+                if (_targetPropertyTypeConverter != null)
                 {
-                    if (this.targetPropertyTypeConverter.CanConvertTo(null, targetType))
+                    if (_targetPropertyTypeConverter.CanConvertTo(null, targetType))
                     {
-                        object convertedValue = this.targetPropertyTypeConverter.ConvertTo(
+                        object convertedValue = _targetPropertyTypeConverter.ConvertTo(
                             null,
                             CultureInfo.InvariantCulture,
                             originalValue,

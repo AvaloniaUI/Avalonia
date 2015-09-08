@@ -1,21 +1,17 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System.Linq;
+using Perspex.Collections;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.VisualTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Presenters
 {
-    using System.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.LogicalTree;
-    using Perspex.VisualTree;
-    using Xunit;
-
     public class ItemsPresenterTests
     {
         [Fact]

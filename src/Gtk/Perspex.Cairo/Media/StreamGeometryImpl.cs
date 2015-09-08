@@ -1,32 +1,30 @@
-﻿
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
-
-
+using System;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
+using System.Collections.Generic;
 
 namespace Perspex.Cairo.Media
 {
-    using System;
-    using Perspex.Media;
-    using Perspex.Platform;
     using Cairo = global::Cairo;
-    using Splat;
-    using System.Collections.Generic;
 
     public class StreamGeometryImpl : IStreamGeometryImpl
     {
         public StreamGeometryImpl()
         {
-            this.impl = new StreamGeometryContextImpl(this);
+            _impl = new StreamGeometryContextImpl(this);
         }
 
         public StreamGeometryImpl(Cairo.Path path)
         {
-            this.impl = new StreamGeometryContextImpl(this);
+            _impl = new StreamGeometryContextImpl(this);
             this.Path = path;
         }
-        
-        public Cairo.Path Path
+
+        public global::Cairo.Path Path
         {
             get;
             set;
@@ -38,20 +36,20 @@ namespace Perspex.Cairo.Media
             set;
         }
 
-        private StreamGeometryContextImpl impl;
+        private StreamGeometryContextImpl _impl;
 
-        private Matrix transform = Matrix.Identity;
+        private Matrix _transform = Matrix.Identity;
         public Matrix Transform
         {
-            get { return this.transform; }
+            get { return _transform; }
             set
             {
                 if (value != this.Transform)
                 {
-                     if (!value.IsIdentity)
-                     {
-                        this.transform = value;
-                     }
+                    if (!value.IsIdentity)
+                    {
+                        _transform = value;
+                    }
                 }
             }
         }
@@ -68,7 +66,7 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryContextImpl Open()
         {
-            return this.impl;
+            return _impl;
         }
     }
 }
