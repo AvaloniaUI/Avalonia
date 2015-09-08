@@ -44,7 +44,6 @@
     <Compile Include="BindingDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />
     <Compile Include="IPropertyBag.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />

@@ -65,7 +65,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Cursors.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="AccessKeyHandler.cs" />
     <Compile Include="Platform\IClipboard.cs" />
     <Compile Include="Platform\IStandardCursorFactory.cs" />

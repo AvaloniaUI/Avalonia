@@ -41,7 +41,6 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ILogical.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

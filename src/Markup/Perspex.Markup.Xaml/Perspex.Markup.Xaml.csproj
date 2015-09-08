@@ -42,7 +42,6 @@
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushConverter.cs" />
     <Compile Include="Converters\BitmapConverter.cs" />

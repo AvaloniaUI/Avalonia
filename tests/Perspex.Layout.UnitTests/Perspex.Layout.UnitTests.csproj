@@ -77,7 +77,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FullLayoutTests.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -75,7 +75,6 @@
     </Compile>
     <Compile Include="Direct2D1Platform.cs" />
     <Compile Include="Disposable.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContext.cs" />

@@ -80,7 +80,6 @@
     <Compile Include="Collections\PerspexDictionaryTests.cs" />
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="Collections\PropertyChangedTracker.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
     <Compile Include="PerspexObjectTests_Validation.cs" />
     <Compile Include="PerspexObjectTests_Binding.cs" />

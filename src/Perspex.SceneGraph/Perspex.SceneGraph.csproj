@@ -55,7 +55,6 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Media\AlignmentY.cs" />
     <Compile Include="Media\AlignmentX.cs" />
