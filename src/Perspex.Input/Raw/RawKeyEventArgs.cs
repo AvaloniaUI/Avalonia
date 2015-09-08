@@ -1,8 +1,8 @@
-﻿// -----------------------------------------------------------------------
+﻿
 // <copyright file="RawKeyEventArgs.cs" company="Tricycle">
 // Copyright 2014 Tricycle. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+
+
 
 namespace Perspex.Input.Raw
 {

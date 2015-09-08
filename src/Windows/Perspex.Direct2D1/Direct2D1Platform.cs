@@ -1,8 +1,8 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Direct2D1Platform.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿
+
+
+
+
 
 namespace Perspex.Direct2D1
 {
