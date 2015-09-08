@@ -146,7 +146,7 @@ namespace Perspex.Input
                 this.CloseMenu();
                 e.Handled = true;
             }
-            else if ((KeyboardDevice.Instance.Modifiers & ModifierKeys.Alt) != 0 || menuIsOpen)
+            else if ((e.Modifiers & ModifierKeys.Alt) != 0 || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.

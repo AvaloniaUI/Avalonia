@@ -18,14 +18,17 @@ namespace Perspex.Input.Raw
             IKeyboardDevice device,
             uint timestamp,
             RawKeyEventType type,
-            Key key)
+            Key key, ModifierKeys modifiers)
             : base(device, timestamp)
         {
             this.Key = key;
             this.Type = type;
+            this.Modifiers = modifiers;
         }
 
         public Key Key { get; set; }
+
+        public ModifierKeys Modifiers { get; set; }
         
         public RawKeyEventType Type { get; set; }
     }

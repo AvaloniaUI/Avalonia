@@ -175,7 +175,7 @@ namespace Perspex.Controls
             int caretIndex = this.CaretIndex;
             bool movement = false;
             bool handled = true;
-            var modifiers = e.Device.Modifiers;
+            var modifiers = e.Modifiers;
 
             switch (e.Key)
             {
@@ -475,7 +475,7 @@ namespace Perspex.Controls
             var selectionEnd = this.SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var end = Math.Max(selectionStart, selectionEnd);
-            if (start == end || (this.Text?.Length ?? 0) <= end)
+            if (start == end || (this.Text?.Length ?? 0) < end)
             {
                 return "";
             }

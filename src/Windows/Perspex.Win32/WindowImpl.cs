@@ -261,22 +261,20 @@ namespace Perspex.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
-                    WindowsKeyboardDevice.Instance.UpdateKeyStates();
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey((int)wParam));
+                            KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYUP:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYUP:
-                    WindowsKeyboardDevice.Instance.UpdateKeyStates();
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey((int)wParam));
+                            KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
@@ -293,7 +291,7 @@ namespace Perspex.Win32
                         timestamp,
                         this.owner,
                         RawMouseEventType.LeftButtonDown,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
@@ -302,7 +300,7 @@ namespace Perspex.Win32
                         timestamp,
                         this.owner,
                         RawMouseEventType.LeftButtonUp,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
@@ -324,7 +322,7 @@ namespace Perspex.Win32
                         timestamp,
                         this.owner,
                         RawMouseEventType.Move,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16));
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
@@ -333,7 +331,7 @@ namespace Perspex.Win32
                         timestamp,
                         this.owner,
                         this.ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
-                        new Vector(0, ((int)wParam >> 16) / WheelDelta));
+                        new Vector(0, ((int)wParam >> 16) / WheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -343,7 +341,7 @@ namespace Perspex.Win32
                         timestamp,
                         this.owner,
                         RawMouseEventType.LeaveWindow,
-                        new Point());
+                        new Point(), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:

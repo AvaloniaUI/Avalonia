@@ -14,5 +14,7 @@ namespace Perspex.Input
         public IKeyboardDevice Device { get; set; }
 
         public Key Key { get; set; }
+
+        public ModifierKeys Modifiers { get; set; }
     }
 }

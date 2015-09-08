@@ -16,8 +16,8 @@ namespace Perspex.Input.Raw
             uint timestamp,
             IInputRoot root,
             Point position,
-            Vector delta)
-            : base(device, timestamp, root, RawMouseEventType.Wheel, position)
+            Vector delta, ModifierKeys modifierKeys)
+            : base(device, timestamp, root, RawMouseEventType.Wheel, position, modifierKeys)
         {
             this.Delta = delta;
         }

@@ -24,7 +24,7 @@ namespace Perspex.Input.Raw
             uint timestamp,
             IInputRoot root,
             RawMouseEventType type,
-            Point position)
+            Point position, ModifierKeys modifierKeys)
             : base(device, timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
@@ -33,6 +33,7 @@ namespace Perspex.Input.Raw
             this.Root = root;
             this.Position = position;
             this.Type = type;
+            this.ModifierKeys = modifierKeys;
         }
 
         public IInputRoot Root { get; private set; }
@@ -40,5 +41,7 @@ namespace Perspex.Input.Raw
         public Point Position { get; private set; }
 
         public RawMouseEventType Type { get; private set; }
+
+        public ModifierKeys ModifierKeys { get; private set; }
     }
 }
