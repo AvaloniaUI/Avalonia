@@ -92,6 +92,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.ReactiveUI", "src\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup.Xaml.UnitTests", "Tests\Perspex.Markup.Xaml.UnitTests\Perspex.Markup.Xaml.UnitTests.csproj", "{99135EAB-653D-47E4-A378-C96E1278CA44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Cairo.RenderTests", "tests\Perspex.RenderTests\Perspex.Cairo.RenderTests.csproj", "{E106CF37-4066-4615-B684-172A6D30B058}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -218,6 +220,10 @@ Global
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E106CF37-4066-4615-B684-172A6D30B058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E106CF37-4066-4615-B684-172A6D30B058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E106CF37-4066-4615-B684-172A6D30B058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E106CF37-4066-4615-B684-172A6D30B058}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -241,5 +247,6 @@ Global
 		{54F237D5-A70A-4752-9656-0C70B1A7B047} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{FB05AC90-89BA-4F2F-A924-F37875FB547C} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{99135EAB-653D-47E4-A378-C96E1278CA44} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{E106CF37-4066-4615-B684-172A6D30B058} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 EndGlobal
