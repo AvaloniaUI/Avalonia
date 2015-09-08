@@ -13,7 +13,7 @@ namespace Perspex.Direct2D1.Media
     /// </summary>
     public class BitmapImpl : IBitmapImpl
     {
-        private ImagingFactory _factory;
+        private readonly ImagingFactory _factory;
 
         private SharpDX.Direct2D1.Bitmap _direct2D;
 

@@ -17,7 +17,7 @@ namespace Perspex.Interactivity
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers =
+        private readonly Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers =
             new Dictionary<RoutedEvent, List<EventSubscription>>();
 
         /// <summary>

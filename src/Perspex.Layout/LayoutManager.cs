@@ -31,12 +31,12 @@ namespace Perspex.Layout
         /// <summary>
         /// Called when a layout is needed.
         /// </summary>
-        private Subject<Unit> _layoutNeeded;
+        private readonly Subject<Unit> _layoutNeeded;
 
         /// <summary>
         /// Called when a layout is completed.
         /// </summary>
-        private Subject<Unit> _layoutCompleted;
+        private readonly Subject<Unit> _layoutCompleted;
 
         /// <summary>
         /// Whether a measure is needed on the next layout pass.
@@ -61,7 +61,7 @@ namespace Perspex.Layout
         /// <summary>
         /// The logger to use.
         /// </summary>
-        private ILogger _log;
+        private readonly ILogger _log;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LayoutManager"/> class.

@@ -73,7 +73,7 @@ namespace Perspex
         /// <summary>
         /// Holds the children of the visual.
         /// </summary>
-        private PerspexList<IVisual> _visualChildren;
+        private readonly PerspexList<IVisual> _visualChildren;
 
         /// <summary>
         /// Holds the parent of the visual.
@@ -88,7 +88,7 @@ namespace Perspex
         /// <summary>
         /// The logger for visual-level events.
         /// </summary>
-        private ILogger _visualLogger;
+        private readonly ILogger _visualLogger;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.

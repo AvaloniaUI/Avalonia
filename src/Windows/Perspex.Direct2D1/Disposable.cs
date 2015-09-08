@@ -7,7 +7,7 @@ namespace Perspex.Direct2D1
 {
     public class Disposable<T> : IDisposable where T : IDisposable
     {
-        private IDisposable _extra;
+        private readonly IDisposable _extra;
 
         public Disposable(T inner)
         {

@@ -18,7 +18,7 @@ namespace Perspex.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private Dictionary<IFocusScope, IInputElement> _focusScopes =
+        private readonly Dictionary<IFocusScope, IInputElement> _focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
 
         /// <summary>

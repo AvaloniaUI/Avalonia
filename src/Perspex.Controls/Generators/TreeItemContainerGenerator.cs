@@ -16,9 +16,9 @@ namespace Perspex.Controls.Generators
     /// <typeparam name="T">The type of the container.</typeparam>
     public class TreeItemContainerGenerator<T> : ITreeItemContainerGenerator where T : TreeViewItem, new()
     {
-        private Dictionary<object, T> _containers = new Dictionary<object, T>();
+        private readonly Dictionary<object, T> _containers = new Dictionary<object, T>();
 
-        private Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
+        private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.

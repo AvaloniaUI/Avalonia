@@ -10,7 +10,7 @@ namespace Perspex.Win32.Input
 {
     public static class KeyInterop
     {
-        private static Dictionary<Key, int> s_virtualKeyFromKey = new Dictionary<Key, int>
+        private static readonly Dictionary<Key, int> s_virtualKeyFromKey = new Dictionary<Key, int>
         {
             { Key.None, 0 },
             { Key.Cancel, 3 },
@@ -187,7 +187,7 @@ namespace Perspex.Win32.Input
             { Key.DeadCharProcessed, 0 },
         };
 
-        private static Dictionary<int, Key> s_keyFromVirtualKey = new Dictionary<int, Key>
+        private static readonly Dictionary<int, Key> s_keyFromVirtualKey = new Dictionary<int, Key>
         {
             { 0, Key.None },
             { 3, Key.Cancel },

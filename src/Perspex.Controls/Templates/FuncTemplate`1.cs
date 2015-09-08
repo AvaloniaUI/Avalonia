@@ -11,7 +11,7 @@ namespace Perspex.Controls.Templates
     /// <typeparam name="TControl">The type of control.</typeparam>
     public class FuncTemplate<TControl> : ITemplate<TControl> where TControl : IControl
     {
-        private Func<TControl> _func;
+        private readonly Func<TControl> _func;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncTemplate{TControl}"/> class.

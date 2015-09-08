@@ -17,7 +17,7 @@ namespace Perspex.Media
     /// TODO: This class is just a wrapper around IStreamGeometryContextImpl: is it needed?
     public class StreamGeometryContext : IDisposable
     {
-        private IStreamGeometryContextImpl _impl;
+        private readonly IStreamGeometryContextImpl _impl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryContext"/> class.

@@ -20,7 +20,7 @@ namespace Perspex.Win32
 {
     public class WindowImpl : IWindowImpl
     {
-        private static List<WindowImpl> s_instances = new List<WindowImpl>();
+        private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
         private static readonly IntPtr DefaultCursor = UnmanagedMethods.LoadCursor(
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));

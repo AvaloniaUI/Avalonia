@@ -10,11 +10,11 @@ namespace Perspex.Direct2D1.Media
 {
     internal class PerspexTextRenderer : TextRenderer
     {
-        private DrawingContext _context;
+        private readonly DrawingContext _context;
 
-        private RenderTarget _renderTarget;
+        private readonly RenderTarget _renderTarget;
 
-        private Brush _foreground;
+        private readonly Brush _foreground;
 
         public PerspexTextRenderer(
             DrawingContext context,

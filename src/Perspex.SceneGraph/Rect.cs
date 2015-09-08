@@ -14,22 +14,22 @@ namespace Perspex
         /// <summary>
         /// The X position.
         /// </summary>
-        private double _x;
+        private readonly double _x;
 
         /// <summary>
         /// The Y position.
         /// </summary>
-        private double _y;
+        private readonly double _y;
 
         /// <summary>
         /// The width.
         /// </summary>
-        private double _width;
+        private readonly double _width;
 
         /// <summary>
         /// The height.
         /// </summary>
-        private double _height;
+        private readonly double _height;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Rect"/> structure.

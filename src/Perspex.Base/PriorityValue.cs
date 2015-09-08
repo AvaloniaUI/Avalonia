@@ -27,22 +27,22 @@ namespace Perspex
         /// <summary>
         /// The name of the property.
         /// </summary>
-        private string _name;
+        private readonly string _name;
 
         /// <summary>
         /// The value type.
         /// </summary>
-        private Type _valueType;
+        private readonly Type _valueType;
 
         /// <summary>
         /// The currently registered bindings organised by priority.
         /// </summary>
-        private Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
+        private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
 
         /// <summary>
         /// The changed observable.
         /// </summary>
-        private Subject<Tuple<object, object>> _changed = new Subject<Tuple<object, object>>();
+        private readonly Subject<Tuple<object, object>> _changed = new Subject<Tuple<object, object>>();
 
         /// <summary>
         /// The current value.
@@ -52,7 +52,7 @@ namespace Perspex
         /// <summary>
         /// The function used to validate the value, if any.
         /// </summary>
-        private Func<object, object> _validate;
+        private readonly Func<object, object> _validate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.

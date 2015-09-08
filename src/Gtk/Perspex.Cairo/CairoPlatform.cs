@@ -14,7 +14,7 @@ namespace Perspex.Cairo
 
     public class CairoPlatform : IPlatformRenderInterface
     {
-        private static CairoPlatform s_instance = new CairoPlatform();
+        private static readonly CairoPlatform s_instance = new CairoPlatform();
 
         public static void Initialize()
         {

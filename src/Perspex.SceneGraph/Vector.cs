@@ -14,12 +14,12 @@ namespace Perspex
         /// <summary>
         /// The X vector.
         /// </summary>
-        private double _x;
+        private readonly double _x;
 
         /// <summary>
         /// The Y vector.
         /// </summary>
-        private double _y;
+        private readonly double _y;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector"/> structure.

@@ -36,7 +36,7 @@ namespace Perspex.Cairo.Media
             set;
         }
 
-        private StreamGeometryContextImpl _impl;
+        private readonly StreamGeometryContextImpl _impl;
 
         private Matrix _transform = Matrix.Identity;
         public Matrix Transform

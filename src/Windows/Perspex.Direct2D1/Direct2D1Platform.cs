@@ -11,13 +11,13 @@ namespace Perspex.Direct2D1
 {
     public class Direct2D1Platform : IPlatformRenderInterface
     {
-        private static Direct2D1Platform s_instance = new Direct2D1Platform();
+        private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static SharpDX.Direct2D1.Factory s_d2D1Factory = new SharpDX.Direct2D1.Factory();
+        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory = new SharpDX.Direct2D1.Factory();
 
-        private static SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
+        private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
-        private static SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+        private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
         public static void Initialize()
         {

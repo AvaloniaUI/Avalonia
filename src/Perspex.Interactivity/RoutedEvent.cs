@@ -18,7 +18,7 @@ namespace Perspex.Interactivity
 
     public class RoutedEvent
     {
-        private List<ClassEventSubscription> _subscriptions = new List<ClassEventSubscription>();
+        private readonly List<ClassEventSubscription> _subscriptions = new List<ClassEventSubscription>();
 
         public RoutedEvent(
             string name,

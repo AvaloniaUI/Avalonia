@@ -68,7 +68,7 @@ namespace Perspex
         /// <summary>
         /// The registered properties by type.
         /// </summary>
-        private static Dictionary<Type, List<PerspexProperty>> s_registered =
+        private static readonly Dictionary<Type, List<PerspexProperty>> s_registered =
             new Dictionary<Type, List<PerspexProperty>>();
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Perspex
         /// <summary>
         /// The set values/bindings on this object.
         /// </summary>
-        private Dictionary<PerspexProperty, PriorityValue> _values =
+        private readonly Dictionary<PerspexProperty, PriorityValue> _values =
             new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Perspex
         /// <summary>
         /// A serilog logger for logging property events.
         /// </summary>
-        private ILogger _propertyLog;
+        private readonly ILogger _propertyLog;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.

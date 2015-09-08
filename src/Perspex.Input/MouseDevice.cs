@@ -21,7 +21,7 @@ namespace Perspex.Input
 
         private uint _lastClickTime;
 
-        private List<IInputElement> _pointerOvers = new List<IInputElement>();
+        private readonly List<IInputElement> _pointerOvers = new List<IInputElement>();
 
         public MouseDevice()
         {

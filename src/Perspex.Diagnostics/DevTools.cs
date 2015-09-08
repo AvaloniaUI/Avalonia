@@ -15,7 +15,7 @@ namespace Perspex.Diagnostics
         public static readonly PerspexProperty<Control> RootProperty =
             PerspexProperty.Register<DevTools, Control>("Root");
 
-        private DevToolsViewModel _viewModel;
+        private readonly DevToolsViewModel _viewModel;
 
         public DevTools()
         {

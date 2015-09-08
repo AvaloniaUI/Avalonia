@@ -14,22 +14,22 @@ namespace Perspex
         /// <summary>
         /// The thickness on the left.
         /// </summary>
-        private double _left;
+        private readonly double _left;
 
         /// <summary>
         /// The thickness on the top.
         /// </summary>
-        private double _top;
+        private readonly double _top;
 
         /// <summary>
         /// The thickness on the right.
         /// </summary>
-        private double _right;
+        private readonly double _right;
 
         /// <summary>
         /// The thickness on the bottom.
         /// </summary>
-        private double _bottom;
+        private readonly double _bottom;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Thickness"/> structure.

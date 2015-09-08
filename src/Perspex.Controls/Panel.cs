@@ -18,7 +18,7 @@ namespace Perspex.Controls
     /// </remarks>
     public class Panel : Control, IReparentingControl, IPanel
     {
-        private Controls _children = new Controls();
+        private readonly Controls _children = new Controls();
 
         private ILogical _childLogicalParent;
 

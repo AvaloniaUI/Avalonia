@@ -13,15 +13,15 @@ namespace Perspex.Styling
 {
     public class Classes : ICollection<string>, INotifyCollectionChanged
     {
-        private List<string> _inner;
+        private readonly List<string> _inner;
 
-        private Subject<NotifyCollectionChangedEventArgs> _beforeChanged
+        private readonly Subject<NotifyCollectionChangedEventArgs> _beforeChanged
             = new Subject<NotifyCollectionChangedEventArgs>();
 
-        private Subject<NotifyCollectionChangedEventArgs> _changed
+        private readonly Subject<NotifyCollectionChangedEventArgs> _changed
             = new Subject<NotifyCollectionChangedEventArgs>();
 
-        private Subject<NotifyCollectionChangedEventArgs> _afterChanged
+        private readonly Subject<NotifyCollectionChangedEventArgs> _afterChanged
             = new Subject<NotifyCollectionChangedEventArgs>();
 
         public Classes()

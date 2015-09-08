@@ -33,9 +33,9 @@ namespace Perspex.Controls
     /// </summary>
     public struct GridLength : IEquatable<GridLength>
     {
-        private GridUnitType _type;
+        private readonly GridUnitType _type;
 
-        private double _value;
+        private readonly double _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GridLength"/> struct.

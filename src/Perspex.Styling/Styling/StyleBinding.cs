@@ -22,7 +22,7 @@ namespace Perspex.Styling
         /// <summary>
         /// The activator.
         /// </summary>
-        private IObservable<bool> _activator;
+        private readonly IObservable<bool> _activator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleBinding"/> class.

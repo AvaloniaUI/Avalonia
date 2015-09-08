@@ -19,7 +19,7 @@ namespace Perspex.Cairo.Media
         /// <summary>
         /// The cairo context.
         /// </summary>
-        private Cairo.Context _context;
+        private readonly Cairo.Context _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.

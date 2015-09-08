@@ -10,9 +10,9 @@ namespace Perspex.Win32.Input
 {
     public class WindowsKeyboardDevice : KeyboardDevice
     {
-        private static WindowsKeyboardDevice s_instance = new WindowsKeyboardDevice();
+        private static readonly WindowsKeyboardDevice s_instance = new WindowsKeyboardDevice();
 
-        private byte[] _keyStates = new byte[256];
+        private readonly byte[] _keyStates = new byte[256];
 
         public static new WindowsKeyboardDevice Instance => s_instance;
 

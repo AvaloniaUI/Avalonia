@@ -16,13 +16,13 @@ namespace Perspex.Styling
 
     public class StyleActivator : IObservable<bool>, IDisposable
     {
-        private ActivatorMode _mode;
+        private readonly ActivatorMode _mode;
 
-        private bool[] _values;
+        private readonly bool[] _values;
 
-        private List<IDisposable> _subscriptions = new List<IDisposable>();
+        private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
 
-        private List<IObserver<bool>> _observers = new List<IObserver<bool>>();
+        private readonly List<IObserver<bool>> _observers = new List<IObserver<bool>>();
 
         public StyleActivator(
             IList<IObservable<bool>> inputs,

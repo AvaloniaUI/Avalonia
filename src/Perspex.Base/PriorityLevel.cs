@@ -50,7 +50,7 @@ namespace Perspex
         /// <summary>
         /// Method called when current value changes.
         /// </summary>
-        private Action<PriorityLevel> _changed;
+        private readonly Action<PriorityLevel> _changed;
 
         /// <summary>
         /// The current direct value.
@@ -62,7 +62,7 @@ namespace Perspex
         /// </summary>
         private int _nextIndex;
 
-        private LevelPrecedenceMode _mode;
+        private readonly LevelPrecedenceMode _mode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityLevel"/> class.

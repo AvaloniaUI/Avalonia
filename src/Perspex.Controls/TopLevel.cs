@@ -47,32 +47,32 @@ namespace Perspex.Controls
         /// <summary>
         /// The dispatcher for the window.
         /// </summary>
-        private Dispatcher _dispatcher;
+        private readonly Dispatcher _dispatcher;
 
         /// <summary>
         /// The render manager for the window.s
         /// </summary>
-        private IRenderManager _renderManager;
+        private readonly IRenderManager _renderManager;
 
         /// <summary>
         /// The window renderer.
         /// </summary>
-        private IRenderer _renderer;
+        private readonly IRenderer _renderer;
 
         /// <summary>
         /// The input manager for the window.
         /// </summary>
-        private IInputManager _inputManager;
+        private readonly IInputManager _inputManager;
 
         /// <summary>
         /// The access key handler for the window.
         /// </summary>
-        private IAccessKeyHandler _accessKeyHandler;
+        private readonly IAccessKeyHandler _accessKeyHandler;
 
         /// <summary>
         /// The access keyboard navigation handler for the window.
         /// </summary>
-        private IKeyboardNavigationHandler _keyboardNavigationHandler;
+        private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.

@@ -10,7 +10,7 @@ namespace Perspex.Gtk
 {
     public class GtkKeyboardDevice : KeyboardDevice
     {
-        private static GtkKeyboardDevice s_instance;
+        private static readonly GtkKeyboardDevice s_instance;
         private static readonly Dictionary<Gdk.Key, string> NameDic = new Dictionary<Gdk.Key, string>();
 
         static GtkKeyboardDevice()

@@ -859,10 +859,10 @@ namespace Perspex.Controls
 
         private struct GridNode
         {
-            public int Row;
-            public int Column;
-            public double Size;
-            public Segment[,] Matrix;
+            public readonly int Row;
+            public readonly int Column;
+            public readonly double Size;
+            public readonly Segment[,] Matrix;
 
             public GridNode(Segment[,] matrix, int row, int col, double size)
             {

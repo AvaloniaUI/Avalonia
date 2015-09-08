@@ -17,9 +17,9 @@ namespace Perspex.Threading
     /// </remarks>
     public class Dispatcher
     {
-        private static Dispatcher s_instance = new Dispatcher();
+        private static readonly Dispatcher s_instance = new Dispatcher();
 
-        private MainLoop _mainLoop = new MainLoop();
+        private readonly MainLoop _mainLoop = new MainLoop();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dispatcher"/> class.

@@ -11,12 +11,12 @@ namespace Perspex
     /// </summary>
     public struct Matrix
     {
-        private double _m11;
-        private double _m12;
-        private double _m21;
-        private double _m22;
-        private double _m31;
-        private double _m32;
+        private readonly double _m11;
+        private readonly double _m12;
+        private readonly double _m21;
+        private readonly double _m22;
+        private readonly double _m31;
+        private readonly double _m32;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Matrix"/> struct.

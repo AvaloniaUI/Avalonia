@@ -17,7 +17,7 @@ namespace Perspex.Cairo
     /// </summary>
     public class Renderer : RendererBase
     {
-        private Surface _surface;
+        private readonly Surface _surface;
         private Gdk.Window _window;
 
         /// <summary>

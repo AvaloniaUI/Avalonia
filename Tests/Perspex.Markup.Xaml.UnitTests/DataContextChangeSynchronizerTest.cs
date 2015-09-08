@@ -16,9 +16,9 @@ namespace Perspex.Xaml.Base.UnitTest
 {
     public class DataContextChangeSynchronizerTest
     {
-        private TypeConverterProvider _repo;
-        private SamplePerspexObject _guiObject;
-        private ViewModelMock _viewModel;
+        private readonly TypeConverterProvider _repo;
+        private readonly SamplePerspexObject _guiObject;
+        private readonly ViewModelMock _viewModel;
 
         public DataContextChangeSynchronizerTest()
         {

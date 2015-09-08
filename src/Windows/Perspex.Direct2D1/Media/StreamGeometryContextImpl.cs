@@ -8,7 +8,7 @@ namespace Perspex.Direct2D1.Media
 {
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        private GeometrySink _sink;
+        private readonly GeometrySink _sink;
 
         public StreamGeometryContextImpl(GeometrySink sink)
         {

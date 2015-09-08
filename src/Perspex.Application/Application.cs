@@ -45,7 +45,7 @@ namespace Perspex
         /// <summary>
         /// The styler that will be used to apply styles to controls.
         /// </summary>
-        private Styler _styler = new Styler();
+        private readonly Styler _styler = new Styler();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.

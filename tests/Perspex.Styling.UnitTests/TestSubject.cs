@@ -9,9 +9,9 @@ namespace Perspex.Styling.UnitTests
 {
     internal class TestSubject<T> : IObserver<T>, IObservable<T>
     {
-        private T _initial;
+        private readonly T _initial;
 
-        private List<IObserver<T>> _subscribers = new List<IObserver<T>>();
+        private readonly List<IObserver<T>> _subscribers = new List<IObserver<T>>();
 
         public TestSubject(T initial)
         {

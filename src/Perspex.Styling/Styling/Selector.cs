@@ -8,11 +8,11 @@ namespace Perspex.Styling
 {
     public class Selector
     {
-        private Func<IStyleable, SelectorMatch> _evaluate;
+        private readonly Func<IStyleable, SelectorMatch> _evaluate;
 
-        private bool _inTemplate;
+        private readonly bool _inTemplate;
 
-        private bool _stopTraversal;
+        private readonly bool _stopTraversal;
 
         private string _description;
 

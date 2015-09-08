@@ -17,9 +17,9 @@ namespace Perspex.Diagnostics.ViewModels
 
         private VisualTreeViewModel _visualTree;
 
-        private ObservableAsPropertyHelper<IInputElement> _focusedControl;
+        private readonly ObservableAsPropertyHelper<IInputElement> _focusedControl;
 
-        private ObservableAsPropertyHelper<IInputElement> _pointerOverElement;
+        private readonly ObservableAsPropertyHelper<IInputElement> _pointerOverElement;
 
         public DevToolsViewModel()
         {

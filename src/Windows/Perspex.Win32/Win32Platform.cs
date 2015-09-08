@@ -18,13 +18,13 @@ namespace Perspex.Win32
 {
     public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings
     {
-        private static Win32Platform s_instance = new Win32Platform();
+        private static readonly Win32Platform s_instance = new Win32Platform();
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
 
         private IntPtr _hwnd;
 
-        private List<Delegate> _delegates = new List<Delegate>();
+        private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {

@@ -25,22 +25,22 @@ namespace Perspex
         /// <summary>
         /// The default values for the property, by type.
         /// </summary>
-        private Dictionary<Type, object> _defaultValues = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _defaultValues = new Dictionary<Type, object>();
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private Subject<PerspexPropertyChangedEventArgs> _initialized = new Subject<PerspexPropertyChangedEventArgs>();
+        private readonly Subject<PerspexPropertyChangedEventArgs> _initialized = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private Subject<PerspexPropertyChangedEventArgs> _changed = new Subject<PerspexPropertyChangedEventArgs>();
+        private readonly Subject<PerspexPropertyChangedEventArgs> _changed = new Subject<PerspexPropertyChangedEventArgs>();
 
         /// <summary>
         /// The validation functions for the property, by type.
         /// </summary>
-        private Dictionary<Type, Func<PerspexObject, object, object>> _validation =
+        private readonly Dictionary<Type, Func<PerspexObject, object, object>> _validation =
             new Dictionary<Type, Func<PerspexObject, object, object>>();
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace Perspex.Controls
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
+        private readonly List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
 
         /// <summary>
         /// The window to which the handler belongs.

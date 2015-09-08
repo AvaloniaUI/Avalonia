@@ -12,7 +12,7 @@ namespace Perspex.Cairo.Media
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        private StreamGeometryImpl _impl;
+        private readonly StreamGeometryImpl _impl;
         public StreamGeometryContextImpl(StreamGeometryImpl imp)
         {
             _impl = imp;
@@ -39,8 +39,8 @@ namespace Perspex.Cairo.Media
             _context.LineTo(point.ToCairo());
         }
 
-        private Cairo.Context _context;
-        private Cairo.ImageSurface _surf;
+        private readonly Cairo.Context _context;
+        private readonly Cairo.ImageSurface _surf;
 
         public void EndFigure(bool isClosed)
         {

@@ -130,7 +130,7 @@ namespace Perspex.Layout
 
         private Rect? _previousArrange;
 
-        private ILogger _layoutLog;
+        private readonly ILogger _layoutLog;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.

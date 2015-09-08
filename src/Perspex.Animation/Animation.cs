@@ -13,12 +13,12 @@ namespace Perspex.Animation
         /// <summary>
         /// The animation being tracked.
         /// </summary>
-        private IObservable<object> _inner;
+        private readonly IObservable<object> _inner;
 
         /// <summary>
         /// The disposable used to cancel the animation.
         /// </summary>
-        private IDisposable _subscription;
+        private readonly IDisposable _subscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animation"/> class.

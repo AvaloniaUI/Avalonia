@@ -12,9 +12,9 @@ namespace Perspex.Controls.Templates
     /// </summary>
     public class TreeDataTemplate : DataTemplate, ITreeDataTemplate
     {
-        private Func<object, IEnumerable> _itemsSelector;
+        private readonly Func<object, IEnumerable> _itemsSelector;
 
-        private Func<object, bool> _isExpanded;
+        private readonly Func<object, bool> _isExpanded;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.

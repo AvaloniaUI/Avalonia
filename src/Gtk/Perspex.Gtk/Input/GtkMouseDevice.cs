@@ -6,7 +6,7 @@ namespace Perspex.Gtk
 {
     public class GtkMouseDevice : MouseDevice
     {
-        private static GtkMouseDevice s_instance;
+        private static readonly GtkMouseDevice s_instance;
 
         private Point _clientPosition;
 

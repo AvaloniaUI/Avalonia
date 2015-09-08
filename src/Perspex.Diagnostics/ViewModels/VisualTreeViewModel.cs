@@ -11,7 +11,7 @@ namespace Perspex.Diagnostics.ViewModels
     {
         private VisualTreeNode _selected;
 
-        private ObservableAsPropertyHelper<ControlDetailsViewModel> _details;
+        private readonly ObservableAsPropertyHelper<ControlDetailsViewModel> _details;
 
         public VisualTreeViewModel(Control root)
         {

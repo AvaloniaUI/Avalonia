@@ -34,7 +34,7 @@ namespace Perspex.Media
 
         private StreamGeometry _geometry;
 
-        private StreamGeometryContext _context;
+        private readonly StreamGeometryContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.

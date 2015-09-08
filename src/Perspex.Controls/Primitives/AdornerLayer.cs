@@ -14,10 +14,10 @@ namespace Perspex.Controls.Primitives
         public static PerspexProperty<Visual> AdornedElementProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
-        private static PerspexProperty<AdornedElementInfo> s_adornedElementInfoProperty =
+        private static readonly PerspexProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
-        private BoundsTracker _tracker = new BoundsTracker();
+        private readonly BoundsTracker _tracker = new BoundsTracker();
 
         static AdornerLayer()
         {

@@ -18,7 +18,7 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// The Direct2D1 render target.
         /// </summary>
-        private RenderTarget _renderTarget;
+        private readonly RenderTarget _renderTarget;
 
         /// <summary>
         /// The DirectWrite factory.

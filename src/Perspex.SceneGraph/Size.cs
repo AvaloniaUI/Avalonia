@@ -19,12 +19,12 @@ namespace Perspex
         /// <summary>
         /// The width.
         /// </summary>
-        private double _width;
+        private readonly double _width;
 
         /// <summary>
         /// The height.
         /// </summary>
-        private double _height;
+        private readonly double _height;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Size"/> structure.

@@ -42,7 +42,7 @@ namespace Perspex.Controls
         /// observable is throttled and calls <see cref="ShowToolTip(Control)"/> when the time
         /// period expires.
         /// </summary>
-        private static Subject<Control> s_show = new Subject<Control>();
+        private static readonly Subject<Control> s_show = new Subject<Control>();
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.

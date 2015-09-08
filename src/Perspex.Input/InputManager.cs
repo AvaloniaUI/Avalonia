@@ -12,9 +12,9 @@ namespace Perspex.Input
 {
     public class InputManager : IInputManager
     {
-        private Subject<RawInputEventArgs> _rawEventReceived = new Subject<RawInputEventArgs>();
+        private readonly Subject<RawInputEventArgs> _rawEventReceived = new Subject<RawInputEventArgs>();
 
-        private Subject<RawInputEventArgs> _postProcess = new Subject<RawInputEventArgs>();
+        private readonly Subject<RawInputEventArgs> _postProcess = new Subject<RawInputEventArgs>();
 
         public static IInputManager Instance => Locator.Current.GetService<IInputManager>();
 

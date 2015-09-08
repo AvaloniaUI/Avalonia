@@ -13,12 +13,12 @@ namespace Perspex
         /// <summary>
         /// The X position.
         /// </summary>
-        private double _x;
+        private readonly double _x;
 
         /// <summary>
         /// The Y position.
         /// </summary>
-        private double _y;
+        private readonly double _y;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Point"/> structure.

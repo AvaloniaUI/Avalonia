@@ -21,7 +21,7 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
-        private DispatcherTimer _caretTimer;
+        private readonly DispatcherTimer _caretTimer;
 
         private bool _caretBlink;
 

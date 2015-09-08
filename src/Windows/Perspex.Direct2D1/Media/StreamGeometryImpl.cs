@@ -14,7 +14,7 @@ namespace Perspex.Direct2D1.Media
     /// </summary>
     public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
-        private PathGeometry _path;
+        private readonly PathGeometry _path;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.

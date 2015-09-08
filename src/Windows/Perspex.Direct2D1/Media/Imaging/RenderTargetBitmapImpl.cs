@@ -10,7 +10,7 @@ namespace Perspex.Direct2D1.Media
 {
     public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl, IDisposable
     {
-        private WicRenderTarget _target;
+        private readonly WicRenderTarget _target;
 
         public RenderTargetBitmapImpl(
             ImagingFactory imagingFactory,

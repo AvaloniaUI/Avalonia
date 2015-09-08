@@ -18,7 +18,7 @@ namespace Perspex.Direct2D1
         /// <summary>
         /// The render target.
         /// </summary>
-        private RenderTarget _renderTarget;
+        private readonly RenderTarget _renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.

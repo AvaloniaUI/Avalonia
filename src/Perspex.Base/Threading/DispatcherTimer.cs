@@ -15,7 +15,7 @@ namespace Perspex.Threading
     {
         private IDisposable _timer;
 
-        private DispatcherPriority _priority;
+        private readonly DispatcherPriority _priority;
 
         private TimeSpan _interval;
 

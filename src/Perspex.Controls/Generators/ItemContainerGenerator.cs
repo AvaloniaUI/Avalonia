@@ -17,7 +17,7 @@ namespace Perspex.Controls.Generators
     {
         private Dictionary<int, IControl> _containers = new Dictionary<int, IControl>();
 
-        private Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
+        private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.

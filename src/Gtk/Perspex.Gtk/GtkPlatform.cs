@@ -14,7 +14,7 @@ namespace Perspex.Gtk
 
     public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings
     {
-        private static GtkPlatform s_instance = new GtkPlatform();
+        private static readonly GtkPlatform s_instance = new GtkPlatform();
 
         public GtkPlatform()
         {

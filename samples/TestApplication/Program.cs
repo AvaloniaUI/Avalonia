@@ -40,7 +40,7 @@ namespace TestApplication
 
     internal class Program
     {
-        private static PerspexList<Node> s_treeData = new PerspexList<Node>
+        private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
         {
             new Node
             {
@@ -78,7 +78,7 @@ namespace TestApplication
             },
         };
 
-        private static PerspexList<Item> s_listBoxData = new PerspexList<Item>
+        private static readonly PerspexList<Item> s_listBoxData = new PerspexList<Item>
         {
             new Item { Name = "Item 1", Value = "Item 1 Value" },
             new Item { Name = "Item 2", Value = "Item 2 Value" },

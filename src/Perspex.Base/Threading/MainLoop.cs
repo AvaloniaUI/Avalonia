@@ -16,9 +16,9 @@ namespace Perspex.Win32.Threading
     /// </summary>
     internal class MainLoop
     {
-        private static IPlatformThreadingInterface s_platform;
+        private static readonly IPlatformThreadingInterface s_platform;
 
-        private PriorityQueue<Job, DispatcherPriority> _queue =
+        private readonly PriorityQueue<Job, DispatcherPriority> _queue =
             new PriorityQueue<Job, DispatcherPriority>(PriorityQueueType.Maximum);
 
         /// <summary>

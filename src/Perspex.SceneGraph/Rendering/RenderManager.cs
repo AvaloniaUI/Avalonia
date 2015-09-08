@@ -12,7 +12,7 @@ namespace Perspex.Rendering
     /// </summary>
     public class RenderManager : IRenderManager
     {
-        private Subject<Unit> _renderNeeded = new Subject<Unit>();
+        private readonly Subject<Unit> _renderNeeded = new Subject<Unit>();
 
         private bool _renderQueued;
 

@@ -31,7 +31,7 @@ namespace Perspex
 
         private Point _point;
 
-        private OriginUnit _unit;
+        private readonly OriginUnit _unit;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Origin"/> struct.

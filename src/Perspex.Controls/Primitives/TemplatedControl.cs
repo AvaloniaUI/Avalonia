@@ -74,7 +74,7 @@ namespace Perspex.Controls.Primitives
 
         private bool _templateApplied;
 
-        private ILogger _templateLog;
+        private readonly ILogger _templateLog;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.

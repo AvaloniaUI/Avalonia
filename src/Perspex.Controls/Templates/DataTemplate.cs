@@ -20,7 +20,7 @@ namespace Perspex.Controls.Templates
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
         /// </summary>
-        private Func<object, bool> _match;
+        private readonly Func<object, bool> _match;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataTemplate"/> class.

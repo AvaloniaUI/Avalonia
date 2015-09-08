@@ -8,8 +8,8 @@ namespace Perspex.Markup.Xaml.DataBinding
 {
     public class XamlBindingDefinition
     {
-        private PropertyPath _sourcePropertyPath;
-        private BindingMode _bindingMode;
+        private readonly PropertyPath _sourcePropertyPath;
+        private readonly BindingMode _bindingMode;
         private readonly Control _target;
         private readonly PerspexProperty _targetProperty;
 
