@@ -27,15 +27,6 @@ namespace Perspex.Gtk
             get { return instance; }
         }
 
-        public override ModifierKeys Modifiers
-        {
-            get
-            {
-                // TODO: Implement.
-                return ModifierKeys.None;
-            }
-        }
-
         public static Perspex.Input.Key ConvertKey(Gdk.Key key)
         {
             // TODO: Don't use reflection for this! My eyes!!!

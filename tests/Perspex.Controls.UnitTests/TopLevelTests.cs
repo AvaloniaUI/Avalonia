@@ -300,7 +300,7 @@ namespace Perspex.Controls.UnitTests
                     new Mock<IKeyboardDevice>().Object,
                     0,
                     RawKeyEventType.KeyDown,
-                    Key.A);
+                    Key.A, ModifierKeys.None);
                 impl.Object.Input(input);
 
                 var inputManagerMock = Mock.Get(InputManager.Instance);

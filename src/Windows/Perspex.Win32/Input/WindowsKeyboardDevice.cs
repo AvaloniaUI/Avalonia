@@ -22,10 +22,11 @@ namespace Perspex.Win32.Input
             get { return instance; }
         }
 
-        public override ModifierKeys Modifiers
+        public ModifierKeys Modifiers
         {
             get
             {
+                UpdateKeyStates();
                 ModifierKeys result = 0;
 
                 if (this.IsDown(Key.LeftAlt) || this.IsDown(Key.RightAlt))
@@ -70,7 +71,7 @@ namespace Perspex.Win32.Input
             return result.ToString();
         }
 
-        internal void UpdateKeyStates()
+        private void UpdateKeyStates()
         {
             UnmanagedMethods.GetKeyboardState(this.keyStates);
         }

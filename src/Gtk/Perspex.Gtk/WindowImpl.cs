@@ -126,6 +126,19 @@ namespace Perspex.Gtk
             this.Activate();
         }
 
+        private static ModifierKeys GetModifierKeys(ModifierType state)
+        {
+            var rv = ModifierKeys.None;
+            if (state.HasFlag(ModifierType.ControlMask))
+                rv |= ModifierKeys.Control;
+            if (state.HasFlag(ModifierType.ShiftMask))
+                rv |= ModifierKeys.Shift;
+            if (state.HasFlag(ModifierType.Mod1Mask))
+                rv |= ModifierKeys.Control;
+
+            return rv;
+        }
+
         protected override bool OnButtonPressEvent(Gdk.EventButton evnt)
         {
             var e = new RawMouseEventArgs(
@@ -133,7 +146,7 @@ namespace Perspex.Gtk
                 evnt.Time,
                 this.owner,
                 RawMouseEventType.LeftButtonDown,
-                new Point(evnt.X, evnt.Y));
+                new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             this.Input(e);
             return true;
         }
@@ -145,7 +158,7 @@ namespace Perspex.Gtk
                 evnt.Time,
                 this.owner,
                 RawMouseEventType.LeftButtonUp,
-                new Point(evnt.X, evnt.Y));
+                new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             this.Input(e);
             return true;
         }
@@ -176,7 +189,7 @@ namespace Perspex.Gtk
                 GtkKeyboardDevice.Instance,
                 evnt.Time,
                 evnt.Type == EventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                GtkKeyboardDevice.ConvertKey(evnt.Key));
+                GtkKeyboardDevice.ConvertKey(evnt.Key), GetModifierKeys(evnt.State));
             this.Input(e);
             return true;
         }
@@ -212,7 +225,7 @@ namespace Perspex.Gtk
                 evnt.Time,
                 this.owner,
                 RawMouseEventType.Move,
-                position);
+                position, GetModifierKeys(evnt.State));
             this.Input(e);
             return true;
         }

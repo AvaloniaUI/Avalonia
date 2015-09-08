@@ -57,9 +57,7 @@ namespace Perspex.Input
                 this.RaisePropertyChanged();
             }
         }
-
-        public abstract ModifierKeys Modifiers { get; }
-
+        
         public void SetFocusedElement(IInputElement element, NavigationMethod method)
         {
             if (element != this.FocusedElement)
@@ -115,6 +113,7 @@ namespace Perspex.Input
                                 RoutedEvent = routedEvent,
                                 Device = this,
                                 Key = keyInput.Key,
+                                Modifiers = keyInput.Modifiers,
                                 Source = element,
                             };
 

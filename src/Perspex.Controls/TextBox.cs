@@ -175,7 +175,7 @@ namespace Perspex.Controls
             int caretIndex = this.CaretIndex;
             bool movement = false;
             bool handled = true;
-            var modifiers = e.Device.Modifiers;
+            var modifiers = e.Modifiers;
 
             switch (e.Key)
             {

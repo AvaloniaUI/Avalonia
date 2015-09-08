@@ -101,7 +101,7 @@ namespace Perspex.Input
                 switch (e.Key)
                 {
                     case Key.Tab:
-                        direction = (KeyboardDevice.Instance.Modifiers & ModifierKeys.Shift) == 0 ?
+                        direction = (e.Modifiers & ModifierKeys.Shift) == 0 ?
                             FocusNavigationDirection.Next : FocusNavigationDirection.Previous;
                         break;
                     case Key.Up:
