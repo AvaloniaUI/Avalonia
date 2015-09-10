@@ -17,6 +17,11 @@ namespace Perspex
         public static readonly Size Infinity = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
         /// <summary>
+        /// A size representing zero
+        /// </summary>
+        public static readonly Size Empty = new Size(0, 0);
+
+        /// <summary>
         /// The width.
         /// </summary>
         private readonly double _width;
