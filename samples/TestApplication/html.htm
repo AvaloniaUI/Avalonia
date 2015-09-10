@@ -1,0 +1,170 @@
+<html>
+    <head>
+        <title>Additional features</title>
+        <link rel="Stylesheet" href="StyleSheet" />
+        <style>
+        <!--
+            .g1, .g2, .g3, .g4, .g5 {
+                background-color: red;
+                background-gradient: yellow;
+                padding: 22px;
+            }
+
+            .g1 { background-gradient-angle: 0; }
+
+            .g2 { background-gradient-angle: 45; }
+
+            .g3 { background-gradient-angle: 90; }
+
+            .g4 { background-gradient-angle: 135; }
+
+            .g5 { background-gradient-angle: 180; }
+
+            .c1, .c2, .c3, .c4, .c5 {
+                background-color: olive;
+                border: 0px;
+                color: white;
+                vertical-align: middle;
+            }
+
+            .c1 { corner-radius: 0px; }
+
+            .c2 { corner-radius: 10px; }
+
+            .c3 { corner-radius: 0px 10px 10px 0px; }
+
+            .c4 { corner-radius: 18px; }
+
+            .c5 {
+                corner-radius: 10px;
+                border: outset #BBBB00 2px;
+            }
+
+            table { border-style: outset; }
+
+            td, th { border-style: inset; }
+
+            td { text-align: center; }
+        -->
+    </style>
+    </head>
+    <body>
+        <h1>
+            Additional features
+        </h1>
+        <blockquote>
+            <p>
+                There are some additional features that you may already discovered about the renderer
+                core engine.</p>
+            <h2>
+                Graphic features</h2>
+            <p>
+                I have always wanted the W3C to add this features to the CSS spec (and so far, not
+                there yet :)</p>
+            <ul>
+                <li><b>Gradients on backgrounds</b></li>
+                <li><b>Rounded corners</b></li>
+            </ul>
+            <p>
+                And I think many many web designers would agree. Is it so hard or what?.</p>
+            <h3>
+                Background Gradients</h3>
+            <p>
+                It is a simple two color linear gradient, achieved by the adding of two CSS properties:</p>
+            <ol>
+                <li><code>background-gradient: (#Color)</code> - Second color of the gradient background,
+                    the first one is given by <code>background-color</code>. Not inherited.</li>
+                <li><code>background-gradient-angle: (number)</code> - Angle (in degrees, clockwise) of
+                    the gradient. Not inherited. Initial value:90</li>
+            </ol>
+            <b>Some examples</b>
+            <!-- Gradients table -->
+            <table width="300px">
+                <tr>
+                    <td class="g1">
+                    </td>
+                    <td class="g2">
+                    </td>
+                    <td class="g3">
+                    </td>
+                    <td class="g4">
+                    </td>
+                    <td class="g5">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        0 degrees
+                    </td>
+                    <td>
+                        45 degrees
+                    </td>
+                    <td>
+                        90 degrees
+                    </td>
+                    <td>
+                        135 degrees
+                    </td>
+                    <td>
+                        180 degrees
+                    </td>
+                </tr>
+            </table>
+            <h3>
+                Rounded corners</h3>
+            <p>
+                As you may already know, CSS is based on a <a href="http://www.w3.org/TR/CSS21/box.html">
+                                                               Box Model</a>, where every box has it's own set of properties. Since we are
+                talking abound <b>boxes</b>, why not to make them with rounded corners, almost every
+                website you visit nowadays makes use of rounded corners, where a not very nice trick
+                with images and tables must be used.</p>
+            <p>
+                In this renderer, the rounded corners are achieved by adding this CSS properties:</p>
+            <ul>
+                <li><code>corner-ne-radius: (length)</code> Indicates the radius of the north-east corner.
+                    Not ineritted</li>
+                <li><code>corner-se-radius: (length)</code> Indicates the radius of the south-east corner.
+                    Not ineritted</li>
+                <li><code>corner-sw-radius: (length)</code> Indicates the radius of the south-west corner.
+                    Not ineritted</li>
+                <li><code>corner-nw-radius: (length)</code> Indicates the radius of the north-west corner.
+                    Not ineritted</li>
+                <li><code>corner-radius: (length){1,4}</code> Shorthand for the other corner properties.
+                    Not ineritted</li>
+            </ul>
+            <!-- Corners table -->
+            <b>Some examples</b>
+            <table width="320px" cellspacing="10">
+                <tr>
+                    <td width="1" style="border: 0px">
+                        <p>
+                        </p>
+                        <p>
+                        </p>
+                    </td>
+                    <td class="c1">
+                        c1
+                    </td>
+                    <td class="c2">
+                        c2
+                    </td>
+                    <td class="c3">
+                        c3
+                    </td>
+                    <td class="c4">
+                        c4
+                    </td>
+                    <td class="c5">
+                        c5
+                    </td>
+                </tr>
+            </table>
+            <pre>.c1, .c2, .c3, .c4, .c5 { background-color:olive; border:0px; color:white; vertical-align:middle; }
+.c1  { corner-radius: 0px }
+.c2  { corner-radius: 10px }
+.c3  { corner-radius: 0px 10px 10px 0px }
+.c4  { corner-radius: 18px }
+.c5  { corner-radius: 10px; border: outset #bb0 2px; }</pre>
+        </blockquote>
+    </body>
+</html>
