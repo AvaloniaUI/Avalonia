@@ -11,6 +11,7 @@
 // "The Art of War"
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Perspex;
 using Perspex.Media;
@@ -41,6 +42,9 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         #endregion
 
 
+        private Stack<IDisposable> _clipStack = new Stack<IDisposable>();
+
+
         /// <summary>
         /// Init.
         /// </summary>
@@ -66,22 +70,25 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             _releaseGraphics = false;
         }
         
+        
+
         public override void PopClip()
         {
-            /*
-            _g.Pop();
-            _clipStack.Pop();
-            */
+            _clipStack.Pop()?.Dispose();
         }
 
         public override void PushClip(RRect rect)
         {
+            _clipStack.Push(_g.PushClip(Util.Convert(rect)));
             //_clipStack.Push(rect);
             //_g.PushClip(new RectangleGeometry(Utils.Convert(rect)));
         }
 
         public override void PushClipExclude(RRect rect)
         {
+            _clipStack.Push(null);
+
+            //TODO: Implement exclude rect, see #128
             //var geometry = new CombinedGeometry();
             //geometry.Geometry1 = new RectangleGeometry(Utils.Convert(_clipStack.Peek()));
             //geometry.Geometry2 = new RectangleGeometry(Utils.Convert(rect));
@@ -125,46 +132,6 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             var text = GetText(str, font);
             text.Constraint = Util.Convert(size);
             _g.DrawText(new SolidColorBrush(Util.Convert(color)), Util.Convert(point), text);
-
-            //var colorConv = ((BrushAdapter)_adapter.GetSolidBrush(color)).Brush;
-
-            //bool glyphRendered = false;
-            //GlyphTypeface glyphTypeface = ((FontAdapter)font).GlyphTypeface;
-            //if (glyphTypeface != null)
-            //{
-            //    double width = 0;
-            //    ushort[] glyphs = new ushort[str.Length];
-            //    double[] widths = new double[str.Length];
-
-            //    int i = 0;
-            //    for (; i < str.Length; i++)
-            //    {
-            //        ushort glyph;
-            //        if (!glyphTypeface.CharacterToGlyphMap.TryGetValue(str[i], out glyph))
-            //            break;
-
-            //        glyphs[i] = glyph;
-            //        width += glyphTypeface.AdvanceWidths[glyph];
-            //        widths[i] = 96d / 72d * font.Size * glyphTypeface.AdvanceWidths[glyph];
-            //    }
-
-            //    if (i >= str.Length)
-            //    {
-            //        point.Y += glyphTypeface.Baseline * font.Size * 96d / 72d;
-            //        point.X += rtl ? 96d / 72d * font.Size * width : 0;
-
-            //        glyphRendered = true;
-            //        var glyphRun = new GlyphRun(glyphTypeface, rtl ? 1 : 0, false, 96d / 72d * font.Size, glyphs, Utils.ConvertRound(point), widths, null, null, null, null, null, null);
-            //        _g.DrawGlyphRun(colorConv, glyphRun);
-            //    }
-            //}
-
-            //if (!glyphRendered)
-            //{
-            //    var formattedText = new FormattedText(str, CultureInfo.CurrentCulture, rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight, ((FontAdapter)font).Font, 96d / 72d * font.Size, colorConv);
-            //    point.X += rtl ? formattedText.Width : 0;
-            //    _g.DrawText(formattedText, Utils.ConvertRound(point));
-            //}
         }
 
         public override RBrush GetTextureBrush(RImage image, RRect dstRect, RPoint translateTransformLocation)
@@ -266,6 +233,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
                     context.BeginFigure(Util.Convert(points[0]), true);
                     for (int i = 1; i < points.Length; i++)
                         context.LineTo(Util.Convert(points[i]));
+                    context.EndFigure(false);
                 }
 
                 _g.DrawGeometry(((BrushAdapter)brush).Brush, null, g);

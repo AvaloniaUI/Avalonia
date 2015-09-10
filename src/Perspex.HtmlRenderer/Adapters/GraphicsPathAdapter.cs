@@ -57,6 +57,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         public StreamGeometry GetClosedGeometry()
         {
             _geometryContext.EndFigure(true);
+            _geometryContext.Dispose();
             return _geometry;
         }
 

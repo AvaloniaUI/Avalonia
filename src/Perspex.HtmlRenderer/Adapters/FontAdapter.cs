@@ -59,8 +59,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             Name = fontFamily;
             _size = size;
             //TODO: Somehow get proper line spacing and underlinePosition
-            var lineSpacing = 2;
-            var underlinePosition = 1;
+            var lineSpacing = 1;
+            var underlinePosition = 0;
 
             _height = 96d / 72d * _size * lineSpacing;
             _underlineOffset = 96d / 72d * _size * (lineSpacing + underlinePosition);
