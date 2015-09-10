@@ -2,13 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Disposables;
 using Perspex.Cairo.Media.Imaging;
 using Perspex.Media;
-using IBitmap = Perspex.Media.Imaging.IBitmap;
 
 namespace Perspex.Cairo.Media
 {
+    using Perspex.Media.Imaging;
     using Cairo = global::Cairo;
 
     /// <summary>
@@ -77,9 +78,9 @@ namespace Perspex.Cairo.Media
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var size = new Rect(p1, p2).Size;
+            
+            SetPen(pen, size);
 
-            SetBrush(pen.Brush, size);
-            _context.LineWidth = pen.Thickness;
             _context.MoveTo(p1.ToCairo());
             _context.LineTo(p2.ToCairo());
             _context.Stroke();
@@ -139,9 +140,9 @@ namespace Perspex.Cairo.Media
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
-            SetBrush(foreground, new Size(0, 0));
-
             _context.MoveTo(origin.X, origin.Y);
+
+            SetBrush(foreground, new Size(0, 0));
             Pango.CairoHelper.ShowLayout(_context, layout);
         }
 
@@ -195,7 +196,7 @@ namespace Perspex.Cairo.Media
                 _context.Transform(matrix.Invert().ToCairo());
             });
         }
-
+        
         private void SetBrush(Brush brush, Size destinationSize)
         {
             var solid = brush as SolidColorBrush;
@@ -225,7 +226,23 @@ namespace Perspex.Cairo.Media
         private void SetPen(Pen pen, Size destinationSize)
         {
             SetBrush(pen.Brush, destinationSize);
+            if (pen.DashStyle != null)
+            {
+                if (pen.DashStyle.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+                {
+                    var cray = pen.DashStyle.Dashes.ToArray();
+                    _context.SetDash(cray, pen.DashStyle.Offset);
+                }
+            }
+
             _context.LineWidth = pen.Thickness;
+            _context.MiterLimit = pen.MiterLimit;
+
+            // Line caps and joins are currently broken on Cairo. I've defaulted them to sensible defaults for now.
+            // Cairo does not have StartLineCap, EndLineCap, and DashCap properties, whereas Direct2D does. 
+            // TODO: Figure out a solution for this.
+            _context.LineJoin = Cairo.LineJoin.Miter;
+            _context.LineCap = Cairo.LineCap.Butt;
         }
     }
 }
