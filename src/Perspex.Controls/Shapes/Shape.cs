@@ -96,7 +96,7 @@ namespace Perspex.Controls.Shapes
 
             if (geometry != null)
             {
-                var pen = new Pen(Stroke, StrokeThickness, StrokeDashArray);
+                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray));
                 context.DrawGeometry(Fill, pen, geometry);
             }
         }
