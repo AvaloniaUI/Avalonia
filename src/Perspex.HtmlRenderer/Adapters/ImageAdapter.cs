@@ -44,7 +44,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         public override void Dispose()
         {
-            //TODO: Implement
+            //TODO: Implement image disposal
             /*if (_image.StreamSource != null)
                 _image.StreamSource.Dispose();*/
         }

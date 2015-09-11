@@ -378,6 +378,7 @@ namespace TestApplication
                 Content = new ScrollViewer()
                 {
                     Width = 600,
+                    MaxHeight = 600,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     CanScrollHorizontally = false,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Visible,

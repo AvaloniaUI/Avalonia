@@ -19,6 +19,7 @@ using Perspex.Media;
 using Perspex.Threading;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.Core.Entities;
+using TheArtOfDev.HtmlRenderer.Perspex.Adapters;
 
 namespace Perspex.Controls
 {
@@ -91,10 +92,13 @@ namespace Perspex.Controls
             PropertyHelper.Register<HtmlControl, string>("Text", null, OnPerspexProperty_valueChanged);
 
         public static readonly PerspexProperty BackgroundProperty =
-            PerspexProperty.Register<HtmlControl, Color>("Background", Colors.White);
+            PerspexProperty.Register<HtmlControl, Brush>("Background", Brushes.White);
 
         public static readonly PerspexProperty BorderThicknessProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("BorderThickness", new Thickness(0));
+
+        public static readonly PerspexProperty BorderBrushProperty =
+    PerspexProperty.Register<HtmlControl, Brush>("BorderBrush");
 
         public static readonly PerspexProperty PaddingProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("Padding", new Thickness(0));
@@ -252,15 +256,21 @@ namespace Perspex.Controls
             set { SetValue(BorderThicknessProperty, value); }
         }
 
+        public Brush BorderBrush
+        {
+            get { return (Brush)GetValue(BorderBrushProperty); }
+            set { SetValue(BorderThicknessProperty, value); }
+        }
+
         public Thickness Padding
         {
             get { return (Thickness)GetValue(PaddingProperty); }
             set { SetValue(PaddingProperty, value); }
         }
 
-        public Color Background
+        public Brush Background
         {
-            get { return (Color?) GetValue(BackgroundProperty) ?? Colors.White; }
+            get { return (Brush) GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value);}
         }
 
@@ -321,15 +331,10 @@ namespace Perspex.Controls
         
         public override void Render(IDrawingContext context)
         {
-            //TODO: Use actual background
-            context.FillRectange(new SolidColorBrush(Colors.White),  new Rect(RenderSize));
-            /*if (Background.Opacity > 0)
-                context.DrawRectangle(Background, null, new Rect(RenderSize));
-                */
+            context.FillRectange(Background,  new Rect(RenderSize));
 
-            if (BorderThickness != new Thickness(0))
+            if (BorderThickness != new Thickness(0) && BorderBrush != null)
             {
-                //TODO: Get default border brush from theme or something
                 var brush = new SolidColorBrush(Colors.Black);
                 if (BorderThickness.Top > 0)
                     context.FillRectange(brush, new Rect(0, 0, RenderSize.Width, BorderThickness.Top));
@@ -346,7 +351,7 @@ namespace Perspex.Controls
             if (_htmlContainer != null && htmlWidth > 0 && htmlHeight > 0)
             {
                 /*
-                //TODO: Rever antialiasing fixes
+                //TODO: Revert antialiasing fixes
                 var windows = Window.GetWindow(this);
                 if (windows != null)
                 {
@@ -514,8 +519,8 @@ namespace Perspex.Controls
         /// </summary>
         protected virtual void InvokeMouseMove()
         {
-            
-            _htmlContainer.HandleMouseMove(this, MouseDevice.Instance.GetPosition(this));
+
+            _htmlContainer.HandleMouseMove(this, MouseDevice.Instance?.GetPosition(this) ?? default(Point));
         }
 
         /// <summary>
@@ -541,7 +546,7 @@ namespace Perspex.Controls
                 }
                 else if (e.Property == BaseStylesheetProperty)
                 {
-                    var baseCssData = HtmlRender.ParseStyleSheet((string)e.NewValue);
+                    var baseCssData = CssData.Parse(PerspexAdapter.Instance, (string)e.NewValue);
                     control._baseCssData = baseCssData;
                     htmlContainer.SetHtml(control.Text, baseCssData);
                 }

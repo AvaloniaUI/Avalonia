@@ -39,6 +39,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             ArgChecker.AssertArgNotNull(control, "control");
 
             _control = control;
+            _control.PointerPressed += delegate { _leftMouseButton = true; };
+            _control.PointerPressed += delegate { _leftMouseButton = false; };
         }
 
         /// <summary>
@@ -53,28 +55,19 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         {
             get
             {
-                //TODO: Implement
-                //return Utils.Convert(_control.PointFromScreen(Mouse.GetPosition(_control)));
-                return new RPoint(0, 0);
+                return Util.Convert(MouseDevice.Instance.GetPosition(_control));
             }
         }
 
-        public override bool LeftMouseButton
-        {
-            get
-            {
-                return false;
-                //TODO: Implement
-                //return Mouse.LeftButton == MouseButtonState.Pressed;
-            }
-        }
+        private bool _leftMouseButton;
+        public override bool LeftMouseButton => _leftMouseButton;
 
         public override bool RightMouseButton
         {
             get
             {
                 return false;
-                //TODO: Implement
+                //TODO: Implement right mouse click
                 //return Mouse.RightButton == MouseButtonState.Pressed;
             }
         }
@@ -96,7 +89,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         public override void DoDragDropCopy(object dragDropData)
         {
-            //TODO: Implement
+            //TODO: Implement DragDropCopy
             //DragDrop.DoDragDrop(_control, dragDropData, DragDropEffects.Copy);
         }
 

@@ -129,7 +129,6 @@
     <Compile Include="HtmlContainer.cs" />
     <Compile Include="HtmlControl.cs" />
     <Compile Include="HtmlLabel.cs" />
-    <Compile Include="HtmlRender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyHelper.cs" />
     <Compile Include="RoutedEventArgsWrapper.cs" />

@@ -205,9 +205,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         public override void Dispose()
         {
-            //TODO: Do something about Dispose
-            //if (_releaseGraphics)
-            //    _g.Close();
+            if (_releaseGraphics)
+                _g.Dispose();
         }
 
     

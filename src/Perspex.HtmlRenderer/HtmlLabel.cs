@@ -45,7 +45,7 @@ namespace Perspex.Controls
         /// </summary>
         static HtmlLabel()
         {
-            //BackgroundProperty.OverrideDefaultValue<HtmlLabel>(Brushes.Transparent);
+            BackgroundProperty.OverrideDefaultValue<HtmlLabel>(Brushes.Transparent);
         }
 
         #region Private methods
@@ -62,9 +62,8 @@ namespace Perspex.Controls
                     var horizontal = Padding.Left + Padding.Right + BorderThickness.Left + BorderThickness.Right;
                     var vertical = Padding.Top + Padding.Bottom + BorderThickness.Top + BorderThickness.Bottom;
 
-                    var size = new RSize(constraint.Width < Double.PositiveInfinity ? constraint.Width - horizontal : 0, constraint.Height < Double.PositiveInfinity ? constraint.Height - vertical : 0);
-                    //var minSize = new RSize(MinWidth < Double.PositiveInfinity ? MinWidth - horizontal : 0, MinHeight < Double.PositiveInfinity ? MinHeight - vertical : 0);
-                    var maxSize = new RSize(MaxWidth < Double.PositiveInfinity ? MaxWidth - horizontal : 0, MaxHeight < Double.PositiveInfinity ? MaxHeight - vertical : 0);
+                    var size = new Size(Math.Min(MaxWidth, constraint.Width), Math.Min(MaxHeight, constraint.Height));
+                    var maxSize = new RSize(size.Width < Double.PositiveInfinity ? size.Width - horizontal : 0, size.Height < Double.PositiveInfinity ? size.Height - vertical : 0);
                     _htmlContainer.HtmlContainerInt.MaxSize = maxSize;
 
                     _htmlContainer.HtmlContainerInt.PerformLayout(ig);
