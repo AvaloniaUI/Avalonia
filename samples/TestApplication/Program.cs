@@ -377,22 +377,14 @@ namespace TestApplication
                 Header = "Html",
                 Content = new ScrollViewer()
                 {
-                    Width = 900,
+                    Width = 600,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    CanScrollHorizontally = false,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
                     Content =
-                        new Border
+                        new HtmlLabel()
                         {
-                            Height = 2500,
-                            Child =
-                                new HtmlLabel()
-                                {
-
-                                    Text = htmlText,
-                                    AutoSize = false,
-                                    MaxWidth = 900,
-                                    MaxHeight = 2500
-
-                                }
+                            Text = htmlText
                         }
                 }
             };

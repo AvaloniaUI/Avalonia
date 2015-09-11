@@ -48,29 +48,6 @@ namespace Perspex.Controls
             //BackgroundProperty.OverrideDefaultValue<HtmlLabel>(Brushes.Transparent);
         }
 
-        /// <summary>
-        /// Automatically sets the size of the label by content size
-        /// </summary>
-        [Category("Layout")]
-        [Description("Automatically sets the size of the label by content size.")]
-        public bool AutoSize
-        {
-            get { return (bool)GetValue(AutoSizeProperty); }
-            set { SetValue(AutoSizeProperty, value); }
-        }
-
-        /// <summary>
-        /// Automatically sets the height of the label by content height (width is not effected).
-        /// </summary>
-        [Category("Layout")]
-        [Description("Automatically sets the height of the label by content height (width is not effected)")]
-        public virtual bool AutoSizeHeightOnly
-        {
-            get { return (bool)GetValue(AutoSizeHeightOnlyProperty); }
-            set { SetValue(AutoSizeHeightOnlyProperty, value); }
-        }
-
-
         #region Private methods
 
         /// <summary>
@@ -86,11 +63,12 @@ namespace Perspex.Controls
                     var vertical = Padding.Top + Padding.Bottom + BorderThickness.Top + BorderThickness.Bottom;
 
                     var size = new RSize(constraint.Width < Double.PositiveInfinity ? constraint.Width - horizontal : 0, constraint.Height < Double.PositiveInfinity ? constraint.Height - vertical : 0);
-                    var minSize = new RSize(MinWidth < Double.PositiveInfinity ? MinWidth - horizontal : 0, MinHeight < Double.PositiveInfinity ? MinHeight - vertical : 0);
+                    //var minSize = new RSize(MinWidth < Double.PositiveInfinity ? MinWidth - horizontal : 0, MinHeight < Double.PositiveInfinity ? MinHeight - vertical : 0);
                     var maxSize = new RSize(MaxWidth < Double.PositiveInfinity ? MaxWidth - horizontal : 0, MaxHeight < Double.PositiveInfinity ? MaxHeight - vertical : 0);
+                    _htmlContainer.HtmlContainerInt.MaxSize = maxSize;
 
-                    var newSize = HtmlRendererUtils.Layout(ig, _htmlContainer.HtmlContainerInt, size, minSize, maxSize, AutoSize, AutoSizeHeightOnly);
-
+                    _htmlContainer.HtmlContainerInt.PerformLayout(ig);
+                    var newSize = _htmlContainer.ActualSize;
                     constraint = new Size(newSize.Width + horizontal, newSize.Height + vertical);
                 }
             }

@@ -123,10 +123,59 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         public override void MeasureString(string str, RFont font, double maxWidth, out int charFit, out double charFitWidth)
         {
             var text = GetText(str, font);
-            charFit = str.Length;
-            charFitWidth = text.Measure().Width;
+            var fullLength = text.Measure().Width;
+            if (fullLength < maxWidth)
+            {
+                charFitWidth = fullLength;
+                charFit = str.Length;
+                return;
+            }
+
+            int lastLen = 0;
+            double lastMeasure = 0;
+            BinarySearch(len =>
+            {
+                text = GetText(str.Substring(0, len), font);
+                var size = text.Measure().Width;
+                lastMeasure = size;
+                lastLen = len;
+                if (size <= maxWidth)
+                    return -1;
+                return 1;
+
+            }, 0, str.Length);
+            if (lastMeasure > maxWidth)
+            {
+                lastLen--;
+                lastMeasure = GetText(str.Substring(0, lastLen), font).Measure().Width;
+            }
+            charFit = lastLen;
+            charFitWidth = lastMeasure;
+
         }
-        
+
+        private static int BinarySearch(Func<int, int> condition, int start, int end)
+        {
+            do
+            {
+                int ind = start + (end - start)/2;
+                int res = condition(ind);
+                if (res == 0)
+                    return ind;
+                else if (res > 0)
+                {
+                    if (start != ind)
+                        start = ind;
+                    else
+                        start = ind + 1;
+                }
+                else
+                    end = ind;
+
+            } while (end > start);
+            return -1;
+        }
+
         public override void DrawString(string str, RFont font, RColor color, RPoint point, RSize size, bool rtl)
         {
             var text = GetText(str, font);
