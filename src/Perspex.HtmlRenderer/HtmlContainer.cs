@@ -376,7 +376,7 @@ namespace Perspex.Controls
         {
             ArgChecker.AssertArgNotNull(parent, "parent");
             ArgChecker.AssertArgNotNull(e, "e");
-
+            
             _htmlContainerInt.HandleMouseDown(new ControlAdapter(parent), Util.Convert(e.GetPosition(parent)));
         }
 

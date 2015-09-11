@@ -127,6 +127,9 @@ namespace Perspex.Controls
             _htmlContainer.ImageLoad += (_, e) => OnImageLoad(e);
         }
 
+        //Hack for adapter
+        internal bool LeftMouseButton { get; private set; }
+
         /// <summary>
         /// Raised when the set html document has been fully loaded.<br/>
         /// Allows manipulation of the html dom, scroll position, etc.
@@ -397,6 +400,7 @@ namespace Perspex.Controls
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             base.OnPointerPressed(e);
+            LeftMouseButton = true;
             _htmlContainer?.HandleLeftMouseDown(this, e);
         }
 
@@ -408,6 +412,7 @@ namespace Perspex.Controls
         protected override void OnPointerReleased(PointerEventArgs e)
         {
             base.OnPointerReleased(e);
+            LeftMouseButton = false;
             if (_htmlContainer != null)
                 _htmlContainer.HandleLeftMouseUp(this, e);
         }

@@ -205,6 +205,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         public override void Dispose()
         {
+            while (_clipStack.Count != 0)
+                PopClip();
             if (_releaseGraphics)
                 _g.Dispose();
         }

@@ -39,8 +39,6 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             ArgChecker.AssertArgNotNull(control, "control");
 
             _control = control;
-            _control.PointerPressed += delegate { _leftMouseButton = true; };
-            _control.PointerPressed += delegate { _leftMouseButton = false; };
         }
 
         /// <summary>
@@ -60,7 +58,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         }
 
         private bool _leftMouseButton;
-        public override bool LeftMouseButton => _leftMouseButton;
+        public override bool LeftMouseButton => (_control as HtmlControl)?.LeftMouseButton ?? false;
 
         public override bool RightMouseButton
         {
