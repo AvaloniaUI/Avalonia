@@ -58,9 +58,6 @@ namespace Perspex
         public static readonly PerspexProperty<Transform> RenderTransformProperty =
             PerspexProperty.Register<Visual, Transform>(nameof(RenderTransform));
 
-        public static readonly PerspexProperty<bool> UseBitmapCacheProperty =
-    PerspexProperty.Register<Visual, bool>(nameof(UseBitmapCache));
-
         /// <summary>
         /// Defines the <see cref="TransformOrigin"/> property.
         /// </summary>
@@ -170,12 +167,6 @@ namespace Perspex
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }
-        }
-
-        public bool UseBitmapCache
-        {
-            get { return GetValue(UseBitmapCacheProperty); }
-            set { SetValue(UseBitmapCacheProperty, value); }
         }
 
         /// <summary>

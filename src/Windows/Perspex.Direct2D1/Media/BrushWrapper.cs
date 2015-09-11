@@ -8,15 +8,11 @@ namespace Perspex.Direct2D1.Media
 {
     internal class BrushWrapper : ComObject
     {
-        public BrushWrapper(Brush brush, FontWeight weight, double fontSize)
+        public BrushWrapper(Brush brush)
         {
             Brush = brush;
-            FontWeight = weight;
-            FontSize = fontSize;
         }
 
         public Brush Brush { get; private set; }
-        public FontWeight FontWeight { get; private set; }
-        public double FontSize { get; private set; }
     }
 }

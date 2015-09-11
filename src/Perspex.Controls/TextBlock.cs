@@ -277,7 +277,8 @@ namespace Perspex.Controls
             var start = 0;
             foreach (var run in this.Inlines.Cast<Run>())
             {
-                result.SetForegroundBrush(run.Foreground, run.FontWeight, run.FontSize, start, start + run.Text.Length);
+                run.InheritanceParent = this;
+                result.SetFormatting(run.Foreground, run.FontWeight, run.FontSize, start, start + run.Text.Length);
                 start = start + run.Text.Length;
             }
 

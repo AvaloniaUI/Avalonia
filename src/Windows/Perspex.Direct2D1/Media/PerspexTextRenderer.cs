@@ -51,8 +51,7 @@ namespace Perspex.Direct2D1.Media
             var brush = (wrapper == null) ?
                 _foreground :
                 _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
-            
-           
+
             _renderTarget.DrawGlyphRun(
                 new Vector2(baselineOriginX, baselineOriginY),
                 glyphRun,

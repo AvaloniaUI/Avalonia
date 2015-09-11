@@ -68,7 +68,7 @@ namespace Perspex.Themes.Default
                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
                         [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
                         [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
-                        Text = control.Text,
+                        [~TextBlock.TextProperty] = control[~TextBox.TextProperty],
                         [~TextBlock.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
                     }
                 }

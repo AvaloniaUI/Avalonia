@@ -14,8 +14,6 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using System.Collections.Generic;
-using Perspex.Controls.Documents;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #endif
@@ -378,17 +376,12 @@ namespace TestApplication
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Gap = 8,
-                    Width = 250,
+                    Width = 120,
                     Children = new Controls
                     {
                         new TextBlock
                         {
-                            Inlines = new List<Inline>()
-                            {
-                                new Run { Text = "This is a test run", FontSize = 14, Foreground = Brushes.Green  },
-                                new Run { Text = " with some color", FontSize = 18, FontWeight = FontWeight.Medium, Foreground = Brushes.Navy },
-                                new Run { Text = " and some font weights", FontSize = 22, FontWeight = FontWeight.Thin, Foreground = Brushes.Purple }
-                            },
+                            Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
                             TextAlignment = TextAlignment.Center,
                         },

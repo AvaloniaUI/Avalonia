@@ -37,7 +37,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public AccessText()
         {
-            //GetObservable(TextProperty).Subscribe(TextChanged);
+            GetObservable(TextProperty).Subscribe(TextChanged);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Perspex.Controls.Primitives
         {
             base.Render(context);
 
-           /* int underscore = Text?.IndexOf('_') ?? -1;
+            int underscore = Text?.IndexOf('_') ?? -1;
 
             if (underscore != -1 && ShowAccessKey)
             {
@@ -76,7 +76,7 @@ namespace Perspex.Controls.Primitives
                     new Pen(Foreground, 1),
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
-            }*/
+            }
         }
 
         /// <summary>
@@ -84,9 +84,9 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        /*protected override FormattedText CreateFormattedText(Size constraint)
+        protected override FormattedText CreateFormattedText(Size constraint)
         {
-         /*   var result = new FormattedText(
+            var result = new FormattedText(
                 StripAccessKey(Text),
                 FontFamily,
                 FontSize,
@@ -95,7 +95,7 @@ namespace Perspex.Controls.Primitives
                 FontWeight);
             result.Constraint = constraint;
             return result;
-        }*/
+        }
 
         /// <summary>
         /// Measures the control.

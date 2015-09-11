@@ -180,14 +180,16 @@ namespace Perspex.Media
         }
 
         /// <summary>
-        /// Sets the foreground brush for the specified text range.
+        /// Sets the formatting for the specified text range.
         /// </summary>
         /// <param name="brush">The brush.</param>
+        /// <param name="weight">The font weight.</param>
+        /// <param name="size">The font size.</param>
         /// <param name="startIndex">The start of the text range.</param>
         /// <param name="length">The length of the text range.</param>
-        public void SetForegroundBrush(Brush brush, FontWeight weight, double size, int startIndex, int length)
+        public void SetFormatting(Brush brush, FontWeight weight, double size, int startIndex, int length)
         {
-            PlatformImpl.SetForegroundBrush(brush, weight, size, startIndex, length);
+            PlatformImpl.SetFormatting(brush, weight, size, startIndex, length);
         }
     }
 }

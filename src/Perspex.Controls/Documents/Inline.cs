@@ -1,14 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Perspex.Controls.Documents
+﻿namespace Perspex.Controls.Documents
 {
-    // TODO: Make this inherit from TextPresenter? Or is it even necessary..
-    public abstract class Inline
+    /// <summary>
+    /// An abstract class that provides a base for all inline content.
+    /// </summary>
+    public abstract class Inline : PerspexObject
     {
-
+        internal new PerspexObject InheritanceParent
+        {
+            get
+            {
+                return base.InheritanceParent;
+            }
+            set
+            {
+                base.InheritanceParent = value;
+            }
+        }
     }
 }
