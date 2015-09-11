@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Reactive.Linq;
 using Perspex;
 using Perspex.Animation;
 using Perspex.Collections;
 using Perspex.Controls;
+using Perspex.Controls.Html;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;
@@ -219,6 +221,7 @@ namespace TestApplication
                             {
                                 ButtonsTab(),
                                 TextTab(),
+                                HtmlTab(),
                                 ImagesTab(),
                                 ListsTab(),
                                 LayoutTab(),
@@ -363,6 +366,30 @@ namespace TestApplication
             });
 
             return result;
+        }
+
+        private static TabItem HtmlTab()
+        {
+            var htmlText =
+                new StreamReader(typeof (Program).Assembly.GetManifestResourceStream("TestApplication.html.htm"))
+                    .ReadToEnd();
+            return new TabItem
+            {
+                Header = "Html",
+                Content = new ScrollViewer()
+                {
+                    Width = 600,
+                    MaxHeight = 600,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    CanScrollHorizontally = false,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
+                    Content =
+                        new HtmlLabel()
+                        {
+                            Text = htmlText
+                        }
+                }
+            };
         }
 
         private static TabItem TextTab()
