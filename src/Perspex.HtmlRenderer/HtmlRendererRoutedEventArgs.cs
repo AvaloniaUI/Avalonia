@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Interactivity;
 
-namespace Perspex.HtmlRenderer
+namespace Perspex.Controls.Html
 {
     public class HtmlRendererRoutedEventArgs<T> : RoutedEventArgs
     {

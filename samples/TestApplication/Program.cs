@@ -8,6 +8,7 @@ using Perspex;
 using Perspex.Animation;
 using Perspex.Collections;
 using Perspex.Controls;
+using Perspex.Controls.Html;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;

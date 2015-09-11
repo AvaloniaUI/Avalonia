@@ -17,7 +17,7 @@ using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.Perspex.Adapters;
 
-namespace Perspex.Controls
+namespace Perspex.Controls.Html
 {
     /// <summary>
     /// Provides HTML rendering using the text property.<br/>

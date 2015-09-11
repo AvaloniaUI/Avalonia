@@ -12,6 +12,9 @@
 
 using System;
 using System.Collections.Generic;
+using Perspex;
+using Perspex.Controls;
+using Perspex.Controls.Html;
 using Perspex.Input;
 using Perspex.Media;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
@@ -22,7 +25,7 @@ using TheArtOfDev.HtmlRenderer.Core.Utils;
 using TheArtOfDev.HtmlRenderer.Perspex.Adapters;
 using TheArtOfDev.HtmlRenderer.Perspex.Utilities;
 
-namespace Perspex.Controls
+namespace TheArtOfDev.HtmlRenderer.Perspex
 {
     /// <summary>
     /// Low level handling of Html Renderer logic, this class is used by <see cref="HtmlParser"/>, 

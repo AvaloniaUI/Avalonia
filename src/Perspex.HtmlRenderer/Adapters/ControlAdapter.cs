@@ -11,6 +11,7 @@
 // "The Art of War"
 
 using Perspex.Controls;
+using Perspex.Controls.Html;
 using Perspex.Input;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
