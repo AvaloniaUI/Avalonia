@@ -10,6 +10,7 @@
 // - Sun Tsu,
 // "The Art of War"
 
+using System.Collections.Generic;
 using Perspex.Media;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
@@ -30,6 +31,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// the width of the pen
         /// </summary>
         private double _width;
+
+        private DashStyle _dashStyle;
 
         /// <summary>
         /// the dash style of the pen
@@ -52,41 +55,24 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         public override RDashStyle DashStyle
         {
-            set
-            {
-                //TODO: Implement DashStyles
-                /*
-                switch (value)
-                {
-                    case RDashStyle.Solid:
-                        _dashStyle = DashStyles.Solid;
-                        break;
-                    case RDashStyle.Dash:
-                        _dashStyle = DashStyles.Dash;
-                        break;
-                    case RDashStyle.Dot:
-                        _dashStyle = DashStyles.Dot;
-                        break;
-                    case RDashStyle.DashDot:
-                        _dashStyle = DashStyles.DashDot;
-                        break;
-                    case RDashStyle.DashDotDot:
-                        _dashStyle = DashStyles.DashDotDot;
-                        break;
-                    default:
-                        _dashStyle = DashStyles.Solid;
-                        break;
-                }*/
-            }
+            set { DashStyles.TryGetValue(value, out _dashStyle); }
         }
+
+        private static readonly Dictionary<RDashStyle, DashStyle> DashStyles = new Dictionary<RDashStyle, DashStyle>
+        {
+            {RDashStyle.Solid,null },
+            {RDashStyle.Dash, global::Perspex.Media.DashStyle.Dash },
+            {RDashStyle.DashDot, global::Perspex.Media.DashStyle.DashDot },
+            {RDashStyle.DashDotDot, global::Perspex.Media.DashStyle.DashDotDot },
+            {RDashStyle.Dot, global::Perspex.Media.DashStyle.Dot }
+        };
 
         /// <summary>
         /// Create the actual Perspex pen instance.
         /// </summary>
         public Pen CreatePen()
         {
-            var pen = new Pen(_brush, _width);
-            //pen.DashStyle = _dashStyle;
+            var pen = new Pen(_brush, _width, _dashStyle);
             return pen;
         }
     }
