@@ -131,7 +131,7 @@
     <Compile Include="HtmlLabel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyHelper.cs" />
-    <Compile Include="RoutedEventArgsWrapper.cs" />
+    <Compile Include="HtmlRendererRoutedEventArgs.cs" />
     <Compile Include="Utilities\Util.cs" />
   </ItemGroup>
   <ItemGroup>

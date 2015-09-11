@@ -7,7 +7,7 @@ using Perspex.Interactivity;
 
 namespace Perspex.HtmlRenderer
 {
-    public class RoutedEventArgsWrapper<T> : RoutedEventArgs
+    public class HtmlRendererRoutedEventArgs<T> : RoutedEventArgs
     {
         public T Event { get; set; }
     }

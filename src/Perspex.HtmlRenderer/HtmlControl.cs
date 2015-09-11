@@ -56,8 +56,6 @@ namespace Perspex.Controls
     
     public class HtmlControl : Control
     {
-        #region Fields and Consts
-
         /// <summary>
         /// Underline html container instance.
         /// </summary>
@@ -72,11 +70,6 @@ namespace Perspex.Controls
         /// The last position of the scrollbars to know if it has changed to update mouse
         /// </summary>
         protected Point _lastScrollOffset;
-
-        #endregion
-
-
-        #region Dependency properties / routed events
 
         public static readonly PerspexProperty AvoidImagesLateLoadingProperty = 
             PropertyHelper.Register<HtmlControl, bool>("AvoidImagesLateLoading", false, OnPerspexProperty_valueChanged);
@@ -106,19 +99,18 @@ namespace Perspex.Controls
         public static readonly RoutedEvent LoadCompleteEvent =
             RoutedEvent.Register<RoutedEventArgs>("LoadComplete",  RoutingStrategies.Bubble, typeof(HtmlControl));
         public static readonly RoutedEvent LinkClickedEvent =
-            RoutedEvent.Register<RoutedEventArgsWrapper<HtmlLinkClickedEventArgs>>("LinkClicked", RoutingStrategies.Bubble, typeof(HtmlControl));
+            RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlLinkClickedEventArgs>>("LinkClicked", RoutingStrategies.Bubble, typeof(HtmlControl));
         public static readonly RoutedEvent RenderErrorEvent 
-            = RoutedEvent.Register<RoutedEventArgsWrapper<HtmlRenderErrorEventArgs>>("RenderError", RoutingStrategies.Bubble, typeof(HtmlControl));
+            = RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlRenderErrorEventArgs>>("RenderError", RoutingStrategies.Bubble, typeof(HtmlControl));
         public static readonly RoutedEvent RefreshEvent 
-            = RoutedEvent.Register< RoutedEventArgsWrapper<HtmlRefreshEventArgs>>("Refresh", RoutingStrategies.Bubble, typeof(HtmlControl));
+            = RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlRefreshEventArgs>>("Refresh", RoutingStrategies.Bubble, typeof(HtmlControl));
         public static readonly RoutedEvent StylesheetLoadEvent 
-            = RoutedEvent.Register<RoutedEventArgsWrapper<HtmlStylesheetLoadEventArgs>>("StylesheetLoad", RoutingStrategies.Bubble, typeof(HtmlControl));
+            = RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlStylesheetLoadEventArgs>>("StylesheetLoad", RoutingStrategies.Bubble, typeof(HtmlControl));
 
         public static readonly RoutedEvent ImageLoadEvent
-            = RoutedEvent.Register<RoutedEventArgsWrapper<HtmlImageLoadEventArgs>>("ImageLoad", RoutingStrategies.Bubble,
+            = RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlImageLoadEventArgs>>("ImageLoad", RoutingStrategies.Bubble,
                 typeof (HtmlControl));
 
-        #endregion
 
 
         /// <summary>
@@ -126,20 +118,20 @@ namespace Perspex.Controls
         /// </summary>
         protected HtmlControl()
         {
-            _htmlContainer = new HtmlContainer();/*
-            _htmlContainer.LoadComplete += OnLoadComplete;
-            _htmlContainer.LinkClicked += OnLinkClicked;
-            _htmlContainer.RenderError += OnRenderError;
-            _htmlContainer.Refresh += OnRefresh;
-            _htmlContainer.StylesheetLoad += OnStylesheetLoad;
-            _htmlContainer.ImageLoad += OnImageLoad;*/
+            _htmlContainer = new HtmlContainer();
+            _htmlContainer.LoadComplete += (_, e) => OnLoadComplete(e);
+            _htmlContainer.LinkClicked += (_, e) => OnLinkClicked(e);
+            _htmlContainer.RenderError += (_, e) => OnRenderError(e);
+            _htmlContainer.Refresh += (_, e) => OnRefresh(e);
+            _htmlContainer.StylesheetLoad += (_, e) => OnStylesheetLoad(e);
+            _htmlContainer.ImageLoad += (_, e) => OnImageLoad(e);
         }
 
         /// <summary>
         /// Raised when the set html document has been fully loaded.<br/>
         /// Allows manipulation of the html dom, scroll position, etc.
         /// </summary>
-        public event EventHandler LoadComplete
+        public event EventHandler<HtmlRendererRoutedEventArgs<EventArgs>>  LoadComplete
         {
             add { AddHandler(LoadCompleteEvent, value); }
             remove { RemoveHandler(LoadCompleteEvent, value); }
@@ -149,7 +141,7 @@ namespace Perspex.Controls
         /// Raised when the user clicks on a link in the html.<br/>
         /// Allows canceling the execution of the link.
         /// </summary>
-        public event EventHandler<HtmlLinkClickedEventArgs> LinkClicked
+        public event EventHandler<HtmlRendererRoutedEventArgs<HtmlLinkClickedEventArgs>> LinkClicked
         {
             add { AddHandler(LinkClickedEvent, value); }
             remove { RemoveHandler(LinkClickedEvent, value); }
@@ -158,7 +150,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Raised when an error occurred during html rendering.<br/>
         /// </summary>
-        public event EventHandler<HtmlRenderErrorEventArgs> RenderError
+        public event EventHandler<HtmlRendererRoutedEventArgs<HtmlRenderErrorEventArgs>> RenderError
         {
             add { AddHandler(RenderErrorEvent, value); }
             remove { RemoveHandler(RenderErrorEvent, value); }
@@ -169,7 +161,7 @@ namespace Perspex.Controls
         /// This event allows to provide the stylesheet manually or provide new source (file or uri) to load from.<br/>
         /// If no alternative data is provided the original source will be used.<br/>
         /// </summary>
-        public event EventHandler<HtmlStylesheetLoadEventArgs> StylesheetLoad
+        public event EventHandler<HtmlRendererRoutedEventArgs<HtmlStylesheetLoadEventArgs>> StylesheetLoad
         {
             add { AddHandler(StylesheetLoadEvent, value); }
             remove { RemoveHandler(StylesheetLoadEvent, value); }
@@ -179,7 +171,7 @@ namespace Perspex.Controls
         /// Raised when an image is about to be loaded by file path or URI.<br/>
         /// This event allows to provide the image manually, if not handled the image will be loaded from file or download from URI.
         /// </summary>
-        public event EventHandler<HtmlImageLoadEventArgs> ImageLoad
+        public event EventHandler<HtmlRendererRoutedEventArgs<HtmlImageLoadEventArgs>> ImageLoad
         {
             add { AddHandler(ImageLoadEvent, value); }
             remove { RemoveHandler(ImageLoadEvent, value); }
@@ -322,8 +314,7 @@ namespace Perspex.Controls
                 _htmlContainer.ClearSelection();
         }
 
-
-        #region Private methods
+        
 
         //HACK: We don't have support for RenderSize for now
         private Size RenderSize => new Size(Bounds.Width, Bounds.Height);
@@ -443,50 +434,42 @@ namespace Perspex.Controls
                 _htmlContainer.HandleKeyDown(this, e);
         }
 
+        void RaiseRouted<T>(RoutedEvent ev, T arg)
+        {
+            var e =new HtmlRendererRoutedEventArgs<T>
+            {
+                Event = arg,
+                Source = this,
+                RoutedEvent = ev,
+                Route = ev.RoutingStrategies
+            };
+            RaiseEvent(e);
+        }
+
         /// <summary>
         /// Propagate the LoadComplete event from root container.
         /// </summary>
-        protected virtual void OnLoadComplete(EventArgs e)
-        {
-            //RoutedEventArgs newEventArgs = new RoutedEventArgs<EventArgs>(LoadCompleteEvent, this, e);
-            //RaiseEvent(newEventArgs);
-        }
+        protected virtual void OnLoadComplete(EventArgs e) => RaiseRouted(LoadCompleteEvent, e);
 
         /// <summary>
         /// Propagate the LinkClicked event from root container.
         /// </summary>
-        protected virtual void OnLinkClicked(HtmlLinkClickedEventArgs e)
-        {
-            //RoutedEventArgs newEventArgs = new RoutedEvenArgs<HtmlLinkClickedEventArgs>(LinkClickedEvent, this, e);
-            //RaiseEvent(newEventArgs);
-        }
+        protected virtual void OnLinkClicked(HtmlLinkClickedEventArgs e) => RaiseRouted(LinkClickedEvent, e);
 
         /// <summary>
         /// Propagate the Render Error event from root container.
         /// </summary>
-        protected virtual void OnRenderError(HtmlRenderErrorEventArgs e)
-        {
-            //RoutedEventArgs newEventArgs = new RoutedEvenArgs<HtmlRenderErrorEventArgs>(RenderErrorEvent, this, e);
-            //RaiseEvent(newEventArgs);
-        }
+        protected virtual void OnRenderError(HtmlRenderErrorEventArgs e) => RaiseRouted(RenderErrorEvent, e);
 
         /// <summary>
         /// Propagate the stylesheet load event from root container.
         /// </summary>
-        protected virtual void OnStylesheetLoad(HtmlStylesheetLoadEventArgs e)
-        {
-            //RoutedEventArgs newEventArgs = new RoutedEvenArgs<HtmlStylesheetLoadEventArgs>(StylesheetLoadEvent, this, e);
-            //RaiseEvent(newEventArgs);
-        }
+        protected virtual void OnStylesheetLoad(HtmlStylesheetLoadEventArgs e) => RaiseRouted(StylesheetLoadEvent, e);
 
         /// <summary>
         /// Propagate the image load event from root container.
         /// </summary>
-        protected virtual void OnImageLoad(HtmlImageLoadEventArgs e)
-        {
-            //RoutedEventArgs newEventArgs = new RoutedEvenArgs<HtmlImageLoadEventArgs>(ImageLoadEvent, this, e);
-            //RaiseEvent(newEventArgs);
-        }
+        protected virtual void OnImageLoad(HtmlImageLoadEventArgs e) => RaiseRouted(ImageLoadEvent, e);
 
         /// <summary>
         /// Handle html renderer invalidate and re-layout as requested.
@@ -526,7 +509,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Handle when dependency property value changes to update the underline HtmlContainer with the new value.
         /// </summary>
-        private static void OnPerspexProperty_valueChanged(PerspexObject PerspexObject, PerspexPropertyChangedEventArgs e)
+        private static void OnPerspexProperty_valueChanged(PerspexObject PerspexObject,
+            PerspexPropertyChangedEventArgs e)
         {
             var control = PerspexObject as HtmlControl;
             if (control != null)
@@ -534,26 +518,26 @@ namespace Perspex.Controls
                 var htmlContainer = control._htmlContainer;
                 if (e.Property == AvoidImagesLateLoadingProperty)
                 {
-                    htmlContainer.AvoidImagesLateLoading = (bool)e.NewValue;
+                    htmlContainer.AvoidImagesLateLoading = (bool) e.NewValue;
                 }
                 else if (e.Property == IsSelectionEnabledProperty)
                 {
-                    htmlContainer.IsSelectionEnabled = (bool)e.NewValue;
+                    htmlContainer.IsSelectionEnabled = (bool) e.NewValue;
                 }
                 else if (e.Property == IsContextMenuEnabledProperty)
                 {
-                    htmlContainer.IsContextMenuEnabled = (bool)e.NewValue;
+                    htmlContainer.IsContextMenuEnabled = (bool) e.NewValue;
                 }
                 else if (e.Property == BaseStylesheetProperty)
                 {
-                    var baseCssData = CssData.Parse(PerspexAdapter.Instance, (string)e.NewValue);
+                    var baseCssData = CssData.Parse(PerspexAdapter.Instance, (string) e.NewValue);
                     control._baseCssData = baseCssData;
                     htmlContainer.SetHtml(control.Text, baseCssData);
                 }
                 else if (e.Property == TextProperty)
                 {
                     htmlContainer.ScrollOffset = new Point(0, 0);
-                    htmlContainer.SetHtml((string)e.NewValue, control._baseCssData);
+                    htmlContainer.SetHtml((string) e.NewValue, control._baseCssData);
                     control.InvalidateMeasure();
                     control.InvalidateVisual();
                     control.InvokeMouseMove();
@@ -562,10 +546,8 @@ namespace Perspex.Controls
         }
 
 
-        #region Private event handlers
-
-
-        /* TODO: Implement events
+        //TODO: Implement CheckAccess calls
+        /*
         private void OnLoadComplete(object sender, EventArgs e)
         {
 
@@ -616,10 +598,5 @@ namespace Perspex.Controls
                 Dispatcher.Invoke(new Action<HtmlRefreshEventArgs>(OnRefresh), e);
         }
         */
-
-        #endregion
-
-
-        #endregion
     }
 }
