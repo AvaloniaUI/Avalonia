@@ -41,6 +41,8 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Documents\Inline.cs" />
+    <Compile Include="Documents\Run.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
     <Compile Include="IContentControl.cs" />

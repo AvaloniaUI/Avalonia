@@ -108,7 +108,7 @@ namespace Perspex.Cairo.Media
             return new Size(width, height);
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        public void SetForegroundBrush(Brush brush, FontWeight weight, double fontSize, int startIndex, int count)
         {
             // TODO: Implement.
         }

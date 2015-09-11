@@ -147,7 +147,7 @@ namespace Perspex.Controls.Presenters
 
             if (length > 0)
             {
-                result.SetForegroundBrush(Brushes.White, start, length);
+                result.SetForegroundBrush(Brushes.White, this.FontWeight, this.FontSize, start, length);
             }
 
             return result;
@@ -155,7 +155,7 @@ namespace Perspex.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var text = Text;
+            var text = "S";//Text;
 
             if (!string.IsNullOrWhiteSpace(text))
             {

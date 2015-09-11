@@ -46,6 +46,7 @@ namespace Perspex.Direct2D1
                 Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
+     //       _renderTarget.DotsPerInch = new Size2F(192, 192);
         }
 
         /// <summary>

@@ -121,10 +121,12 @@ namespace Perspex.Direct2D1.Media
             return new Size(width, TextLayout.Metrics.Height);
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        public void SetForegroundBrush(Brush brush, FontWeight weight, double size, int startIndex, int count)
         {
+            TextLayout.SetFontSize((float)size, new DWrite.TextRange(startIndex, count));
+            TextLayout.SetFontWeight((DWrite.FontWeight)weight, new DWrite.TextRange(startIndex, count));
             TextLayout.SetDrawingEffect(
-                new BrushWrapper(brush),
+                new BrushWrapper(brush, weight, size),
                 new DWrite.TextRange(startIndex, count));
         }
     }

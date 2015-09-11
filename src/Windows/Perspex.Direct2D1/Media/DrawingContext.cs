@@ -35,6 +35,7 @@ namespace Perspex.Direct2D1.Media
             SharpDX.DirectWrite.Factory directWriteFactory)
         {
             _renderTarget = renderTarget;
+        
             _directWriteFactory = directWriteFactory;
             _renderTarget.BeginDraw();
         }
@@ -173,7 +174,7 @@ namespace Perspex.Direct2D1.Media
                 using (var brush = CreateBrush(foreground, impl.Measure()))
                 using (var renderer = new PerspexTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
-                    impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                    impl.TextLayout.Draw(renderer, (float)origin.X * (192 / 96), (float)origin.Y * (192 / 96));
                 }
             }
         }
@@ -198,10 +199,10 @@ namespace Perspex.Direct2D1.Media
                         new RoundedRectangle
                         {
                             Rect = new RectangleF(
-                                    (float)rect.X,
-                                    (float)rect.Y,
-                                    (float)rect.Width,
-                                    (float)rect.Height),
+                                    (float)rect.X * (192 / 96),
+                                    (float)rect.Y * (192 / 96),
+                                    (float)rect.Width * (192 / 96),
+                                    (float)rect.Height * (192 / 96)),
                             RadiusX = cornerRadius,
                             RadiusY = cornerRadius
                         },
