@@ -40,6 +40,29 @@ namespace Perspex.Direct2D1
             else
                 return ExtendMode.Wrap;
         }
+
+        public static SharpDX.Direct2D1.LineJoin ToDirect2D(this Perspex.Media.PenLineJoin lineJoin)
+        {
+            if (lineJoin == Perspex.Media.PenLineJoin.Round)
+                return LineJoin.Round;
+            else if (lineJoin == Perspex.Media.PenLineJoin.Miter)
+                return LineJoin.Miter;
+            else
+                return LineJoin.Bevel;
+        }
+        
+        public static SharpDX.Direct2D1.CapStyle ToDirect2D(this Perspex.Media.PenLineCap lineCap)
+        {
+            if (lineCap == Perspex.Media.PenLineCap.Flat)
+                return CapStyle.Flat;
+            else if (lineCap == Perspex.Media.PenLineCap.Round)
+                return CapStyle.Round;
+            else if (lineCap == Perspex.Media.PenLineCap.Square)
+                return CapStyle.Square;
+            else
+                return CapStyle.Triangle;
+        }
+
         /// <summary>
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
@@ -48,19 +71,26 @@ namespace Perspex.Direct2D1
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, RenderTarget target)
         {
-            if (pen.DashArray != null && pen.DashArray.Count > 0)
+            if (pen.DashStyle != null)
             {
-                var properties = new StrokeStyleProperties
+                if (pen.DashStyle.Dashes != null && pen.DashStyle.Dashes.Count > 0)
                 {
-                    DashStyle = DashStyle.Custom,
-                };
+                    var properties = new StrokeStyleProperties
+                    {
+                        DashStyle = DashStyle.Custom,
+                        DashOffset = (float)pen.DashStyle.Offset,
+                        MiterLimit = (float)pen.MiterLimit,
+                        LineJoin = pen.LineJoin.ToDirect2D(),
+                        StartCap = pen.StartLineCap.ToDirect2D(),
+                        EndCap = pen.EndLineCap.ToDirect2D(),
+                        DashCap = pen.DashCap.ToDirect2D()
+                    };
 
-                return new StrokeStyle(target.Factory, properties, pen.DashArray.Select(x => (float)x).ToArray());
+                    return new StrokeStyle(target.Factory, properties, pen.DashStyle?.Dashes.Select(x => (float)x).ToArray());
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>

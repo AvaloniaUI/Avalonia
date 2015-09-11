@@ -15,12 +15,20 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="brush">The brush used to draw.</param>
         /// <param name="thickness">The stroke thickness.</param>
-        /// <param name="dashArray">The length of alternating dashes and gaps.</param>
-        public Pen(Brush brush, double thickness, IReadOnlyList<double> dashArray = null)
+        public Pen(
+            Brush brush, 
+            double thickness = 1.0,
+            DashStyle dashStyle = null, PenLineCap dashCap = PenLineCap.Flat, PenLineCap startLineCap = PenLineCap.Flat, 
+            PenLineCap endLineCap = PenLineCap.Flat, PenLineJoin lineJoin = PenLineJoin.Miter, double miterLimit = 10.0)
         {
             Brush = brush;
             Thickness = thickness;
-            DashArray = dashArray;
+            StartLineCap = startLineCap;
+            EndLineCap = endLineCap;
+            LineJoin = lineJoin;
+            MiterLimit = miterLimit;
+            DashStyle = dashStyle;
+            DashCap = dashCap;
         }
 
         /// <summary>
@@ -28,12 +36,20 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="color">The stroke color.</param>
         /// <param name="thickness">The stroke thickness.</param>
-        /// <param name="dashArray">The length of alternating dashes and gaps.</param>
-        public Pen(uint color, double thickness, IReadOnlyList<double> dashArray = null)
+        public Pen(
+            uint color, 
+            double thickness = 1.0,
+            DashStyle dashStyle = null, PenLineCap dashCap = PenLineCap.Flat, PenLineCap startLineCap = PenLineCap.Flat,
+            PenLineCap endLineCap = PenLineCap.Flat, PenLineJoin lineJoin = PenLineJoin.Miter, double miterLimit = 10.0)
         {
             Brush = new SolidColorBrush(color);
             Thickness = thickness;
-            DashArray = dashArray;
+            StartLineCap = startLineCap;
+            EndLineCap = endLineCap;
+            LineJoin = lineJoin;
+            MiterLimit = miterLimit;
+            DashStyle = dashStyle;
+            DashCap = dashCap;
         }
 
         /// <summary>
@@ -42,13 +58,20 @@ namespace Perspex.Media
         public Brush Brush { get; }
 
         /// <summary>
-        /// Gets the length of alternating dashes and gaps.
-        /// </summary>
-        public IReadOnlyList<double> DashArray { get; }
-
-        /// <summary>
         /// Gets the stroke thickness.
         /// </summary>
-        public double Thickness { get; }
+        public double Thickness { get; } = 1.0;
+
+        public DashStyle DashStyle { get; }
+
+        public PenLineCap DashCap { get; }
+
+        public PenLineCap StartLineCap { get; } = PenLineCap.Flat;
+
+        public PenLineCap EndLineCap { get; } = PenLineCap.Flat;
+
+        public PenLineJoin LineJoin { get; } = PenLineJoin.Miter;
+
+        public double MiterLimit { get; } = 10.0;
     }
 }
