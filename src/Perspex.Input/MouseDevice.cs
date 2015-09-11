@@ -135,35 +135,32 @@ namespace Perspex.Input
 
         private void MouseMove(IMouseDevice device, IInputRoot root, Point p)
         {
-            IInteractive source;
+            IInputElement source;
 
             if (Captured == null)
             {
-                SetPointerOver(this, root, root, p);
-                source = root as IInteractive;
+                source = SetPointerOver(this, root, p);
             }
             else
             {
-                Point offset = new Point();
+                var offset = new Point();
+                var ancestors = Captured.GetVisualAncestors().OfType<IInputElement>().ToList();
 
-                foreach (IVisual ancestor in Captured.GetVisualAncestors())
+                foreach (IVisual ancestor in ancestors)
                 {
                     offset += ancestor.Bounds.Position;
                 }
 
-                SetPointerOver(this, root, Captured, p - offset);
-                source = Captured as IInteractive;
+                SetPointerOver(this, root, ancestors);
+                source = Captured;
             }
 
-            if (source != null)
+            source.RaiseEvent(new PointerEventArgs
             {
-                source.RaiseEvent(new PointerEventArgs
-                {
-                    Device = this,
-                    RoutedEvent = InputElement.PointerMovedEvent,
-                    Source = source,
-                });
-            }
+                Device = this,
+                RoutedEvent = InputElement.PointerMovedEvent,
+                Source = source,
+            });
         }
 
         private void MouseUp(IMouseDevice device, IInputRoot root, Point p)
@@ -237,11 +234,15 @@ namespace Perspex.Input
             root.PointerOverElement = null;
         }
 
-        private void SetPointerOver(IPointerDevice device, IInputRoot root, IInputElement element, Point p)
+        private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p)
         {
-            IEnumerable<IInputElement> hits = element.GetInputElementsAt(p);
+            var elements = root.GetInputElementsAt(p).ToList();
+            return SetPointerOver(device, root, elements);
+        }
 
-            foreach (var control in _pointerOvers.Except(hits).ToList())
+        private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, IList<IInputElement> elements)
+        {
+            foreach (var control in _pointerOvers.Except(elements).ToList())
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
@@ -254,7 +255,7 @@ namespace Perspex.Input
                 control.RaiseEvent(e);
             }
 
-            foreach (var control in hits.Except(_pointerOvers))
+            foreach (var control in elements.Except(_pointerOvers))
             {
                 PointerEventArgs e = new PointerEventArgs
                 {
@@ -267,7 +268,8 @@ namespace Perspex.Input
                 control.RaiseEvent(e);
             }
 
-            root.PointerOverElement = hits.FirstOrDefault();
+            root.PointerOverElement = elements.FirstOrDefault();
+            return root.PointerOverElement;
         }
     }
 }
