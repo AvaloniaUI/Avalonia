@@ -143,15 +143,8 @@ namespace Perspex.Input
             }
             else
             {
-                var offset = new Point();
-                var ancestors = Captured.GetVisualAncestors().OfType<IInputElement>().ToList();
-
-                foreach (IVisual ancestor in ancestors)
-                {
-                    offset += ancestor.Bounds.Position;
-                }
-
-                SetPointerOver(this, root, ancestors);
+                var elements = Captured.GetSelfAndVisualAncestors().OfType<IInputElement>().ToList();
+                SetPointerOver(this, root, elements);
                 source = Captured;
             }
 
