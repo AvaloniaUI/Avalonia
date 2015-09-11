@@ -14,6 +14,24 @@
             PerspexProperty.Register<Run, string>(nameof(Text));
 
         /// <summary>
+        /// Defines the <see cref="Foreground"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Brush> ForegroundProperty =
+            PerspexProperty.Register<Run, Brush>(nameof(Foreground), Brushes.Black, true);
+
+        /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<FontWeight> FontWeightProperty =
+            PerspexProperty.Register<Run, FontWeight>(nameof(FontWeight), FontWeight.Normal, true);
+
+        /// <summary>
+        /// Defines the <see cref="FontSize"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<double> FontSizeProperty =
+            PerspexProperty.Register<Run, double>(nameof(FontSize), 13.0, true);
+
+        /// <summary>
         /// Gets or sets the text of the run.
         /// </summary>
         public string Text
@@ -23,25 +41,13 @@
         }
 
         /// <summary>
-        /// Defines the <see cref="Foreground"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<SolidColorBrush> ForegroundProperty =
-            PerspexProperty.Register<Run, SolidColorBrush>(nameof(Foreground), Brushes.Black, true);
-
-        /// <summary>
         /// Gets or sets the foreground of the run.
         /// </summary>
-        public SolidColorBrush Foreground
+        public Brush Foreground
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
         }
-
-        /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<FontWeight> FontWeightProperty =
-            PerspexProperty.Register<Run, FontWeight>(nameof(FontWeight), FontWeight.Normal, true);
 
         /// <summary>
         /// Gets or sets the font weight of the run.
@@ -53,13 +59,7 @@
         }
 
         /// <summary>
-        /// Defines the <see cref="FontSize"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<double> FontSizeProperty =
-            PerspexProperty.Register<Run, double>(nameof(FontSize), 13.0, true);
-
-        /// <summary>
-        /// Gets or sets the font weight of the run.
+        /// Gets or sets the font size of the run.
         /// </summary>
         public double FontSize
         {

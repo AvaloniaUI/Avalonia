@@ -68,8 +68,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IList<Inline>> InlinesProperty =
-            PerspexProperty.Register<TextBlock, IList<Inline>>(nameof(Inlines), new List<Inline>());
+        public static readonly PerspexProperty<Inlines> InlinesProperty =
+            PerspexProperty.Register<TextBlock, Inlines>(nameof(Inlines), new Inlines());
 
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Perspex.Controls
             set { SetValue(TextProperty, value); }
         }
 
-        public IList<Inline> Inlines
+        public Inlines Inlines
         {
             get { return GetValue(InlinesProperty); }
             set { SetValue(InlinesProperty, value); }
