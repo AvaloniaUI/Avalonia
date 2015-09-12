@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.IO;
 using Perspex.Platform;
 using Splat;
 
@@ -19,6 +20,16 @@ namespace Perspex.Media.Imaging
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
             PlatformImpl = factory.LoadBitmap(fileName);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bitmap"/> class.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>
+        public Bitmap(Stream stream)
+        {
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = factory.LoadBitmap(stream);
         }
 
         /// <summary>
