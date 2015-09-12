@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.IO;
 using Perspex.Media;
 
 namespace Perspex.Platform
@@ -65,5 +66,12 @@ namespace Perspex.Platform
         /// <param name="fileName">The filename of the bitmap.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(string fileName);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a file..
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmap(Stream stream);
     }
 }

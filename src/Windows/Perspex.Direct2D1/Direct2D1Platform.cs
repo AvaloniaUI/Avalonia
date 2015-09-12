@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.IO;
 using Perspex.Direct2D1.Media;
 using Perspex.Media;
 using Perspex.Platform;
@@ -71,6 +72,11 @@ namespace Perspex.Direct2D1
         public IBitmapImpl LoadBitmap(string fileName)
         {
             return new BitmapImpl(s_imagingFactory, fileName);
+        }
+
+        public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            return new BitmapImpl(s_imagingFactory, stream);
         }
     }
 }

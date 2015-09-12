@@ -10,6 +10,7 @@ using Splat;
 
 namespace Perspex.Cairo
 {
+    using System.IO;
     using global::Cairo;
 
     public class CairoPlatform : IPlatformRenderInterface
@@ -58,6 +59,11 @@ namespace Perspex.Cairo
         {
             ImageSurface result = new ImageSurface(fileName);
             return new BitmapImpl(result);
+        }
+
+        public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
         }
 
         private Pango.Context GetPangoContext(IPlatformHandle handle)

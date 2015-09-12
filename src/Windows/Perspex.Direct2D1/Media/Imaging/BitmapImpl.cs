@@ -36,6 +36,21 @@ namespace Perspex.Direct2D1.Media
         /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
         /// </summary>
         /// <param name="factory">The WIC imaging factory to use.</param>
+        /// <param name="stream">The stream to read the bitmap from.</param>
+        public BitmapImpl(ImagingFactory factory, Stream stream)
+        {
+            _factory = factory;
+
+            using (BitmapDecoder decoder = new BitmapDecoder(factory, stream, DecodeOptions.CacheOnLoad))
+            {
+                WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
+        /// </summary>
+        /// <param name="factory">The WIC imaging factory to use.</param>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>
         public BitmapImpl(ImagingFactory factory, int width, int height)
