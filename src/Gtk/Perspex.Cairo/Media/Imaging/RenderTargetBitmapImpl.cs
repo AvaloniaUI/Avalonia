@@ -39,7 +39,7 @@ namespace Perspex.Cairo.Media.Imaging
 
         public void Save(string fileName)
         {
-            throw new NotImplementedException();
+            Surface.WriteToPng(fileName);
         }
     }
 }
