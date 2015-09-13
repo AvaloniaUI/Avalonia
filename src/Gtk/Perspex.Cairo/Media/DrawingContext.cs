@@ -63,7 +63,7 @@ namespace Perspex.Cairo.Media
 
             _context.Save();
             _context.Scale(scaleX, scaleY);
-            _context.SetSourceSurface(impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
+            Gdk.CairoHelper.SetSourcePixbuf(_context, impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
             _context.Rectangle(sourceRect.ToCairo());
             _context.Fill();
             _context.Restore();

@@ -25,7 +25,7 @@ namespace Perspex.Cairo
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return new BitmapImpl(new ImageSurface(Format.Argb32, width, height));
+            return new BitmapImpl(new Gdk.Pixbuf(Gdk.Colorspace.Rgb, true, 32, width, height));
         }
 
         public IFormattedTextImpl CreateFormattedText(
@@ -57,13 +57,16 @@ namespace Perspex.Cairo
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            ImageSurface result = new ImageSurface(fileName);
-            return new BitmapImpl(result);
+            var pixbuf = new Gdk.Pixbuf(fileName);
+
+            return new BitmapImpl(pixbuf);
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            throw new NotImplementedException();
+            var pixbuf = new Gdk.Pixbuf(stream);
+
+            return new BitmapImpl(pixbuf);
         }
 
         private Pango.Context GetPangoContext(IPlatformHandle handle)

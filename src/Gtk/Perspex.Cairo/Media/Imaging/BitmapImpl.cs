@@ -10,22 +10,24 @@ namespace Perspex.Cairo.Media.Imaging
 
     public class BitmapImpl : IBitmapImpl
     {
-        public BitmapImpl(Cairo.ImageSurface surface)
+        public BitmapImpl(Gdk.Pixbuf pixbuf)
         {
-            Surface = surface;
+            Surface = pixbuf;
         }
 
         public int PixelWidth => Surface.Width;
 
         public int PixelHeight => Surface.Height;
 
-        public Cairo.ImageSurface Surface
+        public Gdk.Pixbuf Surface
         {
-            get; }
+            get;
+        }
 
         public void Save(string fileName)
         {
-            Surface.WriteToPng(fileName);
+            // TODO: Test
+            Surface.Save(fileName, "png");
         }
     }
 }
