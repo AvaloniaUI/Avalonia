@@ -97,6 +97,16 @@ namespace Perspex.Win32
             set { UnmanagedMethods.EnableWindow(_hwnd, value); }
         }
 
+        public Size MaxWindowSize
+        {
+            get
+            {
+                return new Size(
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXMAXTRACK),
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYMAXTRACK));
+            }
+        }
+
         public void Activate()
         {
             UnmanagedMethods.SetActiveWindow(_hwnd);

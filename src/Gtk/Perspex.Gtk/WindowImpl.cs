@@ -57,6 +57,15 @@ namespace Perspex.Gtk
             set;
         }
 
+        public Size MaxWindowSize
+        {
+            get
+            {
+                // TODO: This should take into account things such as taskbar etc.
+                return new Size(Screen.Width, Screen.Height);
+            }
+        }
+
         IPlatformHandle ITopLevelImpl.Handle => _windowHandle;
 
         public Action Activated { get; set; }

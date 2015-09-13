@@ -11,6 +11,11 @@ namespace Perspex.Platform
     public interface IWindowImpl : ITopLevelImpl
     {
         /// <summary>
+        /// Gets the maximum size of a window on the system.
+        /// </summary>
+        Size MaxWindowSize { get; }
+
+        /// <summary>
         /// Sets the title of the window.
         /// </summary>
         /// <param name="title">The title.</param>
