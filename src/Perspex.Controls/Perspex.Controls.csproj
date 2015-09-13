@@ -43,6 +43,7 @@
     </Compile>
     <Compile Include="Documents\Inline.cs" />
     <Compile Include="Documents\Inlines.cs" />
+    <Compile Include="Documents\LineBreak.cs" />
     <Compile Include="Documents\Run.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />

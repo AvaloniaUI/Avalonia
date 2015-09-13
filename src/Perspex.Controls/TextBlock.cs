@@ -249,9 +249,16 @@ namespace Perspex.Controls
             var output = new StringBuilder();
 
             // TODO: Support more types of inlines. 
-            foreach (var run in this.Inlines.Cast<Run>())
-                output.Append(run.Text);
+            foreach (var inline in this.Inlines)
+            {
+                var run = inline as Run;
+                var lineBreak = inline as LineBreak;
 
+                if (run != null)
+                    output.Append(run.Text);
+                else if (lineBreak != null)
+                    output.Append(UTF8Encoding.UTF8.GetString(new byte[] { 0xe2, 0x80, 0xa8 }, 0, 3));
+            }
             return output.ToString();
         }
 
@@ -275,11 +282,16 @@ namespace Perspex.Controls
             result.Constraint = constraint;
 
             var start = 0;
-            foreach (var run in this.Inlines.Cast<Run>())
+            foreach (var inline in this.Inlines)
             {
-                run.InheritanceParent = this;
-                result.SetFormatting(run.Foreground, run.FontWeight, run.FontSize, start, start + run.Text.Length);
-                start = start + run.Text.Length;
+                var run = inline as Run;
+
+                if (run != null)
+                {
+                    run.InheritanceParent = this;
+                    result.SetFormatting(run.Foreground, run.FontWeight, run.FontSize, start, start + run.Text.Length);
+                    start = start + run.Text.Length;
+                }
             }
 
             return result;
