@@ -104,8 +104,17 @@ namespace Perspex.Designer.Comm
 
         sealed class BinderFix : SerializationBinder
         {
+            private const string ListNamePrefix = "System.Collections.Generic.List`1[[";
             public override Type BindToType(string assemblyName, string typeName)
             {
+                if (typeName.StartsWith(ListNamePrefix))
+                {
+                    typeName = typeName.Substring(ListNamePrefix.Length);
+                    typeName = typeName.Substring(0, typeName.IndexOf(","));
+                    return typeof (List<>).MakeGenericType(BindToType(assemblyName, typeName));
+                }
+
+
                 return typeof (CommChannel).Assembly.GetType(typeName, false, true);
 
             }
