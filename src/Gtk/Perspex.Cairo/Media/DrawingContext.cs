@@ -125,13 +125,12 @@ namespace Perspex.Cairo.Media
                     else
                         _context.Fill();
                 }
+            }
 
-
-                if (pen != null)
-                {
-                    SetPen(pen, geometry.Bounds.Size);
-                    _context.Stroke();
-                }
+            if (pen != null)
+            {
+                SetPen(pen, geometry.Bounds.Size);
+                _context.Stroke();
             }
         }
 

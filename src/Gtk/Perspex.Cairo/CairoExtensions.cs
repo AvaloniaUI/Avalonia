@@ -22,6 +22,11 @@ namespace Perspex.Cairo
             return new Cairo.Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
+        public static Rect ToPerspex(this Cairo.Rectangle rect)
+        {
+            return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
         public static Rect ToPerspex(this Pango.Rectangle rect)
         {
             return new Rect(

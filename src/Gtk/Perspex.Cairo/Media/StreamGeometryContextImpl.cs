@@ -47,8 +47,7 @@ namespace Perspex.Cairo.Media
             if (isClosed)
                 _context.ClosePath();
 
-            var extents = _context.StrokeExtents();
-            _impl.Bounds = new Rect(extents.X, extents.Y, extents.Width, extents.Height);
+            _impl.Bounds = _context.FillExtents().ToPerspex();
             _impl.Path = _context.CopyPath();
         }
 
