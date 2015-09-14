@@ -15,6 +15,7 @@ namespace Perspex.Cairo.Media
         private Size _size;
 
         public FormattedTextImpl(
+            Pango.Context context,
             string text,
             string fontFamily,
             double fontSize,
@@ -22,7 +23,8 @@ namespace Perspex.Cairo.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            var context = Locator.Current.GetService<Pango.Context>();
+            Contract.Requires<NullReferenceException>(context != null);
+
             Layout = new Pango.Layout(context);
             Layout.SetText(text);
             Layout.FontDescription = new Pango.FontDescription

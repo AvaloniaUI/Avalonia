@@ -17,6 +17,8 @@ namespace Perspex.Cairo
     {
         private static readonly CairoPlatform s_instance = new CairoPlatform();
 
+        private static Pango.Context s_pangoContext = CreatePangoContext();
+
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
@@ -36,12 +38,11 @@ namespace Perspex.Cairo
             TextAlignment textAlignment,
             Perspex.Media.FontWeight fontWeight)
         {
-            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            Locator.CurrentMutable.RegisterConstant(GetPangoContext(handle), typeof(Pango.Context));
             return new Renderer(handle, width, height);
         }
 
@@ -69,18 +70,10 @@ namespace Perspex.Cairo
             return new BitmapImpl(pixbuf);
         }
 
-        private Pango.Context GetPangoContext(IPlatformHandle handle)
+        private static Pango.Context CreatePangoContext()
         {
-            switch (handle.HandleDescriptor)
-            {
-                case "GtkWindow":
-                    var window = GLib.Object.GetObject(handle.Handle) as Gtk.Window;
-                    return window.PangoContext;
-                default:
-                    throw new NotSupportedException(string.Format(
-                        "Don't know how to get a Pango Context from a '{0}'.",
-                        handle.HandleDescriptor));
-            }
+            Gtk.Application.Init();
+            return new Gtk.Invisible().CreatePangoContext();
         }
     }
 }
