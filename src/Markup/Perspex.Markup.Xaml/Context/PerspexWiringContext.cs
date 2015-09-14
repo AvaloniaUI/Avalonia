@@ -89,6 +89,7 @@ namespace Perspex.Markup.Xaml.Context
             {
                 new TypeConverterRegistration(typeof(Bitmap), new BitmapConverter()),
                 new TypeConverterRegistration(typeof(Brush), new BrushConverter()),
+                new TypeConverterRegistration(typeof(Classes), new ClassesConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyConverter()),
