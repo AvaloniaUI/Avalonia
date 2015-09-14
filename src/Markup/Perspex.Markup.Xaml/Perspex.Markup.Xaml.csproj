@@ -40,6 +40,7 @@
     </Compile>
     <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
+    <Compile Include="Converters\SelectorConverter.cs" />
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="DataBinding\ChangeTracking\PropertyPath.cs" />
     <Compile Include="DataBinding\ChangeTracking\TargettedProperty.cs" />
     <Compile Include="Context\PerspexParserFactory.cs" />
+    <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataBinding\DataContextChangeSynchronizer.cs" />
     <Compile Include="DataBinding\IPerspexPropertyBinder.cs" />
