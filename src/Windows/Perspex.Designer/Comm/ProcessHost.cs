@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Perspex.Designer.Metadata;
 
 namespace Perspex.Designer.Comm
 {
@@ -27,6 +28,8 @@ namespace Perspex.Designer.Comm
                 OnPropertyChanged();
             }
         }
+
+        public event Action<PerspexDesignerMetadata> MetadataArrived;
 
         private bool _isAlive;
         private readonly SynchronizationContext _dispatcher;
@@ -140,6 +143,9 @@ namespace Perspex.Designer.Comm
             var windowMessage = obj as WindowCreatedMessage;
             if (windowMessage != null)
                 WindowHandle = windowMessage.Handle;
+            var metadata = obj as UpdateMetadataMessage;
+            if (metadata != null)
+                _dispatcher.Post(_ => MetadataArrived?.Invoke(metadata.Metadata), null);
         }
 
         public void Kill()

@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Perspex.Designer.AppHost;
 using Perspex.Designer.Comm;
+using Perspex.Designer.Metadata;
 
 namespace Perspex.Designer
 {
@@ -53,6 +54,8 @@ namespace Perspex.Designer
             set { SetValue(XamlProperty, value); }
         }
 
+        public PerspexDesignerMetadata Metadata { get; private set; }
+        
         private readonly ProcessHost _host = new ProcessHost();
         
 
@@ -63,6 +66,7 @@ namespace Perspex.Designer
                 new Binding(nameof(ProcessHost.State)) {Source = _host, Mode = BindingMode.OneWay});
 
             _host.PropertyChanged += _host_PropertyChanged;
+            _host.MetadataArrived += data => Metadata = data;
         }
 
         private void _host_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -74,12 +74,14 @@
     <Compile Include="Comm\InitMessage.cs" />
     <Compile Include="Comm\ProcessHost.cs" />
     <Compile Include="Comm\StateMessage.cs" />
+    <Compile Include="Comm\UpdateMetadata.cs" />
     <Compile Include="Comm\UpdateXamlMessage.cs" />
     <Compile Include="Comm\WindowCreatedMessage.cs" />
     <Compile Include="DemoWindow.xaml.cs">
       <DependentUpon>DemoWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DesignerAppHost.cs" />
+    <Compile Include="Metadata\PerspexDesignerMetadata.cs" />
     <Compile Include="PerspexDesigner.xaml.cs">
       <DependentUpon>PerspexDesigner.xaml</DependentUpon>
     </Compile>

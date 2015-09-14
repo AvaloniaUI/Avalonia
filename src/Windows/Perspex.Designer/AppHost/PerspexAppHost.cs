@@ -4,10 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Forms;
 using Perspex.Designer.Comm;
+using Perspex.Designer.Metadata;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Perspex.Designer.AppHost
 {
@@ -81,6 +84,84 @@ namespace Perspex.Designer.AppHost
                 UpdateState("Unable to load Perspex:\n\n" + e + "\n\n" + log);
             }
         }
+
+        PerspexDesignerMetadata BuildMetadata(List<Assembly> asms)
+        {
+            var rv = new PerspexDesignerMetadata()
+            {
+                NamespaceAliases = new List<MetadataNamespaceAlias>
+                {
+                    new MetadataNamespaceAlias
+                    {
+                        Namespace = "Perspex.Controls",
+                        XmlNamespace = "https://github.com/grokys/Perspex"
+                    }
+                },
+                Types = new List<MetadataType>()
+            };
+            foreach (var asm in asms)
+            {
+                try
+                {
+                    foreach (var type in asm.GetTypes())
+                    {
+                        try
+                        {
+                            if (!type.IsPublic)
+                                continue;
+                            var t = new MetadataType()
+                            {
+                                Name = type.Name,
+                                Namespace = type.Namespace,
+                                Properties = new List<MetadataProperty>()
+                            };
+                            rv.Types.Add(t);
+                            foreach (var prop in type.GetProperties())
+                            {
+                                if (prop.GetMethod?.IsPublic != true)
+                                    continue;
+                                var p = new MetadataProperty()
+                                {
+                                    Name = prop.Name,
+                                    Type =
+                                        prop.PropertyType == typeof (string) ||
+                                        (prop.PropertyType.IsValueType &&
+                                         prop.PropertyType.Assembly == typeof (int).Assembly)
+                                            ? MetadataPropertyType.BasicType
+                                            : prop.PropertyType.IsEnum
+                                                ? MetadataPropertyType.Enum
+                                                : MetadataPropertyType.MetadataType
+
+                                };
+                                if (p.Type == MetadataPropertyType.Enum)
+                                    p.EnumValues = Enum.GetNames(prop.PropertyType);
+                                if (p.Type == MetadataPropertyType.MetadataType)
+                                    p.MetadataFullTypeName = prop.PropertyType.Namespace + "." + prop.PropertyType.Name;
+                                t.Properties.Add(p);
+                            }
+                        }
+                        catch
+                        {
+                            //
+                        }
+                    }
+                }
+                catch
+                {
+                    //
+                }
+            }
+            return rv;
+        }
+
+        void BuildMetadataAndSendMessageAsync(List<Assembly> asms)
+        {
+            new Thread(() =>
+            {
+                _comm.SendMessage(new UpdateMetadataMessage(BuildMetadata(asms)));
+            }).Start();
+        }
+
         private void DoInit(string targetExe, StringBuilder logger)
         {
             _appDir = Path.GetFullPath(Path.GetDirectoryName(targetExe));
@@ -91,16 +172,18 @@ namespace Perspex.Designer.AppHost
                 logger.AppendLine(s);
             };
             log("Loading assemblies from " + _appDir);
+            var asms = new List<Assembly>();
             foreach(var asm in Directory.GetFiles(_appDir).Where(f=>f.ToLower().EndsWith(".dll")||f.ToLower().EndsWith(".exe")))
                 try
                 {
                     log("Trying to load " + asm);
-                    Assembly.LoadFrom(asm);
+                    asms.Add(Assembly.LoadFrom(asm));
                 }
                 catch (Exception e)
                 {
                     logger.AppendLine(e.ToString());
                 }
+            BuildMetadataAndSendMessageAsync(asms);
             log("Looking up Perspex types");
             var syncContext = LookupType("Perspex.Threading.PerspexSynchronizationContext");
             syncContext.GetProperty("AutoInstall", BindingFlags.Public | BindingFlags.Static).SetValue(null, false);
