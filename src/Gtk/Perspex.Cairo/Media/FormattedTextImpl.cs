@@ -12,6 +12,8 @@ namespace Perspex.Cairo.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
+        private Size _size;
+
         public FormattedTextImpl(
             string text,
             string fontFamily,
@@ -34,7 +36,6 @@ namespace Perspex.Cairo.Media
             Layout.Alignment = textAlignment.ToCairo();
         }
 
-        private Size _size;
         public Size Constraint
         {
             get
@@ -52,7 +53,8 @@ namespace Perspex.Cairo.Media
 
         public Pango.Layout Layout
         {
-            get; }
+            get;
+        }
 
         public void Dispose()
         {
