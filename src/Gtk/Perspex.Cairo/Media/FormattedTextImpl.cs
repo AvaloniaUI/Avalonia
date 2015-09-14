@@ -45,7 +45,8 @@ namespace Perspex.Cairo.Media
             set
             {
                 _size = value;
-                Layout.Width = Pango.Units.FromDouble(value.Width);
+                Layout.Width = double.IsPositiveInfinity(value.Width) ? 
+                    -1 : Pango.Units.FromDouble(value.Width);
             }
         }
 
