@@ -78,9 +78,8 @@ namespace Perspex.Gtk
 
         public void Invalidate(Rect rect)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            Draw(new Rectangle { X = (int)rect.X, Y = (int)rect.Y, Width = (int)rect.Width, Height = (int)rect.Height });
-#pragma warning restore CS0612 // Type or member is obsolete
+            base.GdkWindow.InvalidateRect (new Rectangle ((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), true);
+
         }
 
         public Point PointToScreen(Point point)
