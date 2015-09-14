@@ -1,28 +1,25 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RadioButton.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Controls.Primitives;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using Perspex.Controls.Primitives;
-    using Perspex.VisualTree;
-
     public class RadioButton : ToggleButton
     {
         public RadioButton()
         {
-            this.GetObservable(IsCheckedProperty).Subscribe(this.IsCheckedChanged);
+            GetObservable(IsCheckedProperty).Subscribe(IsCheckedChanged);
         }
 
         protected override void Toggle()
         {
-            if (!this.IsChecked)
+            if (!IsChecked)
             {
-                this.IsChecked = true;
+                IsChecked = true;
             }
         }
 

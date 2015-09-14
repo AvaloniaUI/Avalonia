@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -21,7 +24,7 @@ namespace NGenerics.Patterns.Visitor
     {
         #region Globals
 
-        private readonly List<TKey> tracks;
+        private readonly List<TKey> _tracks;
 
         #endregion
 
@@ -30,7 +33,7 @@ namespace NGenerics.Patterns.Visitor
         /// <inheritdoc/>
         public KeyTrackingVisitor()
         {
-            tracks = new List<TKey>();
+            _tracks = new List<TKey>();
         }
 
         #endregion
@@ -41,13 +44,7 @@ namespace NGenerics.Patterns.Visitor
         /// Gets the tracking list.
         /// </summary>
         /// <value>The tracking list.</value>
-        public IList<TKey> TrackingList
-        {
-            get
-            {
-                return tracks;
-            }
-        }
+        public IList<TKey> TrackingList => _tracks;
 
         #endregion
 
@@ -57,17 +54,11 @@ namespace NGenerics.Patterns.Visitor
         /// <inheritdoc />
         public void Visit(KeyValuePair<TKey, TValue> obj)
         {
-            tracks.Add(obj.Key);
+            _tracks.Add(obj.Key);
         }
 
         /// <inheritdoc />
-        public bool HasCompleted
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool HasCompleted => false;
 
         #endregion
     }

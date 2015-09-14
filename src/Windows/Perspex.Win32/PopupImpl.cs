@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PopupImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Platform;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
-    using System;
-    using Perspex.Platform;
-    using Perspex.Win32.Interop;
-
     public class PopupImpl : WindowImpl, IPopupImpl
     {
         public void SetPosition(Point p)
         {
             UnmanagedMethods.SetWindowPos(
-                this.Handle.Handle,
+                Handle.Handle,
                 IntPtr.Zero,
                 (int)p.X,
                 (int)p.Y,
@@ -26,7 +23,7 @@ namespace Perspex.Win32
 
         public override void Show()
         {
-            UnmanagedMethods.ShowWindow(this.Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+            UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)

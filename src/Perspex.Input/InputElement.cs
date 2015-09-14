@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="InputElement.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Interactivity;
+using Perspex.Rendering;
+using Perspex.VisualTree;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Linq;
-    using Perspex.Interactivity;
-    using Perspex.Rendering;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
@@ -34,6 +31,12 @@ namespace Perspex.Input
         /// </summary>
         public static readonly PerspexProperty<bool> IsEnabledCoreProperty =
             PerspexProperty.Register<InputElement, bool>("IsEnabledCore", true);
+
+        /// <summary>
+        /// Gets or sets associated mouse cursor.
+        /// </summary>
+        public static readonly PerspexProperty<Cursor> CursorProperty =
+            PerspexProperty.Register<InputElement, Cursor>("Cursor", null, true);
 
         /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
@@ -79,6 +82,14 @@ namespace Perspex.Input
         public static readonly RoutedEvent<KeyEventArgs> KeyUpEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>(
                 "KeyUp",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="TextInput"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
+            RoutedEvent.Register<InputElement, TextInputEventArgs>(
+                "TextInput",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -136,6 +147,7 @@ namespace Perspex.Input
             LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
             KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
+            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
             PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
             PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
@@ -149,8 +161,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<RoutedEventArgs> GotFocus
         {
-            add { this.AddHandler(GotFocusEvent, value); }
-            remove { this.RemoveHandler(GotFocusEvent, value); }
+            add { AddHandler(GotFocusEvent, value); }
+            remove { RemoveHandler(GotFocusEvent, value); }
         }
 
         /// <summary>
@@ -158,8 +170,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<RoutedEventArgs> LostFocus
         {
-            add { this.AddHandler(LostFocusEvent, value); }
-            remove { this.RemoveHandler(LostFocusEvent, value); }
+            add { AddHandler(LostFocusEvent, value); }
+            remove { RemoveHandler(LostFocusEvent, value); }
         }
 
         /// <summary>
@@ -167,8 +179,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<KeyEventArgs> KeyDown
         {
-            add { this.AddHandler(KeyDownEvent, value); }
-            remove { this.RemoveHandler(KeyDownEvent, value); }
+            add { AddHandler(KeyDownEvent, value); }
+            remove { RemoveHandler(KeyDownEvent, value); }
         }
 
         /// <summary>
@@ -176,8 +188,17 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<KeyEventArgs> KeyUp
         {
-            add { this.AddHandler(KeyUpEvent, value); }
-            remove { this.RemoveHandler(KeyUpEvent, value); }
+            add { AddHandler(KeyUpEvent, value); }
+            remove { RemoveHandler(KeyUpEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a user typed some text while the control has focus.
+        /// </summary>
+        public event EventHandler<TextInputEventArgs> TextInput
+        {
+            add { AddHandler(TextInputEvent, value); }
+            remove { RemoveHandler(TextInputEvent, value); }
         }
 
         /// <summary>
@@ -185,8 +206,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerEnter
         {
-            add { this.AddHandler(PointerEnterEvent, value); }
-            remove { this.RemoveHandler(PointerEnterEvent, value); }
+            add { AddHandler(PointerEnterEvent, value); }
+            remove { RemoveHandler(PointerEnterEvent, value); }
         }
 
         /// <summary>
@@ -194,8 +215,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerLeave
         {
-            add { this.AddHandler(PointerLeaveEvent, value); }
-            remove { this.RemoveHandler(PointerLeaveEvent, value); }
+            add { AddHandler(PointerLeaveEvent, value); }
+            remove { RemoveHandler(PointerLeaveEvent, value); }
         }
 
         /// <summary>
@@ -203,8 +224,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerMoved
         {
-            add { this.AddHandler(PointerMovedEvent, value); }
-            remove { this.RemoveHandler(PointerMovedEvent, value); }
+            add { AddHandler(PointerMovedEvent, value); }
+            remove { RemoveHandler(PointerMovedEvent, value); }
         }
 
         /// <summary>
@@ -212,8 +233,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerPressEventArgs> PointerPressed
         {
-            add { this.AddHandler(PointerPressedEvent, value); }
-            remove { this.RemoveHandler(PointerPressedEvent, value); }
+            add { AddHandler(PointerPressedEvent, value); }
+            remove { RemoveHandler(PointerPressedEvent, value); }
         }
 
         /// <summary>
@@ -221,8 +242,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerReleased
         {
-            add { this.AddHandler(PointerReleasedEvent, value); }
-            remove { this.RemoveHandler(PointerReleasedEvent, value); }
+            add { AddHandler(PointerReleasedEvent, value); }
+            remove { RemoveHandler(PointerReleasedEvent, value); }
         }
 
         /// <summary>
@@ -230,8 +251,8 @@ namespace Perspex.Input
         /// </summary>
         public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
         {
-            add { this.AddHandler(PointerWheelChangedEvent, value); }
-            remove { this.RemoveHandler(PointerWheelChangedEvent, value); }
+            add { AddHandler(PointerWheelChangedEvent, value); }
+            remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
 
         /// <summary>
@@ -239,8 +260,8 @@ namespace Perspex.Input
         /// </summary>
         public bool Focusable
         {
-            get { return this.GetValue(FocusableProperty); }
-            set { this.SetValue(FocusableProperty, value); }
+            get { return GetValue(FocusableProperty); }
+            set { SetValue(FocusableProperty, value); }
         }
 
         /// <summary>
@@ -248,8 +269,17 @@ namespace Perspex.Input
         /// </summary>
         public bool IsEnabled
         {
-            get { return this.GetValue(IsEnabledProperty); }
-            set { this.SetValue(IsEnabledProperty, value); }
+            get { return GetValue(IsEnabledProperty); }
+            set { SetValue(IsEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets associated mouse cursor.
+        /// </summary>
+        public Cursor Cursor
+        {
+            get { return GetValue(CursorProperty); }
+            set { SetValue(CursorProperty, value); }
         }
 
         /// <summary>
@@ -257,8 +287,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsFocused
         {
-            get { return this.GetValue(IsFocusedProperty); }
-            private set { this.SetValue(IsFocusedProperty, value); }
+            get { return GetValue(IsFocusedProperty); }
+            private set { SetValue(IsFocusedProperty, value); }
         }
 
         /// <summary>
@@ -266,8 +296,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsHitTestVisible
         {
-            get { return this.GetValue(IsHitTestVisibleProperty); }
-            set { this.SetValue(IsHitTestVisibleProperty, value); }
+            get { return GetValue(IsHitTestVisibleProperty); }
+            set { SetValue(IsHitTestVisibleProperty, value); }
         }
 
         /// <summary>
@@ -275,8 +305,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsPointerOver
         {
-            get { return this.GetValue(IsPointerOverProperty); }
-            internal set { this.SetValue(IsPointerOverProperty, value); }
+            get { return GetValue(IsPointerOverProperty); }
+            internal set { SetValue(IsPointerOverProperty, value); }
         }
 
         /// <summary>
@@ -287,10 +317,7 @@ namespace Perspex.Input
         /// controls. The <see cref="IsEnabledCore"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        bool IInputElement.IsEnabledCore
-        {
-            get { return this.IsEnabledCore; }
-        }
+        bool IInputElement.IsEnabledCore => IsEnabledCore;
 
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.
@@ -302,8 +329,8 @@ namespace Perspex.Input
         /// </remarks>
         protected bool IsEnabledCore
         {
-            get { return this.GetValue(IsEnabledCoreProperty); }
-            set { this.SetValue(IsEnabledCoreProperty, value); }
+            get { return GetValue(IsEnabledCoreProperty); }
+            set { SetValue(IsEnabledCoreProperty, value); }
         }
 
         /// <summary>
@@ -330,7 +357,7 @@ namespace Perspex.Input
         {
             base.OnDetachedFromVisualTree(oldRoot);
 
-            if (this.IsFocused)
+            if (IsFocused)
             {
                 FocusManager.Instance.Focus(null);
             }
@@ -340,7 +367,7 @@ namespace Perspex.Input
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-            this.UpdateIsEnabledCore();
+            UpdateIsEnabledCore();
         }
 
         /// <summary>
@@ -349,7 +376,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            this.IsFocused = e.Source == this;
+            IsFocused = e.Source == this;
         }
 
         /// <summary>
@@ -358,7 +385,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
-            this.IsFocused = false;
+            IsFocused = false;
         }
 
         /// <summary>
@@ -378,12 +405,20 @@ namespace Perspex.Input
         }
 
         /// <summary>
+        /// Called before the <see cref="TextInput"/> event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTextInput(TextInputEventArgs e)
+        {
+        }
+
+        /// <summary>
         /// Called before the <see cref="PointerEnter"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerEnter(PointerEventArgs e)
         {
-            this.IsPointerOver = true;
+            IsPointerOver = true;
         }
 
         /// <summary>
@@ -392,7 +427,7 @@ namespace Perspex.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerLeave(PointerEventArgs e)
         {
-            this.IsPointerOver = false;
+            IsPointerOver = false;
         }
 
         /// <summary>
@@ -437,7 +472,7 @@ namespace Perspex.Input
         /// </summary>
         private void UpdateIsEnabledCore()
         {
-            this.UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
+            UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
         }
 
         /// <summary>
@@ -449,11 +484,11 @@ namespace Perspex.Input
         {
             if (parent != null)
             {
-                this.IsEnabledCore = this.IsEnabled && parent.IsEnabledCore;
+                IsEnabledCore = IsEnabled && parent.IsEnabledCore;
             }
             else
             {
-                this.IsEnabledCore = this.IsEnabled;
+                IsEnabledCore = IsEnabled;
             }
 
             foreach (var child in this.GetVisualChildren().OfType<InputElement>())

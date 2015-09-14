@@ -1,27 +1,24 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TopLevelTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Reactive;
+using System.Reactive.Subjects;
+using Moq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Input.Raw;
+using Perspex.Layout;
+using Perspex.Platform;
+using Perspex.Rendering;
+using Perspex.Styling;
+using Ploeh.AutoFixture;
+using Ploeh.AutoFixture.AutoMoq;
+using Splat;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Reactive;
-    using System.Reactive.Subjects;
-    using Moq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Input.Raw;
-    using Perspex.Layout;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Perspex.Styling;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
-    using Xunit;
-
     public class TopLevelTests
     {
         [Fact]
@@ -29,7 +26,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
@@ -45,7 +42,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
@@ -61,7 +58,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
@@ -77,7 +74,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 var target = new TestTopLevel(impl.Object);
@@ -93,7 +90,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
                 Locator.CurrentMutable.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
 
                 var impl = new Mock<ITopLevelImpl>();
@@ -105,7 +102,7 @@ namespace Perspex.Controls.UnitTests
                     Template = new ControlTemplate<TestTopLevel>(x =>
                         new ContentPresenter
                         {
-                            [~ContentPresenter.ContentProperty] = x[~TestTopLevel.ContentProperty],
+                            [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
                         }),
                     Content = new TextBlock
                     {
@@ -125,7 +122,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
                 Locator.CurrentMutable.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
 
                 var impl = new Mock<ITopLevelImpl>();
@@ -135,7 +132,7 @@ namespace Perspex.Controls.UnitTests
                     Template = new ControlTemplate<TestTopLevel>(x =>
                         new ContentPresenter
                         {
-                            [~ContentPresenter.ContentProperty] = x[~TestTopLevel.ContentProperty],
+                            [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
                         }),
                     Content = new TextBlock
                     {
@@ -155,7 +152,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
@@ -173,7 +170,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
                 var completed = new Subject<Unit>();
                 var layoutManagerMock = Mock.Get(Locator.Current.GetService<ILayoutManager>());
                 layoutManagerMock.Setup(x => x.LayoutCompleted).Returns(completed);
@@ -194,7 +191,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
@@ -214,7 +211,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 var target = new TestTopLevel(impl.Object);
@@ -230,7 +227,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
@@ -250,7 +247,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
@@ -270,7 +267,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
@@ -290,7 +287,7 @@ namespace Perspex.Controls.UnitTests
         {
             using (Locator.CurrentMutable.WithResolver())
             {
-                this.RegisterServices();
+                RegisterServices();
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
@@ -300,8 +297,7 @@ namespace Perspex.Controls.UnitTests
                     new Mock<IKeyboardDevice>().Object,
                     0,
                     RawKeyEventType.KeyDown,
-                    Key.A,
-                    "A");
+                    Key.A, ModifierKeys.None);
                 impl.Object.Input(input);
 
                 var inputManagerMock = Mock.Get(InputManager.Instance);

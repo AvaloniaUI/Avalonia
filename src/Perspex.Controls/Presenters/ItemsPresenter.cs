@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ItemsPresenter.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Specialized;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Styling;
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Styling;
-
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
@@ -31,9 +28,9 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        private bool createdPanel;
+        private bool _createdPanel;
 
-        private IItemContainerGenerator generator;
+        private IItemContainerGenerator _generator;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -61,23 +58,23 @@ namespace Perspex.Controls.Presenters
         {
             get
             {
-                if (this.generator == null)
+                if (_generator == null)
                 {
-                    var i = this.TemplatedParent as ItemsControl;
-                    this.generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
+                    var i = TemplatedParent as ItemsControl;
+                    _generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
                 }
 
-                return this.generator;
+                return _generator;
             }
 
             set
             {
-                if (this.generator != null)
+                if (_generator != null)
                 {
                     throw new InvalidOperationException("ItemContainerGenerator is already set.");
                 }
 
-                this.generator = value;
+                _generator = value;
             }
         }
 
@@ -86,8 +83,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IEnumerable Items
         {
-            get { return this.GetValue(ItemsProperty); }
-            set { this.SetValue(ItemsProperty, value); }
+            get { return GetValue(ItemsProperty); }
+            set { SetValue(ItemsProperty, value); }
         }
 
         /// <summary>
@@ -95,8 +92,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public ITemplate<IPanel> ItemsPanel
         {
-            get { return this.GetValue(ItemsPanelProperty); }
-            set { this.SetValue(ItemsPanelProperty, value); }
+            get { return GetValue(ItemsPanelProperty); }
+            set { SetValue(ItemsPanelProperty, value); }
         }
 
         /// <summary>
@@ -111,23 +108,23 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
-            if (!this.createdPanel)
+            if (!_createdPanel)
             {
-                this.CreatePanel();
+                CreatePanel();
             }
         }
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            this.Panel.Measure(availableSize);
-            return this.Panel.DesiredSize;
+            Panel.Measure(availableSize);
+            return Panel.DesiredSize;
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            this.Panel.Arrange(new Rect(finalSize));
+            Panel.Arrange(new Rect(finalSize));
             return finalSize;
         }
 
@@ -137,33 +134,33 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         private void CreatePanel()
         {
-            this.ClearVisualChildren();
-            this.Panel = this.ItemsPanel.Build();
-            this.Panel.SetValue(TemplatedParentProperty, this.TemplatedParent);
+            ClearVisualChildren();
+            Panel = ItemsPanel.Build();
+            Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
-            if (!this.Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
+            if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
                 KeyboardNavigation.SetDirectionalNavigation(
-                    (InputElement)this.Panel,
+                    (InputElement)Panel,
                     KeyboardNavigationMode.Contained);
             }
 
-            this.AddVisualChild(this.Panel);
+            AddVisualChild(Panel);
 
             var logicalHost = this.FindReparentingHost();
 
             if (logicalHost != null)
             {
-                ((IReparentingControl)this.Panel).ReparentLogicalChildren(
+                ((IReparentingControl)Panel).ReparentLogicalChildren(
                     logicalHost,
                     logicalHost.LogicalChildren);
             }
 
             KeyboardNavigation.SetTabNavigation(
-                (InputElement)this.Panel,
+                (InputElement)Panel,
                 KeyboardNavigation.GetTabNavigation(this));
-            this.createdPanel = true;
-            this.CreateItemsAndListenForChanges(this.Items);
+            _createdPanel = true;
+            CreateItemsAndListenForChanges(Items);
         }
 
         /// <summary>
@@ -174,14 +171,14 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                this.Panel.Children.AddRange(
-                    this.ItemContainerGenerator.CreateContainers(0, this.Items, null));
+                Panel.Children.AddRange(
+                    ItemContainerGenerator.CreateContainers(0, Items, null));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
                 if (incc != null)
                 {
-                    incc.CollectionChanged += this.ItemsCollectionChanged;
+                    incc.CollectionChanged += ItemsCollectionChanged;
                 }
             }
         }
@@ -192,26 +189,26 @@ namespace Perspex.Controls.Presenters
         /// <param name="e">The event args.</param>
         private void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (this.createdPanel)
+            if (_createdPanel)
             {
-                var generator = this.ItemContainerGenerator;
+                var generator = ItemContainerGenerator;
 
                 if (e.OldValue != null)
                 {
                     generator.ClearContainers();
-                    this.Panel.Children.Clear();
+                    Panel.Children.Clear();
 
                     INotifyCollectionChanged incc = e.OldValue as INotifyCollectionChanged;
 
                     if (incc != null)
                     {
-                        incc.CollectionChanged -= this.ItemsCollectionChanged;
+                        incc.CollectionChanged -= ItemsCollectionChanged;
                     }
                 }
 
-                if (this.Panel != null)
+                if (Panel != null)
                 {
-                    this.CreateItemsAndListenForChanges((IEnumerable)e.NewValue);
+                    CreateItemsAndListenForChanges((IEnumerable)e.NewValue);
                 }
             }
         }
@@ -223,25 +220,25 @@ namespace Perspex.Controls.Presenters
         /// <param name="e">The event args.</param>
         private void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (this.createdPanel)
+            if (_createdPanel)
             {
-                var generator = this.ItemContainerGenerator;
+                var generator = ItemContainerGenerator;
 
                 // TODO: Handle Move and Replace etc.
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        this.Panel.Children.AddRange(
+                        Panel.Children.AddRange(
                             generator.CreateContainers(e.NewStartingIndex, e.NewItems, null));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        this.Panel.Children.RemoveAll(
+                        Panel.Children.RemoveAll(
                             generator.RemoveContainers(e.OldStartingIndex, e.OldItems));
                         break;
                 }
 
-                this.InvalidateMeasure();
+                InvalidateMeasure();
             }
         }
     }

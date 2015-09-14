@@ -1,22 +1,19 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TemplatedControlTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
+using Perspex.VisualTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.LogicalTree;
-    using Perspex.VisualTree;
-    using Xunit;
-
     public class TemplatedControlTests
     {
         [Fact]
@@ -176,8 +173,8 @@ namespace Perspex.Controls.UnitTests.Primitives
                     Content = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                     }
                 }
             };
@@ -188,7 +185,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             var result = new ScrollContentPresenter
             {
                 Name = "contentPresenter",
-                [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
+                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
 
             return result;
@@ -201,7 +198,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             public override void ApplyTemplate()
             {
                 base.ApplyTemplate();
-                this.Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
+                Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
             }
         }
     }

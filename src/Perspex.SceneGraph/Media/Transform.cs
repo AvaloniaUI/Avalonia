@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Transform.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Animation;
 
 namespace Perspex.Media
 {
-    using System;
-    using Perspex.Animation;
-
     /// <summary>
     /// Represents a transform on an <see cref="IVisual"/>.
     /// </summary>
@@ -29,9 +26,9 @@ namespace Perspex.Media
         /// </summary>
         protected void RaiseChanged()
         {
-            if (this.Changed != null)
+            if (Changed != null)
             {
-                this.Changed(this, EventArgs.Empty);
+                Changed(this, EventArgs.Empty);
             }
         }
     }

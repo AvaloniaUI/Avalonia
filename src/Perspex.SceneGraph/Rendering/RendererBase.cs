@@ -1,15 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RendererBase.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Media;
+using Perspex.Platform;
 
 namespace Perspex.Rendering
 {
-    using System.Linq;
-    using Perspex.Media;
-    using Perspex.Platform;
-
     /// <summary>
     /// Base class for standard renderers.
     /// </summary>
@@ -27,6 +25,8 @@ namespace Perspex.Rendering
             private set;
         }
 
+        public abstract void Dispose();
+
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
@@ -34,12 +34,24 @@ namespace Perspex.Rendering
         /// <param name="handle">An optional platform-specific handle.</param>
         public virtual void Render(IVisual visual, IPlatformHandle handle)
         {
-            using (var context = this.CreateDrawingContext(handle))
-            {
-                this.Render(visual, context, Matrix.Identity, Matrix.Identity);
-            }
+            Render(visual, handle, Matrix.Identity);
+            ++RenderCount;
+        }
 
-            ++this.RenderCount;
+        /// <summary>
+        /// Renders the specified visual with the specified transform and clip.
+        /// </summary>
+        /// <param name="visual">The visual to render.</param>
+        /// <param name="handle">An optional platform-specific handle.</param>
+        /// <param name="transform">The transform.</param>
+        /// <param name="clip">An optional clip rectangle.</param>
+        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform, Rect? clip = null)
+        {
+            using (var context = CreateDrawingContext(handle))
+            using (clip.HasValue ? context.PushClip(clip.Value) : null)
+            {
+                Render(visual, context, Matrix.Identity, transform);
+            }
         }
 
         /// <summary>
@@ -96,7 +108,7 @@ namespace Perspex.Rendering
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
-                        this.Render(child, context, translation, transform);
+                        Render(child, context, translation, transform);
                     }
                 }
             }

@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Geometry.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Platform;
 
 namespace Perspex.Media
 {
-    using System;
-    using Perspex.Platform;
-
     /// <summary>
     /// Defines a geometric shape.
     /// </summary>
@@ -53,8 +50,8 @@ namespace Perspex.Media
         /// </summary>
         public Transform Transform
         {
-            get { return this.GetValue(TransformProperty); }
-            set { this.SetValue(TransformProperty, value); }
+            get { return GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
         }
 
         /// <summary>
@@ -70,7 +67,7 @@ namespace Perspex.Media
         /// <returns>The bounding rectangle.</returns>
         public Rect GetRenderBounds(double strokeThickness)
         {
-            return this.PlatformImpl.GetRenderBounds(strokeThickness);
+            return PlatformImpl.GetRenderBounds(strokeThickness);
         }
     }
 }

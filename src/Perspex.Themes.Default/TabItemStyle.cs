@@ -1,18 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabItemStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Media;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for the <see cref="TabItem"/> control.
     /// </summary>
@@ -23,22 +21,22 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TabItemStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TabItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TabItem.FontSizeProperty, 28.7),
-                        new Setter(TabItem.ForegroundProperty, Brushes.Gray),
-                        new Setter(TabItem.TemplateProperty, new ControlTemplate<TabItem>(Template)),
+                        new Setter(TemplatedControl.FontSizeProperty, 28.7),
+                        new Setter(TemplatedControl.ForegroundProperty, Brushes.Gray),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<TabItem>().Class("selected"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TabItem.ForegroundProperty, Brushes.Black),
+                        new Setter(TemplatedControl.ForegroundProperty, Brushes.Black),
                     },
                 },
             });
@@ -54,7 +52,7 @@ namespace Perspex.Themes.Default
             return new ContentPresenter
             {
                 Name = "headerPresenter",
-                [~ContentPresenter.ContentProperty] = control[~TabItem.HeaderProperty],
+                [~ContentPresenter.ContentProperty] = control[~HeaderedContentControl.HeaderProperty],
             };
         }
     }

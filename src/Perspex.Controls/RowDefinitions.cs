@@ -1,15 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RowDefinitions.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Collections;
 
 namespace Perspex.Controls
 {
-    using System.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Parsers;
-
     /// <summary>
     /// A collection of <see cref="RowDefinition"/>s.
     /// </summary>
@@ -28,7 +24,7 @@ namespace Perspex.Controls
         /// <param name="s">A string representation of the row definitions.</param>
         public RowDefinitions(string s)
         {
-            this.AddRange(GridLengthsParser.Parse(s).Select(x => new RowDefinition(x)));
+            AddRange(GridLength.ParseLengths(s).Select(x => new RowDefinition(x)));
         }
     }
 }

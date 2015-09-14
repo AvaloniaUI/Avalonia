@@ -1,19 +1,22 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="XamlBinding.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Diagnostics;
+using OmniXaml.TypeConversion;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
-    using System;
-    using System.Diagnostics;
-    using ChangeTracking;
-    using OmniXaml.TypeConversion;
-
     public class XamlBinding
     {
-        private readonly ITypeConverterProvider typeConverterProvider;
+        private readonly ITypeConverterProvider _typeConverterProvider;
+        private DataContextChangeSynchronizer _changeSynchronizer;
+
+        public XamlBinding(ITypeConverterProvider typeConverterProvider)
+        {
+            _typeConverterProvider = typeConverterProvider;
+        }
 
         public PerspexObject Target { get; set; }
 
@@ -23,12 +26,7 @@ namespace Perspex.Markup.Xaml.DataBinding
 
         public BindingMode BindingMode { get; set; }
 
-        public XamlBinding(ITypeConverterProvider typeConverterProvider)
-        {
-            this.typeConverterProvider = typeConverterProvider;
-        }
-
-        public void Bind(object dataContext)
+        public void BindToDataContext(object dataContext)
         {
             if (dataContext == null)
             {
@@ -37,35 +35,25 @@ namespace Perspex.Markup.Xaml.DataBinding
 
             try
             {
-                if (this.BindingMode == BindingMode.TwoWay)
-                {
-                    var changeSynchronizer = new DataContextChangeSynchronizer(
-                        this.Target,
-                        this.TargetProperty,
-                        this.SourcePropertyPath,
-                        dataContext,
-                        this.typeConverterProvider);
+                var bindingSource = new DataContextChangeSynchronizer.BindingSource(SourcePropertyPath, dataContext);
+                var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(Target, TargetProperty);
 
-                    changeSynchronizer.SubscribeUIToModel();
-                    changeSynchronizer.SubscribeModelToUI();
+                _changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, _typeConverterProvider);
+
+                if (BindingMode == BindingMode.TwoWay)
+                {
+                    _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
+                    _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
 
-                if (this.BindingMode == BindingMode.OneWay)
+                if (BindingMode == BindingMode.OneWay)
                 {
-                    var subscriptionHandler = new DataContextChangeSynchronizer(
-                        this.Target,
-                        this.TargetProperty,
-                        this.SourcePropertyPath,
-                        dataContext,
-                        this.typeConverterProvider);
-
-                    subscriptionHandler.SubscribeUIToModel();
+                    _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                 }
 
-                if (this.BindingMode == BindingMode.OneWayToSource)
+                if (BindingMode == BindingMode.OneWayToSource)
                 {
-                    var subscriptionHandler = new DataContextChangeSynchronizer(this.Target, this.TargetProperty, this.SourcePropertyPath, dataContext, this.typeConverterProvider);
-                    subscriptionHandler.SubscribeModelToUI();
+                    _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
             }
             catch (Exception e)

@@ -55,17 +55,22 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Matrix.cs" />
+    <Compile Include="Media\AlignmentY.cs" />
+    <Compile Include="Media\AlignmentX.cs" />
     <Compile Include="Media\Brush.cs" />
     <Compile Include="Media\Brushes.cs" />
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\DashStyle.cs" />
+    <Compile Include="Media\MediaExtensions.cs" />
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
     <Compile Include="Media\LinearGradientBrush.cs" />
+    <Compile Include="Media\PenLineCap.cs" />
+    <Compile Include="Media\PenLineJoin.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
@@ -91,6 +96,8 @@
     <Compile Include="Media\SweepDirection.cs" />
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
+    <Compile Include="Media\TileBrush.cs" />
+    <Compile Include="Media\VisualBrush.cs" />
     <Compile Include="Origin.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
@@ -102,6 +109,7 @@
     <Compile Include="Platform\IStreamGeometryImpl.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelativeRect.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
     <Compile Include="Rendering\IRenderManager.cs" />
@@ -142,9 +150,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

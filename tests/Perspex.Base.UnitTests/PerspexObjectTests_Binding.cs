@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectTests_Binding.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Xunit;
-
     public class PerspexObjectTests_Binding
     {
         [Fact]
@@ -185,7 +182,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            target.Bind(Class1.FooProperty, this.Single("stylevalue"), BindingPriority.Style);
+            target.Bind(Class1.FooProperty, Single("stylevalue"), BindingPriority.Style);
 
             Assert.Equal("stylevalue", target.GetValue(Class1.FooProperty));
         }

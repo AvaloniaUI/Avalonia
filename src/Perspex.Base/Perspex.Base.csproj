@@ -44,7 +44,6 @@
     <Compile Include="BindingDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />
     <Compile Include="IPropertyBag.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
@@ -107,9 +106,6 @@
       <Project>{415e048e-4611-4815-9cf2-d774e29079ac}</Project>
       <Name>NGenerics</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

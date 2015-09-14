@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SelectingItemsControl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Controls.Generators;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Styling;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Controls.Generators;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// An <see cref="ItemsControl"/> that maintains a selection.
     /// </summary>
@@ -70,7 +67,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public SelectingItemsControl()
         {
-            this.ItemContainerGenerator.ContainersInitialized.Subscribe(this.ContainersInitialized);
+            ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
         }
 
         /// <summary>
@@ -79,8 +76,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool AutoSelect
         {
-            get { return this.GetValue(AutoSelectProperty); }
-            set { this.SetValue(AutoSelectProperty, value); }
+            get { return GetValue(AutoSelectProperty); }
+            set { SetValue(AutoSelectProperty, value); }
         }
 
         /// <summary>
@@ -88,8 +85,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get { return this.GetValue(SelectedIndexProperty); }
-            set { this.SetValue(SelectedIndexProperty, value); }
+            get { return GetValue(SelectedIndexProperty); }
+            set { SetValue(SelectedIndexProperty, value); }
         }
 
         /// <summary>
@@ -97,8 +94,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public object SelectedItem
         {
-            get { return this.GetValue(SelectedItemProperty); }
-            set { this.SetValue(SelectedItemProperty, value); }
+            get { return GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -106,13 +103,13 @@ namespace Perspex.Controls.Primitives
         {
             base.ItemsChanged(e);
 
-            if (this.SelectedIndex != -1)
+            if (SelectedIndex != -1)
             {
-                this.SelectedIndex = IndexOf((IEnumerable)e.NewValue, this.SelectedItem);
+                SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
             }
-            else if (this.AutoSelect && this.Items != null & this.Items.Cast<object>().Any())
+            else if (AutoSelect && Items != null & Items.Cast<object>().Any())
             {
-                this.SelectedIndex = 0;
+                SelectedIndex = 0;
             }
         }
 
@@ -124,34 +121,34 @@ namespace Perspex.Controls.Primitives
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (this.AutoSelect && this.SelectedIndex == -1)
+                    if (AutoSelect && SelectedIndex == -1)
                     {
-                        this.SelectedIndex = 0;
+                        SelectedIndex = 0;
                     }
 
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                 case NotifyCollectionChangedAction.Replace:
-                    var selectedIndex = this.SelectedIndex;
+                    var selectedIndex = SelectedIndex;
 
                     if (selectedIndex >= e.OldStartingIndex &&
                         selectedIndex < e.OldStartingIndex + e.OldItems.Count)
                     {
-                        if (!this.AutoSelect)
+                        if (!AutoSelect)
                         {
-                            this.SelectedIndex = -1;
+                            SelectedIndex = -1;
                         }
                         else
                         {
-                            this.LostSelection();
+                            LostSelection();
                         }
                     }
 
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    this.SelectedIndex = IndexOf(e.NewItems, this.SelectedItem);
+                    SelectedIndex = IndexOf(e.NewItems, SelectedItem);
                     break;
             }
         }
@@ -164,7 +161,7 @@ namespace Perspex.Controls.Primitives
             if (e.NavigationMethod == NavigationMethod.Pointer ||
                 e.NavigationMethod == NavigationMethod.Directional)
             {
-                this.TrySetSelectionFromContainerEvent(e.Source, true);
+                TrySetSelectionFromContainerEvent(e.Source, true);
             }
         }
 
@@ -197,7 +194,7 @@ namespace Perspex.Controls.Primitives
 
                     foreach (var i in items)
                     {
-                        if (object.Equals(i, item))
+                        if (Equals(i, item))
                         {
                             return index;
                         }
@@ -267,12 +264,12 @@ namespace Perspex.Controls.Primitives
         /// <param name="containers">The containers.</param>
         private void ContainersInitialized(ItemContainers containers)
         {
-            var selectedIndex = this.SelectedIndex;
+            var selectedIndex = SelectedIndex;
             var selectedContainer = containers.Items.OfType<ISelectable>().FirstOrDefault(x => x.IsSelected);
 
             if (selectedContainer != null)
             {
-                this.SelectedIndex = containers.Items.IndexOf((IControl)selectedContainer) + containers.StartingIndex;
+                SelectedIndex = containers.Items.IndexOf((IControl)selectedContainer) + containers.StartingIndex;
             }
             else if (selectedIndex >= containers.StartingIndex &&
                      selectedIndex < containers.StartingIndex + containers.Items.Count)
@@ -292,7 +289,7 @@ namespace Perspex.Controls.Primitives
 
             if (selectable != null)
             {
-                this.TrySetSelectionFromContainerEvent(e.Source, selectable.IsSelected);
+                TrySetSelectionFromContainerEvent(e.Source, selectable.IsSelected);
             }
         }
 
@@ -306,7 +303,7 @@ namespace Perspex.Controls.Primitives
 
             if (index != -1)
             {
-                var container = this.ItemContainerGenerator.ContainerFromIndex(index);
+                var container = ItemContainerGenerator.ContainerFromIndex(index);
                 MarkContainerSelected(container, false);
             }
 
@@ -314,19 +311,19 @@ namespace Perspex.Controls.Primitives
 
             if (index == -1)
             {
-                this.SelectedItem = null;
+                SelectedItem = null;
             }
             else
             {
-                this.SelectedItem = this.Items.Cast<object>().ElementAt((int)e.NewValue);
-                var container = this.ItemContainerGenerator.ContainerFromIndex(index);
+                SelectedItem = Items.Cast<object>().ElementAt((int)e.NewValue);
+                var container = ItemContainerGenerator.ContainerFromIndex(index);
                 MarkContainerSelected(container, true);
 
                 var inputElement = container as IInputElement;
-                if (inputElement != null && this.Presenter != null && this.Presenter.Panel != null)
+                if (inputElement != null && Presenter != null && Presenter.Panel != null)
                 {
                     KeyboardNavigation.SetTabOnceActiveElement(
-                        (InputElement)this.Presenter.Panel,
+                        (InputElement)Presenter.Panel,
                         inputElement);
                 }
             }
@@ -338,7 +335,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
         {
-            this.SelectedIndex = IndexOf(this.Items, e.NewValue);
+            SelectedIndex = IndexOf(Items, e.NewValue);
         }
 
         /// <summary>
@@ -361,20 +358,20 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         private void LostSelection()
         {
-            var items = this.Items?.Cast<object>();
+            var items = Items?.Cast<object>();
 
-            if (items != null && this.AutoSelect)
+            if (items != null && AutoSelect)
             {
-                var index = Math.Min(this.SelectedIndex, items.Count() - 1);
+                var index = Math.Min(SelectedIndex, items.Count() - 1);
 
                 if (index > -1)
                 {
-                    this.SelectedItem = items.ElementAt(index);
+                    SelectedItem = items.ElementAt(index);
                     return;
                 }
             }
 
-            this.SelectedIndex = -1;
+            SelectedIndex = -1;
         }
 
         /// <summary>
@@ -384,21 +381,21 @@ namespace Perspex.Controls.Primitives
         /// <param name="select">Whether the container should be selected or unselected.</param>
         private void TrySetSelectionFromContainerEvent(IInteractive eventSource, bool select)
         {
-            var item = this.GetContainerFromEvent(eventSource);
+            var item = GetContainerFromEvent(eventSource);
 
             if (item != null)
             {
-                var index = this.ItemContainerGenerator.IndexFromContainer(item);
+                var index = ItemContainerGenerator.IndexFromContainer(item);
 
                 if (index != -1)
                 {
                     if (select)
                     {
-                        this.SelectedIndex = index;
+                        SelectedIndex = index;
                     }
                     else
                     {
-                        this.LostSelection();
+                        LostSelection();
                     }
                 }
             }

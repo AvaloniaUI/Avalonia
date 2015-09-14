@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="MatrixTransform.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Media
 {
-    using System;
-
     /// <summary>
     /// Transforms an <see cref="IVisual"/> according to a <see cref="Matrix"/>.
     /// </summary>
@@ -24,7 +21,7 @@ namespace Perspex.Media
         /// </summary>
         public MatrixTransform()
         {
-            this.GetObservable(MatrixProperty).Subscribe(_ => this.RaiseChanged());
+            GetObservable(MatrixProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -34,7 +31,7 @@ namespace Perspex.Media
         public MatrixTransform(Matrix matrix)
             : this()
         {
-            this.Matrix = matrix;
+            Matrix = matrix;
         }
 
         /// <summary>
@@ -42,16 +39,13 @@ namespace Perspex.Media
         /// </summary>
         public Matrix Matrix
         {
-            get { return this.GetValue(MatrixProperty); }
-            set { this.SetValue(MatrixProperty, value); }
+            get { return GetValue(MatrixProperty); }
+            set { SetValue(MatrixProperty, value); }
         }
 
         /// <summary>
         /// Gets the matrix.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return this.Matrix; }
-        }
+        public override Matrix Value => Matrix;
     }
 }

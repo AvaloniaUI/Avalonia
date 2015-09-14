@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FocusAdornerStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Collections;
+using Perspex.Controls;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Perspex.Collections;
-    using Perspex.Controls;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Media;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for a focus adorner.
     /// </summary>
@@ -23,7 +20,7 @@ namespace Perspex.Themes.Default
         /// </summary>
         public FocusAdornerStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.Is<Control>())
                 {

@@ -1,21 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="MenuItemStyle.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Layout;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Styling;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="MenuItem"/> control.
@@ -30,22 +29,22 @@ namespace Perspex.Themes.Default
         /// </summary>
         public MenuItemStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<MenuItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(MenuItem.BorderThicknessProperty, 1.0),
-                        new Setter(MenuItem.PaddingProperty, new Thickness(6, 0)),
-                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(PopupTemplate)),
+                        new Setter(TemplatedControl.BorderThicknessProperty, 1.0),
+                        new Setter(TemplatedControl.PaddingProperty, new Thickness(6, 0)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<MenuItem>(PopupTemplate)),
                     },
                 },
                 new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(MenuItem.TemplateProperty, new ControlTemplate<MenuItem>(TopLevelTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<MenuItem>(TopLevelTemplate)),
                     },
                 },
                 new Style(x => x.OfType<MenuItem>().Class("selected").Template().Name("root"))
@@ -68,7 +67,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(Path.IsVisibleProperty, false),
+                        new Setter(Visual.IsVisibleProperty, false),
                     },
                 },
             });
@@ -86,9 +85,9 @@ namespace Perspex.Themes.Default
             var result = new Border
             {
                 Name = "root",
-                [~Border.BackgroundProperty] = control[~MenuItem.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~MenuItem.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~MenuItem.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new Panel
                 {
                     Children = new Controls
@@ -100,7 +99,7 @@ namespace Perspex.Themes.Default
                                 AccessKeyDataTemplate,
                             },
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
-                            [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
+                            [~Layoutable.MarginProperty] = control[~TemplatedControl.PaddingProperty],
                             [Grid.ColumnProperty] = 1,
                         },
                         (popup = new Popup
@@ -132,8 +131,8 @@ namespace Perspex.Themes.Default
                                             new ItemsPresenter
                                             {
                                                 Name = "itemsPresenter",
-                                                [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
-                                                [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                                                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                                                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                                                 [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                                             }
                                         }
@@ -162,9 +161,9 @@ namespace Perspex.Themes.Default
             var result = new Border
             {
                 Name = "root",
-                [~Border.BackgroundProperty] = control[~MenuItem.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~MenuItem.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~MenuItem.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
                 Child = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -192,7 +191,7 @@ namespace Perspex.Themes.Default
                             Margin = new Thickness(3),
                             IsVisible = false,
                             VerticalAlignment = VerticalAlignment.Center,
-                            [~Path.FillProperty] = control[~MenuItem.ForegroundProperty],
+                            [~Shape.FillProperty] = control[~TemplatedControl.ForegroundProperty],
                         },
                         new ContentPresenter
                         {
@@ -202,7 +201,7 @@ namespace Perspex.Themes.Default
                             },
                             VerticalAlignment = VerticalAlignment.Center,
                             [~ContentPresenter.ContentProperty] = control[~MenuItem.HeaderProperty],
-                            [~ContentPresenter.MarginProperty] = control[~MenuItem.PaddingProperty],
+                            [~Layoutable.MarginProperty] = control[~TemplatedControl.PaddingProperty],
                             [Grid.ColumnProperty] = 2,
                         },
                         new Path
@@ -244,8 +243,8 @@ namespace Perspex.Themes.Default
                                             new ItemsPresenter
                                             {
                                                 Name = "itemsPresenter",
-                                                [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
-                                                [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                                                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                                                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                                                 [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                                             }
                                         }

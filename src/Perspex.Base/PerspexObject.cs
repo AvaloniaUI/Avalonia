@@ -1,23 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObject.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reflection;
+using Perspex.Reactive;
+using Perspex.Utilities;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using Perspex.Reactive;
-    using Perspex.Utilities;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// The priority of a binding.
     /// </summary>
@@ -71,49 +68,49 @@ namespace Perspex
         /// <summary>
         /// The registered properties by type.
         /// </summary>
-        private static Dictionary<Type, List<PerspexProperty>> registered =
+        private static readonly Dictionary<Type, List<PerspexProperty>> s_registered =
             new Dictionary<Type, List<PerspexProperty>>();
 
         /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
-        private PerspexObject inheritanceParent;
+        private PerspexObject _inheritanceParent;
 
         /// <summary>
         /// The set values/bindings on this object.
         /// </summary>
-        private Dictionary<PerspexProperty, PriorityValue> values =
+        private readonly Dictionary<PerspexProperty, PriorityValue> _values =
             new Dictionary<PerspexProperty, PriorityValue>();
 
         /// <summary>
         /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
         /// </summary>
-        private PropertyChangedEventHandler inpcChanged;
+        private PropertyChangedEventHandler _inpcChanged;
 
         /// <summary>
         /// A serilog logger for logging property events.
         /// </summary>
-        private ILogger propertyLog;
+        private readonly ILogger _propertyLog;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
         {
-            this.propertyLog = Log.ForContext(new[]
+            _propertyLog = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Property"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
 
-            foreach (var property in this.GetRegisteredProperties())
+            foreach (var property in GetRegisteredProperties())
             {
                 var e = new PerspexPropertyChangedEventArgs(
                     this,
                     property,
                     PerspexProperty.UnsetValue,
-                    property.GetDefaultValue(this.GetType()),
+                    property.GetDefaultValue(GetType()),
                     BindingPriority.Unset);
 
                 property.NotifyInitialized(e);
@@ -130,8 +127,8 @@ namespace Perspex
         /// </summary>
         event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
         {
-            add { this.inpcChanged += value; }
-            remove { this.inpcChanged -= value; }
+            add { _inpcChanged += value; }
+            remove { _inpcChanged -= value; }
         }
 
         /// <summary>
@@ -145,41 +142,41 @@ namespace Perspex
         {
             get
             {
-                return this.inheritanceParent;
+                return _inheritanceParent;
             }
 
             set
             {
-                if (this.inheritanceParent != value)
+                if (_inheritanceParent != value)
                 {
-                    if (this.inheritanceParent != null)
+                    if (_inheritanceParent != null)
                     {
-                        this.inheritanceParent.PropertyChanged -= this.ParentPropertyChanged;
+                        _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var inherited = (from property in GetProperties(this.GetType())
+                    var inherited = (from property in GetProperties(GetType())
                                      where property.Inherits
                                      select new
                                      {
                                          Property = property,
-                                         Value = this.GetValue(property),
+                                         Value = GetValue(property),
                                      }).ToList();
 
-                    this.inheritanceParent = value;
+                    _inheritanceParent = value;
 
                     foreach (var i in inherited)
                     {
-                        object newValue = this.GetValue(i.Property);
+                        object newValue = GetValue(i.Property);
 
-                        if (!object.Equals(i.Value, newValue))
+                        if (!Equals(i.Value, newValue))
                         {
-                            this.RaisePropertyChanged(i.Property, i.Value, newValue, BindingPriority.LocalValue);
+                            RaisePropertyChanged(i.Property, i.Value, newValue, BindingPriority.LocalValue);
                         }
                     }
 
-                    if (this.inheritanceParent != null)
+                    if (_inheritanceParent != null)
                     {
-                        this.inheritanceParent.PropertyChanged += this.ParentPropertyChanged;
+                        _inheritanceParent.PropertyChanged += ParentPropertyChanged;
                     }
                 }
             }
@@ -191,8 +188,8 @@ namespace Perspex
         /// <param name="property">The property.</param>
         public object this[PerspexProperty property]
         {
-            get { return this.GetValue(property); }
-            set { this.SetValue(property, value); }
+            get { return GetValue(property); }
+            set { SetValue(property, value); }
         }
 
         /// <summary>
@@ -228,16 +225,16 @@ namespace Perspex
                 {
                     case BindingMode.Default:
                     case BindingMode.OneWay:
-                        this.Bind(binding.Property, value, binding.Priority);
+                        Bind(binding.Property, value, binding.Priority);
                         break;
                     case BindingMode.OneTime:
-                        this.SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
+                        SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
                         break;
                     case BindingMode.OneWayToSource:
-                        sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
+                        sourceBinding.Source.Bind(sourceBinding.Property, GetObservable(binding.Property), binding.Priority);
                         break;
                     case BindingMode.TwoWay:
-                        this.BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
+                        BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
                         break;
                 }
             }
@@ -258,7 +255,7 @@ namespace Perspex
             {
                 List<PerspexProperty> list;
 
-                if (registered.TryGetValue(type, out list))
+                if (s_registered.TryGetValue(type, out list))
                 {
                     foreach (PerspexProperty p in list)
                     {
@@ -286,10 +283,10 @@ namespace Perspex
 
             List<PerspexProperty> list;
 
-            if (!registered.TryGetValue(type, out list))
+            if (!s_registered.TryGetValue(type, out list))
             {
                 list = new List<PerspexProperty>();
-                registered.Add(type, list);
+                s_registered.Add(type, list);
             }
 
             if (!list.Contains(property))
@@ -306,7 +303,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.SetValue(property, PerspexProperty.UnsetValue);
+            SetValue(property, PerspexProperty.UnsetValue);
         }
 
         /// <summary>
@@ -329,16 +326,16 @@ namespace Perspex
                         }
                     };
 
-                    observer.OnNext(this.GetValue(property));
+                    observer.OnNext(GetValue(property));
 
-                    this.PropertyChanged += handler;
+                    PropertyChanged += handler;
 
                     return Disposable.Create(() =>
                     {
-                        this.PropertyChanged -= handler;
+                        PropertyChanged -= handler;
                     });
                 },
-                this.GetObservableDescription(property));
+                GetObservableDescription(property));
         }
 
         /// <summary>
@@ -351,7 +348,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return this.GetObservable((PerspexProperty)property).Cast<T>();
+            return GetObservable((PerspexProperty)property).Cast<T>();
         }
 
         /// <summary>
@@ -374,14 +371,14 @@ namespace Perspex
                         }
                     };
 
-                    this.PropertyChanged += handler;
+                    PropertyChanged += handler;
 
                     return Disposable.Create(() =>
                     {
-                        this.PropertyChanged -= handler;
+                        PropertyChanged -= handler;
                     });
                 },
-                this.GetObservableDescription(property));
+                GetObservableDescription(property));
         }
 
         /// <summary>
@@ -397,7 +394,7 @@ namespace Perspex
 
             PriorityValue value;
 
-            if (this.values.TryGetValue(property, out value))
+            if (_values.TryGetValue(property, out value))
             {
                 result = value.Value;
             }
@@ -408,7 +405,7 @@ namespace Perspex
 
             if (result == PerspexProperty.UnsetValue)
             {
-                result = this.GetDefaultValue(property);
+                result = GetDefaultValue(property);
             }
 
             return result;
@@ -424,7 +421,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return (T)this.GetValue((PerspexProperty)property);
+            return (T)GetValue((PerspexProperty)property);
         }
 
         /// <summary>
@@ -435,13 +432,13 @@ namespace Perspex
         /// </returns>
         public IEnumerable<PerspexProperty> GetRegisteredProperties()
         {
-            Type type = this.GetType();
+            Type type = GetType();
 
             while (type != null)
             {
                 List<PerspexProperty> list;
 
-                if (registered.TryGetValue(type, out list))
+                if (s_registered.TryGetValue(type, out list))
                 {
                     foreach (var p in list)
                     {
@@ -462,7 +459,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return this.values.ContainsKey(property);
+            return _values.ContainsKey(property);
         }
 
         /// <summary>
@@ -472,13 +469,13 @@ namespace Perspex
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(PerspexProperty property)
         {
-            Type type = this.GetType();
+            Type type = GetType();
 
             while (type != null)
             {
                 List<PerspexProperty> list;
 
-                if (registered.TryGetValue(type, out list))
+                if (s_registered.TryGetValue(type, out list))
                 {
                     if (list.Contains(property))
                     {
@@ -507,12 +504,12 @@ namespace Perspex
 
             PriorityValue v;
 
-            if (!this.IsRegistered(property))
+            if (!IsRegistered(property))
             {
                 throw new InvalidOperationException(string.Format(
                     "Property '{0}' not registered on '{1}'",
                     property.Name,
-                    this.GetType()));
+                    GetType()));
             }
 
             if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
@@ -524,18 +521,18 @@ namespace Perspex
                     value?.GetType().FullName ?? "(null)"));
             }
 
-            if (!this.values.TryGetValue(property, out v))
+            if (!_values.TryGetValue(property, out v))
             {
                 if (value == PerspexProperty.UnsetValue)
                 {
                     return;
                 }
 
-                v = this.CreatePriorityValue(property);
-                this.values.Add(property, v);
+                v = CreatePriorityValue(property);
+                _values.Add(property, v);
             }
 
-            this.propertyLog.Verbose(
+            _propertyLog.Verbose(
                 "Set {Property} to {$Value} with priority {Priority}",
                 property,
                 value,
@@ -557,7 +554,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            this.SetValue((PerspexProperty)property, value, priority);
+            SetValue((PerspexProperty)property, value, priority);
         }
 
         /// <summary>
@@ -579,21 +576,21 @@ namespace Perspex
             PriorityValue v;
             IDescription description = source as IDescription;
 
-            if (!this.IsRegistered(property))
+            if (!IsRegistered(property))
             {
                 throw new InvalidOperationException(string.Format(
                     "Property '{0}' not registered on '{1}'",
                     property.Name,
-                    this.GetType()));
+                    GetType()));
             }
 
-            if (!this.values.TryGetValue(property, out v))
+            if (!_values.TryGetValue(property, out v))
             {
-                v = this.CreatePriorityValue(property);
-                this.values.Add(property, v);
+                v = CreatePriorityValue(property);
+                _values.Add(property, v);
             }
 
-            this.propertyLog.Verbose(
+            _propertyLog.Verbose(
                 "Bound {Property} to {Binding} with priority {Priority}",
                 property,
                 source,
@@ -619,7 +616,7 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return this.Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
+            return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
         }
 
         /// <summary>
@@ -642,8 +639,8 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             return new CompositeDisposable(
-                this.Bind(property, source.GetObservable(sourceProperty)),
-                source.Bind(sourceProperty, this.GetObservable(property)));
+                Bind(property, source.GetObservable(sourceProperty)),
+                source.Bind(sourceProperty, GetObservable(property)));
         }
 
         /// <summary>
@@ -654,7 +651,7 @@ namespace Perspex
         {
             PriorityValue value;
 
-            if (this.values.TryGetValue(property, out value))
+            if (_values.TryGetValue(property, out value))
             {
                 value.Revalidate();
             }
@@ -666,7 +663,7 @@ namespace Perspex
         /// <returns>A collection of property/value tuples.</returns>
         internal IDictionary<PerspexProperty, PriorityValue> GetSetValues()
         {
-            return this.values;
+            return _values;
         }
 
         /// <summary>
@@ -700,7 +697,7 @@ namespace Perspex
         /// <returns>The <see cref="PriorityValue"/>.</returns>
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
-            Func<PerspexObject, object, object> validate = property.GetValidationFunc(this.GetType());
+            Func<PerspexObject, object, object> validate = property.GetValidationFunc(GetType());
             Func<object, object> validate2 = null;
 
             if (validate != null)
@@ -713,17 +710,17 @@ namespace Perspex
             result.Changed.Subscribe(x =>
             {
                 object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ?
-                    this.GetDefaultValue(property) :
+                    GetDefaultValue(property) :
                     x.Item1;
                 object newValue = (x.Item2 == PerspexProperty.UnsetValue) ?
-                    this.GetDefaultValue(property) :
+                    GetDefaultValue(property) :
                     x.Item2;
 
-                if (!object.Equals(oldValue, newValue))
+                if (!Equals(oldValue, newValue))
                 {
-                    this.RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
+                    RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
 
-                    this.propertyLog.Verbose(
+                    _propertyLog.Verbose(
                         "{Property} changed from {$Old} to {$Value} with priority {Priority}",
                         property,
                         oldValue,
@@ -742,13 +739,13 @@ namespace Perspex
         /// <returns>The default value.</returns>
         private object GetDefaultValue(PerspexProperty property)
         {
-            if (property.Inherits && this.inheritanceParent != null)
+            if (property.Inherits && _inheritanceParent != null)
             {
-                return this.inheritanceParent.GetValue(property);
+                return _inheritanceParent.GetValue(property);
             }
             else
             {
-                return property.GetDefaultValue(this.GetType());
+                return property.GetDefaultValue(GetType());
             }
         }
 
@@ -764,9 +761,9 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(e != null);
 
-            if (e.Property.Inherits && !this.IsSet(e.Property))
+            if (e.Property.Inherits && !IsSet(e.Property))
             {
-                this.RaisePropertyChanged(e.Property, e.OldValue, e.NewValue, BindingPriority.LocalValue);
+                RaisePropertyChanged(e.Property, e.OldValue, e.NewValue, BindingPriority.LocalValue);
             }
         }
 
@@ -777,7 +774,7 @@ namespace Perspex
         /// <returns>The description.</returns>
         private string GetObservableDescription(PerspexProperty property)
         {
-            return string.Format("{0}.{1}", this.GetType().Name, property.Name);
+            return string.Format("{0}.{1}", GetType().Name, property.Name);
         }
 
         /// <summary>
@@ -802,18 +799,18 @@ namespace Perspex
                 newValue,
                 priority);
 
-            this.OnPropertyChanged(e);
+            OnPropertyChanged(e);
             property.NotifyChanged(e);
 
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, e);
+                PropertyChanged(this, e);
             }
 
-            if (this.inpcChanged != null)
+            if (_inpcChanged != null)
             {
                 PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
-                this.inpcChanged(this, e2);
+                _inpcChanged(this, e2);
             }
         }
     }

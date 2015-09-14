@@ -59,6 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetLoader.cs" />
+    <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="CursorFactory.cs" />
     <Compile Include="GtkExtensions.cs" />
     <Compile Include="PopupImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexDictionary.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Perspex.Collections
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Linq;
-
     /// <summary>
     /// A notifying dictionary.
     /// </summary>
@@ -22,14 +19,14 @@ namespace Perspex.Collections
         INotifyCollectionChanged,
         INotifyPropertyChanged
     {
-        private Dictionary<TKey, TValue> inner;
+        private Dictionary<TKey, TValue> _inner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexDictionary{TKey, TValue}"/> class.
         /// </summary>
         public PerspexDictionary()
         {
-            this.inner = new Dictionary<TKey, TValue>();
+            _inner = new Dictionary<TKey, TValue>();
         }
 
         /// <summary>
@@ -43,28 +40,16 @@ namespace Perspex.Collections
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <inheritdoc/>
-        public int Count
-        {
-            get { return this.inner.Count; }
-        }
+        public int Count => _inner.Count;
 
         /// <inheritdoc/>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <inheritdoc/>
-        public ICollection<TKey> Keys
-        {
-            get { return this.inner.Keys; }
-        }
+        public ICollection<TKey> Keys => _inner.Keys;
 
         /// <inheritdoc/>
-        public ICollection<TValue> Values
-        {
-            get { return this.inner.Values; }
-        }
+        public ICollection<TValue> Values => _inner.Values;
 
         /// <summary>
         /// Gets or sets the named resource.
@@ -75,34 +60,34 @@ namespace Perspex.Collections
         {
             get
             {
-                return this.inner[key];
+                return _inner[key];
             }
 
             set
             {
                 TValue old;
-                bool replace = this.inner.TryGetValue(key, out old);
-                this.inner[key] = value;
+                bool replace = _inner.TryGetValue(key, out old);
+                _inner[key] = value;
 
                 if (replace)
                 {
-                    if (this.PropertyChanged != null)
+                    if (PropertyChanged != null)
                     {
-                        this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                        PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
                     }
 
-                    if (this.CollectionChanged != null)
+                    if (CollectionChanged != null)
                     {
                         var e = new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Replace,
                             new KeyValuePair<TKey, TValue>(key, value),
                             new KeyValuePair<TKey, TValue>(key, old));
-                        this.CollectionChanged(this, e);
+                        CollectionChanged(this, e);
                     }
                 }
                 else
                 {
-                    this.NotifyAdd(key, value);
+                    NotifyAdd(key, value);
                 }
             }
         }
@@ -110,49 +95,49 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public void Add(TKey key, TValue value)
         {
-            this.inner.Add(key, value);
-            this.NotifyAdd(key, value);
+            _inner.Add(key, value);
+            NotifyAdd(key, value);
         }
 
         /// <inheritdoc/>
         public void Clear()
         {
-            var old = this.inner;
+            var old = _inner;
 
-            this.inner = new Dictionary<TKey, TValue>();
+            _inner = new Dictionary<TKey, TValue>();
 
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[]"));
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged(this, new PropertyChangedEventArgs($"Item[]"));
             }
 
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Remove,
                     old.ToList(),
                     -1);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
         }
 
         /// <inheritdoc/>
         public bool ContainsKey(TKey key)
         {
-            return this.inner.ContainsKey(key);
+            return _inner.ContainsKey(key);
         }
 
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            ((IDictionary<TKey, TValue>)this.inner).CopyTo(array, arrayIndex);
+            ((IDictionary<TKey, TValue>)_inner).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc/>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <inheritdoc/>
@@ -160,21 +145,21 @@ namespace Perspex.Collections
         {
             TValue value;
 
-            if (this.inner.TryGetValue(key, out value))
+            if (_inner.TryGetValue(key, out value))
             {
-                if (this.PropertyChanged != null)
+                if (PropertyChanged != null)
                 {
-                    this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                    this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                    PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                    PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
                 }
 
-                if (this.CollectionChanged != null)
+                if (CollectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Remove,
                         new[] { new KeyValuePair<TKey, TValue>(key, value) },
                         -1);
-                    this.CollectionChanged(this, e);
+                    CollectionChanged(this, e);
                 }
 
                 return true;
@@ -188,49 +173,49 @@ namespace Perspex.Collections
         /// <inheritdoc/>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return this.inner.TryGetValue(key, out value);
+            return _inner.TryGetValue(key, out value);
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.inner.GetEnumerator();
+            return _inner.GetEnumerator();
         }
 
         /// <inheritdoc/>
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            this.Add(item.Key, item.Value);
+            Add(item.Key, item.Value);
         }
 
         /// <inheritdoc/>
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            return this.inner.Contains(item);
+            return _inner.Contains(item);
         }
 
         /// <inheritdoc/>
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            return this.Remove(item.Key);
+            return Remove(item.Key);
         }
 
         private void NotifyAdd(TKey key, TValue value)
         {
-            if (this.PropertyChanged != null)
+            if (PropertyChanged != null)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                this.PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
             }
 
-            if (this.CollectionChanged != null)
+            if (CollectionChanged != null)
             {
                 var val = new KeyValuePair<TKey, TValue>(key, value);
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Add,
                     new[] { new KeyValuePair<TKey, TValue>(key, value) },
                     -1);
-                this.CollectionChanged(this, e);
+                CollectionChanged(this, e);
             }
         }
     }

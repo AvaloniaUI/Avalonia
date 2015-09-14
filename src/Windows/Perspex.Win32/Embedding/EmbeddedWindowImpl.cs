@@ -1,46 +1,16 @@
-﻿namespace Perspex.Win32
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Windows.Interop;
-    using Perspex.Win32.Interop;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Perspex.Win32.Interop;
+
+namespace Perspex.Win32
+{
     public class EmbeddedWindowImpl : WindowImpl
     {
         private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
 
-        public HwndHost Host { get; set; }
-
-        private class FakeHost : HwndHost
-        {
-            private readonly IntPtr hWnd;
-
-            public FakeHost(IntPtr hWnd)
-            {
-                this.hWnd = hWnd;
-            }
-
-            protected override HandleRef BuildWindowCore(HandleRef hwndParent)
-            {
-                UnmanagedMethods.SetParent(this.hWnd, hwndParent.Handle);
-                return new HandleRef(this, this.hWnd);
-            }
-
-            protected override void DestroyWindowCore(HandleRef hwnd)
-            {
-            }
-        }
-
         public IntPtr Handle { get; private set; }
-
-        public HwndHost CreateWpfHost()
-        {
-            return new FakeHost(this.Handle);
-        }
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
@@ -57,7 +27,7 @@
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
-            this.Handle = hWnd;
+            Handle = hWnd;
             return hWnd;
         }
     }

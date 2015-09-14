@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RenderTargetBitmap.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Media.Imaging
 {
-    using System;
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
     /// </summary>
@@ -28,10 +25,7 @@ namespace Perspex.Media.Imaging
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public new IRenderTargetBitmapImpl PlatformImpl
-        {
-            get { return (IRenderTargetBitmapImpl)base.PlatformImpl; }
-        }
+        public new IRenderTargetBitmapImpl PlatformImpl => (IRenderTargetBitmapImpl)base.PlatformImpl;
 
         /// <summary>
         /// Renders an <see cref="IVisual"/> into the bitmap.
@@ -42,7 +36,7 @@ namespace Perspex.Media.Imaging
         /// </remarks>
         public void Render(IVisual visual)
         {
-            this.PlatformImpl.Render(visual);
+            PlatformImpl.Render(visual);
         }
 
         /// <summary>
@@ -50,7 +44,7 @@ namespace Perspex.Media.Imaging
         /// </summary>
         public void Dispose()
         {
-            this.PlatformImpl.Dispose();
+            PlatformImpl.Dispose();
         }
 
         /// <summary>

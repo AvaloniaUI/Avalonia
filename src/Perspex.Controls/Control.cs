@@ -1,24 +1,21 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Control.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Collections;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.LogicalTree;
+using Perspex.Rendering;
+using Perspex.Styling;
+using Splat;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.LogicalTree;
-    using Perspex.Rendering;
-    using Perspex.Styling;
-    using Splat;
-
     /// <summary>
     /// Base class for Perspex controls.
     /// </summary>
@@ -70,27 +67,27 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
-        private Classes classes = new Classes();
+        private readonly Classes _classes = new Classes();
 
-        private DataTemplates dataTemplates;
+        private DataTemplates _dataTemplates;
 
-        private IControl focusAdorner;
+        private IControl _focusAdorner;
 
-        private string id;
+        private string _id;
 
-        private IPerspexList<ILogical> logicalChildren;
+        private IPerspexList<ILogical> _logicalChildren;
 
-        private Styles styles;
+        private Styles _styles;
 
         /// <summary>
         /// Initializes static members of the <see cref="Control"/> class.
         /// </summary>
         static Control()
         {
-            Control.AffectsMeasure(Control.IsVisibleProperty);
-            PseudoClass(InputElement.IsEnabledCoreProperty, x => !x, ":disabled");
-            PseudoClass(InputElement.IsFocusedProperty, ":focus");
-            PseudoClass(InputElement.IsPointerOverProperty, ":pointerover");
+            AffectsMeasure(IsVisibleProperty);
+            PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass(IsFocusedProperty, ":focus");
+            PseudoClass(IsPointerOverProperty, ":pointerover");
         }
 
         /// <summary>
@@ -112,15 +109,15 @@ namespace Perspex.Controls
         {
             get
             {
-                return this.classes;
+                return _classes;
             }
 
             set
             {
-                if (this.classes != value)
+                if (_classes != value)
                 {
-                    this.classes.Clear();
-                    this.classes.Add(value);
+                    _classes.Clear();
+                    _classes.Add(value);
                 }
             }
         }
@@ -134,8 +131,8 @@ namespace Perspex.Controls
         /// </remarks>
         public object DataContext
         {
-            get { return this.GetValue(DataContextProperty); }
-            set { this.SetValue(DataContextProperty, value); }
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
         }
 
         /// <summary>
@@ -143,8 +140,8 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplate<IControl> FocusAdorner
         {
-            get { return this.GetValue(FocusAdornerProperty); }
-            set { this.SetValue(FocusAdornerProperty, value); }
+            get { return GetValue(FocusAdornerProperty); }
+            set { SetValue(FocusAdornerProperty, value); }
         }
 
         /// <summary>
@@ -158,17 +155,17 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.dataTemplates == null)
+                if (_dataTemplates == null)
                 {
-                    this.dataTemplates = new DataTemplates();
+                    _dataTemplates = new DataTemplates();
                 }
 
-                return this.dataTemplates;
+                return _dataTemplates;
             }
 
             set
             {
-                this.dataTemplates = value;
+                _dataTemplates = value;
             }
         }
 
@@ -183,12 +180,12 @@ namespace Perspex.Controls
         {
             get
             {
-                return this.id;
+                return _id;
             }
 
             set
             {
-                if (this.id != null)
+                if (_id != null)
                 {
                     throw new InvalidOperationException("ID already set.");
                 }
@@ -198,7 +195,7 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("Cannot set ID : control already added to tree.");
                 }
 
-                this.id = value;
+                _id = value;
             }
         }
 
@@ -214,35 +211,32 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.styles == null)
+                if (_styles == null)
                 {
-                    this.styles = new Styles();
+                    _styles = new Styles();
                 }
 
-                return this.styles;
+                return _styles;
             }
 
             set
             {
-                this.styles = value;
+                _styles = value;
             }
         }
 
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        public IControl Parent
-        {
-            get { return this.GetValue(ParentProperty); }
-        }
+        public IControl Parent => GetValue(ParentProperty);
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
         /// </summary>
         public object Tag
         {
-            get { return this.GetValue(TagProperty); }
-            set { this.SetValue(TagProperty, value); }
+            get { return GetValue(TagProperty); }
+            set { SetValue(TagProperty, value); }
         }
 
         /// <summary>
@@ -250,25 +244,19 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplatedControl TemplatedParent
         {
-            get { return this.GetValue(TemplatedParentProperty); }
-            internal set { this.SetValue(TemplatedParentProperty, value); }
+            get { return GetValue(TemplatedParentProperty); }
+            internal set { SetValue(TemplatedParentProperty, value); }
         }
 
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        ILogical ILogical.LogicalParent
-        {
-            get { return this.Parent; }
-        }
+        ILogical ILogical.LogicalParent => Parent;
 
         /// <summary>
         /// Gets the control's logical children.
         /// </summary>
-        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren
-        {
-            get { return this.LogicalChildren; }
-        }
+        IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <summary>
         /// Gets the type by which the control is styled.
@@ -279,10 +267,7 @@ namespace Perspex.Controls
         /// derives from Button and adds extra functionality but is still styled as a regular
         /// Button.
         /// </remarks>
-        Type IStyleable.StyleKey
-        {
-            get { return this.GetType(); }
-        }
+        Type IStyleable.StyleKey => GetType();
 
         /// <summary>
         /// Gets the control's logical children.
@@ -291,12 +276,12 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.logicalChildren == null)
+                if (_logicalChildren == null)
                 {
-                    this.logicalChildren = new PerspexList<ILogical>();
+                    _logicalChildren = new PerspexList<ILogical>();
                 }
 
-                return this.logicalChildren;
+                return _logicalChildren;
             }
         }
 
@@ -306,14 +291,14 @@ namespace Perspex.Controls
         /// <param name="parent">The parent.</param>
         void ISetLogicalParent.SetParent(ILogical parent)
         {
-            var old = this.Parent;
+            var old = Parent;
 
             if (old != null && parent != null)
             {
                 throw new InvalidOperationException("The Control already has a parent.");
             }
 
-            this.SetValue(ParentProperty, parent);
+            SetValue(ParentProperty, parent);
         }
 
         /// <summary>
@@ -367,7 +352,7 @@ namespace Perspex.Controls
         {
             base.OnGotFocus(e);
 
-            if (this.IsFocused &&
+            if (IsFocused &&
                 (e.NavigationMethod == NavigationMethod.Tab ||
                  e.NavigationMethod == NavigationMethod.Directional))
             {
@@ -375,20 +360,20 @@ namespace Perspex.Controls
 
                 if (adornerLayer != null)
                 {
-                    if (this.focusAdorner == null)
+                    if (_focusAdorner == null)
                     {
-                        var template = this.GetValue(FocusAdornerProperty);
+                        var template = GetValue(FocusAdornerProperty);
 
                         if (template != null)
                         {
-                            this.focusAdorner = template.Build();
+                            _focusAdorner = template.Build();
                         }
                     }
 
-                    if (this.focusAdorner != null)
+                    if (_focusAdorner != null)
                     {
-                        AdornerLayer.SetAdornedElement((Visual)this.focusAdorner, this);
-                        adornerLayer.Children.Add(this.focusAdorner);
+                        AdornerLayer.SetAdornedElement((Visual)_focusAdorner, this);
+                        adornerLayer.Children.Add(_focusAdorner);
                     }
                 }
             }
@@ -399,11 +384,11 @@ namespace Perspex.Controls
         {
             base.OnLostFocus(e);
 
-            if (this.focusAdorner != null)
+            if (_focusAdorner != null)
             {
-                var adornerLayer = this.focusAdorner.Parent as Panel;
-                adornerLayer.Children.Remove(this.focusAdorner);
-                this.focusAdorner = null;
+                var adornerLayer = _focusAdorner.Parent as Panel;
+                adornerLayer.Children.Remove(_focusAdorner);
+                _focusAdorner = null;
             }
         }
 
@@ -422,7 +407,7 @@ namespace Perspex.Controls
         /// <param name="collection">The logical children to use.</param>
         protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
         {
-            this.logicalChildren = collection;
+            _logicalChildren = collection;
         }
     }
 }

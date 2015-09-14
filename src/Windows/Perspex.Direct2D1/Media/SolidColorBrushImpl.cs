@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SolidColorBrushImpl.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Direct2D1.Media
 {
@@ -10,7 +7,15 @@ namespace Perspex.Direct2D1.Media
     {
         public SolidColorBrushImpl(Perspex.Media.SolidColorBrush brush, SharpDX.Direct2D1.RenderTarget target)
         {
-            this.PlatformBrush = new SharpDX.Direct2D1.SolidColorBrush(target, brush?.Color.ToDirect2D() ?? new SharpDX.Color4());
+            PlatformBrush = new SharpDX.Direct2D1.SolidColorBrush(
+                target,
+                brush?.Color.ToDirect2D() ?? new SharpDX.Color4(),
+                new SharpDX.Direct2D1.BrushProperties
+                {
+                    Opacity = brush != null ? (float)brush.Opacity : 1.0f,
+                    Transform = target.Transform
+                }
+            );
         }
     }
 }

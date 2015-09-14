@@ -1,35 +1,29 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Interactive.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Perspex.Layout;
+using Perspex.VisualTree;
 
 namespace Perspex.Interactivity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
-    using Perspex.Layout;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Base class for objects that raise routed events.
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> eventHandlers =
+        private readonly Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers =
             new Dictionary<RoutedEvent, List<EventSubscription>>();
 
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunnelling events.
         /// </summary>
-        IInteractive IInteractive.InteractiveParent
-        {
-            get { return ((IVisual)this).VisualParent as IInteractive; }
-        }
+        IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -50,10 +44,10 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (!this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (!_eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
                 subscriptions = new List<EventSubscription>();
-                this.eventHandlers.Add(routedEvent, subscriptions);
+                _eventHandlers.Add(routedEvent, subscriptions);
             }
 
             var sub = new EventSubscription
@@ -83,7 +77,7 @@ namespace Perspex.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            return this.AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+            return AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
         }
 
         /// <summary>
@@ -98,7 +92,7 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (this.eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (_eventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
                 subscriptions.RemoveAll(x => x.Handler == handler);
             }
@@ -113,7 +107,7 @@ namespace Perspex.Interactivity
         public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
             where TEventArgs : RoutedEventArgs
         {
-            this.RemoveHandler(routedEvent, (Delegate)handler);
+            RemoveHandler(routedEvent, (Delegate)handler);
         }
 
         /// <summary>
@@ -129,17 +123,17 @@ namespace Perspex.Interactivity
             if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
                 e.Route = RoutingStrategies.Direct;
-                this.RaiseEventImpl(e);
+                RaiseEventImpl(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
             {
-                this.TunnelEvent(e);
+                TunnelEvent(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
             {
-                this.BubbleEvent(e);
+                BubbleEvent(e);
             }
         }
 
@@ -187,7 +181,7 @@ namespace Perspex.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (this.eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
+            if (_eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
             {
                 foreach (var sub in subscriptions.ToList())
                 {

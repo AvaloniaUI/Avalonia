@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ITopLevelImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Controls;
+using Perspex.Input;
+using Perspex.Input.Raw;
 
 namespace Perspex.Platform
 {
-    using System;
-    using Perspex.Controls;
-    using Perspex.Input;
-    using Perspex.Input.Raw;
-
     public interface ITopLevelImpl : IDisposable
     {
         Size ClientSize { get; set; }
@@ -36,5 +33,11 @@ namespace Perspex.Platform
         void SetOwner(TopLevel owner);
 
         Point PointToScreen(Point point);
+
+        /// <summary>
+        /// Sets the cursor associated with the window.
+        /// </summary>
+        /// <param name="cursor">The cursor. Use null for default cursor</param>
+        void SetCursor(IPlatformHandle cursor);
     }
 }

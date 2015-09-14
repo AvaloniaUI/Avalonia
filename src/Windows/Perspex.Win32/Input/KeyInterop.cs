@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="KeyInterop.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Text;
+using Perspex.Input;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32.Input
 {
-    using System.Collections.Generic;
-    using System.Text;
-    using Perspex.Input;
-    using Perspex.Win32.Interop;
-
     public static class KeyInterop
     {
-        private static Dictionary<Key, int> virtualKeyFromKey = new Dictionary<Key, int>
+        private static readonly Dictionary<Key, int> s_virtualKeyFromKey = new Dictionary<Key, int>
         {
             { Key.None, 0 },
             { Key.Cancel, 3 },
@@ -190,7 +187,7 @@ namespace Perspex.Win32.Input
             { Key.DeadCharProcessed, 0 },
         };
 
-        private static Dictionary<int, Key> keyFromVirtualKey = new Dictionary<int, Key>
+        private static readonly Dictionary<int, Key> s_keyFromVirtualKey = new Dictionary<int, Key>
         {
             { 0, Key.None },
             { 3, Key.Cancel },
@@ -368,14 +365,14 @@ namespace Perspex.Win32.Input
         public static Key KeyFromVirtualKey(int virtualKey)
         {
             Key result;
-            keyFromVirtualKey.TryGetValue(virtualKey, out result);
+            s_keyFromVirtualKey.TryGetValue(virtualKey, out result);
             return result;
         }
 
         public static int VirtualKeyFromKey(Key key)
         {
             int result;
-            virtualKeyFromKey.TryGetValue(key, out result);
+            s_virtualKeyFromKey.TryGetValue(key, out result);
             return result;
         }
     }

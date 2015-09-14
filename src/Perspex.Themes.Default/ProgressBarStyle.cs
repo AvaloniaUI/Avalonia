@@ -1,21 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ProgressBarStyle.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Layout;
+using Perspex.Media;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Shapes;
-    using Perspex.Controls.Templates;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Perspex.Styling;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="ProgressBar"/> control.
@@ -27,15 +26,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ProgressBarStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ProgressBar>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ProgressBar.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
-                        new Setter(ProgressBar.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
-                        new Setter(ProgressBar.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
+                        new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
                     },
                 }
             });
@@ -50,9 +49,9 @@ namespace Perspex.Themes.Default
         {
             Border container = new Border
             {
-                [~Border.BackgroundProperty] = control[~ProgressBar.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~ProgressBar.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~ProgressBar.BorderThicknessProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
 
                 Child = new Grid
                 {
@@ -65,7 +64,7 @@ namespace Perspex.Themes.Default
                         {
                             Name = "PART_Track",
                             BorderThickness = 1,
-                            [~Border.BorderBrushProperty] = control[~ProgressBar.BackgroundProperty],
+                            [~Border.BorderBrushProperty] = control[~TemplatedControl.BackgroundProperty],
                         },
 
                         new Border
@@ -73,7 +72,7 @@ namespace Perspex.Themes.Default
                             Name = "PART_Indicator",
                             BorderThickness = 1,
                             HorizontalAlignment = HorizontalAlignment.Left,
-                            [~Border.BackgroundProperty] = control[~ProgressBar.ForegroundProperty],
+                            [~Border.BackgroundProperty] = control[~TemplatedControl.ForegroundProperty],
                             Child = new Grid
                             {
                                 Name = "Animation",

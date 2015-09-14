@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PriorityValue.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Subjects;
+using System.Text;
+using Perspex.Utilities;
 
 namespace Perspex
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Subjects;
-    using System.Text;
-    using Perspex.Utilities;
-
     /// <summary>
     /// Maintains a list of prioritised bindings together with a current value.
     /// </summary>
@@ -30,32 +27,32 @@ namespace Perspex
         /// <summary>
         /// The name of the property.
         /// </summary>
-        private string name;
+        private readonly string _name;
 
         /// <summary>
         /// The value type.
         /// </summary>
-        private Type valueType;
+        private readonly Type _valueType;
 
         /// <summary>
         /// The currently registered bindings organised by priority.
         /// </summary>
-        private Dictionary<int, PriorityLevel> levels = new Dictionary<int, PriorityLevel>();
+        private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
 
         /// <summary>
         /// The changed observable.
         /// </summary>
-        private Subject<Tuple<object, object>> changed = new Subject<Tuple<object, object>>();
+        private readonly Subject<Tuple<object, object>> _changed = new Subject<Tuple<object, object>>();
 
         /// <summary>
         /// The current value.
         /// </summary>
-        private object value;
+        private object _value;
 
         /// <summary>
         /// The function used to validate the value, if any.
         /// </summary>
-        private Func<object, object> validate;
+        private readonly Func<object, object> _validate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -65,11 +62,11 @@ namespace Perspex
         /// <param name="validate">An optional validation function.</param>
         public PriorityValue(string name, Type valueType, Func<object, object> validate = null)
         {
-            this.name = name;
-            this.valueType = valueType;
-            this.value = PerspexProperty.UnsetValue;
-            this.ValuePriority = int.MaxValue;
-            this.validate = validate;
+            _name = name;
+            _valueType = valueType;
+            _value = PerspexProperty.UnsetValue;
+            ValuePriority = int.MaxValue;
+            _validate = validate;
         }
 
         /// <summary>
@@ -78,18 +75,12 @@ namespace Perspex
         /// <remarks>
         /// The old and new values may be the same, this class does not check for distinct values.
         /// </remarks>
-        public IObservable<Tuple<object, object>> Changed
-        {
-            get { return this.changed; }
-        }
+        public IObservable<Tuple<object, object>> Changed => _changed;
 
         /// <summary>
         /// Gets the current value.
         /// </summary>
-        public object Value
-        {
-            get { return this.value; }
-        }
+        public object Value => _value;
 
         /// <summary>
         /// Gets the priority of the binding that is currently active.
@@ -110,7 +101,7 @@ namespace Perspex
         /// </returns>
         public IDisposable Add(IObservable<object> binding, int priority)
         {
-            return this.GetLevel(priority).Add(binding);
+            return GetLevel(priority).Add(binding);
         }
 
         /// <summary>
@@ -120,7 +111,7 @@ namespace Perspex
         /// <param name="priority">The priority</param>
         public void SetDirectValue(object value, int priority)
         {
-            this.GetLevel(priority).DirectValue = value;
+            GetLevel(priority).DirectValue = value;
         }
 
         /// <summary>
@@ -129,7 +120,7 @@ namespace Perspex
         /// <returns>An enumerable collection of bindings.</returns>
         public IEnumerable<PriorityBindingEntry> GetBindings()
         {
-            foreach (var level in this.levels)
+            foreach (var level in _levels)
             {
                 foreach (var binding in level.Value.Bindings)
                 {
@@ -148,14 +139,14 @@ namespace Perspex
             var b = new StringBuilder();
             var first = true;
 
-            foreach (var level in this.levels)
+            foreach (var level in _levels)
             {
                 if (!first)
                 {
                     b.AppendLine();
                 }
 
-                b.Append(this.ValuePriority == level.Key ? "*" : string.Empty);
+                b.Append(ValuePriority == level.Key ? "*" : string.Empty);
                 b.Append("Priority ");
                 b.Append(level.Key);
                 b.Append(": ");
@@ -183,13 +174,13 @@ namespace Perspex
         /// </summary>
         public void Revalidate()
         {
-            if (this.validate != null)
+            if (_validate != null)
             {
                 PriorityLevel level;
 
-                if (this.levels.TryGetValue(this.ValuePriority, out level))
+                if (_levels.TryGetValue(ValuePriority, out level))
                 {
-                    this.UpdateValue(level.Value, level.Priority);
+                    UpdateValue(level.Value, level.Priority);
                 }
             }
         }
@@ -204,11 +195,11 @@ namespace Perspex
         {
             PriorityLevel result;
 
-            if (!this.levels.TryGetValue(priority, out result))
+            if (!_levels.TryGetValue(priority, out result))
             {
                 var mode = (LevelPrecedenceMode)(priority % 2);
-                result = new PriorityLevel(priority, mode, this.ValueChanged);
-                this.levels.Add(priority, result);
+                result = new PriorityLevel(priority, mode, ValueChanged);
+                _levels.Add(priority, result);
             }
 
             return result;
@@ -221,25 +212,25 @@ namespace Perspex
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            if (!TypeUtilities.TryCast(this.valueType, value, out value))
+            if (!TypeUtilities.TryCast(_valueType, value, out value))
             {
                 throw new InvalidOperationException(string.Format(
                     "Invalid value for Property '{0}': {1} ({2})",
-                    this.name,
+                    _name,
                     value,
                     value?.GetType().FullName ?? "(null)"));
             }
 
-            var old = this.value;
+            var old = _value;
 
-            if (this.validate != null)
+            if (_validate != null)
             {
-                value = this.validate(value);
+                value = _validate(value);
             }
 
-            this.ValuePriority = priority;
-            this.value = value;
-            this.changed.OnNext(Tuple.Create(old, this.value));
+            ValuePriority = priority;
+            _value = value;
+            _changed.OnNext(Tuple.Create(old, _value));
         }
 
         /// <summary>
@@ -248,24 +239,24 @@ namespace Perspex
         /// <param name="level">The priority level of the changed entry.</param>
         private void ValueChanged(PriorityLevel level)
         {
-            if (level.Priority <= this.ValuePriority)
+            if (level.Priority <= ValuePriority)
             {
                 if (level.Value != PerspexProperty.UnsetValue)
                 {
-                    this.UpdateValue(level.Value, level.Priority);
+                    UpdateValue(level.Value, level.Priority);
                 }
                 else
                 {
-                    foreach (var i in this.levels.Values.OrderBy(x => x.Priority))
+                    foreach (var i in _levels.Values.OrderBy(x => x.Priority))
                     {
                         if (i.Value != PerspexProperty.UnsetValue)
                         {
-                            this.UpdateValue(i.Value, i.Priority);
+                            UpdateValue(i.Value, i.Priority);
                             return;
                         }
                     }
 
-                    this.UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
+                    UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
                 }
             }
         }

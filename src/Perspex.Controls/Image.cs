@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Image.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Media;
+using Perspex.Media.Imaging;
 
 namespace Perspex.Controls
 {
-    using System;
-    using Perspex.Media;
-    using Perspex.Media.Imaging;
-
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -32,8 +29,8 @@ namespace Perspex.Controls
         /// </summary>
         public Bitmap Source
         {
-            get { return this.GetValue(SourceProperty); }
-            set { this.SetValue(SourceProperty, value); }
+            get { return GetValue(SourceProperty); }
+            set { SetValue(SourceProperty, value); }
         }
 
         /// <summary>
@@ -41,8 +38,8 @@ namespace Perspex.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)this.GetValue(StretchProperty); }
-            set { this.SetValue(StretchProperty, value); }
+            get { return (Stretch)GetValue(StretchProperty); }
+            set { SetValue(StretchProperty, value); }
         }
 
         /// <summary>
@@ -51,13 +48,13 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(IDrawingContext context)
         {
-            Bitmap source = this.Source;
+            Bitmap source = Source;
 
             if (source != null)
             {
-                Rect viewPort = new Rect(this.Bounds.Size);
+                Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-                Vector scale = CalculateScaling(this.Bounds.Size, sourceSize, this.Stretch);
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterIn(new Rect(scaledSize))
@@ -80,56 +77,25 @@ namespace Perspex.Controls
             double height = 0;
             Vector scale = new Vector();
 
-            if (this.Source != null)
+            if (Source != null)
             {
-                width = this.Source.PixelWidth;
-                height = this.Source.PixelHeight;
+                width = Source.PixelWidth;
+                height = Source.PixelHeight;
 
-                if (this.Width > 0)
+                if (Width > 0)
                 {
-                    availableSize = new Size(this.Width, availableSize.Height);
+                    availableSize = new Size(Width, availableSize.Height);
                 }
 
-                if (this.Height > 0)
+                if (Height > 0)
                 {
-                    availableSize = new Size(availableSize.Width, this.Height);
+                    availableSize = new Size(availableSize.Width, Height);
                 }
 
-                scale = CalculateScaling(availableSize, new Size(width, height), this.Stretch);
+                scale = Stretch.CalculateScaling(availableSize, new Size(width, height));
             }
 
             return new Size(width * scale.X, height * scale.Y);
-        }
-
-        /// <summary>
-        /// Calculates the scaling for the image.
-        /// </summary>
-        /// <param name="availableSize">The size available to display the image.</param>
-        /// <param name="imageSize">The pxiel size of the image.</param>
-        /// <param name="stretch">The stretch mode of the control.</param>
-        /// <returns>A vector with the X and Y scaling factors.</returns>
-        private static Vector CalculateScaling(Size availableSize, Size imageSize, Stretch stretch)
-        {
-            double scaleX = 1;
-            double scaleY = 1;
-
-            if (stretch != Stretch.None)
-            {
-                scaleX = availableSize.Width / imageSize.Width;
-                scaleY = availableSize.Height / imageSize.Height;
-
-                switch (stretch)
-                {
-                    case Stretch.Uniform:
-                        scaleX = scaleY = Math.Min(scaleX, scaleY);
-                        break;
-                    case Stretch.UniformToFill:
-                        scaleX = scaleY = Math.Max(scaleX, scaleY);
-                        break;
-                }
-            }
-
-            return new Vector(scaleX, scaleY);
         }
     }
 }

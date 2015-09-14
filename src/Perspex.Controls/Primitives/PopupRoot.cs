@@ -1,26 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PopupRoot.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Interactivity;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Interactivity;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
     public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot
     {
-        private IDisposable presenterSubscription;
+        private IDisposable _presenterSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -47,16 +44,13 @@ namespace Perspex.Controls.Primitives
         public PopupRoot(IDependencyResolver dependencyResolver)
             : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
         {
-            this.GetObservable(ParentProperty).Subscribe(x => this.InheritanceParent = (PerspexObject)x);
+            GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public new IPopupImpl PlatformImpl
-        {
-            get { return (IPopupImpl)base.PlatformImpl; }
-        }
+        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
 
         /// <summary>
         /// Gets the parent control in the event route.
@@ -64,18 +58,12 @@ namespace Perspex.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive IInteractive.InteractiveParent
-        {
-            get { return this.Parent; }
-        }
+        IInteractive IInteractive.InteractiveParent => Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        IVisual IHostedVisualTreeRoot.Host
-        {
-            get { return this.Parent; }
-        }
+        IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <summary>
         /// Sets the position of the popup in screen coordinates.
@@ -83,7 +71,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="p">The position.</param>
         public void SetPosition(Point p)
         {
-            this.PlatformImpl.SetPosition(p);
+            PlatformImpl.SetPosition(p);
         }
 
         /// <summary>
@@ -91,8 +79,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public void Hide()
         {
-            this.PlatformImpl.Hide();
-            this.IsVisible = false;
+            PlatformImpl.Hide();
+            IsVisible = false;
         }
 
         /// <summary>
@@ -100,9 +88,9 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public void Show()
         {
-            this.PlatformImpl.Show();
-            this.LayoutManager?.ExecuteLayoutPass();
-            this.IsVisible = true;
+            PlatformImpl.Show();
+            LayoutManager?.ExecuteLayoutPass();
+            IsVisible = true;
         }
 
         /// <inheritdoc/>
@@ -110,27 +98,27 @@ namespace Perspex.Controls.Primitives
         {
             base.OnTemplateApplied();
 
-            if (this.Parent.TemplatedParent != null)
+            if (Parent.TemplatedParent != null)
             {
-                if (this.presenterSubscription != null)
+                if (_presenterSubscription != null)
                 {
-                    this.presenterSubscription.Dispose();
-                    this.presenterSubscription = null;
+                    _presenterSubscription.Dispose();
+                    _presenterSubscription = null;
                 }
 
-                var presenter = this.Presenter;
+                var presenter = Presenter;
 
                 if (presenter != null)
                 {
                     presenter.GetObservable(ContentPresenter.ChildProperty)
-                        .Subscribe(this.SetTemplatedParentAndApplyChildTemplates);
+                        .Subscribe(SetTemplatedParentAndApplyChildTemplates);
                 }
             }
         }
 
         private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            var templatedParent = this.Parent.TemplatedParent;
+            var templatedParent = Parent.TemplatedParent;
 
             if (control.TemplatedParent == null)
             {
@@ -143,7 +131,7 @@ namespace Perspex.Controls.Primitives
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                    SetTemplatedParentAndApplyChildTemplates(child);
                 }
             }
         }

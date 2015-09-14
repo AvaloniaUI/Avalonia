@@ -1,62 +1,52 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Win32Platform.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Input.Platform;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
+using System.Runtime.InteropServices;
+using Perspex.Input;
+using Perspex.Platform;
+using Perspex.Win32.Input;
+using Perspex.Win32.Interop;
+using Splat;
 
 namespace Perspex.Win32
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Reactive.Disposables;
-    using System.Runtime.InteropServices;
-    using Perspex.Input;
-    using Perspex.Platform;
-    using Perspex.Win32.Input;
-    using Perspex.Win32.Interop;
-    using Splat;
-
     public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings
     {
-        private static Win32Platform instance = new Win32Platform();
+        private static readonly Win32Platform s_instance = new Win32Platform();
 
-        private UnmanagedMethods.WndProc wndProcDelegate;
+        private UnmanagedMethods.WndProc _wndProcDelegate;
 
-        private IntPtr hwnd;
+        private IntPtr _hwnd;
 
-        private List<Delegate> delegates = new List<Delegate>();
+        private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
-            this.CreateMessageWindow();
+            CreateMessageWindow();
         }
 
-        public Size DoubleClickSize
-        {
-            get
-            {
-                return new Size(
-                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
-            }
-        }
+        public Size DoubleClickSize => new Size(
+            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
+            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
-        public TimeSpan DoubleClickTime
-        {
-            get { return TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime()); }
-        }
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
 
         private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-
+            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
-            locator.Register(() => instance, typeof(IPlatformSettings));
-            locator.Register(() => instance, typeof(IPlatformThreadingInterface));
+            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
+            locator.Register(() => s_instance, typeof(IPlatformSettings));
+            locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
             locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
         }
 
@@ -100,11 +90,11 @@ namespace Perspex.Win32
                 timerDelegate);
 
             // Prevent timerDelegate being garbage collected.
-            this.delegates.Add(timerDelegate);
+            _delegates.Add(timerDelegate);
 
             return Disposable.Create(() =>
             {
-                this.delegates.Remove(timerDelegate);
+                _delegates.Remove(timerDelegate);
                 UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
             });
         }
@@ -127,13 +117,13 @@ namespace Perspex.Win32
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            this.wndProcDelegate = new UnmanagedMethods.WndProc(this.WndProc);
+            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
-                lpfnWndProc = this.wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(this.GetType().Module),
+                lpfnWndProc = _wndProcDelegate,
+                hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 lpszClassName = "PerspexMessageWindow",
             };
 
@@ -144,9 +134,9 @@ namespace Perspex.Win32
                 throw new Win32Exception();
             }
 
-            this.hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            _hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
-            if (this.hwnd == IntPtr.Zero)
+            if (_hwnd == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }

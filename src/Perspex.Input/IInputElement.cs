@@ -1,14 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IInputElement.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Diagnostics.Contracts;
+using System;
+using Perspex.Interactivity;
 
 namespace Perspex.Input
 {
-    using System;
-    using Perspex.Interactivity;
-
     /// <summary>
     /// Defines input-related functionality for a control.
     /// </summary>
@@ -33,6 +31,11 @@ namespace Perspex.Input
         /// Occurs when a key is released while the control has focus.
         /// </summary>
         event EventHandler<KeyEventArgs> KeyUp;
+
+        /// <summary>
+        /// Occurs when a user typed some text while the control has focus.
+        /// </summary>
+        event EventHandler<TextInputEventArgs> TextInput;
 
         /// <summary>
         /// Occurs when the pointer enters the control.
@@ -73,6 +76,11 @@ namespace Perspex.Input
         /// Gets or sets a value indicating whether the control is enabled for user interaction.
         /// </summary>
         bool IsEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets the associated mouse cursor.
+        /// </summary>
+        Cursor Cursor { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.

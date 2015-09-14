@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ScrollBar.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-
     /// <summary>
     /// A scrollbar control.
     /// </summary>
@@ -39,12 +36,12 @@ namespace Perspex.Controls.Primitives
         public ScrollBar()
         {
             var isVisible = Observable.Merge(
-                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
-                .Select(_ => this.CalculateIsVisible());
-            this.Bind(ScrollBar.IsVisibleProperty, isVisible, BindingPriority.Style);
+                GetObservable(MinimumProperty).Select(_ => Unit.Default),
+                GetObservable(MaximumProperty).Select(_ => Unit.Default),
+                GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
+                GetObservable(VisibilityProperty).Select(_ => Unit.Default))
+                .Select(_ => CalculateIsVisible());
+            Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         /// <summary>
@@ -52,8 +49,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double ViewportSize
         {
-            get { return this.GetValue(ViewportSizeProperty); }
-            set { this.SetValue(ViewportSizeProperty, value); }
+            get { return GetValue(ViewportSizeProperty); }
+            set { SetValue(ViewportSizeProperty, value); }
         }
 
         /// <summary>
@@ -62,8 +59,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public ScrollBarVisibility Visibility
         {
-            get { return this.GetValue(VisibilityProperty); }
-            set { this.SetValue(VisibilityProperty, value); }
+            get { return GetValue(VisibilityProperty); }
+            set { SetValue(VisibilityProperty, value); }
         }
 
         /// <summary>
@@ -71,8 +68,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Orientation Orientation
         {
-            get { return this.GetValue(OrientationProperty); }
-            set { this.SetValue(OrientationProperty, value); }
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -87,7 +84,7 @@ namespace Perspex.Controls.Primitives
         /// <returns>The scrollbar's visibility.</returns>
         private bool CalculateIsVisible()
         {
-            switch (this.Visibility)
+            switch (Visibility)
             {
                 case ScrollBarVisibility.Visible:
                     return true;
@@ -96,8 +93,8 @@ namespace Perspex.Controls.Primitives
                     return false;
 
                 case ScrollBarVisibility.Auto:
-                    var viewportSize = this.ViewportSize;
-                    return double.IsNaN(viewportSize) || viewportSize < this.Maximum - this.Minimum;
+                    var viewportSize = ViewportSize;
+                    return double.IsNaN(viewportSize) || viewportSize < Maximum - Minimum;
 
                 default:
                     throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");

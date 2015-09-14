@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TreeDataTemplate`1.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
 
 namespace Perspex.Controls.Templates
 {
-    using System;
-    using System.Collections;
-
     /// <summary>
     /// A template used to build hierachical data.
     /// </summary>
@@ -30,8 +27,8 @@ namespace Perspex.Controls.Templates
             Func<T, IEnumerable> itemsSelector)
             : base(
                 typeof(T),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector))
+                Cast(build),
+                Cast(itemsSelector))
         {
         }
 
@@ -55,9 +52,9 @@ namespace Perspex.Controls.Templates
             Func<T, bool> isExpanded)
             : base(
                 typeof(T),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector),
-                TreeDataTemplate<T>.Cast(isExpanded))
+                Cast(build),
+                Cast(itemsSelector),
+                Cast(isExpanded))
         {
         }
 
@@ -78,9 +75,9 @@ namespace Perspex.Controls.Templates
             Func<T, Control> build,
             Func<T, IEnumerable> itemsSelector)
             : base(
-                TreeDataTemplate<T>.CastMatch(match),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector))
+                CastMatch(match),
+                Cast(build),
+                Cast(itemsSelector))
         {
         }
 
@@ -106,10 +103,10 @@ namespace Perspex.Controls.Templates
             Func<T, IEnumerable> itemsSelector,
             Func<T, bool> isExpanded)
             : base(
-                TreeDataTemplate<T>.CastMatch(match),
-                TreeDataTemplate<T>.Cast(build),
-                TreeDataTemplate<T>.Cast(itemsSelector),
-                TreeDataTemplate<T>.Cast(isExpanded))
+                CastMatch(match),
+                Cast(build),
+                Cast(itemsSelector),
+                Cast(isExpanded))
         {
         }
 

@@ -1,23 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ControlDetailsViewModel.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Controls;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Controls;
-    using ReactiveUI;
-
     internal class ControlDetailsViewModel : ReactiveObject
     {
         public ControlDetailsViewModel(Control control)
         {
             if (control != null)
             {
-                this.Properties = control.GetRegisteredProperties()
+                Properties = control.GetRegisteredProperties()
                     .Select(x => new PropertyDetails(control, x))
                     .OrderBy(x => x.Name)
                     .OrderBy(x => x.IsAttached);

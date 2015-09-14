@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FocusManager.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Interactivity;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Interactivity;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
@@ -21,7 +18,7 @@ namespace Perspex.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private Dictionary<IFocusScope, IInputElement> focusScopes =
+        private readonly Dictionary<IFocusScope, IInputElement> _focusScopes =
             new Dictionary<IFocusScope, IInputElement>();
 
         /// <summary>
@@ -31,25 +28,19 @@ namespace Perspex.Input
         {
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
-                new EventHandler<RoutedEventArgs>(this.OnPreviewPointerPressed),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
                 RoutingStrategies.Tunnel);
         }
 
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance
-        {
-            get { return Locator.Current.GetService<IFocusManager>(); }
-        }
+        public static IFocusManager Instance => Locator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        public IInputElement Current
-        {
-            get { return KeyboardDevice.Instance.FocusedElement; }
-        }
+        public IInputElement Current => KeyboardDevice.Instance.FocusedElement;
 
         /// <summary>
         /// Gets the current focus scope.
@@ -74,20 +65,20 @@ namespace Perspex.Input
 
                 if (scope != null)
                 {
-                    this.Scope = scope;
-                    this.SetFocusedElement(scope, control, method);
+                    Scope = scope;
+                    SetFocusedElement(scope, control, method);
                 }
             }
-            else if (this.Current != null)
+            else if (Current != null)
             {
                 // If control is null, set focus to the topmost focus scope.
-                foreach (var scope in GetFocusScopeAncestors(this.Current).Reverse().ToList())
+                foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
                 {
                     IInputElement element;
 
-                    if (this.focusScopes.TryGetValue(scope, out element))
+                    if (_focusScopes.TryGetValue(scope, out element))
                     {
-                        this.Focus(element, method);
+                        Focus(element, method);
                         break;
                     }
                 }
@@ -111,9 +102,9 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
-            this.focusScopes[scope] = element;
+            _focusScopes[scope] = element;
 
-            if (this.Scope == scope)
+            if (Scope == scope)
             {
                 KeyboardDevice.Instance.SetFocusedElement(element, method);
             }
@@ -129,17 +120,17 @@ namespace Perspex.Input
 
             IInputElement e;
 
-            if (!this.focusScopes.TryGetValue(scope, out e))
+            if (!_focusScopes.TryGetValue(scope, out e))
             {
                 // TODO: Make this do something useful, i.e. select the first focusable
                 // control, select a control that the user has specified to have default
                 // focus etc.
                 e = scope as IInputElement;
-                this.focusScopes.Add(scope, e);
+                _focusScopes.Add(scope, e);
             }
 
-            this.Scope = scope;
-            this.Focus(e);
+            Scope = scope;
+            Focus(e);
         }
 
         /// <summary>
@@ -191,7 +182,7 @@ namespace Perspex.Input
 
                 if (element != null)
                 {
-                    this.Focus(element, NavigationMethod.Pointer);
+                    Focus(element, NavigationMethod.Pointer);
                 }
             }
         }

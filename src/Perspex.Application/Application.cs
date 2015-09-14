@@ -1,23 +1,21 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Application.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reflection;
+using System.Threading;
+using Perspex.Controls;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Input.Platform;
+using Perspex.Layout;
+using Perspex.Rendering;
+using Perspex.Styling;
+using Perspex.Threading;
+using Splat;
 
 namespace Perspex
 {
-    using System;
-    using System.Reflection;
-    using System.Threading;
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.Rendering;
-    using Perspex.Styling;
-    using Perspex.Threading;
-    using Splat;
-
     /// <summary>
     /// Encapsulates a Perspex application.
     /// </summary>
@@ -39,12 +37,15 @@ namespace Perspex
         /// <summary>
         /// The application-global data templates.
         /// </summary>
-        private DataTemplates dataTemplates;
+        private DataTemplates _dataTemplates;
+
+        private readonly Lazy<IClipboard> _clipboard =
+            new Lazy<IClipboard>(() => (IClipboard)Locator.Current.GetService(typeof(IClipboard)));
 
         /// <summary>
         /// The styler that will be used to apply styles to controls.
         /// </summary>
-        private Styler styler = new Styler();
+        private readonly Styler _styler = new Styler();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -81,17 +82,17 @@ namespace Perspex
         {
             get
             {
-                if (this.dataTemplates == null)
+                if (_dataTemplates == null)
                 {
-                    this.dataTemplates = new DataTemplates();
+                    _dataTemplates = new DataTemplates();
                 }
 
-                return this.dataTemplates;
+                return _dataTemplates;
             }
 
             set
             {
-                this.dataTemplates = value;
+                _dataTemplates = value;
             }
         }
 
@@ -118,6 +119,8 @@ namespace Perspex
             get;
             private set;
         }
+
+        public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global styles.
@@ -151,16 +154,16 @@ namespace Perspex
         protected virtual void RegisterServices()
         {
             PerspexSynchronizationContext.InstallIfNeeded();
-            this.FocusManager = new FocusManager();
-            this.InputManager = new InputManager();
+            FocusManager = new FocusManager();
+            InputManager = new InputManager();
 
             Locator.CurrentMutable.Register(() => new AccessKeyHandler(), typeof(IAccessKeyHandler));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
             Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
-            Locator.CurrentMutable.Register(() => this.FocusManager, typeof(IFocusManager));
-            Locator.CurrentMutable.Register(() => this.InputManager, typeof(IInputManager));
+            Locator.CurrentMutable.Register(() => FocusManager, typeof(IFocusManager));
+            Locator.CurrentMutable.Register(() => InputManager, typeof(IInputManager));
             Locator.CurrentMutable.Register(() => new KeyboardNavigationHandler(), typeof(IKeyboardNavigationHandler));
-            Locator.CurrentMutable.Register(() => this.styler, typeof(IStyler));
+            Locator.CurrentMutable.Register(() => _styler, typeof(IStyler));
             Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
             Locator.CurrentMutable.Register(() => new RenderManager(), typeof(IRenderManager));
         }
@@ -173,13 +176,13 @@ namespace Perspex
         {
             if (platformID == 4 || platformID == 6)
             {
-                this.InitializeSubsystem("Perspex.Cairo");
-                this.InitializeSubsystem("Perspex.Gtk");
+                InitializeSubsystem("Perspex.Cairo");
+                InitializeSubsystem("Perspex.Gtk");
             }
             else
             {
-                this.InitializeSubsystem("Perspex.Direct2D1");
-                this.InitializeSubsystem("Perspex.Win32");
+                InitializeSubsystem("Perspex.Direct2D1");
+                InitializeSubsystem("Perspex.Win32");
             }
         }
 

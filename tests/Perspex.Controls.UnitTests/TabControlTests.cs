@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabControlTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.ObjectModel;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.LogicalTree;
-    using Xunit;
-
     public class TabControlTests
     {
         [Fact]
@@ -22,7 +19,7 @@ namespace Perspex.Controls.UnitTests
             TabItem selected;
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     (selected = new TabItem
@@ -49,7 +46,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -76,7 +73,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -120,7 +117,7 @@ namespace Perspex.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(this.CreateTabControlTemplate),
+                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = collection,
             };
 
@@ -142,20 +139,20 @@ namespace Perspex.Controls.UnitTests
                     new TabStrip
                     {
                         Name = "tabStrip",
-                        Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
-                        [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                        Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                        [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!!TabStrip.SelectedTabProperty] = parent[!!TabControl.SelectedTabProperty]
                     },
                     new Deck
                     {
                         Name = "deck",
-                        Template = new ControlTemplate<Deck>(this.CreateDeckTemplate),
+                        Template = new ControlTemplate<Deck>(CreateDeckTemplate),
                         DataTemplates = new DataTemplates
                         {
                             new DataTemplate<TabItem>(x => (Control)parent.MaterializeDataTemplate(x.Content)),
                         },
-                        [!Deck.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
+                        [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
+                        [!SelectingItemsControl.SelectedItemProperty] = parent[!SelectingItemsControl.SelectedItemProperty],
                     }
                 }
             };
@@ -166,7 +163,7 @@ namespace Perspex.Controls.UnitTests
             return new ItemsPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
+                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             };
         }
 
@@ -175,9 +172,9 @@ namespace Perspex.Controls.UnitTests
             return new DeckPresenter
             {
                 Name = "itemsPresenter",
-                [!ItemsPresenter.ItemsProperty] = control[!Deck.ItemsProperty],
-                [!ItemsPresenter.ItemsPanelProperty] = control[!Deck.ItemsPanelProperty],
-                [!DeckPresenter.SelectedIndexProperty] = control[!Deck.SelectedIndexProperty],
+                [!ItemsPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                [!ItemsPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
+                [!DeckPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }

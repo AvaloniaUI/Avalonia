@@ -1,17 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="LogicalTreeView.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Templates;
+using Perspex.Diagnostics.ViewModels;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.Views
 {
-    using System;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
-    using Perspex.Diagnostics.ViewModels;
-    using ReactiveUI;
+    using Controls = Controls.Controls;
 
     internal class LogicalTreeView : TreePage
     {
@@ -20,22 +19,22 @@ namespace Perspex.Diagnostics.Views
 
         public LogicalTreeView()
         {
-            this.InitializeComponent();
-            this.GetObservable(DataContextProperty)
-                .Subscribe(x => this.ViewModel = (LogicalTreeViewModel)x);
+            InitializeComponent();
+            GetObservable(DataContextProperty)
+                .Subscribe(x => ViewModel = (LogicalTreeViewModel)x);
         }
 
         public LogicalTreeViewModel ViewModel
         {
-            get { return this.GetValue(ViewModelProperty); }
-            private set { this.SetValue(ViewModelProperty, value); }
+            get { return GetValue(ViewModelProperty); }
+            private set { SetValue(ViewModelProperty, value); }
         }
 
         private void InitializeComponent()
         {
             TreeView tree;
 
-            this.Content = new Grid
+            Content = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions
                 {
@@ -49,9 +48,9 @@ namespace Perspex.Diagnostics.Views
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<LogicalTreeNode>(this.GetHeader, x => x.Children),
+                            new TreeDataTemplate<LogicalTreeNode>(GetHeader, x => x.Children),
                         },
-                        [!TreeView.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
+                        [!ItemsControl.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
                     }),
                     new GridSplitter
                     {
@@ -60,7 +59,7 @@ namespace Perspex.Diagnostics.Views
                     },
                     new ContentControl
                     {
-                        [!ContentControl.ContentProperty] = this.WhenAnyValue(x => x.ViewModel.Details),
+                        [!ContentProperty] = this.WhenAnyValue(x => x.ViewModel.Details),
                         [Grid.ColumnProperty] = 2,
                     }
                 }
@@ -68,7 +67,7 @@ namespace Perspex.Diagnostics.Views
 
             tree.GetObservable(TreeView.SelectedItemProperty)
                 .OfType<LogicalTreeNode>()
-                .Subscribe(x => this.ViewModel.SelectedNode = x);
+                .Subscribe(x => ViewModel.SelectedNode = x);
         }
 
         private Control GetHeader(LogicalTreeNode node)
@@ -90,8 +89,8 @@ namespace Perspex.Diagnostics.Views
                 }
             };
 
-            result.PointerEnter += this.AddAdorner;
-            result.PointerLeave += this.RemoveAdorner;
+            result.PointerEnter += AddAdorner;
+            result.PointerLeave += RemoveAdorner;
 
             return result;
         }

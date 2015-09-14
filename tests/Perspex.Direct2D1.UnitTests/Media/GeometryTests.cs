@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="GeometryTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Media;
+using Splat;
+using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Media
 {
-    using Perspex.Media;
-    using Splat;
-    using Xunit;
-
     public class GeometryTests
     {
         private static readonly RectComparer Compare = new RectComparer();

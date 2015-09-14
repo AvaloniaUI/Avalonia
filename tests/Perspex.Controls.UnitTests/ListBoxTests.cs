@@ -1,20 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ListBoxTests.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
+using Perspex.Styling;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.LogicalTree;
-    using Perspex.Styling;
-    using Xunit;
-
     public class ListBoxTests
     {
         [Fact]
@@ -22,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(this.CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -41,7 +38,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(this.CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -57,11 +54,11 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate(this.CreateScrollViewerTemplate),
+                Template = new ControlTemplate(CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ListBox.ItemsProperty),
+                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
                 }
             };
         }
@@ -70,7 +67,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollContentPresenter
             {
-                [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty),
+                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
             };
         }
     }

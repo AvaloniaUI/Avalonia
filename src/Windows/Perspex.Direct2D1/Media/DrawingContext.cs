@@ -1,19 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="DrawingContext.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Disposables;
+using Perspex.Media;
+using SharpDX;
+using SharpDX.Direct2D1;
+using IBitmap = Perspex.Media.Imaging.IBitmap;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using System.Reactive.Disposables;
-    using Perspex.Media;
-    using SharpDX;
-    using SharpDX.Direct2D1;
-    using IBitmap = Perspex.Media.Imaging.IBitmap;
-    using Matrix = Perspex.Matrix;
-
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
@@ -22,12 +18,12 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// The Direct2D1 render target.
         /// </summary>
-        private RenderTarget renderTarget;
+        private readonly RenderTarget _renderTarget;
 
         /// <summary>
         /// The DirectWrite factory.
         /// </summary>
-        private SharpDX.DirectWrite.Factory directWriteFactory;
+        private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
@@ -38,9 +34,9 @@ namespace Perspex.Direct2D1.Media
             RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory)
         {
-            this.renderTarget = renderTarget;
-            this.directWriteFactory = directWriteFactory;
-            this.renderTarget.BeginDraw();
+            _renderTarget = renderTarget;
+            _directWriteFactory = directWriteFactory;
+            _renderTarget.BeginDraw();
         }
 
         /// <summary>
@@ -48,8 +44,8 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public Matrix CurrentTransform
         {
-            get { return this.renderTarget.Transform.ToPerspex(); }
-            private set { this.renderTarget.Transform = value.ToDirect2D(); }
+            get { return _renderTarget.Transform.ToPerspex(); }
+            private set { _renderTarget.Transform = value.ToDirect2D(); }
         }
 
         /// <summary>
@@ -57,7 +53,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public void Dispose()
         {
-            this.renderTarget.EndDraw();
+            _renderTarget.EndDraw();
         }
 
         /// <summary>
@@ -70,8 +66,8 @@ namespace Perspex.Direct2D1.Media
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
             BitmapImpl impl = (BitmapImpl)source.PlatformImpl;
-            Bitmap d2d = impl.GetDirect2DBitmap(this.renderTarget);
-            this.renderTarget.DrawBitmap(
+            Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
+            _renderTarget.DrawBitmap(
                 d2d,
                 destRect.ToSharpDX(),
                 (float)opacity,
@@ -85,16 +81,16 @@ namespace Perspex.Direct2D1.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Perspex.Point p1, Perspex.Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2)
         {
             if (pen != null)
             {
                 var size = new Rect(p1, p2).Size;
 
-                using (var d2dBrush = this.CreateBrush(pen.Brush, size))
-                using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
+                using (var d2dBrush = CreateBrush(pen.Brush, size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
-                    this.renderTarget.DrawLine(
+                    _renderTarget.DrawLine(
                         p1.ToSharpDX(),
                         p2.ToSharpDX(),
                         d2dBrush.PlatformBrush,
@@ -110,24 +106,24 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Perspex.Media.Brush brush, Perspex.Media.Pen pen, Perspex.Media.Geometry geometry)
+        public void DrawGeometry(Perspex.Media.Brush brush, Pen pen, Perspex.Media.Geometry geometry)
         {
             if (brush != null)
             {
-                using (var d2dBrush = this.CreateBrush(brush, geometry.Bounds.Size))
+                using (var d2dBrush = CreateBrush(brush, geometry.Bounds.Size))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    this.renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
+                    _renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
                 }
             }
 
             if (pen != null)
             {
-                using (var d2dBrush = this.CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
-                using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
+                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
                     GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    this.renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
+                    _renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
                 }
             }
         }
@@ -140,14 +136,25 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var brush = this.CreateBrush(pen.Brush, rect.Size))
-            using (var d2dStroke = pen.ToDirect2DStrokeStyle(this.renderTarget))
+            using (var brush = CreateBrush(pen.Brush, rect.Size))
+            using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
             {
-                this.renderTarget.DrawRoundedRectangle(
-                    new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                    brush.PlatformBrush,
-                    (float)pen.Thickness,
-                    d2dStroke);
+                if (cornerRadius == 0)
+                {
+                    _renderTarget.DrawRectangle(
+                        rect.ToDirect2D(),
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
+                else
+                {
+                    _renderTarget.DrawRoundedRectangle(
+                        new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
+                        brush.PlatformBrush,
+                        (float)pen.Thickness,
+                        d2dStroke);
+                }
             }
         }
 
@@ -157,14 +164,14 @@ namespace Perspex.Direct2D1.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Perspex.Media.Brush foreground, Perspex.Point origin, FormattedText text)
+        public void DrawText(Perspex.Media.Brush foreground, Point origin, FormattedText text)
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
                 var impl = (FormattedTextImpl)text.PlatformImpl;
 
-                using (var brush = this.CreateBrush(foreground, impl.Measure()))
-                using (var renderer = new PerspexTextRenderer(this, this.renderTarget, brush.PlatformBrush))
+                using (var brush = CreateBrush(foreground, impl.Measure()))
+                using (var renderer = new PerspexTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
                     impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
                 }
@@ -179,20 +186,27 @@ namespace Perspex.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
-            using (var b = this.CreateBrush(brush, rect.Size))
+            using (var b = CreateBrush(brush, rect.Size))
             {
-                this.renderTarget.FillRoundedRectangle(
-                    new RoundedRectangle
-                    {
-                        Rect = new RectangleF(
-                                (float)rect.X,
-                                (float)rect.Y,
-                                (float)rect.Width,
-                                (float)rect.Height),
-                        RadiusX = cornerRadius,
-                        RadiusY = cornerRadius
-                    },
-                    b.PlatformBrush);
+                if (cornerRadius == 0)
+                {
+                    _renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
+                }
+                else
+                {
+                    _renderTarget.FillRoundedRectangle(
+                        new RoundedRectangle
+                        {
+                            Rect = new RectangleF(
+                                    (float)rect.X,
+                                    (float)rect.Y,
+                                    (float)rect.Width,
+                                    (float)rect.Height),
+                            RadiusX = cornerRadius,
+                            RadiusY = cornerRadius
+                        },
+                        b.PlatformBrush);
+                }
             }
         }
 
@@ -203,11 +217,11 @@ namespace Perspex.Direct2D1.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
-            this.renderTarget.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
+            _renderTarget.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
 
             return Disposable.Create(() =>
             {
-                this.renderTarget.PopAxisAlignedClip();
+                _renderTarget.PopAxisAlignedClip();
             });
         }
 
@@ -227,13 +241,14 @@ namespace Perspex.Direct2D1.Media
                     Opacity = (float)opacity,
                 };
 
-                var layer = new Layer(this.renderTarget);
+                var layer = new Layer(_renderTarget);
 
-                this.renderTarget.PushLayer(ref parameters, layer);
+                _renderTarget.PushLayer(ref parameters, layer);
 
                 return Disposable.Create(() =>
                 {
-                    this.renderTarget.PopLayer();
+                    _renderTarget.PopLayer();
+                    layer.Dispose();
                 });
             }
             else
@@ -250,32 +265,43 @@ namespace Perspex.Direct2D1.Media
         public IDisposable PushTransform(Matrix matrix)
         {
             Matrix3x2 m3x2 = matrix.ToDirect2D();
-            Matrix3x2 transform = this.renderTarget.Transform * m3x2;
-            this.renderTarget.Transform = transform;
+            Matrix3x2 transform = _renderTarget.Transform * m3x2;
+            _renderTarget.Transform = transform;
 
             return Disposable.Create(() =>
             {
                 m3x2.Invert();
-                this.renderTarget.Transform = transform * m3x2;
+                _renderTarget.Transform = transform * m3x2;
             });
         }
 
+        /// <summary>
+        /// Creates a Direct2D brush wrapper for a Perspex brush.
+        /// </summary>
+        /// <param name="brush">The perspex brush.</param>
+        /// <param name="destinationSize">The size of the brush's target area.</param>
+        /// <returns>The Direct2D brush wrapper.</returns>
         public BrushImpl CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
         {
-            Perspex.Media.SolidColorBrush solidColorBrush = brush as Perspex.Media.SolidColorBrush;
-            Perspex.Media.LinearGradientBrush linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
+            var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
+            var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
+            var visualBrush = brush as VisualBrush;
 
             if (solidColorBrush != null)
             {
-                return new SolidColorBrushImpl(solidColorBrush, this.renderTarget);
+                return new SolidColorBrushImpl(solidColorBrush, _renderTarget);
             }
             else if (linearGradientBrush != null)
             {
-                return new LinearGradientBrushImpl(linearGradientBrush, this.renderTarget, destinationSize);
+                return new LinearGradientBrushImpl(linearGradientBrush, _renderTarget, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                return new VisualBrushImpl(visualBrush, _renderTarget, destinationSize);
             }
             else
             {
-                return new SolidColorBrushImpl(null, this.renderTarget);
+                return new SolidColorBrushImpl(null, _renderTarget);
             }
         }
     }

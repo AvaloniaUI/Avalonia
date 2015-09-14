@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TreeView.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Controls.Generators;
+using Perspex.Input;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Controls.Generators;
-    using Perspex.Input;
-    using Perspex.VisualTree;
-
     public class TreeView : ItemsControl
     {
         public static readonly PerspexProperty<object> SelectedItemProperty =
@@ -32,15 +29,12 @@ namespace Perspex.Controls
             });
         }
 
-        public new ITreeItemContainerGenerator ItemContainerGenerator
-        {
-            get { return (ITreeItemContainerGenerator)base.ItemContainerGenerator; }
-        }
+        public new ITreeItemContainerGenerator ItemContainerGenerator => (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         public object SelectedItem
         {
-            get { return this.GetValue(SelectedItemProperty); }
-            set { this.SetValue(SelectedItemProperty, value); }
+            get { return GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -51,26 +45,26 @@ namespace Perspex.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             var control = (IControl)e.Source;
-            var item = this.ItemContainerGenerator.ItemFromContainer(control);
+            var item = ItemContainerGenerator.ItemFromContainer(control);
 
             if (item != null)
             {
-                this.SelectedItem = item;
+                SelectedItem = item;
                 e.Handled = true;
             }
         }
 
         private void SelectedItemChanged(object selected)
         {
-            var containers = this.ItemContainerGenerator.GetAllContainers().OfType<ISelectable>();
+            var containers = ItemContainerGenerator.GetAllContainers().OfType<ISelectable>();
             var selectedContainer = (selected != null) ?
-                this.ItemContainerGenerator.ContainerFromItem(selected) :
+                ItemContainerGenerator.ContainerFromItem(selected) :
                 null;
 
-            if (this.Presenter != null && this.Presenter.Panel != null)
+            if (Presenter != null && Presenter.Panel != null)
             {
                 KeyboardNavigation.SetTabOnceActiveElement(
-                    (InputElement)this.Presenter.Panel,
+                    (InputElement)Presenter.Panel,
                     selectedContainer);
             }
 

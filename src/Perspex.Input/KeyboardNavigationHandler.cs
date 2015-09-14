@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="KeyboardNavigationHandler.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Input.Navigation;
 
 namespace Perspex.Input
 {
-    using System;
-    using Perspex.Input.Navigation;
-
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
@@ -17,7 +14,7 @@ namespace Perspex.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot owner;
+        private IInputRoot _owner;
 
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -30,14 +27,14 @@ namespace Perspex.Input
         {
             Contract.Requires<ArgumentNullException>(owner != null);
 
-            if (this.owner != null)
+            if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            this.owner = owner;
+            _owner = owner;
 
-            this.owner.AddHandler(InputElement.KeyDownEvent, this.OnKeyDown);
+            _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
         }
 
         /// <summary>
@@ -101,7 +98,7 @@ namespace Perspex.Input
                 switch (e.Key)
                 {
                     case Key.Tab:
-                        direction = (KeyboardDevice.Instance.Modifiers & ModifierKeys.Shift) == 0 ?
+                        direction = (e.Modifiers & ModifierKeys.Shift) == 0 ?
                             FocusNavigationDirection.Next : FocusNavigationDirection.Previous;
                         break;
                     case Key.Up:
@@ -120,7 +117,7 @@ namespace Perspex.Input
 
                 if (direction.HasValue)
                 {
-                    this.Move(current, direction.Value);
+                    Move(current, direction.Value);
                     e.Handled = true;
                 }
             }

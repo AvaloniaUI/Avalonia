@@ -1,49 +1,44 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="WindowsKeyboardDevice.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Text;
+using Perspex.Controls;
+using Perspex.Input;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32.Input
 {
-    using System.Text;
-    using Perspex.Controls;
-    using Perspex.Input;
-    using Perspex.Win32.Interop;
-
     public class WindowsKeyboardDevice : KeyboardDevice
     {
-        private static WindowsKeyboardDevice instance = new WindowsKeyboardDevice();
+        private static readonly WindowsKeyboardDevice s_instance = new WindowsKeyboardDevice();
 
-        private byte[] keyStates = new byte[256];
+        private readonly byte[] _keyStates = new byte[256];
 
-        public static new WindowsKeyboardDevice Instance
-        {
-            get { return instance; }
-        }
+        public static new WindowsKeyboardDevice Instance => s_instance;
 
-        public override ModifierKeys Modifiers
+        public ModifierKeys Modifiers
         {
             get
             {
+                UpdateKeyStates();
                 ModifierKeys result = 0;
 
-                if (this.IsDown(Key.LeftAlt) || this.IsDown(Key.RightAlt))
+                if (IsDown(Key.LeftAlt) || IsDown(Key.RightAlt))
                 {
                     result |= ModifierKeys.Alt;
                 }
 
-                if (this.IsDown(Key.LeftCtrl) || this.IsDown(Key.RightCtrl))
+                if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
                 {
                     result |= ModifierKeys.Control;
                 }
 
-                if (this.IsDown(Key.LeftShift) || this.IsDown(Key.RightShift))
+                if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
                 {
                     result |= ModifierKeys.Shift;
                 }
 
-                if (this.IsDown(Key.LWin) || this.IsDown(Key.RWin))
+                if (IsDown(Key.LWin) || IsDown(Key.RWin))
                 {
                     result |= ModifierKeys.Windows;
                 }
@@ -54,7 +49,7 @@ namespace Perspex.Win32.Input
 
         public void WindowActivated(Window window)
         {
-            this.SetFocusedElement(window, NavigationMethod.Unspecified);
+            SetFocusedElement(window, NavigationMethod.Unspecified);
         }
 
         public string StringFromVirtualKey(uint virtualKey)
@@ -63,27 +58,27 @@ namespace Perspex.Win32.Input
             int length = UnmanagedMethods.ToUnicode(
                 virtualKey,
                 0,
-                this.keyStates,
+                _keyStates,
                 result,
                 256,
                 0);
             return result.ToString();
         }
 
-        internal void UpdateKeyStates()
+        private void UpdateKeyStates()
         {
-            UnmanagedMethods.GetKeyboardState(this.keyStates);
+            UnmanagedMethods.GetKeyboardState(_keyStates);
         }
 
         private bool IsDown(Key key)
         {
-            return (this.GetKeyStates(key) & KeyStates.Down) != 0;
+            return (GetKeyStates(key) & KeyStates.Down) != 0;
         }
 
         private KeyStates GetKeyStates(Key key)
         {
             int vk = KeyInterop.VirtualKeyFromKey(key);
-            byte state = this.keyStates[vk];
+            byte state = _keyStates[vk];
             KeyStates result = 0;
 
             if ((state & 0x80) != 0)

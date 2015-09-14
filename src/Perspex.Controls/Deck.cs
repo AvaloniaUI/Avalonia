@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Deck.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Animation;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
+using Perspex.Input;
 
 namespace Perspex.Controls
 {
-    using Perspex.Animation;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-    using Perspex.Input;
-
     /// <summary>
     /// An items control that displays its items as pages that fill the control.
     /// </summary>
@@ -43,8 +40,8 @@ namespace Perspex.Controls
         /// </summary>
         public IPageTransition Transition
         {
-            get { return this.GetValue(TransitionProperty); }
-            set { this.SetValue(TransitionProperty, value); }
+            get { return GetValue(TransitionProperty); }
+            set { SetValue(TransitionProperty, value); }
         }
 
         /// <inheritdoc/>

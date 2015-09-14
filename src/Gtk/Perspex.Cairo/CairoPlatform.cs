@@ -1,39 +1,37 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="CairoPlatform.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Cairo.Media;
+using Perspex.Cairo.Media.Imaging;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Cairo
 {
-    using System;
+    using System.IO;
     using global::Cairo;
-    using Perspex.Cairo.Media;
-    using Perspex.Cairo.Media.Imaging;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Threading;
-    using Splat;
 
     public class CairoPlatform : IPlatformRenderInterface
     {
-        private static CairoPlatform instance = new CairoPlatform();
+        private static readonly CairoPlatform s_instance = new CairoPlatform();
 
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => instance, typeof(IPlatformRenderInterface));
+            locator.Register(() => s_instance, typeof(IPlatformRenderInterface));
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return new BitmapImpl(new ImageSurface(Format.Argb32, width, height));
+            return new BitmapImpl(new Gdk.Pixbuf(Gdk.Colorspace.Rgb, true, 32, width, height));
         }
 
         public IFormattedTextImpl CreateFormattedText(
-            string text, 
-            string fontFamily, 
-            double fontSize, 
+            string text,
+            string fontFamily,
+            double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
             Perspex.Media.FontWeight fontWeight)
@@ -43,7 +41,7 @@ namespace Perspex.Cairo
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            Locator.CurrentMutable.RegisterConstant(this.GetPangoContext(handle), typeof(Pango.Context));
+            Locator.CurrentMutable.RegisterConstant(GetPangoContext(handle), typeof(Pango.Context));
             return new Renderer(handle, width, height);
         }
 
@@ -59,8 +57,16 @@ namespace Perspex.Cairo
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            ImageSurface result = new ImageSurface(fileName);
-            return new BitmapImpl(result);
+            var pixbuf = new Gdk.Pixbuf(fileName);
+
+            return new BitmapImpl(pixbuf);
+        }
+
+        public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            var pixbuf = new Gdk.Pixbuf(stream);
+
+            return new BitmapImpl(pixbuf);
         }
 
         private Pango.Context GetPangoContext(IPlatformHandle handle)

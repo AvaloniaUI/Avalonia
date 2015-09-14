@@ -1,14 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Bitmap.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.IO;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Media.Imaging
 {
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// Holds a bitmap image.
     /// </summary>
@@ -21,7 +19,17 @@ namespace Perspex.Media.Imaging
         public Bitmap(string fileName)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.LoadBitmap(fileName);
+            PlatformImpl = factory.LoadBitmap(fileName);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bitmap"/> class.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>
+        public Bitmap(Stream stream)
+        {
+            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = factory.LoadBitmap(stream);
         }
 
         /// <summary>
@@ -32,7 +40,7 @@ namespace Perspex.Media.Imaging
         public Bitmap(int width, int height)
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.CreateBitmap(width, height);
+            PlatformImpl = factory.CreateBitmap(width, height);
         }
 
         /// <summary>
@@ -41,33 +49,25 @@ namespace Perspex.Media.Imaging
         /// <param name="impl">A platform-specific bitmap implementation.</param>
         protected Bitmap(IBitmapImpl impl)
         {
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
         }
 
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
-        public int PixelWidth
-        {
-            get { return this.PlatformImpl.PixelWidth; }
-        }
+        public int PixelWidth => PlatformImpl.PixelWidth;
 
         /// <summary>
         /// Gets the height of the bitmap, in pixels.
         /// </summary>
-        public int PixelHeight
-        {
-            get { return this.PlatformImpl.PixelHeight; }
-        }
+        public int PixelHeight => PlatformImpl.PixelHeight;
 
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
         public IBitmapImpl PlatformImpl
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Saves the bitmap to a file.
@@ -75,7 +75,7 @@ namespace Perspex.Media.Imaging
         /// <param name="fileName">The filename.</param>
         public void Save(string fileName)
         {
-            this.PlatformImpl.Save(fileName);
+            PlatformImpl.Save(fileName);
         }
     }
 }

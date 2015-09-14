@@ -1,38 +1,35 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexPropertyBinder.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using OmniXaml.TypeConversion;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using OmniXaml.TypeConversion;
-
     public class PerspexPropertyBinder : IPerspexPropertyBinder
     {
-        private readonly ITypeConverterProvider typeConverterProvider;
+        private readonly ITypeConverterProvider _typeConverterProvider;
 
-        private readonly HashSet<XamlBinding> bindings;
+        private readonly HashSet<XamlBinding> _bindings;
 
         public PerspexPropertyBinder(ITypeConverterProvider typeConverterProvider)
         {
-            this.typeConverterProvider = typeConverterProvider;
-            this.bindings = new HashSet<XamlBinding>();
+            _typeConverterProvider = typeConverterProvider;
+            _bindings = new HashSet<XamlBinding>();
         }
 
         public XamlBinding GetBinding(PerspexObject po, PerspexProperty pp)
         {
-            return this.bindings.First(xamlBinding => xamlBinding.Target == po && xamlBinding.TargetProperty == pp);
+            return _bindings.First(xamlBinding => xamlBinding.Target == po && xamlBinding.TargetProperty == pp);
         }
 
         public IEnumerable<XamlBinding> GetBindings(PerspexObject source)
         {
-            return from binding in this.bindings
-                where binding.Target == source
-                select binding;
+            return from binding in _bindings
+                   where binding.Target == source
+                   select binding;
         }
 
         public XamlBinding Create(XamlBindingDefinition xamlBinding)
@@ -47,7 +44,7 @@ namespace Perspex.Markup.Xaml.DataBinding
                 throw new InvalidOperationException();
             }
 
-            var binding = new XamlBinding(this.typeConverterProvider)
+            var binding = new XamlBinding(_typeConverterProvider)
             {
                 BindingMode = xamlBinding.BindingMode,
                 SourcePropertyPath = xamlBinding.SourcePropertyPath,
@@ -55,7 +52,7 @@ namespace Perspex.Markup.Xaml.DataBinding
                 TargetProperty = xamlBinding.TargetProperty
             };
 
-            this.bindings.Add(binding);
+            _bindings.Add(binding);
             return binding;
         }
     }

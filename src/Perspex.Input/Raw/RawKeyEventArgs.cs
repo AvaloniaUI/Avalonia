@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RawKeyEventArgs.cs" company="Tricycle">
-// Copyright 2014 Tricycle. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Input.Raw
 {
@@ -18,18 +15,17 @@ namespace Perspex.Input.Raw
             IKeyboardDevice device,
             uint timestamp,
             RawKeyEventType type,
-            Key key,
-            string text)
+            Key key, ModifierKeys modifiers)
             : base(device, timestamp)
         {
-            this.Key = key;
-            this.Type = type;
-            this.Text = text;
+            Key = key;
+            Type = type;
+            Modifiers = modifiers;
         }
 
         public Key Key { get; set; }
 
-        public string Text { get; set; }
+        public ModifierKeys Modifiers { get; set; }
 
         public RawKeyEventType Type { get; set; }
     }

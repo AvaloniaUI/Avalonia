@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -23,7 +26,7 @@ namespace NGenerics.Patterns.Visitor
     {
         #region Globals
 
-        private readonly IVisitor<T> visitorToUse;
+        private readonly IVisitor<T> _visitorToUse;
 
         #endregion
 
@@ -35,7 +38,7 @@ namespace NGenerics.Patterns.Visitor
         {
             Guard.ArgumentNotNull(visitorToUse, "visitorToUse");
 
-            this.visitorToUse = visitorToUse;
+            _visitorToUse = visitorToUse;
         }
 
         #endregion
@@ -49,13 +52,7 @@ namespace NGenerics.Patterns.Visitor
         /// <returns>
         /// 	<c>true</c> if this visitor is done; otherwise, <c>false</c>.
         /// </returns>
-        public bool HasCompleted
-        {
-            get
-            {
-                return visitorToUse.HasCompleted;
-            }
-        }
+        public bool HasCompleted => _visitorToUse.HasCompleted;
 
         /// <summary>
         /// Visits the object in pre order.
@@ -64,7 +61,7 @@ namespace NGenerics.Patterns.Visitor
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "PreOrder")]
         public virtual void VisitPreOrder(T obj)
         {
-            visitorToUse.Visit(obj);
+            _visitorToUse.Visit(obj);
         }
 
         /// <summary>
@@ -73,7 +70,7 @@ namespace NGenerics.Patterns.Visitor
         /// <param name="obj">The obj.</param>        
         public virtual void VisitPostOrder(T obj)
         {
-            visitorToUse.Visit(obj);
+            _visitorToUse.Visit(obj);
         }
 
         /// <summary>
@@ -82,12 +79,12 @@ namespace NGenerics.Patterns.Visitor
         /// <param name="obj">The obj.</param>
         public virtual void VisitInOrder(T obj)
         {
-            visitorToUse.Visit(obj);
+            _visitorToUse.Visit(obj);
         }
         /// <inheritdoc />
         public void Visit(T obj)
         {
-            visitorToUse.Visit(obj);
+            _visitorToUse.Visit(obj);
         }
 
         #endregion
@@ -98,13 +95,7 @@ namespace NGenerics.Patterns.Visitor
         /// Gets the visitor to use.
         /// </summary>
         /// <value>The visitor to use.</value>
-        public IVisitor<T> VisitorToUse
-        {
-            get
-            {
-                return visitorToUse;
-            }
-        }
+        public IVisitor<T> VisitorToUse => _visitorToUse;
 
         #endregion
     }

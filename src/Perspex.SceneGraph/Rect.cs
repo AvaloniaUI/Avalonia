@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Rect.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
 
 namespace Perspex
 {
-    using System;
-    using System.Globalization;
-
     /// <summary>
     /// Defines a rectangle.
     /// </summary>
@@ -17,22 +14,22 @@ namespace Perspex
         /// <summary>
         /// The X position.
         /// </summary>
-        private double x;
+        private readonly double _x;
 
         /// <summary>
         /// The Y position.
         /// </summary>
-        private double y;
+        private readonly double _y;
 
         /// <summary>
         /// The width.
         /// </summary>
-        private double width;
+        private readonly double _width;
 
         /// <summary>
         /// The height.
         /// </summary>
-        private double height;
+        private readonly double _height;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Rect"/> structure.
@@ -43,10 +40,10 @@ namespace Perspex
         /// <param name="height">The height.</param>
         public Rect(double x, double y, double width, double height)
         {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
+            _x = x;
+            _y = y;
+            _width = width;
+            _height = height;
         }
 
         /// <summary>
@@ -55,10 +52,10 @@ namespace Perspex
         /// <param name="size">The size of the rectangle.</param>
         public Rect(Size size)
         {
-            this.x = 0;
-            this.y = 0;
-            this.width = size.Width;
-            this.height = size.Height;
+            _x = 0;
+            _y = 0;
+            _width = size.Width;
+            _height = size.Height;
         }
 
         /// <summary>
@@ -68,10 +65,10 @@ namespace Perspex
         /// <param name="size">The size of the rectangle.</param>
         public Rect(Point position, Size size)
         {
-            this.x = position.X;
-            this.y = position.Y;
-            this.width = size.Width;
-            this.height = size.Height;
+            _x = position.X;
+            _y = position.Y;
+            _width = size.Width;
+            _height = size.Height;
         }
 
         /// <summary>
@@ -81,123 +78,81 @@ namespace Perspex
         /// <param name="bottomRight">The bottom right position of the rectangle.</param>
         public Rect(Point topLeft, Point bottomRight)
         {
-            this.x = topLeft.X;
-            this.y = topLeft.Y;
-            this.width = bottomRight.X - topLeft.X;
-            this.height = bottomRight.Y - topLeft.Y;
+            _x = topLeft.X;
+            _y = topLeft.Y;
+            _width = bottomRight.X - topLeft.X;
+            _height = bottomRight.Y - topLeft.Y;
         }
 
         /// <summary>
         /// Gets the X position.
         /// </summary>
-        public double X
-        {
-            get { return this.x; }
-        }
+        public double X => _x;
 
         /// <summary>
         /// Gets the Y position.
         /// </summary>
-        public double Y
-        {
-            get { return this.y; }
-        }
+        public double Y => _y;
 
         /// <summary>
         /// Gets the width.
         /// </summary>
-        public double Width
-        {
-            get { return this.width; }
-        }
+        public double Width => _width;
 
         /// <summary>
         /// Gets the height.
         /// </summary>
-        public double Height
-        {
-            get { return this.height; }
-        }
+        public double Height => _height;
 
         /// <summary>
         /// Gets the position of the rectangle.
         /// </summary>
-        public Point Position
-        {
-            get { return new Point(this.x, this.y); }
-        }
+        public Point Position => new Point(_x, _y);
 
         /// <summary>
         /// Gets the size of the rectangle.
         /// </summary>
-        public Size Size
-        {
-            get { return new Size(this.width, this.height); }
-        }
+        public Size Size => new Size(_width, _height);
 
         /// <summary>
         /// Gets the right position of the rectangle.
         /// </summary>
-        public double Right
-        {
-            get { return this.x + this.width; }
-        }
+        public double Right => _x + _width;
 
         /// <summary>
         /// Gets the bottom position of the rectangle.
         /// </summary>
-        public double Bottom
-        {
-            get { return this.y + this.height; }
-        }
+        public double Bottom => _y + _height;
 
         /// <summary>
         /// Gets the top left point of the rectangle.
         /// </summary>
-        public Point TopLeft
-        {
-            get { return new Point(this.x, this.y); }
-        }
+        public Point TopLeft => new Point(_x, _y);
 
         /// <summary>
         /// Gets the top right point of the rectangle.
         /// </summary>
-        public Point TopRight
-        {
-            get { return new Point(this.Right, this.y); }
-        }
+        public Point TopRight => new Point(Right, _y);
 
         /// <summary>
         /// Gets the bottom left point of the rectangle.
         /// </summary>
-        public Point BottomLeft
-        {
-            get { return new Point(this.x, this.Bottom); }
-        }
+        public Point BottomLeft => new Point(_x, Bottom);
 
         /// <summary>
         /// Gets the bottom right point of the rectangle.
         /// </summary>
-        public Point BottomRight
-        {
-            get { return new Point(this.Right, this.Bottom); }
-        }
+        public Point BottomRight => new Point(Right, Bottom);
 
         /// <summary>
         /// Gets the center point of the rectangle.
         /// </summary>
-        public Point Center
-        {
-            get { return new Point(this.x + (this.width / 2), this.y + (this.height / 2)); }
-        }
+        public Point Center => new Point(_x + (_width / 2), _y + (_height / 2));
 
         /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
-        public bool IsEmpty
-        {
-            get { return this.width == 0 && this.height == 0; }
-        }
+        public bool IsEmpty => _width == 0 && _height == 0;
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.
@@ -229,10 +184,10 @@ namespace Perspex
         /// <returns>The scaled rectangle.</returns>
         public static Rect operator *(Rect rect, Vector scale)
         {
-            double centerX = rect.x + (rect.width / 2);
-            double centerY = rect.y + (rect.height / 2);
-            double width = rect.width * scale.X;
-            double height = rect.height * scale.Y;
+            double centerX = rect._x + (rect._width / 2);
+            double centerY = rect._y + (rect._height / 2);
+            double width = rect._width * scale.X;
+            double height = rect._height * scale.Y;
             return new Rect(
                 centerX - (width / 2),
                 centerY - (height / 2),
@@ -259,10 +214,10 @@ namespace Perspex
         /// <returns>The scaled rectangle.</returns>
         public static Rect operator /(Rect rect, Vector scale)
         {
-            double centerX = rect.x + (rect.width / 2);
-            double centerY = rect.y + (rect.height / 2);
-            double width = rect.width / scale.X;
-            double height = rect.height / scale.Y;
+            double centerX = rect._x + (rect._width / 2);
+            double centerY = rect._y + (rect._height / 2);
+            double width = rect._width / scale.X;
+            double height = rect._height / scale.Y;
             return new Rect(
                 centerX - (width / 2),
                 centerY - (height / 2),
@@ -277,8 +232,8 @@ namespace Perspex
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
         public bool Contains(Point p)
         {
-            return p.X >= this.x && p.X < this.x + this.width &&
-                   p.Y >= this.y && p.Y < this.y + this.height;
+            return p.X >= _x && p.X < _x + _width &&
+                   p.Y >= _y && p.Y < _y + _height;
         }
 
         /// <summary>
@@ -289,10 +244,10 @@ namespace Perspex
         public Rect CenterIn(Rect rect)
         {
             return new Rect(
-                this.x + ((this.width - rect.width) / 2),
-                this.y + ((this.height - rect.height) / 2),
-                rect.width,
-                rect.height);
+                _x + ((_width - rect._width) / 2),
+                _y + ((_height - rect._height) / 2),
+                rect._width,
+                rect._height);
         }
 
         /// <summary>
@@ -302,7 +257,7 @@ namespace Perspex
         /// <returns>The inflated rectangle.</returns>
         public Rect Inflate(double thickness)
         {
-            return this.Inflate(thickness);
+            return Inflate(thickness);
         }
 
         /// <summary>
@@ -313,8 +268,8 @@ namespace Perspex
         public Rect Inflate(Thickness thickness)
         {
             return new Rect(
-                new Point(this.x - thickness.Left, this.y - thickness.Top),
-                this.Size.Inflate(thickness));
+                new Point(_x - thickness.Left, _y - thickness.Top),
+                Size.Inflate(thickness));
         }
 
         /// <summary>
@@ -325,7 +280,7 @@ namespace Perspex
         /// <remarks>The deflated rectangle size cannot be less than 0.</remarks>
         public Rect Deflate(double thickness)
         {
-            return this.Deflate(new Thickness(thickness / 2));
+            return Deflate(new Thickness(thickness / 2));
         }
 
         /// <summary>
@@ -337,8 +292,8 @@ namespace Perspex
         public Rect Deflate(Thickness thickness)
         {
             return new Rect(
-                new Point(this.x + thickness.Left, this.y + thickness.Top),
-                this.Size.Deflate(thickness));
+                new Point(_x + thickness.Left, _y + thickness.Top),
+                Size.Deflate(thickness));
         }
 
         /// <summary>
@@ -365,10 +320,10 @@ namespace Perspex
             unchecked
             {
                 int hash = 17;
-                hash = (hash * 23) + this.X.GetHashCode();
-                hash = (hash * 23) + this.Y.GetHashCode();
-                hash = (hash * 23) + this.Width.GetHashCode();
-                hash = (hash * 23) + this.Height.GetHashCode();
+                hash = (hash * 23) + X.GetHashCode();
+                hash = (hash * 23) + Y.GetHashCode();
+                hash = (hash * 23) + Width.GetHashCode();
+                hash = (hash * 23) + Height.GetHashCode();
                 return hash;
             }
         }
@@ -380,10 +335,10 @@ namespace Perspex
         /// <returns>The intersection.</returns>
         public Rect Intersect(Rect rect)
         {
-            double x = Math.Max(this.x, rect.x);
-            double y = Math.Max(this.y, rect.y);
-            double width = Math.Min(this.Right, rect.Right) - x;
-            double height = Math.Min(this.Bottom, rect.Bottom) - y;
+            double x = Math.Max(_x, rect._x);
+            double y = Math.Max(_y, rect._y);
+            double width = Math.Min(Right, rect.Right) - x;
+            double height = Math.Min(Bottom, rect.Bottom) - y;
 
             if (width < 0 || height < 0)
             {
@@ -408,10 +363,10 @@ namespace Perspex
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}, {1}, {2}, {3}",
-                this.x,
-                this.y,
-                this.width,
-                this.height);
+                _x,
+                _y,
+                _width,
+                _height);
         }
     }
 }

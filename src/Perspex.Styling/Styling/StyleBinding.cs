@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StyleBinding.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-
     /// <summary>
     /// Provides an observable for a style.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Styling
         /// <summary>
         /// The activator.
         /// </summary>
-        private IObservable<bool> activator;
+        private readonly IObservable<bool> _activator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleBinding"/> class.
@@ -38,9 +35,9 @@ namespace Perspex.Styling
             object activatedValue,
             string description)
         {
-            this.activator = activator;
-            this.ActivatedValue = activatedValue;
-            this.Description = description;
+            _activator = activator;
+            ActivatedValue = activatedValue;
+            Description = description;
         }
 
         /// <summary>
@@ -54,9 +51,9 @@ namespace Perspex.Styling
             IObservable<object> source,
             string description)
         {
-            this.activator = activator;
-            this.Description = description;
-            this.Source = source;
+            _activator = activator;
+            Description = description;
+            Source = source;
         }
 
         /// <summary>
@@ -64,9 +61,7 @@ namespace Perspex.Styling
         /// </summary>
         public object ActivatedValue
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets a description of the binding.
@@ -93,17 +88,17 @@ namespace Perspex.Styling
         {
             Contract.Requires<NullReferenceException>(observer != null);
 
-            if (this.Source == null)
+            if (Source == null)
             {
-                return this.activator.Subscribe(
-                    active => observer.OnNext(active ? this.ActivatedValue : PerspexProperty.UnsetValue),
+                return _activator.Subscribe(
+                    active => observer.OnNext(active ? ActivatedValue : PerspexProperty.UnsetValue),
                     observer.OnError,
                     observer.OnCompleted);
             }
             else
             {
                 return Observable
-                    .CombineLatest(this.activator, this.Source, (x, y) => new { Active = x, Value = y })
+                    .CombineLatest(_activator, Source, (x, y) => new { Active = x, Value = y })
                     .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
             }
         }

@@ -1,4 +1,7 @@
-﻿/*  
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+/*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
 
@@ -9,17 +12,19 @@
 
 
 
-using System;using System.Diagnostics.CodeAnalysis;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace NGenerics.DataStructures.Trees {
+namespace NGenerics.DataStructures.Trees
+{
     /// <summary>
     /// A container class, used for the RedBlackTree.
     /// </summary>
 	/// <typeparam name="T">The type of element.</typeparam>
     //[Serializable]
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    internal class RedBlackTreeNode<T> : BinaryTree<T> {
-        
+    internal class RedBlackTreeNode<T> : BinaryTree<T>
+    {
         #region Construction
 
         /// <summary>
@@ -27,7 +32,8 @@ namespace NGenerics.DataStructures.Trees {
         /// </summary>
         /// <param name="data">The data contained in this node.</param>
         internal RedBlackTreeNode(T data)
-            : base(data) {
+            : base(data)
+        {
             Color = NodeColor.Red;
         }
 
@@ -45,14 +51,20 @@ namespace NGenerics.DataStructures.Trees {
         /// Gets or sets the <see cref="NGenerics.DataStructures.Trees.BinaryTree&lt;T&gt;"/> with the specified direction.
         /// </summary>
         /// <value></value>
-        internal RedBlackTreeNode<T> this[bool direction] {
-            get {
+        internal RedBlackTreeNode<T> this[bool direction]
+        {
+            get
+            {
                 return direction ? Right : Left;
             }
-            set {
-                if (direction) {
+            set
+            {
+                if (direction)
+                {
                     Right = value;
-                } else {
+                }
+                else
+                {
                     Left = value;
                 }
             }
@@ -62,11 +74,14 @@ namespace NGenerics.DataStructures.Trees {
         /// Gets or sets the left subtree.
         /// </summary>
         /// <value>The left subtree.</value>
-        internal new RedBlackTreeNode<T> Left {
-            get {
+        internal new RedBlackTreeNode<T> Left
+        {
+            get
+            {
                 return (RedBlackTreeNode<T>)base.Left;
             }
-            set {
+            set
+            {
                 base.Left = value;
             }
         }
@@ -75,15 +90,17 @@ namespace NGenerics.DataStructures.Trees {
         /// Gets or sets the right subtree.
         /// </summary>
         /// <value>The right subtree.</value>
-        internal new RedBlackTreeNode<T> Right {
-            get {
+        internal new RedBlackTreeNode<T> Right
+        {
+            get
+            {
                 return (RedBlackTreeNode<T>)base.Right;
             }
-            set {
+            set
+            {
                 base.Right = value;
             }
         }
-        
 
         #endregion
     }

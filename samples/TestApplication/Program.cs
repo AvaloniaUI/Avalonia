@@ -1,9 +1,14 @@
-﻿using System;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.IO;
 using System.Reactive.Linq;
 using Perspex;
 using Perspex.Animation;
 using Perspex.Collections;
 using Perspex.Controls;
+using Perspex.Controls.Html;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;
@@ -18,26 +23,26 @@ using ReactiveUI;
 
 namespace TestApplication
 {
-    class Item
+    internal class Item
     {
         public string Name { get; set; }
         public string Value { get; set; }
     }
 
-    class Node
+    internal class Node
     {
         public Node()
         {
-            this.Children = new PerspexList<Node>();
+            Children = new PerspexList<Node>();
         }
 
         public string Name { get; set; }
         public PerspexList<Node> Children { get; set; }
     }
 
-    class Program
+    internal class Program
     {
-        private static PerspexList<Node> treeData = new PerspexList<Node>
+        private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
         {
             new Node
             {
@@ -75,7 +80,7 @@ namespace TestApplication
             },
         };
 
-        private static PerspexList<Item> listBoxData = new PerspexList<Item>
+        private static readonly PerspexList<Item> s_listBoxData = new PerspexList<Item>
         {
             new Item { Name = "Item 1", Value = "Item 1 Value" },
             new Item { Name = "Item 2", Value = "Item 2 Value" },
@@ -87,7 +92,7 @@ namespace TestApplication
             new Item { Name = "Item 8", Value = "Item 8 Value" },
         };
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //Log.Logger = new LoggerConfiguration()
             //    .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
@@ -216,6 +221,7 @@ namespace TestApplication
                             {
                                 ButtonsTab(),
                                 TextTab(),
+                                HtmlTab(),
                                 ImagesTab(),
                                 ListsTab(),
                                 LayoutTab(),
@@ -264,7 +270,7 @@ namespace TestApplication
 
             var showDialog = ReactiveCommand.Create();
             Button showDialogButton;
-            
+
             var result = new TabItem
             {
                 Header = "Buttons",
@@ -356,10 +362,34 @@ namespace TestApplication
 
                 close.Subscribe(x => dialog.Close(x));
 
-                showDialogButton.Content =  await dialog.ShowDialog<string>();
+                showDialogButton.Content = await dialog.ShowDialog<string>();
             });
 
             return result;
+        }
+
+        private static TabItem HtmlTab()
+        {
+            var htmlText =
+                new StreamReader(typeof (Program).Assembly.GetManifestResourceStream("TestApplication.html.htm"))
+                    .ReadToEnd();
+            return new TabItem
+            {
+                Header = "Html",
+                Content = new ScrollViewer()
+                {
+                    Width = 600,
+                    MaxHeight = 600,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    CanScrollHorizontally = false,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
+                    Content =
+                        new HtmlLabel()
+                        {
+                            Text = htmlText
+                        }
+                }
+            };
         }
 
         private static TabItem TextTab()
@@ -402,7 +432,7 @@ namespace TestApplication
                         new TextBox
                         {
                             AcceptsReturn = true,
-                            Text = "A wrapping text box. " + 
+                            Text = "A wrapping text box. " +
                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. " +
                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
                             TextWrapping = TextWrapping.Wrap,
@@ -443,15 +473,15 @@ namespace TestApplication
                             Content = new Image
                             {
                                 Source = new Bitmap("github_icon.png"),
-                                [!Image.WidthProperty] = size[!ScrollBar.ValueProperty],
-                                [!Image.HeightProperty] = size[!ScrollBar.ValueProperty],
+                                [!Layoutable.WidthProperty] = size[!RangeBase.ValueProperty],
+                                [!Layoutable.HeightProperty] = size[!RangeBase.ValueProperty],
                             },
                         },
                         new ProgressBar
                         {
-                            [!ProgressBar.MinimumProperty] = size[!ScrollBar.MinimumProperty],
-                            [!ProgressBar.MaximumProperty] = size[!ScrollBar.MaximumProperty],
-                            [!ProgressBar.ValueProperty] = size[!ScrollBar.ValueProperty],
+                            [!RangeBase.MinimumProperty] = size[!RangeBase.MinimumProperty],
+                            [!RangeBase.MaximumProperty] = size[!RangeBase.MaximumProperty],
+                            [!RangeBase.ValueProperty] = size[!RangeBase.ValueProperty],
                         }
                     }
                 },
@@ -488,17 +518,17 @@ namespace TestApplication
                         new TreeView
                         {
                             Name = "treeView",
-                            Items = treeData,
+                            Items = s_treeData,
                         },
                         (listBox = new ListBox
                         {
-                            Items = listBoxData,
+                            Items = s_listBoxData,
                             MaxHeight = 300,
                         }),
                         new DropDown
                         {
-                            Items = listBoxData,
-                            SelectedItem = listBoxData[0],
+                            Items = s_listBoxData,
+                            SelectedItem = s_listBoxData[0],
                             VerticalAlignment = VerticalAlignment.Center,
                         }
                     }
@@ -614,8 +644,8 @@ namespace TestApplication
                             }),
                             PropertyTransitions = new PropertyTransitions
                             {
-                                Rectangle.WidthProperty.Transition(300),
-                                Rectangle.HeightProperty.Transition(1000),
+                                Layoutable.WidthProperty.Transition(300),
+                                Layoutable.HeightProperty.Transition(1000),
                             },
                             [Grid.ColumnProperty] = 1,
                         }),

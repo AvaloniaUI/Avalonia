@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PopupRootStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for the <see cref="PopupRoot"/> control.
     /// </summary>
@@ -23,15 +20,15 @@ namespace Perspex.Themes.Default
         /// </summary>
         public PopupRootStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<PopupRoot>())
                 {
                     Setters = new[]
                     {
-                        new Setter(PopupRoot.TemplateProperty, new ControlTemplate<PopupRoot>(Template)),
-                        new Setter(PopupRoot.FontFamilyProperty, "Segoe UI"),
-                        new Setter(PopupRoot.FontSizeProperty, 12.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<PopupRoot>(Template)),
+                        new Setter(TemplatedControl.FontFamilyProperty, "Segoe UI"),
+                        new Setter(TemplatedControl.FontSizeProperty, 12.0),
                     },
                 },
             });
@@ -46,11 +43,11 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                [~Border.BackgroundProperty] = control[~PopupRoot.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                 Child = new ContentPresenter
                 {
                     Name = "contentPresenter",
-                    [~ContentPresenter.ContentProperty] = control[~PopupRoot.ContentProperty],
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
             };
         }

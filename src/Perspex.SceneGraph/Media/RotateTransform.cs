@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RotateTransform.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Media
 {
-    using System;
-
     /// <summary>
     /// Rotates an <see cref="IVisual"/>.
     /// </summary>
@@ -24,7 +21,7 @@ namespace Perspex.Media
         /// </summary>
         public RotateTransform()
         {
-            this.GetObservable(AngleProperty).Subscribe(_ => this.RaiseChanged());
+            GetObservable(AngleProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -34,7 +31,7 @@ namespace Perspex.Media
         public RotateTransform(double angle)
             : this()
         {
-            this.Angle = angle;
+            Angle = angle;
         }
 
         /// <summary>
@@ -42,16 +39,13 @@ namespace Perspex.Media
         /// </summary>
         public double Angle
         {
-            get { return this.GetValue(AngleProperty); }
-            set { this.SetValue(AngleProperty, value); }
+            get { return GetValue(AngleProperty); }
+            set { SetValue(AngleProperty, value); }
         }
 
         /// <summary>
         /// Gets the tranform's <see cref="Matrix"/>.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return Matrix.CreateRotation(Matrix.ToRadians(this.Angle)); }
-        }
+        public override Matrix Value => Matrix.CreateRotation(Matrix.ToRadians(Angle));
     }
 }

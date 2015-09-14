@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectTests_Inheritance.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using Xunit;
-
     public class PerspexObjectTests_Inheritance
     {
         [Fact]
@@ -96,8 +93,8 @@ namespace Perspex.Base.UnitTests
 
             public Class1 Parent
             {
-                get { return (Class1)this.InheritanceParent; }
-                set { this.InheritanceParent = value; }
+                get { return (Class1)InheritanceParent; }
+                set { InheritanceParent = value; }
             }
         }
     }

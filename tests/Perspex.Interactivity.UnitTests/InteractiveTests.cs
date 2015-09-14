@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="InteractiveTests.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Interactivity;
+using Perspex.VisualTree;
+using Xunit;
 
 namespace Perspex.Interactivity.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Interactivity;
-    using Perspex.VisualTree;
-    using Xunit;
-
     public class InteractiveTests
     {
         [Fact]
@@ -21,7 +18,7 @@ namespace Perspex.Interactivity.UnitTests
             var ev = new RoutedEvent("test", RoutingStrategies.Direct, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Direct);
+            var target = CreateTree(ev, handler, RoutingStrategies.Direct);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -41,7 +38,7 @@ namespace Perspex.Interactivity.UnitTests
                 called = true;
             };
 
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Direct);
+            var target = CreateTree(ev, handler, RoutingStrategies.Direct);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -55,7 +52,7 @@ namespace Perspex.Interactivity.UnitTests
             var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -69,7 +66,7 @@ namespace Perspex.Interactivity.UnitTests
             var ev = new RoutedEvent("test", RoutingStrategies.Tunnel, typeof(RoutedEventArgs), typeof(TestInteractive));
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -87,7 +84,7 @@ namespace Perspex.Interactivity.UnitTests
                 typeof(TestInteractive));
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -105,7 +102,7 @@ namespace Perspex.Interactivity.UnitTests
                 typeof(TestInteractive));
             var invoked = new List<RoutingStrategies>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(e.Route);
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -135,7 +132,7 @@ namespace Perspex.Interactivity.UnitTests
                 ++count;
             };
 
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Direct);
+            var target = CreateTree(ev, handler, RoutingStrategies.Direct);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -159,7 +156,7 @@ namespace Perspex.Interactivity.UnitTests
                 ++count;
             };
 
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -183,7 +180,7 @@ namespace Perspex.Interactivity.UnitTests
                 ++count;
             };
 
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Tunnel);
+            var target = CreateTree(ev, handler, RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -207,7 +204,7 @@ namespace Perspex.Interactivity.UnitTests
                 e.Handled = true;
             };
 
-            var target = this.CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, true);
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, true);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -226,7 +223,7 @@ namespace Perspex.Interactivity.UnitTests
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
-            var target = this.CreateTree(ev, null, 0);
+            var target = CreateTree(ev, null, 0);
 
             ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Direct);
 
@@ -247,7 +244,7 @@ namespace Perspex.Interactivity.UnitTests
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
-            var target = this.CreateTree(ev, null, 0);
+            var target = CreateTree(ev, null, 0);
 
             ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Tunnel);
 
@@ -268,7 +265,7 @@ namespace Perspex.Interactivity.UnitTests
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
 
-            var target = this.CreateTree(ev, null, 0);
+            var target = CreateTree(ev, null, 0);
 
             ev.AddClassHandler(typeof(TestInteractive), handler, RoutingStrategies.Bubble);
 
@@ -286,7 +283,7 @@ namespace Perspex.Interactivity.UnitTests
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
                 typeof(TestInteractive));
 
-            var target = this.CreateTree(ev, null, 0);
+            var target = CreateTree(ev, null, 0);
 
             ev.AddClassHandler<TestInteractive>(x => x.ClassHandler, RoutingStrategies.Bubble);
 
@@ -354,13 +351,13 @@ namespace Perspex.Interactivity.UnitTests
 
                 set
                 {
-                    this.AddVisualChildren(value.Cast<Visual>());
+                    AddVisualChildren(value.Cast<Visual>());
                 }
             }
 
             public void ClassHandler(RoutedEventArgs e)
             {
-                this.ClassHandlerInvoked = true;
+                ClassHandlerInvoked = true;
             }
         }
     }

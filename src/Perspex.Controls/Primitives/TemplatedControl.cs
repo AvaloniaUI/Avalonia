@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TemplatedControl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.Media;
+using Perspex.Styling;
+using Perspex.VisualTree;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Media;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
@@ -75,9 +72,9 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
 
-        private bool templateApplied;
+        private bool _templateApplied;
 
-        private ILogger templateLog;
+        private readonly ILogger _templateLog;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -87,7 +84,7 @@ namespace Perspex.Controls.Primitives
             TemplateProperty.Changed.Subscribe(e =>
             {
                 var templatedControl = (TemplatedControl)e.Sender;
-                templatedControl.templateApplied = false;
+                templatedControl._templateApplied = false;
                 templatedControl.InvalidateMeasure();
             });
         }
@@ -97,11 +94,11 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public TemplatedControl()
         {
-            this.templateLog = Log.ForContext(new[]
+            _templateLog = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Template"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
         }
 
@@ -110,8 +107,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Brush Background
         {
-            get { return this.GetValue(BackgroundProperty); }
-            set { this.SetValue(BackgroundProperty, value); }
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         /// <summary>
@@ -119,8 +116,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Brush BorderBrush
         {
-            get { return this.GetValue(BorderBrushProperty); }
-            set { this.SetValue(BorderBrushProperty, value); }
+            get { return GetValue(BorderBrushProperty); }
+            set { SetValue(BorderBrushProperty, value); }
         }
 
         /// <summary>
@@ -128,8 +125,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double BorderThickness
         {
-            get { return this.GetValue(BorderThicknessProperty); }
-            set { this.SetValue(BorderThicknessProperty, value); }
+            get { return GetValue(BorderThicknessProperty); }
+            set { SetValue(BorderThicknessProperty, value); }
         }
 
         /// <summary>
@@ -137,8 +134,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public string FontFamily
         {
-            get { return this.GetValue(FontFamilyProperty); }
-            set { this.SetValue(FontFamilyProperty, value); }
+            get { return GetValue(FontFamilyProperty); }
+            set { SetValue(FontFamilyProperty, value); }
         }
 
         /// <summary>
@@ -146,8 +143,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double FontSize
         {
-            get { return this.GetValue(FontSizeProperty); }
-            set { this.SetValue(FontSizeProperty, value); }
+            get { return GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
         }
 
         /// <summary>
@@ -155,8 +152,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return this.GetValue(FontStyleProperty); }
-            set { this.SetValue(FontStyleProperty, value); }
+            get { return GetValue(FontStyleProperty); }
+            set { SetValue(FontStyleProperty, value); }
         }
 
         /// <summary>
@@ -164,8 +161,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Brush Foreground
         {
-            get { return this.GetValue(ForegroundProperty); }
-            set { this.SetValue(ForegroundProperty, value); }
+            get { return GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
         }
 
         /// <summary>
@@ -173,8 +170,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public Thickness Padding
         {
-            get { return this.GetValue(PaddingProperty); }
-            set { this.SetValue(PaddingProperty, value); }
+            get { return GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
         }
 
         /// <summary>
@@ -182,38 +179,38 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public ControlTemplate Template
         {
-            get { return this.GetValue(TemplateProperty); }
-            set { this.SetValue(TemplateProperty, value); }
+            get { return GetValue(TemplateProperty); }
+            set { SetValue(TemplateProperty, value); }
         }
 
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
-            if (!this.templateApplied)
+            if (!_templateApplied)
             {
-                this.ClearVisualChildren();
+                ClearVisualChildren();
 
-                if (this.Template != null)
+                if (Template != null)
                 {
-                    this.templateLog.Verbose("Creating control template");
+                    _templateLog.Verbose("Creating control template");
 
-                    var child = this.Template.Build(this);
+                    var child = Template.Build(this);
 
                     // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
                     // before the controls are added to the visual tree so that the logical
                     // tree can be set up before styling is applied.
                     ((ISetLogicalParent)child).SetParent(this);
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                    SetTemplatedParentAndApplyChildTemplates(child);
 
                     // And again after the controls are added to the visual tree, and have their
                     // styling and thus Template property set.
-                    this.AddVisualChild((Visual)child);
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                    AddVisualChild((Visual)child);
+                    SetTemplatedParentAndApplyChildTemplates(child);
 
-                    this.OnTemplateApplied();
+                    OnTemplateApplied();
                 }
 
-                this.templateApplied = true;
+                _templateApplied = true;
             }
         }
 
@@ -242,7 +239,7 @@ namespace Perspex.Controls.Primitives
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    this.SetTemplatedParentAndApplyChildTemplates(child);
+                    SetTemplatedParentAndApplyChildTemplates(child);
                 }
             }
         }

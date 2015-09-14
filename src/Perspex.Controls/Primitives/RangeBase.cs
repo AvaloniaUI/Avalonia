@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RangeBase.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Utilities;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Perspex.Utilities;
-
     /// <summary>
     /// Base class for controls that display a value within a range.
     /// </summary>
@@ -53,8 +50,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Minimum
         {
-            get { return this.GetValue(MinimumProperty); }
-            set { this.SetValue(MinimumProperty, value); }
+            get { return GetValue(MinimumProperty); }
+            set { SetValue(MinimumProperty, value); }
         }
 
         /// <summary>
@@ -62,8 +59,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Maximum
         {
-            get { return this.GetValue(MaximumProperty); }
-            set { this.SetValue(MaximumProperty, value); }
+            get { return GetValue(MaximumProperty); }
+            set { SetValue(MaximumProperty, value); }
         }
 
         /// <summary>
@@ -71,8 +68,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Value
         {
-            get { return this.GetValue(ValueProperty); }
-            set { this.SetValue(ValueProperty, value); }
+            get { return GetValue(ValueProperty); }
+            set { SetValue(ValueProperty, value); }
         }
 
         /// <summary>

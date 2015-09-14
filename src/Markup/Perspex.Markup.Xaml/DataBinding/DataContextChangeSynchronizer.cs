@@ -1,119 +1,165 @@
-// -----------------------------------------------------------------------
-// <copyright file="DataContextChangeSynchronizer.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.Reactive.Linq;
+using System.Reflection;
+using Glass;
+using OmniXaml.TypeConversion;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
-    using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.Reflection;
-    using ChangeTracking;
-    using Glass;
-    using OmniXaml.TypeConversion;
-
     public class DataContextChangeSynchronizer
     {
-        private readonly ITypeConverter targetPropertyTypeConverter;
-        private readonly TargetBindingEndpoint bindingEndpoint;
-        private readonly ObservablePropertyBranch sourceEndpoint;
+        private readonly BindingTarget _bindingTarget;
+        private readonly ITypeConverter _targetPropertyTypeConverter;
+        private readonly TargetBindingEndpoint _bindingEndpoint;
+        private readonly ObservablePropertyBranch _sourceEndpoint;
 
-        public DataContextChangeSynchronizer(PerspexObject target, PerspexProperty targetProperty,
-            PropertyPath sourcePropertyPath, object source, ITypeConverterProvider typeConverterProvider)
+        public DataContextChangeSynchronizer(BindingSource bindingSource, BindingTarget bindingTarget, ITypeConverterProvider typeConverterProvider)
         {
-            Guard.ThrowIfNull(target, nameof(target));
-            Guard.ThrowIfNull(targetProperty, nameof(targetProperty));
-            Guard.ThrowIfNull(sourcePropertyPath, nameof(sourcePropertyPath));
-            Guard.ThrowIfNull(source, nameof(source));
+            _bindingTarget = bindingTarget;
+            Guard.ThrowIfNull(bindingTarget.Object, nameof(bindingTarget.Object));
+            Guard.ThrowIfNull(bindingTarget.Property, nameof(bindingTarget.Property));
+            Guard.ThrowIfNull(bindingSource.SourcePropertyPath, nameof(bindingSource.SourcePropertyPath));
+            Guard.ThrowIfNull(bindingSource.Source, nameof(bindingSource.Source));
             Guard.ThrowIfNull(typeConverterProvider, nameof(typeConverterProvider));
 
-            this.bindingEndpoint = new TargetBindingEndpoint(target, targetProperty);
-            this.sourceEndpoint = new ObservablePropertyBranch(source, sourcePropertyPath);
-            this.targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(targetProperty.PropertyType);
+            _bindingEndpoint = new TargetBindingEndpoint(bindingTarget.Object, bindingTarget.Property);
+            _sourceEndpoint = new ObservablePropertyBranch(bindingSource.Source, bindingSource.SourcePropertyPath);
+            _targetPropertyTypeConverter = typeConverterProvider.GetTypeConverter(bindingTarget.Property.PropertyType);
+        }
+
+        public class BindingTarget
+        {
+            private readonly PerspexObject _obj;
+            private readonly PerspexProperty _property;
+
+            public BindingTarget(PerspexObject @object, PerspexProperty property)
+            {
+                _obj = @object;
+                _property = property;
+            }
+
+            public PerspexObject Object => _obj;
+
+            public PerspexProperty Property => _property;
+
+            public object Value
+            {
+                get { return _obj.GetValue(_property); }
+                set { _obj.SetValue(_property, value); }
+            }
+        }
+
+        public class BindingSource
+        {
+            private readonly PropertyPath _sourcePropertyPath;
+            private readonly object _source;
+
+            public BindingSource(PropertyPath sourcePropertyPath, object source)
+            {
+                _sourcePropertyPath = sourcePropertyPath;
+                _source = source;
+            }
+
+            public PropertyPath SourcePropertyPath => _sourcePropertyPath;
+
+            public object Source => _source;
+        }
+
+        public void StartUpdatingTargetWhenSourceChanges()
+        {
+            // TODO: commenting out this line will make the existing value to be skipped from the SourceValues. This is not supposed to happen. Is it?
+            _bindingTarget.Value = ConvertedValue(_sourceEndpoint.Value, _bindingTarget.Property.PropertyType);
+
+            // We use the native Bind method from PerspexObject to subscribe to the SourceValues observable
+            _bindingTarget.Object.Bind(_bindingTarget.Property, SourceValues);
+        }
+
+        public void StartUpdatingSourceWhenTargetChanges()
+        {
+            // We subscribe to the TargetValues and each time we have a new value, we update the source with it
+            TargetValues.Subscribe(newValue => _sourceEndpoint.Value = newValue);
+        }
+
+        private IObservable<object> SourceValues
+        {
+            get
+            {
+                return _sourceEndpoint.Values.Select(originalValue => ConvertedValue(originalValue, _bindingTarget.Property.PropertyType));
+            }
+        }
+
+        private IObservable<object> TargetValues
+        {
+            get
+            {
+                return _bindingEndpoint.Object
+                    .GetObservable(_bindingEndpoint.Property).Select(o => ConvertedValue(o, _sourceEndpoint.Type));
+            }
         }
 
         private bool CanAssignWithoutConversion
         {
             get
             {
-                var sourceTypeInfo = this.sourceEndpoint.Type.GetTypeInfo();
-                var targetTypeInfo = this.bindingEndpoint.Property.PropertyType.GetTypeInfo();
+                var sourceTypeInfo = _sourceEndpoint.Type.GetTypeInfo();
+                var targetTypeInfo = _bindingEndpoint.Property.PropertyType.GetTypeInfo();
                 var compatible = targetTypeInfo.IsAssignableFrom(sourceTypeInfo);
                 return compatible;
             }
         }
 
-        public void SubscribeModelToUI()
+        private object ConvertedValue(object originalValue, Type propertyType)
         {
-            this.bindingEndpoint.Object.GetObservable(this.bindingEndpoint.Property).Subscribe(this.UpdateModelFromUI);
-        }
-
-        public void SubscribeUIToModel()
-        {
-            this.sourceEndpoint.Changed.Subscribe(_ => this.UpdateUIFromModel());
-            this.UpdateUIFromModel();
-        }
-
-        private void UpdateUIFromModel()
-        {
-            object contextGetter = this.sourceEndpoint.Value;
-            this.SetCompatibleValue(contextGetter, this.bindingEndpoint.Property.PropertyType, o => this.bindingEndpoint.Object.SetValue(this.bindingEndpoint.Property, o));
-        }
-
-        private void SetCompatibleValue(object originalValue, Type targetType, Action<object> setValueFunc)
-        {
-            if (originalValue == null)
+            object converted;
+            if (TryConvert(originalValue, propertyType, out converted))
             {
-                setValueFunc(null);
+                return converted;
+            }
+
+            return null;
+        }
+
+        private bool TryConvert(object originalValue, Type targetType, out object finalValue)
+        {
+            if (originalValue != null)
+            {
+                if (CanAssignWithoutConversion)
+                {
+                    finalValue = originalValue;
+                    return true;
+                }
+
+                if (_targetPropertyTypeConverter != null)
+                {
+                    if (_targetPropertyTypeConverter.CanConvertTo(null, targetType))
+                    {
+                        object convertedValue = _targetPropertyTypeConverter.ConvertTo(
+                            null,
+                            CultureInfo.InvariantCulture,
+                            originalValue,
+                            targetType);
+
+                        if (convertedValue != null)
+                        {
+                            finalValue = convertedValue;
+                            return true;
+                        }
+                    }
+                }
             }
             else
             {
-                if (this.CanAssignWithoutConversion)
-                {
-                    setValueFunc(originalValue);
-                }
-                else
-                {
-                    var synchronizationOk = false;
-
-                    if (this.targetPropertyTypeConverter != null)
-                    {
-                        if (this.targetPropertyTypeConverter.CanConvertTo(null, targetType))
-                        {
-                            object convertedValue = this.targetPropertyTypeConverter.ConvertTo(null, CultureInfo.InvariantCulture, originalValue,
-                                targetType);
-
-                            if (convertedValue != null)
-                            {
-                                setValueFunc(convertedValue);
-                                synchronizationOk = true;
-                            }
-                        }
-                    }
-
-                    if (!synchronizationOk)
-                    {
-                        this.LogCannotConvertError(originalValue);
-                    }
-                }
+                finalValue = null;
+                return true;
             }
-        }
 
-        private void UpdateModelFromUI(object valueFromUI)
-        {
-            this.SetCompatibleValue(valueFromUI, this.sourceEndpoint.Type, o => this.sourceEndpoint.Value = o);
-        }
-
-        private void LogCannotConvertError(object value)
-        {
-            Contract.Requires<ArgumentException>(value != null);
-
-            var loggableValue = value.ToString();
-            var valueToWrite = string.IsNullOrWhiteSpace(loggableValue) ? "'(empty/whitespace string)'" : loggableValue;
-
-            Debug.WriteLine("Cannot convert value {0} ({1}) to {2}", valueToWrite, value.GetType(), this.bindingEndpoint.Property.PropertyType);
+            finalValue = null;
+            return false;
         }
     }
 }

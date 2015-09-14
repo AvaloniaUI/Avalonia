@@ -1,18 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="MenuStyle.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for the <see cref="Menu"/> control.
     /// </summary>
@@ -23,13 +21,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public MenuStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<Menu>())
                 {
                     Setters = new[]
                     {
-                        new Setter(Menu.TemplateProperty, new ControlTemplate<Menu>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Menu>(Template)),
                     },
                 },
             });
@@ -44,15 +42,15 @@ namespace Perspex.Themes.Default
         {
             return new Border
             {
-                [~Border.BackgroundProperty] = control[~Menu.BackgroundProperty],
-                [~Border.BorderBrushProperty] = control[~Menu.BorderBrushProperty],
-                [~Border.BorderThicknessProperty] = control[~Menu.BorderThicknessProperty],
-                [~Border.PaddingProperty] = control[~Menu.PaddingProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
+                [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
+                [~Decorator.PaddingProperty] = control[~TemplatedControl.PaddingProperty],
                 Child = new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~Menu.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~Menu.ItemsPanelProperty],
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                     [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Continue,
                 }
             };

@@ -1,20 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="LayoutManager.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Subjects;
+using NGenerics.DataStructures.General;
+using Perspex.VisualTree;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex.Layout
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Disposables;
-    using System.Reactive.Subjects;
-    using NGenerics.DataStructures.General;
-    using Perspex.VisualTree;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
@@ -34,52 +31,52 @@ namespace Perspex.Layout
         /// <summary>
         /// Called when a layout is needed.
         /// </summary>
-        private Subject<Unit> layoutNeeded;
+        private readonly Subject<Unit> _layoutNeeded;
 
         /// <summary>
         /// Called when a layout is completed.
         /// </summary>
-        private Subject<Unit> layoutCompleted;
+        private readonly Subject<Unit> _layoutCompleted;
 
         /// <summary>
         /// Whether a measure is needed on the next layout pass.
         /// </summary>
-        private bool measureNeeded = true;
+        private bool _measureNeeded = true;
 
         /// <summary>
         /// The controls that need to be measured, sorted by distance to layout root.
         /// </summary>
-        private Heap<Item> toMeasure = new Heap<Item>(HeapType.Minimum);
+        private Heap<Item> _toMeasure = new Heap<Item>(HeapType.Minimum);
 
         /// <summary>
         /// The controls that need to be arranged, sorted by distance to layout root.
         /// </summary>
-        private Heap<Item> toArrange = new Heap<Item>(HeapType.Minimum);
+        private Heap<Item> _toArrange = new Heap<Item>(HeapType.Minimum);
 
         /// <summary>
         /// Prevents re-entrancy.
         /// </summary>
-        private bool running;
+        private bool _running;
 
         /// <summary>
         /// The logger to use.
         /// </summary>
-        private ILogger log;
+        private readonly ILogger _log;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LayoutManager"/> class.
         /// </summary>
         public LayoutManager()
         {
-            this.log = Log.ForContext(new[]
+            _log = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Layout"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
 
-            this.layoutNeeded = new Subject<Unit>();
-            this.layoutCompleted = new Subject<Unit>();
+            _layoutNeeded = new Subject<Unit>();
+            _layoutCompleted = new Subject<Unit>();
         }
 
         /// <summary>
@@ -97,12 +94,12 @@ namespace Perspex.Layout
         /// <summary>
         /// Gets an observable that is fired when a layout pass is needed.
         /// </summary>
-        public IObservable<Unit> LayoutNeeded => this.layoutNeeded;
+        public IObservable<Unit> LayoutNeeded => _layoutNeeded;
 
         /// <summary>
         /// Gets an observable that is fired when a layout pass is completed.
         /// </summary>
-        public IObservable<Unit> LayoutCompleted => this.layoutCompleted;
+        public IObservable<Unit> LayoutCompleted => _layoutCompleted;
 
         /// <summary>
         /// Gets a value indicating whether a layout is queued.
@@ -122,44 +119,44 @@ namespace Perspex.Layout
         /// </summary>
         public void ExecuteLayoutPass()
         {
-            if (this.running)
+            if (_running)
             {
                 return;
             }
 
-            using (Disposable.Create(() => this.running = false))
+            using (Disposable.Create(() => _running = false))
             {
-                this.running = true;
-                this.LayoutQueued = false;
+                _running = true;
+                LayoutQueued = false;
 
-                this.log.Information(
+                _log.Information(
                     "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
-                    this.toMeasure.Count,
-                    this.toArrange.Count);
+                    _toMeasure.Count,
+                    _toArrange.Count);
 
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
 
                 for (int i = 0; i < MaxTries; ++i)
                 {
-                    if (this.measureNeeded)
+                    if (_measureNeeded)
                     {
-                        this.ExecuteMeasure();
-                        this.measureNeeded = false;
+                        ExecuteMeasure();
+                        _measureNeeded = false;
                     }
 
-                    this.ExecuteArrange();
+                    ExecuteArrange();
 
-                    if (this.toMeasure.Count == 0)
+                    if (_toMeasure.Count == 0)
                     {
                         break;
                     }
                 }
 
                 stopwatch.Stop();
-                this.log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
+                _log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
 
-                this.layoutCompleted.OnNext(Unit.Default);
+                _layoutCompleted.OnNext(Unit.Default);
             }
         }
 
@@ -171,16 +168,16 @@ namespace Perspex.Layout
         public void InvalidateMeasure(ILayoutable control, int distance)
         {
             var item = new Item(control, distance);
-            this.toMeasure.Add(item);
-            this.toArrange.Add(item);
+            _toMeasure.Add(item);
+            _toArrange.Add(item);
 
-            this.measureNeeded = true;
+            _measureNeeded = true;
 
-            if (!this.LayoutQueued)
+            if (!LayoutQueued)
             {
                 IVisual visual = control as IVisual;
-                this.layoutNeeded.OnNext(Unit.Default);
-                this.LayoutQueued = true;
+                _layoutNeeded.OnNext(Unit.Default);
+                LayoutQueued = true;
             }
         }
 
@@ -191,13 +188,13 @@ namespace Perspex.Layout
         /// <param name="distance">The control's distance from the layout root.</param>
         public void InvalidateArrange(ILayoutable control, int distance)
         {
-            this.toArrange.Add(new Item(control, distance));
+            _toArrange.Add(new Item(control, distance));
 
-            if (!this.LayoutQueued)
+            if (!LayoutQueued)
             {
                 IVisual visual = control as IVisual;
-                this.layoutNeeded.OnNext(Unit.Default);
-                this.LayoutQueued = true;
+                _layoutNeeded.OnNext(Unit.Default);
+                LayoutQueued = true;
             }
         }
 
@@ -208,23 +205,23 @@ namespace Perspex.Layout
         {
             for (int i = 0; i < MaxTries; ++i)
             {
-                var measure = this.toMeasure;
+                var measure = _toMeasure;
 
-                this.toMeasure = new Heap<Item>(HeapType.Minimum);
+                _toMeasure = new Heap<Item>(HeapType.Minimum);
 
-                if (!this.Root.IsMeasureValid)
+                if (!Root.IsMeasureValid)
                 {
                     var size = new Size(
-                        double.IsNaN(this.Root.Width) ? double.PositiveInfinity : this.Root.Width,
-                        double.IsNaN(this.Root.Height) ? double.PositiveInfinity : this.Root.Height);
-                    this.Root.Measure(size);
+                        double.IsNaN(Root.Width) ? double.PositiveInfinity : Root.Width,
+                        double.IsNaN(Root.Height) ? double.PositiveInfinity : Root.Height);
+                    Root.Measure(size);
                 }
 
                 foreach (var item in measure)
                 {
                     if (!item.Control.IsMeasureValid)
                     {
-                        if (item.Control != this.Root)
+                        if (item.Control != Root)
                         {
                             var parent = item.Control.GetVisualParent<ILayoutable>();
 
@@ -233,7 +230,7 @@ namespace Perspex.Layout
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            if (parent.GetVisualRoot() == this.Root)
+                            if (parent.GetVisualRoot() == Root)
                             {
                                 parent.Measure(parent.PreviousMeasure.Value, true);
                             }
@@ -241,7 +238,7 @@ namespace Perspex.Layout
                     }
                 }
 
-                if (this.toMeasure.Count == 0)
+                if (_toMeasure.Count == 0)
                 {
                     break;
                 }
@@ -255,16 +252,16 @@ namespace Perspex.Layout
         {
             for (int i = 0; i < MaxTries; ++i)
             {
-                var arrange = this.toArrange;
+                var arrange = _toArrange;
 
-                this.toArrange = new Heap<Item>(HeapType.Minimum);
+                _toArrange = new Heap<Item>(HeapType.Minimum);
 
-                if (!this.Root.IsArrangeValid && this.Root.IsMeasureValid)
+                if (!Root.IsArrangeValid && Root.IsMeasureValid)
                 {
-                    this.Root.Arrange(new Rect(this.Root.DesiredSize));
+                    Root.Arrange(new Rect(Root.DesiredSize));
                 }
 
-                if (this.toMeasure.Count > 0)
+                if (_toMeasure.Count > 0)
                 {
                     return;
                 }
@@ -273,7 +270,7 @@ namespace Perspex.Layout
                 {
                     if (!item.Control.IsArrangeValid)
                     {
-                        if (item.Control != this.Root)
+                        if (item.Control != Root)
                         {
                             var control = item.Control;
 
@@ -282,12 +279,12 @@ namespace Perspex.Layout
                                 control = control.GetVisualParent<ILayoutable>();
                             }
 
-                            if (control.GetVisualRoot() == this.Root)
+                            if (control.GetVisualRoot() == Root)
                             {
                                 control.Arrange(control.PreviousArrange.Value, true);
                             }
 
-                            if (this.toMeasure.Count > 0)
+                            if (_toMeasure.Count > 0)
                             {
                                 return;
                             }
@@ -295,7 +292,7 @@ namespace Perspex.Layout
                     }
                 }
 
-                if (this.toArrange.Count == 0)
+                if (_toArrange.Count == 0)
                 {
                     break;
                 }
@@ -314,8 +311,8 @@ namespace Perspex.Layout
             /// <param name="distance">The control's distance from the layout root.</param>
             public Item(ILayoutable control, int distance)
             {
-                this.Control = control;
-                this.Distance = distance;
+                Control = control;
+                Distance = distance;
             }
 
             /// <summary>
@@ -335,7 +332,7 @@ namespace Perspex.Layout
             /// <returns>The comparison.</returns>
             public int CompareTo(Item other)
             {
-                return this.Distance - other.Distance;
+                return Distance - other.Distance;
             }
         }
     }

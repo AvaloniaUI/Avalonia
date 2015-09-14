@@ -1,17 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabControlStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Styling;
+    using Controls = Controls.Controls;
 
     /// <summary>
     /// The default style for the <see cref="TabControl"/> control.
@@ -23,13 +22,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public TabControlStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<TabControl>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TabControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
                     },
                 },
             });
@@ -54,8 +53,8 @@ namespace Perspex.Themes.Default
                     new TabStrip
                     {
                         Name = "tabStrip",
-                        [!TabStrip.ItemsProperty] = control[!TabControl.ItemsProperty],
-                        [!!TabStrip.SelectedItemProperty] = control[!!TabControl.SelectedItemProperty],
+                        [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
                     },
                     new Deck
                     {
@@ -64,8 +63,8 @@ namespace Perspex.Themes.Default
                         {
                             new DataTemplate<TabItem>(x => (Control)control.MaterializeDataTemplate(x.Content)),
                         },
-                        [!Deck.ItemsProperty] = control[!TabControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = control[!TabControl.SelectedItemProperty],
+                        [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!SelectingItemsControl.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
                         [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [Grid.RowProperty] = 1,
                     }

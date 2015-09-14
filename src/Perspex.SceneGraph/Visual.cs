@@ -1,25 +1,22 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Visual.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Animation;
+using Perspex.Collections;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.Rendering;
+using Perspex.VisualTree;
+using Serilog;
+using Serilog.Core.Enrichers;
 
 namespace Perspex
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Animation;
-    using Perspex.Collections;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Perspex.VisualTree;
-    using Serilog;
-    using Serilog.Core.Enrichers;
-
     /// <summary>
     /// Base class for controls that provides rendering and related visual properties.
     /// </summary>
@@ -76,22 +73,22 @@ namespace Perspex
         /// <summary>
         /// Holds the children of the visual.
         /// </summary>
-        private PerspexList<IVisual> visualChildren;
+        private readonly PerspexList<IVisual> _visualChildren;
 
         /// <summary>
         /// Holds the parent of the visual.
         /// </summary>
-        private Visual visualParent;
+        private Visual _visualParent;
 
         /// <summary>
         /// Whether the element is attached to the visual tree.
         /// </summary>
-        private bool isAttachedToVisualTree;
+        private bool _isAttachedToVisualTree;
 
         /// <summary>
         /// The logger for visual-level events.
         /// </summary>
-        private ILogger visualLogger;
+        private readonly ILogger _visualLogger;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -108,15 +105,15 @@ namespace Perspex
         /// </summary>
         public Visual()
         {
-            this.visualLogger = Log.ForContext(new[]
+            _visualLogger = Log.ForContext(new[]
             {
                 new PropertyEnricher("Area", "Visual"),
-                new PropertyEnricher("SourceContext", this.GetType()),
-                new PropertyEnricher("Id", this.GetHashCode()),
+                new PropertyEnricher("SourceContext", GetType()),
+                new PropertyEnricher("Id", GetHashCode()),
             });
 
-            this.visualChildren = new PerspexList<IVisual>();
-            this.visualChildren.CollectionChanged += this.VisualChildrenChanged;
+            _visualChildren = new PerspexList<IVisual>();
+            _visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 
         /// <summary>
@@ -124,8 +121,8 @@ namespace Perspex
         /// </summary>
         public Rect Bounds
         {
-            get { return this.GetValue(BoundsProperty); }
-            protected set { this.SetValue(BoundsProperty, value); }
+            get { return GetValue(BoundsProperty); }
+            protected set { SetValue(BoundsProperty, value); }
         }
 
         /// <summary>
@@ -133,8 +130,8 @@ namespace Perspex
         /// </summary>
         public bool ClipToBounds
         {
-            get { return this.GetValue(ClipToBoundsProperty); }
-            set { this.SetValue(ClipToBoundsProperty, value); }
+            get { return GetValue(ClipToBoundsProperty); }
+            set { SetValue(ClipToBoundsProperty, value); }
         }
 
         /// <summary>
@@ -150,8 +147,8 @@ namespace Perspex
         /// </summary>
         public bool IsVisible
         {
-            get { return this.GetValue(IsVisibleProperty); }
-            set { this.SetValue(IsVisibleProperty, value); }
+            get { return GetValue(IsVisibleProperty); }
+            set { SetValue(IsVisibleProperty, value); }
         }
 
         /// <summary>
@@ -159,8 +156,8 @@ namespace Perspex
         /// </summary>
         public double Opacity
         {
-            get { return this.GetValue(OpacityProperty); }
-            set { this.SetValue(OpacityProperty, value); }
+            get { return GetValue(OpacityProperty); }
+            set { SetValue(OpacityProperty, value); }
         }
 
         /// <summary>
@@ -168,8 +165,8 @@ namespace Perspex
         /// </summary>
         public Transform RenderTransform
         {
-            get { return this.GetValue(RenderTransformProperty); }
-            set { this.SetValue(RenderTransformProperty, value); }
+            get { return GetValue(RenderTransformProperty); }
+            set { SetValue(RenderTransformProperty, value); }
         }
 
         /// <summary>
@@ -177,8 +174,8 @@ namespace Perspex
         /// </summary>
         public Origin TransformOrigin
         {
-            get { return this.GetValue(TransformOriginProperty); }
-            set { this.SetValue(TransformOriginProperty, value); }
+            get { return GetValue(TransformOriginProperty); }
+            set { SetValue(TransformOriginProperty, value); }
         }
 
         /// <summary>
@@ -186,36 +183,24 @@ namespace Perspex
         /// </summary>
         public int ZIndex
         {
-            get { return this.GetValue(ZIndexProperty); }
-            set { this.SetValue(ZIndexProperty, value); }
+            get { return GetValue(ZIndexProperty); }
+            set { SetValue(ZIndexProperty, value); }
         }
 
         /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
-        bool IVisual.IsAttachedToVisualTree
-        {
-            get { return this.isAttachedToVisualTree; }
-        }
+        bool IVisual.IsAttachedToVisualTree => _isAttachedToVisualTree;
 
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
-        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren
-        {
-            get { return this.visualChildren; }
-        }
+        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => _visualChildren;
 
         /// <summary>
         /// Gets the scene graph node's parent node.
         /// </summary>
-        IVisual IVisual.VisualParent
-        {
-            get
-            {
-                return this.visualParent;
-            }
-        }
+        IVisual IVisual.VisualParent => _visualParent;
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
@@ -288,7 +273,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            this.visualChildren.Add(visual);
+            _visualChildren.Add(visual);
         }
 
         /// <summary>
@@ -299,7 +284,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visuals != null);
 
-            this.visualChildren.AddRange(visuals);
+            _visualChildren.AddRange(visuals);
         }
 
         /// <summary>
@@ -307,7 +292,7 @@ namespace Perspex
         /// </summary>
         protected void ClearVisualChildren()
         {
-            this.visualChildren.Clear();
+            _visualChildren.Clear();
         }
 
         /// <summary>
@@ -318,7 +303,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            this.visualChildren.Remove(visual);
+            _visualChildren.Remove(visual);
         }
 
         /// <summary>
@@ -331,7 +316,7 @@ namespace Perspex
 
             foreach (var v in visuals)
             {
-                this.visualChildren.Remove(v);
+                _visualChildren.Remove(v);
             }
         }
 
@@ -423,7 +408,7 @@ namespace Perspex
         /// <param name="e">The event args.</param>
         private void RenderTransformChanged(object sender, EventArgs e)
         {
-            this.InvalidateVisual();
+            InvalidateVisual();
         }
 
         /// <summary>
@@ -432,9 +417,9 @@ namespace Perspex
         /// <param name="value">The visual parent.</param>
         private void SetVisualParent(Visual value)
         {
-            if (this.visualParent != value)
+            if (_visualParent != value)
             {
-                var old = this.visualParent;
+                var old = _visualParent;
                 var oldRoot = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
                 var newRoot = default(IRenderRoot);
 
@@ -443,22 +428,22 @@ namespace Perspex
                     newRoot = value.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
                 }
 
-                this.visualParent = value;
+                _visualParent = value;
 
                 if (oldRoot != null)
                 {
-                    this.NotifyDetachedFromVisualTree(oldRoot);
+                    NotifyDetachedFromVisualTree(oldRoot);
                 }
 
                 if (newRoot != null)
                 {
-                    this.NotifyAttachedToVisualTree(newRoot);
+                    NotifyAttachedToVisualTree(newRoot);
                 }
             }
         }
 
         /// <summary>
-        /// Called when the <see cref="visualChildren"/> collection changes.
+        /// Called when the <see cref="_visualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
@@ -493,14 +478,14 @@ namespace Perspex
         /// <param name="root">The root of the visual tree.</param>
         private void NotifyAttachedToVisualTree(IRenderRoot root)
         {
-            this.visualLogger.Verbose("Attached to visual tree");
+            _visualLogger.Verbose("Attached to visual tree");
 
-            this.isAttachedToVisualTree = true;
-            this.OnAttachedToVisualTree(root);
+            _isAttachedToVisualTree = true;
+            OnAttachedToVisualTree(root);
 
-            if (this.visualChildren != null)
+            if (_visualChildren != null)
             {
-                foreach (Visual child in this.visualChildren.OfType<Visual>())
+                foreach (Visual child in _visualChildren.OfType<Visual>())
                 {
                     child.NotifyAttachedToVisualTree(root);
                 }
@@ -514,14 +499,14 @@ namespace Perspex
         /// <param name="root">The root of the visual tree.</param>
         private void NotifyDetachedFromVisualTree(IRenderRoot root)
         {
-            this.visualLogger.Verbose("Detached from visual tree");
+            _visualLogger.Verbose("Detached from visual tree");
 
-            this.isAttachedToVisualTree = false;
-            this.OnDetachedFromVisualTree(root);
+            _isAttachedToVisualTree = false;
+            OnDetachedFromVisualTree(root);
 
-            if (this.visualChildren != null)
+            if (_visualChildren != null)
             {
-                foreach (Visual child in this.visualChildren.OfType<Visual>())
+                foreach (Visual child in _visualChildren.OfType<Visual>())
                 {
                     child.NotifyDetachedFromVisualTree(root);
                 }

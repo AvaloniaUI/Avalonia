@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="HeaderedItemsControl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Controls.Primitives
 {
@@ -13,8 +10,8 @@ namespace Perspex.Controls.Primitives
 
         public object Header
         {
-            get { return this.GetValue(HeaderProperty); }
-            set { this.SetValue(HeaderProperty, value); }
+            get { return GetValue(HeaderProperty); }
+            set { SetValue(HeaderProperty, value); }
         }
     }
 }

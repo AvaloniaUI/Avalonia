@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Origin.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex
 {
@@ -32,9 +29,9 @@ namespace Perspex
         /// </summary>
         public static readonly Origin Default = new Origin(0.5, 0.5, OriginUnit.Percent);
 
-        private Point point;
+        private Point _point;
 
-        private OriginUnit unit;
+        private readonly OriginUnit _unit;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Origin"/> struct.
@@ -54,25 +51,19 @@ namespace Perspex
         /// <param name="unit">The origin unit.</param>
         public Origin(Point point, OriginUnit unit)
         {
-            this.point = point;
-            this.unit = unit;
+            _point = point;
+            _unit = unit;
         }
 
         /// <summary>
         /// Gets the origin point.
         /// </summary>
-        public Point Point
-        {
-            get { return this.point; }
-        }
+        public Point Point => _point;
 
         /// <summary>
         /// Gets the origin unit.
         /// </summary>
-        public OriginUnit Unit
-        {
-            get { return this.unit; }
-        }
+        public OriginUnit Unit => _unit;
 
         /// <summary>
         /// Converts an <see cref="Origin"/> into pixels.
@@ -81,9 +72,9 @@ namespace Perspex
         /// <returns>The origin point in pixels.</returns>
         public Point ToPixels(Size size)
         {
-            return this.unit == OriginUnit.Pixels ?
-                this.point :
-                new Point(this.point.X * size.Width, this.point.Y * size.Height);
+            return _unit == OriginUnit.Pixels ?
+                _point :
+                new Point(_point.X * size.Width, _point.Y * size.Height);
         }
     }
 }

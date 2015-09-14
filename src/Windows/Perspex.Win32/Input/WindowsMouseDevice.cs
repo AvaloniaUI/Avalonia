@@ -1,24 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="WindowsMouseDevice.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Win32.Interop;
 
 namespace Perspex.Win32.Input
 {
-    using System;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Win32.Interop;
-
     public class WindowsMouseDevice : MouseDevice
     {
-        private static WindowsMouseDevice instance = new WindowsMouseDevice();
+        private static readonly WindowsMouseDevice s_instance = new WindowsMouseDevice();
 
-        public static new WindowsMouseDevice Instance
-        {
-            get { return instance; }
-        }
+        public static new WindowsMouseDevice Instance => s_instance;
 
         public WindowImpl CurrentWindow
         {
@@ -32,7 +26,7 @@ namespace Perspex.Win32.Input
 
             if (control != null)
             {
-                UnmanagedMethods.SetCapture(this.CurrentWindow.Handle.Handle);
+                UnmanagedMethods.SetCapture(CurrentWindow.Handle.Handle);
             }
             else
             {

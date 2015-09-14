@@ -1,18 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StyleTests.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reactive.Subjects;
+using Perspex.Controls;
+using Xunit;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Subjects;
-    using Perspex.Controls;
-    using Perspex.Styling;
-    using Xunit;
-
     public class StyleTests
     {
         [Fact]
@@ -161,8 +157,8 @@ namespace Perspex.Styling.UnitTests
 
             public string Foo
             {
-                get { return this.GetValue(FooProperty); }
-                set { this.SetValue(FooProperty, value); }
+                get { return GetValue(FooProperty); }
+                set { SetValue(FooProperty, value); }
             }
 
             protected override Size MeasureOverride(Size availableSize)

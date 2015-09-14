@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FormattedText.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// Represents a piece of text with formatting.
     /// </summary>
@@ -33,16 +30,16 @@ namespace Perspex.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            this.Text = text;
-            this.FontFamilyName = fontFamilyName;
-            this.FontSize = fontSize;
-            this.FontStyle = fontStyle;
-            this.FontWeight = fontWeight;
-            this.TextAlignment = textAlignment;
+            Text = text;
+            FontFamilyName = fontFamilyName;
+            FontSize = fontSize;
+            FontStyle = fontStyle;
+            FontWeight = fontWeight;
+            TextAlignment = textAlignment;
 
             var platform = Locator.Current.GetService<IPlatformRenderInterface>();
 
-            this.PlatformImpl = platform.CreateFormattedText(
+            PlatformImpl = platform.CreateFormattedText(
                 text,
                 fontFamilyName,
                 fontSize,
@@ -56,8 +53,8 @@ namespace Perspex.Media
         /// </summary>
         public Size Constraint
         {
-            get { return this.PlatformImpl.Constraint; }
-            set { this.PlatformImpl.Constraint = value; }
+            get { return PlatformImpl.Constraint; }
+            set { PlatformImpl.Constraint = value; }
         }
 
         /// <summary>
@@ -110,9 +107,7 @@ namespace Perspex.Media
         /// </summary>
         public IFormattedTextImpl PlatformImpl
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets the text alignment.
@@ -128,7 +123,7 @@ namespace Perspex.Media
         /// </summary>
         public void Dispose()
         {
-            this.PlatformImpl.Dispose();
+            PlatformImpl.Dispose();
         }
 
         /// <summary>
@@ -139,7 +134,7 @@ namespace Perspex.Media
         /// </returns>
         public IEnumerable<FormattedTextLine> GetLines()
         {
-            return this.PlatformImpl.GetLines();
+            return PlatformImpl.GetLines();
         }
 
         /// <summary>
@@ -151,7 +146,7 @@ namespace Perspex.Media
         /// </returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
-            return this.PlatformImpl.HitTestPoint(point);
+            return PlatformImpl.HitTestPoint(point);
         }
 
         /// <summary>
@@ -161,7 +156,7 @@ namespace Perspex.Media
         /// <returns>The character bounds.</returns>
         public Rect HitTestTextPosition(int index)
         {
-            return this.PlatformImpl.HitTestTextPosition(index);
+            return PlatformImpl.HitTestTextPosition(index);
         }
 
         /// <summary>
@@ -172,7 +167,7 @@ namespace Perspex.Media
         /// <returns>The character bounds.</returns>
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            return this.PlatformImpl.HitTestTextRange(index, length);
+            return PlatformImpl.HitTestTextRange(index, length);
         }
 
         /// <summary>
@@ -181,7 +176,7 @@ namespace Perspex.Media
         /// <returns>The bounds box of the text.</returns>
         public Size Measure()
         {
-            return this.PlatformImpl.Measure();
+            return PlatformImpl.Measure();
         }
 
         /// <summary>
@@ -192,7 +187,7 @@ namespace Perspex.Media
         /// <param name="length">The length of the text range.</param>
         public void SetForegroundBrush(Brush brush, int startIndex, int length)
         {
-            this.PlatformImpl.SetForegroundBrush(brush, startIndex, length);
+            PlatformImpl.SetForegroundBrush(brush, startIndex, length);
         }
     }
 }

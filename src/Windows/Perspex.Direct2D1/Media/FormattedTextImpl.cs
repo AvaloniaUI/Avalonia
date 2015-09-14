@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FormattedTextImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
+using DWrite = SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Splat;
-    using DWrite = SharpDX.DirectWrite;
-
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -33,44 +30,42 @@ namespace Perspex.Direct2D1.Media
                 (DWrite.FontStyle)fontStyle,
                 (float)fontSize);
 
-            this.TextLayout = new DWrite.TextLayout(
+            TextLayout = new DWrite.TextLayout(
                 factory,
                 text ?? string.Empty,
                 format,
                 float.MaxValue,
                 float.MaxValue);
 
-            this.TextLayout.TextAlignment = textAlignment.ToDirect2D();
+            TextLayout.TextAlignment = textAlignment.ToDirect2D();
         }
 
         public Size Constraint
         {
             get
             {
-                return new Size(this.TextLayout.MaxWidth, this.TextLayout.MaxHeight);
+                return new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
             }
 
             set
             {
-                this.TextLayout.MaxWidth = (float)value.Width;
-                this.TextLayout.MaxHeight = (float)value.Height;
+                TextLayout.MaxWidth = (float)value.Width;
+                TextLayout.MaxHeight = (float)value.Height;
             }
         }
 
         public DWrite.TextLayout TextLayout
         {
-            get;
-            private set;
-        }
+            get; }
 
         public void Dispose()
         {
-            this.TextLayout.Dispose();
+            TextLayout.Dispose();
         }
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
-            var result = this.TextLayout.GetLineMetrics();
+            var result = TextLayout.GetLineMetrics();
             return from line in result select new FormattedTextLine(line.Length, line.Height);
         }
 
@@ -79,7 +74,7 @@ namespace Perspex.Direct2D1.Media
             SharpDX.Bool isTrailingHit;
             SharpDX.Bool isInside;
 
-            var result = this.TextLayout.HitTestPoint(
+            var result = TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
                 out isTrailingHit,
@@ -98,7 +93,7 @@ namespace Perspex.Direct2D1.Media
             float x;
             float y;
 
-            var result = this.TextLayout.HitTestTextPosition(
+            var result = TextLayout.HitTestTextPosition(
                 index,
                 false,
                 out x,
@@ -109,13 +104,13 @@ namespace Perspex.Direct2D1.Media
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            var result = this.TextLayout.HitTestTextRange(index, length, 0, 0);
+            var result = TextLayout.HitTestTextRange(index, length, 0, 0);
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
         public Size Measure()
         {
-            var metrics = this.TextLayout.Metrics;
+            var metrics = TextLayout.Metrics;
             var width = metrics.WidthIncludingTrailingWhitespace;
 
             if (float.IsNaN(width))
@@ -123,12 +118,12 @@ namespace Perspex.Direct2D1.Media
                 width = metrics.Width;
             }
 
-            return new Size(width, this.TextLayout.Metrics.Height);
+            return new Size(width, TextLayout.Metrics.Height);
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int count)
         {
-            this.TextLayout.SetDrawingEffect(
+            TextLayout.SetDrawingEffect(
                 new BrushWrapper(brush),
                 new DWrite.TextRange(startIndex, count));
         }

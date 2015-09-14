@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PathTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Controls.Shapes;
+using Perspex.Layout;
+using Perspex.Media;
+using Splat;
+using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
 {
-    using Perspex.Controls.Shapes;
-    using Perspex.Layout;
-    using Perspex.Media;
-    using Splat;
-    using Xunit;
-
     public class PathTests
     {
         private static readonly RectComparer Compare = new RectComparer();

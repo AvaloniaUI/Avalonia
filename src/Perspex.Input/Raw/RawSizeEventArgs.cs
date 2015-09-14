@@ -1,23 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RawSizeEventArgs.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Input.Raw
 {
-    using System;
-
     public class RawSizeEventArgs : EventArgs
     {
         public RawSizeEventArgs(Size size)
         {
-            this.Size = size;
+            Size = size;
         }
 
         public RawSizeEventArgs(double width, double height)
         {
-            this.Size = new Size(width, height);
+            Size = new Size(width, height);
         }
 
         public Size Size { get; private set; }

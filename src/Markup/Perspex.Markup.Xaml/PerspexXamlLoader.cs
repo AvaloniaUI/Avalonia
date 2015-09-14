@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexXamlLoader.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reflection;
+using OmniXaml;
+using Perspex.Markup.Xaml.Context;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Markup.Xaml
 {
-    using System;
-    using System.Reflection;
-    using OmniXaml;
-    using Perspex.Markup.Xaml.Context;
-    using Platform;
-    using Splat;
-
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
@@ -55,7 +52,7 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
-            return this.Load(GetUriFor(type), rootInstance);
+            return Load(GetUriFor(type), rootInstance);
         }
 
         /// <summary>
@@ -78,7 +75,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return this.Load(stream, rootInstance);
+                return Load(stream, rootInstance);
             }
         }
 

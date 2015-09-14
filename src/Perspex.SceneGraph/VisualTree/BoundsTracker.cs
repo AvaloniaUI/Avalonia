@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BoundsTracker.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 
 namespace Perspex.VisualTree
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
-
     /// <summary>
     /// Tracks the bounds of a control.
     /// </summary>
@@ -26,7 +23,7 @@ namespace Perspex.VisualTree
         /// <returns>An observable that returns the tracked bounds.</returns>
         public IObservable<TransformedBounds> Track(Visual visual)
         {
-            return this.Track(visual, (Visual)visual.GetVisualRoot());
+            return Track(visual, (Visual)visual.GetVisualRoot());
         }
 
         /// <summary>

@@ -1,15 +1,18 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
+using ReactiveUI;
+
 namespace XamlTestApplication
 {
-    using System.Collections.Generic;
-    using ReactiveUI;
-
     public class MainViewModel : ReactiveObject
     {
-        private string name;
+        private string _name;
 
         public MainViewModel()
         {
-            Name = "José Manuel";
+            Name = "Jos\u00E9 Manuel";
             People = new List<Person>
             {
                 new Person("a little bit of Monica in my life"),
@@ -24,8 +27,8 @@ namespace XamlTestApplication
 
         public string Name
         {
-            get { return name; }
-            set { this.RaiseAndSetIfChanged(ref name, value); }
+            get { return _name; }
+            set { this.RaiseAndSetIfChanged(ref _name, value); }
         }
 
         public List<Person> People { get; set; }
@@ -33,17 +36,17 @@ namespace XamlTestApplication
 
     public class Person
     {
-        private string name;
+        private string _name;
 
         public Person(string name)
         {
-            this.name = name;
+            _name = name;
         }
 
         public string Name
         {
-            get { return name; }
-            set { name = value; }
+            get { return _name; }
+            set { _name = value; }
         }
     }
 }

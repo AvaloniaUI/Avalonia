@@ -64,8 +64,11 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Cursors.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="Platform\IClipboard.cs" />
+    <Compile Include="Platform\IStandardCursorFactory.cs" />
+    <Compile Include="Raw\RawTextInputEventArgs.cs" />
     <Compile Include="NavigationMethod.cs" />
     <Compile Include="IInputRoot.cs" />
     <Compile Include="IMainMenu.cs" />
@@ -100,6 +103,7 @@
     <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
     <Compile Include="Raw\RawSizeEventArgs.cs" />
     <Compile Include="KeyboardNavigationMode.cs" />
+    <Compile Include="TextInputEventArgs.cs" />
     <Compile Include="VectorEventArgs.cs" />
     <Compile Include="KeyEventArgs.cs" />
     <Compile Include="MouseDevice.cs" />
@@ -130,9 +134,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

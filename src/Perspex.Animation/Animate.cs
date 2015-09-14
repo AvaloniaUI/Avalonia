@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Animate.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Threading;
 
 namespace Perspex.Animation
 {
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Threading;
-
     /// <summary>
     /// Utilities for creating animations.
     /// </summary>
@@ -48,9 +45,7 @@ namespace Perspex.Animation
         /// </value>
         public static Stopwatch Stopwatch
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets the animation timer.
@@ -65,9 +60,7 @@ namespace Perspex.Animation
         /// </value>
         public static IObservable<TimeSpan> Timer
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets a timer that fires every frame for the specified duration.

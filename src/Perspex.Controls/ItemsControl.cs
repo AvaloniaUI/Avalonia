@@ -1,25 +1,22 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ItemsControl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Perspex.Collections;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
+using Perspex.Styling;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Collections.ObjectModel;
-    using System.Collections.Specialized;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using Perspex.Collections;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Controls.Utils;
-    using Perspex.Styling;
-
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
@@ -44,7 +41,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>("ItemsPanel", defaultValue: DefaultPanel);
 
-        private IItemContainerGenerator itemContainerGenerator;
+        private IItemContainerGenerator _itemContainerGenerator;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -59,8 +56,8 @@ namespace Perspex.Controls
         /// </summary>
         public ItemsControl()
         {
-            this.Classes.Add(":empty");
-            this.Items = new PerspexList<object>();
+            Classes.Add(":empty");
+            Items = new PerspexList<object>();
         }
 
         /// <summary>
@@ -70,12 +67,12 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.itemContainerGenerator == null)
+                if (_itemContainerGenerator == null)
                 {
-                    this.itemContainerGenerator = this.CreateItemContainerGenerator();
+                    _itemContainerGenerator = CreateItemContainerGenerator();
                 }
 
-                return this.itemContainerGenerator;
+                return _itemContainerGenerator;
             }
         }
 
@@ -84,8 +81,8 @@ namespace Perspex.Controls
         /// </summary>
         public IEnumerable Items
         {
-            get { return this.GetValue(ItemsProperty); }
-            set { this.SetValue(ItemsProperty, value); }
+            get { return GetValue(ItemsProperty); }
+            set { SetValue(ItemsProperty, value); }
         }
 
         /// <summary>
@@ -93,8 +90,8 @@ namespace Perspex.Controls
         /// </summary>
         public ITemplate<IPanel> ItemsPanel
         {
-            get { return this.GetValue(ItemsPanelProperty); }
-            set { this.SetValue(ItemsPanelProperty, value); }
+            get { return GetValue(ItemsPanelProperty); }
+            set { SetValue(ItemsPanelProperty, value); }
         }
 
         /// <summary>
@@ -107,10 +104,7 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        IPerspexList<ILogical> IReparentingHost.LogicalChildren
-        {
-            get { return this.LogicalChildren; }
-        }
+        IPerspexList<ILogical> IReparentingHost.LogicalChildren => LogicalChildren;
 
         /// <summary>
         /// Asks the control whether it wants to reparent the logical children of the specified
@@ -137,7 +131,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
-            this.Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
+            Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
         }
 
         /// <summary>
@@ -150,25 +144,25 @@ namespace Perspex.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged += this.ItemsCollectionChanged;
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
 
             var newValue = e.NewValue as IEnumerable;
 
             if (newValue == null || newValue.Count() == 0)
             {
-                this.Classes.Add(":empty");
+                Classes.Add(":empty");
             }
             else
             {
-                this.Classes.Remove(":empty");
+                Classes.Remove(":empty");
             }
 
             incc = newValue as INotifyCollectionChanged;
 
             if (incc != null)
             {
-                incc.CollectionChanged += this.ItemsCollectionChanged;
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
         }
 
@@ -184,11 +178,11 @@ namespace Perspex.Controls
 
             if (collection.Count == 0)
             {
-                this.Classes.Add(":empty");
+                Classes.Add(":empty");
             }
             else
             {
-                this.Classes.Remove(":empty");
+                Classes.Remove(":empty");
             }
         }
     }

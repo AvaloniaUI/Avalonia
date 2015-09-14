@@ -1,14 +1,17 @@
-﻿namespace Perspex.Direct2D1.RenderTests.Media
-{
-    using Perspex.Controls;
-    using Perspex.Media;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Xunit;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Perspex.Controls;
+using Perspex.Media;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Perspex.Direct2D1.RenderTests.Media
+{
     public class LinearGradientBrushTests : TestBase
     {
         public LinearGradientBrushTests() : base(@"Media\LinearGradientBrush")
@@ -38,8 +41,8 @@
                 }
             };
 
-            this.RenderToFile(target);
-            this.CompareImages();
+            RenderToFile(target);
+            CompareImages();
         }
     }
 }

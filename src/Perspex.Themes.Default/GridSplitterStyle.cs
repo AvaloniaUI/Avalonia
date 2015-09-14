@@ -1,16 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="GridSplitterStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Layout;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Templates;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for the <see cref="GridSplitter"/> control.
     /// </summary>
@@ -21,14 +20,14 @@ namespace Perspex.Themes.Default
         /// </summary>
         public GridSplitterStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<GridSplitter>())
                 {
                     Setters = new[]
                     {
-                        new Setter(GridSplitter.TemplateProperty, new ControlTemplate<GridSplitter>(Template)),
-                        new Setter(GridSplitter.WidthProperty, 4.0),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<GridSplitter>(Template)),
+                        new Setter(Layoutable.WidthProperty, 4.0),
                     },
                 },
             });
@@ -43,7 +42,7 @@ namespace Perspex.Themes.Default
         {
             Border border = new Border
             {
-                [~Border.BackgroundProperty] = control[~GridSplitter.BackgroundProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
             };
 
             return border;

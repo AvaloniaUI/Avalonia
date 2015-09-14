@@ -1,3 +1,6 @@
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 /*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
@@ -27,90 +30,78 @@ namespace NGenerics.DataStructures.Trees
     {
         #region Globals
 
-        private BinaryTree<T> leftSubtree;
-        private BinaryTree<T> rightSubtree;
-        private T data;
+        private BinaryTree<T> _leftSubtree;
+        private BinaryTree<T> _rightSubtree;
+        private T _data;
 
-		#endregion
+        #endregion
 
-		#region Construction
+        #region Construction
 
-		/// <param name="data">The data contained in this node.</param>
-		public BinaryTree(T data) : this(data, null, null) { }
+        /// <param name="data">The data contained in this node.</param>
+        public BinaryTree(T data) : this(data, null, null) { }
 
-		/// <param name="data">The data.</param>
-		/// <param name="left">The data of the left subtree.</param>
-		/// <param name="right">The data of the right subtree.</param>
-		public BinaryTree(T data, T left, T right) : this(data, new BinaryTree<T>(left), new BinaryTree<T>(right)) { }
+        /// <param name="data">The data.</param>
+        /// <param name="left">The data of the left subtree.</param>
+        /// <param name="right">The data of the right subtree.</param>
+        public BinaryTree(T data, T left, T right) : this(data, new BinaryTree<T>(left), new BinaryTree<T>(right)) { }
 
-		/// <param name="data">The data contained in this node.</param>
-		/// <param name="left">The left subtree.</param>
-		/// <param name="right">The right subtree.</param>
-		public BinaryTree(T data, BinaryTree<T> left, BinaryTree<T> right)
-			: this(data, left, right, true)
-		{
-		}
-
-
-
-		/// <param name="data">The data contained in this node.</param>
-		/// <param name="left">The left subtree.</param>
-		/// <param name="right">The right subtree.</param>
-		/// <param name="validateData"><see langword="true"/> to validate <paramref name="data"/>; otherwise <see langword="false"/>.</param>
-		internal BinaryTree(T data, BinaryTree<T> left, BinaryTree<T> right, bool validateData)
-		{
-			#region Validation
-
-			//TODO: probably not the most efficient way of doing this but SplayTree needs to use a BinaryTree with null data.
-			if (validateData)
-			{
-				Guard.ArgumentNotNull(data, "data");
-			}
-
-			#endregion
-
-			leftSubtree = left;
-
-			if (left != null)
-			{
-				left.Parent = this;
-			}
-
-			rightSubtree = right;
-
-			if (right != null)
-			{
-				right.Parent = this;
-			}
-
-			this.data = data;
-		}
+        /// <param name="data">The data contained in this node.</param>
+        /// <param name="left">The left subtree.</param>
+        /// <param name="right">The right subtree.</param>
+        public BinaryTree(T data, BinaryTree<T> left, BinaryTree<T> right)
+            : this(data, left, right, true)
+        {
+        }
 
 
 
-		#endregion
+        /// <param name="data">The data contained in this node.</param>
+        /// <param name="left">The left subtree.</param>
+        /// <param name="right">The right subtree.</param>
+        /// <param name="validateData"><see langword="true"/> to validate <paramref name="data"/>; otherwise <see langword="false"/>.</param>
+        internal BinaryTree(T data, BinaryTree<T> left, BinaryTree<T> right, bool validateData)
+        {
+            #region Validation
+
+            //TODO: probably not the most efficient way of doing this but SplayTree needs to use a BinaryTree with null data.
+            if (validateData)
+            {
+                Guard.ArgumentNotNull(data, "data");
+            }
+
+            #endregion
+
+            _leftSubtree = left;
+
+            if (left != null)
+            {
+                left.Parent = this;
+            }
+
+            _rightSubtree = right;
+
+            if (right != null)
+            {
+                right.Parent = this;
+            }
+
+            _data = data;
+        }
+
+
+
+        #endregion
 
         #region ICollection<T> Members
 
-		/// <inheritdoc />
-        public bool IsEmpty
-        {
-            get
-            {
-                return Count == 0;
-            }
-        }
+        /// <inheritdoc />
+        public bool IsEmpty => Count == 0;
 
-		/// <inheritdoc />
-        public bool IsFull
-        {
-            get
-            {
-                return (leftSubtree != null) && (rightSubtree != null);
-            }
-        }
+        /// <inheritdoc />
+        public bool IsFull => (_leftSubtree != null) && (_rightSubtree != null);
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public bool Contains(T item)
         {
             foreach (var thisItem in this)
@@ -124,7 +115,7 @@ namespace NGenerics.DataStructures.Trees
             return false;
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public void CopyTo(T[] array, int arrayIndex)
         {
             Guard.ArgumentNotNull(array, "array");
@@ -144,19 +135,19 @@ namespace NGenerics.DataStructures.Trees
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public int Count
         {
             get
             {
                 var count = 0;
 
-                if (leftSubtree != null)
+                if (_leftSubtree != null)
                 {
                     count++;
                 }
 
-                if (rightSubtree != null)
+                if (_rightSubtree != null)
                 {
                     count++;
                 }
@@ -165,27 +156,27 @@ namespace NGenerics.DataStructures.Trees
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public void Add(T item)
         {
             AddItem(new BinaryTree<T>(item));
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public bool Remove(T item)
         {
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                if (leftSubtree.data.Equals(item))
+                if (_leftSubtree._data.Equals(item))
                 {
                     RemoveLeft();
                     return true;
                 }
             }
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                if (rightSubtree.data.Equals(item))
+                if (_rightSubtree._data.Equals(item))
                 {
                     RemoveRight();
                     return true;
@@ -202,18 +193,18 @@ namespace NGenerics.DataStructures.Trees
         /// <returns>A value indicating whether the child was found (and removed) from this tree.</returns>
         public bool Remove(BinaryTree<T> child)
         {
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                if (leftSubtree == child)
+                if (_leftSubtree == child)
                 {
                     RemoveLeft();
                     return true;
                 }
             }
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                if (rightSubtree == child)
+                if (_rightSubtree == child)
                 {
                     RemoveRight();
                     return true;
@@ -241,31 +232,31 @@ namespace NGenerics.DataStructures.Trees
 
                 yield return tree.Data;
 
-                if (tree.leftSubtree != null)
+                if (tree._leftSubtree != null)
                 {
-                    stack.Push(tree.leftSubtree);
+                    stack.Push(tree._leftSubtree);
                 }
 
-                if (tree.rightSubtree != null)
+                if (tree._rightSubtree != null)
                 {
-                    stack.Push(tree.rightSubtree);
+                    stack.Push(tree._rightSubtree);
                 }
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public virtual void Clear()
         {
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                leftSubtree.Parent = null;
-                leftSubtree = null;
+                _leftSubtree.Parent = null;
+                _leftSubtree = null;
             }
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                rightSubtree.Parent = null;
-                rightSubtree = null;
+                _rightSubtree.Parent = null;
+                _rightSubtree = null;
             }
         }
 
@@ -273,38 +264,32 @@ namespace NGenerics.DataStructures.Trees
 
         #region ITree<T> Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         void ITree<T>.Add(ITree<T> child)
         {
             AddItem((BinaryTree<T>)child);
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         ITree<T> ITree<T>.GetChild(int index)
         {
             return GetChild(index);
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         bool ITree<T>.Remove(ITree<T> child)
         {
             return Remove((BinaryTree<T>)child);
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         ITree<T> ITree<T>.FindNode(Predicate<T> condition)
         {
             return FindNode(condition);
         }
 
-		/// <inheritdoc />
-        ITree<T> ITree<T>.Parent
-        {
-            get
-            {
-                return Parent;
-            }
-        }
+        /// <inheritdoc />
+        ITree<T> ITree<T>.Parent => Parent;
 
         #endregion
 
@@ -331,10 +316,10 @@ namespace NGenerics.DataStructures.Trees
             {
                 return this;
             }
-            
-            if (leftSubtree != null)
+
+            if (_leftSubtree != null)
             {
-                var ret = leftSubtree.FindNode(condition);
+                var ret = _leftSubtree.FindNode(condition);
 
                 if (ret != null)
                 {
@@ -342,9 +327,9 @@ namespace NGenerics.DataStructures.Trees
                 }
             }
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                var ret = rightSubtree.FindNode(condition);
+                var ret = _rightSubtree.FindNode(condition);
 
                 if (ret != null)
                 {
@@ -364,11 +349,11 @@ namespace NGenerics.DataStructures.Trees
         {
             get
             {
-                return leftSubtree;
+                return _leftSubtree;
             }
             set
             {
-                if (leftSubtree != null)
+                if (_leftSubtree != null)
                 {
                     RemoveLeft();
                 }
@@ -383,7 +368,7 @@ namespace NGenerics.DataStructures.Trees
                     value.Parent = this;
                 }
 
-                leftSubtree = value;
+                _leftSubtree = value;
             }
         }
 
@@ -396,12 +381,11 @@ namespace NGenerics.DataStructures.Trees
         {
             get
             {
-                return rightSubtree;
+                return _rightSubtree;
             }
             set
             {
-
-                if (rightSubtree != null)
+                if (_rightSubtree != null)
                 {
                     RemoveRight();
                 }
@@ -416,16 +400,16 @@ namespace NGenerics.DataStructures.Trees
                     value.Parent = this;
                 }
 
-                rightSubtree = value;
+                _rightSubtree = value;
             }
         }
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public virtual T Data
         {
             get
             {
-                return data;
+                return _data;
             }
             set
             {
@@ -435,18 +419,12 @@ namespace NGenerics.DataStructures.Trees
 
                 #endregion
 
-                data = value;
+                _data = value;
             }
         }
 
-		/// <inheritdoc />
-        public int Degree
-        {
-            get
-            {
-                return Count;
-            }
-        }
+        /// <inheritdoc />
+        public int Degree => Count;
 
         /// <summary>
         /// Gets the child at the specified index.
@@ -459,14 +437,14 @@ namespace NGenerics.DataStructures.Trees
             switch (index)
             {
                 case 0:
-                    return leftSubtree;
+                    return _leftSubtree;
                 case 1:
-                    return rightSubtree;
+                    return _rightSubtree;
                 default:
                     throw new ArgumentOutOfRangeException("index");
             }
         }
-		/// <inheritdoc />
+        /// <inheritdoc />
         public virtual int Height
         {
             get
@@ -475,7 +453,7 @@ namespace NGenerics.DataStructures.Trees
                 {
                     return 0;
                 }
-                
+
                 return 1 + FindMaximumChildHeight();
             }
         }
@@ -494,21 +472,21 @@ namespace NGenerics.DataStructures.Trees
             {
                 return;
             }
-            
+
             // Preorder visit
             orderedVisitor.VisitPreOrder(Data);
 
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                leftSubtree.DepthFirstTraversal(orderedVisitor);
+                _leftSubtree.DepthFirstTraversal(orderedVisitor);
             }
 
             // In-order visit
-            orderedVisitor.VisitInOrder(data);
+            orderedVisitor.VisitInOrder(_data);
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                rightSubtree.DepthFirstTraversal(orderedVisitor);
+                _rightSubtree.DepthFirstTraversal(orderedVisitor);
             }
 
             // PostOrder visit
@@ -551,24 +529,18 @@ namespace NGenerics.DataStructures.Trees
         }
 
 
-		/// <inheritdoc />
-        public virtual bool IsLeafNode
-        {
-            get
-            {
-                return Degree == 0;
-            }
-        }
+        /// <inheritdoc />
+        public virtual bool IsLeafNode => Degree == 0;
 
         /// <summary>
         /// Removes the left child.
         /// </summary>
         public virtual void RemoveLeft()
         {
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                leftSubtree.Parent = null;
-                leftSubtree = null;
+                _leftSubtree.Parent = null;
+                _leftSubtree = null;
             }
         }
 
@@ -577,10 +549,10 @@ namespace NGenerics.DataStructures.Trees
         /// </summary>
         public virtual void RemoveRight()
         {
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                rightSubtree.Parent = null;
-                rightSubtree = null;
+                _rightSubtree.Parent = null;
+                _rightSubtree = null;
             }
         }
 
@@ -595,8 +567,8 @@ namespace NGenerics.DataStructures.Trees
         {
             Guard.ArgumentNotNull(subtree, "subtree");
 
-          AddItem(subtree);
-		}
+            AddItem(subtree);
+        }
 
         /// <summary>
         /// Adds an item to the <see cref="ICollection{T}"/>.
@@ -608,24 +580,24 @@ namespace NGenerics.DataStructures.Trees
         /// </remarks>
 		protected virtual void AddItem(BinaryTree<T> subtree)
         {
-            if (leftSubtree == null)
+            if (_leftSubtree == null)
             {
                 if (subtree.Parent != null)
                 {
                     subtree.Parent.Remove(subtree);
                 }
 
-                leftSubtree = subtree;
+                _leftSubtree = subtree;
                 subtree.Parent = this;
             }
-            else if (rightSubtree == null)
+            else if (_rightSubtree == null)
             {
                 if (subtree.Parent != null)
                 {
                     subtree.Parent.Remove(subtree);
                 }
 
-                rightSubtree = subtree;
+                _rightSubtree = subtree;
                 subtree.Parent = this;
             }
             else
@@ -648,14 +620,14 @@ namespace NGenerics.DataStructures.Trees
             var leftHeight = 0;
             var rightHeight = 0;
 
-            if (leftSubtree != null)
+            if (_leftSubtree != null)
             {
-                leftHeight = leftSubtree.Height;
+                leftHeight = _leftSubtree.Height;
             }
 
-            if (rightSubtree != null)
+            if (_rightSubtree != null)
             {
-                rightHeight = rightSubtree.Height;
+                rightHeight = _rightSubtree.Height;
             }
 
             return leftHeight > rightHeight ? leftHeight : rightHeight;
@@ -668,32 +640,20 @@ namespace NGenerics.DataStructures.Trees
         /// <summary>
         /// Gets the <see cref="BinaryTree{T}"/> at the specified index.
         /// </summary>
-        public BinaryTree<T> this[int index]
-        {
-            get
-            {
-                return GetChild(index);
-            }
-        }
+        public BinaryTree<T> this[int index] => GetChild(index);
 
         #endregion
 
         #region ICollection<T> Members
 
-		/// <inheritdoc />
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        /// <inheritdoc />
+        public bool IsReadOnly => false;
 
         #endregion
 
         #region IEnumerable Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -703,10 +663,10 @@ namespace NGenerics.DataStructures.Trees
 
         #region Object Members
 
-		/// <inheritdoc />
+        /// <inheritdoc />
         public override string ToString()
         {
-            return data.ToString();
+            return _data.ToString();
         }
 
         #endregion

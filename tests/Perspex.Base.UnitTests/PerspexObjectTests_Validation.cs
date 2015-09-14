@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectTests_Validation.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using Xunit;
-
     public class PerspexObjectTests_Validation
     {
         [Fact]
@@ -67,13 +64,13 @@ namespace Perspex.Base.UnitTests
 
             public Class1()
             {
-                this.MaxQux = 10;
-                this.ErrorQux = 20;
+                MaxQux = 10;
+                ErrorQux = 20;
             }
 
             public int MaxQux { get; set; }
 
-            public int ErrorQux { get; set; }
+            public int ErrorQux { get; }
 
             private static int Validate(Class1 instance, int value)
             {

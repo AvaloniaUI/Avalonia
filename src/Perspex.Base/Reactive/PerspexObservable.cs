@@ -1,22 +1,19 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObservable.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
+using System.Reactive.Disposables;
 
 namespace Perspex.Reactive
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Disposables;
-
     /// <summary>
     /// An <see cref="IObservable{T}"/> with an additional description.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
     public sealed class PerspexObservable<T> : ObservableBase<T>, IDescription
     {
-        private readonly Func<IObserver<T>, IDisposable> subscribe;
+        private readonly Func<IObserver<T>, IDisposable> _subscribe;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObservable{T}"/> class.
@@ -30,8 +27,8 @@ namespace Perspex.Reactive
                 throw new ArgumentNullException("subscribe");
             }
 
-            this.subscribe = subscribe;
-            this.Description = description;
+            _subscribe = subscribe;
+            Description = description;
         }
 
         /// <summary>
@@ -42,7 +39,7 @@ namespace Perspex.Reactive
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<T> observer)
         {
-            return this.subscribe(observer) ?? Disposable.Empty;
+            return _subscribe(observer) ?? Disposable.Empty;
         }
     }
 }

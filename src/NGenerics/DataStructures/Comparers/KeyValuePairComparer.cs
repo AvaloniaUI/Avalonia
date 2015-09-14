@@ -1,4 +1,7 @@
-﻿/*  
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+/*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
 
@@ -11,18 +14,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace NGenerics.Comparers {
+namespace NGenerics.Comparers
+{
     /// <summary>
     /// A comparer for comparing keys for the KeyValuePair class.
     /// </summary>
     /// <typeparam name="TKey">The key type.</typeparam>
 	/// <typeparam name="TValue">The value type.</typeparam>
     //[Serializable]
-    public class KeyValuePairComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>> {
-
+    public class KeyValuePairComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>>
+    {
         #region Globals
 
-        private readonly IComparer<TKey> comparer;
+        private readonly IComparer<TKey> _comparer;
 
         #endregion
 
@@ -31,22 +35,23 @@ namespace NGenerics.Comparers {
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyValuePairComparer&lt;TKey, TValue&gt;"/> class.
         /// </summary>
-        public KeyValuePairComparer() {
-            comparer = Comparer<TKey>.Default;
+        public KeyValuePairComparer()
+        {
+            _comparer = Comparer<TKey>.Default;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyValuePairComparer&lt;TKey, TValue&gt;"/> class.
         /// </summary>
         /// <param name="comparer">The comparer.</param>
-        public KeyValuePairComparer(IComparer<TKey> comparer) {
-
+        public KeyValuePairComparer(IComparer<TKey> comparer)
+        {
             if (comparer == null)
             {
                 throw new ArgumentNullException("comparer");
             }
 
-            this.comparer = comparer;
+            _comparer = comparer;
         }
 
         /// <summary>
@@ -55,11 +60,12 @@ namespace NGenerics.Comparers {
         /// <param name="comparison">The comparison.</param>
         public KeyValuePairComparer(Comparison<TKey> comparison)
         {
-            if (comparison == null) {
+            if (comparison == null)
+            {
                 throw new ArgumentNullException("comparison");
             }
 
-            comparer = new ComparisonComparer<TKey>(comparison);
+            _comparer = new ComparisonComparer<TKey>(comparison);
         }
 
         #endregion
@@ -67,8 +73,9 @@ namespace NGenerics.Comparers {
         #region IComparer<KeyValuePairComparer<TKey,TValue>> Members
 
         /// <inheritdoc />
-        public int Compare(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y) {
-            return comparer.Compare(x.Key, y.Key);
+        public int Compare(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
+        {
+            return _comparer.Compare(x.Key, y.Key);
         }
 
         #endregion
@@ -76,11 +83,11 @@ namespace NGenerics.Comparers {
         #region IComparer<TKey> Members
 
         /// <inheritdoc />
-        public int Compare(TKey x, TKey y) {
-            return comparer.Compare(x, y);
+        public int Compare(TKey x, TKey y)
+        {
+            return _comparer.Compare(x, y);
         }
 
         #endregion
-
     }
 }

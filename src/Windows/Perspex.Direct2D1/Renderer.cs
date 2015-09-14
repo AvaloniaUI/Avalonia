@@ -1,27 +1,24 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Renderer.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Direct2D1.Media;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.Rendering;
+using SharpDX;
+using SharpDX.Direct2D1;
+using Splat;
+using DwFactory = SharpDX.DirectWrite.Factory;
 
 namespace Perspex.Direct2D1
 {
-    using System;
-    using Perspex.Direct2D1.Media;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using SharpDX;
-    using SharpDX.Direct2D1;
-    using Splat;
-    using DwFactory = SharpDX.DirectWrite.Factory;
-
     public class Renderer : RendererBase
     {
         /// <summary>
         /// The render target.
         /// </summary>
-        private RenderTarget renderTarget;
+        private readonly RenderTarget _renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -31,8 +28,8 @@ namespace Perspex.Direct2D1
         /// <param name="height">The height of the window.</param>
         public Renderer(IntPtr hwnd, double width, double height)
         {
-            this.Direct2DFactory = Locator.Current.GetService<Factory>();
-            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            Direct2DFactory = Locator.Current.GetService<Factory>();
+            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
 
             RenderTargetProperties renderTargetProperties = new RenderTargetProperties
             {
@@ -45,8 +42,8 @@ namespace Perspex.Direct2D1
                 PresentOptions = PresentOptions.Immediately,
             };
 
-            this.renderTarget = new WindowRenderTarget(
-                this.Direct2DFactory,
+            _renderTarget = new WindowRenderTarget(
+                Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
         }
@@ -57,9 +54,9 @@ namespace Perspex.Direct2D1
         /// <param name="renderTarget">The render target.</param>
         public Renderer(RenderTarget renderTarget)
         {
-            this.Direct2DFactory = Locator.Current.GetService<Factory>();
-            this.DirectWriteFactory = Locator.Current.GetService<DwFactory>();
-            this.renderTarget = renderTarget;
+            Direct2DFactory = Locator.Current.GetService<Factory>();
+            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            _renderTarget = renderTarget;
         }
 
         /// <summary>
@@ -67,18 +64,14 @@ namespace Perspex.Direct2D1
         /// </summary>
         public Factory Direct2DFactory
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Gets the DirectWrite factory.
         /// </summary>
         public DwFactory DirectWriteFactory
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Resizes the renderer.
@@ -87,13 +80,13 @@ namespace Perspex.Direct2D1
         /// <param name="height">The new height.</param>
         public override void Resize(int width, int height)
         {
-            WindowRenderTarget window = this.renderTarget as WindowRenderTarget;
+            WindowRenderTarget window = _renderTarget as WindowRenderTarget;
 
             if (window == null)
             {
                 throw new InvalidOperationException(string.Format(
                     "A renderer with a target of type '{0}' cannot be resized.",
-                    this.renderTarget.GetType().Name));
+                    _renderTarget.GetType().Name));
             }
 
             window.Resize(new Size2(width, height));
@@ -106,7 +99,12 @@ namespace Perspex.Direct2D1
         /// <returns>An <see cref="IDrawingContext"/>.</returns>
         protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
-            return new DrawingContext(this.renderTarget, this.DirectWriteFactory);
+            return new DrawingContext(_renderTarget, DirectWriteFactory);
+        }
+
+        public override void Dispose()
+        {
+            _renderTarget.Dispose();
         }
     }
 }

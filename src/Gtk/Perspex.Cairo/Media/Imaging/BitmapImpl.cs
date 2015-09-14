@@ -1,41 +1,33 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BitmapImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Platform;
 
 namespace Perspex.Cairo.Media.Imaging
 {
-    using System;
-    using Perspex.Platform;
     using Cairo = global::Cairo;
 
     public class BitmapImpl : IBitmapImpl
     {
-        public BitmapImpl(Cairo.ImageSurface surface)
+        public BitmapImpl(Gdk.Pixbuf pixbuf)
         {
-            this.Surface = surface;
+            Surface = pixbuf;
         }
 
-        public int PixelWidth
-        {
-            get { return this.Surface.Width; }
-        }
+        public int PixelWidth => Surface.Width;
 
-        public int PixelHeight
-        {
-            get { return this.Surface.Height; }
-        }
+        public int PixelHeight => Surface.Height;
 
-        public Cairo.ImageSurface Surface
+        public Gdk.Pixbuf Surface
         {
             get;
-            private set;
         }
 
         public void Save(string fileName)
         {
-            this.Surface.WriteToPng(fileName);
+            // TODO: Test
+            Surface.Save(fileName, "png");
         }
     }
 }

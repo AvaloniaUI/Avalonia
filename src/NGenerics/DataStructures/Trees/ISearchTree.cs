@@ -1,4 +1,7 @@
-﻿/*  
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+/*  
   Copyright 2007-2013 The NGenerics Team
  (https://github.com/ngenerics/ngenerics/wiki/Team)
 
@@ -15,13 +18,13 @@ using NGenerics.Patterns.Visitor;
 
 namespace NGenerics.DataStructures.Trees
 {
-
     /// <summary>
     /// An interface for Search Trees that mimic a dictionary.
     /// </summary>
     /// <typeparam name="T">The type of element to hold in the tree.</typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public interface ISearchTree<T> : ICollection<T>  {
+    public interface ISearchTree<T> : ICollection<T>
+    {
         /// <summary>
         /// Gets the largest item in the tree.
         /// </summary>
