@@ -215,7 +215,7 @@ namespace Perspex.Cairo.Media
                 Cairo.LinearGradient g = new Cairo.LinearGradient(linearGradientBrush.StartPoint.X * destinationSize.Width, linearGradientBrush.StartPoint.Y * destinationSize.Height, linearGradientBrush.EndPoint.X * destinationSize.Width, linearGradientBrush.EndPoint.Y * destinationSize.Height);
 
                 foreach (var s in linearGradientBrush.GradientStops)
-                    g.AddColorStopRgb(s.Offset, new Cairo.Color(s.Color.R, s.Color.G, s.Color.B, s.Color.A));
+                    g.AddColorStop(s.Offset, new Cairo.Color(s.Color.R / 255.0, s.Color.G / 255.0, s.Color.B / 255.0, s.Color.A / 255.0));
 
                 g.Extend = Cairo.Extend.Pad;
 
