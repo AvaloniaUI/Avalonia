@@ -15,22 +15,23 @@ namespace Perspex.Base.UnitTests
             PerspexProperty p;
             p = Class1.FooProperty;
             p = Class2.BarProperty;
+            p = AttachedOwner.AttachedProperty;
         }
 
         [Fact]
-        public void GetProperties_Returns_Registered_Properties()
+        public void GetRegisteredProperties_Returns_Registered_Properties()
         {
-            string[] names = PerspexObject.GetProperties(typeof(Class1)).Select(x => x.Name).ToArray();
+            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class1)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
         [Fact]
-        public void GetProperties_Returns_Registered_Properties_For_Base_Types()
+        public void GetRegisteredProperties_Returns_Registered_Properties_For_Base_Types()
         {
-            string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
+            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
         private class Class1 : PerspexObject
@@ -55,6 +56,12 @@ namespace Perspex.Base.UnitTests
 
             public static readonly PerspexProperty<double?> FredProperty =
                 PerspexProperty.Register<Class2, double?>("Fred");
+        }
+
+        private class AttachedOwner
+        {
+            public static readonly PerspexProperty<string> AttachedProperty =
+                PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
         }
     }
 }

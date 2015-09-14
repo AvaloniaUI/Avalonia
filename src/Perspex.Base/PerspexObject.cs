@@ -72,6 +72,12 @@ namespace Perspex
             new Dictionary<Type, List<PerspexProperty>>();
 
         /// <summary>
+        /// The registered attached properties by owner type.
+        /// </summary>
+        private static readonly Dictionary<Type, List<PerspexProperty>> s_attached =
+            new Dictionary<Type, List<PerspexProperty>>();
+
+        /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
         private PerspexObject _inheritanceParent;
@@ -154,7 +160,7 @@ namespace Perspex
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var inherited = (from property in GetProperties(GetType())
+                    var inherited = (from property in GetRegisteredProperties(GetType())
                                      where property.Inherits
                                      select new
                                      {
@@ -245,7 +251,7 @@ namespace Perspex
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
-        public static IEnumerable<PerspexProperty> GetProperties(Type type)
+        public static IEnumerable<PerspexProperty> GetRegisteredProperties(Type type)
         {
             Contract.Requires<NullReferenceException>(type != null);
 
@@ -432,22 +438,7 @@ namespace Perspex
         /// </returns>
         public IEnumerable<PerspexProperty> GetRegisteredProperties()
         {
-            Type type = GetType();
-
-            while (type != null)
-            {
-                List<PerspexProperty> list;
-
-                if (s_registered.TryGetValue(type, out list))
-                {
-                    foreach (var p in list)
-                    {
-                        yield return p;
-                    }
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
+            return GetRegisteredProperties(GetType());
         }
 
         /// <summary>

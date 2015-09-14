@@ -68,6 +68,11 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(valueType != null);
             Contract.Requires<NullReferenceException>(ownerType != null);
 
+            if (name.Contains("."))
+            {
+                throw new ArgumentException("'name' may not contain periods.");
+            }
+
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;

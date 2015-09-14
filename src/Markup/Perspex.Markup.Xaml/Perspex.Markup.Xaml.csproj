@@ -40,6 +40,7 @@
     </Compile>
     <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
+    <Compile Include="Converters\PerspexPropertyConverter.cs" />
     <Compile Include="Converters\SelectorConverter.cs" />
     <Compile Include="Converters\ThicknessConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />

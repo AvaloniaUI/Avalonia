@@ -16,6 +16,7 @@ using Perspex.Markup.Xaml.DataBinding;
 using Perspex.Markup.Xaml.MarkupExtensions;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -42,6 +43,7 @@ namespace Perspex.Markup.Xaml.Context
             var rootType = typeof(Control);
             var bindingType = typeof(BindingExtension);
             var templateType = typeof(XamlDataTemplate);
+            var styleType = typeof(Style);
 
             var definitionForRoot = XamlNamespace
                 .Map(PerspexNs)
@@ -59,6 +61,11 @@ namespace Perspex.Markup.Xaml.Context
                                 bindingType.Namespace,
                             }),
                         Route.Assembly(templateType.GetTypeInfo().Assembly).WithNamespaces(
+                            new[]
+                            {
+                                templateType.Namespace,
+                            }),
+                        Route.Assembly(styleType.GetTypeInfo().Assembly).WithNamespaces(
                             new[]
                             {
                                 templateType.Namespace,
@@ -84,7 +91,9 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Brush), new BrushConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(Selector), new SelectorConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessConverter()),
             };
 
@@ -101,6 +110,7 @@ namespace Perspex.Markup.Xaml.Context
                 new ContentPropertyDefinition(typeof(Decorator), "Child"),
                 new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
                 new ContentPropertyDefinition(typeof(Panel), "Children"),
+                new ContentPropertyDefinition(typeof(Style), "Setters"),
                 new ContentPropertyDefinition(typeof(TextBlock), "Text"),
                 new ContentPropertyDefinition(typeof(TextBox), "Text"),
                 new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),
