@@ -16,7 +16,17 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
             var result = SelectorGrammar.Selector.Parse("Button").ToList();
 
             Assert.Equal(
-                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button" } },
+                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = null } },
+                result);
+        }
+
+        [Fact]
+        public void NamespacedOfType()
+        {
+            var result = SelectorGrammar.Selector.Parse("x|Button").ToList();
+
+            Assert.Equal(
+                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = "x" } },
                 result);
         }
 
@@ -94,6 +104,21 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
         }
 
         [Fact]
+        public void OfType_Child_Class_No_Spaces()
+        {
+            var result = SelectorGrammar.Selector.Parse("Button<.foo").ToList();
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.ChildSyntax { },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
         public void OfType_Descendent_Class()
         {
             var result = SelectorGrammar.Selector.Parse("Button .foo").ToList();
@@ -135,6 +160,30 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
                     new SelectorGrammar.PropertySyntax { Property = "Foo", Value = "bar" },
                 },
                 result);
+        }
+
+        [Fact]
+        public void Namespace_Alone_Fails()
+        {
+            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse("ns|").ToList());
+        }
+
+        [Fact]
+        public void Dot_Alone_Fails()
+        {
+            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse(". dot").ToList());
+        }
+
+        [Fact]
+        public void Invalid_Identifier_Fails()
+        {
+            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse("%foo").ToList());
+        }
+
+        [Fact]
+        public void Invalid_Class_Fails()
+        {
+            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse(".%foo").ToList());
         }
     }
 }

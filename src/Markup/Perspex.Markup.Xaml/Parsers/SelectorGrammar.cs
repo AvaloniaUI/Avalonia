@@ -41,8 +41,19 @@ namespace Perspex.Markup.Xaml.Parsers
             from @char in IdentifierChar.Many().Text()
             select start + @char;
 
+        public static readonly Parser<string> Namespace =
+            from ns in Parse.Letter.Many().Text()
+            from bar in Parse.Char('|')
+            select ns;
+
         public static readonly Parser<OfTypeSyntax> OfType =
-            from identifier in Identifier select new OfTypeSyntax { TypeName = identifier };
+            from ns in Namespace.Optional()
+            from identifier in Identifier
+            select new OfTypeSyntax
+            {
+                TypeName = identifier,
+                Xmlns = ns.GetOrDefault(),
+            };
 
         public static readonly Parser<NameSyntax> Name =
             from hash in Parse.Char('#')
@@ -88,8 +99,6 @@ namespace Perspex.Markup.Xaml.Parsers
             from template in Parse.String("/template/").Token()
             select new TemplateSyntax();
 
-        //public static readonly 
-
         public static readonly Parser<ISyntax> SingleSelector =
             OfType
             .Or<ISyntax>(Name)
@@ -99,8 +108,8 @@ namespace Perspex.Markup.Xaml.Parsers
             .Or<ISyntax>(Template)
             .Or<ISyntax>(Descendent);
 
-        public static readonly Parser<IEnumerable<ISyntax>> Selector = SingleSelector.Many();
-
+        public static readonly Parser<IEnumerable<ISyntax>> Selector = SingleSelector.Many().End();
+        
         public interface ISyntax
         {
         }
@@ -108,6 +117,8 @@ namespace Perspex.Markup.Xaml.Parsers
         public class OfTypeSyntax : ISyntax
         {
             public string TypeName { get; set; }
+
+            public string Xmlns { get; set; }
 
             public override bool Equals(object obj)
             {
