@@ -494,6 +494,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             PriorityValue v;
+            var originalValue = value;
 
             if (!IsRegistered(property))
             {
@@ -506,10 +507,10 @@ namespace Perspex
             if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
             {
                 throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': {1} ({2})",
+                    "Invalid value for Property '{0}': '{1}' ({2})",
                     property.Name,
-                    value,
-                    value?.GetType().FullName ?? "(null)"));
+                    originalValue,
+                    originalValue?.GetType().FullName ?? "(null)"));
             }
 
             if (!_values.TryGetValue(property, out v))
