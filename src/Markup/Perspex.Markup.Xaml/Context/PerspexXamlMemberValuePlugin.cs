@@ -4,9 +4,11 @@
 using System;
 using System.Reactive.Linq;
 using Glass;
+using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
 using Perspex.Controls;
 using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -23,30 +25,25 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (ValueRequiresSpecialHandling(value))
+            if (value is XamlBindingDefinition)
             {
-                HandleSpecialValue(instance, value);
-            }
-            else
-            {
-                base.SetValue(instance, value);
-            }
-        }
-
-        private void HandleSpecialValue(object instance, object value)
-        {
-            var definition = value as XamlBindingDefinition;
-            if (definition != null)
-            {
-                HandleXamlBindingDefinition(definition);
+                HandleXamlBindingDefinition((XamlBindingDefinition)value);
             }
             else if (IsPerspexProperty)
             {
                 HandlePerspexProperty(instance, value);
             }
+            else if (instance is Setter && _xamlMember.Name == "Value")
+            {
+                var setter = (Setter)instance;
+                var targetType = setter.Property.PropertyType;
+                var valuePipeline = new ValuePipeline(_xamlMember.TypeRepository);
+                var xamlType = _xamlMember.TypeRepository.GetXamlType(targetType);
+                base.SetValue(instance, valuePipeline.ConvertValueIfNecessary(value, xamlType));
+            }
             else
             {
-                throw new InvalidOperationException($"Cannot handle the value {value} for member {this} and the instance {instance}");
+                base.SetValue(instance, value);
             }
         }
 
