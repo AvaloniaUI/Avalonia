@@ -107,7 +107,7 @@ namespace Perspex.Designer.AppHost
                     {
                         try
                         {
-                            if (!type.IsPublic)
+                            if (!type.IsPublic || type.IsAbstract)
                                 continue;
                             var t = new MetadataType()
                             {
