@@ -42,6 +42,9 @@ namespace Perspex.Cairo.Media
             CurrentTransform = Matrix.Identity;
         }
 
+        /// <summary>
+        /// Gets the current transform of the drawing context.
+        /// </summary>
         public Matrix CurrentTransform
         {
             get; }
@@ -54,17 +57,30 @@ namespace Perspex.Cairo.Media
             _context.Dispose();
         }
 
+        /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacity">The opacity to draw with.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
             var impl = bitmap.PlatformImpl as BitmapImpl;
             var size = new Size(impl.PixelWidth, impl.PixelHeight);
-            var scaleX = destRect.Size.Width / sourceRect.Size.Width;
-            var scaleY = destRect.Size.Height / sourceRect.Size.Height;
+            var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
 
             _context.Save();
-            _context.Scale(scaleX, scaleY);
-            Gdk.CairoHelper.SetSourcePixbuf(_context, impl.Surface, (int)sourceRect.X, (int)sourceRect.Y);
-            _context.Rectangle(sourceRect.ToCairo());
+            _context.Scale(scale.X, scale.Y);
+            destRect /= scale;
+
+            Gdk.CairoHelper.SetSourcePixbuf(
+                _context, 
+                impl.Surface, 
+                -sourceRect.X + destRect.X, 
+                -sourceRect.Y + destRect.Y);
+
+            _context.Rectangle(destRect.ToCairo());
             _context.Fill();
             _context.Restore();
         }

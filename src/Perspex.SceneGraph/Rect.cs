@@ -184,15 +184,11 @@ namespace Perspex
         /// <returns>The scaled rectangle.</returns>
         public static Rect operator *(Rect rect, Vector scale)
         {
-            double centerX = rect._x + (rect._width / 2);
-            double centerY = rect._y + (rect._height / 2);
-            double width = rect._width * scale.X;
-            double height = rect._height * scale.Y;
             return new Rect(
-                centerX - (width / 2),
-                centerY - (height / 2),
-                width,
-                height);
+                rect.X * scale.X,
+                rect.Y * scale.Y,
+                rect.Width * scale.X,
+                rect.Height * scale.Y);
         }
 
         /// <summary>
@@ -214,15 +210,11 @@ namespace Perspex
         /// <returns>The scaled rectangle.</returns>
         public static Rect operator /(Rect rect, Vector scale)
         {
-            double centerX = rect._x + (rect._width / 2);
-            double centerY = rect._y + (rect._height / 2);
-            double width = rect._width / scale.X;
-            double height = rect._height / scale.Y;
             return new Rect(
-                centerX - (width / 2),
-                centerY - (height / 2),
-                width,
-                height);
+                rect.X / scale.X, 
+                rect.Y / scale.Y, 
+                rect.Width / scale.X, 
+                rect.Height / scale.Y);
         }
 
         /// <summary>
