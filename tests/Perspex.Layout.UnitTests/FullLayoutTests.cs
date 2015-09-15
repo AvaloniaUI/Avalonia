@@ -140,6 +140,7 @@ namespace Perspex.Layout.UnitTests
             var windowImpl = new Mock<IWindowImpl>();
 
             windowImpl.SetupProperty(x => x.ClientSize);
+            windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1024, 1024));
             globalStyles.Setup(x => x.Styles).Returns(theme);
 
             l.RegisterConstant(new Mock<IInputManager>().Object, typeof(IInputManager));
