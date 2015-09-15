@@ -25,9 +25,9 @@
             </TabItem>
             <TabItem Header="Text">
                 <StackPanel HorizontalAlignment="Center" Width="200" VerticalAlignment="Center">
-                    <TextBlock
-                        Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt."
-                        TextWrapping="Wrap" TextAlignment="Center" />
+                    <TextBlock TextWrapping="Wrap" TextAlignment="Center">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.
+                    </TextBlock>
                     <TextBlock Text="Italic text." TextWrapping="Wrap" TextAlignment="Left" FontStyle="Italic" />
                     <TextBlock TextWrapping="Wrap" TextAlignment="Right" FontWeight="Bold">Bold text.</TextBlock>
                     <TextBox Text="A non-wrapping text box. Lorem ipsum dolor sit amet." TextWrapping="NoWrap" />
