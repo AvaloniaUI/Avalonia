@@ -1,14 +1,13 @@
-// Copyright (c) The Perspex Project. All rights reserved.
+﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
 using System.Globalization;
 using OmniXaml.TypeConversion;
-using Perspex.Media;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class BrushConverter : ITypeConverter
+    public class ThicknessTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
@@ -22,7 +21,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return Brush.Parse((string)value);
+            return Thickness.Parse((string)value);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)

@@ -80,12 +80,12 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof(Bitmap), new BitmapConverter()),
-                new TypeConverterRegistration(typeof(Brush), new BrushConverter()),
+                new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
+                new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
-                new TypeConverterRegistration(typeof(Thickness), new ThicknessConverter()),
+                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
