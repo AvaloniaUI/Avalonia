@@ -7,6 +7,7 @@ using System.Linq;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.TypeConversion;
 using Perspex.Markup.Xaml.Parsers;
+using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Converters
 {
@@ -34,10 +35,11 @@ namespace Perspex.Markup.Xaml.Converters
 
             var typeName = s.Substring(0, lastDot);
             var propertyName = s.Substring(lastDot + 1);
+            var type = context.TypeRepository.GetByQualifiedName(typeName)?.UnderlyingType;
+            var styleType = context.TypeRepository.GetXamlType(typeof(Style));
 
-            // TODO: Doesn't handle xml namespaces - use GetByQualifiedName when it works with the
-            // default namespace.            
-            var type = context.TypeRepository.GetByPrefix("", typeName)?.UnderlyingType;
+            // ATTN: SuperJMN
+            //var style = ((XamlTypeConverterContext)context).TopDownValueContext.GetLastInstance(styleType);
 
             if (type == null)
             {
