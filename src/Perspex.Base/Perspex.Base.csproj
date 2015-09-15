@@ -46,8 +46,10 @@
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />
     <Compile Include="IPropertyBag.cs" />
+    <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PerspexProperty`1.cs" />
+    <Compile Include="Platform\IPclPlatformWrapper.cs" />
     <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IPerspexList.cs" />
     <Compile Include="Collections\PerspexList.cs" />

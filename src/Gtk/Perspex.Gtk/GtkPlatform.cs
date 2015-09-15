@@ -28,6 +28,7 @@ namespace Perspex.Gtk
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => new PclPlatformWrapper(), typeof(IPclPlatformWrapper));
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
