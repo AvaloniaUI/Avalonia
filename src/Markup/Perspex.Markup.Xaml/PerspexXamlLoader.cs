@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using OmniXaml;
 using Perspex.Markup.Xaml.Context;
@@ -52,7 +54,27 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
-            return Load(GetUriFor(type), rootInstance);
+            var assetLocator = Locator.Current.GetService<IAssetLoader>();
+            if (assetLocator == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
+            }
+            foreach (var uri in GetUrisFor(type))
+            {
+                Stream stream;
+                try
+                {
+                    stream= assetLocator.Open(uri);
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+                using (stream)
+                    return Load(stream, rootInstance);
+            }
+            throw new FileNotFoundException("Unable to find view for " + type.FullName);
         }
 
         /// <summary>
@@ -84,7 +106,7 @@ namespace Perspex.Markup.Xaml
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The URI.</returns>
-        private static Uri GetUriFor(Type type)
+        private static IEnumerable<Uri> GetUrisFor(Type type)
         {
             if (type.Namespace != null)
             {
@@ -97,10 +119,9 @@ namespace Perspex.Markup.Xaml
                     replace = replace + "/";
                 }
 
-                return new Uri(replace + type.Name + ".xaml", UriKind.Relative);
+                foreach (var ext in new[] {".xaml", ".paml"})
+                    yield return new Uri(replace + type.Name + ext, UriKind.Relative);
             }
-
-            return null;
         }
     }
 }
