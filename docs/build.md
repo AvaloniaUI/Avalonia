@@ -6,7 +6,7 @@ Perspex requires Visual Studio 2015 to build on Windows.
 
 ### Install GTK Sharp
 
-To compile the full project under windows, you must have gtk-sharp installed. However, if you're 
+To compile the full project under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. However, if you're 
 not interested in building the cross-platform bits you can simply unload the Perspex.Cairo and 
 Perspex.Gtk project in Visual Studio.
 
