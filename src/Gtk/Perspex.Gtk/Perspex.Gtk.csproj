@@ -58,6 +58,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Shared\PclPlatformWrapper.cs">
+      <Link>PclPlatformWrapper.cs</Link>
+    </Compile>
     <Compile Include="AssetLoader.cs" />
     <Compile Include="ClipboardImpl.cs" />
     <Compile Include="CursorFactory.cs" />

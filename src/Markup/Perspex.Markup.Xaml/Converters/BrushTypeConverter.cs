@@ -4,11 +4,11 @@
 using System;
 using System.Globalization;
 using OmniXaml.TypeConversion;
-using Perspex.Media.Imaging;
+using Perspex.Media;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class BitmapConverter : ITypeConverter
+    public class BrushTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
@@ -22,7 +22,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return new Bitmap((string)value);
+            return Brush.Parse((string)value);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)

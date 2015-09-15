@@ -7,6 +7,11 @@ namespace Perspex.Cairo
 
     public static class CairoExtensions
     {
+        public static Cairo.Color ToCairo(this Perspex.Media.Color color)
+        {
+            return new Cairo.Color(color.R / 255.0, color.G / 255.0, color.B / 255.0, color.A / 255.0);
+        }
+
         public static Cairo.Matrix ToCairo(this Matrix m)
         {
             return new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
@@ -20,6 +25,11 @@ namespace Perspex.Cairo
         public static Cairo.Rectangle ToCairo(this Rect rect)
         {
             return new Cairo.Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        public static Rect ToPerspex(this Cairo.Rectangle rect)
+        {
+            return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
         public static Rect ToPerspex(this Pango.Rectangle rect)

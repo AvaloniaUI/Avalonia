@@ -2,22 +2,10 @@
 
 ## Style ##
 
-The codebase uses StyleCop with default settings[1] to enforce coding style. Yes, some of the 
-decisions it makes are downright bizarre, and are certainly not what I would've personally chosen 
-but the less time spent debating coding style the more time left for coding.
-
-StyleCop should run on each build and give warnings for any violations. So please, follow the style;
-you'll get used to it in the end (I know I have).
-
-If the .NET core team decide on a style and write an automatic checker/tidy tool for that style,
-I'll gladly adopt it! I'm certainly not tied to the current style, I'm just tired of endless coding
-style debates. Someone decide for me goddammit!
+The codebase uses [.net core](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md) coding style. 
 
 Try to keep lines of code around 100 characters in length or less, though this is not a hard limit.
 If you're a few characters over then don't worry too much. 
-
-Documentation comments should also be formatted to a 100 character length to help keep them 
-readable.
 
 **DO NOT USE #REGIONS** full stop.
 
@@ -45,8 +33,7 @@ unless you see something that is obviously wrong or that could be written in a m
 idiomatic style. It takes time to review each pull request - time that I'd prefer to spend writing 
 new features!
 
-Prefer terseness to verbosity (yes I know that StyleCop will often be working against you here 
-:weary:) but don't try to be too clever.
+Prefer terseness to verbosity but don't try to be too clever.
 
 ## Tests ##
 
@@ -67,6 +54,3 @@ English what the test is testing, e.g.
 Render tests should describe what the produced image is:
 
     void Rectangle_2px_Stroke_Filled()
-
-----
-[1] Documentation rules are disabled because there's currently so much missing documentation, sorry!

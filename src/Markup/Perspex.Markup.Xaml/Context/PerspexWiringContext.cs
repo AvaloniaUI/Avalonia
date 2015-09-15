@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using Glass;
 using OmniXaml;
@@ -16,13 +17,17 @@ using Perspex.Markup.Xaml.DataBinding;
 using Perspex.Markup.Xaml.MarkupExtensions;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Metadata;
+using Perspex.Platform;
+using Perspex.Styling;
+using Splat;
 
 namespace Perspex.Markup.Xaml.Context
 {
     public class PerspexWiringContext : IWiringContext
     {
         private readonly WiringContext _context;
-        private const string PerspexNs = "https://github.com/grokys/Perspex";
+        private const string PerspexNs = "https://github.com/perspex";
 
         public PerspexWiringContext(ITypeFactory typeFactory)
         {
@@ -39,37 +44,27 @@ namespace Perspex.Markup.Xaml.Context
         {
             var xamlNamespaceRegistry = new XamlNamespaceRegistry();
 
-            var rootType = typeof(Control);
-            var bindingType = typeof(BindingExtension);
-            var templateType = typeof(XamlDataTemplate);
-
-            var definitionForRoot = XamlNamespace
-                .Map(PerspexNs)
-                .With(
-                    new[]
-                    {
-                        Route.Assembly(rootType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                rootType.Namespace
-                            }),
-                        Route.Assembly(bindingType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                bindingType.Namespace,
-                            }),
-                        Route.Assembly(templateType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                templateType.Namespace,
-                            })
-                    });
-
-            foreach (var ns in new List<XamlNamespace> { definitionForRoot })
+            var forcedAssemblies = new[]
             {
-                xamlNamespaceRegistry.AddNamespace(ns);
-            }
+                typeof (Control),
+                typeof(Style)
+            }.Select(t => t.GetTypeInfo().Assembly);
 
+            foreach (var nsa in 
+                forcedAssemblies
+                    .Concat(Locator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
+                    .Distinct()
+                    .SelectMany(asm
+                        => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new {asm, attr}))
+                    .GroupBy(entry => entry.attr.XmlNamespace))
+            {
+                var def = XamlNamespace.Map(nsa.Key)
+                    .With(nsa.GroupBy(x => x.asm).Select(
+                        a => Route.Assembly(a.Key)
+                            .WithNamespaces(a.Select(entry => entry.attr.ClrNamespace).ToList())
+                        ));
+                xamlNamespaceRegistry.AddNamespace(def);
+            }
             xamlNamespaceRegistry.RegisterPrefix(new PrefixRegistration(string.Empty, PerspexNs));
 
             return xamlNamespaceRegistry;
@@ -80,12 +75,12 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof(Bitmap), new BitmapConverter()),
-                new TypeConverterRegistration(typeof(Brush), new BrushConverter()),
+                new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
+                new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
-                new TypeConverterRegistration(typeof(Thickness), new ThicknessConverter()),
+                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);

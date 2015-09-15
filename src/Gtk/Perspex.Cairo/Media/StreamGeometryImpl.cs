@@ -61,6 +61,7 @@ namespace Perspex.Cairo.Media
 
         public Rect GetRenderBounds(double strokeThickness)
         {
+            // TODO: Calculate properly.
             return Bounds;
         }
 

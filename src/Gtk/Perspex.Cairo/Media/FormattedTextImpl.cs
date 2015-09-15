@@ -12,7 +12,10 @@ namespace Perspex.Cairo.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
+        private Size _size;
+
         public FormattedTextImpl(
+            Pango.Context context,
             string text,
             string fontFamily,
             double fontSize,
@@ -20,7 +23,8 @@ namespace Perspex.Cairo.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            var context = Locator.Current.GetService<Pango.Context>();
+            Contract.Requires<NullReferenceException>(context != null);
+
             Layout = new Pango.Layout(context);
             Layout.SetText(text);
             Layout.FontDescription = new Pango.FontDescription
@@ -34,7 +38,6 @@ namespace Perspex.Cairo.Media
             Layout.Alignment = textAlignment.ToCairo();
         }
 
-        private Size _size;
         public Size Constraint
         {
             get
@@ -45,13 +48,15 @@ namespace Perspex.Cairo.Media
             set
             {
                 _size = value;
-                Layout.Width = Pango.Units.FromDouble(value.Width);
+                Layout.Width = double.IsPositiveInfinity(value.Width) ? 
+                    -1 : Pango.Units.FromDouble(value.Width);
             }
         }
 
         public Pango.Layout Layout
         {
-            get; }
+            get;
+        }
 
         public void Dispose()
         {
