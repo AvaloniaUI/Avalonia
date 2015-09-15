@@ -274,6 +274,23 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets all attached <see cref="PerspexProperty"/>s registered by an owner.
+        /// </summary>
+        /// <param name="ownerType">The owner type.</param>
+        /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
+        public static IEnumerable<PerspexProperty> GetAttachedProperties(Type ownerType)
+        {
+            List<PerspexProperty> list;
+
+            if (s_attached.TryGetValue(ownerType, out list))
+            {
+                return list;
+            }
+
+            return Enumerable.Empty<PerspexProperty>();
+        }
+
+        /// <summary>
         /// Registers a <see cref="PerspexProperty"/> on a type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -298,6 +315,20 @@ namespace Perspex
             if (!list.Contains(property))
             {
                 list.Add(property);
+            }
+
+            if (property.IsAttached)
+            {
+                if (!s_attached.TryGetValue(property.OwnerType, out list))
+                {
+                    list = new List<PerspexProperty>();
+                    s_attached.Add(property.OwnerType, list);
+                }
+
+                if (!list.Contains(property))
+                {
+                    list.Add(property);
+                }
             }
         }
 

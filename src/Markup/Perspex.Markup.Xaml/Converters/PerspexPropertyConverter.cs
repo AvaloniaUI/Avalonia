@@ -4,9 +4,8 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using OmniXaml.ObjectAssembler;
+using OmniXaml;
 using OmniXaml.TypeConversion;
-using Perspex.Markup.Xaml.Parsers;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Converters
@@ -43,12 +42,26 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (type == null)
             {
-                throw new InvalidOperationException($"Could not find type '{typeName}'.");
+                throw new XamlParseException($"Could not find type '{typeName}'.");
             }
 
-            // TODO: Handle attached properties.
-            // TODO: Give decent error message for not found property.
-            return PerspexObject.GetRegisteredProperties(type).Single(x => x.Name == propertyName);
+            // First look for non-attached property on the type and then look for an attached property.
+            var property = PerspexObject.GetRegisteredProperties(type)
+                .FirstOrDefault(x => x.Name == propertyName && !x.IsAttached);
+
+            if (property == null)
+            {
+                property = PerspexObject.GetAttachedProperties(type)
+                    .FirstOrDefault(x => x.Name == propertyName);
+            }
+
+            if (property == null)
+            {
+                throw new XamlParseException(
+                    $"Could not find PerspexProperty '{typeName}'.{propertyName}.");
+            }
+
+            return property;
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)

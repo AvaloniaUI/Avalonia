@@ -34,6 +34,14 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
+        [Fact]
+        public void GetAttachedProperties_Returns_Registered_Properties_For_Base_Types()
+        {
+            string[] names = PerspexObject.GetAttachedProperties(typeof(AttachedOwner)).Select(x => x.Name).ToArray();
+
+            Assert.Equal(new[] { "Attached" }, names);
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =

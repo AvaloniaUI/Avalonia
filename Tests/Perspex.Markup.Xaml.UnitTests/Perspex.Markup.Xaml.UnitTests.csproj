@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="BindingDefinitionBuilder.cs" />
     <Compile Include="ChangeBranchTest.cs" />
+    <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="DataContextChangeSynchronizerTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
