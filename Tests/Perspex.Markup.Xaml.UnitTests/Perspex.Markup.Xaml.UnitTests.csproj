@@ -43,19 +43,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Glass, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Glass.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Glass.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Octokit">
       <HintPath>..\..\packages\Octokit.0.14.0\lib\net45\Octokit.dll</HintPath>
-    </Reference>
-    <Reference Include="OmniXaml">
-      <HintPath>..\..\packages\OmniXaml.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
     </Reference>
     <Reference Include="Splat, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.1\lib\Net45\Splat.dll</HintPath>

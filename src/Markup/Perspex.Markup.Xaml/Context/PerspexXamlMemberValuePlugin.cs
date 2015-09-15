@@ -37,7 +37,7 @@ namespace Perspex.Markup.Xaml.Context
             {
                 var setter = (Setter)instance;
                 var targetType = setter.Property.PropertyType;
-                var valuePipeline = new ValuePipeline(_xamlMember.TypeRepository);
+                var valuePipeline = new ValuePipeline(_xamlMember.TypeRepository, null);
                 var xamlType = _xamlMember.TypeRepository.GetXamlType(targetType);
                 base.SetValue(instance, valuePipeline.ConvertValueIfNecessary(value, xamlType));
             }
