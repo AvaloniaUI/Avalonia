@@ -40,6 +40,7 @@ namespace Perspex.Win32
         private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(()=>new PclPlatformWrapper(), typeof(IPclPlatformWrapper));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));

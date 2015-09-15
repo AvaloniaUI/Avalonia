@@ -3,6 +3,10 @@
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Perspex.Metadata;
 
 [assembly: AssemblyTitle("Perspex.Controls")]
 [assembly: InternalsVisibleTo("Perspex.Controls.UnitTests")]
+
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Primitives")]
