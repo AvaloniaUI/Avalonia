@@ -85,22 +85,29 @@ namespace Perspex.Designer.AppHost
             }
         }
 
-        PerspexDesignerMetadata BuildMetadata(List<Assembly> asms)
+        PerspexDesignerMetadata BuildMetadata(List<Assembly> asms, Type xmlNsAttr)
         {
+            
+
             var rv = new PerspexDesignerMetadata()
             {
-                NamespaceAliases = new List<MetadataNamespaceAlias>
-                {
-                    new MetadataNamespaceAlias
-                    {
-                        Namespace = "Perspex.Controls",
-                        XmlNamespace = "https://github.com/grokys/Perspex"
-                    }
-                },
+                
+                NamespaceAliases = new List<MetadataNamespaceAlias>(),
                 Types = new List<MetadataType>()
             };
+
+
             foreach (var asm in asms)
             {
+                foreach (dynamic xmlns in asm.GetCustomAttributes().Where(a => a.GetType() == xmlNsAttr))
+                {
+                    rv.NamespaceAliases.Add(new MetadataNamespaceAlias
+                    {
+                        Namespace = (string)xmlns.ClrNamespace,
+                        XmlNamespace = (string)xmlns.XmlNamespace
+                    });
+                }
+
                 try
                 {
                     foreach (var type in asm.GetTypes())
@@ -156,9 +163,10 @@ namespace Perspex.Designer.AppHost
 
         void BuildMetadataAndSendMessageAsync(List<Assembly> asms)
         {
+            var xmlNsAttr = LookupType("Perspex.Metadata.XmlnsDefinitionAttribute");
             new Thread(() =>
             {
-                _comm.SendMessage(new UpdateMetadataMessage(BuildMetadata(asms)));
+                _comm.SendMessage(new UpdateMetadataMessage(BuildMetadata(asms, xmlNsAttr)));
             }).Start();
         }
 
@@ -183,8 +191,10 @@ namespace Perspex.Designer.AppHost
                 {
                     logger.AppendLine(e.ToString());
                 }
-            BuildMetadataAndSendMessageAsync(asms);
+            
             log("Looking up Perspex types");
+            BuildMetadataAndSendMessageAsync(asms);
+
             var syncContext = LookupType("Perspex.Threading.PerspexSynchronizationContext");
             syncContext.GetProperty("AutoInstall", BindingFlags.Public | BindingFlags.Static).SetValue(null, false);
 
