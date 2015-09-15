@@ -7,7 +7,11 @@ using Perspex.Layout;
 using Perspex.Media;
 using Xunit;
 
+#if PERSPEX_CAIRO
+namespace Perspex.Cairo.RenderTests.Media
+#else
 namespace Perspex.Direct2D1.RenderTests.Media
+#endif
 {
     public class VisualBrushTests : TestBase
     {
@@ -16,7 +20,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         {
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Align_TopLeft()
         {
             Decorator target = new Decorator
@@ -55,7 +63,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Align_Center()
         {
             Decorator target = new Decorator
@@ -94,7 +106,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Align_BottomRight()
         {
             Decorator target = new Decorator
@@ -133,7 +149,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Stretch_Fill_Large()
         {
             Decorator target = new Decorator
@@ -170,7 +190,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Stretch_Uniform()
         {
             Decorator target = new Decorator
@@ -207,7 +231,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Stretch_UniformToFill()
         {
             Decorator target = new Decorator
@@ -244,7 +272,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_SourceRect_Absolute()
         {
             Decorator target = new Decorator
@@ -281,7 +313,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_DestinationRect_Absolute()
         {
             Decorator target = new Decorator
@@ -318,7 +354,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_SourceRect_DestinationRect_Absolute()
         {
             Decorator target = new Decorator
@@ -356,7 +396,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_SourceRect_DestinationRect_Percent()
         {
             Decorator target = new Decorator
@@ -394,7 +438,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Tile()
         {
             Decorator target = new Decorator
@@ -433,7 +481,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Tile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
@@ -473,7 +525,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_FlipX()
         {
             Decorator target = new Decorator
@@ -512,7 +568,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_FlipY()
         {
             Decorator target = new Decorator
@@ -551,7 +611,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_FlipXY()
         {
             Decorator target = new Decorator

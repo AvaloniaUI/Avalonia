@@ -10,7 +10,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
+#if PERSPEX_CAIRO
+namespace Perspex.Cairo.RenderTests.Media
+#else
 namespace Perspex.Direct2D1.RenderTests.Media
+#endif
 {
     public class LinearGradientBrushTests : TestBase
     {
