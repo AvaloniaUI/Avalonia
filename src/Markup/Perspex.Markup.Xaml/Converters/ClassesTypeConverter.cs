@@ -8,7 +8,7 @@ using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class ClassesConverter : ITypeConverter
+    public class ClassesTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {

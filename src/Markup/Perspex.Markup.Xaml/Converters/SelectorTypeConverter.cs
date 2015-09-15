@@ -8,7 +8,7 @@ using Perspex.Markup.Xaml.Parsers;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class SelectorConverter : ITypeConverter
+    public class SelectorTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {

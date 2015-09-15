@@ -22,7 +22,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
         [Fact]
         public void ConvertFrom_Finds_Fully_Qualified_Property()
         {
-            var target = new PerspexPropertyConverter();
+            var target = new PerspexPropertyTypeConverter();
             var context = CreateContext();
             var result = target.ConvertFrom(context, null, "Class1.Foo");
         }
@@ -30,7 +30,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
         [Fact]
         public void ConvertFrom_Finds_Attached_Property()
         {
-            var target = new PerspexPropertyConverter();
+            var target = new PerspexPropertyTypeConverter();
             var context = CreateContext();
             var result = target.ConvertFrom(context, null, "AttachedOwner.Attached");
         }

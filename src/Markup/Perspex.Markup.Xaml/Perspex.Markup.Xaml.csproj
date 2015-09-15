@@ -38,12 +38,12 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Converters\ClassesConverter.cs" />
+    <Compile Include="Converters\ClassesTypeConverter.cs" />
     <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ThicknessTypeConverter.cs" />
-    <Compile Include="Converters\PerspexPropertyConverter.cs" />
-    <Compile Include="Converters\SelectorConverter.cs" />
+    <Compile Include="Converters\PerspexPropertyTypeConverter.cs" />
+    <Compile Include="Converters\SelectorTypeConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />

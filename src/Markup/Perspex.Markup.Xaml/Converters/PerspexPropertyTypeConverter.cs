@@ -10,7 +10,7 @@ using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class PerspexPropertyConverter : ITypeConverter
+    public class PerspexPropertyTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
