@@ -3,7 +3,10 @@
 
 using System.Reflection;
 using Perspex.Metadata;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Perspex.Markup.Xaml")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.MarkupExtensions")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.Templates")]
+[assembly: InternalsVisibleTo("Perspex.Markup.Xaml.UnitTests")]
+

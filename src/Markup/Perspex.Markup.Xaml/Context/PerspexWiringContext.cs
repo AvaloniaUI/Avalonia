@@ -77,10 +77,13 @@ namespace Perspex.Markup.Xaml.Context
             {
                 new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
                 new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
+                new TypeConverterRegistration(typeof(Classes), new ClassesConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
+                new TypeConverterRegistration(typeof(Selector), new SelectorConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
@@ -96,6 +99,7 @@ namespace Perspex.Markup.Xaml.Context
                 new ContentPropertyDefinition(typeof(Decorator), "Child"),
                 new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
                 new ContentPropertyDefinition(typeof(Panel), "Children"),
+                new ContentPropertyDefinition(typeof(Style), "Setters"),
                 new ContentPropertyDefinition(typeof(TextBlock), "Text"),
                 new ContentPropertyDefinition(typeof(TextBox), "Text"),
                 new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),

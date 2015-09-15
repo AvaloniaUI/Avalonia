@@ -6,10 +6,15 @@
         <TabControl Grid.Row="1">
             <TabItem Header="Buttons">
                 <StackPanel HorizontalAlignment="Center" Width="200" VerticalAlignment="Center">
+                    <StackPanel.Styles>
+                        <Style Selector="Button.italic">
+                            <Setter Property="TextBlock.FontStyle" Value="Italic"/>
+                        </Style>
+                    </StackPanel.Styles>
                     <Button Content="Button" />
                     <Button Content="Button" Background="#119EDA" ToolTip.Tip="Goodbye Cruel World!" />
                     <Button Content="Default" IsDefault="True" />
-                    <Button Content="Disabled" IsEnabled="False" />
+                    <Button Content="Disabled" IsEnabled="False" Classes="italic"/>
                     <Button Content="Disabled" IsEnabled="False" Background="#119eda" />
                     <ToggleButton Content="Toggle" />
                     <ToggleButton Content="Toggle" IsEnabled="False" />

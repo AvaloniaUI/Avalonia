@@ -21,7 +21,7 @@ namespace Perspex.Styling
 
             if (global != null)
             {
-                global.Styles.Attach(control);
+                global.Styles.Attach(control, null);
             }
 
             if (styleContainer != null)
@@ -50,7 +50,7 @@ namespace Perspex.Styling
                 }
             }
 
-            container.Styles.Attach(control);
+            container.Styles.Attach(control, container);
         }
 
         private IStyleHost GetParentContainer(IStyleHost container)

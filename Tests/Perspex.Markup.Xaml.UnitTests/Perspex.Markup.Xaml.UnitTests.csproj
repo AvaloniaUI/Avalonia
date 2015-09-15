@@ -8,8 +8,8 @@
     <ProjectGuid>{99135EAB-653D-47E4-A378-C96E1278CA44}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.Xaml.Base.UnitTest</RootNamespace>
-    <AssemblyName>Perspex.Xaml.Base.UnitTest</AssemblyName>
+    <RootNamespace>Perspex.Markup.Xaml.UnitTests</RootNamespace>
+    <AssemblyName>Perspex.Markup.Xaml.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -43,10 +43,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Glass, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Glass.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Glass.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
@@ -54,11 +50,12 @@
     <Reference Include="Octokit">
       <HintPath>..\..\packages\Octokit.0.14.0\lib\net45\Octokit.dll</HintPath>
     </Reference>
-    <Reference Include="OmniXaml">
-      <HintPath>..\..\packages\OmniXaml.0.1.0\lib\portable-net45+win+Xamarin.iOS10+MonoAndroid10+MonoTouch10\OmniXaml.dll</HintPath>
-    </Reference>
     <Reference Include="Splat, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.1\lib\Net45\Splat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sprache, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sprache.SuperJMN.2.0.0.50\lib\portable-net451+netcore451+wpa81\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -102,7 +99,9 @@
   <ItemGroup>
     <Compile Include="BindingDefinitionBuilder.cs" />
     <Compile Include="ChangeBranchTest.cs" />
+    <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="DataContextChangeSynchronizerTest.cs" />
+    <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleModel\Level1.cs" />
     <Compile Include="SampleModel\Level2.cs" />
