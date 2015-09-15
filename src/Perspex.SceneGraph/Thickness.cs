@@ -139,6 +139,32 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Adds a Thickness to a Size.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The equality.</returns>
+        public static Size operator +(Size size, Thickness thickness)
+        {
+            return new Size(
+                size.Width + thickness.Left + thickness.Right,
+                size.Height + thickness.Top + thickness.Bottom);
+        }
+
+        /// <summary>
+        /// Subtracts a Thickness from a Size.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The equality.</returns>
+        public static Size operator -(Size size, Thickness thickness)
+        {
+            return new Size(
+                size.Width - (thickness.Left + thickness.Right),
+                size.Height - (thickness.Top + thickness.Bottom));
+        }
+
+        /// <summary>
         /// Parses a <see cref="Thickness"/> string.
         /// </summary>
         /// <param name="s">The string.</param>

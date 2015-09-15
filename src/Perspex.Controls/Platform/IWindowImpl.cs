@@ -13,7 +13,7 @@ namespace Perspex.Platform
         /// <summary>
         /// Gets the maximum size of a window on the system.
         /// </summary>
-        Size MaxWindowSize { get; }
+        Size MaxClientSize { get; }
 
         /// <summary>
         /// Sets the title of the window.

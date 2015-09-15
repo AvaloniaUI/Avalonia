@@ -53,6 +53,25 @@ namespace Perspex.Win32
 
         public Action<Size> Resized { get; set; }
 
+        public Thickness BorderThickness
+        {
+            get
+            {
+                var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
+                var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
+                var padding = new UnmanagedMethods.RECT();
+
+                if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
+                {
+                    return new Thickness(-padding.left, -padding.top, padding.right, padding.bottom);
+                }
+                else
+                {
+                    throw new Win32Exception();
+                }
+            }
+        }
+
         public Size ClientSize
         {
             get
@@ -66,21 +85,16 @@ namespace Perspex.Win32
             {
                 if (value != ClientSize)
                 {
-                    var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
-                    var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
-                    var padding = new UnmanagedMethods.RECT();
+                    value += BorderThickness;
 
-                    if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
-                    {
-                        UnmanagedMethods.SetWindowPos(
-                            _hwnd,
-                            IntPtr.Zero,
-                            0,
-                            0,
-                            -padding.left + padding.right + (int)value.Width,
-                            -padding.top + padding.bottom + (int)value.Height,
-                            UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
-                    }
+                    UnmanagedMethods.SetWindowPos(
+                        _hwnd,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        (int)value.Width,
+                        (int)value.Height,
+                        UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
                 }
             }
         }
@@ -97,13 +111,14 @@ namespace Perspex.Win32
             set { UnmanagedMethods.EnableWindow(_hwnd, value); }
         }
 
-        public Size MaxWindowSize
+        public Size MaxClientSize
         {
             get
             {
                 return new Size(
                     UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXMAXTRACK),
-                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYMAXTRACK));
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYMAXTRACK))
+                    - BorderThickness;
             }
         }
 
