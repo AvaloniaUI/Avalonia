@@ -57,6 +57,16 @@ namespace Perspex.Gtk
             set;
         }
 
+        public Size MaxClientSize
+        {
+            get
+            {
+                // TODO: This should take into account things such as taskbar and window border
+                // thickness etc.
+                return new Size(Screen.Width, Screen.Height);
+            }
+        }
+
         IPlatformHandle ITopLevelImpl.Handle => _windowHandle;
 
         public Action Activated { get; set; }

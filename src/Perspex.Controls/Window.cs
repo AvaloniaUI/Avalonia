@@ -57,6 +57,8 @@ namespace Perspex.Controls
 
         private object _dialogResult;
 
+        private Size _maxPlatformClientSize;
+
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
         /// </summary>
@@ -72,6 +74,7 @@ namespace Perspex.Controls
         public Window()
             : base(Locator.Current.GetService<IWindowImpl>())
         {
+            _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
         }
 
         /// <summary>
@@ -193,7 +196,7 @@ namespace Perspex.Controls
         {
             var sizeToContent = SizeToContent;
             var size = ClientSize;
-            var desired = base.MeasureOverride(availableSize);
+            var desired = base.MeasureOverride(availableSize.Constrain(_maxPlatformClientSize));
 
             switch (sizeToContent)
             {
