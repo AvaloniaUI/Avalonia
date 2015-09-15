@@ -54,6 +54,9 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
+            // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
+            // in certain situations, so we try to load .xaml and if that's not found we try .paml.
+            // Ideally we'd be able to use .xaml everywhere
             var assetLocator = Locator.Current.GetService<IAssetLoader>();
             if (assetLocator == null)
             {
