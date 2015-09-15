@@ -1,5 +1,5 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
-        xmlns="https://github.com/grokys/Perspex"
+        xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
         Title="Perspex Test Application" Height="350" Width="525">
     <Grid RowDefinitions="Auto,*">

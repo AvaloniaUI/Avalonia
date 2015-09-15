@@ -22,7 +22,7 @@ namespace Perspex.Markup.Xaml.Context
     public class PerspexWiringContext : IWiringContext
     {
         private readonly WiringContext _context;
-        private const string PerspexNs = "https://github.com/grokys/Perspex";
+        private const string PerspexNs = "https://github.com/perspex";
 
         public PerspexWiringContext(ITypeFactory typeFactory)
         {
