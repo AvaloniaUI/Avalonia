@@ -288,7 +288,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        SourceRect = new RelativeRect(40, 40, 100, 100, OriginUnit.Pixels),
+                        SourceRect = new RelativeRect(40, 40, 100, 100, RelativeUnit.Pixels),
                         Visual = new Border
                         {
                             Width = 180,
@@ -329,7 +329,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        DestinationRect = new RelativeRect(92, 92, 92, 92, OriginUnit.Pixels),
+                        DestinationRect = new RelativeRect(92, 92, 92, 92, RelativeUnit.Pixels),
                         Visual = new Border
                         {
                             Width = 180,
@@ -370,8 +370,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        SourceRect = new RelativeRect(40, 40, 100, 100, OriginUnit.Pixels),
-                        DestinationRect = new RelativeRect(92, 92, 92, 92, OriginUnit.Pixels),
+                        SourceRect = new RelativeRect(40, 40, 100, 100, RelativeUnit.Pixels),
+                        DestinationRect = new RelativeRect(92, 92, 92, 92, RelativeUnit.Pixels),
                         Visual = new Border
                         {
                             Width = 180,
@@ -412,8 +412,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        SourceRect = new RelativeRect(0.22, 0.22, 0.56, 0.56, OriginUnit.Percent),
-                        DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, OriginUnit.Percent),
+                        SourceRect = new RelativeRect(0.22, 0.22, 0.56, 0.56, RelativeUnit.Percent),
+                        DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Percent),
                         Visual = new Border
                         {
                             Width = 180,
@@ -456,7 +456,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.Tile,
-                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, OriginUnit.Percent),
+                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, RelativeUnit.Percent),
                         Visual = new Border
                         {
                             Width = 92,
@@ -543,7 +543,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipX,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Percent),
                         Visual = new Border
                         {
                             Width = 92,
@@ -586,7 +586,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipY,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Percent),
                         Visual = new Border
                         {
                             Width = 92,
@@ -629,7 +629,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipXY,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Percent),
                         Visual = new Border
                         {
                             Width = 92,

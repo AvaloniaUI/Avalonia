@@ -4,12 +4,13 @@
 namespace Perspex
 {
     /// <summary>
-    /// Defines the reference point units of an <see cref="Origin"/>.
+    /// Defines the reference point units of an <see cref="RelativePoint"/> or 
+    /// <see cref="RelativeRect"/>.
     /// </summary>
-    public enum OriginUnit
+    public enum RelativeUnit
     {
         /// <summary>
-        /// The origin's point is a percentage.
+        /// The point is expressed as a percentage of the containing element's size.
         /// </summary>
         Percent,
 
@@ -20,59 +21,59 @@ namespace Perspex
     }
 
     /// <summary>
-    /// Defines an origin for a <see cref="Perspex.Media.Transform"/>.
+    /// Defines a point that may be defined relative to a containing element.
     /// </summary>
-    public struct Origin
+    public struct RelativePoint
     {
         /// <summary>
-        /// The default origin, which is the center of the control.
+        /// A point at the center of the containing element.
         /// </summary>
-        public static readonly Origin Default = new Origin(0.5, 0.5, OriginUnit.Percent);
+        public static readonly RelativePoint Center = new RelativePoint(0.5, 0.5, RelativeUnit.Percent);
 
         private Point _point;
 
-        private readonly OriginUnit _unit;
+        private readonly RelativeUnit _unit;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Origin"/> struct.
+        /// Initializes a new instance of the <see cref="RelativePoint"/> struct.
         /// </summary>
         /// <param name="x">The X point.</param>
         /// <param name="y">The Y point</param>
-        /// <param name="unit">The origin unit.</param>
-        public Origin(double x, double y, OriginUnit unit)
+        /// <param name="unit">The unit.</param>
+        public RelativePoint(double x, double y, RelativeUnit unit)
             : this(new Point(x, y), unit)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Origin"/> struct.
+        /// Initializes a new instance of the <see cref="RelativePoint"/> struct.
         /// </summary>
-        /// <param name="point">The origin point.</param>
-        /// <param name="unit">The origin unit.</param>
-        public Origin(Point point, OriginUnit unit)
+        /// <param name="point">The point.</param>
+        /// <param name="unit">The unit.</param>
+        public RelativePoint(Point point, RelativeUnit unit)
         {
             _point = point;
             _unit = unit;
         }
 
         /// <summary>
-        /// Gets the origin point.
+        /// Gets the point.
         /// </summary>
         public Point Point => _point;
 
         /// <summary>
-        /// Gets the origin unit.
+        /// Gets the unit.
         /// </summary>
-        public OriginUnit Unit => _unit;
+        public RelativeUnit Unit => _unit;
 
         /// <summary>
-        /// Converts an <see cref="Origin"/> into pixels.
+        /// Converts a <see cref="RelativePoint"/> into pixels.
         /// </summary>
         /// <param name="size">The size of the visual.</param>
         /// <returns>The origin point in pixels.</returns>
         public Point ToPixels(Size size)
         {
-            return _unit == OriginUnit.Pixels ?
+            return _unit == RelativeUnit.Pixels ?
                 _point :
                 new Point(_point.X * size.Width, _point.Y * size.Height);
         }

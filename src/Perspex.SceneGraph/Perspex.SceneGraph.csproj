@@ -98,7 +98,7 @@
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
-    <Compile Include="Origin.cs" />
+    <Compile Include="RelativePoint.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
