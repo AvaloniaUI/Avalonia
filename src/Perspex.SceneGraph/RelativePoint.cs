@@ -27,7 +27,7 @@ namespace Perspex
     /// <summary>
     /// Defines a point that may be defined relative to a containing element.
     /// </summary>
-    public struct RelativePoint
+    public struct RelativePoint : IEquatable<RelativePoint>
     {
         /// <summary>
         /// A point at the top left of the containing element.
@@ -81,6 +81,63 @@ namespace Perspex
         public RelativeUnit Unit => _unit;
 
         /// <summary>
+        /// Checks for equality between two <see cref="RelativePoint"/>s.
+        /// </summary>
+        /// <param name="left">The first point.</param>
+        /// <param name="right">The second point.</param>
+        /// <returns>True if the points are equal; otherwise false.</returns>
+        public static bool operator ==(RelativePoint left, RelativePoint right)
+        {
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// Checks for unequality between two <see cref="RelativePoint"/>s.
+        /// </summary>
+        /// <param name="left">The first point.</param>
+        /// <param name="right">The second point.</param>
+        /// <returns>True if the points are unequal; otherwise false.</returns>
+        public static bool operator !=(RelativePoint left, RelativePoint right)
+        {
+            return !left.Equals(right);
+        }
+
+        /// <summary>
+        /// Checks if the <see cref="RelativePoint"/> equals another object.
+        /// </summary>
+        /// <param name="obj">The other object.</param>
+        /// <returns>True if the objects are equal, otherwise false.</returns>
+        public override bool Equals(object obj)
+        {
+            return (obj is RelativePoint) ? Equals((RelativePoint)obj) : false;
+        }
+
+        /// <summary>
+        /// Checks if the <see cref="RelativePoint"/> equals another point.
+        /// </summary>
+        /// <param name="p">The other point.</param>
+        /// <returns>True if the objects are equal, otherwise false.</returns>
+        public bool Equals(RelativePoint p)
+        {
+            return Unit == p.Unit && Point == p.Point;
+        }
+
+        /// <summary>
+        /// Gets a hashcode for a <see cref="RelativePoint"/>.
+        /// </summary>
+        /// <returns>A hash code.</returns>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 23) + Unit.GetHashCode();
+                hash = (hash * 23) + Point.GetHashCode();
+                return hash;
+            }
+        }
+
+        /// <summary>
         /// Converts a <see cref="RelativePoint"/> into pixels.
         /// </summary>
         /// <param name="size">The size of the visual.</param>
@@ -107,6 +164,7 @@ namespace Perspex
             if (parts.Count == 2)
             {
                 var unit = RelativeUnit.Absolute;
+                var scale = 1.0;
 
                 if (parts[0].EndsWith("%"))
                 {
@@ -118,11 +176,12 @@ namespace Perspex
                     parts[0] = parts[0].TrimEnd('%');
                     parts[1] = parts[1].TrimEnd('%');
                     unit = RelativeUnit.Relative;
+                    scale = 0.01;
                 }
 
                 return new RelativePoint(
-                    double.Parse(parts[0], culture), 
-                    double.Parse(parts[1], culture),
+                    double.Parse(parts[0], culture) * scale,
+                    double.Parse(parts[1], culture) * scale,
                     unit);
             }
             else

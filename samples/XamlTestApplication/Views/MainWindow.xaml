@@ -104,7 +104,7 @@
                     </Grid.RowDefinitions>
                     <Border Width="100" Height="100">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                                 <GradientStop Color="Red" Offset="0"/>
                                 <GradientStop Color="Green" Offset="1"/>
                             </LinearGradientBrush>
