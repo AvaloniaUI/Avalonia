@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Perspex
@@ -168,8 +169,9 @@ namespace Perspex
         /// Parses a <see cref="Thickness"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Thickness"/>.</returns>
-        public static Thickness Parse(string s)
+        public static Thickness Parse(string s, CultureInfo culture)
         {
             var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Trim())
@@ -178,17 +180,17 @@ namespace Perspex
             switch (parts.Count)
             {
                 case 1:
-                    var uniform = double.Parse(parts[0]);
+                    var uniform = double.Parse(parts[0], culture);
                     return new Thickness(uniform);
                 case 2:
-                    var horizontal = double.Parse(parts[0]);
-                    var vertical = double.Parse(parts[1]);
+                    var horizontal = double.Parse(parts[0], culture);
+                    var vertical = double.Parse(parts[1], culture);
                     return new Thickness(horizontal, vertical);
                 case 4:
-                    var left = double.Parse(parts[0]);
-                    var top = double.Parse(parts[1]);
-                    var right = double.Parse(parts[2]);
-                    var bottom = double.Parse(parts[3]);
+                    var left = double.Parse(parts[0], culture);
+                    var top = double.Parse(parts[1], culture);
+                    var right = double.Parse(parts[2], culture);
+                    var bottom = double.Parse(parts[3], culture);
                     return new Thickness(left, top, right, bottom);
             }
 

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Perspex
 {
@@ -137,6 +139,28 @@ namespace Perspex
             return new Point(
                 (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.M31,
                 (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.M32);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Point"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="Thickness"/>.</returns>
+        public static Point Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            if (parts.Count == 2)
+            {
+                return new Point(double.Parse(parts[0], culture), double.Parse(parts[1], culture));
+            }
+            else
+            {
+                throw new FormatException("Invalid Thickness.");
+            }
         }
 
         /// <summary>
