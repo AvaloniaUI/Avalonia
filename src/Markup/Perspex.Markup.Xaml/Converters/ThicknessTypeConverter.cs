@@ -21,7 +21,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return Thickness.Parse((string)value);
+            return Thickness.Parse((string)value, culture);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
