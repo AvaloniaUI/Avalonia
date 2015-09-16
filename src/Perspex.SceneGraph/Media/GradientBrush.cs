@@ -7,23 +7,15 @@ namespace Perspex.Media
 {
     public abstract class GradientBrush : Brush
     {
-        public static readonly PerspexProperty<BrushMappingMode> MappingModeProperty =
-PerspexProperty.Register<GradientBrush, BrushMappingMode>(nameof(MappingMode), BrushMappingMode.RelativeToBoundingBox);
-
         public static readonly PerspexProperty<GradientSpreadMethod> SpreadMethodProperty =
-PerspexProperty.Register<GradientBrush, GradientSpreadMethod>(nameof(SpreadMethod), GradientSpreadMethod.Pad);
+            PerspexProperty.Register<GradientBrush, GradientSpreadMethod>(nameof(SpreadMethod));
 
         public static readonly PerspexProperty<List<GradientStop>> GradientStopsProperty =
-PerspexProperty.Register<GradientBrush, List<GradientStop>>(nameof(Opacity), new List<GradientStop>());
+            PerspexProperty.Register<GradientBrush, List<GradientStop>>(nameof(Opacity));
 
         public GradientBrush()
         {
-        }
-
-        public BrushMappingMode MappingMode
-        {
-            get { return GetValue(MappingModeProperty); }
-            set { SetValue(MappingModeProperty, value); }
+            this.GradientStops = new List<GradientStop>();
         }
 
         public GradientSpreadMethod SpreadMethod

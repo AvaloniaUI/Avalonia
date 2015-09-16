@@ -227,11 +227,10 @@ namespace Perspex.Cairo.Media
             }
             else if (linearGradientBrush != null)
             {
-                Cairo.LinearGradient g = new Cairo.LinearGradient(
-                    linearGradientBrush.StartPoint.X * destinationSize.Width, 
-                    linearGradientBrush.StartPoint.Y * destinationSize.Height, 
-                    linearGradientBrush.EndPoint.X * destinationSize.Width, 
-                    linearGradientBrush.EndPoint.Y * destinationSize.Height);
+                var start = linearGradientBrush.StartPoint.ToPixels(destinationSize);
+                var end = linearGradientBrush.EndPoint.ToPixels(destinationSize);
+
+                Cairo.LinearGradient g = new Cairo.LinearGradient(start.X, start.Y, end.X, end.Y);
 
                 foreach (var s in linearGradientBrush.GradientStops)
                     g.AddColorStop(s.Offset, s.Color.ToCairo());

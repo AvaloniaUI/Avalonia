@@ -26,9 +26,19 @@ namespace Perspex
     public struct RelativePoint
     {
         /// <summary>
+        /// A point at the top left of the containing element.
+        /// </summary>
+        public static readonly RelativePoint TopLeft = new RelativePoint(0, 0, RelativeUnit.Percent);
+
+        /// <summary>
         /// A point at the center of the containing element.
         /// </summary>
         public static readonly RelativePoint Center = new RelativePoint(0.5, 0.5, RelativeUnit.Percent);
+
+        /// <summary>
+        /// A point at the bottom right of the containing element.
+        /// </summary>
+        public static readonly RelativePoint BottomRight = new RelativePoint(1, 1, RelativeUnit.Percent);
 
         private Point _point;
 

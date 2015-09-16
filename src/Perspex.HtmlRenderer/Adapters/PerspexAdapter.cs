@@ -77,8 +77,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             double y = angle <= 45 ? Math.Max(0.5 - angle / 90, 0) : angle > 135 ? Math.Abs(1.5 - angle / 90) : 0;
             return new BrushAdapter(new LinearGradientBrush
             {
-                StartPoint = new Point(x, y), 
-                EndPoint = new Point(1 - x, 1 - y),
+                StartPoint = new RelativePoint(x, y, RelativeUnit.Percent), 
+                EndPoint = new RelativePoint(1 - x, 1 - y, RelativeUnit.Percent),
                 GradientStops =
                 {
                     new GradientStop(startColor, 0),
