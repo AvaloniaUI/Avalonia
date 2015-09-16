@@ -1,6 +1,10 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Globalization;
+using System.Linq;
+
 namespace Perspex
 {
     /// <summary>
@@ -10,14 +14,14 @@ namespace Perspex
     public enum RelativeUnit
     {
         /// <summary>
-        /// The point is expressed as a percentage of the containing element's size.
+        /// The point is expressed as a fraction of the containing element's size.
         /// </summary>
-        Percent,
+        Relative,
 
         /// <summary>
-        /// The origin's point is in pixels.
+        /// The point is absolute (i.e. in pixels).
         /// </summary>
-        Pixels,
+        Absolute,
     }
 
     /// <summary>
@@ -28,17 +32,17 @@ namespace Perspex
         /// <summary>
         /// A point at the top left of the containing element.
         /// </summary>
-        public static readonly RelativePoint TopLeft = new RelativePoint(0, 0, RelativeUnit.Percent);
+        public static readonly RelativePoint TopLeft = new RelativePoint(0, 0, RelativeUnit.Relative);
 
         /// <summary>
         /// A point at the center of the containing element.
         /// </summary>
-        public static readonly RelativePoint Center = new RelativePoint(0.5, 0.5, RelativeUnit.Percent);
+        public static readonly RelativePoint Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
         /// <summary>
         /// A point at the bottom right of the containing element.
         /// </summary>
-        public static readonly RelativePoint BottomRight = new RelativePoint(1, 1, RelativeUnit.Percent);
+        public static readonly RelativePoint BottomRight = new RelativePoint(1, 1, RelativeUnit.Relative);
 
         private Point _point;
 
@@ -83,9 +87,48 @@ namespace Perspex
         /// <returns>The origin point in pixels.</returns>
         public Point ToPixels(Size size)
         {
-            return _unit == RelativeUnit.Pixels ?
+            return _unit == RelativeUnit.Absolute ?
                 _point :
                 new Point(_point.X * size.Width, _point.Y * size.Height);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="RelativePoint"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The parsed <see cref="RelativePoint"/>.</returns>
+        public static RelativePoint Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            if (parts.Count == 2)
+            {
+                var unit = RelativeUnit.Absolute;
+
+                if (parts[0].EndsWith("%"))
+                {
+                    if (!parts[1].EndsWith("%"))
+                    {
+                        throw new FormatException("If one coordinate is relative, both must be.");
+                    }
+
+                    parts[0] = parts[0].TrimEnd('%');
+                    parts[1] = parts[1].TrimEnd('%');
+                    unit = RelativeUnit.Relative;
+                }
+
+                return new RelativePoint(
+                    double.Parse(parts[0], culture), 
+                    double.Parse(parts[1], culture),
+                    unit);
+            }
+            else
+            {
+                throw new FormatException("Invalid Point.");
+            }
         }
     }
 }

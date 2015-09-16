@@ -34,8 +34,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Background = new LinearGradientBrush
                     {
-                        StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Percent),
-                        EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Percent),
+                        StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                        EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
                         GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
@@ -61,8 +61,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Background = new LinearGradientBrush
                     {
-                        StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Percent),
-                        EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Percent),
+                        StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
+                        EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
                         GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },

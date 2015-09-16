@@ -11,7 +11,7 @@ namespace Perspex
         /// <summary>
         /// A rectangle that represents 100% of an area.
         /// </summary>
-        public static readonly RelativeRect Fill = new RelativeRect(0, 0, 1, 1, RelativeUnit.Percent);
+        public static readonly RelativeRect Fill = new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RelativeRect"/> structure.
@@ -90,7 +90,7 @@ namespace Perspex
         /// <returns>The origin point in pixels.</returns>
         public Rect ToPixels(Size size)
         {
-            return Unit == RelativeUnit.Pixels ?
+            return Unit == RelativeUnit.Absolute ?
                 Rect :
                 new Rect(
                     Rect.X * size.Width,
