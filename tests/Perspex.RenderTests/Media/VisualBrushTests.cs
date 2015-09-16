@@ -653,5 +653,27 @@ namespace Perspex.Direct2D1.RenderTests.Media
             RenderToFile(target);
             CompareImages();
         }
+
+#if PERSPEX_CAIRO
+        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+#else
+        [Fact]
+#endif
+        public void VisualBrush_No_Visual()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = new VisualBrush(),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
     }
 }

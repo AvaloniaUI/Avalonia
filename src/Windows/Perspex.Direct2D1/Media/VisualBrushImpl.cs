@@ -16,6 +16,12 @@ namespace Perspex.Direct2D1.Media
             Size targetSize)
         {
             var visual = brush.Visual;
+
+            if (visual == null)
+            {
+                return;
+            }
+
             var layoutable = visual as ILayoutable;
 
             if (layoutable?.IsArrangeValid == false)
@@ -102,7 +108,7 @@ namespace Perspex.Direct2D1.Media
 
         public override void Dispose()
         {
-            ((BitmapBrush)PlatformBrush).Bitmap.Dispose();
+            ((BitmapBrush)PlatformBrush)?.Bitmap.Dispose();
             base.Dispose();
         }
     }

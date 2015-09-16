@@ -90,12 +90,15 @@ namespace Perspex.Direct2D1.Media
                 using (var d2dBrush = CreateBrush(pen.Brush, size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
-                    _renderTarget.DrawLine(
-                        p1.ToSharpDX(),
-                        p2.ToSharpDX(),
-                        d2dBrush.PlatformBrush,
-                        (float)pen.Thickness,
-                        d2dStroke);
+                    if (d2dBrush.PlatformBrush != null)
+                    {
+                        _renderTarget.DrawLine(
+                            p1.ToSharpDX(),
+                            p2.ToSharpDX(),
+                            d2dBrush.PlatformBrush,
+                            (float)pen.Thickness,
+                            d2dStroke);
+                    }
                 }
             }
         }
@@ -112,8 +115,11 @@ namespace Perspex.Direct2D1.Media
             {
                 using (var d2dBrush = CreateBrush(brush, geometry.Bounds.Size))
                 {
-                    GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    _renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
+                    if (d2dBrush.PlatformBrush != null)
+                    {
+                        var impl = (GeometryImpl)geometry.PlatformImpl;
+                        _renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
+                    }
                 }
             }
 
@@ -122,8 +128,11 @@ namespace Perspex.Direct2D1.Media
                 using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
-                    GeometryImpl impl = (GeometryImpl)geometry.PlatformImpl;
-                    _renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
+                    if (d2dBrush.PlatformBrush != null)
+                    {
+                        var impl = (GeometryImpl)geometry.PlatformImpl;
+                        _renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
+                    }
                 }
             }
         }
@@ -139,21 +148,24 @@ namespace Perspex.Direct2D1.Media
             using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
             {
-                if (cornerRadius == 0)
+                if (brush.PlatformBrush != null)
                 {
-                    _renderTarget.DrawRectangle(
-                        rect.ToDirect2D(),
-                        brush.PlatformBrush,
-                        (float)pen.Thickness,
-                        d2dStroke);
-                }
-                else
-                {
-                    _renderTarget.DrawRoundedRectangle(
-                        new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                        brush.PlatformBrush,
-                        (float)pen.Thickness,
-                        d2dStroke);
+                    if (cornerRadius == 0)
+                    {
+                        _renderTarget.DrawRectangle(
+                            rect.ToDirect2D(),
+                            brush.PlatformBrush,
+                            (float)pen.Thickness,
+                            d2dStroke);
+                    }
+                    else
+                    {
+                        _renderTarget.DrawRoundedRectangle(
+                            new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
+                            brush.PlatformBrush,
+                            (float)pen.Thickness,
+                            d2dStroke);
+                    }
                 }
             }
         }
@@ -173,7 +185,10 @@ namespace Perspex.Direct2D1.Media
                 using (var brush = CreateBrush(foreground, impl.Measure()))
                 using (var renderer = new PerspexTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
-                    impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                    if (brush.PlatformBrush != null)
+                    {
+                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                    }
                 }
             }
         }
@@ -188,24 +203,27 @@ namespace Perspex.Direct2D1.Media
         {
             using (var b = CreateBrush(brush, rect.Size))
             {
-                if (cornerRadius == 0)
+                if (b.PlatformBrush != null)
                 {
-                    _renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
-                }
-                else
-                {
-                    _renderTarget.FillRoundedRectangle(
-                        new RoundedRectangle
-                        {
-                            Rect = new RectangleF(
-                                    (float)rect.X,
-                                    (float)rect.Y,
-                                    (float)rect.Width,
-                                    (float)rect.Height),
-                            RadiusX = cornerRadius,
-                            RadiusY = cornerRadius
-                        },
-                        b.PlatformBrush);
+                    if (cornerRadius == 0)
+                    {
+                        _renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
+                    }
+                    else
+                    {
+                        _renderTarget.FillRoundedRectangle(
+                            new RoundedRectangle
+                            {
+                                Rect = new RectangleF(
+                                        (float)rect.X,
+                                        (float)rect.Y,
+                                        (float)rect.Width,
+                                        (float)rect.Height),
+                                RadiusX = cornerRadius,
+                                RadiusY = cornerRadius
+                            },
+                            b.PlatformBrush);
+                    }
                 }
             }
         }
