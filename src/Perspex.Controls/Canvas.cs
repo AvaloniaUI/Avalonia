@@ -6,13 +6,13 @@ using Perspex.Input;
 
 namespace Perspex.Controls
 {
-    public class Canvas : Panel, INavigableContainer
-    {
-        /// <summary>
-        /// Defines the <see cref="Left"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<double> LeftProperty =
-            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Left");
+	public class Canvas : Panel, INavigableContainer
+	{
+		/// <summary>
+		/// Defines the <see cref="Left"/> property.
+		/// </summary>
+		public static readonly PerspexProperty<double> LeftProperty =
+			PerspexProperty.RegisterAttached<StackPanel, Control, double>("Left");
 
 		/// <summary>
 		/// Defines the <see cref="Top"/> property.
@@ -24,10 +24,10 @@ namespace Perspex.Controls
 		/// Initializes static members of the <see cref="Canvas"/> class.
 		/// </summary>
 		static Canvas()
-        {
-            AffectsArrange(LeftProperty);
+		{
+			AffectsArrange(LeftProperty);
 			AffectsArrange(TopProperty);
-        }
+		}
 
 		/// <summary>
 		/// Gets the value of the Left attached property for a control.
@@ -76,37 +76,37 @@ namespace Perspex.Controls
 		/// <param name="from">The control from which movement begins.</param>
 		/// <returns>The control.</returns>
 		IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
-        {
+		{
 			// TODO: Implement this
 			return null;
-        }
+		}
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size.</param>
-        /// <returns>The desired size of the control.</returns>
-        protected override Size MeasureOverride(Size availableSize)
-        {
+		/// <summary>
+		/// Measures the control.
+		/// </summary>
+		/// <param name="availableSize">The available size.</param>
+		/// <returns>The desired size of the control.</returns>
+		protected override Size MeasureOverride(Size availableSize)
+		{
 			availableSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-            foreach (Control child in Children)
-            {
-                child.Measure(availableSize);
-            }
+			foreach (Control child in Children)
+			{
+				child.Measure(availableSize);
+			}
 
 			return new Size();
-        }
+		}
 
-        /// <summary>
-        /// Arranges the control's children.
-        /// </summary>
-        /// <param name="finalSize">The size allocated to the control.</param>
-        /// <returns>The space taken.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            foreach (Control child in Children)
-            {
+		/// <summary>
+		/// Arranges the control's children.
+		/// </summary>
+		/// <param name="finalSize">The size allocated to the control.</param>
+		/// <returns>The space taken.</returns>
+		protected override Size ArrangeOverride(Size finalSize)
+		{
+			foreach (Control child in Children)
+			{
 				double x = 0.0;
 				double y = 0.0;
 				double elementLeft = GetLeft(child);
@@ -126,6 +126,6 @@ namespace Perspex.Controls
 			}
 
 			return finalSize;
-        }
-    }
+		}
+	}
 }
