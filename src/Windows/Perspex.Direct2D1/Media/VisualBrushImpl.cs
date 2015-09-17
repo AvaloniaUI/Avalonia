@@ -8,7 +8,7 @@ using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
-    public class VisualBrushImpl : BrushImpl
+    public class VisualBrushImpl : TileBrushImpl
     {
         public VisualBrushImpl(
             VisualBrush brush,
@@ -59,8 +59,8 @@ namespace Perspex.Direct2D1.Media
                 renderer.Render(visual, null, transform, drawRect);
 
                 var result = new BitmapBrush(brt, brt.Bitmap);
-                result.ExtendModeX = (brush.TileMode & TileMode.FlipX) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
-                result.ExtendModeY = (brush.TileMode & TileMode.FlipY) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
+                result.ExtendModeX = GetExtendModeX(brush.TileMode);
+                result.ExtendModeY = GetExtendModeY(brush.TileMode);
 
                 if (brush.TileMode != TileMode.None)
                 {
@@ -71,45 +71,6 @@ namespace Perspex.Direct2D1.Media
 
                 PlatformBrush = result;
             }
-        }
-
-        private static Vector CalculateTranslate(
-            VisualBrush brush,
-            Rect sourceRect,
-            Rect destinationRect,
-            Vector scale)
-        {
-            var x = 0.0;
-            var y = 0.0;
-            var size = sourceRect.Size * scale;
-
-            switch (brush.AlignmentX)
-            {
-                case AlignmentX.Center:
-                    x += (destinationRect.Width - size.Width) / 2;
-                    break;
-                case AlignmentX.Right:
-                    x += destinationRect.Width - size.Width;
-                    break;
-            }
-
-            switch (brush.AlignmentY)
-            {
-                case AlignmentY.Center:
-                    y += (destinationRect.Height - size.Height) / 2;
-                    break;
-                case AlignmentY.Bottom:
-                    y += destinationRect.Height - size.Height;
-                    break;
-            }
-
-            return new Vector(x, y);
-        }
-
-        public override void Dispose()
-        {
-            ((BitmapBrush)PlatformBrush)?.Bitmap.Dispose();
-            base.Dispose();
         }
     }
 }
