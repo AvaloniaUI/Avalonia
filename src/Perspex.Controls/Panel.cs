@@ -6,145 +6,177 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    /// <summary>
-    /// Base class for controls that can contain multiple children.
-    /// </summary>
-    /// <remarks>
-    /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
-    /// collection. All children are layed out to fill the panel.
-    /// </remarks>
-    public class Panel : Control, IReparentingControl, IPanel
-    {
-        private readonly Controls _children = new Controls();
+	/// <summary>
+	/// Base class for controls that can contain multiple children.
+	/// </summary>
+	/// <remarks>
+	/// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
+	/// collection. All children are layed out to fill the panel.
+	/// </remarks>
+	public class Panel : Control, IReparentingControl, IPanel
+	{
+		/// <summary>
+		/// Defines the <see cref="Background"/> property.
+		/// </summary>
+		public static readonly PerspexProperty<Brush> BackgroundProperty =
+			Border.BackgroundProperty.AddOwner<Panel>();
 
-        private ILogical _childLogicalParent;
+		private readonly Controls _children = new Controls();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Panel"/> class.
-        /// </summary>
-        public Panel()
-        {
-            _children.CollectionChanged += ChildrenChanged;
-            _childLogicalParent = this;
-        }
+		private ILogical _childLogicalParent;
 
-        /// <summary>
-        /// Gets or sets the children of the <see cref="Panel"/>.
-        /// </summary>
-        /// <remarks>
-        /// Even though this property can be set, the setter is only intended for use in object
-        /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and adds the contents of the assigned
-        /// collection.
-        /// </remarks>
-        public Controls Children
-        {
-            get
-            {
-                return _children;
-            }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Panel"/> class.
+		/// </summary>
+		public Panel()
+		{
+			_children.CollectionChanged += ChildrenChanged;
+			_childLogicalParent = this;
+		}
 
-            set
-            {
-                Contract.Requires<ArgumentNullException>(value != null);
+		/// <summary>
+		/// Gets or sets the children of the <see cref="Panel"/>.
+		/// </summary>
+		/// <remarks>
+		/// Even though this property can be set, the setter is only intended for use in object
+		/// initializers. Assigning to this property does not change the underlying collection,
+		/// it simply clears the existing collection and adds the contents of the assigned
+		/// collection.
+		/// </remarks>
+		public Controls Children
+		{
+			get
+			{
+				return _children;
+			}
 
-                ClearVisualChildren();
-                _children.Clear();
-                _children.AddRange(value);
-            }
-        }
+			set
+			{
+				Contract.Requires<ArgumentNullException>(value != null);
 
-        /// <summary>
-        /// Requests that the visual children of the panel use another control as their logical
-        /// parent.
-        /// </summary>
-        /// <param name="logicalParent">
-        /// The logical parent for the visual children of the panel.
-        /// </param>
-        /// <param name="children">
-        /// The <see cref="ILogical.LogicalChildren"/> collection to modify.
-        /// </param>
-        void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
-        {
-            Contract.Requires<ArgumentNullException>(logicalParent != null);
-            Contract.Requires<ArgumentNullException>(children != null);
+				ClearVisualChildren();
+				_children.Clear();
+				_children.AddRange(value);
+			}
+		}
 
-            _childLogicalParent = logicalParent;
-            RedirectLogicalChildren(children);
+		/// <summary>
+		/// Gets or Sets Panel background brush.
+		/// </summary>
+		public Brush Background
+		{
+			get { return GetValue(BackgroundProperty); }
+			set { SetValue(BackgroundProperty, value); }
+		}
 
-            foreach (var control in Children)
-            {
-                ((ISetLogicalParent)control).SetParent(null);
-                ((ISetLogicalParent)control).SetParent((IControl)logicalParent);
-                children.Add(control);
-            }
-        }
+		/// <summary>
+		/// Requests that the visual children of the panel use another control as their logical
+		/// parent.
+		/// </summary>
+		/// <param name="logicalParent">
+		/// The logical parent for the visual children of the panel.
+		/// </param>
+		/// <param name="children">
+		/// The <see cref="ILogical.LogicalChildren"/> collection to modify.
+		/// </param>
+		void IReparentingControl.ReparentLogicalChildren(ILogical logicalParent, IPerspexList<ILogical> children)
+		{
+			Contract.Requires<ArgumentNullException>(logicalParent != null);
+			Contract.Requires<ArgumentNullException>(children != null);
 
-        /// <summary>
-        /// Clears <see cref="IControl.Parent"/> for the specified controls.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        private void ClearLogicalParent(IEnumerable<IControl> controls)
-        {
-            foreach (var control in controls)
-            {
-                ((ISetLogicalParent)control).SetParent(null);
-            }
-        }
+			_childLogicalParent = logicalParent;
+			RedirectLogicalChildren(children);
 
-        /// <summary>
-        /// Sets <see cref="IControl.Parent"/> for the specified controls.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        private void SetLogicalParent(IEnumerable<IControl> controls)
-        {
-            var parent = _childLogicalParent as Control;
+			foreach (var control in Children)
+			{
+				((ISetLogicalParent)control).SetParent(null);
+				((ISetLogicalParent)control).SetParent((IControl)logicalParent);
+				children.Add(control);
+			}
+		}
 
-            foreach (var control in controls)
-            {
-                ((ISetLogicalParent)control).SetParent(parent);
-            }
-        }
+		/// <summary>
+		/// Clears <see cref="IControl.Parent"/> for the specified controls.
+		/// </summary>
+		/// <param name="controls">The controls.</param>
+		private void ClearLogicalParent(IEnumerable<IControl> controls)
+		{
+			foreach (var control in controls)
+			{
+				((ISetLogicalParent)control).SetParent(null);
+			}
+		}
 
-        /// <summary>
-        /// Called when the <see cref="Children"/> collection changes.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            List<Control> controls;
+		/// <summary>
+		/// Sets <see cref="IControl.Parent"/> for the specified controls.
+		/// </summary>
+		/// <param name="controls">The controls.</param>
+		private void SetLogicalParent(IEnumerable<IControl> controls)
+		{
+			var parent = _childLogicalParent as Control;
 
-            // TODO: Handle Replace.
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems.OfType<Control>().ToList();
-                    SetLogicalParent(controls);
-                    AddVisualChildren(e.NewItems.OfType<Visual>());
-                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    break;
+			foreach (var control in controls)
+			{
+				((ISetLogicalParent)control).SetParent(parent);
+			}
+		}
 
-                case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    ClearLogicalParent(e.OldItems.OfType<Control>());
-                    LogicalChildren.RemoveAll(controls);
-                    RemoveVisualChildren(e.OldItems.OfType<Visual>());
-                    break;
+		/// <summary>
+		/// Called when the <see cref="Children"/> collection changes.
+		/// </summary>
+		/// <param name="sender">The event sender.</param>
+		/// <param name="e">The event args.</param>
+		private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			List<Control> controls;
 
-                case NotifyCollectionChangedAction.Reset:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    ClearLogicalParent(controls);
-                    LogicalChildren.Clear();
-                    ClearVisualChildren();
-                    AddVisualChildren(_children);
-                    break;
-            }
+			// TODO: Handle Replace.
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					controls = e.NewItems.OfType<Control>().ToList();
+					SetLogicalParent(controls);
+					AddVisualChildren(e.NewItems.OfType<Visual>());
+					LogicalChildren.InsertRange(e.NewStartingIndex, controls);
+					break;
 
-            InvalidateMeasure();
-        }
-    }
+				case NotifyCollectionChangedAction.Remove:
+					controls = e.OldItems.OfType<Control>().ToList();
+					ClearLogicalParent(e.OldItems.OfType<Control>());
+					LogicalChildren.RemoveAll(controls);
+					RemoveVisualChildren(e.OldItems.OfType<Visual>());
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					controls = e.OldItems.OfType<Control>().ToList();
+					ClearLogicalParent(controls);
+					LogicalChildren.Clear();
+					ClearVisualChildren();
+					AddVisualChildren(_children);
+					break;
+			}
+
+			InvalidateMeasure();
+		}
+
+		/// <summary>
+		/// Renders the visual to a <see cref="IDrawingContext"/>.
+		/// </summary>
+		/// <param name="context">The drawing context.</param>
+		public override void Render(IDrawingContext context)
+		{
+			Brush background = Background;
+			if (background != null)
+			{
+				var renderSize = Bounds.Size;
+				context.FillRectange(background, new Rect(renderSize));
+			}
+
+			base.Render(context);
+		}
+	}
 }
