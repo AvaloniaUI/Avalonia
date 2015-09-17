@@ -33,17 +33,19 @@ namespace Perspex.Direct2D1.Media
             // them and directly use 'image' in those cases.
             using (var intermediate = new BitmapRenderTarget(target, brtOpts, intermediateSize))
             {
-                SharpDX.RectangleF drawRect;
+                Rect drawRect;
+                var transform = CalculateIntermediateTransform(
+                    tileMode,
+                    sourceRect,
+                    destinationRect,
+                    scale,
+                    translate,
+                    out drawRect);
 
                 intermediate.BeginDraw();
-                intermediate.Transform = CalculateIntermediateTransform(
-                    tileMode, 
-                    sourceRect, 
-                    destinationRect, 
-                    scale, 
-                    translate, 
-                    out drawRect);
-                intermediate.PushAxisAlignedClip(drawRect, AntialiasMode.Aliased);
+                intermediate.Transform = transform.ToDirect2D();
+                drawRect *= -transform;
+                intermediate.PushAxisAlignedClip(drawRect.ToDirect2D(), AntialiasMode.Aliased);
                 intermediate.DrawBitmap(image, 1, BitmapInterpolationMode.Linear);
                 intermediate.PopAxisAlignedClip();
                 intermediate.EndDraw();

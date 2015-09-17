@@ -62,13 +62,13 @@ namespace Perspex.Direct2D1.Media
             return result.ToSharpDX();
         }
 
-        protected static Matrix3x2 CalculateIntermediateTransform(
+        protected static Matrix CalculateIntermediateTransform(
             TileMode tileMode,
             Rect sourceRect,
             Rect destinationRect,
             Vector scale,
             Vector translate,
-            out SharpDX.RectangleF drawRect)
+            out Rect drawRect)
         {
             var transform = Matrix.CreateTranslation(-sourceRect.Position) *
                 Matrix.CreateScale(scale) *
@@ -85,9 +85,9 @@ namespace Perspex.Direct2D1.Media
                 dr = new Rect(destinationRect.Size);
             }
 
-            drawRect = (dr * -transform).ToSharpDX();
+            drawRect = dr;
 
-            return transform.ToDirect2D();
+            return transform;
         }
 
         protected static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
