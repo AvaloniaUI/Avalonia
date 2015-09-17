@@ -41,6 +41,17 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DockPanel\Aligner.cs" />
+    <Compile Include="DockPanel\Alignment.cs" />
+    <Compile Include="DockPanel\Alignments.cs" />
+    <Compile Include="DockPanel\CoordinateMixin.cs" />
+    <Compile Include="DockPanel\Dock.cs" />
+    <Compile Include="DockPanel\Docker.cs" />
+    <Compile Include="DockPanel\DockingArranger.cs" />
+    <Compile Include="DockPanel\DockPanel.cs" />
+    <Compile Include="DockPanel\EnumerableMixin.cs" />
+    <Compile Include="DockPanel\LayoutSizes.cs" />
+    <Compile Include="DockPanel\RectMixin.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
     <Compile Include="IContentControl.cs" />
@@ -48,6 +59,9 @@
     <Compile Include="IPanel.cs" />
     <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
+    <Compile Include="DockPanel\LeftDocker.cs" />
+    <Compile Include="DockPanel\Segment.cs" />
+    <Compile Include="Margins.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
     <Compile Include="Presenters\IContentPresenter.cs" />
@@ -65,6 +79,7 @@
     <Compile Include="Primitives\IScrollInfo.cs" />
     <Compile Include="Primitives\Popup.cs" />
     <Compile Include="Primitives\ScrollInfoAdapter.cs" />
+    <Compile Include="DockPanel\RightDocker.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
     <Compile Include="Templates\DataTemplate`1.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />

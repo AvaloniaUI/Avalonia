@@ -96,6 +96,16 @@ namespace Perspex
             return new Size(size._width / scale.X, size._height / scale.Y);
         }
 
+        public static Size operator +(Size size, Size toAdd)
+        {
+            return new Size(size._width + toAdd._width, size._height + toAdd._height);
+        }
+
+        public static Size operator -(Size size, Size toSubstract)
+        {
+            return new Size(size._width + toSubstract._width, size._height + toSubstract._height);
+        }
+
         /// <summary>
         /// Constrains the size.
         /// </summary>
