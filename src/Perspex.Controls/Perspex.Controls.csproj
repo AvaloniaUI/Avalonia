@@ -65,6 +65,7 @@
     <Compile Include="Primitives\IScrollInfo.cs" />
     <Compile Include="Primitives\Popup.cs" />
     <Compile Include="Primitives\ScrollInfoAdapter.cs" />
+    <Compile Include="Canvas.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
     <Compile Include="Templates\DataTemplate`1.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
