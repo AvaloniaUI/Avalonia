@@ -73,29 +73,14 @@ namespace Perspex.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            double width = 0;
-            double height = 0;
-            Vector scale = new Vector();
-
             if (Source != null)
             {
-                width = Source.PixelWidth;
-                height = Source.PixelHeight;
-
-                if (Width > 0)
-                {
-                    availableSize = new Size(Width, availableSize.Height);
-                }
-
-                if (Height > 0)
-                {
-                    availableSize = new Size(availableSize.Width, Height);
-                }
-
-                scale = Stretch.CalculateScaling(availableSize, new Size(width, height));
+                return new Size(Source.PixelWidth, Source.PixelHeight);
             }
-
-            return new Size(width * scale.X, height * scale.Y);
+            else
+            {
+                return new Size();
+            }
         }
     }
 }

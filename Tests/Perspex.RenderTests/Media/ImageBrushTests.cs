@@ -14,10 +14,10 @@ namespace Perspex.Cairo.RenderTests.Media
 namespace Perspex.Direct2D1.RenderTests.Media
 #endif
 {
-    public class VisualBrushTests : TestBase
+    public class ImageBrushTests : TestBase
     {
-        public VisualBrushTests()
-            : base(@"Media\VisualBrush")
+        public ImageBrushTests()
+            : base(@"Media\ImageBrush")
         {
         }
 
@@ -26,44 +26,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
             get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
         }
 
-        private Control Visual
-        {
-            get 
-            {
-                return new Panel
-                {
-                    Children = new Perspex.Controls.Controls
-                    {
-                        new Image
-                        {
-                            Source = new Bitmap(BitmapPath),
-                        },
-                        new Border
-                        {
-                            BorderBrush = Brushes.Blue,
-                            BorderThickness = 2,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Child = new TextBlock
-                            {
-                                FontSize = 24,
-                                FontFamily = "Arial",
-                                Background = Brushes.Green,
-                                Foreground = Brushes.Yellow,
-                                Text = "VisualBrush",
-                            }
-                        }
-                    }
-                };
-            }
-        }
-
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_Alignment_TopLeft()
+        public void ImageBrush_NoStretch_NoTile_Alignment_TopLeft()
         {
             Decorator target = new Decorator
             {
@@ -72,13 +40,13 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Left,
                         AlignmentY = AlignmentY.Top,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -88,11 +56,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_Alignment_Center()
+        public void ImageBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
             {
@@ -101,13 +69,13 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Center,
                         AlignmentY = AlignmentY.Center,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -117,11 +85,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_Alignment_BottomRight()
+        public void ImageBrush_NoStretch_NoTile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
             {
@@ -130,13 +98,13 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Right,
                         AlignmentY = AlignmentY.Bottom,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -146,11 +114,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_Fill_NoTile()
+        public void ImageBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -159,11 +127,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 920,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.Fill,
                         TileMode = TileMode.None,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -173,11 +141,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_Uniform_NoTile()
+        public void ImageBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -186,11 +154,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.Uniform,
                         TileMode = TileMode.None,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -200,11 +168,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_UniformToFill_NoTile()
+        public void ImageBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -213,11 +181,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.UniformToFill,
                         TileMode = TileMode.None,
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -227,11 +195,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource()
+        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterSource()
         {
             Decorator target = new Decorator
             {
@@ -240,12 +208,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         SourceRect = new RelativeRect(250, 250, 250, 250, RelativeUnit.Absolute),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -255,11 +223,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
+        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -268,12 +236,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         DestinationRect = new RelativeRect(92, 92, 92, 92, RelativeUnit.Absolute),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -283,11 +251,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
+        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -296,13 +264,13 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.None,
                         SourceRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
                         DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -312,11 +280,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
+        public void ImageBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -325,13 +293,13 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.Tile,
                         SourceRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
                         DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, RelativeUnit.Relative),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -341,11 +309,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipX_TopLeftDest()
+        public void ImageBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -354,12 +322,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipX,
                         DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -369,11 +337,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipY_TopLeftDest()
+        public void ImageBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -382,12 +350,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipY,
                         DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
@@ -397,11 +365,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "ImageBrush not yet implemented on Cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipXY_TopLeftDest()
+        public void ImageBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -410,12 +378,12 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 Height = 200,
                 Child = new Rectangle
                 {
-                    Fill = new VisualBrush
+                    Fill = new ImageBrush
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipXY,
                         DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
-                        Visual = Visual,
+                        Source = new Bitmap(BitmapPath),
                     }
                 }
             };
