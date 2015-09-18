@@ -61,8 +61,8 @@ namespace Perspex
         /// <summary>
         /// Defines the <see cref="TransformOrigin"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Origin> TransformOriginProperty =
-            PerspexProperty.Register<Visual, Origin>(nameof(TransformOrigin), defaultValue: Origin.Default);
+        public static readonly PerspexProperty<RelativePoint> TransformOriginProperty =
+            PerspexProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
@@ -172,7 +172,7 @@ namespace Perspex
         /// <summary>
         /// Gets the transform origin of the scene graph node.
         /// </summary>
-        public Origin TransformOrigin
+        public RelativePoint TransformOrigin
         {
             get { return GetValue(TransformOriginProperty); }
             set { SetValue(TransformOriginProperty, value); }

@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex;
+using Perspex.Input.Platform;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Splat;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Perspex.Utilities;
@@ -77,8 +79,8 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
             double y = angle <= 45 ? Math.Max(0.5 - angle / 90, 0) : angle > 135 ? Math.Abs(1.5 - angle / 90) : 0;
             return new BrushAdapter(new LinearGradientBrush
             {
-                StartPoint = new Point(x, y), 
-                EndPoint = new Point(1 - x, 1 - y),
+                StartPoint = new RelativePoint(x, y, RelativeUnit.Relative), 
+                EndPoint = new RelativePoint(1 - x, 1 - y, RelativeUnit.Relative),
                 GradientStops =
                 {
                     new GradientStop(startColor, 0),
@@ -107,6 +109,22 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         protected override RFont CreateFontInt(RFontFamily family, double size, RFontStyle style)
         {
             return new FontAdapter(family.Name, size, style);
+        }
+
+        protected override void SetToClipboardInt(string html, string plainText)
+        {
+            SetToClipboardInt(plainText);
+        }
+
+        protected override void SetToClipboardInt(string text)
+        {
+            Locator.Current.GetService<IClipboard>().SetTextAsync(text);
+        }
+
+        protected override void SetToClipboardInt(RImage image)
+        {
+            //Do not crash, just ignore
+            //TODO: implement image clipboard support
         }
     }
 }

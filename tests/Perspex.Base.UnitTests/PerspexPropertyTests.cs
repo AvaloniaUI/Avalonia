@@ -26,6 +26,18 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Name_Cannot_Contain_Periods()
+        {
+            Assert.Throws<ArgumentException>(() => new PerspexProperty<string>(
+                "Foo.Bar",
+                typeof(Class1),
+                "Foo",
+                false,
+                BindingMode.OneWay,
+                null));
+        }
+
+        [Fact]
         public void GetDefaultValue_Returns_Registered_Value()
         {
             PerspexProperty<string> target = new PerspexProperty<string>(

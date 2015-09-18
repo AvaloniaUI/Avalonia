@@ -72,6 +72,12 @@ namespace Perspex
             new Dictionary<Type, List<PerspexProperty>>();
 
         /// <summary>
+        /// The registered attached properties by owner type.
+        /// </summary>
+        private static readonly Dictionary<Type, List<PerspexProperty>> s_attached =
+            new Dictionary<Type, List<PerspexProperty>>();
+
+        /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
         private PerspexObject _inheritanceParent;
@@ -154,7 +160,7 @@ namespace Perspex
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var inherited = (from property in GetProperties(GetType())
+                    var inherited = (from property in GetRegisteredProperties(GetType())
                                      where property.Inherits
                                      select new
                                      {
@@ -245,7 +251,7 @@ namespace Perspex
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
-        public static IEnumerable<PerspexProperty> GetProperties(Type type)
+        public static IEnumerable<PerspexProperty> GetRegisteredProperties(Type type)
         {
             Contract.Requires<NullReferenceException>(type != null);
 
@@ -265,6 +271,23 @@ namespace Perspex
 
                 type = type.GetTypeInfo().BaseType;
             }
+        }
+
+        /// <summary>
+        /// Gets all attached <see cref="PerspexProperty"/>s registered by an owner.
+        /// </summary>
+        /// <param name="ownerType">The owner type.</param>
+        /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
+        public static IEnumerable<PerspexProperty> GetAttachedProperties(Type ownerType)
+        {
+            List<PerspexProperty> list;
+
+            if (s_attached.TryGetValue(ownerType, out list))
+            {
+                return list;
+            }
+
+            return Enumerable.Empty<PerspexProperty>();
         }
 
         /// <summary>
@@ -292,6 +315,20 @@ namespace Perspex
             if (!list.Contains(property))
             {
                 list.Add(property);
+            }
+
+            if (property.IsAttached)
+            {
+                if (!s_attached.TryGetValue(property.OwnerType, out list))
+                {
+                    list = new List<PerspexProperty>();
+                    s_attached.Add(property.OwnerType, list);
+                }
+
+                if (!list.Contains(property))
+                {
+                    list.Add(property);
+                }
             }
         }
 
@@ -432,22 +469,7 @@ namespace Perspex
         /// </returns>
         public IEnumerable<PerspexProperty> GetRegisteredProperties()
         {
-            Type type = GetType();
-
-            while (type != null)
-            {
-                List<PerspexProperty> list;
-
-                if (s_registered.TryGetValue(type, out list))
-                {
-                    foreach (var p in list)
-                    {
-                        yield return p;
-                    }
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
+            return GetRegisteredProperties(GetType());
         }
 
         /// <summary>
@@ -503,6 +525,7 @@ namespace Perspex
             Contract.Requires<NullReferenceException>(property != null);
 
             PriorityValue v;
+            var originalValue = value;
 
             if (!IsRegistered(property))
             {
@@ -515,10 +538,10 @@ namespace Perspex
             if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
             {
                 throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': {1} ({2})",
+                    "Invalid value for Property '{0}': '{1}' ({2})",
                     property.Name,
-                    value,
-                    value?.GetType().FullName ?? "(null)"));
+                    originalValue,
+                    originalValue?.GetType().FullName ?? "(null)"));
             }
 
             if (!_values.TryGetValue(property, out v))

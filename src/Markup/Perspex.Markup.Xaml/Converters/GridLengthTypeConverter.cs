@@ -22,7 +22,7 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return GridLength.Parse((string)value);
+            return GridLength.Parse((string)value, culture);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)

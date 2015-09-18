@@ -6,6 +6,34 @@ using System.Collections.Generic;
 
 namespace Perspex.Styling
 {
+    /// <summary>
+    /// A selector in a <see cref="Style"/>.
+    /// </summary>
+    /// <remarks>
+    /// Selectors represented in markup using a CSS-like syntax, e.g. "Button &lt; .dark" which 
+    /// means "A child of a Button with the 'dark' class applied. The preceeding example would be
+    /// stored in 3 <see cref="Selector"/> objects, linked by the <see cref="Previous"/> property:
+    /// <list type="number">
+    /// <item>
+    ///   <term>.dark</term>
+    ///   <description>
+    ///     A selector that selects a control with the 'dark' class applied.
+    ///   </description>
+    /// </item>
+    /// <item>
+    ///   <term>&lt;</term>
+    ///   <description>
+    ///     A selector that selects a child of the previous selector.
+    ///   </description>
+    /// </item>
+    /// <item>
+    ///   <term>Button</term>
+    ///   <description>
+    ///     A selector that selects a Button type.
+    ///   </description>
+    /// </item>
+    /// </list>
+    /// </remarks>
     public class Selector
     {
         private readonly Func<IStyleable, SelectorMatch> _evaluate;

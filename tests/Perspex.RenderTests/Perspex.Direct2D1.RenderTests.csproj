@@ -75,6 +75,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Media\ImageBrushTests.cs" />
     <Compile Include="Media\VisualBrushTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />

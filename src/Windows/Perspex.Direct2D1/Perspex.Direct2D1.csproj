@@ -82,6 +82,8 @@
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\PerspexTextRenderer.cs" />
+    <Compile Include="Media\ImageBrushImpl.cs" />
+    <Compile Include="Media\TileBrushImpl.cs" />
     <Compile Include="Media\VisualBrushImpl.cs" />
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />

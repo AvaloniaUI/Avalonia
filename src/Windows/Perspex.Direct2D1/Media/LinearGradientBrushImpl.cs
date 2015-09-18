@@ -20,21 +20,8 @@ namespace Perspex.Direct2D1.Media
             {
                 var gradientStops = brush.GradientStops.Select(s => new SharpDX.Direct2D1.GradientStop { Color = s.Color.ToDirect2D(), Position = (float)s.Offset }).ToArray();
 
-                Point startPoint = new Point(0, 0);
-                Point endPoint = new Point(0, 0);
-
-                switch (brush.MappingMode)
-                {
-                    case Perspex.Media.BrushMappingMode.Absolute:
-                        // TODO:
-
-                        break;
-                    case Perspex.Media.BrushMappingMode.RelativeToBoundingBox:
-                        startPoint = new Point(brush.StartPoint.X * destinationSize.Width, brush.StartPoint.Y * destinationSize.Height);
-                        endPoint = new Point(brush.EndPoint.X * destinationSize.Width, brush.EndPoint.Y * destinationSize.Height);
-
-                        break;
-                }
+                Point startPoint = brush.StartPoint.ToPixels(destinationSize);
+                Point endPoint = brush.EndPoint.ToPixels(destinationSize);
 
                 PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
                     target,

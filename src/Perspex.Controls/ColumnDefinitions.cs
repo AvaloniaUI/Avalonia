@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Globalization;
 using System.Linq;
 using Perspex.Collections;
 
@@ -24,7 +25,7 @@ namespace Perspex.Controls
         /// <param name="s">A string representation of the column definitions.</param>
         public ColumnDefinitions(string s)
         {
-            AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
+            AddRange(GridLength.ParseLengths(s, CultureInfo.InvariantCulture).Select(x => new ColumnDefinition(x)));
         }
     }
 }

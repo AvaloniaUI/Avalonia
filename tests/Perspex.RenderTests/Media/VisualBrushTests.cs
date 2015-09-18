@@ -5,6 +5,7 @@ using Perspex.Controls;
 using Perspex.Controls.Shapes;
 using Perspex.Layout;
 using Perspex.Media;
+using Perspex.Media.Imaging;
 using Xunit;
 
 #if PERSPEX_CAIRO
@@ -20,12 +21,45 @@ namespace Perspex.Direct2D1.RenderTests.Media
         {
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
+        private string BitmapPath
+        {
+            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
+        }
+
+        private Control Visual
+        {
+            get 
+            {
+                return new Panel
+                {
+                    Children = new Perspex.Controls.Controls
+                    {
+                        new Image
+                        {
+                            Source = new Bitmap(BitmapPath),
+                        },
+                        new Border
+                        {
+                            BorderBrush = Brushes.Blue,
+                            BorderThickness = 2,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Child = new TextBlock
+                            {
+                                FontSize = 24,
+                                FontFamily = "Arial",
+                                Background = Brushes.Green,
+                                Foreground = Brushes.Yellow,
+                                Text = "VisualBrush",
+                            }
+                        }
+                    }
+                };
+            }
+        }
+
         [Fact]
-#endif
-        public void VisualBrush_Align_TopLeft()
+        public void VisualBrush_NoStretch_NoTile_Alignment_TopLeft()
         {
             Decorator target = new Decorator
             {
@@ -36,25 +70,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Left,
                         AlignmentY = AlignmentY.Top,
-                        Stretch = Stretch.None,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        Visual = Visual,
                     }
                 }
             };
@@ -63,12 +83,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_Align_Center()
+        public void VisualBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
             {
@@ -79,25 +95,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Center,
                         AlignmentY = AlignmentY.Center,
-                        Stretch = Stretch.None,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        Visual = Visual,
                     }
                 }
             };
@@ -106,12 +108,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_Align_BottomRight()
+        public void VisualBrush_NoStretch_NoTile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
             {
@@ -122,25 +120,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
                         AlignmentX = AlignmentX.Right,
                         AlignmentY = AlignmentY.Bottom,
-                        Stretch = Stretch.None,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        Visual = Visual,
                     }
                 }
             };
@@ -149,12 +133,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_Stretch_Fill_Large()
+        public void VisualBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -166,22 +146,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     Fill = new VisualBrush
                     {
                         Stretch = Stretch.Fill,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        TileMode = TileMode.None,
+                        Visual = Visual,
                     }
                 }
             };
@@ -190,39 +156,21 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_Stretch_Uniform()
+        public void VisualBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
-                Width = 920,
-                Height = 820,
+                Width = 300,
+                Height = 200,
                 Child = new Rectangle
                 {
                     Fill = new VisualBrush
                     {
                         Stretch = Stretch.Uniform,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        TileMode = TileMode.None,
+                        Visual = Visual,
                     }
                 }
             };
@@ -231,39 +179,21 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_Stretch_UniformToFill()
+        public void VisualBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
-                Width = 920,
-                Height = 820,
+                Width = 300,
+                Height = 200,
                 Child = new Rectangle
                 {
                     Fill = new VisualBrush
                     {
                         Stretch = Stretch.UniformToFill,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        TileMode = TileMode.None,
+                        Visual = Visual,
                     }
                 }
             };
@@ -272,12 +202,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_SourceRect_Absolute()
+        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource()
         {
             Decorator target = new Decorator
             {
@@ -288,23 +214,10 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        SourceRect = new RelativeRect(40, 40, 100, 100, OriginUnit.Pixels),
-                        Visual = new Border
-                        {
-                            Width = 180,
-                            Height = 180,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new Ellipse
-                            {
-                                Width = 100,
-                                Height = 100,
-                                Fill = Brushes.Yellow,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                            }
-                        }
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
+                        SourceRect = new RelativeRect(250, 250, 250, 250, RelativeUnit.Absolute),
+                        Visual = Visual,
                     }
                 }
             };
@@ -313,12 +226,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_DestinationRect_Absolute()
+        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -329,23 +238,10 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        DestinationRect = new RelativeRect(92, 92, 92, 92, OriginUnit.Pixels),
-                        Visual = new Border
-                        {
-                            Width = 180,
-                            Height = 180,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new Ellipse
-                            {
-                                Width = 100,
-                                Height = 100,
-                                Fill = Brushes.Yellow,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                            }
-                        }
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
+                        DestinationRect = new RelativeRect(92, 92, 92, 92, RelativeUnit.Absolute),
+                        Visual = Visual,
                     }
                 }
             };
@@ -354,12 +250,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_SourceRect_DestinationRect_Absolute()
+        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -370,24 +262,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
                 {
                     Fill = new VisualBrush
                     {
-                        SourceRect = new RelativeRect(40, 40, 100, 100, OriginUnit.Pixels),
-                        DestinationRect = new RelativeRect(92, 92, 92, 92, OriginUnit.Pixels),
-                        Visual = new Border
-                        {
-                            Width = 180,
-                            Height = 180,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new Ellipse
-                            {
-                                Width = 100,
-                                Height = 100,
-                                Fill = Brushes.Yellow,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                            }
-                        }
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.None,
+                        SourceRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
+                        DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
+                        Visual = Visual,
                     }
                 }
             };
@@ -396,54 +275,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_SourceRect_DestinationRect_Percent()
-        {
-            Decorator target = new Decorator
-            {
-                Padding = new Thickness(8),
-                Width = 200,
-                Height = 200,
-                Child = new Rectangle
-                {
-                    Fill = new VisualBrush
-                    {
-                        SourceRect = new RelativeRect(0.22, 0.22, 0.56, 0.56, OriginUnit.Percent),
-                        DestinationRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, OriginUnit.Percent),
-                        Visual = new Border
-                        {
-                            Width = 180,
-                            Height = 180,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new Ellipse
-                            {
-                                Width = 100,
-                                Height = 100,
-                                Fill = Brushes.Yellow,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                            }
-                        }
-                    }
-                }
-            };
-
-            RenderToFile(target);
-            CompareImages();
-        }
-
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
-        [Fact]
-#endif
-        public void VisualBrush_Tile()
+        public void VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -456,23 +289,9 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.Tile,
-                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, OriginUnit.Percent),
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        SourceRect = new RelativeRect(0.5, 0.5, 0.5, 0.5, RelativeUnit.Relative),
+                        DestinationRect = new RelativeRect(0.25, 0.25, 0.5, 0.5, RelativeUnit.Relative),
+                        Visual = Visual,
                     }
                 }
             };
@@ -482,55 +301,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_Tile_Alignment_BottomRight()
-        {
-            Decorator target = new Decorator
-            {
-                Padding = new Thickness(8),
-                Width = 200,
-                Height = 200,
-                Child = new Rectangle
-                {
-                    Fill = new VisualBrush
-                    {
-                        Stretch = Stretch.None,
-                        TileMode = TileMode.Tile,
-                        AlignmentX = AlignmentX.Right,
-                        AlignmentY = AlignmentY.Bottom,
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
-                    }
-                }
-            };
-
-            RenderToFile(target);
-            CompareImages();
-        }
-
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
-        [Fact]
-#endif
-        public void VisualBrush_FlipX()
+        public void VisualBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -543,23 +318,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipX,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
+                        Visual = Visual,
                     }
                 }
             };
@@ -569,11 +329,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
         }
 
 #if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
+        [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_FlipY()
+        public void VisualBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -586,23 +346,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipY,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
+                        Visual = Visual,
                     }
                 }
             };
@@ -611,12 +356,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_CAIRO
-        [Fact(Skip = "VisualBrush not yet implemented on Cairo")]
-#else
         [Fact]
-#endif
-        public void VisualBrush_FlipXY()
+        public void VisualBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -629,23 +370,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
                     {
                         Stretch = Stretch.None,
                         TileMode = TileMode.FlipXY,
-                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, OriginUnit.Percent),
-                        Visual = new Border
-                        {
-                            Width = 92,
-                            Height = 92,
-                            Background = Brushes.Red,
-                            BorderBrush = Brushes.Black,
-                            BorderThickness = 2,
-                            Child = new TextBlock
-                            {
-                                Text = "Perspex",
-                                FontSize = 12,
-                                FontFamily = "Arial",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            }
-                        }
+                        DestinationRect = new RelativeRect(0, 0, 0.5, 0.5, RelativeUnit.Relative),
+                        Visual = Visual,
                     }
                 }
             };

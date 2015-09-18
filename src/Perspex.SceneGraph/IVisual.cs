@@ -58,7 +58,7 @@ namespace Perspex
         /// <summary>
         /// Gets or sets the transform origin of the scene graph node.
         /// </summary>
-        Origin TransformOrigin { get; set; }
+        RelativePoint TransformOrigin { get; set; }
 
         /// <summary>
         /// Gets the scene graph node's child nodes.

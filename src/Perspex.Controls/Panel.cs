@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
@@ -18,6 +19,12 @@ namespace Perspex.Controls
     /// </remarks>
     public class Panel : Control, IReparentingControl, IPanel
     {
+        /// <summary>
+        /// Defines the <see cref="Background"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<Panel>();
+
         private readonly Controls _children = new Controls();
 
         private ILogical _childLogicalParent;
@@ -55,6 +62,15 @@ namespace Perspex.Controls
                 _children.Clear();
                 _children.AddRange(value);
             }
+        }
+
+        /// <summary>
+        /// Gets or Sets Panel background brush.
+        /// </summary>
+        public Brush Background
+        {
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         /// <summary>
@@ -145,6 +161,22 @@ namespace Perspex.Controls
             }
 
             InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Renders the visual to a <see cref="IDrawingContext"/>.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        public override void Render(IDrawingContext context)
+        {
+            Brush background = Background;
+            if (background != null)
+            {
+                var renderSize = Bounds.Size;
+                context.FillRectange(background, new Rect(renderSize));
+            }
+
+            base.Render(context);
         }
     }
 }

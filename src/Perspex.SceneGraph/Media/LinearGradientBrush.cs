@@ -3,21 +3,40 @@
 
 namespace Perspex.Media
 {
+    /// <summary>
+    /// A brush that draws with a linear gradient.
+    /// </summary>
     public class LinearGradientBrush : GradientBrush
     {
-        public static readonly PerspexProperty<Point> StartPointProperty =
-PerspexProperty.Register<LinearGradientBrush, Point>(nameof(StartPoint), new Point(0, 0));
+        /// <summary>
+        /// Defines the <see cref="StartPoint"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<RelativePoint> StartPointProperty =
+            PerspexProperty.Register<LinearGradientBrush, RelativePoint>(
+                nameof(StartPoint),
+                RelativePoint.TopLeft);
 
-        public static readonly PerspexProperty<Point> EndPointProperty =
-PerspexProperty.Register<LinearGradientBrush, Point>(nameof(EndPoint), new Point(0, 0));
+        /// <summary>
+        /// Defines the <see cref="EndPoint"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<RelativePoint> EndPointProperty =
+            PerspexProperty.Register<LinearGradientBrush, RelativePoint>(
+                nameof(EndPoint), 
+                RelativePoint.BottomRight);
 
-        public Point StartPoint
+        /// <summary>
+        /// Gets or sets the start point for the gradient.
+        /// </summary>
+        public RelativePoint StartPoint
         {
             get { return GetValue(StartPointProperty); }
             set { SetValue(StartPointProperty, value); }
         }
 
-        public Point EndPoint
+        /// <summary>
+        /// Gets or sets the end point for the gradient.
+        /// </summary>
+        public RelativePoint EndPoint
         {
             get { return GetValue(EndPointProperty); }
             set { SetValue(EndPointProperty, value); }

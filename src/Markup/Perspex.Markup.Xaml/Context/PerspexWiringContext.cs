@@ -77,10 +77,16 @@ namespace Perspex.Markup.Xaml.Context
             {
                 new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
                 new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
+                new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
+                new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
+                new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
+                new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
+                new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
@@ -95,7 +101,9 @@ namespace Perspex.Markup.Xaml.Context
                 new ContentPropertyDefinition(typeof(ContentControl), "Content"),
                 new ContentPropertyDefinition(typeof(Decorator), "Child"),
                 new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
+                new ContentPropertyDefinition(typeof(GradientBrush), "GradientStops"),
                 new ContentPropertyDefinition(typeof(Panel), "Children"),
+                new ContentPropertyDefinition(typeof(Style), "Setters"),
                 new ContentPropertyDefinition(typeof(TextBlock), "Text"),
                 new ContentPropertyDefinition(typeof(TextBox), "Text"),
                 new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),

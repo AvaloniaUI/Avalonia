@@ -78,7 +78,7 @@ namespace Perspex.Styling
             return new Selector(
                 previous,
                 x => MatchTemplate(x, previous),
-                " /deep/ ",
+                " /template/ ",
                 inTemplate: true,
                 stopTraversal: true);
         }

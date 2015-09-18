@@ -216,6 +216,8 @@ namespace Perspex.Cairo.Media
         {
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
+            var imageBrush = brush as ImageBrush;
+            var visualBrush = brush as VisualBrush;
 
             if (solid != null)
             {
@@ -227,18 +229,25 @@ namespace Perspex.Cairo.Media
             }
             else if (linearGradientBrush != null)
             {
-                Cairo.LinearGradient g = new Cairo.LinearGradient(
-                    linearGradientBrush.StartPoint.X * destinationSize.Width, 
-                    linearGradientBrush.StartPoint.Y * destinationSize.Height, 
-                    linearGradientBrush.EndPoint.X * destinationSize.Width, 
-                    linearGradientBrush.EndPoint.Y * destinationSize.Height);
+                var start = linearGradientBrush.StartPoint.ToPixels(destinationSize);
+                var end = linearGradientBrush.EndPoint.ToPixels(destinationSize);
+
+                Cairo.LinearGradient g = new Cairo.LinearGradient(start.X, start.Y, end.X, end.Y);
 
                 foreach (var s in linearGradientBrush.GradientStops)
                     g.AddColorStop(s.Offset, s.Color.ToCairo());
 
                 g.Extend = Cairo.Extend.Pad;
-
+                
                 _context.SetSource(g);
+            }
+            else if (imageBrush != null)
+            {
+                _context.SetSource(TileBrushes.CreateImageBrush(imageBrush, destinationSize));
+            }
+            else if (visualBrush != null)
+            {
+                _context.SetSource(TileBrushes.CreateVisualBrush(visualBrush, destinationSize));
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Perspex.Controls
@@ -178,8 +179,9 @@ namespace Perspex.Controls
         /// Parses a string to return a <see cref="GridLength"/>.
         /// </summary>
         /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="GridLength"/>.</returns>
-        public static GridLength Parse(string s)
+        public static GridLength Parse(string s, CultureInfo culture)
         {
             s = s.ToUpperInvariant();
 
@@ -190,12 +192,12 @@ namespace Perspex.Controls
             else if (s.EndsWith("*"))
             {
                 var valueString = s.Substring(0, s.Length - 1).Trim();
-                var value = valueString.Length > 0 ? double.Parse(valueString) : 1;
+                var value = valueString.Length > 0 ? double.Parse(valueString, culture) : 1;
                 return new GridLength(value, GridUnitType.Star);
             }
             else
             {
-                var value = double.Parse(s);
+                var value = double.Parse(s, culture);
                 return new GridLength(value, GridUnitType.Pixel);
             }
         }
@@ -204,10 +206,11 @@ namespace Perspex.Controls
         /// Parses a string to return a collection of <see cref="GridLength"/>s.
         /// </summary>
         /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="GridLength"/>.</returns>
-        public static IEnumerable<GridLength> ParseLengths(string s)
+        public static IEnumerable<GridLength> ParseLengths(string s, CultureInfo culture)
         {
-            return s.Split(new[] { ',', ' ' }).Select(x => Parse(x));
+            return s.Split(new[] { ',', ' ' }).Select(x => Parse(x, culture));
         }
     }
 }
