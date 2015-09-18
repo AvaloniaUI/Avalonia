@@ -47,7 +47,7 @@ namespace Perspex.Markup.Xaml.Converters
 
             // First look for non-attached property on the type and then look for an attached property.
             var property = PerspexObject.GetRegisteredProperties(type)
-                .FirstOrDefault(x => x.Name == propertyName && !x.IsAttached);
+                .FirstOrDefault(x => x.Name == propertyName);
 
             if (property == null)
             {
