@@ -152,7 +152,7 @@ namespace Perspex.Designer.Comm
         {
             try
             {
-                _proc.Kill();
+                _proc?.Kill();
                 _proc = null;
             }
             catch

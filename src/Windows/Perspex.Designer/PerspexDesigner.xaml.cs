@@ -80,10 +80,30 @@ namespace Perspex.Designer
                 }
                 if (_host.WindowHandle != IntPtr.Zero)
                 {
-                    var host = new WindowHost();
-                    host.SetWindow(_host.WindowHandle);
-                    NativeContainer.Content = new WindowsFormsHost() {Child = host};
+                    var host = new NativeWindowHost(_host.WindowHandle);
+                    NativeContainer.Content = host;
                 }
+            }
+        }
+
+        class NativeWindowHost  :HwndHost
+        {
+            private readonly IntPtr _hWnd;
+
+            public NativeWindowHost(IntPtr hWnd)
+            {
+                _hWnd = hWnd;
+            }
+
+            protected override HandleRef BuildWindowCore(HandleRef hwndParent)
+            {
+                WinApi.SetParent(_hWnd, hwndParent.Handle);
+                return new HandleRef(this, _hWnd);
+            }
+
+            protected override void DestroyWindowCore(HandleRef hwnd)
+            {
+                WinApi.SendMessage(hwnd.Handle, WinApi.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
             }
         }
 

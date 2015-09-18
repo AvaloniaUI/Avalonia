@@ -46,6 +46,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations, Version=9.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\JetBrains.Annotations.9.2.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -66,9 +70,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AppHost\HostedAppModel.cs" />
     <Compile Include="AppHost\PerspexAppHost.cs" />
     <Compile Include="AppHost\WindowHost.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Comm\CommChannel.cs" />
     <Compile Include="Comm\InitMessage.cs" />
@@ -80,7 +85,9 @@
     <Compile Include="DemoWindow.xaml.cs">
       <DependentUpon>DemoWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DesignerAppHost.cs" />
+    <Compile Include="InProcDesigner\InProcDesignerView.xaml.cs">
+      <DependentUpon>InProcDesignerView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Metadata\PerspexDesignerMetadata.cs" />
     <Compile Include="PerspexDesigner.xaml.cs">
       <DependentUpon>PerspexDesigner.xaml</DependentUpon>
@@ -91,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
     <None Include="perspex.designer.snk" />
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +107,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DemoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InProcDesigner\InProcDesignerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

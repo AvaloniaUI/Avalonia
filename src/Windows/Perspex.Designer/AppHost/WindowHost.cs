@@ -9,29 +9,58 @@ using System.Windows.Forms;
 
 namespace Perspex.Designer.AppHost
 {
-    class WindowHost : Control
+    class WindowHost : UserControl
     {
         public WindowHost()
         {
-            BackColor = Color.AliceBlue;
-            _textBox = new TextBox {Dock = DockStyle.Fill, ReadOnly = true, Multiline = true, Visible = false};
-            Controls.Add(_textBox);
+            AutoScroll = true;
+            VerticalScroll.Enabled = true;
+            HorizontalScroll.Enabled = true;
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            Text = "ScrollableArea";
+            Controls.Add(_windowHost);
+            _windowHost.Anchor = AnchorStyles.None;
+            _timer.Tick += delegate { FixWindow(); };
         }
-        
+
+        private Control _windowHost = new Control() {Text = "WindowWrapper"};
+        private Timer _timer = new Timer {Enabled = true, Interval = 50};
         private IntPtr _hWnd;
-        private TextBox _textBox;
+        private int _desiredWidth;
+        private int _desiredHeight;
 
-        public string PlaceholderText
+        private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL = 0x115;
+
+        protected override void WndProc(ref Message m)
         {
-            get { return _textBox.Text; }
-            set
+            if ((m.Msg == WM_HSCROLL || m.Msg == WM_VSCROLL)
+                && (((int) m.WParam & 0xFFFF) == 5))
             {
-                _textBox.Text = value;
-                FixWindow();
+                // Change SB_THUMBTRACK to SB_THUMBPOSITION
+                m.WParam = (IntPtr) (((int) m.WParam & ~0xFFFF) | 4);
             }
+            base.WndProc(ref m);
         }
 
-        
+        void FixPosition()
+        {
+            AutoScrollMinSize = new Size(_desiredWidth, _desiredHeight);
+            var width = Width - AutoScrollMargin.Width;
+            var height = Height - AutoScrollMargin.Height;
+            var x = Math.Max(0, (width - _windowHost.Width)/2);
+            var y = Math.Max(0, (height - _windowHost.Height)/2);
+            _windowHost.Location = new Point(x, y);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _timer.Dispose();
+            }
+            base.Dispose(disposing);
+        }
 
         public void SetWindow(IntPtr hWnd)
         {
@@ -40,21 +69,34 @@ namespace Perspex.Designer.AppHost
             _hWnd = hWnd;
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.SetParent(hWnd, Handle);
+                WinApi.SetParent(hWnd, _windowHost.Handle);
                 FixWindow();
             }
         }
-
+        
         void FixWindow()
         {
             if (_hWnd != IntPtr.Zero)
-                WinApi.MoveWindow(_hWnd, 0, 0, Width, Height, true);
-            _textBox.Visible = _hWnd == IntPtr.Zero && !string.IsNullOrWhiteSpace(_textBox.Text);
+            {
+                WinApi.RECT rc;
+                WinApi.GetWindowRect(_hWnd, out rc);
+                _desiredWidth = rc.Right - rc.Left;
+                _desiredHeight = rc.Bottom - rc.Top;
+                var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
+                
+                if (pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width && _desiredHeight == _windowHost.Height)
+                    return;
+                _windowHost.Width = _desiredWidth;
+                _windowHost.Height = _desiredHeight;
+                WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                FixPosition();
+
+            }
         }
 
         protected override void OnResize(EventArgs e)
         {
-            FixWindow();
+            FixPosition();
             base.OnResize(e);
         }
     }

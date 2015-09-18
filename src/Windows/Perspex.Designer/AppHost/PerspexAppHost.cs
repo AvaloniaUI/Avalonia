@@ -5,10 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+using System.Xml;
 using Perspex.Designer.Comm;
+using Perspex.Designer.InProcDesigner;
 using Perspex.Designer.Metadata;
 using Timer = System.Windows.Forms.Timer;
 
@@ -21,8 +22,9 @@ namespace Perspex.Designer.AppHost
         private string _lastXaml;
         private string _currentXaml;
         private Func<Stream, object> _xamlReader;
-        private WindowHost _host;
         private bool _initSuccess;
+        private HostedAppModel _appModel = new HostedAppModel();
+        private Control _window;
 
         public PerspexAppHost(CommChannel channel)
         {
@@ -222,16 +224,46 @@ namespace Perspex.Designer.AppHost
                 LookupType("OmniXaml.XamlLoader").GetConstructors().First().Invoke(new object[] {xamlFactory});
 
             _xamlReader = (stream) => xamlLoader.Load(stream);
-            _host = new WindowHost();
+
+            _window = new Control
+            {
+                Controls =
+                {
+                    new ElementHost()
+                    {
+                        Child = new InProcDesignerView(_appModel),
+                        Dock = DockStyle.Fill
+                    }
+                }
+            };
+            _window.CreateControl();
+            
             new Timer {Interval = 10, Enabled = true}.Tick += delegate
             {
                 dispatcher.RunJobs();
             };
             new Timer {Interval = 200, Enabled = true}.Tick += delegate { XamlUpdater(); };
-            _comm.SendMessage(new WindowCreatedMessage(_host.Handle));
+            _comm.SendMessage(new WindowCreatedMessage(_window.Handle));
             _initSuccess = true;
         }
 
+
+        bool ValidateXml(string xml)
+        {
+            try
+            {
+                var rdr = new XmlTextReader(new StringReader(xml));
+                while (rdr.Read())
+                {
+                    
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
 
         void XamlUpdater()
         {
@@ -240,6 +272,14 @@ namespace Perspex.Designer.AppHost
             if(_lastXaml == _currentXaml)
                 return;
             _lastXaml = _currentXaml;
+
+            if (!ValidateXml(_currentXaml))
+            {
+                _appModel.SetError("Invalid markup");
+                return;
+            }
+
+
             try
             {
                 const string windowType = "Perspex.Controls.Window";
@@ -254,13 +294,13 @@ namespace Perspex.Designer.AppHost
 
 
                 var hWnd = (IntPtr)window.PlatformImpl.Handle;
-                _host.SetWindow(hWnd);
+                _appModel.NativeWindowHandle = hWnd;
                 window.Show();
+                _appModel.SetError(null);
             }
             catch (Exception e)
             {
-                _host.SetWindow(IntPtr.Zero);
-                _host.PlaceholderText = e.ToString();
+                _appModel.SetError("XAML load error", e.ToString());
             }
         }
 

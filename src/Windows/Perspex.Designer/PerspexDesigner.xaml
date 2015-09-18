@@ -10,5 +10,8 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Panel.ZIndex="0">
             <TextBox IsReadOnly="True" TextWrapping="WrapWithOverflow" x:Name="State"/>
         </ScrollViewer>
+        <StackPanel x:Name="ErrorContainer">
+            <TextBlock ></TextBlock>
+        </StackPanel>
     </Grid>
 </UserControl>
