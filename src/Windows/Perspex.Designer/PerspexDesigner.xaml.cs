@@ -75,8 +75,9 @@ namespace Perspex.Designer
             {
                 if (NativeContainer.Content != null)
                 {
-                    ((WindowHost)((WindowsFormsHost)NativeContainer.Content).Child).Dispose();
+                    var wndHost = ((HwndHost) NativeContainer.Content);
                     NativeContainer.Content = null;
+                    wndHost?.Dispose();
                 }
                 if (_host.WindowHandle != IntPtr.Zero)
                 {

@@ -45,12 +45,18 @@ namespace Perspex.Designer.AppHost
 
         void FixPosition()
         {
-            AutoScrollMinSize = new Size(_desiredWidth, _desiredHeight);
+            var newScrollSize =  new Size(_desiredWidth, _desiredHeight);
+            if (AutoScrollMinSize != newScrollSize)
+                AutoScrollMinSize = newScrollSize;
+
             var width = Width - AutoScrollMargin.Width;
             var height = Height - AutoScrollMargin.Height;
             var x = Math.Max(0, (width - _windowHost.Width)/2);
             var y = Math.Max(0, (height - _windowHost.Height)/2);
-            _windowHost.Location = new Point(x, y);
+
+            var newLoc = new Point(x - HorizontalScroll.Value, y - VerticalScroll.Value);
+            if(_windowHost.Location != newLoc)
+                _windowHost.Location = newLoc;
         }
 
         protected override void Dispose(bool disposing)
@@ -83,14 +89,14 @@ namespace Perspex.Designer.AppHost
                 _desiredWidth = rc.Right - rc.Left;
                 _desiredHeight = rc.Bottom - rc.Top;
                 var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
-                
-                if (pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width && _desiredHeight == _windowHost.Height)
-                    return;
-                _windowHost.Width = _desiredWidth;
-                _windowHost.Height = _desiredHeight;
-                WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
-                FixPosition();
 
+                if (!(pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width && _desiredHeight == _windowHost.Height))
+                {
+                    _windowHost.Width = _desiredWidth;
+                    _windowHost.Height = _desiredHeight;
+                    WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                }
+                FixPosition();
             }
         }
 
