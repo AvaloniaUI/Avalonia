@@ -216,6 +216,7 @@ namespace Perspex.Cairo.Media
         {
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
+            var imageBrush = brush as ImageBrush;
 
             if (solid != null)
             {
@@ -224,6 +225,10 @@ namespace Perspex.Cairo.Media
                     solid.Color.G / 255.0,
                     solid.Color.B / 255.0,
                     solid.Color.A / 255.0);
+            }
+            else if (imageBrush != null)
+            {
+                _context.SetSource(TileBrushes.CreateImageBrush(imageBrush, destinationSize));
             }
             else if (linearGradientBrush != null)
             {
@@ -236,7 +241,7 @@ namespace Perspex.Cairo.Media
                     g.AddColorStop(s.Offset, s.Color.ToCairo());
 
                 g.Extend = Cairo.Extend.Pad;
-
+                
                 _context.SetSource(g);
             }
         }
