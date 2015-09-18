@@ -1,9 +1,12 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Cairo;
 using Perspex.Cairo.Media.Imaging;
+using Perspex.Layout;
 using Perspex.Media;
+using Perspex.Platform;
 
 namespace Perspex.Cairo.Media
 {
@@ -44,6 +47,75 @@ namespace Perspex.Cairo.Media
                 Gdk.CairoHelper.SetSourcePixbuf(context, image, 0, 0);
                 context.Rectangle(0, 0, imageSize.Width, imageSize.Height);
                 context.Fill();
+
+                var result = new SurfacePattern(intermediate);
+
+                if ((brush.TileMode & TileMode.FlipXY) != 0)
+                {
+                    // TODO: Currently always FlipXY as that's all cairo supports natively. 
+                    // Support separate FlipX and FlipY by drawing flipped images to intermediate
+                    // surface.
+                    result.Extend = Extend.Reflect;
+                }
+                else
+                {
+                    result.Extend = Extend.Repeat;
+                }
+
+                if (brush.TileMode != TileMode.None)
+                {
+                    var matrix = result.Matrix;
+                    matrix.InitTranslate(-destinationRect.X, -destinationRect.Y);
+                    result.Matrix = matrix;
+                }
+
+                return result;
+            }
+        }
+
+        public static SurfacePattern CreateVisualBrush(VisualBrush brush, Size targetSize)
+        {
+            var visual = brush.Visual;
+
+            if (visual == null)
+            {
+                return null;
+            }
+
+            var layoutable = visual as ILayoutable;
+
+            if (layoutable?.IsArrangeValid == false)
+            {
+                layoutable.Measure(Size.Infinity);
+                layoutable.Arrange(new Rect(layoutable.DesiredSize));
+            }
+
+            // TODO: This is directly ported from Direct2D and could probably be made more
+            // efficient on cairo by taking advantage of the fact that cairo has Extend.None.
+            var tileMode = brush.TileMode;
+            var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
+            var destinationRect = brush.DestinationRect.ToPixels(targetSize);
+            var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+            var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
+            var intermediateSize = CalculateIntermediateSize(tileMode, targetSize, destinationRect.Size);
+            var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height);
+
+            using (var context = new Context(intermediate))
+            {
+                Rect drawRect;
+                var transform = CalculateIntermediateTransform(
+                    tileMode,
+                    sourceRect,
+                    destinationRect,
+                    scale,
+                    translate,
+                    out drawRect);
+                var renderer = new Renderer(intermediate);
+
+                context.Rectangle(drawRect.ToCairo());
+                context.Clip();
+                context.Transform(transform.ToCairo());
+                renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"), transform, drawRect);
 
                 var result = new SurfacePattern(intermediate);
 
