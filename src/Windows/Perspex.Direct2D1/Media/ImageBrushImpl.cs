@@ -43,9 +43,8 @@ namespace Perspex.Direct2D1.Media
                     out drawRect);
 
                 intermediate.BeginDraw();
-                intermediate.Transform = transform.ToDirect2D();
-                drawRect *= -transform;
                 intermediate.PushAxisAlignedClip(drawRect.ToDirect2D(), AntialiasMode.Aliased);
+                intermediate.Transform = transform.ToDirect2D();
                 intermediate.DrawBitmap(image, 1, BitmapInterpolationMode.Linear);
                 intermediate.PopAxisAlignedClip();
                 intermediate.EndDraw();
