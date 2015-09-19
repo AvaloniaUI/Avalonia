@@ -147,7 +147,7 @@ namespace Perspex.Controls.Presenters
 
             if (length > 0)
             {
-                result.SetForegroundBrush(Brushes.White, start, length);
+                result.SetFormatting(Brushes.White, this.FontWeight, this.FontSize, start, length);
             }
 
             return result;

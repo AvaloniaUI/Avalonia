@@ -35,6 +35,7 @@ namespace Perspex.Cairo.Media
                 Weight = fontWeight.ToCairo()
             };
 
+            Layout.Attributes = new Pango.AttrList();
             Layout.Alignment = textAlignment.ToCairo();
         }
 
@@ -113,9 +114,33 @@ namespace Perspex.Cairo.Media
             return new Size(width, height);
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        public void SetFormatting(Brush brush, FontWeight weight, double fontSize, int startIndex, int count)
         {
-            // TODO: Implement.
+            var scb = brush as SolidColorBrush;
+            var weightAttr = new Pango.AttrWeight(weight.ToCairo());
+            var fontSizeAttr = new Pango.AttrSize(Pango.Units.FromDouble(fontSize));
+
+            weightAttr.StartIndex = (uint)startIndex;
+            weightAttr.EndIndex = (uint)(startIndex + count);
+
+            fontSizeAttr.StartIndex = (uint)startIndex;
+            fontSizeAttr.EndIndex = (uint)(startIndex + count);
+
+            if (scb != null)
+            {
+
+                var color = new Pango.Color();
+                color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
+
+                var brushAttr = new Pango.AttrForeground(color);
+                brushAttr.StartIndex = (uint)startIndex;
+                brushAttr.EndIndex = (uint)(startIndex + count);
+
+                Layout.Attributes.Insert(brushAttr);
+            }
+
+            Layout.Attributes.Insert(weightAttr);
+            Layout.Attributes.Insert(fontSizeAttr);
         }
     }
 }

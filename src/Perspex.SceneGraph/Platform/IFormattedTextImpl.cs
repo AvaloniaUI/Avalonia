@@ -61,6 +61,6 @@ namespace Perspex.Platform
         /// <param name="brush">The brush.</param>
         /// <param name="startIndex">The start of the text range.</param>
         /// <param name="length">The length of the text range.</param>
-        void SetForegroundBrush(Brush brush, int startIndex, int length);
+        void SetFormatting(Brush brush, FontWeight weight, double size, int startIndex, int length);
     }
 }

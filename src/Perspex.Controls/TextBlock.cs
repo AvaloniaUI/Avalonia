@@ -5,6 +5,10 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using Perspex.Media;
+using System.Collections.Generic;
+using Perspex.Controls.Documents;
+using System.Linq;
+using System.Text;
 
 namespace Perspex.Controls
 {
@@ -60,6 +64,13 @@ namespace Perspex.Controls
                 nameof(Foreground),
                 new SolidColorBrush(0xff000000),
                 inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="Inlines"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Inlines> InlinesProperty =
+            PerspexProperty.Register<TextBlock, Inlines>(nameof(Inlines), new Inlines());
+
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
@@ -129,6 +140,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
+        }
+
+        public Inlines Inlines
+        {
+            get { return GetValue(InlinesProperty); }
+            set { SetValue(InlinesProperty, value); }
         }
 
         /// <summary>
@@ -227,6 +244,24 @@ namespace Perspex.Controls
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 
+        private string ExtractInlines()
+        {
+            var output = new StringBuilder();
+
+            // TODO: Support more types of inlines. 
+            foreach (var inline in this.Inlines)
+            {
+                var run = inline as Run;
+                var lineBreak = inline as LineBreak;
+
+                if (run != null)
+                    output.Append(run.Text);
+                else if (lineBreak != null)
+                    output.Append(UTF8Encoding.UTF8.GetString(new byte[] { 0xe2, 0x80, 0xa8 }, 0, 3));
+            }
+            return output.ToString();
+        }
+
         /// <summary>
         /// Creates the <see cref="FormattedText"/> used to render the text.
         /// </summary>
@@ -234,6 +269,9 @@ namespace Perspex.Controls
         /// <returns>A <see cref="FormattedText"/> object.</returns>
         protected virtual FormattedText CreateFormattedText(Size constraint)
         {
+            if (Inlines.Count > 0)
+                Text = ExtractInlines();
+
             var result = new FormattedText(
                 Text,
                 FontFamily,
@@ -242,6 +280,20 @@ namespace Perspex.Controls
                 TextAlignment,
                 FontWeight);
             result.Constraint = constraint;
+
+            var start = 0;
+            foreach (var inline in this.Inlines)
+            {
+                var run = inline as Run;
+
+                if (run != null)
+                {
+                    run.InheritanceParent = this;
+                    result.SetFormatting(run.Foreground, run.FontWeight, run.FontSize, start, start + run.Text.Length);
+                    start = start + run.Text.Length;
+                }
+            }
+
             return result;
         }
 
