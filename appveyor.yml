@@ -6,7 +6,6 @@ before_build:
 
 
 configuration:
-  - Debug
   - Release
 
 after_build:
