@@ -157,9 +157,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Resource Include="Views\MainWindow.xaml">
+    <EmbeddedResource Include="Views\MainWindow.xaml">
       <SubType>Designer</SubType>
-    </Resource>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\src\Shared\perspex.platform.targets" />

@@ -26,20 +26,7 @@ namespace Perspex.Gtk
         public Stream Open(Uri uri)
         {
             var assembly = Assembly.GetEntryAssembly();
-            var resourceName = assembly.GetName().Name + ".g";
-            var manager = new ResourceManager(resourceName, assembly);
-
-            using (var resourceSet = manager.GetResourceSet(CultureInfo.CurrentCulture, true, true))
-            {
-                var stream = (Stream)resourceSet.GetObject(uri.ToString(), true);
-
-                if (stream == null)
-                {
-                    throw new FileNotFoundException($"The requested asset could not be found: {uri}");
-                }
-
-                return stream;
-            }
+            return assembly.GetManifestResourceStream(uri.ToString());
         }
     }
 }
