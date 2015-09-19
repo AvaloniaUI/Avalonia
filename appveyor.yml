@@ -3,6 +3,18 @@ os: Visual Studio 2015
 before_build:
 - git submodule update --init
 - nuget restore Perspex.sln
+
+
+configuration:
+  - Debug
+  - Release
+
+after_build:
+- ps: nuget\build-version.ps1 999.{build}.0-nightly
+
+artifacts:
+  - path: nuget\*.nupkg
+
 build:
   project: Perspex.sln
   verbosity: minimal
