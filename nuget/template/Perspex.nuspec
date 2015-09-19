@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Perspex</id>
-    <version>0.0.1-alpha</version>
+    <version>#VERSION#</version>
     <authors>stevenk</authors>
     <owners>stevenk</owners>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
