@@ -9,7 +9,7 @@ configuration:
   - Release
 
 after_build:
-- ps: nuget\build-version.ps1 999.{build}.0-nightly
+- ps: nuget\build-appveyor.ps1
 
 artifacts:
   - path: nuget\*.nupkg
