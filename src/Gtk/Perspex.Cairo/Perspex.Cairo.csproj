@@ -44,10 +44,6 @@
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -65,6 +61,9 @@
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-sharp-2.0</Package>
     </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CairoPlatform.cs" />
@@ -81,7 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
@@ -89,7 +88,7 @@
       <Name>Perspex.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
