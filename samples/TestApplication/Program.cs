@@ -23,23 +23,6 @@ using ReactiveUI;
 
 namespace TestApplication
 {
-    internal class Item
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
-
-    internal class Node
-    {
-        public Node()
-        {
-            Children = new PerspexList<Node>();
-        }
-
-        public string Name { get; set; }
-        public PerspexList<Node> Children { get; set; }
-    }
-
     internal class Program
     {
         private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
@@ -94,12 +77,6 @@ namespace TestApplication
 
         private static void Main(string[] args)
         {
-            //Log.Logger = new LoggerConfiguration()
-            //    .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Layout"))
-            //    .MinimumLevel.Verbose()
-            //    .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
-            //    .CreateLogger();
-
             // The version of ReactiveUI currently included is for WPF and so expects a WPF
             // dispatcher. This makes sure it's initialized.
             System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
@@ -120,10 +97,13 @@ namespace TestApplication
             var testCommand = ReactiveCommand.Create();
             testCommand.Subscribe(_ => System.Diagnostics.Debug.WriteLine("Test command executed."));
 
+            TabControl container;
+
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                SizeToContent = SizeToContent.WidthAndHeight,
+                Width = 800,
+                Height = 300,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -139,84 +119,9 @@ namespace TestApplication
                     },
                     Children = new Controls
                     {
-                        new Menu
+                        (container = new TabControl
                         {
-                            Items = new[]
-                            {
-                                new MenuItem
-                                {
-                                    Header = "_File",
-                                    Items = new[]
-                                    {
-                                        new MenuItem
-                                        {
-                                            Header = "_Open...",
-                                            Icon = new Image
-                                            {
-                                                Source = new Bitmap("github_icon.png"),
-                                            },
-                                        },
-                                        new MenuItem
-                                        {
-                                            Header = "_Save",
-                                            Items = new[]
-                                            {
-                                                new MenuItem
-                                                {
-                                                    Header = "Sub Item _1",
-                                                },
-                                                new MenuItem
-                                                {
-                                                    Header = "Sub Item _2",
-                                                },
-                                            }
-                                        },
-                                        new MenuItem
-                                        {
-                                            Header = "Save _As",
-                                            Items = new[]
-                                            {
-                                                new MenuItem
-                                                {
-                                                    Header = "Sub Item _1",
-                                                },
-                                                new MenuItem
-                                                {
-                                                    Header = "Sub Item _2",
-                                                },
-                                            }
-                                        },
-                                        new MenuItem
-                                        {
-                                            Header = "E_xit",
-                                            Command = testCommand,
-                                        },
-                                    }
-                                },
-                                new MenuItem
-                                {
-                                    Header = "_Edit",
-                                    Items = new[]
-                                    {
-                                        new MenuItem
-                                        {
-                                            Header = "Cu_t",
-                                        },
-                                        new MenuItem
-                                        {
-                                            Header = "_Copy",
-                                        },
-                                        new MenuItem
-                                        {
-                                            Header = "_Paste",
-                                        },
-                                    }
-                                }
-                            },
-                            [Grid.ColumnSpanProperty] = 2,
-                        },
-                        new TabControl
-                        {
+                            Padding = new Thickness(5),
                             Items = new[]
                             {
                                 ButtonsTab(),
@@ -227,38 +132,15 @@ namespace TestApplication
                                 LayoutTab(),
                                 AnimationsTab(),
                             },
-                            Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
+                            Transition = new CrossFade(TimeSpan.FromSeconds(0.25)),
                             [Grid.RowProperty] = 1,
                             [Grid.ColumnSpanProperty] = 2,
-                        },
-                        (fps = new TextBlock
-                        {
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                            Margin = new Thickness(2),
-                            [Grid.RowProperty] = 2,
-                        }),
-                        new TextBlock
-                        {
-                            Text = "Press F12 for Dev Tools",
-                            HorizontalAlignment = HorizontalAlignment.Right,
-                            Margin = new Thickness(2),
-                            [Grid.ColumnProperty] = 1,
-                            [Grid.RowProperty] = 2,
-                        },
+                        })
                     }
                 },
             };
 
-            DevTools.Attach(window);
-
-            //var renderer = ((IRenderRoot)window).Renderer;
-            //var last = renderer.RenderCount;
-            //DispatcherTimer.Run(() =>
-            //{
-            //    fps.Text = "FPS: " + (renderer.RenderCount - last);
-            //    last = renderer.RenderCount;
-            //    return true;
-            //}, TimeSpan.FromSeconds(1));
+            container.Classes.Add(":container");
 
             window.Show();
             Application.Current.Run(window);

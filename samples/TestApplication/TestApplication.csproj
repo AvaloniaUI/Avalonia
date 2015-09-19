@@ -73,6 +73,8 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="GalleryStyle.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
