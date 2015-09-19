@@ -81,7 +81,7 @@ Named controls can be selected using `#` as in CSS, e.g. `Button#Name`.
 
 As with CSS, you can select children and descendants:
 
-- `StackPanel < Button#Foo` selects a `Button` named `"Foo"` that is the child
+- `StackPanel > Button#Foo` selects a `Button` named `"Foo"` that is the child
   of a `StackPanel`.
 - `StackPanel Button.foo` selects all `Button`s with the `foo` class that are
   descendants of a `StackPanel`.
