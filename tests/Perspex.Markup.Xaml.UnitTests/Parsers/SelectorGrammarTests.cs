@@ -91,7 +91,7 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
         [Fact]
         public void OfType_Child_Class()
         {
-            var result = SelectorGrammar.Selector.Parse("Button < .foo").ToList();
+            var result = SelectorGrammar.Selector.Parse("Button > .foo").ToList();
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -106,7 +106,7 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
         [Fact]
         public void OfType_Child_Class_No_Spaces()
         {
-            var result = SelectorGrammar.Selector.Parse("Button<.foo").ToList();
+            var result = SelectorGrammar.Selector.Parse("Button>.foo").ToList();
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]

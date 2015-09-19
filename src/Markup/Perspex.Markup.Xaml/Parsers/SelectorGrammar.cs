@@ -89,7 +89,7 @@ namespace Perspex.Markup.Xaml.Parsers
             from close in Parse.Char(']').Once()
             select new PropertySyntax { Property = identifier, Value = value };
 
-        public static readonly Parser<ChildSyntax> Child = Parse.Char('<').Token().Return(new ChildSyntax());
+        public static readonly Parser<ChildSyntax> Child = Parse.Char('>').Token().Return(new ChildSyntax());
 
         public static readonly Parser<DescendentSyntax> Descendent =
             from child in Parse.WhiteSpace.Many()
