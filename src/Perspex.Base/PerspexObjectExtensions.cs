@@ -26,7 +26,13 @@ namespace Perspex
             Action<TTarget, PerspexPropertyChangedEventArgs> action)
             where TTarget : PerspexObject
         {
-            return observable.Subscribe(e => action((TTarget)e.Sender, e));
+            return observable.Subscribe(e =>
+            {
+                if (e.Sender is TTarget)
+                {
+                    action((TTarget)e.Sender, e);
+                }
+            });
         }
 
         /// <summary>
