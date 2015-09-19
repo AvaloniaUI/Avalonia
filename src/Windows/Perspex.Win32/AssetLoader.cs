@@ -26,7 +26,10 @@ namespace Perspex.Win32
         public Stream Open(Uri uri)
         {
             var assembly = Assembly.GetEntryAssembly();
-            return assembly.GetManifestResourceStream(uri.ToString());
+            var rv = assembly.GetManifestResourceStream(uri.ToString());
+            if (rv == null)
+                throw new FileNotFoundException(uri.ToString());
+            return rv;
         }
     }
 }
