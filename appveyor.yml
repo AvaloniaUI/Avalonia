@@ -11,7 +11,7 @@ environment:
 configuration:
   - Release
 
-after_tests:
+after_test:
 - ps: nuget\build-appveyor.ps1
 
 artifacts:
