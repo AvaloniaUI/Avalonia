@@ -54,8 +54,8 @@
       <HintPath>..\..\packages\Splat.1.6.1\lib\Net45\Splat.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Sprache, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Sprache.SuperJMN.2.0.0.50\lib\portable-net451+netcore451+wpa81\Sprache.dll</HintPath>
+    <Reference Include="Sprache, Version=2.0.0.47, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sprache.2.0.0.47\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid1+MonoTouch1\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
