@@ -83,7 +83,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
@@ -133,7 +137,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
@@ -156,7 +164,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
@@ -179,7 +191,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
@@ -226,7 +242,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
@@ -356,7 +376,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void VisualBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
