@@ -30,7 +30,7 @@ namespace Perspex.Cairo.Media
             Layout.FontDescription = new Pango.FontDescription
             {
                 Family = fontFamily,
-                Size = Pango.Units.FromDouble(fontSize * 0.73),
+                Size = Pango.Units.FromDouble(fontSize),
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };
