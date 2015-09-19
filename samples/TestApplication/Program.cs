@@ -155,97 +155,67 @@ namespace TestApplication
 
             var result = new TabItem
             {
-                Header = "Buttons",
+                Header = "Button",
                 Content = new StackPanel
                 {
+                    Margin = new Thickness(10),
                     Orientation = Orientation.Vertical,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Gap = 8,
-                    MinWidth = 120,
+                    Gap = 4,
                     Children = new Controls
                     {
-                        (showDialogButton = new Button
+                        new TextBlock
                         {
-                            Content = "Button",
-                            Command = showDialog,
-                            [ToolTip.TipProperty] = "Hello World!",
-                        }),
-                        new Button
-                        {
-                            Content = "Button",
-                            Background = new SolidColorBrush(0xcc119eda),
-                            [ToolTip.TipProperty] = "Goodbye Cruel World!",
+                            Text = "Button",
+                            FontWeight = FontWeight.Medium,
+                            FontSize = 22,
+                            Foreground = SolidColorBrush.Parse("#212121"),
                         },
-                        (defaultButton = new Button
+                        new TextBlock
                         {
-                            Content = "Default",
-                            IsDefault = true,
-                        }),
-                        new Button
-                        {
-                            Content = "Disabled",
-                            IsEnabled = false,
+                            Text = "A button control",
+                            FontSize = 14,
+                            Foreground = SolidColorBrush.Parse("#727272"),
+                            Margin = new Thickness(0, 0, 0, 10)
                         },
                         new Button
                         {
-                            Content = "Disabled",
-                            IsEnabled = false,
-                            Background = new SolidColorBrush(0xcc119eda),
+                            Width = 150,
+                            Content = "Button"
                         },
-                        new ToggleButton
+                        new Button
                         {
-                            Content = "Toggle",
-                        },
-                        new ToggleButton
-                        {
+                            Width   = 150,
                             Content = "Disabled",
                             IsEnabled = false,
                         },
-                        new CheckBox
+                        new TabControl
                         {
-                            Content = "Checkbox",
-                        },
-                        new RadioButton
-                        {
-                            Content = "RadioButton 1",
-                            IsChecked = true,
-                        },
-                        new RadioButton
-                        {
-                            Content = "RadioButton 2",
-                        },
+                            Margin = new Thickness(0, 20, 0, 0),
+
+                            Items = new []
+                            {
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "CSHRP CODEZ"
+                                    }
+                                }, 
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "XAML CODEZ"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
             };
-
-            defaultButton.Click += (s, e) =>
-            {
-                defaultButton.Content = ((string)defaultButton.Content == "Default") ? "Clicked" : "Default";
-            };
-
-            showDialog.Subscribe(async _ =>
-            {
-                var close = ReactiveCommand.Create();
-
-                var dialog = new Window
-                {
-                    Content = new StackPanel
-                    {
-                        Width = 200,
-                        Height = 200,
-                        Children = new Controls
-                        {
-                            new Button { Content = "Yes", Command = close, CommandParameter = "Yes" },
-                            new Button { Content = "No", Command = close, CommandParameter = "No" },
-                        }
-                    }
-                };
-
-                close.Subscribe(x => dialog.Close(x));
-
-                showDialogButton.Content = await dialog.ShowDialog<string>();
-            });
+            
 
             return result;
         }
@@ -257,7 +227,7 @@ namespace TestApplication
                     .ReadToEnd();
             return new TabItem
             {
-                Header = "Html",
+                Header = "HTML Label",
                 Content = new ScrollViewer()
                 {
                     Width = 600,
@@ -278,50 +248,99 @@ namespace TestApplication
         {
             return new TabItem
             {
-                Header = "Text",
+                Header = "Input",
                 Content = new StackPanel
                 {
+                    Margin = new Thickness(10),
                     Orientation = Orientation.Vertical,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Gap = 8,
-                    Width = 120,
+                    Gap = 4,
                     Children = new Controls
                     {
                         new TextBlock
                         {
-                            Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
+                            Text = "Check box",
+                            FontWeight = FontWeight.Medium,
+                            FontSize = 22,
+                            Foreground = SolidColorBrush.Parse("#212121"),
                         },
                         new TextBlock
                         {
-                            Text = "Italic text.",
-                            FontStyle = FontStyle.Italic,
-                            TextAlignment = TextAlignment.Left,
+                            Text = "A check box control",
+                            FontSize = 14,
+                            Foreground = SolidColorBrush.Parse("#373749"),
+                            Margin = new Thickness(0, 0, 0, 10)
+                        },
+                        new CheckBox { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Checked" },
+                        new CheckBox { IsChecked = false, Content = "Unchecked" },
+                        new TabControl
+                        {
+                            Margin = new Thickness(0, 20, 0, 0),
+
+                            Items = new []
+                            {
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "CSHRP CODEZ"
+                                    }
+                                },
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "XAML CODEZ"
+                                    }
+                                }
+                            }
                         },
                         new TextBlock
                         {
-                            Text = "Bold text.",
-                            FontWeight = FontWeight.Bold,
-                            TextAlignment = TextAlignment.Right,
+                            Margin = new Thickness(0, 40, 0, 0),
+                            Text = "Radio button",
+                            FontWeight = FontWeight.Medium,
+                            FontSize = 22,
+                            Foreground = SolidColorBrush.Parse("#373749"),
                         },
-                        new TextBox
+                        new TextBlock
                         {
-                            Text = "A non-wrapping text box. Lorem ipsum dolor sit amet.",
-                            TextWrapping = TextWrapping.NoWrap,
+                            Text = "A radio button control",
+                            FontSize = 14,
+                            Foreground = SolidColorBrush.Parse("#373749"),
+                            Margin = new Thickness(0, 0, 0, 10)
                         },
-                        new TextBox
+
+                        new RadioButton { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Option 1" },
+                        new RadioButton { IsChecked = false, Content = "Option 2" },
+                        new RadioButton { IsChecked = false, Content = "Option 3" },
+                        new TabControl
                         {
-                            AcceptsReturn = true,
-                            Text = "A wrapping text box. " +
-                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. " +
-                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.",
-                            TextWrapping = TextWrapping.Wrap,
-                            MaxHeight = 100,
-                        },
+                            Margin = new Thickness(0, 20, 0, 0),
+
+                            Items = new []
+                            {
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "CSHRP CODEZ"
+                                    }
+                                },
+                                new TabItem
+                                {
+                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
+                                    Content = new HtmlLabel
+                                    {
+                                        Text = "XAML CODEZ"
+                                    }
+                                }
+                            }
+                        }
                     }
-                },
+                }
             };
         }
 

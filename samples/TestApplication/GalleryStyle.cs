@@ -27,7 +27,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Class(":container").OfType<TabControl>().Child().Child().Child().Child().OfType<TabItem>())
+                new Style(s => s.Class(":container").OfType<TabControl>().Child().Child().Child().Child().Child().OfType<TabItem>())
                 {
                     Setters = new[]
                     {
@@ -35,7 +35,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Class(":container").Child().Child().Child().Child().OfType<TabItem>())
+                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>())
                 {
                     Setters = new[]
                     {
@@ -44,7 +44,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Class(":container").Child().Child().Child().Child().OfType<TabItem>().Class("selected"))
+                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>().Class("selected"))
                 {
                     Setters = new[]
                     {
@@ -90,15 +90,18 @@ namespace TestApplication
                 {
                     new Border
                     {
-                        Width = 170,
-                        Background = SolidColorBrush.Parse("#373749"),
-                        Child = new TabStrip
+                        Width = 190,
+                        Background = SolidColorBrush.Parse("#1976D2"),
+                        Child = new ScrollViewer
                         {
-                            ItemsPanel = new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical, Gap = 4 }),
-                            Margin = new Thickness(0, 10, 0, 0),
-                            Name = "containerTabStrip",
-                            [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                            [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
+                            Content = new TabStrip
+                            {
+                                ItemsPanel = new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical, Gap = 4 }),
+                                Margin = new Thickness(0, 10, 0, 0),
+                                Name = "internalStrip",
+                                [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                                [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
+                            }
                         }
                     },
                     new Deck
