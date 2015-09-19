@@ -4,6 +4,9 @@ before_build:
 - git submodule update --init
 - nuget restore Perspex.sln
 
+environment:
+  myget_key:
+    secure: XOgD5bJUKNOS2kDDgb+affS4pDcslxALh+xvvnr1Koy0PjXlhILsBdNhxRe0KcNm
 
 configuration:
   - Release
