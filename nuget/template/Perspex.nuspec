@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>Perspex</id>
     <version>#VERSION#</version>
@@ -13,12 +13,14 @@
     <copyright>Copyright 2015</copyright>
     <tags>Perspex</tags>
     <dependencies>
-      <dependency id="Glass" version="1.4.4.0" />
-      <dependency id="OmniXaml" version="1.4.4.0" />
-      <dependency id="reactiveui" version="6.5.0" />
-      <dependency id="reactiveui-core" version="6.5.0" />
       <dependency id="Serilog" version="1.5.9" />
       <dependency id="Splat" version="1.6.2" />
+      <dependency id="Sprache" version="2.0.0.47" />
+      <dependency id="Rx-Core" version="2.2.5" />
+      <dependency id="Rx-Interfaces" version="2.2.5" />
+      <dependency id="Rx-Linq" version="2.2.5" />
+      <dependency id="Rx-Main" version="2.2.5" />
+      <dependency id="Rx-PlatformServices" version="2.2.5" />
     </dependencies>
   </metadata>
 </package>
