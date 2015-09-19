@@ -203,11 +203,14 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the opacity.</returns>
         public IDisposable PushOpacity(double opacity)
         {
-            opacityOverride = opacity;
+            var tmp = opacityOverride;
+
+            if (opacity < 1.0f)
+                opacityOverride = opacity;
 
             return Disposable.Create(() =>
             {
-                opacityOverride = 1.0f;
+                opacityOverride = tmp;
             });
         }
 
@@ -254,7 +257,7 @@ namespace Perspex.Cairo.Media
 			} 
 			else 
 			{
-				impl = new SolidColorBrushImpl(null, 1.0f);
+				impl = new SolidColorBrushImpl(null, opacityOverride);
 			}
 
 			_context.SetSource(impl.PlatformBrush);
