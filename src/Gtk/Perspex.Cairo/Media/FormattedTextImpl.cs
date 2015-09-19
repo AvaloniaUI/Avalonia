@@ -36,6 +36,7 @@ namespace Perspex.Cairo.Media
             };
 
             Layout.Alignment = textAlignment.ToCairo();
+            Layout.Attributes = new Pango.AttrList();
         }
 
         public Size Constraint
@@ -115,7 +116,19 @@ namespace Perspex.Cairo.Media
 
         public void SetForegroundBrush(Brush brush, int startIndex, int count)
         {
-            // TODO: Implement.
+            var scb = brush as SolidColorBrush;
+            if (scb != null)
+            {
+
+                var color = new Pango.Color();
+                color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
+
+                var brushAttr = new Pango.AttrForeground(color);
+                brushAttr.StartIndex = (uint)startIndex;
+                brushAttr.EndIndex = (uint)(startIndex + count);
+
+                Layout.Attributes.Insert(brushAttr);
+            }
         }
     }
 }
