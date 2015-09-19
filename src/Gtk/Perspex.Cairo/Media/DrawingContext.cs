@@ -95,11 +95,12 @@ namespace Perspex.Cairo.Media
         {
             var size = new Rect(p1, p2).Size;
             
-            SetPen(pen, size);
-
-            _context.MoveTo(p1.ToCairo());
-            _context.LineTo(p2.ToCairo());
-            _context.Stroke();
+			using (var p = SetPen(pen, size)) 
+			{
+				_context.MoveTo(p1.ToCairo());
+				_context.LineTo(p2.ToCairo());
+				_context.Stroke();
+			}
         }
 
         /// <summary>
@@ -118,19 +119,22 @@ namespace Perspex.Cairo.Media
 
                 if (brush != null)
                 {
-                    SetBrush(brush, geometry.Bounds.Size);
-
-                    if (pen != null)
-                        _context.FillPreserve();
-                    else
-                        _context.Fill();
+					using (var b = SetBrush(brush, geometry.Bounds.Size)) 
+					{
+						if (pen != null)
+							_context.FillPreserve();
+						else
+							_context.Fill();
+					}
                 }
             }
 
             if (pen != null)
             {
-                SetPen(pen, geometry.Bounds.Size);
-                _context.Stroke();
+				using (var p = SetPen(pen, geometry.Bounds.Size)) 
+				{
+					_context.Stroke();
+				}
             }
         }
 
@@ -141,9 +145,11 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
         {
-            SetPen(pen, rect.Size);
-            _context.Rectangle(rect.ToCairo());
-            _context.Stroke();
+			using (var p = SetPen(pen, rect.Size)) 
+			{
+				_context.Rectangle(rect.ToCairo ());
+				_context.Stroke();
+			}
         }
 
         /// <summary>
@@ -157,8 +163,10 @@ namespace Perspex.Cairo.Media
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
-            SetBrush(foreground, new Size(0, 0));
-            Pango.CairoHelper.ShowLayout(_context, layout);
+			using (var b = SetBrush(foreground, new Size(0, 0))) 
+			{
+				Pango.CairoHelper.ShowLayout(_context, layout);
+			}
         }
 
         /// <summary>
@@ -168,9 +176,11 @@ namespace Perspex.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectange(Brush brush, Rect rect, float cornerRadius)
         {
-            SetBrush(brush, rect.Size);
-            _context.Rectangle(rect.ToCairo());
-            _context.Fill();
+			using (var b = SetBrush(brush, rect.Size)) 
+			{
+				_context.Rectangle(rect.ToCairo ());
+				_context.Fill();
+			}
         }
 
         /// <summary>
@@ -212,48 +222,44 @@ namespace Perspex.Cairo.Media
             });
         }
         
-        private void SetBrush(Brush brush, Size destinationSize)
+		private double opacityOverride = 1.0f;
+
+        private BrushImpl SetBrush(Brush brush, Size destinationSize)
         {
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
             var imageBrush = brush as ImageBrush;
             var visualBrush = brush as VisualBrush;
+			BrushImpl impl = null;
 
-            if (solid != null)
-            {
-                _context.SetSourceRGBA(
-                    solid.Color.R / 255.0,
-                    solid.Color.G / 255.0,
-                    solid.Color.B / 255.0,
-                    solid.Color.A / 255.0);
-            }
-            else if (linearGradientBrush != null)
-            {
-                var start = linearGradientBrush.StartPoint.ToPixels(destinationSize);
-                var end = linearGradientBrush.EndPoint.ToPixels(destinationSize);
+			if (solid != null) 
+			{
+				impl = new SolidColorBrushImpl(solid, opacityOverride);
+			} 
+			else if (linearGradientBrush != null) 
+			{
+				impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+			} 
+			else if (imageBrush != null) 
+			{
+				impl = new ImageBrushImpl(imageBrush, destinationSize);
+			} 
+			else if (visualBrush != null) 
+			{
+				impl = new VisualBrushImpl(visualBrush, destinationSize);
+			} 
+			else 
+			{
+				impl = new SolidColorBrushImpl(null, 1.0f);
+			}
 
-                Cairo.LinearGradient g = new Cairo.LinearGradient(start.X, start.Y, end.X, end.Y);
+			_context.SetSource(impl.PlatformBrush);
 
-                foreach (var s in linearGradientBrush.GradientStops)
-                    g.AddColorStop(s.Offset, s.Color.ToCairo());
-
-                g.Extend = Cairo.Extend.Pad;
-                
-                _context.SetSource(g);
-            }
-            else if (imageBrush != null)
-            {
-                _context.SetSource(TileBrushes.CreateImageBrush(imageBrush, destinationSize));
-            }
-            else if (visualBrush != null)
-            {
-                _context.SetSource(TileBrushes.CreateVisualBrush(visualBrush, destinationSize));
-            }
+			return impl;
         }
 
-        private void SetPen(Pen pen, Size destinationSize)
+        private BrushImpl SetPen(Pen pen, Size destinationSize)
         {
-            SetBrush(pen.Brush, destinationSize);
             if (pen.DashStyle != null)
             {
                 if (pen.DashStyle.Dashes != null && pen.DashStyle.Dashes.Count > 0)
@@ -271,6 +277,8 @@ namespace Perspex.Cairo.Media
             // TODO: Figure out a solution for this.
             _context.LineJoin = Cairo.LineJoin.Miter;
             _context.LineCap = Cairo.LineCap.Butt;
+
+			return SetBrush(pen.Brush, destinationSize);
         }
     }
 }

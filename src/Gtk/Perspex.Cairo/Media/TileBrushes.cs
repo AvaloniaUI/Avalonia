@@ -29,8 +29,8 @@ namespace Perspex.Cairo.Media
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
             var intermediateSize = CalculateIntermediateSize(tileMode, targetSize, destinationRect.Size);
-            var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height);
 
+            using (var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height))
             using (var context = new Context(intermediate))
             {
                 Rect drawRect;
@@ -98,8 +98,8 @@ namespace Perspex.Cairo.Media
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
             var intermediateSize = CalculateIntermediateSize(tileMode, targetSize, destinationRect.Size);
-            var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height);
-
+            
+			using (var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height))
             using (var context = new Context(intermediate))
             {
                 Rect drawRect;

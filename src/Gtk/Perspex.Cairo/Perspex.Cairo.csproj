@@ -32,18 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
-      <Package>glib-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -58,9 +50,7 @@
     <Reference Include="System.Reactive.Interfaces">
       <HintPath>..\..\..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
     </Reference>
@@ -77,6 +67,11 @@
     <Compile Include="CairoExtensions.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
     <Compile Include="Media\StreamGeometryImpl.cs" />
+    <Compile Include="Media\BrushImpl.cs" />
+    <Compile Include="Media\SolidColorBrushImpl.cs" />
+    <Compile Include="Media\LinearGradientBrushImpl.cs" />
+    <Compile Include="Media\ImageBrushImpl.cs" />
+    <Compile Include="Media\VisualBrushImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
