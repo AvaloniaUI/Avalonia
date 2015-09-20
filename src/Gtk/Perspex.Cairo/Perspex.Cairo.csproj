@@ -54,9 +54,6 @@
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK">
-      <HintPath>..\..\..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CairoPlatform.cs" />
@@ -99,7 +96,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
