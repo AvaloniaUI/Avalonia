@@ -89,7 +89,6 @@ namespace Perspex.Gtk
         public void Invalidate(Rect rect)
         {
             base.GdkWindow.InvalidateRect (new Rectangle ((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), true);
-
         }
 
         public Point PointToScreen(Point point)

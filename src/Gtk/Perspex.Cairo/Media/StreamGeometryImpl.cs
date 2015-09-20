@@ -18,9 +18,9 @@ namespace Perspex.Cairo.Media
             _impl = new StreamGeometryContextImpl(null);
         }
 
-        public StreamGeometryImpl(Cairo.Path path)
+        public StreamGeometryImpl(StreamGeometryContextImpl impl)
         {
-            _impl = new StreamGeometryContextImpl(path);
+            _impl = impl;
         }
 
         public Rect Bounds
@@ -53,7 +53,7 @@ namespace Perspex.Cairo.Media
 
         public IStreamGeometryImpl Clone()
 		{
-			return new StreamGeometryImpl(_impl.Path);
+			return new StreamGeometryImpl(_impl);
         }
 
         public Rect GetRenderBounds(double strokeThickness)

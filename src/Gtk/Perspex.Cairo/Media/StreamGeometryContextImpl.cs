@@ -60,9 +60,8 @@ namespace Perspex.Cairo.Media
 					_context.ClosePath ();
 
 				Path = _context.CopyPath ();
+				Bounds = _context.FillExtents ().ToPerspex ();
 			}
-
-			Bounds = _context.FillExtents ().ToPerspex ();
         }
 
         public void Dispose()

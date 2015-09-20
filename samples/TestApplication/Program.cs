@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.IO;
 using System.Reactive.Linq;
 using Perspex;
@@ -122,7 +123,7 @@ namespace TestApplication
                                 ButtonsTab(),
                                 TextTab(),
                                 HtmlTab(),
-                                ImagesTab(),
+								ImagesTab(),
                                 ListsTab(),
                                 LayoutTab(),
                                 AnimationsTab(),
@@ -160,13 +161,13 @@ namespace TestApplication
 							{
 								Text = "Button",
 								FontWeight = FontWeight.Medium,
-								FontSize = 13,
+								FontSize = 20,
 								Foreground = SolidColorBrush.Parse("#212121"),
 							},
 							new TextBlock
 							{
 								Text = "A button control",
-								FontSize = 20,
+								FontSize = 13,
 								Foreground = SolidColorBrush.Parse("#727272"),
 								Margin = new Thickness(0, 0, 0, 10)
 							},
@@ -183,17 +184,30 @@ namespace TestApplication
 							},
 							new TextBlock
 							{
-								Text = "Toggle button",
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "ToggleButton",
 								FontWeight = FontWeight.Medium,
-								FontSize = 13,
+								FontSize = 20,
 								Foreground = SolidColorBrush.Parse("#212121"),
 							},
 							new TextBlock
 							{
-								Text = "A button control",
-								FontSize = 20,
+								Text = "A toggle button control",
+								FontSize = 13,
 								Foreground = SolidColorBrush.Parse("#727272"),
 								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new ToggleButton 
+							{ 
+								Width = 150,
+								IsChecked = true,
+								Content = "On" 
+							},
+							new ToggleButton 
+							{ 
+								Width = 150,
+								IsChecked = false, 
+								Content = "Off" 
 							},
 						}
 					}
@@ -221,7 +235,7 @@ namespace TestApplication
 						{
 							new TextBlock
 							{
-								Text = "Text block",
+								Text = "TextBlock",
 								FontWeight = FontWeight.Medium,
 								FontSize = 20,
 								Foreground = SolidColorBrush.Parse("#212121"),
@@ -255,11 +269,11 @@ namespace TestApplication
 								Text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
 								FontSize = 11,
 								FontStyle = FontStyle.Italic,
-								Margin = new Thickness(0, 0, 0, 20)
 							},
 							new TextBlock
 							{
-								Text = "HTML label",
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "HtmlLabel",
 								FontWeight = FontWeight.Medium,
 								FontSize = 20,
 								Foreground = SolidColorBrush.Parse("#212121"),
@@ -303,196 +317,367 @@ namespace TestApplication
             return new TabItem
             {
                 Header = "Input",
-                Content = new StackPanel
-                {
-                    Margin = new Thickness(10),
-                    Orientation = Orientation.Vertical,
-                    Gap = 4,
-                    Children = new Controls
-                    {
-                        new TextBlock
-                        {
-                            Text = "Check box",
-                            FontWeight = FontWeight.Medium,
-							FontSize = 20,
-							Foreground = SolidColorBrush.Parse("#212121"),
-                        },
-                        new TextBlock
-                        {
-                            Text = "A check box control",
-                            FontSize = 13,
-							Foreground = SolidColorBrush.Parse("#727272"),
-                            Margin = new Thickness(0, 0, 0, 10)
-                        },
-                        new CheckBox { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Checked" },
-                        new CheckBox { IsChecked = false, Content = "Unchecked" },
-                        new TextBlock
-                        {
-                            Margin = new Thickness(0, 40, 0, 0),
-                            Text = "Radio button",
-                            FontWeight = FontWeight.Medium,
-							FontSize = 20,
-							Foreground = SolidColorBrush.Parse("#212121"),
-                        },
-                        new TextBlock
-                        {
-                            Text = "A radio button control",
-							FontSize = 13,
-							Foreground = SolidColorBrush.Parse("#727272"),
-                            Margin = new Thickness(0, 0, 0, 10)
-                        },
-
-                        new RadioButton { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Option 1" },
-                        new RadioButton { IsChecked = false, Content = "Option 2" },
-                        new RadioButton { IsChecked = false, Content = "Option 3" },
-                    }
-                }
+				Content = new ScrollViewer()
+				{
+					Content = new StackPanel
+					{
+						Margin = new Thickness(10),
+						Orientation = Orientation.Vertical,
+						Gap = 4,
+						Children = new Controls
+						{
+							new TextBlock
+							{
+								Text = "TextBox",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A text box control",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new TextBox { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", Width = 200 },
+							new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Width = 200, Height = 150, Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." },
+							new TextBlock
+							{
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "CheckBox",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A check box control",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new CheckBox { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Checked" },
+							new CheckBox { IsChecked = false, Content = "Unchecked" },
+							new TextBlock
+							{
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "RadioButton",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A radio button control",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new RadioButton { IsChecked = true, Content = "Option 1" },
+							new RadioButton { IsChecked = false, Content = "Option 2" },
+							new RadioButton { IsChecked = false, Content = "Option 3" },
+						}
+					}
+				}
             };
         }
 
-        private static TabItem ImagesTab()
-        {
-            ScrollBar size;
-
-            return new TabItem
-            {
-                Header = "Images",
-                Content = new StackPanel
-                {
-                    Orientation = Orientation.Vertical,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Gap = 8,
-                    Children = new Controls
-                    {
-						new Perspex.Controls.Shapes.Path {
-							Fill = Brushes.Red,
-							Stroke = Brushes.Orange,
-							Width = 400,
-							Height = 400, 
-							Data = StreamGeometry.Parse("M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z")
-						},
-                        (size = new ScrollBar
-                        {
-                            Minimum = 100,
-                            Maximum = 400,
-                            Value = 100,
-                            Orientation = Orientation.Horizontal,
-                        }),
-                        new ScrollViewer
-                        {
-                            Width = 200,
-                            Height = 200,
-                            CanScrollHorizontally = true,
-                            Content = new Image
-                            {
-                                Source = new Bitmap("github_icon.png"),
-                                [!Layoutable.WidthProperty] = size[!RangeBase.ValueProperty],
-                                [!Layoutable.HeightProperty] = size[!RangeBase.ValueProperty],
-                            },
-                        },
-                        new ProgressBar
-                        {
-                            [!RangeBase.MinimumProperty] = size[!RangeBase.MinimumProperty],
-                            [!RangeBase.MaximumProperty] = size[!RangeBase.MaximumProperty],
-                            [!RangeBase.ValueProperty] = size[!RangeBase.ValueProperty],
-                        }
-                    }
-                },
-            };
-        }
-
+        
         private static TabItem ListsTab()
         {
-            ListBox listBox;
-
             return new TabItem
             {
                 Header = "Lists",
-                Content = new StackPanel
-                {
-                    DataTemplates = new DataTemplates
-                    {
-                        new DataTemplate<Item>(x =>
-                            new StackPanel
-                            {
-                                Children = new Controls
-                                {
-                                    new TextBlock { Text = x.Name, FontSize = 24 },
-                                    new TextBlock { Text = x.Value },
-                                }
-                            })
-                    },
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Gap = 8,
-                    Children = new Controls
-                    {
-                        new TreeView
-                        {
-                            Name = "treeView",
-                            Items = s_treeData,
-                        },
-                        (listBox = new ListBox
-                        {
-                            Items = s_listBoxData,
-                            MaxHeight = 300,
-                        }),
-                        new DropDown
-                        {
-                            Items = s_listBoxData,
-                            SelectedItem = s_listBoxData[0],
-                            VerticalAlignment = VerticalAlignment.Center,
-                        }
-                    }
-                },
+				Content = new ScrollViewer()
+				{
+					CanScrollHorizontally = false,
+					Content = new StackPanel
+					{
+						HorizontalAlignment = HorizontalAlignment.Left,
+						Orientation = Orientation.Vertical,
+						VerticalAlignment = VerticalAlignment.Top,
+						Gap = 4,
+						Margin = new Thickness(10),
+						DataTemplates = new DataTemplates
+						{
+							new DataTemplate<Item>(x =>
+								new StackPanel
+								{
+									Gap = 4,
+									Orientation = Orientation.Horizontal,
+									Children = new Controls
+									{
+										new Image { Width = 50, Height = 50, Source = new Bitmap("github_icon.png") },
+										new TextBlock { Text = x.Name, FontSize = 18 }
+									}
+								})
+						},
+						Children = new Controls
+						{
+							new TextBlock
+							{
+								Text = "ListBox",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A list box control.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new ListBox
+							{
+								BorderThickness = 2,
+								Items = s_listBoxData,						
+								Height = 300,
+								Width =	 300,
+							},
+							new TextBlock
+							{
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "TreeView",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A tree view control.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new TreeView
+							{
+								Name = "treeView",
+								Items = s_treeData,							
+								Height = 300,
+								BorderThickness = 2,
+								Width =	 300,
+							}
+						}
+					},
+				}
             };
         }
+
+		private static TabItem ImagesTab() 
+		{
+			var imageDeck = new Deck 
+			{
+				Width = 400,
+				Height = 400,
+				Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
+				Items = new[] 
+				{
+					new Image { Source = new Bitmap("github_icon.png"),  Width = 400, Height = 400 },
+					new Image { Source = new Bitmap("pattern.jpg"), Width = 400, Height = 400 },
+				}
+			};
+
+			imageDeck.AutoSelect = true;
+
+			var next = new Button 
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				Padding = new Thickness(20),
+				Content = new Perspex.Controls.Shapes.Path 
+				{
+					Data = StreamGeometry.Parse("M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"),
+					Fill = Brushes.Black
+				}
+			};
+
+			var prev = new Button 
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				Padding = new Thickness(20),
+				Content = new Perspex.Controls.Shapes.Path 
+				{
+					Data = StreamGeometry.Parse("M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"),
+					Fill = Brushes.Black
+				}
+			};
+
+			prev.Click += (s, e) => 
+			{
+				if (imageDeck.SelectedIndex == 0)
+					imageDeck.SelectedIndex = 1;
+				else
+					imageDeck.SelectedIndex--;
+			};
+
+			next.Click += (s, e) => 
+			{
+				if (imageDeck.SelectedIndex == 1)
+					imageDeck.SelectedIndex = 0;
+				else
+					imageDeck.SelectedIndex++;
+			};
+
+			return new TabItem
+			{
+				Header = "Images",
+				Content = new ScrollViewer 
+				{
+					Content = new StackPanel 
+					{
+						HorizontalAlignment = HorizontalAlignment.Left,
+						Orientation = Orientation.Vertical,
+						VerticalAlignment = VerticalAlignment.Top,
+						Gap = 4,
+						Margin = new Thickness(10),
+						Children = new Controls 
+						{
+							new TextBlock
+							{
+								Text = "Deck",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "An items control that displays its items as pages that fill the controls.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new StackPanel 
+							{
+								Name = "deckVisual",
+								Orientation = Orientation.Horizontal,
+								Gap = 4,
+								Children = new Controls
+								{								
+									prev,
+									imageDeck,
+									next
+								}
+							}
+						}
+					}
+				}
+			};
+		}
 
         private static TabItem LayoutTab()
         {
             return new TabItem
             {
                 Header = "Layout",
-                Content = new Grid
-                {
-                    ColumnDefinitions = new ColumnDefinitions
-                    {
-                        new ColumnDefinition(1, GridUnitType.Star),
-                        new ColumnDefinition(1, GridUnitType.Star),
-                    },
-                    Margin = new Thickness(50),
-                    Children = new Controls
-                    {
-                        new StackPanel
-                        {
-                            Orientation = Orientation.Vertical,
-                            Gap = 8,
-                            Children = new Controls
-                            {
-                                new Button { HorizontalAlignment = HorizontalAlignment.Left, Content = "Left Aligned" },
-                                new Button { HorizontalAlignment = HorizontalAlignment.Center, Content = "Center Aligned" },
-                                new Button { HorizontalAlignment = HorizontalAlignment.Right, Content = "Right Aligned" },
-                                new Button { HorizontalAlignment = HorizontalAlignment.Stretch, Content = "Stretch" },
-                            },
-                            [Grid.ColumnProperty] = 0,
-                        },
-                        new StackPanel
-                        {
-                            Orientation = Orientation.Horizontal,
-                            Gap = 8,
-                            Children = new Controls
-                            {
-                                new Button { VerticalAlignment = VerticalAlignment.Top, Content = "Top Aligned" },
-                                new Button { VerticalAlignment = VerticalAlignment.Center, Content = "Center Aligned" },
-                                new Button { VerticalAlignment = VerticalAlignment.Bottom, Content = "Bottom Aligned" },
-                                new Button { VerticalAlignment = VerticalAlignment.Stretch, Content = "Stretch" },
-                            },
-                            [Grid.ColumnProperty] = 1,
-                        },
-                    },
-                }
+				Content = new ScrollViewer 
+				{
+					Content = new StackPanel 
+					{
+						HorizontalAlignment = HorizontalAlignment.Left,
+						Orientation = Orientation.Vertical,
+						VerticalAlignment = VerticalAlignment.Top,
+						Gap = 4,
+						Margin = new Thickness(10),
+						Children = new Controls 
+						{
+							new TextBlock
+							{
+								Text = "Grid",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "Lays out child controls according to a grid.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new Grid
+							{
+								Width = 600,
+								ColumnDefinitions = new ColumnDefinitions
+								{
+									new ColumnDefinition(1, GridUnitType.Star),
+									new ColumnDefinition(1, GridUnitType.Star),
+								},
+
+								RowDefinitions = new RowDefinitions
+								{
+									new RowDefinition(1, GridUnitType.Auto),
+									new RowDefinition(1, GridUnitType.Auto)
+								},
+								Children = new Controls
+								{
+
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FF5722"),
+										[Grid.ColumnSpanProperty] = 2,
+										Height = 200,
+										Margin = new Thickness(2.5)
+									},
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FF5722"),
+										[Grid.RowProperty] = 1,
+										Height = 100,
+										Margin = new Thickness(2.5)
+									},
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FF5722"),
+										[Grid.RowProperty] = 1,
+										[Grid.ColumnProperty] = 1,
+										Height = 100,
+										Margin = new Thickness(2.5)
+									},
+								},
+							},
+							new TextBlock
+							{
+								Margin = new Thickness(0, 40, 0, 0),
+								Text = "StackPanel",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A panel which lays out its children horizontally or vertically.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new StackPanel 
+							{
+								Orientation = Orientation.Vertical,
+								Gap = 4,
+								Width = 300,
+								Children = new Controls
+								{
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FFC107"),
+										Height = 50,
+									},
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FFC107"),
+										Height = 50,
+									},
+									new Rectangle
+									{
+										Fill = SolidColorBrush.Parse("#FFC107"),
+										Height = 50,
+									},
+								}
+							},
+						}
+					}
+				}
             };
         }
 
@@ -506,70 +691,88 @@ namespace TestApplication
             var result = new TabItem
             {
                 Header = "Animations",
-                Content = new Grid
+                Content = new StackPanel
                 {
-                    ColumnDefinitions = new ColumnDefinitions
-                    {
-                        new ColumnDefinition(1, GridUnitType.Star),
-                        new ColumnDefinition(1, GridUnitType.Star),
-                    },
-                    RowDefinitions = new RowDefinitions
-                    {
-                        new RowDefinition(1, GridUnitType.Star),
-                        new RowDefinition(GridLength.Auto),
-                    },
+					HorizontalAlignment = HorizontalAlignment.Left,
+					Orientation = Orientation.Vertical,
+					VerticalAlignment = VerticalAlignment.Top,
+					Gap = 4,
+					Margin = new Thickness(10),
                     Children = new Controls
                     {
-                        (border1 = new Border
-                        {
-                            Width = 100,
-                            Height = 100,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Background = Brushes.Crimson,
-                            RenderTransform = new RotateTransform(),
-                            Child = new TextBox
-                            {
-                                Background = Brushes.White,
-                                Text = "Hello!",
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            },
-                        }),
-                        (border2 = new Border
-                        {
-                            Width = 100,
-                            Height = 100,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Background = Brushes.Coral,
-                            Child = new Image
-                            {
-                                Source = new Bitmap("github_icon.png"),
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            },
-                            RenderTransform = (rotate = new RotateTransform
-                            {
-                                PropertyTransitions = new PropertyTransitions
-                                {
-                                    RotateTransform.AngleProperty.Transition(500),
-                                }
-                            }),
-                            PropertyTransitions = new PropertyTransitions
-                            {
-                                Layoutable.WidthProperty.Transition(300),
-                                Layoutable.HeightProperty.Transition(1000),
-                            },
-                            [Grid.ColumnProperty] = 1,
-                        }),
-                        (button1 = new Button
-                        {
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            Content = "Animate",
-                            [Grid.ColumnProperty] = 1,
-                            [Grid.RowProperty] = 1,
-                        }),
+						new TextBlock
+						{
+							Text = "Animations",
+							FontWeight = FontWeight.Medium,
+							FontSize = 20,
+							Foreground = SolidColorBrush.Parse("#212121"),
+						},
+						new TextBlock
+						{
+							Text = "A few animations showcased below",
+							FontSize = 13,
+							Foreground = SolidColorBrush.Parse("#727272"),
+							Margin = new Thickness(0, 0, 0, 10)
+						},
+						(button1 = new Button
+						{
+							Content = "Animate",
+							Width = 120,
+							[Grid.ColumnProperty] = 1,
+							[Grid.RowProperty] = 1,
+						}),
+						new Canvas 
+						{
+							Children = new Controls 
+							{
+								(border1 = new Border
+								{
+									Width = 100,
+									Height = 100,
+									HorizontalAlignment = HorizontalAlignment.Center,
+									VerticalAlignment = VerticalAlignment.Center,
+									Background = Brushes.Crimson,
+									RenderTransform = new RotateTransform(),
+									Child = new TextBox
+									{
+										Background = Brushes.White,
+										Text = "Hello!",
+										HorizontalAlignment = HorizontalAlignment.Center,
+										VerticalAlignment = VerticalAlignment.Center,
+									},
+									[Canvas.LeftProperty] = 100,
+									[Canvas.TopProperty] = 100,
+								}),
+								(border2 = new Border
+								{
+									Width = 100,
+									Height = 100,
+									HorizontalAlignment = HorizontalAlignment.Center,
+									VerticalAlignment = VerticalAlignment.Center,
+									Background = Brushes.Coral,
+									Child = new Image
+									{
+										Source = new Bitmap("github_icon.png"),
+										HorizontalAlignment = HorizontalAlignment.Center,
+										VerticalAlignment = VerticalAlignment.Center,
+									},
+									RenderTransform = (rotate = new RotateTransform
+									{
+										PropertyTransitions = new PropertyTransitions
+										{
+											RotateTransform.AngleProperty.Transition(500),
+										}
+									}),
+									PropertyTransitions = new PropertyTransitions
+									{
+										Layoutable.WidthProperty.Transition(300),
+										Layoutable.HeightProperty.Transition(1000),
+									},
+									[Canvas.LeftProperty] = 400,
+									[Canvas.TopProperty] = 100,
+								}),
+							}
+						}
                     },
                 },
             };

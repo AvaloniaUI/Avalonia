@@ -84,7 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
+      <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
       <Name>Perspex.Cairo</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
@@ -153,6 +153,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="html.htm" />
+    <Content Include="pattern.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\src\Shared\perspex.platform.targets" />
