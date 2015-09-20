@@ -117,7 +117,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets the bounds of the scene graph node.
+        /// Gets the bounds of the scene graph node relative to its parent.
         /// </summary>
         public Rect Bounds
         {
