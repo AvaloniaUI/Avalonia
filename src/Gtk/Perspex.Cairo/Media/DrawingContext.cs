@@ -74,14 +74,31 @@ namespace Perspex.Cairo.Media
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-            Gdk.CairoHelper.SetSourcePixbuf(
-                _context, 
-                impl.Surface, 
-                -sourceRect.X + destRect.X, 
-                -sourceRect.Y + destRect.Y);
+			if (opacityOverride < 1.0f) {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl.Surface, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
 
-            _context.Rectangle(destRect.ToCairo());
-            _context.Fill();
+				_context.Rectangle (destRect.ToCairo ());
+				_context.Fill ();
+				_context.PopGroupToSource ();
+				_context.PaintWithAlpha (opacityOverride);
+			} else {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl.Surface, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
+
+				_context.Rectangle (destRect.ToCairo ());
+				_context.Fill ();
+				_context.PopGroupToSource ();
+				_context.PaintWithAlpha (opacityOverride);			
+			}
             _context.Restore();
         }
 

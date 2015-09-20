@@ -81,7 +81,7 @@ namespace TestApplication
             // dispatcher. This makes sure it's initialized.
             System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
 
-            App application = new App
+            new App
             {
                 DataTemplates = new DataTemplates
                 {
@@ -92,18 +92,13 @@ namespace TestApplication
                 },
             };
 
-            TextBlock fps;
-
-            var testCommand = ReactiveCommand.Create();
-            testCommand.Subscribe(_ => System.Diagnostics.Debug.WriteLine("Test command executed."));
-
             TabControl container;
 
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                Width = 800,
-                Height = 300,
+                Width = 900,
+                Height = 480,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -148,71 +143,60 @@ namespace TestApplication
 
         private static TabItem ButtonsTab()
         {
-            Button defaultButton;
-
-            var showDialog = ReactiveCommand.Create();
-            Button showDialogButton;
-
             var result = new TabItem
             {
                 Header = "Button",
-                Content = new StackPanel
-                {
-                    Margin = new Thickness(10),
-                    Orientation = Orientation.Vertical,
-                    Gap = 4,
-                    Children = new Controls
-                    {
-                        new TextBlock
-                        {
-                            Text = "Button",
-                            FontWeight = FontWeight.Medium,
-                            FontSize = 22,
-                            Foreground = SolidColorBrush.Parse("#212121"),
-                        },
-                        new TextBlock
-                        {
-                            Text = "A button control",
-                            FontSize = 14,
-                            Foreground = SolidColorBrush.Parse("#727272"),
-                            Margin = new Thickness(0, 0, 0, 10)
-                        },
-                        new Button
-                        {
-                            Width = 150,
-                            Content = "Button"
-                        },
-                        new Button
-                        {
-                            Width   = 150,
-                            Content = "Disabled",
-                            IsEnabled = false,
-                        },
-                        new TabControl
-                        {
-                            Margin = new Thickness(0, 20, 0, 0),
-
-                            Items = new []
-                            {
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "CSHRP CODEZ"
-                                    }
-                                }, 
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "XAML CODEZ"
-                                    }
-                                }
-                            }
-                        }
-                    }
+				Content = new ScrollViewer()
+				{
+					CanScrollHorizontally = false,
+					Content = new StackPanel
+					{
+						Margin = new Thickness(10),
+						Orientation = Orientation.Vertical,
+						Gap = 4,
+						Children = new Controls
+						{
+							new TextBlock
+							{
+								Text = "Button",
+								FontWeight = FontWeight.Medium,
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A button control",
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new Button
+							{
+								Width = 150,
+								Content = "Button"
+							},
+							new Button
+							{
+								Width   = 150,
+								Content = "Disabled",
+								IsEnabled = false,
+							},
+							new TextBlock
+							{
+								Text = "Toggle button",
+								FontWeight = FontWeight.Medium,
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A button control",
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+						}
+					}
                 },
             };
             
@@ -222,25 +206,95 @@ namespace TestApplication
 
         private static TabItem HtmlTab()
         {
-            var htmlText =
-                new StreamReader(typeof (Program).Assembly.GetManifestResourceStream("TestApplication.html.htm"))
-                    .ReadToEnd();
             return new TabItem
             {
-                Header = "HTML Label",
-                Content = new ScrollViewer()
-                {
-                    Width = 600,
-                    MaxHeight = 600,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    CanScrollHorizontally = false,
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
-                    Content =
-                        new HtmlLabel()
-                        {
-                            Text = htmlText
-                        }
-                }
+                Header = "Text",
+				Content = new ScrollViewer() 
+				{
+					CanScrollHorizontally = false,
+					Content = new StackPanel()
+					{                   
+						Margin = new Thickness(10),
+						Orientation = Orientation.Vertical,
+						Gap = 4,
+						Children = new Controls 
+						{
+							new TextBlock
+							{
+								Text = "Text block",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A control for displaying text.",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new TextBlock
+							{
+								Text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+								FontSize = 11
+							},
+							new TextBlock
+							{
+								Text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+								FontSize = 11,
+								FontWeight = FontWeight.Medium
+							},
+							new TextBlock
+							{
+								Text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+								FontSize = 11,
+								FontWeight = FontWeight.Bold
+							},
+							new TextBlock
+							{
+								Text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+								FontSize = 11,
+								FontStyle = FontStyle.Italic,
+								Margin = new Thickness(0, 0, 0, 20)
+							},
+							new TextBlock
+							{
+								Text = "HTML label",
+								FontWeight = FontWeight.Medium,
+								FontSize = 20,
+								Foreground = SolidColorBrush.Parse("#212121"),
+							},
+							new TextBlock
+							{
+								Text = "A label capable of displaying HTML content",
+								FontSize = 13,
+								Foreground = SolidColorBrush.Parse("#727272"),
+								Margin = new Thickness(0, 0, 0, 10)
+							},
+							new HtmlLabel 
+							{ 
+								Background = SolidColorBrush.Parse("#CCCCCC"),
+								Padding = new Thickness(5),
+								Text = @"<p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=""#"">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+										<h2>Header Level 2</h2>
+											       
+										<ol>
+										   <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+										   <li>Aliquam tincidunt mauris eu risus.</li>
+										</ol>
+
+										<blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+										<h3>Header Level 3</h3>
+
+										<ul>
+										   <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+										   <li>Aliquam tincidunt mauris eu risus.</li>
+										</ul>" 				
+							}
+						}
+              		}
+				}
             };
         }
 
@@ -260,85 +314,37 @@ namespace TestApplication
                         {
                             Text = "Check box",
                             FontWeight = FontWeight.Medium,
-                            FontSize = 22,
-                            Foreground = SolidColorBrush.Parse("#212121"),
+							FontSize = 20,
+							Foreground = SolidColorBrush.Parse("#212121"),
                         },
                         new TextBlock
                         {
                             Text = "A check box control",
-                            FontSize = 14,
-                            Foreground = SolidColorBrush.Parse("#373749"),
+                            FontSize = 13,
+							Foreground = SolidColorBrush.Parse("#727272"),
                             Margin = new Thickness(0, 0, 0, 10)
                         },
                         new CheckBox { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Checked" },
                         new CheckBox { IsChecked = false, Content = "Unchecked" },
-                        new TabControl
-                        {
-                            Margin = new Thickness(0, 20, 0, 0),
-
-                            Items = new []
-                            {
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "CSHRP CODEZ"
-                                    }
-                                },
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "XAML CODEZ"
-                                    }
-                                }
-                            }
-                        },
                         new TextBlock
                         {
                             Margin = new Thickness(0, 40, 0, 0),
                             Text = "Radio button",
                             FontWeight = FontWeight.Medium,
-                            FontSize = 22,
-                            Foreground = SolidColorBrush.Parse("#373749"),
+							FontSize = 20,
+							Foreground = SolidColorBrush.Parse("#212121"),
                         },
                         new TextBlock
                         {
                             Text = "A radio button control",
-                            FontSize = 14,
-                            Foreground = SolidColorBrush.Parse("#373749"),
+							FontSize = 13,
+							Foreground = SolidColorBrush.Parse("#727272"),
                             Margin = new Thickness(0, 0, 0, 10)
                         },
 
                         new RadioButton { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Option 1" },
                         new RadioButton { IsChecked = false, Content = "Option 2" },
                         new RadioButton { IsChecked = false, Content = "Option 3" },
-                        new TabControl
-                        {
-                            Margin = new Thickness(0, 20, 0, 0),
-
-                            Items = new []
-                            {
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "CSHARP" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "CSHRP CODEZ"
-                                    }
-                                },
-                                new TabItem
-                                {
-                                    Header = new TextBlock { FontWeight = FontWeight.Medium, Text = "XAML" },
-                                    Content = new HtmlLabel
-                                    {
-                                        Text = "XAML CODEZ"
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             };
@@ -359,6 +365,13 @@ namespace TestApplication
                     Gap = 8,
                     Children = new Controls
                     {
+						new Perspex.Controls.Shapes.Path {
+							Fill = Brushes.Red,
+							Stroke = Brushes.Orange,
+							Width = 400,
+							Height = 400, 
+							Data = StreamGeometry.Parse("M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z")
+						},
                         (size = new ScrollBar
                         {
                             Minimum = 100,

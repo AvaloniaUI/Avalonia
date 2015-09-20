@@ -31,7 +31,7 @@ namespace Perspex.Gtk
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
         {
-            DefaultSize = new Gdk.Size(640, 480);
+            DefaultSize = new Gdk.Size(900, 480);
             Init();
         }
 
