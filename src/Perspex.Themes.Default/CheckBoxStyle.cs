@@ -73,7 +73,7 @@ namespace Perspex.Themes.Default
                         new Border
                         {
                             Name = "checkBorder",
-                            BorderBrush = Brushes.Black,
+                            BorderBrush = new SolidColorBrush(0xff333333),
                             BorderThickness = 2,
                             Width = 18,
                             Height = 18,
@@ -83,7 +83,7 @@ namespace Perspex.Themes.Default
                         new Path
                         {
                             Name = "checkMark",
-                            Fill = Brushes.Black,
+                            Fill = new SolidColorBrush(0xff333333),
                             Width = 11,
                             Height = 10,
                             Stretch = Stretch.Uniform,

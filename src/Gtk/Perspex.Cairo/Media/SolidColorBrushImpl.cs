@@ -9,11 +9,13 @@ namespace Perspex.Cairo
 		{
 			var color = brush?.Color.ToCairo() ?? new Color();
 
-			if (brush != null && brush.Opacity > 1)
+            if (brush != null)
 				color.A = Math.Min(brush.Opacity, color.A);
 			
-			color.A = Math.Min(opacityOverride, color.A);
-			this.PlatformBrush = new SolidPattern(brush?.Color.ToCairo() ?? new Color());
+            if (opacityOverride < 1.0f)
+			    color.A = Math.Min(opacityOverride, color.A);
+
+			this.PlatformBrush = new SolidPattern(color);
 		}
 	}
 }

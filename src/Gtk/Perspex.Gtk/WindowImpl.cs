@@ -31,7 +31,7 @@ namespace Perspex.Gtk
         public WindowImpl()
             : base(Gtk.WindowType.Toplevel)
         {
-            DefaultSize = new Gdk.Size(640, 480);
+            DefaultSize = new Gdk.Size(900, 480);
             Init();
         }
 
@@ -89,7 +89,6 @@ namespace Perspex.Gtk
         public void Invalidate(Rect rect)
         {
             base.GdkWindow.InvalidateRect (new Rectangle ((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), true);
-
         }
 
         public Point PointToScreen(Point point)

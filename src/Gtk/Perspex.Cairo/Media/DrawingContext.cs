@@ -74,14 +74,31 @@ namespace Perspex.Cairo.Media
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-            Gdk.CairoHelper.SetSourcePixbuf(
-                _context, 
-                impl.Surface, 
-                -sourceRect.X + destRect.X, 
-                -sourceRect.Y + destRect.Y);
+			if (opacityOverride < 1.0f) {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl.Surface, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
 
-            _context.Rectangle(destRect.ToCairo());
-            _context.Fill();
+				_context.Rectangle (destRect.ToCairo ());
+				_context.Fill ();
+				_context.PopGroupToSource ();
+				_context.PaintWithAlpha (opacityOverride);
+			} else {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl.Surface, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
+
+				_context.Rectangle (destRect.ToCairo ());
+				_context.Fill ();
+				_context.PopGroupToSource ();
+				_context.PaintWithAlpha (opacityOverride);			
+			}
             _context.Restore();
         }
 
@@ -203,11 +220,14 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the opacity.</returns>
         public IDisposable PushOpacity(double opacity)
         {
-            opacityOverride = opacity;
+            var tmp = opacityOverride;
+
+            if (opacity < 1.0f)
+                opacityOverride = opacity;
 
             return Disposable.Create(() =>
             {
-                opacityOverride = 1.0f;
+                opacityOverride = tmp;
             });
         }
 
@@ -228,8 +248,10 @@ namespace Perspex.Cairo.Media
         
 		private double opacityOverride = 1.0f;
 
-        private BrushImpl SetBrush(Brush brush, Size destinationSize)
+        private IDisposable SetBrush(Brush brush, Size destinationSize)
         {
+			_context.Save ();
+
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
             var imageBrush = brush as ImageBrush;
@@ -254,15 +276,17 @@ namespace Perspex.Cairo.Media
 			} 
 			else 
 			{
-				impl = new SolidColorBrushImpl(null, 1.0f);
+				impl = new SolidColorBrushImpl(null, opacityOverride);
 			}
 
 			_context.SetSource(impl.PlatformBrush);
-
-			return impl;
+			return Disposable.Create(() => 
+			{
+				_context.Restore();
+			});
         }
 
-        private BrushImpl SetPen(Pen pen, Size destinationSize)
+        private IDisposable SetPen(Pen pen, Size destinationSize)
         {
             if (pen.DashStyle != null)
             {
@@ -282,6 +306,9 @@ namespace Perspex.Cairo.Media
             _context.LineJoin = Cairo.LineJoin.Miter;
             _context.LineCap = Cairo.LineCap.Butt;
 
+			if (pen.Brush == null)
+				return Disposable.Empty;
+			
 			return SetBrush(pen.Brush, destinationSize);
         }
     }

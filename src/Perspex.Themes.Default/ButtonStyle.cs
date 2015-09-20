@@ -30,8 +30,8 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff707070)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffaaaaaa)),
+                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xffaaaaaa)),
                         new Setter(TemplatedControl.BorderThicknessProperty, 2),
                         new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xff000000)),
                         new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
@@ -44,22 +44,15 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffbee6fd)),
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
+                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff888888)),
                     },
                 },
                 new Style(x => x.OfType<Button>().Class(":pointerover").Class(":pressed").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffc4e5f6)),
-                    },
-                },
-                new Style(x => x.OfType<Button>().Class(":pressed").Template().Name("border"))
-                {
-                    Setters = new[]
-                    {
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
+                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff888888)),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff888888)),
                     },
                 },
                 new Style(x => x.OfType<Button>().Class(":disabled").Template().Name("contentPresenter"))
