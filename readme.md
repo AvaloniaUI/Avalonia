@@ -5,7 +5,9 @@
 
 A multi-platform .NET UI framework.
 
-![](docs/screen.png)
+[![](docs/screen.png)](https://www.youtube.com/watch?t=28&v=c_AB_XSILp0)
+
+Click on the image above to see a video of Perspex in action!
 
 ## Background
 
@@ -26,8 +28,8 @@ framework.
 
 ## Documentation
 
-As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can 
-take a look at the [alpha release announcement](http://grokys.github.io/perspex/perspex-alpha/) for an 
+As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can
+take a look at the [getting started page](docs/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
 about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/grokys/Perspex).
 
