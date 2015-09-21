@@ -5,9 +5,9 @@
 
 A multi-platform .NET UI framework.
 
-[![](docs/screen.png)](https://www.youtube.com/watch?t=28&v=c_AB_XSILp0)
+![](docs/screen.png)
 
-Click on the image above to see a video of Perspex in action!
+[![](docs/perspex-video.png)](https://www.youtube.com/watch?t=28&v=c_AB_XSILp0)
 
 ## NuGet
 
