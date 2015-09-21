@@ -7,7 +7,7 @@ A multi-platform .NET UI framework.
 
 ![](docs/screen.png)
 
-[![](docs/perspex-video.png)](https://www.youtube.com/watch?t=28&v=c_AB_XSILp0)
+<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)]<a/>
 
 ## NuGet
 
