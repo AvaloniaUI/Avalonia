@@ -21,12 +21,26 @@ namespace Perspex.Controls
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Top");
 
         /// <summary>
+        /// Defines the <see cref="Right"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<double> RightProperty =
+            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Right");
+
+        /// <summary>
+        /// Defines the <see cref="Bottom"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<double> BottomProperty =
+            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Bottom");
+
+        /// <summary>
         /// Initializes static members of the <see cref="Canvas"/> class.
         /// </summary>
         static Canvas()
         {
             AffectsArrange(LeftProperty);
             AffectsArrange(TopProperty);
+            AffectsArrange(RightProperty);
+            AffectsArrange(BottomProperty);
         }
 
         /// <summary>
@@ -67,6 +81,46 @@ namespace Perspex.Controls
         public static void SetTop(PerspexObject element, double value)
         {
             element.SetValue(TopProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the Right attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's right coordinate.</returns>
+        public static double GetRight(PerspexObject element)
+        {
+            return element.GetValue(RightProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the Right attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The right value.</param>
+        public static void SetRight(PerspexObject element, double value)
+        {
+            element.SetValue(RightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the Bottom attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's bottom coordinate.</returns>
+        public static double GetBottom(PerspexObject element)
+        {
+            return element.GetValue(BottomProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the Bottom attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The bottom value.</param>
+        public static void SetBottom(PerspexObject element, double value)
+        {
+            element.SetValue(BottomProperty, value);
         }
 
         /// <summary>
@@ -111,15 +165,32 @@ namespace Perspex.Controls
                 double y = 0.0;
                 double elementLeft = GetLeft(child);
 
-                if (double.IsNaN(elementLeft) == false)
+                if (!double.IsNaN(elementLeft))
                 {
                     x = elementLeft;
                 }
+                else
+                {
+                    // Arrange with right.
+                    double elementRight = GetRight(child);
+                    if (!double.IsNaN(elementRight))
+                    {
+                        x = finalSize.Width - child.DesiredSize.Width - elementRight;
+                    }
+                }
 
                 double elementTop = GetTop(child);
-                if (double.IsNaN(elementTop) == false)
+                if (!double.IsNaN(elementTop) )
                 {
                     y = elementTop;
+                }
+                else
+                {
+                    double elementBottom = GetBottom(child);
+                    if (!double.IsNaN(elementBottom))
+                    {
+                        y = finalSize.Height - child.DesiredSize.Height - elementBottom;
+                    }
                 }
 
                 child.Arrange(new Rect(new Point(x, y), child.DesiredSize));
