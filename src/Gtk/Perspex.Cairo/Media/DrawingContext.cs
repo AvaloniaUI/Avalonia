@@ -254,6 +254,7 @@ namespace Perspex.Cairo.Media
 
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
+            var radialGradientBrush = brush as RadialGradientBrush;
             var imageBrush = brush as ImageBrush;
             var visualBrush = brush as VisualBrush;
 			BrushImpl impl = null;
@@ -265,8 +266,12 @@ namespace Perspex.Cairo.Media
 			else if (linearGradientBrush != null) 
 			{
 				impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
-			} 
-			else if (imageBrush != null) 
+			}
+            else if (radialGradientBrush != null)
+            {
+                impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
+            }
+            else if (imageBrush != null) 
 			{
 				impl = new ImageBrushImpl(imageBrush, destinationSize);
 			} 
