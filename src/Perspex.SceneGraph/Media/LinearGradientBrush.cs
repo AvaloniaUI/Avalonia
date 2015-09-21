@@ -6,7 +6,7 @@ namespace Perspex.Media
     /// <summary>
     /// A brush that draws with a linear gradient.
     /// </summary>
-    public class LinearGradientBrush : GradientBrush
+    public sealed class LinearGradientBrush : GradientBrush
     {
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.

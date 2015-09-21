@@ -61,6 +61,7 @@
     <Compile Include="Media\FormattedTextImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
+    <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\TileBrushes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Renderer.cs" />

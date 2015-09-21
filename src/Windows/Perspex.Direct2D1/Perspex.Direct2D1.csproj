@@ -79,6 +79,7 @@
     <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
+    <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\PerspexTextRenderer.cs" />
     <Compile Include="Media\ImageBrushImpl.cs" />
