@@ -9,6 +9,14 @@ A multi-platform .NET UI framework.
 
 Click on the image above to see a video of Perspex in action!
 
+## NuGet
+
+Perspex is delivered as a NuGet package.
+You can find the packages here: ([alpha2](https://www.nuget.org/packages/Perspex/0.1.0-alpha2), [nightly](https://www.myget.org/F/perspex-nightly/api/v2/Packages))
+
+You can install the package like this:
+`Install-Package Perspex -Pre`
+
 ## Background
 
 Perspex is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
