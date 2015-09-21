@@ -7,6 +7,16 @@ A multi-platform .NET UI framework.
 
 ![](docs/screen.png)
 
+<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)]<a/>
+
+## NuGet
+
+Perspex is delivered as a NuGet package.
+You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Perspex/), [nightly](https://www.myget.org/F/perspex-nightly/api/v2/Packages))
+
+You can install the package like this:
+`Install-Package Perspex -Pre`
+
 ## Background
 
 Perspex is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
@@ -26,8 +36,8 @@ framework.
 
 ## Documentation
 
-As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can 
-take a look at the [alpha release announcement](http://grokys.github.io/perspex/perspex-alpha/) for an 
+As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can
+take a look at the [getting started page](docs/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
 about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/grokys/Perspex).
 
