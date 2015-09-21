@@ -16,23 +16,20 @@ namespace Perspex.Direct2D1.Media
             SharpDX.Direct2D1.RenderTarget target,
             Size destinationSize)
         {
-            if (brush != null)
-            {
-                var gradientStops = brush.GradientStops.Select(s => new SharpDX.Direct2D1.GradientStop { Color = s.Color.ToDirect2D(), Position = (float)s.Offset }).ToArray();
+            var gradientStops = brush.GradientStops.Select(s => new SharpDX.Direct2D1.GradientStop { Color = s.Color.ToDirect2D(), Position = (float)s.Offset }).ToArray();
 
-                Point centerPoint = brush.Center.ToPixels(destinationSize);
-                Point GradientOriginOffset = brush.GradientOrigin.ToPixels(destinationSize);
-                // Note: Direct2D supports RadiusX and RadiusY but Cairo backend supports only Radius property
-                double radiusX = brush.Radius;
-                double radiusY = brush.Radius;
+            Point centerPoint = brush.Center.ToPixels(destinationSize);
+            Point GradientOriginOffset = brush.GradientOrigin.ToPixels(destinationSize);
+            // Note: Direct2D supports RadiusX and RadiusY but Cairo backend supports only Radius property
+            double radiusX = brush.Radius;
+            double radiusY = brush.Radius;
 
-                PlatformBrush = new SharpDX.Direct2D1.RadialGradientBrush(
-                    target,
-                    new SharpDX.Direct2D1.RadialGradientBrushProperties { Center = centerPoint.ToSharpDX(), GradientOriginOffset = GradientOriginOffset.ToSharpDX(), RadiusX = (float)radiusX, RadiusY = (float)radiusY },
-                    new SharpDX.Direct2D1.BrushProperties { Opacity = (float)brush.Opacity, Transform = target.Transform },
-                    new SharpDX.Direct2D1.GradientStopCollection(target, gradientStops, brush.SpreadMethod.ToDirect2D())
-                );
-            }
+            PlatformBrush = new SharpDX.Direct2D1.RadialGradientBrush(
+                target,
+                new SharpDX.Direct2D1.RadialGradientBrushProperties { Center = centerPoint.ToSharpDX(), GradientOriginOffset = GradientOriginOffset.ToSharpDX(), RadiusX = (float)radiusX, RadiusY = (float)radiusY },
+                new SharpDX.Direct2D1.BrushProperties { Opacity = (float)brush.Opacity, Transform = target.Transform },
+                new SharpDX.Direct2D1.GradientStopCollection(target, gradientStops, brush.SpreadMethod.ToDirect2D())
+            );
         }
     }
 }

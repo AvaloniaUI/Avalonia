@@ -52,7 +52,7 @@ namespace Perspex.Media
         }
 
         /// <summary>
-        ///  ets or sets the horizontal and vertical radius of the outermost circle of the radial gradient.
+        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial gradient.
         /// </summary>
         public double Radius
         {
