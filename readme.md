@@ -12,7 +12,7 @@ Click on the image above to see a video of Perspex in action!
 ## NuGet
 
 Perspex is delivered as a NuGet package.
-You can find the packages here: ([stable-ish](https://www.nuget.org/packages/Perspex/0.1.0-alpha2), [nightly](https://www.myget.org/F/perspex-nightly/api/v2/Packages))
+You can find the packages here: ([stable(ish)](https://www.nuget.org/packages), [nightly](https://www.myget.org/F/perspex-nightly/api/v2/Packages))
 
 You can install the package like this:
 `Install-Package Perspex -Pre`
