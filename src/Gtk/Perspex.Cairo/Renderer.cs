@@ -74,6 +74,8 @@ namespace Perspex.Cairo
 
         public override void Dispose()
         {
+			if (_surface != null)
+		        _surface.Dispose();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\xunit.runner.visualstudio.2.0.1\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\..\packages\xunit.runner.visualstudio.2.0.1\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -36,10 +36,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,17 +44,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
-      <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.assert, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.assert, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
-      <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.core, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.core, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll</HintPath>
-      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -69,39 +65,39 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Controls\Perspex.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
       <Name>Perspex.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
       <Name>Perspex.Input</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Interactivity\Perspex.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
       <Name>Perspex.Interactivity</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Layout\Perspex.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
+      <Project>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</Project>
       <Name>Perspex.Direct2D1</Name>
     </ProjectReference>
   </ItemGroup>

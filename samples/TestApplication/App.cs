@@ -12,8 +12,9 @@ namespace TestApplication
         public App()
         {
             RegisterServices();
-            InitializeSubsystems((int)Environment.OSVersion.Platform);
+            InitializeSubsystems((int)Environment.OSVersion.Platform);            
             Styles = new DefaultTheme();
+            Styles.Add(new SampleTabStyle());
         }
     }
 }

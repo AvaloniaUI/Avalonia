@@ -21,7 +21,7 @@ namespace Perspex
     public interface IVisual
     {
         /// <summary>
-        /// Gets the bounds of the scene graph node.
+        /// Gets the bounds of the scene graph node relative to its parent.
         /// </summary>
         Rect Bounds { get; }
 

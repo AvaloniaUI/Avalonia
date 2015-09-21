@@ -112,7 +112,10 @@ namespace Perspex.Controls.Html
             = RoutedEvent.Register<HtmlRendererRoutedEventArgs<HtmlImageLoadEventArgs>>("ImageLoad", RoutingStrategies.Bubble,
                 typeof (HtmlControl));
 
-
+        static HtmlControl()
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(HtmlControl), true);
+        }
 
         /// <summary>
         /// Creates a new HtmlPanel and sets a basic css for it's styling.

@@ -29,8 +29,8 @@ namespace Perspex.Themes.Default
                     Setters = new[]
                     {
                         new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ToggleButton>(Template)),
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff707070)),
+						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffaaaaaa)),
+						new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xffaaaaaa)),
                         new Setter(TemplatedControl.BorderThicknessProperty, 2.0),
                         new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(ButtonStyle.FocusAdornerTemplate)),
                         new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xff000000)),
@@ -42,36 +42,37 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff7f7f7f)),
+						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff777777)),
+						new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff77777)),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffbee6fd)),
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff3c7fb1)),
+						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff888888)),
+						new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff888888)),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":checked").Class(":pointerover").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffa0a0a0)),
+						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff777777)),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":pointerover").Class(":pressed").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffc4e5f6)),
+						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xff888888)),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":pressed").Template().Name("border"))
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xffff628b)),
+						new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xff888888)),
                     },
                 },
                 new Style(x => x.OfType<ToggleButton>().Class(":disabled").Template().Name("border"))

@@ -13,6 +13,7 @@ namespace Perspex.Cairo.Media.Imaging
         public RenderTargetBitmapImpl(Cairo.ImageSurface surface)
         {
             Surface = surface;
+            renderer = new Renderer(Surface);
         }
 
         public int PixelWidth => Surface.Width;
@@ -21,7 +22,7 @@ namespace Perspex.Cairo.Media.Imaging
 
         public void Dispose()
         {
-            Surface.Dispose();
+            renderer.Dispose();
         }
 
         public Cairo.ImageSurface Surface
@@ -29,9 +30,9 @@ namespace Perspex.Cairo.Media.Imaging
             get;
         }
 
+        private Renderer renderer;
         public void Render(IVisual visual)
         {
-            Renderer renderer = new Renderer(Surface);
             renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"));
         }
 

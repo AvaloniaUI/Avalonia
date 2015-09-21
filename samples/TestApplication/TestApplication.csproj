@@ -35,18 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.FullNetFx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -72,9 +60,21 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="GalleryStyle.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -83,8 +83,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
+      <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
+      <Name>Perspex.Cairo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Application\Perspex.Application.csproj">
@@ -104,7 +108,7 @@
       <Name>Perspex.Diagnostics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
-      <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
+      <Project>{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}</Project>
       <Name>Perspex.HtmlRenderer</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
@@ -136,11 +140,11 @@
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
+      <Project>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</Project>
       <Name>Perspex.Direct2D1</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
-      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
+      <Project>{811A76CF-1CF6-440F-963B-BBE31BD72A82}</Project>
       <Name>Perspex.Win32</Name>
     </ProjectReference>
   </ItemGroup>
@@ -149,6 +153,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="html.htm" />
+    <Content Include="pattern.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\src\Shared\perspex.platform.targets" />

@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex;
+using Perspex.Input.Platform;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Splat;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Perspex.Utilities;
@@ -107,6 +109,22 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         protected override RFont CreateFontInt(RFontFamily family, double size, RFontStyle style)
         {
             return new FontAdapter(family.Name, size, style);
+        }
+
+        protected override void SetToClipboardInt(string html, string plainText)
+        {
+            SetToClipboardInt(plainText);
+        }
+
+        protected override void SetToClipboardInt(string text)
+        {
+            Locator.Current.GetService<IClipboard>().SetTextAsync(text);
+        }
+
+        protected override void SetToClipboardInt(RImage image)
+        {
+            //Do not crash, just ignore
+            //TODO: implement image clipboard support
         }
     }
 }

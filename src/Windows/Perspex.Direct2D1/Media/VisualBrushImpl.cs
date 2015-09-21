@@ -8,7 +8,7 @@ using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
-    public class VisualBrushImpl : BrushImpl
+    public class VisualBrushImpl : TileBrushImpl
     {
         public VisualBrushImpl(
             VisualBrush brush,
@@ -30,86 +30,78 @@ namespace Perspex.Direct2D1.Media
                 layoutable.Arrange(new Rect(layoutable.DesiredSize));
             }
 
+            var tileMode = brush.TileMode;
             var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
             var destinationRect = brush.DestinationRect.ToPixels(targetSize);
-            var bitmapSize = brush.TileMode == TileMode.None ? targetSize : destinationRect.Size;
             var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
             var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
-            var options = CompatibleRenderTargetOptions.None;
+            var intermediateSize = CalculateIntermediateSize(tileMode, targetSize, destinationRect.Size);
+            var brtOpts = CompatibleRenderTargetOptions.None;
 
-            using (var brt = new BitmapRenderTarget(target, options, bitmapSize.ToSharpDX()))
+            // TODO: There are times where we don't need to draw an intermediate bitmap. Identify
+            // them and directly use 'image' in those cases.
+            using (var intermediate = new BitmapRenderTarget(target, brtOpts, intermediateSize))
             {
-                var renderer = new Renderer(brt);
-                var transform = Matrix.CreateTranslation(-sourceRect.Position) *
-                                Matrix.CreateScale(scale) *
-                                Matrix.CreateTranslation(translate);
-
                 Rect drawRect;
-
-                if (brush.TileMode == TileMode.None)
-                {
-                    drawRect = destinationRect;
-                    transform *= Matrix.CreateTranslation(destinationRect.Position);
-                }
-                else
-                {
-                    drawRect = new Rect(0, 0, destinationRect.Width, destinationRect.Height);
-                }
+                var transform = CalculateIntermediateTransform(
+                    tileMode,
+                    sourceRect,
+                    destinationRect,
+                    scale,
+                    translate,
+                    out drawRect);
+                var renderer = new Renderer(intermediate);
 
                 renderer.Render(visual, null, transform, drawRect);
 
-                var result = new BitmapBrush(brt, brt.Bitmap);
-                result.ExtendModeX = (brush.TileMode & TileMode.FlipX) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
-                result.ExtendModeY = (brush.TileMode & TileMode.FlipY) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
-
-                if (brush.TileMode != TileMode.None)
-                {
-                    result.Transform = SharpDX.Matrix3x2.Translation(
-                        (float)destinationRect.X,
-                        (float)destinationRect.Y);
-                }
-
-                PlatformBrush = result;
-            }
-        }
-
-        private static Vector CalculateTranslate(
-            VisualBrush brush,
-            Rect sourceRect,
-            Rect destinationRect,
-            Vector scale)
-        {
-            var x = 0.0;
-            var y = 0.0;
-            var size = sourceRect.Size * scale;
-
-            switch (brush.AlignmentX)
-            {
-                case AlignmentX.Center:
-                    x += (destinationRect.Width - size.Width) / 2;
-                    break;
-                case AlignmentX.Right:
-                    x += destinationRect.Width - size.Width;
-                    break;
+                this.PlatformBrush = new BitmapBrush(
+                    target,
+                    intermediate.Bitmap,
+                    GetBitmapBrushProperties(brush),
+                    GetBrushProperties(brush, destinationRect));
             }
 
-            switch (brush.AlignmentY)
-            {
-                case AlignmentY.Center:
-                    y += (destinationRect.Height - size.Height) / 2;
-                    break;
-                case AlignmentY.Bottom:
-                    y += destinationRect.Height - size.Height;
-                    break;
-            }
+            //var sourceRect = brush.SourceRect.ToPixels(layoutable.Bounds.Size);
+            //var destinationRect = brush.DestinationRect.ToPixels(targetSize);
+            //var bitmapSize = brush.TileMode == TileMode.None ? targetSize : destinationRect.Size;
+            //var scale = brush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+            //var translate = CalculateTranslate(brush, sourceRect, destinationRect, scale);
+            //var options = CompatibleRenderTargetOptions.None;
 
-            return new Vector(x, y);
-        }
+            //using (var brt = new BitmapRenderTarget(target, options, bitmapSize.ToSharpDX()))
+            //{
+            //    var renderer = new Renderer(brt);
+            //    var transform = Matrix.CreateTranslation(-sourceRect.Position) *
+            //                    Matrix.CreateScale(scale) *
+            //                    Matrix.CreateTranslation(translate);
 
-        public override void Dispose()
-        {
-            ((BitmapBrush)PlatformBrush)?.Bitmap.Dispose();
-            base.Dispose();
+            //    Rect drawRect;
+
+            //    if (brush.TileMode == TileMode.None)
+            //    {
+            //        drawRect = destinationRect;
+            //        transform *= Matrix.CreateTranslation(destinationRect.Position);
+            //    }
+            //    else
+            //    {
+            //        drawRect = new Rect(0, 0, destinationRect.Width, destinationRect.Height);
+            //    }
+
+            //    renderer.Render(visual, null, transform, drawRect);
+
+            //    var result = new BitmapBrush(brt, brt.Bitmap);
+            //    result.ExtendModeX = GetExtendModeX(brush.TileMode);
+            //    result.ExtendModeY = GetExtendModeY(brush.TileMode);
+
+            //    if (brush.TileMode != TileMode.None)
+            //    {
+            //        result.Transform = SharpDX.Matrix3x2.Translation(
+            //            (float)destinationRect.X,
+            //            (float)destinationRect.Y);
+            //    }
+
+            //    PlatformBrush = result;
+            //}
         }
     }
 }

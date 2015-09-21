@@ -1,0 +1,1 @@
+.\build-version.ps1 0.1.0-alpha2

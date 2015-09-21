@@ -27,8 +27,7 @@ please submit a PR if you have anything to add.
 ### Install Latest Mono
 
 That the time of writing, mono 4.2 aplha was needed to build. Add mono package sources by following
-instructions below for the stable channel, and then add the alpha channel to 
-`/etc/apt/sources.list.d/mono-xamarin-alpha.list` as well.
+instructions below for the stable channel and then add the alpha channel as well.
 
 http://www.mono-project.com/docs/getting-started/install/linux/#debian-ubuntu-and-derivatives
 

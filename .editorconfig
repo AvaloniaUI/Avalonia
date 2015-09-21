@@ -1,0 +1,11 @@
+; This file is for unifying the coding style for different editors and IDEs.
+; More information at http://EditorConfig.org
+
+root = true
+
+[*]
+end_of_line = CRLF
+
+[*.cs]
+indent_style = space
+indent_size = 4
