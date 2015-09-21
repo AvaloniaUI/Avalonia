@@ -675,7 +675,47 @@ namespace TestApplication
 									},
 								}
 							},
-						}
+                            new TextBlock
+                            {
+                                Margin = new Thickness(0, 40, 0, 0),
+                                Text = "Canvas",
+                                FontWeight = FontWeight.Medium,
+                                FontSize = 20,
+                                Foreground = SolidColorBrush.Parse("#212121"),
+                            },
+                            new TextBlock
+                            {
+                                Text = "A panel which lays out its children by explicit coordinates.",
+                                FontSize = 13,
+                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Margin = new Thickness(0, 0, 0, 10)
+                            },
+                            new Canvas
+                            {
+                                Background = Brushes.Yellow,
+                                Width = 300,
+                                Height = 400,
+                                Children = new Controls
+                                {
+                                    new Rectangle
+                                    {
+                                        Fill = Brushes.Blue,
+                                        Width = 63,
+                                        Height = 41,
+                                        [Canvas.LeftProperty] = 40,
+                                        [Canvas.TopProperty] = 31,
+                                    },
+                                    new Ellipse
+                                    {
+                                        Fill = Brushes.Green,
+                                        Width = 58,
+                                        Height = 58,
+                                        [Canvas.LeftProperty] = 130,
+                                        [Canvas.TopProperty] = 79,
+                                    },
+                                }
+                            },
+                        }
 					}
 				}
             };
