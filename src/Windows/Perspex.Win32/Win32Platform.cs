@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Perspex.Input;
 using Perspex.Platform;
+using Perspex.Shared.PlatformSupport;
 using Perspex.Win32.Input;
 using Perspex.Win32.Interop;
 using Splat;
@@ -40,7 +41,6 @@ namespace Perspex.Win32
         private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(()=>new PclPlatformWrapper(), typeof(IPclPlatformWrapper));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
@@ -48,7 +48,7 @@ namespace Perspex.Win32
             locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
             locator.Register(() => s_instance, typeof(IPlatformSettings));
             locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
-            locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
+            SharedPlatform.Register();
         }
 
         public static void Initialize()

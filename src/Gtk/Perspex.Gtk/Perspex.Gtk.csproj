@@ -49,10 +49,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Shared\PclPlatformWrapper.cs">
-      <Link>PclPlatformWrapper.cs</Link>
-    </Compile>
-    <Compile Include="AssetLoader.cs" />
     <Compile Include="ClipboardImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="GtkExtensions.cs" />
@@ -106,4 +102,5 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
+  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
 </Project>

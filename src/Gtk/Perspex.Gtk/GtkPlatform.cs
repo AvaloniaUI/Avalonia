@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using Perspex.Input.Platform;
 using Perspex.Input;
 using Perspex.Platform;
+using Perspex.Shared.PlatformSupport;
 using Splat;
 
 namespace Perspex.Gtk
@@ -28,7 +29,6 @@ namespace Perspex.Gtk
         public static void Initialize()
         {
             var locator = Locator.CurrentMutable;
-            locator.Register(() => new PclPlatformWrapper(), typeof(IPclPlatformWrapper));
             locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
@@ -36,7 +36,7 @@ namespace Perspex.Gtk
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => s_instance, typeof(IPlatformSettings));
             locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
-            locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
+            SharedPlatform.Register();
         }
 
         public bool HasMessages()

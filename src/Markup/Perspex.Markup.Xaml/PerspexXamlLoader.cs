@@ -111,11 +111,11 @@ namespace Perspex.Markup.Xaml
         /// <returns>The URI.</returns>
         private static IEnumerable<Uri> GetUrisFor(Type type)
         {
-            return new[]
-            {
-                new Uri(type.FullName + ".xaml", UriKind.Relative),
-                new Uri(type.FullName + ".paml", UriKind.Relative),
-            };
+            var asm = type.GetTypeInfo().Assembly.GetName().Name;
+            var typeName = type.FullName;
+            yield return new Uri("resource://application/" + asm + "/" + typeName+".xaml");
+            yield return new Uri("resource://application/" + asm + "/" + typeName + ".paml");
+
         }
     }
 }

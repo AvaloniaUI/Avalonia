@@ -61,13 +61,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Shared\PclPlatformWrapper.cs">
-      <Link>PclPlatformWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AssetLoader.cs" />
     <Compile Include="ClipboardImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Input\KeyInterop.cs" />
@@ -127,6 +123,7 @@
       <Name>Perspex.Styling</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

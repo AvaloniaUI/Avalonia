@@ -2,19 +2,35 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Perspex.Platform;
 
-namespace Perspex.Gtk
+namespace Perspex.Shared.PlatformSupport
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
+        private static readonly Dictionary<string, Assembly> AssemblyNameCache
+            = new Dictionary<string, Assembly>();
+
+
+        static Assembly GetAssembly(string name)
+        {
+            Assembly rv;
+            if (!AssemblyNameCache.TryGetValue(name, out rv))
+                AssemblyNameCache[name] = rv =
+                    AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == name)
+                    ?? Assembly.Load(name);
+            return rv;
+        }
+
         /// <summary>
         /// Opens the resource with the requested URI.
         /// </summary>
@@ -25,8 +41,10 @@ namespace Perspex.Gtk
         /// </exception>
         public Stream Open(Uri uri)
         {
-            var assembly = Assembly.GetEntryAssembly();
-            var rv = assembly.GetManifestResourceStream(uri.ToString());
+            var parts = uri.AbsolutePath.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            var asm = parts.Length == 1 ? Assembly.GetEntryAssembly() : GetAssembly(parts[0]);
+            var typeName = parts[parts.Length == 1 ? 0 : 1];
+            var rv = asm.GetManifestResourceStream(typeName);
             if (rv == null)
                 throw new FileNotFoundException(uri.ToString());
             return rv;
