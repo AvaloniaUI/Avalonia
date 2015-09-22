@@ -60,6 +60,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Orientation = Orientation.Horizontal,
                 Minimum = 100,
                 Maximum = 200,
+                Height = 12,
                 Value = 150,
                 ViewportSize = 50,
             };
@@ -86,6 +87,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Maximum = 300,
                 Value = 150,
                 ViewportSize = 50,
+                Width = 12,
             };
 
             target.Measure(new Size(100, 100));
@@ -104,6 +106,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var target = new Track
             {
+                Height = 12,
                 Thumb = thumb,
                 Orientation = Orientation.Horizontal,
                 Minimum = 100,

@@ -4,6 +4,7 @@
 using System;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.Layout;
 
 namespace Perspex.Controls.Primitives
 {
