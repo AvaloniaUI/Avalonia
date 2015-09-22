@@ -31,6 +31,7 @@ Copy-Item ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.xml $
 Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.dll $lib
 Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.xml $lib
 Copy-Item ..\src\Perspex.HtmlRenderer\bin\Release\Perspex.HtmlRenderer.dll $lib
+Copy-Item ..\src\Perspex.ReactiveUI\bin\Release\Perspex.ReactiveUI.dll $lib
 Copy-Item ..\src\NGenerics\bin\Release\NGenerics.dll $lib
 
 Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\Perspex.Direct2D1.dll $build
