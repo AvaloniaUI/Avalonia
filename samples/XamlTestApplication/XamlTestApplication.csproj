@@ -157,7 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="Views\MainWindow.xaml">
+    <EmbeddedResource Include="Views\MainWindow.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

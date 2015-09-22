@@ -1,7 +1,7 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-        Title="Perspex Test Application" Height="350" Width="525">
+        Title="Perspex Test Application" Height="350" Width="525" SizeToContent="WidthAndHeight" >
    
     <Grid RowDefinitions="Auto,*">
         <TabControl Grid.Row="1">
