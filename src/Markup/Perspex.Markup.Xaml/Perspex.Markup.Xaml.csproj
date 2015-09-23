@@ -194,6 +194,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlNamespaceRegistry.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlTypeRepository.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MemberValuePlugin.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\Metadata.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MutableXamlMember.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\Namespace.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\PrefixRegistration.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\XamlType.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\XamlTypeName.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\XamlTypeRepository.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\XamlTypeRepositoryMixin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ValueConversionException.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Visualization\IVisitor.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Visualization\NodeType.cs" />
