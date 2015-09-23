@@ -74,7 +74,6 @@ namespace Perspex.Rendering
         /// </summary>
         /// <param name="visual">The visual to render.</param>
         /// <param name="context">The drawing context.</param>
-        /// <param name="translation">The current translation.</param>
         /// <param name="transform">The current transform.</param>
         protected virtual void Render(IVisual visual, IDrawingContext context,  Matrix transform)
         {
@@ -94,22 +93,17 @@ namespace Perspex.Rendering
                 }
 
                 // Draw the control and its children.
-               // var m = transform * translation;
-                var d = context.PushTransform(transform);
-
+				using (context.PushTransform (transform))
                 using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
                 {
                     visual.Render(context);
-                    //d.Dispose();
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
 						Render(child, context, transform.Invert() * offset);
                     }
                 }
-
-				d.Dispose ();
             }
         }
     }
