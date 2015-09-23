@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
-using NGenerics.DataStructures.General;
 using Perspex.VisualTree;
 using Serilog;
 using Serilog.Core.Enrichers;
@@ -44,14 +44,14 @@ namespace Perspex.Layout
         private bool _measureNeeded = true;
 
         /// <summary>
-        /// The controls that need to be measured, sorted by distance to layout root.
+        /// The controls that need to be measured.
         /// </summary>
-        private Heap<Item> _toMeasure = new Heap<Item>(HeapType.Minimum);
+        private List<Item> _toMeasure = new List<Item>();
 
         /// <summary>
-        /// The controls that need to be arranged, sorted by distance to layout root.
+        /// The controls that need to be arranged.
         /// </summary>
-        private Heap<Item> _toArrange = new Heap<Item>(HeapType.Minimum);
+        private List<Item> _toArrange = new List<Item>();
 
         /// <summary>
         /// Prevents re-entrancy.
@@ -207,7 +207,8 @@ namespace Perspex.Layout
             {
                 var measure = _toMeasure;
 
-                _toMeasure = new Heap<Item>(HeapType.Minimum);
+                _toMeasure = new List<Item>();
+                measure.Sort();
 
                 if (!Root.IsMeasureValid)
                 {
@@ -254,7 +255,8 @@ namespace Perspex.Layout
             {
                 var arrange = _toArrange;
 
-                _toArrange = new Heap<Item>(HeapType.Minimum);
+                _toArrange = new List<Item>();
+                arrange.Sort();
 
                 if (!Root.IsArrangeValid && Root.IsMeasureValid)
                 {
