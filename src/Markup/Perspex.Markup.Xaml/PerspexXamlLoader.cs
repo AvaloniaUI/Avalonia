@@ -65,17 +65,13 @@ namespace Perspex.Markup.Xaml
             }
             foreach (var uri in GetUrisFor(type))
             {
-                Stream stream;
-                try
+                if (assetLocator.Exists(uri))
                 {
-                    stream= assetLocator.Open(uri);
+                    using (var stream = assetLocator.Open(uri))
+                    {
+                        return Load(stream, rootInstance);
+                    }
                 }
-                catch (FileNotFoundException)
-                {
-                    continue;
-                }
-                using (stream)
-                    return Load(stream, rootInstance);
             }
             throw new FileNotFoundException("Unable to find view for " + type.FullName);
         }
