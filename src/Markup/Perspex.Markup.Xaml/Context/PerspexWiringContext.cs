@@ -21,23 +21,33 @@ using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
 using Splat;
+using System;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexWiringContext : IWiringContext
+    public class PerspexWiringContext : WiringContext
     {
-        private readonly WiringContext _context;
         private const string PerspexNs = "https://github.com/perspex";
 
         public PerspexWiringContext(ITypeFactory typeFactory)
+            : this(typeFactory, new TypeFeatureProvider(GetContentPropertyProvider(), GetConverterProvider()))
         {
-            var featureProvider = new TypeFeatureProvider(GetContentPropertyProvider(), GetConverterProvider());
+        }
 
+        public PerspexWiringContext(ITypeFactory typeFactory, TypeFeatureProvider featureProvider)
+            : base(CreateTypeContext(typeFactory, featureProvider), featureProvider)
+        {
+        }
+
+        private static ITypeContext CreateTypeContext(ITypeFactory typeFactory, TypeFeatureProvider featureProvider)
+        {
             var xamlNamespaceRegistry = CreateXamlNamespaceRegistry();
             var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
-            var xamlTypeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
-            var typeContext = new TypeContext(xamlTypeRepository, xamlNamespaceRegistry, typeFactory);
-            _context = new WiringContext(typeContext, featureProvider);
+            var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
+
+            typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(setter => setter.Value, setter => setter.Property));
+
+            return new TypeContext(typeRepository, xamlNamespaceRegistry, typeFactory);
         }
 
         private static XamlNamespaceRegistry CreateXamlNamespaceRegistry()
@@ -113,9 +123,5 @@ namespace Perspex.Markup.Xaml.Context
 
             return contentPropertyProvider;
         }
-
-        public ITypeContext TypeContext => _context.TypeContext;
-
-        public ITypeFeatureProvider FeatureProvider => _context.FeatureProvider;
     }
 }
