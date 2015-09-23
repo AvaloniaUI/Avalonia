@@ -39,10 +39,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
-      <Project>{415E048E-4611-4815-9CF2-D774E29079AC}</Project>
-      <Name>NGenerics</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>

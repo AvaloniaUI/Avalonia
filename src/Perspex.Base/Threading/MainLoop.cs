@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NGenerics.DataStructures.Queues;
 using Perspex.Platform;
 using Perspex.Threading;
 using Splat;
@@ -18,8 +18,7 @@ namespace Perspex.Win32.Threading
     {
         private static readonly IPlatformThreadingInterface s_platform;
 
-        private readonly PriorityQueue<Job, DispatcherPriority> _queue =
-            new PriorityQueue<Job, DispatcherPriority>(PriorityQueueType.Maximum);
+        private readonly Queue<Job> _queue = new Queue<Job>();
 
         /// <summary>
         /// Initializes static members of the <see cref="MainLoop"/> class.
@@ -109,6 +108,7 @@ namespace Perspex.Win32.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority)
         {
+            // TODO: Respect priority.
             AddJob(new Job(action, priority, true));
         }
 
@@ -116,7 +116,7 @@ namespace Perspex.Win32.Threading
         {
             lock (_queue)
             {
-                _queue.Add(job, job.Priority);
+                _queue.Enqueue(job);
             }
             s_platform.Wake();
         }
