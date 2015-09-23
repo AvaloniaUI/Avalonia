@@ -50,7 +50,7 @@ namespace Perspex.Rendering
             using (var context = CreateDrawingContext(handle))
             using (clip.HasValue ? context.PushClip(clip.Value) : null)
             {
-                Render(visual, context, Matrix.Identity, transform);
+                Render(visual, context, transform);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Perspex.Rendering
         /// <param name="context">The drawing context.</param>
         /// <param name="translation">The current translation.</param>
         /// <param name="transform">The current transform.</param>
-        protected virtual void Render(IVisual visual, IDrawingContext context, Matrix translation, Matrix transform)
+        protected virtual void Render(IVisual visual, IDrawingContext context,  Matrix transform)
         {
             var opacity = visual.Opacity;
 
@@ -84,10 +84,7 @@ namespace Perspex.Rendering
             {
                 // Translate any existing transform into this controls coordinate system.
                 Matrix offset = Matrix.CreateTranslation(visual.Bounds.Position);
-                transform = offset * transform * -offset;
-
-                // Update the current offset.
-                translation *= Matrix.CreateTranslation(visual.Bounds.Position);
+				transform = offset * transform;
 
                 // Apply the control's render transform, if any.
                 if (visual.RenderTransform != null)
@@ -97,20 +94,22 @@ namespace Perspex.Rendering
                 }
 
                 // Draw the control and its children.
-                var m = transform * translation;
-                var d = context.PushTransform(m);
+               // var m = transform * translation;
+                var d = context.PushTransform(transform);
 
                 using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
                 {
                     visual.Render(context);
-                    d.Dispose();
+                    //d.Dispose();
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
-                        Render(child, context, translation, transform);
+						Render(child, context, transform.Invert() * offset);
                     }
                 }
+
+				d.Dispose ();
             }
         }
     }
