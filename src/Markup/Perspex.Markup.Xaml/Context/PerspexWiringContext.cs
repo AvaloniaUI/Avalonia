@@ -22,6 +22,7 @@ using Perspex.Platform;
 using Perspex.Styling;
 using Splat;
 using System;
+using Perspex.Controls.Primitives;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -45,7 +46,11 @@ namespace Perspex.Markup.Xaml.Context
             var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
             var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
 
-            typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(setter => setter.Value, setter => setter.Property));
+            typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
+            typeRepository.RegisterMetadata(
+                new Metadata<SelectingItemsControl>()
+                .WithMemberDependency(x => x.SelectedIndex, x => x.Items)
+                .WithMemberDependency(x => x.SelectedItem, x => x.Items));
 
             return new TypeContext(typeRepository, xamlNamespaceRegistry, typeFactory);
         }
