@@ -3,7 +3,6 @@
 
 using System.IO;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Media.Imaging
 {
@@ -18,7 +17,7 @@ namespace Perspex.Media.Imaging
         /// <param name="fileName">The filename of the bitmap.</param>
         public Bitmap(string fileName)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             PlatformImpl = factory.LoadBitmap(fileName);
         }
 
@@ -28,7 +27,7 @@ namespace Perspex.Media.Imaging
         /// <param name="stream">The stream to read the bitmap from.</param>
         public Bitmap(Stream stream)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             PlatformImpl = factory.LoadBitmap(stream);
         }
 
@@ -39,7 +38,7 @@ namespace Perspex.Media.Imaging
         /// <param name="height">The height of the bitmap, in pixels.</param>
         public Bitmap(int width, int height)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             PlatformImpl = factory.CreateBitmap(width, height);
         }
 

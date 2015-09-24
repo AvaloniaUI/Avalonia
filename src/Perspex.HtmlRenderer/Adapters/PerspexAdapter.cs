@@ -9,7 +9,6 @@ using Perspex;
 using Perspex.Input.Platform;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Splat;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Perspex.Utilities;
@@ -118,7 +117,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
 
         protected override void SetToClipboardInt(string text)
         {
-            Locator.Current.GetService<IClipboard>().SetTextAsync(text);
+            PerspexLocator.Current.GetService<IClipboard>().SetTextAsync(text);
         }
 
         protected override void SetToClipboardInt(RImage image)

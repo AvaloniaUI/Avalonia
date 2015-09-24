@@ -5,7 +5,6 @@ using System;
 using Perspex.Interactivity;
 using Perspex.Rendering;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Controls.Primitives
 {
@@ -94,7 +93,7 @@ namespace Perspex.Controls.Primitives
         /// This property allows a client to customize the behaviour of the popup by injecting
         /// a specialized dependency resolver into the <see cref="PopupRoot"/>'s constructor.
         /// </remarks>
-        public IDependencyResolver DependencyResolver
+        public IPerspexDependencyResolver DependencyResolver
         {
             get;
             set;

@@ -9,7 +9,6 @@ using Perspex.Controls.Templates;
 using Perspex.Platform;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -58,10 +57,11 @@ namespace Perspex.Controls.UnitTests
 
         private IDisposable RegisterServices()
         {
-            var result = Locator.CurrentMutable.WithResolver();
+            var result = PerspexLocator.EnterScope();
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            Locator.CurrentMutable.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
+            PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
+
             return result;
         }
     }

@@ -3,7 +3,6 @@
 
 using System;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Media.Imaging
 {
@@ -55,7 +54,7 @@ namespace Perspex.Media.Imaging
         /// <returns>The platform-specific implementation.</returns>
         private static IBitmapImpl CreateImpl(int width, int height)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(width, height);
         }
     }

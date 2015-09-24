@@ -8,7 +8,6 @@ using Perspex.Platform;
 using Perspex.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Splat;
 using DwFactory = SharpDX.DirectWrite.Factory;
 
 namespace Perspex.Direct2D1
@@ -28,8 +27,8 @@ namespace Perspex.Direct2D1
         /// <param name="height">The height of the window.</param>
         public Renderer(IntPtr hwnd, double width, double height)
         {
-            Direct2DFactory = Locator.Current.GetService<Factory>();
-            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            Direct2DFactory = PerspexLocator.Current.GetService<Factory>();
+            DirectWriteFactory = PerspexLocator.Current.GetService<DwFactory>();
 
             RenderTargetProperties renderTargetProperties = new RenderTargetProperties
             {
@@ -54,8 +53,8 @@ namespace Perspex.Direct2D1
         /// <param name="renderTarget">The render target.</param>
         public Renderer(RenderTarget renderTarget)
         {
-            Direct2DFactory = Locator.Current.GetService<Factory>();
-            DirectWriteFactory = Locator.Current.GetService<DwFactory>();
+            Direct2DFactory = PerspexLocator.Current.GetService<Factory>();
+            DirectWriteFactory = PerspexLocator.Current.GetService<DwFactory>();
             _renderTarget = renderTarget;
         }
 

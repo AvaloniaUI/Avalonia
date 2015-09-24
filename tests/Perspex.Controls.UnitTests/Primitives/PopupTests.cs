@@ -13,7 +13,6 @@ using Perspex.LogicalTree;
 using Perspex.Platform;
 using Perspex.Styling;
 using Perspex.VisualTree;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
@@ -248,7 +247,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
         private static IDisposable CreateServices()
         {
-            var result = Locator.Current.WithResolver();
+            var result = PerspexLocator.EnterScope();
 
             var styles = new Styles
             {
@@ -264,11 +263,14 @@ namespace Perspex.Controls.UnitTests.Primitives
             var globalStyles = new Mock<IGlobalStyles>();
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
-            Locator.CurrentMutable.Register(() => globalStyles.Object, typeof(IGlobalStyles));
-            Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
-            Locator.CurrentMutable.Register(() => new Mock<IPlatformThreadingInterface>().Object, typeof(IPlatformThreadingInterface));
-            Locator.CurrentMutable.Register(() => new Mock<IPopupImpl>().Object, typeof(IPopupImpl));
-            Locator.CurrentMutable.Register(() => new Styler(), typeof(IStyler));
+
+            PerspexLocator.CurrentMutable
+                .Bind<ILayoutManager>().ToTransient<LayoutManager>()
+                .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
+                .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
+                .Bind<IPopupImpl>().ToConstant(new Mock<IPopupImpl>().Object)
+                .Bind<IStyler>().ToTransient<Styler>();
+
             return result;
         }
 

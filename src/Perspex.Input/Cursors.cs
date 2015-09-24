@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +49,7 @@ namespace Perspex.Input
 
         public Cursor(StandardCursorType cursorType)
             : this(
-                ((IStandardCursorFactory)Locator.Current.GetService(typeof(IStandardCursorFactory))).GetCursor(
+                ((IStandardCursorFactory)PerspexLocator.Current.GetService(typeof(IStandardCursorFactory))).GetCursor(
                     cursorType))
         {
         }

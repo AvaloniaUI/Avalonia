@@ -12,7 +12,6 @@ using Perspex.Interactivity;
 using Perspex.LogicalTree;
 using Perspex.Rendering;
 using Perspex.Styling;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -397,7 +396,7 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(root);
 
-            IStyler styler = Locator.Current.GetService<IStyler>();
+            IStyler styler = PerspexLocator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
         }
 

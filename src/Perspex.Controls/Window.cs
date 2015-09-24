@@ -8,7 +8,6 @@ using Perspex.Input;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Styling;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -72,7 +71,7 @@ namespace Perspex.Controls
         /// Initializes a new instance of the <see cref="Window"/> class.
         /// </summary>
         public Window()
-            : base(Locator.Current.GetService<IWindowImpl>())
+            : base(PerspexLocator.Current.GetService<IWindowImpl>())
         {
             _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
         }

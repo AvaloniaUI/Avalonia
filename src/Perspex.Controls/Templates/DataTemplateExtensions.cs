@@ -3,7 +3,6 @@
 
 using System.Linq;
 using Perspex.LogicalTree;
-using Splat;
 
 namespace Perspex.Controls.Templates
 {
@@ -63,7 +62,7 @@ namespace Perspex.Controls.Templates
                 }
             }
 
-            IGlobalDataTemplates global = Locator.Current.GetService<IGlobalDataTemplates>();
+            IGlobalDataTemplates global = PerspexLocator.Current.GetService<IGlobalDataTemplates>();
 
             if (global != null)
             {

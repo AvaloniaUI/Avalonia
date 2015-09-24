@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 using DWrite = SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1.Media
@@ -21,7 +20,7 @@ namespace Perspex.Direct2D1.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            var factory = Locator.Current.GetService<DWrite.Factory>();
+            var factory = PerspexLocator.Current.GetService<DWrite.Factory>();
 
             var format = new DWrite.TextFormat(
                 factory,

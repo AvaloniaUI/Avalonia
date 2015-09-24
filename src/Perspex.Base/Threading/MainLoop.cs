@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Perspex.Platform;
 using Perspex.Threading;
-using Splat;
 
 namespace Perspex.Win32.Threading
 {
@@ -25,7 +24,7 @@ namespace Perspex.Win32.Threading
         /// </summary>
         static MainLoop()
         {
-            s_platform = Locator.Current.GetService<IPlatformThreadingInterface>();
+            s_platform = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
         }
 
         /// <summary>

@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Disposables;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Threading
 {
@@ -175,7 +174,7 @@ namespace Perspex.Threading
         {
             if (!IsEnabled)
             {
-                IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
+                IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
                 _timer = threading.StartTimer(Interval, InternalTick);
             }
         }
@@ -187,7 +186,7 @@ namespace Perspex.Threading
         {
             if (IsEnabled)
             {
-                IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
+                IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
                 _timer.Dispose();
                 _timer = null;
             }

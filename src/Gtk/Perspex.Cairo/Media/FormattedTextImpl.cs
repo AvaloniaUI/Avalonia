@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Cairo.Media
 {
