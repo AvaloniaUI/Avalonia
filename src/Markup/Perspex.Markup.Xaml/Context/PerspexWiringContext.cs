@@ -20,7 +20,6 @@ using Perspex.Media.Imaging;
 using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
-using Splat;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -52,7 +51,7 @@ namespace Perspex.Markup.Xaml.Context
 
             foreach (var nsa in 
                 forcedAssemblies
-                    .Concat(Locator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
+                    .Concat(PerspexLocator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
                     .Distinct()
                     .SelectMany(asm
                         => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new {asm, attr}))

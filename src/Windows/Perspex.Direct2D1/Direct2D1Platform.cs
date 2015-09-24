@@ -6,7 +6,6 @@ using System.IO;
 using Perspex.Direct2D1.Media;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Direct2D1
 {
@@ -20,14 +19,11 @@ namespace Perspex.Direct2D1
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        public static void Initialize()
-        {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => s_instance, typeof(IPlatformRenderInterface));
-            locator.Register(() => s_d2D1Factory, typeof(SharpDX.Direct2D1.Factory));
-            locator.Register(() => s_dwfactory, typeof(SharpDX.DirectWrite.Factory));
-            locator.Register(() => s_imagingFactory, typeof(SharpDX.WIC.ImagingFactory));
-        }
+        public static void Initialize() => PerspexLocator.CurrentMutable
+            .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+            .BindToSelf(s_d2D1Factory)
+            .BindToSelf(s_dwfactory)
+            .BindToSelf(s_imagingFactory);
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {

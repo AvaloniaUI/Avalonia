@@ -4,7 +4,6 @@
 using Perspex.Controls.Shapes;
 using Perspex.Layout;
 using Perspex.Media;
-using Splat;
 using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
@@ -16,7 +15,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 Direct2D1Platform.Initialize();
 
@@ -39,7 +38,7 @@ namespace Perspex.Direct2D1.UnitTests.Controls.Shapes
         [Fact]
         public void Should_Measure_Expander_Triangle_With_Stroke_Correctly()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 Direct2D1Platform.Initialize();
 

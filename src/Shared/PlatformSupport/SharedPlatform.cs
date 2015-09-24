@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Shared.PlatformSupport
 {
@@ -10,9 +9,9 @@ namespace Perspex.Shared.PlatformSupport
     {
         public static void Register()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new PclPlatformWrapper(), typeof(IPclPlatformWrapper));
-            locator.RegisterConstant(new AssetLoader(), typeof(IAssetLoader));
+            PerspexLocator.CurrentMutable
+                .Bind<IPclPlatformWrapper>().ToSingleton<PclPlatformWrapper>()
+                .Bind<IAssetLoader>().ToSingleton<AssetLoader>();
         }
     }
 }

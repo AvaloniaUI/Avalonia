@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Perspex.Controls.Platform;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -20,7 +19,7 @@ namespace Perspex.Controls
 
         public async Task<string> ShowAsync(Window window = null)
             =>
-                ((await Locator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl)) ??
+                ((await PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl)) ??
                  new string[0]).FirstOrDefault();
     }
 
@@ -29,7 +28,7 @@ namespace Perspex.Controls
         public bool AllowMultiple { get; set; }
 
         public Task<string[]> ShowAsync(Window window = null)
-            => Locator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl);
+            => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl);
     }
 
     public abstract class SystemDialog

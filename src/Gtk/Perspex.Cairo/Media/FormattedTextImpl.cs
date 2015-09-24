@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Cairo.Media
 {

@@ -12,7 +12,6 @@ using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
 using Perspex.Threading;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -87,7 +86,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="impl">The platform-specific window implementation.</param>
         public TopLevel(ITopLevelImpl impl)
-            : this(impl, Locator.Current)
+            : this(impl, PerspexLocator.Current)
         {
         }
 
@@ -98,7 +97,7 @@ namespace Perspex.Controls
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public TopLevel(ITopLevelImpl impl, IDependencyResolver dependencyResolver)
+        public TopLevel(ITopLevelImpl impl, IPerspexDependencyResolver dependencyResolver)
         {
             if (impl == null)
             {
@@ -108,7 +107,7 @@ namespace Perspex.Controls
 
             PlatformImpl = impl;
 
-            dependencyResolver = dependencyResolver ?? Locator.Current;
+            dependencyResolver = dependencyResolver ?? PerspexLocator.Current;
             var renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             var styler = TryGetService<IStyler>(dependencyResolver);
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
@@ -327,13 +326,13 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Tries to get a service from an <see cref="IDependencyResolver"/>, throwing an
+        /// Tries to get a service from an <see cref="IPerspexDependencyResolver"/>, throwing an
         /// exception if not found.
         /// </summary>
         /// <typeparam name="T">The service type.</typeparam>
         /// <param name="resolver">The resolver.</param>
         /// <returns>The service.</returns>
-        private static T TryGetService<T>(IDependencyResolver resolver) where T : class
+        private static T TryGetService<T>(IPerspexDependencyResolver resolver) where T : class
         {
             var result = resolver.GetService<T>();
 

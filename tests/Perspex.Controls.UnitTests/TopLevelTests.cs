@@ -14,7 +14,6 @@ using Perspex.Rendering;
 using Perspex.Styling;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -24,7 +23,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void ClientSize_Should_Be_Set_On_Construction()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -40,7 +39,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_Should_Not_Be_Set_On_Construction()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -56,7 +55,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Height_Should_Not_Be_Set_On_Construction()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -72,7 +71,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Layout_Pass_Should_Not_Be_Automatically_Scheduled()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -88,10 +87,10 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Bounds_Should_Be_Set_After_Layout_Pass()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
-                Locator.CurrentMutable.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
+                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(new LayoutManager());
 
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupProperty(x => x.ClientSize);
@@ -120,10 +119,10 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_ClientSize_Should_Be_Set_After_Layout_Pass()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
-                Locator.CurrentMutable.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
+                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(new LayoutManager());
 
                 var impl = new Mock<ITopLevelImpl>();
 
@@ -150,7 +149,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_And_Height_Should_Not_Be_Set_After_Layout_Pass()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -168,11 +167,11 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Render_Should_Be_Scheduled_After_Layout_Pass()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
                 var completed = new Subject<Unit>();
-                var layoutManagerMock = Mock.Get(Locator.Current.GetService<ILayoutManager>());
+                var layoutManagerMock = Mock.Get(PerspexLocator.Current.GetService<ILayoutManager>());
                 layoutManagerMock.Setup(x => x.LayoutCompleted).Returns(completed);
 
                 var impl = new Mock<ITopLevelImpl>();
@@ -181,7 +180,7 @@ namespace Perspex.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
                 completed.OnNext(Unit.Default);
 
-                var renderManagerMock = Mock.Get(Locator.Current.GetService<IRenderManager>());
+                var renderManagerMock = Mock.Get(PerspexLocator.Current.GetService<IRenderManager>());
                 renderManagerMock.Verify(x => x.InvalidateRender(target));
             }
         }
@@ -189,7 +188,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_And_Height_Should_Be_Set_After_Window_Resize_Notification()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -209,7 +208,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Activate_Should_Call_Impl_Activate()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -225,7 +224,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Activate_Should_Call_Raise_Activated_Event()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -245,7 +244,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Close_Should_Call_Raise_Closed_Event()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -265,7 +264,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Deactivate_Should_Call_Raise_Activated_Event()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -285,7 +284,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -308,7 +307,7 @@ namespace Perspex.Controls.UnitTests
         private void RegisterServices()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var l = Locator.CurrentMutable;
+            var l = PerspexLocator.CurrentMutable;
 
             var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
@@ -320,14 +319,16 @@ namespace Perspex.Controls.UnitTests
 
             globalStyles.Setup(x => x.Styles).Returns(theme);
 
-            l.RegisterConstant(new Mock<IInputManager>().Object, typeof(IInputManager));
-            l.RegisterConstant(new Mock<IFocusManager>().Object, typeof(IFocusManager));
-            l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
-            l.RegisterConstant(layoutManager, typeof(ILayoutManager));
-            l.RegisterConstant(new Mock<IPlatformThreadingInterface>().Object, typeof(IPlatformThreadingInterface));
-            l.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
-            l.RegisterConstant(renderManager, typeof(IRenderManager));
-            l.RegisterConstant(new Styler(), typeof(IStyler));
+
+            PerspexLocator.CurrentMutable
+                .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
+                .Bind<IFocusManager>().ToConstant(new Mock<IFocusManager>().Object)
+                .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
+                .Bind<ILayoutManager>().ToConstant(layoutManager)
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
+                .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
+                .Bind<IRenderManager>().ToConstant(renderManager)
+                .Bind<IStyler>().ToConstant(new Styler());
         }
 
         private class TestTopLevel : TopLevel

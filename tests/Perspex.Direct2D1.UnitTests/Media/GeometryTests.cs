@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Media;
-using Splat;
 using Xunit;
 
 namespace Perspex.Direct2D1.UnitTests.Media
@@ -14,7 +13,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
         [Fact]
         public void Should_Measure_Expander_Triangle_Correctly()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 Direct2D1Platform.Initialize();
 
@@ -27,7 +26,7 @@ namespace Perspex.Direct2D1.UnitTests.Media
         [Fact]
         public void Should_Measure_Expander_Triangle_With_Stroke_Correctly()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 Direct2D1Platform.Initialize();
 

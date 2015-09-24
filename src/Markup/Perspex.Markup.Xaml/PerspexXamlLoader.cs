@@ -8,7 +8,6 @@ using System.Reflection;
 using OmniXaml;
 using Perspex.Markup.Xaml.Context;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Markup.Xaml
 {
@@ -57,7 +56,7 @@ namespace Perspex.Markup.Xaml
             // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
             // in certain situations, so we try to load .xaml and if that's not found we try .paml.
             // Ideally we'd be able to use .xaml everywhere
-            var assetLocator = Locator.Current.GetService<IAssetLoader>();
+            var assetLocator = PerspexLocator.Current.GetService<IAssetLoader>();
             if (assetLocator == null)
             {
                 throw new InvalidOperationException(
@@ -86,7 +85,7 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Uri uri, object rootInstance = null)
         {
-            var assetLocator = Locator.Current.GetService<IAssetLoader>();
+            var assetLocator = PerspexLocator.Current.GetService<IAssetLoader>();
 
             if (assetLocator == null)
             {
