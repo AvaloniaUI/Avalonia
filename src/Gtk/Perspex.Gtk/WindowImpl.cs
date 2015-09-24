@@ -51,6 +51,12 @@ namespace Perspex.Gtk
             _imContext.Commit += ImContext_Commit;
         }
 
+		protected override void OnRealized ()
+		{
+			base.OnRealized ();
+			_imContext.ClientWindow = this.GdkWindow;
+		}
+
         public Size ClientSize
         {
             get;
