@@ -287,6 +287,7 @@ namespace Perspex.Cairo.Media
 			_context.SetSource(impl.PlatformBrush);
 			return Disposable.Create(() => 
 			{
+			    impl.Dispose();
 				_context.Restore();
 			});
         }
