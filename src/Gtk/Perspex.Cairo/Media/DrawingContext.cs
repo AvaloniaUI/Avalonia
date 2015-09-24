@@ -288,6 +288,7 @@ namespace Perspex.Cairo.Media
 			return Disposable.Create(() => 
 			{
 				_context.Restore();
+				impl.Dispose();
 			});
         }
 
