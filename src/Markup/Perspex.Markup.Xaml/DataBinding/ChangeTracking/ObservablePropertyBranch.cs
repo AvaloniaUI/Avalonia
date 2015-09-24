@@ -1,56 +1,58 @@
-// -----------------------------------------------------------------------
-// <copyright file="ObservablePropertyBranch.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reflection;
+using Glass;
 
 namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Reflection;
-    using Glass;
-
     public class ObservablePropertyBranch
     {
-        private readonly object root;
-        private readonly PropertyPath propertyPath;
-        private PropertyMountPoint mountPoint;
+        private readonly object _instance;
+        private readonly PropertyPath _propertyPath;
+        private readonly PropertyMountPoint _mountPoint;
 
-        public ObservablePropertyBranch(object root, PropertyPath propertyPath)
+        public ObservablePropertyBranch(object instance, PropertyPath propertyPath)
         {
-            Guard.ThrowIfNull(root, nameof(root));
+            Guard.ThrowIfNull(instance, nameof(instance));
             Guard.ThrowIfNull(propertyPath, nameof(propertyPath));
 
-            this.root = root;
-            this.propertyPath = propertyPath;
-            this.mountPoint = new PropertyMountPoint(root, propertyPath);
-            var subscriptions = this.GetInpcNodes();
-            this.Changed = this.CreateObservableFromNodes(subscriptions);
+            _instance = instance;
+            _propertyPath = propertyPath;
+            _mountPoint = new PropertyMountPoint(instance, propertyPath);
+            var properties = GetPropertiesThatRaiseNotifications();
+            Values = CreateUnifiedObservableFromNodes(properties);
         }
 
-        private IObservable<object> CreateObservableFromNodes(IEnumerable<InpcNode> subscriptions)
+        public IObservable<object> Values { get; private set; }
+
+        private IObservable<object> CreateUnifiedObservableFromNodes(IEnumerable<PropertyDefinition> subscriptions)
         {
-            return subscriptions.Select(
-                subscription => Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                    ev => subscription.Parent.PropertyChanged += ev,
-                    handler => subscription.Parent.PropertyChanged -= handler)
-                    .Do(_ => this.mountPoint = new PropertyMountPoint(this.root, this.propertyPath))
-                    .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName))
-                    .Merge();
+            return subscriptions.Select(GetObservableFromProperty).Merge();
         }
 
-        private IEnumerable<InpcNode> GetInpcNodes()
+        private IObservable<object> GetObservableFromProperty(PropertyDefinition subscription)
         {
-            return this.GetSubscriptionsRecursive(this.root, this.propertyPath, 0);
+            return Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                parentOnPropertyChanged => subscription.Parent.PropertyChanged += parentOnPropertyChanged,
+                parentOnPropertyChanged => subscription.Parent.PropertyChanged -= parentOnPropertyChanged)
+                .Where(pattern => pattern.EventArgs.PropertyName == subscription.PropertyName)
+                .Select(pattern => _mountPoint.Value);
         }
 
-        private IEnumerable<InpcNode> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
+        private IEnumerable<PropertyDefinition> GetPropertiesThatRaiseNotifications()
         {
-            var subscriptions = new List<InpcNode>();
+            return GetSubscriptionsRecursive(_instance, _propertyPath, 0);
+        }
+
+        private IEnumerable<PropertyDefinition> GetSubscriptionsRecursive(object current, PropertyPath propertyPath, int i)
+        {
+            var subscriptions = new List<PropertyDefinition>();
             var inpc = current as INotifyPropertyChanged;
 
             if (inpc == null)
@@ -59,42 +61,44 @@ namespace Perspex.Markup.Xaml.DataBinding.ChangeTracking
             }
 
             var nextPropertyName = propertyPath.Chunks[i];
-            subscriptions.Add(new InpcNode(inpc, nextPropertyName));
+            subscriptions.Add(new PropertyDefinition(inpc, nextPropertyName));
 
-            if (i < this.propertyPath.Chunks.Length)
+            if (i < _propertyPath.Chunks.Length)
             {
                 var currentObjectTypeInfo = current.GetType().GetTypeInfo();
                 var nextProperty = currentObjectTypeInfo.GetDeclaredProperty(nextPropertyName);
                 var nextInstance = nextProperty.GetValue(current);
-                subscriptions.AddRange(this.GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+
+                if (i < _propertyPath.Chunks.Length - 1)
+                {
+                    subscriptions.AddRange(GetSubscriptionsRecursive(nextInstance, propertyPath, i + 1));
+                }
             }
 
             return subscriptions;
         }
 
-        public IObservable<object> Changed { get; }
-
         public object Value
         {
             get
             {
-                return this.mountPoint.Value;
+                return _mountPoint.Value;
             }
 
             set
             {
-                this.mountPoint.Value = value;
+                _mountPoint.Value = value;
             }
         }
 
-        public Type Type => this.mountPoint.ProperyType;
+        public Type Type => _mountPoint.ProperyType;
 
-        private class InpcNode
+        private class PropertyDefinition
         {
-            public InpcNode(INotifyPropertyChanged parent, string propertyName)
+            public PropertyDefinition(INotifyPropertyChanged parent, string propertyName)
             {
-                this.Parent = parent;
-                this.PropertyName = propertyName;
+                Parent = parent;
+                PropertyName = propertyName;
             }
 
             public INotifyPropertyChanged Parent { get; }

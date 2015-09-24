@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SolidColorBrush.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Media
 {
@@ -17,7 +14,7 @@ namespace Perspex.Media
         /// <param name="color">The color to use.</param>
         public SolidColorBrush(Color color)
         {
-            this.Color = color;
+            Color = color;
         }
 
         /// <summary>
@@ -34,9 +31,7 @@ namespace Perspex.Media
         /// </summary>
         public Color Color
         {
-            get;
-            private set;
-        }
+            get; }
 
         /// <summary>
         /// Returns a string representation of the brush.
@@ -44,7 +39,7 @@ namespace Perspex.Media
         /// <returns>A string representation of the brush.</returns>
         public override string ToString()
         {
-            return this.Color.ToString();
+            return Color.ToString();
         }
     }
 }

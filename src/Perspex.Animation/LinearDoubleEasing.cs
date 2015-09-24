@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="LinearDoubleEasing.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Animation
 {
@@ -38,7 +35,7 @@ namespace Perspex.Animation
         /// </returns>
         object IEasing.Ease(double progress, object start, object finish)
         {
-            return this.Ease(progress, (double)start, (double)finish);
+            return Ease(progress, (double)start, (double)finish);
         }
     }
 }

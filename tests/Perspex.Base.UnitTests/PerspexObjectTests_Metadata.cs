@@ -1,17 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectTests_Metadata.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using System.Reactive.Linq;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Xunit;
-
     public class PerspexObjectTests_Metadata
     {
         public PerspexObjectTests_Metadata()
@@ -20,22 +15,31 @@ namespace Perspex.Base.UnitTests
             PerspexProperty p;
             p = Class1.FooProperty;
             p = Class2.BarProperty;
+            p = AttachedOwner.AttachedProperty;
         }
 
         [Fact]
-        public void GetProperties_Returns_Registered_Properties()
+        public void GetRegisteredProperties_Returns_Registered_Properties()
         {
-            string[] names = PerspexObject.GetProperties(typeof(Class1)).Select(x => x.Name).ToArray();
+            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class1)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
         [Fact]
-        public void GetProperties_Returns_Registered_Properties_For_Base_Types()
+        public void GetRegisteredProperties_Returns_Registered_Properties_For_Base_Types()
         {
-            string[] names = PerspexObject.GetProperties(typeof(Class2)).Select(x => x.Name).ToArray();
+            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class2)).Select(x => x.Name).ToArray();
 
-            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
+        }
+
+        [Fact]
+        public void GetAttachedProperties_Returns_Registered_Properties_For_Base_Types()
+        {
+            string[] names = PerspexObject.GetAttachedProperties(typeof(AttachedOwner)).Select(x => x.Name).ToArray();
+
+            Assert.Equal(new[] { "Attached" }, names);
         }
 
         private class Class1 : PerspexObject
@@ -60,6 +64,12 @@ namespace Perspex.Base.UnitTests
 
             public static readonly PerspexProperty<double?> FredProperty =
                 PerspexProperty.Register<Class2, double?>("Fred");
+        }
+
+        private class AttachedOwner
+        {
+            public static readonly PerspexProperty<string> AttachedProperty =
+                PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
         }
     }
 }

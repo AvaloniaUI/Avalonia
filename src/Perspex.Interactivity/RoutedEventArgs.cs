@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RoutedEventArgs.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Interactivity
 {
-    using System;
-
     public class RoutedEventArgs : EventArgs
     {
         public RoutedEventArgs()
@@ -16,13 +13,13 @@ namespace Perspex.Interactivity
 
         public RoutedEventArgs(RoutedEvent routedEvent)
         {
-            this.RoutedEvent = routedEvent;
+            RoutedEvent = routedEvent;
         }
 
         public RoutedEventArgs(RoutedEvent routedEvent, IInteractive source)
         {
-            this.RoutedEvent = routedEvent;
-            this.Source = source;
+            RoutedEvent = routedEvent;
+            Source = source;
         }
 
         public bool Handled { get; set; }

@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FormattedTextLine.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Media
 {
@@ -18,8 +15,8 @@ namespace Perspex.Media
         /// <param name="height">The height of the line, in pixels.</param>
         public FormattedTextLine(int length, double height)
         {
-            this.Length = length;
-            this.Height = height;
+            Length = length;
+            Height = height;
         }
 
         /// <summary>

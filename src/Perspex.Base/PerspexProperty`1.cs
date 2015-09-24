@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexProperty`1.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex
 {
-    using System;
-
     /// <summary>
     /// A typed perspex property.
     /// </summary>
@@ -64,7 +61,7 @@ namespace Perspex
         /// <returns>The default value.</returns>
         public TValue GetDefaultValue<T>()
         {
-            return (TValue)this.GetDefaultValue(typeof(T));
+            return (TValue)GetDefaultValue(typeof(T));
         }
 
         /// <summary>
@@ -77,7 +74,7 @@ namespace Perspex
             var f = validation != null ?
                 (o, v) => validation((T)o, (TValue)v) :
                 (Func<PerspexObject, object, object>)null;
-            this.OverrideValidation(typeof(T), f);
+            OverrideValidation(typeof(T), f);
         }
 
         /// <summary>

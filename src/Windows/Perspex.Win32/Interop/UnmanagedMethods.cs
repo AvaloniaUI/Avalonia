@@ -1,16 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="UnmanagedMethods.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Text;
+// ReSharper disable InconsistentNaming
+#pragma warning disable 169
 
 namespace Perspex.Win32.Interop
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.InteropServices;
-    using System.Text;
-
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Using Win32 naming for consistency.")]
@@ -572,7 +571,9 @@ namespace Perspex.Win32.Interop
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr LoadCursor(IntPtr hInstance, int lpCursorName);
+        public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+
 
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
@@ -626,6 +627,71 @@ namespace Perspex.Win32.Interop
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+
+        public enum ClassLongIndex : int
+        {
+            GCL_HCURSOR = -12,
+            GCL_HICON = -14
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
+        private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLong")]
+        private static extern IntPtr SetClassLong32(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
+
+        public static IntPtr SetClassLong(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return SetClassLong32(hWnd, nIndex, dwNewLong);
+            }
+
+            return SetClassLong64(hWnd, nIndex, dwNewLong);
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool OpenClipboard(IntPtr hWndOwner);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool CloseClipboard();
+
+        [DllImport("user32.dll")]
+        public static extern bool EmptyClipboard();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetClipboardData(ClipboardFormat uFormat);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalLock(IntPtr handle);
+
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern bool GlobalUnlock(IntPtr handle);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GlobalFree(IntPtr hMem);
+
+        [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetSaveFileNameW")]
+        public static extern bool GetSaveFileName(IntPtr lpofn);
+
+        [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetOpenFileNameW")]
+        public static extern bool GetOpenFileName(IntPtr lpofn);
+
+        [DllImport("comdlg32.dll")]
+        public static extern int CommDlgExtendedError();
+
+        public enum ClipboardFormat
+        {
+            CF_TEXT = 1,
+            CF_UNICODETEXT = 13
+        }
 
         public struct MSG
         {
@@ -686,6 +752,50 @@ namespace Perspex.Win32.Interop
             public string lpszMenuName;
             public string lpszClassName;
             public IntPtr hIconSm;
+        }
+
+        [Flags]
+        public enum OpenFileNameFlags
+        {
+
+            OFN_ALLOWMULTISELECT = 0x00000200,
+
+            OFN_EXPLORER = 0x00080000,
+
+            OFN_HIDEREADONLY = 0x00000004,
+
+            OFN_NOREADONLYRETURN = 0x00008000,
+
+            OFN_OVERWRITEPROMPT = 0x00000002
+
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct OpenFileName
+        {
+            public int lStructSize;
+            public IntPtr hwndOwner;
+            public IntPtr hInstance;
+            public IntPtr lpstrFilter;
+            public IntPtr lpstrCustomFilter;
+            public int nMaxCustFilter;
+            public int nFilterIndex;
+            public IntPtr lpstrFile;
+            public int nMaxFile;
+            public IntPtr lpstrFileTitle;
+            public int nMaxFileTitle;
+            public IntPtr lpstrInitialDir;
+            public IntPtr lpstrTitle;
+            public OpenFileNameFlags Flags;
+            private ushort Unused;
+            private ushort Unused2;
+            public IntPtr lpstrDefExt;
+            public IntPtr lCustData;
+            public IntPtr lpfnHook;
+            public IntPtr lpTemplateName;
+            public IntPtr reservedPtr;
+            public int reservedInt;
+            public int flagsEx;
         }
     }
 }

@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SelectableMixin.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Interactivity;
+using Perspex.Controls.Primitives;
 
 namespace Perspex.Controls.Mixins
 {
-    using System;
-    using Perspex.Interactivity;
-    using Primitives;
-
     /// <summary>
     /// Adds selectable functionality to control classes.
     /// </summary>

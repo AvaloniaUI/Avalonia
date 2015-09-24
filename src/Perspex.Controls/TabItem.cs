@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabItem.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Primitives;
 
 namespace Perspex.Controls
 {
-    using Mixins;
-    using Perspex.Controls.Primitives;
-
     /// <summary>
     /// An item in  a <see cref="TabStrip"/> or <see cref="TabControl"/>.
     /// </summary>
@@ -34,8 +31,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return this.GetValue(IsSelectedProperty); }
-            set { this.SetValue(IsSelectedProperty, value); }
+            get { return GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
     }
 }

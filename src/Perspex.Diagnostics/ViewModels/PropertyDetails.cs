@@ -1,38 +1,35 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PropertyDetails.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System;
-    using ReactiveUI;
-
     internal class PropertyDetails : ReactiveObject
     {
-        private object value;
+        private object _value;
 
-        private string priority;
+        private string _priority;
 
-        private string diagnostic;
+        private string _diagnostic;
 
         public PropertyDetails(PerspexObject o, PerspexProperty property)
         {
-            this.Name = property.IsAttached ?
+            Name = property.IsAttached ?
                 string.Format("[{0}.{1}]", property.OwnerType.Name, property.Name) :
                 property.Name;
-            this.IsAttached = property.IsAttached;
+            IsAttached = property.IsAttached;
 
             // TODO: Unsubscribe when view model is deactivated.
             o.GetObservable(property).Subscribe(x =>
             {
                 var diagnostic = o.GetDiagnostic(property);
-                this.Value = diagnostic.Value ?? "(null)";
-                this.Priority = (diagnostic.Priority != BindingPriority.Unset) ?
+                Value = diagnostic.Value ?? "(null)";
+                Priority = (diagnostic.Priority != BindingPriority.Unset) ?
                     diagnostic.Priority.ToString() :
                     diagnostic.Property.Inherits ? "Inherited" : "Unset";
-                this.Diagnostic = diagnostic.Diagnostic;
+                Diagnostic = diagnostic.Diagnostic;
             });
         }
 
@@ -42,20 +39,20 @@ namespace Perspex.Diagnostics.ViewModels
 
         public string Priority
         {
-            get { return this.priority; }
-            private set { this.RaiseAndSetIfChanged(ref this.priority, value); }
+            get { return _priority; }
+            private set { this.RaiseAndSetIfChanged(ref _priority, value); }
         }
 
         public string Diagnostic
         {
-            get { return this.diagnostic; }
-            private set { this.RaiseAndSetIfChanged(ref this.diagnostic, value); }
+            get { return _diagnostic; }
+            private set { this.RaiseAndSetIfChanged(ref _diagnostic, value); }
         }
 
         public object Value
         {
-            get { return this.value; }
-            private set { this.RaiseAndSetIfChanged(ref this.value, value); }
+            get { return _value; }
+            private set { this.RaiseAndSetIfChanged(ref _value, value); }
         }
     }
 }

@@ -1,17 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Panel.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.Collections;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.Collections;
-
     /// <summary>
     /// Base class for controls that can contain multiple children.
     /// </summary>
@@ -21,17 +19,23 @@ namespace Perspex.Controls
     /// </remarks>
     public class Panel : Control, IReparentingControl, IPanel
     {
-        private Controls children = new Controls();
+        /// <summary>
+        /// Defines the <see cref="Background"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<Panel>();
 
-        private ILogical childLogicalParent;
+        private readonly Controls _children = new Controls();
+
+        private ILogical _childLogicalParent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
         /// </summary>
         public Panel()
         {
-            this.children.CollectionChanged += this.ChildrenChanged;
-            this.childLogicalParent = this;
+            _children.CollectionChanged += ChildrenChanged;
+            _childLogicalParent = this;
         }
 
         /// <summary>
@@ -47,17 +51,26 @@ namespace Perspex.Controls
         {
             get
             {
-                return this.children;
+                return _children;
             }
 
             set
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                this.ClearVisualChildren();
-                this.children.Clear();
-                this.children.AddRange(value);
+                ClearVisualChildren();
+                _children.Clear();
+                _children.AddRange(value);
             }
+        }
+
+        /// <summary>
+        /// Gets or Sets Panel background brush.
+        /// </summary>
+        public Brush Background
+        {
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         /// <summary>
@@ -75,10 +88,10 @@ namespace Perspex.Controls
             Contract.Requires<ArgumentNullException>(logicalParent != null);
             Contract.Requires<ArgumentNullException>(children != null);
 
-            this.childLogicalParent = logicalParent;
-            this.RedirectLogicalChildren(children);
+            _childLogicalParent = logicalParent;
+            RedirectLogicalChildren(children);
 
-            foreach (var control in this.Children)
+            foreach (var control in Children)
             {
                 ((ISetLogicalParent)control).SetParent(null);
                 ((ISetLogicalParent)control).SetParent((IControl)logicalParent);
@@ -104,7 +117,7 @@ namespace Perspex.Controls
         /// <param name="controls">The controls.</param>
         private void SetLogicalParent(IEnumerable<IControl> controls)
         {
-            var parent = this.childLogicalParent as Control;
+            var parent = _childLogicalParent as Control;
 
             foreach (var control in controls)
             {
@@ -126,28 +139,44 @@ namespace Perspex.Controls
             {
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
-                    this.SetLogicalParent(controls);
-                    this.AddVisualChildren(e.NewItems.OfType<Visual>());
-                    this.LogicalChildren.InsertRange(e.NewStartingIndex, controls);
+                    SetLogicalParent(controls);
+                    AddVisualChildren(e.NewItems.OfType<Visual>());
+                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
-                    this.ClearLogicalParent(e.OldItems.OfType<Control>());
-                    this.LogicalChildren.RemoveAll(controls);
-                    this.RemoveVisualChildren(e.OldItems.OfType<Visual>());
+                    ClearLogicalParent(e.OldItems.OfType<Control>());
+                    LogicalChildren.RemoveAll(controls);
+                    RemoveVisualChildren(e.OldItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
                     controls = e.OldItems.OfType<Control>().ToList();
-                    this.ClearLogicalParent(controls);
-                    this.LogicalChildren.Clear();
-                    this.ClearVisualChildren();
-                    this.AddVisualChildren(this.children);
+                    ClearLogicalParent(controls);
+                    LogicalChildren.Clear();
+                    ClearVisualChildren();
+                    AddVisualChildren(_children);
                     break;
             }
 
-            this.InvalidateMeasure();
+            InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Renders the visual to a <see cref="IDrawingContext"/>.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        public override void Render(IDrawingContext context)
+        {
+            Brush background = Background;
+            if (background != null)
+            {
+                var renderSize = Bounds.Size;
+                context.FillRectange(background, new Rect(renderSize));
+            }
+
+            base.Render(context);
         }
     }
 }

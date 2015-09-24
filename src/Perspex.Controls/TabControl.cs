@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabControl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Animation;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 
 namespace Perspex.Controls
 {
-    using Perspex.Animation;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
@@ -42,8 +39,8 @@ namespace Perspex.Controls
         /// </summary>
         public TabItem SelectedTab
         {
-            get { return this.GetValue(SelectedTabProperty); }
-            private set { this.SetValue(SelectedTabProperty, value); }
+            get { return GetValue(SelectedTabProperty); }
+            private set { SetValue(SelectedTabProperty, value); }
         }
 
         /// <summary>
@@ -51,8 +48,8 @@ namespace Perspex.Controls
         /// </summary>
         public IPageTransition Transition
         {
-            get { return this.GetValue(TransitionProperty); }
-            set { this.SetValue(TransitionProperty, value); }
+            get { return GetValue(TransitionProperty); }
+            set { SetValue(TransitionProperty, value); }
         }
 
         /// <summary>
@@ -76,9 +73,9 @@ namespace Perspex.Controls
         {
             if ((int)e.NewValue != -1)
             {
-                var item = this.SelectedItem as IContentControl;
+                var item = SelectedItem as IContentControl;
                 var content = item?.Content ?? item;
-                this.SelectedTab = item as TabItem;
+                SelectedTab = item as TabItem;
             }
         }
     }

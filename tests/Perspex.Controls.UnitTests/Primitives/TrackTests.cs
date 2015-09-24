@@ -1,26 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TrackTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Controls.Primitives;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Layout;
-    using Moq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.LogicalTree;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Splat;
-    using Templates;
-    using Xunit;
-
     public class TrackTests
     {
         [Fact]
@@ -75,6 +60,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Orientation = Orientation.Horizontal,
                 Minimum = 100,
                 Maximum = 200,
+                Height = 12,
                 Value = 150,
                 ViewportSize = 50,
             };
@@ -101,6 +87,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Maximum = 300,
                 Value = 150,
                 ViewportSize = 50,
+                Width = 12,
             };
 
             target.Measure(new Size(100, 100));
@@ -119,6 +106,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var target = new Track
             {
+                Height = 12,
                 Thumb = thumb,
                 Orientation = Orientation.Horizontal,
                 Minimum = 100,

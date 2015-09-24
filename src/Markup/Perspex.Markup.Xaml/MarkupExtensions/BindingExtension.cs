@@ -1,17 +1,14 @@
-// -----------------------------------------------------------------------
-// <copyright file="BindingExtension.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using OmniXaml;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
-    using System.Linq;
-    using Controls;
-    using DataBinding;
-    using DataBinding.ChangeTracking;
-    using OmniXaml;
-
     public class BindingExtension : MarkupExtension
     {
         public BindingExtension()
@@ -20,7 +17,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public BindingExtension(string path)
         {
-            this.Path = path;
+            Path = path;
         }
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
@@ -34,8 +31,8 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 (
                 target,
                 perspexProperty,
-                new PropertyPath(this.Path),
-                this.Mode == BindingMode.Default ? BindingMode.OneWay : this.Mode
+                new PropertyPath(Path),
+                Mode == BindingMode.Default ? BindingMode.OneWay : Mode
                 );
         }
 

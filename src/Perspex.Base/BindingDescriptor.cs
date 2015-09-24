@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BindingDescriptor.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
 
 namespace Perspex
 {
-    using System;
-    using System.Reactive;
-
     /// <summary>
     /// Defines possible binding modes.
     /// </summary>
@@ -84,7 +81,7 @@ namespace Perspex
         /// <summary>
         /// Gets a description of the binding.
         /// </summary>
-        public string Description => string.Format("{0}.{1}", this.Source?.GetType().Name, this.Property.Name);
+        public string Description => string.Format("{0}.{1}", Source?.GetType().Name, Property.Name);
 
         /// <summary>
         /// Makes a two-way binding.
@@ -113,7 +110,7 @@ namespace Perspex
         /// <returns>The object that the method was called on.</returns>
         public BindingDescriptor WithMode(BindingMode mode)
         {
-            this.Mode = mode;
+            Mode = mode;
             return this;
         }
 
@@ -124,14 +121,14 @@ namespace Perspex
         /// <returns>The object that the method was called on.</returns>
         public BindingDescriptor WithPriority(BindingPriority priority)
         {
-            this.Priority = priority;
+            Priority = priority;
             return this;
         }
 
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
-            return this.Source.GetObservable(this.Property).Subscribe(observer);
+            return Source.GetObservable(Property).Subscribe(observer);
         }
     }
 }

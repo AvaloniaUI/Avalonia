@@ -1,3 +1,10 @@
 [submodule "src/Perspex.ReactiveUI/src"]
 	path = src/Perspex.ReactiveUI/src
 	url = https://github.com/reactiveui/ReactiveUI.git
+[submodule "src/Perspex.HtmlRenderer/external"]
+	path = src/Perspex.HtmlRenderer/external
+	url = https://github.com/Perspex/HTML-Renderer.git
+	branch = perspex-pcl
+[submodule "src/Markup/Perspex.Markup.Xaml/OmniXAML"]
+	path = src/Markup/Perspex.Markup.Xaml/OmniXAML
+	url = https://github.com/SuperJMN/OmniXAML.git

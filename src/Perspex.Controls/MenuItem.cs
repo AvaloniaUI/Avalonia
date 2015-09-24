@@ -1,26 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="MenuItem.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Windows.Input;
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Interactivity;
+using Perspex.Threading;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Windows.Input;
-    using Perspex.Controls.Mixins;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Interactivity;
-    using Perspex.Threading;
-    using Perspex.VisualTree;
-    using Splat;
-
     /// <summary>
     /// A menu item control.
     /// </summary>
@@ -86,12 +83,12 @@ namespace Perspex.Controls
         /// <summary>
         /// The timer used to display submenus.
         /// </summary>
-        private IDisposable submenuTimer;
+        private IDisposable _submenuTimer;
 
         /// <summary>
         /// The submenu popup.
         /// </summary>
-        private Popup popup;
+        private Popup _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -112,8 +109,8 @@ namespace Perspex.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs> Click
         {
-            add { this.AddHandler(ClickEvent, value); }
-            remove { this.RemoveHandler(ClickEvent, value); }
+            add { AddHandler(ClickEvent, value); }
+            remove { RemoveHandler(ClickEvent, value); }
         }
 
         /// <summary>
@@ -121,8 +118,8 @@ namespace Perspex.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs> SubmenuOpened
         {
-            add { this.AddHandler(SubmenuOpenedEvent, value); }
-            remove { this.RemoveHandler(SubmenuOpenedEvent, value); }
+            add { AddHandler(SubmenuOpenedEvent, value); }
+            remove { RemoveHandler(SubmenuOpenedEvent, value); }
         }
 
         /// <summary>
@@ -130,8 +127,8 @@ namespace Perspex.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return this.GetValue(CommandProperty); }
-            set { this.SetValue(CommandProperty, value); }
+            get { return GetValue(CommandProperty); }
+            set { SetValue(CommandProperty, value); }
         }
 
         /// <summary>
@@ -140,8 +137,8 @@ namespace Perspex.Controls
         /// </summary>
         public object CommandParameter
         {
-            get { return this.GetValue(CommandParameterProperty); }
-            set { this.SetValue(CommandParameterProperty, value); }
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
         }
 
         /// <summary>
@@ -149,8 +146,8 @@ namespace Perspex.Controls
         /// </summary>
         public object Header
         {
-            get { return this.GetValue(HeaderProperty); }
-            set { this.SetValue(HeaderProperty, value); }
+            get { return GetValue(HeaderProperty); }
+            set { SetValue(HeaderProperty, value); }
         }
 
         /// <summary>
@@ -158,8 +155,8 @@ namespace Perspex.Controls
         /// </summary>
         public object Icon
         {
-            get { return this.GetValue(IconProperty); }
-            set { this.SetValue(IconProperty, value); }
+            get { return GetValue(IconProperty); }
+            set { SetValue(IconProperty, value); }
         }
 
         /// <summary>
@@ -167,8 +164,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return this.GetValue(IsSelectedProperty); }
-            set { this.SetValue(IsSelectedProperty, value); }
+            get { return GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
 
         /// <summary>
@@ -177,25 +174,19 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsSubMenuOpen
         {
-            get { return this.GetValue(IsSubMenuOpenProperty); }
-            set { this.SetValue(IsSubMenuOpenProperty, value); }
+            get { return GetValue(IsSubMenuOpenProperty); }
+            set { SetValue(IsSubMenuOpenProperty, value); }
         }
 
         /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
-        public bool HasSubMenu
-        {
-            get { return !this.Classes.Contains(":empty"); }
-        }
+        public bool HasSubMenu => !Classes.Contains(":empty");
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level menu item.
         /// </summary>
-        public bool IsTopLevel
-        {
-            get { return this.Parent is Menu; }
-        }
+        public bool IsTopLevel => Parent is Menu;
 
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.
@@ -203,9 +194,9 @@ namespace Perspex.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (this.Command != null)
+            if (Command != null)
             {
-                this.Command.Execute(this.CommandParameter);
+                Command.Execute(CommandParameter);
             }
         }
 
@@ -216,7 +207,7 @@ namespace Perspex.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            this.IsSelected = true;
+            IsSelected = true;
         }
 
         /// <summary>
@@ -234,43 +225,43 @@ namespace Perspex.Controls
             switch (e.Key)
             {
                 case Key.Left:
-                    if (!this.IsTopLevel && this.IsSubMenuOpen)
+                    if (!IsTopLevel && IsSubMenuOpen)
                     {
-                        this.IsSubMenuOpen = false;
+                        IsSubMenuOpen = false;
                         e.Handled = true;
                     }
 
-                    passStraightToParent = this.IsTopLevel || !this.IsSubMenuOpen;
+                    passStraightToParent = IsTopLevel || !IsSubMenuOpen;
                     break;
 
                 case Key.Right:
-                    if (!this.IsTopLevel && this.HasSubMenu && !this.IsSubMenuOpen)
+                    if (!IsTopLevel && HasSubMenu && !IsSubMenuOpen)
                     {
-                        this.SelectedIndex = 0;
-                        this.IsSubMenuOpen = true;
+                        SelectedIndex = 0;
+                        IsSubMenuOpen = true;
                         e.Handled = true;
                     }
 
-                    passStraightToParent = this.IsTopLevel || !this.IsSubMenuOpen;
+                    passStraightToParent = IsTopLevel || !IsSubMenuOpen;
                     break;
 
                 case Key.Enter:
-                    if (this.HasSubMenu)
+                    if (HasSubMenu)
                     {
                         goto case Key.Right;
                     }
                     else
                     {
-                        this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                        RaiseEvent(new RoutedEventArgs(ClickEvent));
                         e.Handled = true;
                     }
 
                     break;
 
                 case Key.Escape:
-                    if (this.IsSubMenuOpen)
+                    if (IsSubMenuOpen)
                     {
-                        this.IsSubMenuOpen = false;
+                        IsSubMenuOpen = false;
                         e.Handled = true;
                     }
 
@@ -291,19 +282,19 @@ namespace Perspex.Controls
         {
             base.OnPointerEnter(e);
 
-            var menu = this.Parent as Menu;
+            var menu = Parent as Menu;
 
             if (menu != null)
             {
                 if (menu.IsOpen)
                 {
-                    this.IsSubMenuOpen = true;
+                    IsSubMenuOpen = true;
                 }
             }
-            else if (this.HasSubMenu && !this.IsSubMenuOpen)
+            else if (HasSubMenu && !IsSubMenuOpen)
             {
-                this.submenuTimer = DispatcherTimer.Run(
-                    () => this.IsSubMenuOpen = true,
+                _submenuTimer = DispatcherTimer.Run(
+                    () => IsSubMenuOpen = true,
                     TimeSpan.FromMilliseconds(400));
             }
         }
@@ -316,10 +307,10 @@ namespace Perspex.Controls
         {
             base.OnPointerLeave(e);
 
-            if (this.submenuTimer != null)
+            if (_submenuTimer != null)
             {
-                this.submenuTimer.Dispose();
-                this.submenuTimer = null;
+                _submenuTimer.Dispose();
+                _submenuTimer = null;
             }
         }
 
@@ -331,17 +322,17 @@ namespace Perspex.Controls
         {
             base.OnPointerPressed(e);
 
-            if (!this.HasSubMenu)
+            if (!HasSubMenu)
             {
-                this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
             }
-            else if (this.IsTopLevel)
+            else if (IsTopLevel)
             {
-                this.IsSubMenuOpen = !this.IsSubMenuOpen;
+                IsSubMenuOpen = !IsSubMenuOpen;
             }
             else
             {
-                this.IsSubMenuOpen = true;
+                IsSubMenuOpen = true;
             }
 
             e.Handled = true;
@@ -357,7 +348,7 @@ namespace Perspex.Controls
 
             if (menuItem != null && menuItem.Parent == this)
             {
-                foreach (var child in this.Items.OfType<MenuItem>())
+                foreach (var child in Items.OfType<MenuItem>())
                 {
                     if (child != menuItem && child.IsSubMenuOpen)
                     {
@@ -374,11 +365,11 @@ namespace Perspex.Controls
         {
             base.OnTemplateApplied();
 
-            this.popup = this.GetTemplateChild<Popup>("popup");
-            this.popup.DependencyResolver = DependencyResolver.Instance;
-            this.popup.PopupRootCreated += this.PopupRootCreated;
-            this.popup.Opened += this.PopupOpened;
-            this.popup.Closed += this.PopupClosed;
+            _popup = this.GetTemplateChild<Popup>("popup");
+            _popup.DependencyResolver = DependencyResolver.Instance;
+            _popup.PopupRootCreated += PopupRootCreated;
+            _popup.Opened += PopupOpened;
+            _popup.Closed += PopupClosed;
         }
 
         /// <summary>
@@ -387,14 +378,14 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void AccessKeyPressed(RoutedEventArgs e)
         {
-            if (this.HasSubMenu)
+            if (HasSubMenu)
             {
-                this.SelectedIndex = 0;
-                this.IsSubMenuOpen = true;
+                SelectedIndex = 0;
+                IsSubMenuOpen = true;
             }
             else
             {
-                this.RaiseEvent(new RoutedEventArgs(ClickEvent));
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
             }
 
             e.Handled = true;
@@ -405,7 +396,7 @@ namespace Perspex.Controls
         /// </summary>
         private void CloseSubmenus()
         {
-            foreach (var child in this.Items.OfType<MenuItem>())
+            foreach (var child in Items.OfType<MenuItem>())
             {
                 child.IsSubMenuOpen = false;
             }
@@ -421,13 +412,13 @@ namespace Perspex.Controls
 
             if (value)
             {
-                this.RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
-                this.IsSelected = true;
+                RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
+                IsSelected = true;
             }
             else
             {
-                this.CloseSubmenus();
-                this.SelectedIndex = -1;
+                CloseSubmenus();
+                SelectedIndex = -1;
             }
         }
 
@@ -461,7 +452,7 @@ namespace Perspex.Controls
                 // The presenter was found. Set its TemplatedParent so it thinks that it had a
                 // normal birth; may it never know its own perveristy.
                 presenter.TemplatedParent = this;
-                this.Presenter = presenter;
+                Presenter = presenter;
             }
         }
 
@@ -472,11 +463,11 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void PopupOpened(object sender, EventArgs e)
         {
-            var selected = this.SelectedIndex;
+            var selected = SelectedIndex;
 
             if (selected != -1)
             {
-                var container = this.ItemContainerGenerator.ContainerFromIndex(selected);
+                var container = ItemContainerGenerator.ContainerFromIndex(selected);
 
                 if (container != null)
                 {
@@ -492,7 +483,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void PopupClosed(object sender, EventArgs e)
         {
-            this.SelectedItem = null;
+            SelectedItem = null;
         }
 
         /// <summary>

@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TabStripTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.ObjectModel;
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Xunit;
-
     public class TabStripTests
     {
         [Fact]
@@ -20,7 +17,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -45,7 +42,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -70,7 +67,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -111,7 +108,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(this.CreateTabStripTemplate),
+                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = list
             };
 
@@ -130,7 +127,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             return new ItemsPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~TabStrip.ItemsProperty],
+                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             };
         }
     }

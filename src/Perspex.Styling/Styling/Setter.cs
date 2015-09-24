@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Setter.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Styling
 {
-    using System;
-
     /// <summary>
     /// A setter for a <see cref="Style"/>.
     /// </summary>
@@ -31,8 +28,8 @@ namespace Perspex.Styling
         /// <param name="value">The property value.</param>
         public Setter(PerspexProperty property, object value)
         {
-            this.Property = property;
-            this.Value = value;
+            Property = property;
+            Value = value;
         }
 
         /// <summary>
@@ -63,12 +60,12 @@ namespace Perspex.Styling
         {
             if (activator == null)
             {
-                control.SetValue(this.Property, this.Value, BindingPriority.Style);
+                control.SetValue(Property, Value, BindingPriority.Style);
             }
             else
             {
-                var binding = new StyleBinding(activator, this.Value, style.ToString());
-                control.Bind(this.Property, binding, BindingPriority.StyleTrigger);
+                var binding = new StyleBinding(activator, Value, style.ToString());
+                control.Bind(Property, binding, BindingPriority.StyleTrigger);
             }
         }
     }

@@ -40,7 +40,7 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
@@ -55,7 +55,6 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Media\AlignmentY.cs" />
     <Compile Include="Media\AlignmentX.cs" />
@@ -64,11 +63,15 @@
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
-    <Compile Include="Media\MediaExtensions.cs" />
+    <Compile Include="Media\DashStyle.cs" />
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
+    <Compile Include="Media\RadialGradientBrush.cs" />
     <Compile Include="Media\LinearGradientBrush.cs" />
+    <Compile Include="Media\MediaExtensions.cs" />
+    <Compile Include="Media\PenLineCap.cs" />
+    <Compile Include="Media\PenLineJoin.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
@@ -95,8 +98,9 @@
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Media\TileBrush.cs" />
+    <Compile Include="Media\ImageBush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
-    <Compile Include="Origin.cs" />
+    <Compile Include="RelativePoint.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
@@ -124,14 +128,6 @@
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -144,13 +140,16 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
+      <HintPath>..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

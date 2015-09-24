@@ -1,17 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectTests_SetValue.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Xunit;
-
     public class PerspexObjectTests_SetValue
     {
         [Fact]
@@ -189,8 +183,8 @@ namespace Perspex.Base.UnitTests
 
             public Class1 Parent
             {
-                get { return (Class1)this.InheritanceParent; }
-                set { this.InheritanceParent = value; }
+                get { return (Class1)InheritanceParent; }
+                set { InheritanceParent = value; }
             }
         }
 
@@ -198,12 +192,12 @@ namespace Perspex.Base.UnitTests
         {
             public ImplictDouble(double value)
             {
-                this.Value = value;
+                Value = value;
             }
 
             public double Value { get; }
 
-            public static implicit operator double(ImplictDouble v)
+            public static implicit operator double (ImplictDouble v)
             {
                 return v.Value;
             }

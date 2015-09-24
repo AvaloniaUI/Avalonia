@@ -1,26 +1,24 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Renderer.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Runtime.InteropServices;
+using Perspex.Cairo.Media;
+using Perspex.Media;
+using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo
 {
-    using System;
-    using System.Runtime.InteropServices;
     using global::Cairo;
-    using Perspex.Cairo.Media;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Perspex.Rendering;
-    using Matrix = Perspex.Matrix;
 
     /// <summary>
     /// A cairo renderer.
     /// </summary>
     public class Renderer : RendererBase
     {
-        private ImageSurface surface;
+        private readonly Surface _surface;
+        private Gdk.Window _window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -34,7 +32,7 @@ namespace Perspex.Cairo
 
         public Renderer(ImageSurface surface)
         {
-            this.surface = surface;
+            _surface = surface;
         }
 
         /// <summary>
@@ -47,6 +45,7 @@ namespace Perspex.Cairo
             // Don't need to do anything here.
         }
 
+
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
@@ -56,14 +55,13 @@ namespace Perspex.Cairo
         {
             switch (handle.HandleDescriptor)
             {
-                case "HWND":
-                    return new DrawingContext(new Win32Surface(GetDC(handle.Handle)));
                 case "RTB":
-                    return new DrawingContext(this.surface);
-                case "HDC":
-                    return new DrawingContext(new Win32Surface(handle.Handle));
+                    return new DrawingContext(_surface);
                 case "GdkWindow":
-                    return new DrawingContext(new Gdk.Window(handle.Handle));
+                    if (_window == null)
+                        _window = new Gdk.Window(handle.Handle);
+
+                    return new DrawingContext(_window);
                 default:
                     throw new NotSupportedException(string.Format(
                         "Don't know how to create a Cairo renderer from a '{0}' handle",
@@ -73,5 +71,11 @@ namespace Perspex.Cairo
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetDC(IntPtr hwnd);
+
+        public override void Dispose()
+        {
+			if (_surface != null)
+		        _surface.Dispose();
+        }
     }
 }

@@ -1,31 +1,33 @@
-// -----------------------------------------------------------------------
-// <copyright file="PerspexWiringContext.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using Glass;
+using OmniXaml;
+using OmniXaml.Builder;
+using OmniXaml.TypeConversion;
+using OmniXaml.Typing;
+using Perspex.Controls;
+using Perspex.Markup.Xaml.Templates;
+using Perspex.Markup.Xaml.Converters;
+using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.MarkupExtensions;
+using Perspex.Media;
+using Perspex.Media.Imaging;
+using Perspex.Metadata;
+using Perspex.Platform;
+using Perspex.Styling;
+using Splat;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Reflection;
-    using Controls;
-    using Converters;
-    using DataBinding;
-    using Glass;
-    using MarkupExtensions;
-    using Media;
-    using Media.Imaging;
-    using OmniXaml;
-    using OmniXaml.Builder;
-    using OmniXaml.TypeConversion;
-    using OmniXaml.Typing;
-    using Templates;
-
     public class PerspexWiringContext : IWiringContext
     {
-        private readonly WiringContext context;
-        private const string PerspexNs = "https://github.com/grokys/Perspex";
+        private readonly WiringContext _context;
+        private const string PerspexNs = "https://github.com/perspex";
 
         public PerspexWiringContext(ITypeFactory typeFactory)
         {
@@ -35,44 +37,34 @@ namespace Perspex.Markup.Xaml.Context
             var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
             var xamlTypeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
             var typeContext = new TypeContext(xamlTypeRepository, xamlNamespaceRegistry, typeFactory);
-            this.context = new WiringContext(typeContext, featureProvider);
+            _context = new WiringContext(typeContext, featureProvider);
         }
 
         private static XamlNamespaceRegistry CreateXamlNamespaceRegistry()
         {
             var xamlNamespaceRegistry = new XamlNamespaceRegistry();
 
-            var rootType = typeof(Control);
-            var bindingType = typeof(BindingExtension);
-            var templateType = typeof(XamlDataTemplate);
-
-            var definitionForRoot = XamlNamespace
-                .Map(PerspexNs)
-                .With(
-                    new[]
-                    {
-                        Route.Assembly(rootType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                rootType.Namespace
-                            }),
-                        Route.Assembly(bindingType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                bindingType.Namespace,
-                            }),
-                        Route.Assembly(templateType.GetTypeInfo().Assembly).WithNamespaces(
-                            new[]
-                            {
-                                templateType.Namespace,
-                            })
-                    });
-
-            foreach (var ns in new List<XamlNamespace> { definitionForRoot })
+            var forcedAssemblies = new[]
             {
-                xamlNamespaceRegistry.AddNamespace(ns);
-            }
+                typeof (Control),
+                typeof(Style)
+            }.Select(t => t.GetTypeInfo().Assembly);
 
+            foreach (var nsa in 
+                forcedAssemblies
+                    .Concat(Locator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
+                    .Distinct()
+                    .SelectMany(asm
+                        => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new {asm, attr}))
+                    .GroupBy(entry => entry.attr.XmlNamespace))
+            {
+                var def = XamlNamespace.Map(nsa.Key)
+                    .With(nsa.GroupBy(x => x.asm).Select(
+                        a => Route.Assembly(a.Key)
+                            .WithNamespaces(a.Select(entry => entry.attr.ClrNamespace).ToList())
+                        ));
+                xamlNamespaceRegistry.AddNamespace(def);
+            }
             xamlNamespaceRegistry.RegisterPrefix(new PrefixRegistration(string.Empty, PerspexNs));
 
             return xamlNamespaceRegistry;
@@ -83,10 +75,18 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof (Bitmap), new BitmapConverter()),
-                new TypeConverterRegistration(typeof (GridLength), new GridLengthTypeConverter()),
-                new TypeConverterRegistration(typeof (Brush), new BrushConverter()),
-                new TypeConverterRegistration(typeof (Thickness), new ThicknessConverter()),
+                new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
+                new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
+                new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
+                new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
+                new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
+                new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
+                new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
+                new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
+                new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
@@ -98,13 +98,15 @@ namespace Perspex.Markup.Xaml.Context
             var contentPropertyProvider = new ContentPropertyProvider();
             var contentProperties = new Collection<ContentPropertyDefinition>
             {
-                new ContentPropertyDefinition(typeof (ContentControl), "Content"),
-                new ContentPropertyDefinition(typeof (Decorator), "Child"),
-                new ContentPropertyDefinition(typeof (ItemsControl), "Items"),
-                new ContentPropertyDefinition(typeof (Panel), "Children"),
-                new ContentPropertyDefinition(typeof (TextBlock), "Text"),
-                new ContentPropertyDefinition(typeof (TextBox), "Text"),
-                new ContentPropertyDefinition(typeof (XamlDataTemplate), "Content"),
+                new ContentPropertyDefinition(typeof(ContentControl), "Content"),
+                new ContentPropertyDefinition(typeof(Decorator), "Child"),
+                new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
+                new ContentPropertyDefinition(typeof(GradientBrush), "GradientStops"),
+                new ContentPropertyDefinition(typeof(Panel), "Children"),
+                new ContentPropertyDefinition(typeof(Style), "Setters"),
+                new ContentPropertyDefinition(typeof(TextBlock), "Text"),
+                new ContentPropertyDefinition(typeof(TextBox), "Text"),
+                new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),
             };
 
             contentPropertyProvider.AddAll(contentProperties);
@@ -112,8 +114,8 @@ namespace Perspex.Markup.Xaml.Context
             return contentPropertyProvider;
         }
 
-        public ITypeContext TypeContext => this.context.TypeContext;
+        public ITypeContext TypeContext => _context.TypeContext;
 
-        public ITypeFeatureProvider FeatureProvider => this.context.FeatureProvider;
+        public ITypeFeatureProvider FeatureProvider => _context.FeatureProvider;
     }
 }

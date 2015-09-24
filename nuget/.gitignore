@@ -1,7 +1,2 @@
-- build/
-
-**/lib/**/*.dll
-**/lib/**/*.xml
-**/build/**/*.dll
-**/build/**/*.xml
+Perspex
 *.nupkg

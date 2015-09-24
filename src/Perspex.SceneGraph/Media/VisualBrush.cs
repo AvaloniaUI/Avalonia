@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="VisualBrush.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Media
 {
@@ -30,7 +27,7 @@ namespace Perspex.Media
         /// <param name="visual">The visual to draw.</param>
         public VisualBrush(IVisual visual)
         {
-            this.Visual = visual;
+            Visual = visual;
         }
 
         /// <summary>
@@ -38,8 +35,8 @@ namespace Perspex.Media
         /// </summary>
         public IVisual Visual
         {
-            get { return this.GetValue(VisualProperty); }
-            set { this.SetValue(VisualProperty, value); }
+            get { return GetValue(VisualProperty); }
+            set { SetValue(VisualProperty, value); }
         }
     }
 }

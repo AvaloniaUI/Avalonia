@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SelectorMatch.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Styling
 {
-    using System;
-
     /// <summary>
     /// Holds the result of a <see cref="Selector"/> match.
     /// </summary>
@@ -31,7 +28,7 @@ namespace Perspex.Styling
         /// <param name="match">The immediate match value.</param>
         public SelectorMatch(bool match)
         {
-            this.ImmediateResult = match;
+            ImmediateResult = match;
         }
 
         /// <summary>
@@ -40,7 +37,7 @@ namespace Perspex.Styling
         /// <param name="match">The observable match value.</param>
         public SelectorMatch(IObservable<bool> match)
         {
-            this.ObservableResult = match;
+            ObservableResult = match;
         }
 
         /// <summary>

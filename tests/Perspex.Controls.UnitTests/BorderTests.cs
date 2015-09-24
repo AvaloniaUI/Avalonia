@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BorderTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using Xunit;
-
     public class BorderTests
     {
         [Fact]

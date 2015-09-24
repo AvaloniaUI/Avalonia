@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Vector.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
 
 namespace Perspex
 {
-    using System;
-    using System.Globalization;
-
     /// <summary>
     /// Defines a vector.
     /// </summary>
@@ -17,12 +14,12 @@ namespace Perspex
         /// <summary>
         /// The X vector.
         /// </summary>
-        private double x;
+        private readonly double _x;
 
         /// <summary>
         /// The Y vector.
         /// </summary>
-        private double y;
+        private readonly double _y;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector"/> structure.
@@ -31,25 +28,19 @@ namespace Perspex
         /// <param name="y">The Y vector.</param>
         public Vector(double x, double y)
         {
-            this.x = x;
-            this.y = y;
+            _x = x;
+            _y = y;
         }
 
         /// <summary>
         /// Gets the X vector.
         /// </summary>
-        public double X
-        {
-            get { return this.x; }
-        }
+        public double X => _x;
 
         /// <summary>
         /// Gets the Y vector.
         /// </summary>
-        public double Y
-        {
-            get { return this.y; }
-        }
+        public double Y => _y;
 
         /// <summary>
         /// Converts the <see cref="Vector"/> to a <see cref="Point"/>.
@@ -57,7 +48,7 @@ namespace Perspex
         /// <param name="a">The vector.</param>
         public static explicit operator Point(Vector a)
         {
-            return new Point(a.x, a.y);
+            return new Point(a._x, a._y);
         }
 
         /// <summary>
@@ -67,7 +58,7 @@ namespace Perspex
         /// <returns>The negated vector.</returns>
         public static Vector operator -(Vector a)
         {
-            return new Vector(-a.x, -a.y);
+            return new Vector(-a._x, -a._y);
         }
 
         /// <summary>
@@ -78,7 +69,7 @@ namespace Perspex
         /// <returns>A vector that is the result of the addition.</returns>
         public static Vector operator +(Vector a, Vector b)
         {
-            return new Vector(a.x + b.x, a.y + b.y);
+            return new Vector(a._x + b._x, a._y + b._y);
         }
 
         /// <summary>
@@ -89,7 +80,7 @@ namespace Perspex
         /// <returns>A vector that is the result of the subtraction.</returns>
         public static Vector operator -(Vector a, Vector b)
         {
-            return new Vector(a.x - b.x, a.y - b.y);
+            return new Vector(a._x - b._x, a._y - b._y);
         }
 
         /// <summary>
@@ -98,7 +89,7 @@ namespace Perspex
         /// <returns>The string representation of the point.</returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", this.x, this.y);
+            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", _x, _y);
         }
 
         /// <summary>
@@ -108,7 +99,7 @@ namespace Perspex
         /// <returns>The new vector.</returns>
         public Vector WithX(double x)
         {
-            return new Vector(x, this.y);
+            return new Vector(x, _y);
         }
 
         /// <summary>
@@ -118,7 +109,7 @@ namespace Perspex
         /// <returns>The new vector.</returns>
         public Vector WithY(double y)
         {
-            return new Vector(this.x, y);
+            return new Vector(_x, y);
         }
     }
 }

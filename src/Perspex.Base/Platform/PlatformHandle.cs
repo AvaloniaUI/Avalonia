@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PlatformHandle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Platform
 {
-    using System;
-
     /// <summary>
     /// Represents a platform-specific handle.
     /// </summary>
@@ -22,8 +19,8 @@ namespace Perspex.Platform
         /// </param>
         public PlatformHandle(IntPtr handle, string descriptor)
         {
-            this.Handle = handle;
-            this.HandleDescriptor = descriptor;
+            Handle = handle;
+            HandleDescriptor = descriptor;
         }
 
         /// <summary>

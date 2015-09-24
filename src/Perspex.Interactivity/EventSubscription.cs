@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="EventSubscription.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Interactivity
 {
-    using System;
-
     internal class EventSubscription
     {
         public Delegate Handler { get; set; }

@@ -1,70 +1,56 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="KeyboardDevice.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using Perspex.Input.Raw;
+using Perspex.Interactivity;
+using Splat;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using System.Runtime.CompilerServices;
-    using Perspex.Input.Raw;
-    using Perspex.Interactivity;
-    using Splat;
-
     public abstract class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
-        private IInputElement focusedElement;
+        private IInputElement _focusedElement;
 
         public KeyboardDevice()
         {
-            this.InputManager.RawEventReceived
+            InputManager.RawEventReceived
                 .OfType<RawInputEventArgs>()
                 .Where(x => x.Device == this)
-                .Subscribe(this.ProcessRawEvent);
+                .Subscribe(ProcessRawEvent);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public static IKeyboardDevice Instance
-        {
-            get { return Locator.Current.GetService<IKeyboardDevice>(); }
-        }
+        public static IKeyboardDevice Instance => Locator.Current.GetService<IKeyboardDevice>();
 
-        public IInputManager InputManager
-        {
-            get { return Locator.Current.GetService<IInputManager>(); }
-        }
+        public IInputManager InputManager => Locator.Current.GetService<IInputManager>();
 
-        public IFocusManager FocusManager
-        {
-            get { return Locator.Current.GetService<IFocusManager>(); }
-        }
+        public IFocusManager FocusManager => Locator.Current.GetService<IFocusManager>();
 
         public IInputElement FocusedElement
         {
             get
             {
-                return this.focusedElement;
+                return _focusedElement;
             }
 
             private set
             {
-                this.focusedElement = value;
-                this.RaisePropertyChanged();
+                _focusedElement = value;
+                RaisePropertyChanged();
             }
         }
 
-        public abstract ModifierKeys Modifiers { get; }
-
         public void SetFocusedElement(IInputElement element, NavigationMethod method)
         {
-            if (element != this.FocusedElement)
+            if (element != FocusedElement)
             {
-                var interactive = this.FocusedElement as IInteractive;
+                var interactive = FocusedElement as IInteractive;
 
                 if (interactive != null)
                 {
@@ -74,7 +60,7 @@ namespace Perspex.Input
                     });
                 }
 
-                this.FocusedElement = element;
+                FocusedElement = element;
                 interactive = element as IInteractive;
 
                 if (interactive != null)
@@ -90,12 +76,12 @@ namespace Perspex.Input
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void ProcessRawEvent(RawInputEventArgs e)
         {
-            IInputElement element = this.FocusedElement;
+            IInputElement element = FocusedElement;
 
             if (element != null)
             {
@@ -115,6 +101,7 @@ namespace Perspex.Input
                                 RoutedEvent = routedEvent,
                                 Device = this,
                                 Key = keyInput.Key,
+                                Modifiers = keyInput.Modifiers,
                                 Source = element,
                             };
 

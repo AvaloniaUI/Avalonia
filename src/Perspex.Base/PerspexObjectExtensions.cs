@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexObjectExtensions.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Linq;
 
 namespace Perspex
 {
-    using System;
-    using System.Reactive.Linq;
-
     /// <summary>
     /// Provides extension methods for <see cref="PerspexObject"/> and related classes.
     /// </summary>
@@ -29,7 +26,13 @@ namespace Perspex
             Action<TTarget, PerspexPropertyChangedEventArgs> action)
             where TTarget : PerspexObject
         {
-            return observable.Subscribe(e => action((TTarget)e.Sender, e));
+            return observable.Subscribe(e =>
+            {
+                if (e.Sender is TTarget)
+                {
+                    action((TTarget)e.Sender, e);
+                }
+            });
         }
 
         /// <summary>

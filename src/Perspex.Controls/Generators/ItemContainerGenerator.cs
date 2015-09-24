@@ -1,26 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ItemContainerGenerator.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Subjects;
+using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Generators
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Subjects;
-    using Perspex.Controls.Templates;
-
     /// <summary>
     /// Creates containers for items and maintains a list of created containers.
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private Dictionary<int, IControl> containers = new Dictionary<int, IControl>();
+        private Dictionary<int, IControl> _containers = new Dictionary<int, IControl>();
 
-        private Subject<ItemContainers> containersInitialized = new Subject<ItemContainers>();
+        private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -28,13 +25,13 @@ namespace Perspex.Controls.Generators
         /// <param name="owner">The owner control.</param>
         public ItemContainerGenerator(IControl owner)
         {
-            this.Owner = owner;
+            Owner = owner;
         }
 
         /// <summary>
         /// Signalled whenever new containers are initialized.
         /// </summary>
-        public IObservable<ItemContainers> ContainersInitialized => this.containersInitialized;
+        public IObservable<ItemContainers> ContainersInitialized => _containersInitialized;
 
         /// <summary>
         /// Gets the owner control.
@@ -62,12 +59,12 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                IControl container = this.CreateContainer(item, itemTemplate);
+                IControl container = CreateContainer(item, itemTemplate);
                 result.Add(container);
             }
 
-            this.AddContainers(startingIndex, result);
-            this.containersInitialized.OnNext(new ItemContainers(startingIndex, result));
+            AddContainers(startingIndex, result);
+            _containersInitialized.OnNext(new ItemContainers(startingIndex, result));
 
             return result.Where(x => x != null).ToList();
         }
@@ -87,12 +84,12 @@ namespace Perspex.Controls.Generators
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                var container = this.containers[i];
+                var container = _containers[i];
 
                 if (container != null)
                 {
                     result.Add(container);
-                    this.containers.Remove(i);
+                    _containers.Remove(i);
                 }
             }
 
@@ -105,8 +102,8 @@ namespace Perspex.Controls.Generators
         /// <returns>The removed controls.</returns>
         public IList<IControl> ClearContainers()
         {
-            var result = this.containers;
-            this.containers = new Dictionary<int, IControl>();
+            var result = _containers;
+            _containers = new Dictionary<int, IControl>();
             return result.Values.ToList();
         }
 
@@ -118,7 +115,7 @@ namespace Perspex.Controls.Generators
         public IControl ContainerFromIndex(int index)
         {
             IControl result;
-            this.containers.TryGetValue(index, out result);
+            _containers.TryGetValue(index, out result);
             return result;
         }
 
@@ -129,7 +126,7 @@ namespace Perspex.Controls.Generators
         /// <returns>The index of the container or -1 if not found.</returns>
         public int IndexFromContainer(IControl container)
         {
-            foreach (var i in this.containers)
+            foreach (var i in _containers)
             {
                 if (i.Value == container)
                 {
@@ -160,7 +157,7 @@ namespace Perspex.Controls.Generators
             }
             else
             {
-                return this.Owner.MaterializeDataTemplate(item);
+                return Owner.MaterializeDataTemplate(item);
             }
         }
 
@@ -175,9 +172,9 @@ namespace Perspex.Controls.Generators
 
             foreach (var c in container)
             {
-                if (!this.containers.ContainsKey(index))
+                if (!_containers.ContainsKey(index))
                 {
-                    this.containers[index] = c;
+                    _containers[index] = c;
                 }
                 else
                 {

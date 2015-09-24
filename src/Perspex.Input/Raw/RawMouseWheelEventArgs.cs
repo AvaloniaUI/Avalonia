@@ -1,25 +1,22 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RawMouseWheelEventArgs.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Layout;
 
 namespace Perspex.Input.Raw
 {
-    using System;
-    using Perspex.Layout;
-
     public class RawMouseWheelEventArgs : RawMouseEventArgs
     {
         public RawMouseWheelEventArgs(
             IInputDevice device,
             uint timestamp,
-            IInputElement root,
+            IInputRoot root,
             Point position,
-            Vector delta)
-            : base(device, timestamp, root, RawMouseEventType.Wheel, position)
+            Vector delta, ModifierKeys modifierKeys)
+            : base(device, timestamp, root, RawMouseEventType.Wheel, position, modifierKeys)
         {
-            this.Delta = delta;
+            Delta = delta;
         }
 
         public Vector Delta { get; private set; }

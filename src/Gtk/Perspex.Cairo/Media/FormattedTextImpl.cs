@@ -1,21 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FormattedTextImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Cairo.Media
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Media;
-    using Perspex.Platform;
-    using Splat;
-
     public class FormattedTextImpl : IFormattedTextImpl
     {
+        private Size _size;
+        private string _text;
+
         public FormattedTextImpl(
+            Pango.Context context,
             string text,
             string fontFamily,
             double fontSize,
@@ -23,44 +25,46 @@ namespace Perspex.Cairo.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            var context = Locator.Current.GetService<Pango.Context>();
-            this.Layout = new Pango.Layout(context);
-            this.Layout.SetText(text);
-            this.Layout.FontDescription = new Pango.FontDescription
+            Contract.Requires<NullReferenceException>(context != null);
+
+            Layout = new Pango.Layout(context);
+            _text = text;
+            Layout.SetText(text);
+            Layout.FontDescription = new Pango.FontDescription
             {
                 Family = fontFamily,
-                Size = Pango.Units.FromDouble(fontSize * 0.73),
+                Size = Pango.Units.FromDouble(fontSize),
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };
-            
-            this.Layout.Alignment = textAlignment.ToCairo();
+
+            Layout.Alignment = textAlignment.ToCairo();
+            Layout.Attributes = new Pango.AttrList();
         }
 
-        private Size size;
         public Size Constraint
         {
             get
             {
-                return size;
+                return _size;
             }
 
             set
             {
-                this.size = value;
-                this.Layout.Width = Pango.Units.FromDouble(value.Width);
+                _size = value;
+                Layout.Width = double.IsPositiveInfinity(value.Width) ?
+                    -1 : Pango.Units.FromDouble(value.Width);
             }
         }
 
         public Pango.Layout Layout
         {
             get;
-            private set;
         }
 
         public void Dispose()
         {
-            this.Layout.Dispose();
+            Layout.Dispose();
         }
 
         public IEnumerable<FormattedTextLine> GetLines()
@@ -73,11 +77,13 @@ namespace Perspex.Cairo.Media
             int textPosition;
             int trailing;
 
-            var isInside = this.Layout.XyToIndex(
+            var isInside = Layout.XyToIndex(
                 Pango.Units.FromDouble(point.X),
                 Pango.Units.FromDouble(point.Y),
                 out textPosition,
                 out trailing);
+
+            textPosition = PangoIndexToTextIndex(textPosition);
 
             return new TextHitTestResult
             {
@@ -87,20 +93,30 @@ namespace Perspex.Cairo.Media
             };
         }
 
+        int PangoIndexToTextIndex(int pangoIndex)
+        {
+            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(_text), 0, Math.Min(pangoIndex, _text.Length)).Length;
+        }
+
         public Rect HitTestTextPosition(int index)
         {
-            return this.Layout.IndexToPos(index).ToPerspex();
+            return Layout.IndexToPos(TextIndexToPangoIndex(index)).ToPerspex();
+        }
+
+        int TextIndexToPangoIndex(int textIndex)
+        {
+            return Encoding.UTF8.GetByteCount(textIndex < _text.Length ? _text.Remove(textIndex) : _text);
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
             var ranges = new List<Rect>();
-        
+
             for (var i = 0; i < length; i++)
             {
-                ranges.Add(this.HitTestTextPosition(index+i));
+                ranges.Add(HitTestTextPosition(index + i));
             }
-            
+
             return ranges;
         }
 
@@ -108,14 +124,26 @@ namespace Perspex.Cairo.Media
         {
             int width;
             int height;
-            this.Layout.GetPixelSize(out width, out height);
-        
+            Layout.GetPixelSize(out width, out height);
+
             return new Size(width, height);
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int count)
         {
-            // TODO: Implement.
+            var scb = brush as SolidColorBrush;
+            if (scb != null)
+            {
+
+                var color = new Pango.Color();
+                color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
+
+                var brushAttr = new Pango.AttrForeground(color);
+                brushAttr.StartIndex = (uint)TextIndexToPangoIndex(startIndex);
+                brushAttr.EndIndex = (uint)TextIndexToPangoIndex(startIndex + count);
+
+                Layout.Attributes.Insert(brushAttr);
+            }
         }
     }
 }

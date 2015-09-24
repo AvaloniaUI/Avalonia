@@ -1,13 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="GridLength.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace Perspex.Controls
 {
-    using System;
-
     /// <summary>
     /// Defines the valid units for a <see cref="GridLength"/>.
     /// </summary>
@@ -34,9 +34,9 @@ namespace Perspex.Controls
     /// </summary>
     public struct GridLength : IEquatable<GridLength>
     {
-        private GridUnitType type;
+        private readonly GridUnitType _type;
 
-        private double value;
+        private readonly double _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GridLength"/> struct.
@@ -64,58 +64,40 @@ namespace Perspex.Controls
                 throw new ArgumentException("Invalid value", "type");
             }
 
-            this.type = type;
-            this.value = value;
+            _type = type;
+            _value = value;
         }
 
         /// <summary>
         /// Gets an instance of <see cref="GridLength"/> that indicates that a row or column should
         /// auto-size to fit its content.
         /// </summary>
-        public static GridLength Auto
-        {
-            get { return new GridLength(0, GridUnitType.Auto); }
-        }
+        public static GridLength Auto => new GridLength(0, GridUnitType.Auto);
 
         /// <summary>
         /// Gets the unit of the <see cref="GridLength"/>.
         /// </summary>
-        public GridUnitType GridUnitType
-        {
-            get { return this.type; }
-        }
+        public GridUnitType GridUnitType => _type;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Pixel.
         /// </summary>
-        public bool IsAbsolute
-        {
-            get { return this.type == GridUnitType.Pixel; }
-        }
+        public bool IsAbsolute => _type == GridUnitType.Pixel;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Auto.
         /// </summary>
-        public bool IsAuto
-        {
-            get { return this.type == GridUnitType.Auto; }
-        }
+        public bool IsAuto => _type == GridUnitType.Auto;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="GridLength"/> has a <see cref="GridUnitType"/> of Star.
         /// </summary>
-        public bool IsStar
-        {
-            get { return this.type == GridUnitType.Star; }
-        }
+        public bool IsStar => _type == GridUnitType.Star;
 
         /// <summary>
         /// Gets the length.
         /// </summary>
-        public double Value
-        {
-            get { return this.value; }
-        }
+        public double Value => _value;
 
         /// <summary>
         /// Compares two GridLength structures for equality.
@@ -125,7 +107,7 @@ namespace Perspex.Controls
         /// <returns>True if the structures are equal, otherwise false.</returns>
         public static bool operator ==(GridLength a, GridLength b)
         {
-            return (a.IsAuto && b.IsAuto) || (a.value == b.value && a.type == b.type);
+            return (a.IsAuto && b.IsAuto) || (a._value == b._value && a._type == b._type);
         }
 
         /// <summary>
@@ -175,7 +157,7 @@ namespace Perspex.Controls
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            return this.value.GetHashCode() ^ this.type.GetHashCode();
+            return _value.GetHashCode() ^ _type.GetHashCode();
         }
 
         /// <summary>
@@ -184,13 +166,51 @@ namespace Perspex.Controls
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            if (this.IsAuto)
+            if (IsAuto)
             {
                 return "Auto";
             }
 
-            string s = this.value.ToString();
-            return this.IsStar ? s + "*" : s;
+            string s = _value.ToString();
+            return IsStar ? s + "*" : s;
+        }
+
+        /// <summary>
+        /// Parses a string to return a <see cref="GridLength"/>.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="GridLength"/>.</returns>
+        public static GridLength Parse(string s, CultureInfo culture)
+        {
+            s = s.ToUpperInvariant();
+
+            if (s == "AUTO")
+            {
+                return Auto;
+            }
+            else if (s.EndsWith("*"))
+            {
+                var valueString = s.Substring(0, s.Length - 1).Trim();
+                var value = valueString.Length > 0 ? double.Parse(valueString, culture) : 1;
+                return new GridLength(value, GridUnitType.Star);
+            }
+            else
+            {
+                var value = double.Parse(s, culture);
+                return new GridLength(value, GridUnitType.Pixel);
+            }
+        }
+
+        /// <summary>
+        /// Parses a string to return a collection of <see cref="GridLength"/>s.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="GridLength"/>.</returns>
+        public static IEnumerable<GridLength> ParseLengths(string s, CultureInfo culture)
+        {
+            return s.Split(new[] { ',', ' ' }).Select(x => Parse(x, culture));
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IRenderer.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Platform
 {
@@ -15,7 +14,7 @@ namespace Perspex.Platform
     /// as RenderBase has a default implementation for the non-platform specific parts of a
     /// renderer.
     /// </remarks>
-    public interface IRenderer
+    public interface IRenderer : IDisposable
     {
         /// <summary>
         /// Gets the number of times <see cref="Render"/> has been called.

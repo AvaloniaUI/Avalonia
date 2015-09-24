@@ -1,17 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ContentControlStyle.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Styling;
-
     /// <summary>
     /// The default style for the <see cref="ContentControl"/> control.
     /// </summary>
@@ -22,13 +20,13 @@ namespace Perspex.Themes.Default
         /// </summary>
         public ContentControlStyle()
         {
-            this.AddRange(new[]
+            AddRange(new[]
             {
                 new Style(x => x.OfType<ContentControl>())
                 {
                     Setters = new[]
                     {
-                        new Setter(ContentControl.TemplateProperty, new ControlTemplate<ContentControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ContentControl>(Template)),
                     },
                 },
             });
@@ -41,10 +39,14 @@ namespace Perspex.Themes.Default
         /// <returns>The root of the instantiated template.</returns>
         public static Control Template(ContentControl control)
         {
-            return new ContentPresenter
+            return new Border
             {
-                Name = "contentPresenter",
-                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
+                [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
+                Child = new ContentPresenter
+                {
+                    Name = "contentPresenter",
+                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
+                }
             };
         }
     }

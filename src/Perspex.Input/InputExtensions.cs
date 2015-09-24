@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="InputExtensions.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perspex.Input
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public static class InputExtensions
     {
         public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Point p)

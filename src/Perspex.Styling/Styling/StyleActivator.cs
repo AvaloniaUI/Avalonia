@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StyleActivator.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Disposables;
-
     public enum ActivatorMode
     {
         And,
@@ -19,13 +16,13 @@ namespace Perspex.Styling
 
     public class StyleActivator : IObservable<bool>, IDisposable
     {
-        private ActivatorMode mode;
+        private readonly ActivatorMode _mode;
 
-        private bool[] values;
+        private readonly bool[] _values;
 
-        private List<IDisposable> subscriptions = new List<IDisposable>();
+        private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
 
-        private List<IObserver<bool>> observers = new List<IObserver<bool>>();
+        private readonly List<IObserver<bool>> _observers = new List<IObserver<bool>>();
 
         public StyleActivator(
             IList<IObservable<bool>> inputs,
@@ -33,18 +30,18 @@ namespace Perspex.Styling
         {
             int i = 0;
 
-            this.mode = mode;
-            this.values = new bool[inputs.Count];
+            _mode = mode;
+            _values = new bool[inputs.Count];
 
             foreach (IObservable<bool> input in inputs)
             {
                 int capturedIndex = i;
 
                 IDisposable subscription = input.Subscribe(
-                    x => this.Update(capturedIndex, x),
-                    x => this.Finish(capturedIndex),
-                    () => this.Finish(capturedIndex));
-                this.subscriptions.Add(subscription);
+                    x => Update(capturedIndex, x),
+                    x => Finish(capturedIndex),
+                    () => Finish(capturedIndex));
+                _subscriptions.Add(subscription);
                 ++i;
             }
         }
@@ -63,12 +60,12 @@ namespace Perspex.Styling
 
         public void Dispose()
         {
-            foreach (IObserver<bool> observer in this.observers)
+            foreach (IObserver<bool> observer in _observers)
             {
                 observer.OnCompleted();
             }
 
-            foreach (IDisposable subscription in this.subscriptions)
+            foreach (IDisposable subscription in _subscriptions)
             {
                 subscription.Dispose();
             }
@@ -78,42 +75,42 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(observer != null);
 
-            observer.OnNext(this.CurrentValue);
+            observer.OnNext(CurrentValue);
 
-            if (this.HasCompleted)
+            if (HasCompleted)
             {
                 observer.OnCompleted();
                 return Disposable.Empty;
             }
             else
             {
-                this.observers.Add(observer);
-                return Disposable.Create(() => this.observers.Remove(observer));
+                _observers.Add(observer);
+                return Disposable.Create(() => _observers.Remove(observer));
             }
         }
 
         private void Update(int index, bool value)
         {
-            this.values[index] = value;
+            _values[index] = value;
 
             bool current;
 
-            switch (this.mode)
+            switch (_mode)
             {
                 case ActivatorMode.And:
-                    current = this.values.All(x => x);
+                    current = _values.All(x => x);
                     break;
                 case ActivatorMode.Or:
-                    current = this.values.Any(x => x);
+                    current = _values.Any(x => x);
                     break;
                 default:
                     throw new InvalidOperationException("Invalid Activator mode.");
             }
 
-            if (current != this.CurrentValue)
+            if (current != CurrentValue)
             {
-                this.Push(current);
-                this.CurrentValue = current;
+                Push(current);
+                CurrentValue = current;
             }
         }
 
@@ -123,25 +120,25 @@ namespace Perspex.Styling
             // - Is the only subscription.
             // - Has finished on 'false' and we're in And mode
             // - Has finished on 'true' and we're in Or mode
-            var value = this.values[i];
+            var value = _values[i];
             var unsubscribe =
-                (this.values.Length == 1) ||
-                (this.mode == ActivatorMode.And ? !value : value);
+                (_values.Length == 1) ||
+                (_mode == ActivatorMode.And ? !value : value);
 
             if (unsubscribe)
             {
-                foreach (IDisposable subscription in this.subscriptions)
+                foreach (IDisposable subscription in _subscriptions)
                 {
                     subscription.Dispose();
                 }
 
-                this.HasCompleted = true;
+                HasCompleted = true;
             }
         }
 
         private void Push(bool value)
         {
-            foreach (IObserver<bool> observer in this.observers)
+            foreach (IObserver<bool> observer in _observers)
             {
                 observer.OnNext(value);
             }

@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BrushWrapper.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Media;
+using SharpDX;
 
 namespace Perspex.Direct2D1.Media
 {
-    using Perspex.Media;
-    using SharpDX;
-
     internal class BrushWrapper : ComObject
     {
         public BrushWrapper(Brush brush)
         {
-            this.Brush = brush;
+            Brush = brush;
         }
 
         public Brush Brush { get; private set; }

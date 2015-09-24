@@ -1,43 +1,40 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="DevTools.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Diagnostics.ViewModels;
+using Perspex.Input;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics
 {
-    using System;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Diagnostics.ViewModels;
-    using Perspex.Input;
-    using ReactiveUI;
-
     public class DevTools : Decorator
     {
         public static readonly PerspexProperty<Control> RootProperty =
             PerspexProperty.Register<DevTools, Control>("Root");
 
-        private DevToolsViewModel viewModel;
+        private readonly DevToolsViewModel _viewModel;
 
         public DevTools()
         {
-            this.viewModel = new DevToolsViewModel();
-            this.GetObservable(RootProperty).Subscribe(x => this.viewModel.Root = x);
+            _viewModel = new DevToolsViewModel();
+            GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
 
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         public Control Root
         {
-            get { return this.GetValue(RootProperty); }
-            set { this.SetValue(RootProperty, value); }
+            get { return GetValue(RootProperty); }
+            set { SetValue(RootProperty, value); }
         }
 
         public static IDisposable Attach(Window window)
         {
             return window.AddHandler(
-                Window.KeyDownEvent,
+                KeyDownEvent,
                 WindowPreviewKeyDown,
                 Interactivity.RoutingStrategies.Tunnel);
         }
@@ -62,12 +59,12 @@ namespace Perspex.Diagnostics
 
         private void InitializeComponent()
         {
-            this.DataTemplates.Add(new ViewLocator<ReactiveObject>());
+            DataTemplates.Add(new ViewLocator<ReactiveObject>());
 
-            this.Child = new Grid
+            Child = new Grid
             {
                 RowDefinitions = new RowDefinitions("*,Auto"),
-                Children = new Controls
+                Children = new Controls.Controls
                 {
                     new TabControl
                     {
@@ -76,12 +73,12 @@ namespace Perspex.Diagnostics
                             new TabItem
                             {
                                 Header = "Logical Tree",
-                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.LogicalTree),
+                                [!ContentControl.ContentProperty] = _viewModel.WhenAnyValue(x => x.LogicalTree),
                             },
                             new TabItem
                             {
                                 Header = "Visual Tree",
-                                [!TabItem.ContentProperty] = this.viewModel.WhenAnyValue(x => x.VisualTree),
+                                [!ContentControl.ContentProperty] = _viewModel.WhenAnyValue(x => x.VisualTree),
                             }
                         },
                     },
@@ -90,7 +87,7 @@ namespace Perspex.Diagnostics
                         Orientation = Orientation.Horizontal,
                         Gap = 4,
                         [Grid.RowProperty] = 1,
-                        Children = new Controls
+                        Children = new Controls.Controls
                         {
                             new TextBlock
                             {
@@ -98,7 +95,19 @@ namespace Perspex.Diagnostics
                             },
                             new TextBlock
                             {
-                                [!TextBlock.TextProperty] = this.viewModel.WhenAnyValue(x => x.FocusedControl).Select(x => x?.GetType().Name)
+                                [!TextBlock.TextProperty] = _viewModel
+                                    .WhenAnyValue(x => x.FocusedControl)
+                                    .Select(x => x?.GetType().Name ?? "(null)")
+                            },
+                            new TextBlock
+                            {
+                                Text = "Pointer Over: "
+                            },
+                            new TextBlock
+                            {
+                                [!TextBlock.TextProperty] = _viewModel
+                                    .WhenAnyValue(x => x.PointerOverElement)
+                                    .Select(x => x?.GetType().Name ?? "(null)")
                             }
                         }
                     }

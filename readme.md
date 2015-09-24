@@ -7,6 +7,16 @@ A multi-platform .NET UI framework.
 
 ![](docs/screen.png)
 
+<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)<a/>
+
+## NuGet
+
+Perspex is delivered as a NuGet package.
+You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Perspex/), [nightly](https://github.com/Perspex/Perspex/wiki/Using-nightly-build-feed))
+
+You can install the package like this:
+`Install-Package Perspex -Pre`
+
 ## Background
 
 Perspex is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
@@ -17,7 +27,7 @@ using Direct2D and other operating systems using Gtk & Cairo.
 
 Perspex is now in alpha. What does "alpha mean? Well, it means that it's now at a stage where you
 can have a play and hopefully create simple applications. There's now a [Visual
-Studio Extension](https://visualstudiogallery.msdn.microsoft.com/87db356c-cec9-4a07-b7db-a4ed8a921ac9)
+Studio Extension](https://visualstudiogallery.msdn.microsoft.com/a4542e8a-b56c-4295-8df1-7e220178b873)
 containing project and item templates that will help you get started, and
 there's an initial complement of controls. There's still a lot missing, and you
 *will* find bugs, and the API *will* change, but this represents the first time
@@ -26,8 +36,8 @@ framework.
 
 ## Documentation
 
-As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can 
-take a look at the [alpha release announcement](http://grokys.github.io/perspex/perspex-alpha/) for an 
+As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can
+take a look at the [getting started page](docs/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
 about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/grokys/Perspex).
 

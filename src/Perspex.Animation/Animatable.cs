@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Animatable.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
 
 namespace Perspex.Animation
 {
-    using System.Linq;
-
     /// <summary>
     /// Base class for control which can have property transitions.
     /// </summary>
@@ -16,7 +13,7 @@ namespace Perspex.Animation
         /// <summary>
         /// The property transitions for the control.
         /// </summary>
-        private PropertyTransitions propertyTransitions;
+        private PropertyTransitions _propertyTransitions;
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
@@ -28,17 +25,17 @@ namespace Perspex.Animation
         {
             get
             {
-                if (this.propertyTransitions == null)
+                if (_propertyTransitions == null)
                 {
-                    this.propertyTransitions = new PropertyTransitions();
+                    _propertyTransitions = new PropertyTransitions();
                 }
 
-                return this.propertyTransitions;
+                return _propertyTransitions;
             }
 
             set
             {
-                this.propertyTransitions = value;
+                _propertyTransitions = value;
             }
         }
 
@@ -49,9 +46,9 @@ namespace Perspex.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (e.Priority != BindingPriority.Animation && this.propertyTransitions != null)
+            if (e.Priority != BindingPriority.Animation && _propertyTransitions != null)
             {
-                var match = this.propertyTransitions.FirstOrDefault(x => x.Property == e.Property);
+                var match = _propertyTransitions.FirstOrDefault(x => x.Property == e.Property);
 
                 if (match != null)
                 {

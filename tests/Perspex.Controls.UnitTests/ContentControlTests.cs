@@ -1,37 +1,33 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ContentControlTests.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Specialized;
+using System.Linq;
+using Moq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
+using Perspex.Platform;
+using Perspex.Styling;
+using Perspex.VisualTree;
+using Ploeh.AutoFixture;
+using Ploeh.AutoFixture.AutoMoq;
+using Splat;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using LogicalTree;
-    using Moq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.Platform;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
-    using Xunit;
-
     public class ContentControlTests
     {
         [Fact]
         public void Template_Should_Be_Instantiated()
         {
-            using (var ctx = this.RegisterServices())
+            using (var ctx = RegisterServices())
             {
                 var target = new ContentControl();
                 target.Content = "Foo";
-                target.Template = this.GetTemplate();
+                target.Template = GetTemplate();
 
                 target.Measure(new Size(100, 100));
 
@@ -47,7 +43,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (var ctx = this.RegisterServices())
+            using (var ctx = RegisterServices())
             {
                 var root = new TestRoot();
                 var target = new ContentControl();
@@ -55,7 +51,7 @@ namespace Perspex.Controls.UnitTests
 
                 Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
                 target.Content = "Foo";
-                target.Template = this.GetTemplate();
+                target.Template = GetTemplate();
                 root.Child = target;
 
                 target.ApplyTemplate();
@@ -73,7 +69,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Border();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -87,7 +83,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Border();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -99,7 +95,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ContentControl
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
             };
 
             var child = new Control();
@@ -115,7 +111,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ContentControl
             {
-                Template = this.GetTemplate(),
+                Template = GetTemplate(),
             };
 
             target.Content = "Foo";
@@ -146,7 +142,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -159,7 +155,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = "Foo";
             target.ApplyTemplate();
 
@@ -174,7 +170,7 @@ namespace Perspex.Controls.UnitTests
             var target = new ContentControl();
             var child = new Control();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -196,7 +192,7 @@ namespace Perspex.Controls.UnitTests
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -213,7 +209,7 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
 
@@ -236,7 +232,7 @@ namespace Perspex.Controls.UnitTests
             var child2 = new Control();
             var called = false;
 
-            contentControl.Template = this.GetTemplate();
+            contentControl.Template = GetTemplate();
             contentControl.Content = child1;
             contentControl.ApplyTemplate();
 
@@ -256,7 +252,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ContentControl();
 
-            target.Template = this.GetTemplate();
+            target.Template = GetTemplate();
             target.ApplyTemplate();
 
             target.Content = "Foo";
@@ -273,7 +269,7 @@ namespace Perspex.Controls.UnitTests
             {
                 return new Border
                 {
-                    Background = new Perspex.Media.SolidColorBrush(0xffffffff),
+                    Background = new Media.SolidColorBrush(0xffffffff),
                     Child = new ContentPresenter
                     {
                         Name = "contentPresenter",

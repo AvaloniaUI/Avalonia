@@ -1,13 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Thickness.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.Linq;
 
 namespace Perspex
 {
-    using System;
-
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
@@ -16,22 +15,22 @@ namespace Perspex
         /// <summary>
         /// The thickness on the left.
         /// </summary>
-        private double left;
+        private readonly double _left;
 
         /// <summary>
         /// The thickness on the top.
         /// </summary>
-        private double top;
+        private readonly double _top;
 
         /// <summary>
         /// The thickness on the right.
         /// </summary>
-        private double right;
+        private readonly double _right;
 
         /// <summary>
         /// The thickness on the bottom.
         /// </summary>
-        private double bottom;
+        private readonly double _bottom;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Thickness"/> structure.
@@ -41,7 +40,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentException>(uniformLength >= 0);
 
-            this.left = this.top = this.right = this.bottom = uniformLength;
+            _left = _top = _right = _bottom = uniformLength;
         }
 
         /// <summary>
@@ -54,8 +53,8 @@ namespace Perspex
             Contract.Requires<ArgumentException>(horizontal >= 0);
             Contract.Requires<ArgumentException>(vertical >= 0);
 
-            this.left = this.right = horizontal;
-            this.top = this.bottom = vertical;
+            _left = _right = horizontal;
+            _top = _bottom = vertical;
         }
 
         /// <summary>
@@ -72,51 +71,36 @@ namespace Perspex
             Contract.Requires<ArgumentException>(right >= 0);
             Contract.Requires<ArgumentException>(bottom >= 0);
 
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
+            _left = left;
+            _top = top;
+            _right = right;
+            _bottom = bottom;
         }
 
         /// <summary>
         /// Gets the thickness on the left.
         /// </summary>
-        public double Left
-        {
-            get { return this.left; }
-        }
+        public double Left => _left;
 
         /// <summary>
         /// Gets the thickness on the top.
         /// </summary>
-        public double Top
-        {
-            get { return this.top; }
-        }
+        public double Top => _top;
 
         /// <summary>
         /// Gets the thickness on the right.
         /// </summary>
-        public double Right
-        {
-            get { return this.right; }
-        }
+        public double Right => _right;
 
         /// <summary>
         /// Gets the thickness on the bottom.
         /// </summary>
-        public double Bottom
-        {
-            get { return this.bottom; }
-        }
+        public double Bottom => _bottom;
 
         /// <summary>
         /// Gets a value indicating whether all sides are set to 0.
         /// </summary>
-        public bool IsEmpty
-        {
-            get { return this.Left == 0 && this.Top == 0 && this.Right == 0 && this.Bottom == 0; }
-        }
+        public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
 
         /// <summary>
         /// Compares two Thicknesses.
@@ -156,6 +140,64 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Adds a Thickness to a Size.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The equality.</returns>
+        public static Size operator +(Size size, Thickness thickness)
+        {
+            return new Size(
+                size.Width + thickness.Left + thickness.Right,
+                size.Height + thickness.Top + thickness.Bottom);
+        }
+
+        /// <summary>
+        /// Subtracts a Thickness from a Size.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="thickness">The thickness.</param>
+        /// <returns>The equality.</returns>
+        public static Size operator -(Size size, Thickness thickness)
+        {
+            return new Size(
+                size.Width - (thickness.Left + thickness.Right),
+                size.Height - (thickness.Top + thickness.Bottom));
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Thickness"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="Thickness"/>.</returns>
+        public static Thickness Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            switch (parts.Count)
+            {
+                case 1:
+                    var uniform = double.Parse(parts[0], culture);
+                    return new Thickness(uniform);
+                case 2:
+                    var horizontal = double.Parse(parts[0], culture);
+                    var vertical = double.Parse(parts[1], culture);
+                    return new Thickness(horizontal, vertical);
+                case 4:
+                    var left = double.Parse(parts[0], culture);
+                    var top = double.Parse(parts[1], culture);
+                    var right = double.Parse(parts[2], culture);
+                    var bottom = double.Parse(parts[3], culture);
+                    return new Thickness(left, top, right, bottom);
+            }
+
+            throw new FormatException("Invalid Thickness.");
+        }
+
+        /// <summary>
         /// Checks for equality between a thickness and an object.
         /// </summary>
         /// <param name="obj">The object.</param>
@@ -167,10 +209,10 @@ namespace Perspex
             if (obj is Thickness)
             {
                 Thickness other = (Thickness)obj;
-                return this.Left == other.Left &&
-                       this.Top == other.Top &&
-                       this.Right == other.Right &&
-                       this.Bottom == other.Bottom;
+                return Left == other.Left &&
+                       Top == other.Top &&
+                       Right == other.Right &&
+                       Bottom == other.Bottom;
             }
 
             return false;
@@ -185,10 +227,10 @@ namespace Perspex
             unchecked
             {
                 int hash = 17;
-                hash = (hash * 23) + this.Left.GetHashCode();
-                hash = (hash * 23) + this.Top.GetHashCode();
-                hash = (hash * 23) + this.Right.GetHashCode();
-                hash = (hash * 23) + this.Bottom.GetHashCode();
+                hash = (hash * 23) + Left.GetHashCode();
+                hash = (hash * 23) + Top.GetHashCode();
+                hash = (hash * 23) + Right.GetHashCode();
+                hash = (hash * 23) + Bottom.GetHashCode();
                 return hash;
             }
         }
@@ -199,7 +241,7 @@ namespace Perspex
         /// <returns>The string representation of the thickness.</returns>
         public override string ToString()
         {
-            return string.Format("{0},{1},{2},{3}", this.left, this.top, this.right, this.bottom);
+            return string.Format("{0},{1},{2},{3}", _left, _top, _right, _bottom);
         }
     }
 }

@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TreeViewItem.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Controls.Mixins;
+using Perspex.Controls.Generators;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Input;
+using Perspex.Rendering;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Linq;
-    using Mixins;
-    using Perspex.Controls.Generators;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Input;
-    using Perspex.Rendering;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
@@ -39,7 +36,7 @@ namespace Perspex.Controls
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
             });
 
-        private TreeView treeView;
+        private TreeView _treeView;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -56,8 +53,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return this.GetValue(IsExpandedProperty); }
-            set { this.SetValue(IsExpandedProperty, value); }
+            get { return GetValue(IsExpandedProperty); }
+            set { SetValue(IsExpandedProperty, value); }
         }
 
         /// <summary>
@@ -65,21 +62,21 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return this.GetValue(IsSelectedProperty); }
-            set { this.SetValue(IsSelectedProperty, value); }
+            get { return GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            if (this.treeView == null)
+            if (_treeView == null)
             {
                 throw new InvalidOperationException(
                     "Cannot get the ItemContainerGenerator for a TreeViewItem " +
                     "before it is added to a TreeView.");
             }
 
-            return this.treeView.ItemContainerGenerator;
+            return _treeView.ItemContainerGenerator;
         }
 
         /// <inheritdoc/>
@@ -89,16 +86,16 @@ namespace Perspex.Controls
 
             if (this.GetVisualParent() != null)
             {
-                this.treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
+                _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
 
-                if (this.treeView == null)
+                if (_treeView == null)
                 {
                     throw new InvalidOperationException("TreeViewItems must be added to a TreeView.");
                 }
             }
             else
             {
-                this.treeView = null;
+                _treeView = null;
             }
         }
 
@@ -109,16 +106,16 @@ namespace Perspex.Controls
                 switch (e.Key)
                 {
                     case Key.Right:
-                        if (this.Items != null && this.Items.Cast<object>().Any())
+                        if (Items != null && Items.Cast<object>().Any())
                         {
-                            this.IsExpanded = true;
+                            IsExpanded = true;
                         }
 
                         e.Handled = true;
                         break;
 
                     case Key.Left:
-                        this.IsExpanded = false;
+                        IsExpanded = false;
                         e.Handled = true;
                         break;
                 }

@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ControlDetailsView.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Diagnostics.ViewModels;
+using Perspex.Styling;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.Views
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Diagnostics.ViewModels;
-    using Perspex.Styling;
-    using ReactiveUI;
-
     internal class ControlDetailsView : UserControl
     {
         private static readonly PerspexProperty<ControlDetailsViewModel> ViewModelProperty =
@@ -21,22 +18,22 @@ namespace Perspex.Diagnostics.Views
 
         public ControlDetailsView()
         {
-            this.InitializeComponent();
-            this.GetObservable(DataContextProperty)
-                .Subscribe(x => this.ViewModel = (ControlDetailsViewModel)x);
+            InitializeComponent();
+            GetObservable(DataContextProperty)
+                .Subscribe(x => ViewModel = (ControlDetailsViewModel)x);
         }
 
         public ControlDetailsViewModel ViewModel
         {
-            get { return this.GetValue(ViewModelProperty); }
-            private set { this.SetValue(ViewModelProperty, value); }
+            get { return GetValue(ViewModelProperty); }
+            private set { SetValue(ViewModelProperty, value); }
         }
 
         private void InitializeComponent()
         {
-            Func<object, IEnumerable<Control>> pt = this.PropertyTemplate;
+            Func<object, IEnumerable<Control>> pt = PropertyTemplate;
 
-            this.Content = new ScrollViewer
+            Content = new ScrollViewer
             {
                 Content = new Grid
                 {
@@ -52,7 +49,7 @@ namespace Perspex.Diagnostics.Views
                         {
                             Setters = new[]
                             {
-                                new Setter(Control.MarginProperty, new Thickness(2)),
+                                new Setter(MarginProperty, new Thickness(2)),
                             }
                         },
                     },

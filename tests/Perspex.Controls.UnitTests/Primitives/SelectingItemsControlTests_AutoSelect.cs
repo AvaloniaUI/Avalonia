@@ -1,18 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SelectingItemsControlTests_AutoSelect.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
 {
-    using Perspex.Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Interactivity;
-    using Xunit;
-
     public class SelectingItemsControlTests_AutoSelect
     {
         [Fact]
@@ -22,7 +18,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = new[] { "foo", "bar" },
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -39,7 +35,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -58,7 +54,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -78,7 +74,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 AutoSelect = true,
                 Items = items,
-                Template = this.Template(),
+                Template = Template(),
             };
 
             target.ApplyTemplate();
@@ -96,8 +92,8 @@ namespace Perspex.Controls.UnitTests.Primitives
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ListBox.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~ListBox.ItemsPanelProperty],
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 });
         }
 

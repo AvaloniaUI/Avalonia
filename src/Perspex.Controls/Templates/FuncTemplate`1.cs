@@ -1,20 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="FuncTemplate`1.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Controls.Templates
 {
-    using System;
-
     /// <summary>
     /// Creates a control from a <see cref="Func{TControl}"/>.
     /// </summary>
     /// <typeparam name="TControl">The type of control.</typeparam>
     public class FuncTemplate<TControl> : ITemplate<TControl> where TControl : IControl
     {
-        private Func<TControl> func;
+        private readonly Func<TControl> _func;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncTemplate{TControl}"/> class.
@@ -24,7 +21,7 @@ namespace Perspex.Controls.Templates
         {
             Contract.Requires<ArgumentNullException>(func != null);
 
-            this.func = func;
+            _func = func;
         }
 
         /// <summary>
@@ -35,7 +32,7 @@ namespace Perspex.Controls.Templates
         /// </returns>
         public TControl Build()
         {
-            return this.func();
+            return _func();
         }
     }
 }

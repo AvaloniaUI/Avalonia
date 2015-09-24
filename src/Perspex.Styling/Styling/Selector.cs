@@ -1,27 +1,52 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Selector.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Collections.Generic;
-
+    /// <summary>
+    /// A selector in a <see cref="Style"/>.
+    /// </summary>
+    /// <remarks>
+    /// Selectors represented in markup using a CSS-like syntax, e.g. "Button &lt; .dark" which 
+    /// means "A child of a Button with the 'dark' class applied. The preceeding example would be
+    /// stored in 3 <see cref="Selector"/> objects, linked by the <see cref="Previous"/> property:
+    /// <list type="number">
+    /// <item>
+    ///   <term>.dark</term>
+    ///   <description>
+    ///     A selector that selects a control with the 'dark' class applied.
+    ///   </description>
+    /// </item>
+    /// <item>
+    ///   <term>&lt;</term>
+    ///   <description>
+    ///     A selector that selects a child of the previous selector.
+    ///   </description>
+    /// </item>
+    /// <item>
+    ///   <term>Button</term>
+    ///   <description>
+    ///     A selector that selects a Button type.
+    ///   </description>
+    /// </item>
+    /// </list>
+    /// </remarks>
     public class Selector
     {
-        private Func<IStyleable, SelectorMatch> evaluate;
+        private readonly Func<IStyleable, SelectorMatch> _evaluate;
 
-        private bool inTemplate;
+        private readonly bool _inTemplate;
 
-        private bool stopTraversal;
+        private readonly bool _stopTraversal;
 
-        private string description;
+        private string _description;
 
         public Selector()
         {
-            this.evaluate = _ => SelectorMatch.True;
+            _evaluate = _ => SelectorMatch.True;
         }
 
         public Selector(
@@ -34,18 +59,16 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(previous != null);
 
-            this.Previous = previous;
-            this.evaluate = evaluate;
-            this.SelectorString = selectorString;
-            this.inTemplate = inTemplate || previous.inTemplate;
-            this.stopTraversal = stopTraversal;
+            Previous = previous;
+            _evaluate = evaluate;
+            SelectorString = selectorString;
+            _inTemplate = inTemplate || previous._inTemplate;
+            _stopTraversal = stopTraversal;
         }
 
         public Selector Previous
         {
-            get;
-            private set;
-        }
+            get; }
 
         public string SelectorString
         {
@@ -55,7 +78,7 @@ namespace Perspex.Styling
 
         public Selector MovePrevious()
         {
-            return this.stopTraversal ? null : this.Previous;
+            return _stopTraversal ? null : Previous;
         }
 
         public SelectorMatch Match(IStyleable control)
@@ -65,12 +88,12 @@ namespace Perspex.Styling
 
             while (selector != null)
             {
-                if (selector.inTemplate && control.TemplatedParent == null)
+                if (selector._inTemplate && control.TemplatedParent == null)
                 {
                     return SelectorMatch.False;
                 }
 
-                var match = selector.evaluate(control);
+                var match = selector._evaluate(control);
 
                 if (match.ImmediateResult == false)
                 {
@@ -96,19 +119,19 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            if (this.description == null)
+            if (_description == null)
             {
                 string result = string.Empty;
 
-                if (this.Previous != null)
+                if (Previous != null)
                 {
-                    result = this.Previous.ToString();
+                    result = Previous.ToString();
                 }
 
-                this.description = result + this.SelectorString;
+                _description = result + SelectorString;
             }
 
-            return this.description;
+            return _description;
         }
     }
 }

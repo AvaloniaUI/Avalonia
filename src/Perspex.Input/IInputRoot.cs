@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IInputRoot.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Perspex.Input
 {
@@ -20,6 +17,11 @@ namespace Perspex.Input
         /// Gets or sets the keyboard navigation handler.
         /// </summary>
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
+
+        /// <summary>
+        /// Gets or sets the input element that the pointer is currently over.
+        /// </summary>
+        IInputElement PointerOverElement { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.

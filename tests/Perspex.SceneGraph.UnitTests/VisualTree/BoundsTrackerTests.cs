@@ -1,20 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BoundsTrackerTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Shapes;
+using Perspex.VisualTree;
+using Xunit;
 
 namespace Perspex.SceneGraph.UnitTests.VisualTree
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Shapes;
-    using Perspex.VisualTree;
-    using Xunit;
-
     public class BoundsTrackerTests
     {
         [Fact]
@@ -43,13 +40,13 @@ namespace Perspex.SceneGraph.UnitTests.VisualTree
             var results = new List<TransformedBounds>();
             track.Subscribe(results.Add);
 
-            Assert.Equal(new Rect(15, 15, 15, 15), results.Last().Bounds);
+            Assert.Equal(new Rect(42, 42, 15, 15), results.Last().Bounds);
 
             tree.Padding = new Thickness(15);
             tree.Measure(Size.Infinity);
             tree.Arrange(new Rect(0, 0, 100, 100), true);
 
-            Assert.Equal(new Rect(20, 20, 15, 15), results.Last().Bounds);
+            Assert.Equal(new Rect(42, 42, 15, 15), results.Last().Bounds);
         }
     }
 }

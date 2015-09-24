@@ -1,19 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SelectorTests_Template.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using System.Reactive.Linq;
+using Moq;
+using Perspex.Controls;
+using Perspex.VisualTree;
+using Xunit;
+using System.Threading.Tasks;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System.Linq;
-    using System.Reactive.Linq;
-    using Moq;
-    using Perspex.Controls;
-    using Perspex.Styling;
-    using Perspex.VisualTree;
-    using Xunit;
-    using System.Threading.Tasks;
+    using Controls = Controls.Controls;
 
     public class SelectorTests_Template
     {
@@ -23,7 +21,7 @@ namespace Perspex.Styling.UnitTests
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             var border = (Border)target.Object.GetVisualChildren().Single();
             var selector = new Selector().Template().OfType<Border>();
@@ -37,10 +35,10 @@ namespace Perspex.Styling.UnitTests
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             var border = (Border)target.Object.GetVisualChildren().Single();
-            border.SetValue(Border.TemplatedParentProperty, null);
+            border.SetValue(Control.TemplatedParentProperty, null);
             var selector = new Selector().Template().OfType<Border>();
 
             Assert.False(selector.Match(border).ImmediateResult);
@@ -52,7 +50,7 @@ namespace Perspex.Styling.UnitTests
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             var textBlock = (TextBlock)target.Object.VisualChildren.Single().VisualChildren.Single();
             var selector = new Selector().Template().OfType<TextBlock>();
@@ -67,7 +65,7 @@ namespace Perspex.Styling.UnitTests
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
             var styleKey = templatedControl.Object.GetType();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             var border = (Border)target.Object.VisualChildren.Single();
 
@@ -83,7 +81,7 @@ namespace Perspex.Styling.UnitTests
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
             var styleKey = templatedControl.Object.GetType();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             styleable.Setup(x => x.StyleKey).Returns(styleKey);
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
@@ -100,7 +98,7 @@ namespace Perspex.Styling.UnitTests
             var target = new Mock<IVisual>();
             var templatedControl = target.As<ITemplatedControl>();
             var styleable = target.As<IStyleable>();
-            this.BuildVisualTree(target);
+            BuildVisualTree(target);
 
             styleable.Setup(x => x.Classes).Returns(new Classes("bar"));
             var border = (Border)target.Object.VisualChildren.Single();
@@ -116,10 +114,10 @@ namespace Perspex.Styling.UnitTests
             {
                 new Border
                 {
-                    [Border.TemplatedParentProperty] = templatedControl.Object,
+                    [Control.TemplatedParentProperty] = templatedControl.Object,
                     Child = new TextBlock
                     {
-                        [Border.TemplatedParentProperty] = templatedControl.Object,
+                        [Control.TemplatedParentProperty] = templatedControl.Object,
                     },
                 },
             });

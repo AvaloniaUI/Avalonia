@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="AccessText.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Input;
+using Perspex.Media;
+using Perspex.Rendering;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Perspex.Input;
-    using Perspex.Media;
-    using Perspex.Rendering;
-
     /// <summary>
     /// A text block that displays a character prefixed with an underscore as an access key.
     /// </summary>
@@ -25,7 +22,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// The access key handler for the current window.
         /// </summary>
-        private IAccessKeyHandler accessKeys;
+        private IAccessKeyHandler _accessKeys;
 
         /// <summary>
         /// Initializes static members of the <see cref="AccessText"/> class.
@@ -40,7 +37,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public AccessText()
         {
-            this.GetObservable(TextProperty).Subscribe(this.TextChanged);
+            GetObservable(TextProperty).Subscribe(TextChanged);
         }
 
         /// <summary>
@@ -57,8 +54,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool ShowAccessKey
         {
-            get { return this.GetValue(ShowAccessKeyProperty); }
-            set { this.SetValue(ShowAccessKeyProperty, value); }
+            get { return GetValue(ShowAccessKeyProperty); }
+            set { SetValue(ShowAccessKeyProperty, value); }
         }
 
         /// <summary>
@@ -69,14 +66,14 @@ namespace Perspex.Controls.Primitives
         {
             base.Render(context);
 
-            int underscore = this.Text?.IndexOf('_') ?? -1;
+            int underscore = Text?.IndexOf('_') ?? -1;
 
-            if (underscore != -1 && this.ShowAccessKey)
+            if (underscore != -1 && ShowAccessKey)
             {
-                var rect = this.FormattedText.HitTestTextPosition(underscore);
+                var rect = FormattedText.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -0.5);
                 context.DrawLine(
-                    new Pen(this.Foreground, 1),
+                    new Pen(Foreground, 1),
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
             }
@@ -90,12 +87,12 @@ namespace Perspex.Controls.Primitives
         protected override FormattedText CreateFormattedText(Size constraint)
         {
             var result = new FormattedText(
-                this.StripAccessKey(this.Text),
-                this.FontFamily,
-                this.FontSize,
-                this.FontStyle,
-                this.TextAlignment,
-                this.FontWeight);
+                StripAccessKey(Text),
+                FontFamily,
+                FontSize,
+                FontStyle,
+                TextAlignment,
+                FontWeight);
             result.Constraint = constraint;
             return result;
         }
@@ -118,11 +115,11 @@ namespace Perspex.Controls.Primitives
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-            this.accessKeys = (root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (root as IInputRoot)?.AccessKeyHandler;
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
-                this.accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(AccessKey, this);
             }
         }
 
@@ -134,10 +131,10 @@ namespace Perspex.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(root);
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
-                this.accessKeys.Unregister(this);
-                this.accessKeys = null;
+                _accessKeys.Unregister(this);
+                _accessKeys = null;
             }
         }
 
@@ -178,11 +175,11 @@ namespace Perspex.Controls.Primitives
                 }
             }
 
-            this.AccessKey = key;
+            AccessKey = key;
 
-            if (this.accessKeys != null && this.AccessKey != 0)
+            if (_accessKeys != null && AccessKey != 0)
             {
-                this.accessKeys.Register(this.AccessKey, this);
+                _accessKeys.Register(AccessKey, this);
             }
         }
     }

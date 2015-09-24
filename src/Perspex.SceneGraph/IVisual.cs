@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IVisual.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Collections;
+using Perspex.Media;
+using Perspex.VisualTree;
 
 namespace Perspex
 {
-    using Perspex.Collections;
-    using Perspex.Media;
-    using Perspex.VisualTree;
-
     /// <summary>
     /// Represents a node in the visual scene graph.
     /// </summary>
@@ -24,7 +21,7 @@ namespace Perspex
     public interface IVisual
     {
         /// <summary>
-        /// Gets the bounds of the scene graph node.
+        /// Gets the bounds of the scene graph node relative to its parent.
         /// </summary>
         Rect Bounds { get; }
 
@@ -61,7 +58,7 @@ namespace Perspex
         /// <summary>
         /// Gets or sets the transform origin of the scene graph node.
         /// </summary>
-        Origin TransformOrigin { get; set; }
+        RelativePoint TransformOrigin { get; set; }
 
         /// <summary>
         /// Gets the scene graph node's child nodes.

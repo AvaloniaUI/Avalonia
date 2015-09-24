@@ -1,30 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TestControlBase.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System;
-    using Perspex.Styling;
-
     public class TestControlBase : IStyleable
     {
         public TestControlBase()
         {
-            this.Classes = new Classes();
-            this.SubscribeCheckObservable = new TestObservable();
+            Classes = new Classes();
+            SubscribeCheckObservable = new TestObservable();
         }
 
         public string Name { get; set; }
 
         public virtual Classes Classes { get; set; }
 
-        public Type StyleKey
-        {
-            get { return this.GetType(); }
-        }
+        public Type StyleKey => GetType();
 
         public TestObservable SubscribeCheckObservable { get; private set; }
 

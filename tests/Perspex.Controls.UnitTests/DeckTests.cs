@@ -1,17 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="DeckTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Linq;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Templates;
-    using Perspex.LogicalTree;
-    using Xunit;
-
     public class DeckTests
     {
         [Fact]
@@ -19,7 +17,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = new ControlTemplate<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -38,7 +36,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Deck
             {
-                Template = new ControlTemplate<Deck>(this.CreateTemplate),
+                Template = new ControlTemplate<Deck>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -60,9 +58,9 @@ namespace Perspex.Controls.UnitTests
             return new DeckPresenter
             {
                 Name = "itemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = control[~Deck.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~Deck.ItemsPanelProperty],
-                [~DeckPresenter.SelectedIndexProperty] = control[~Deck.SelectedIndexProperty],
+                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                [~DeckPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
         }

@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StreamGeometry.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Media
 {
-    using Perspex.Platform;
-    using Splat;
-
     /// <summary>
     /// Represents the geometry of an arbitrarily complex shape.
     /// </summary>
@@ -20,7 +17,7 @@ namespace Perspex.Media
         public StreamGeometry()
         {
             IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
-            this.PlatformImpl = factory.CreateStreamGeometry();
+            PlatformImpl = factory.CreateStreamGeometry();
         }
 
         /// <summary>
@@ -29,14 +26,11 @@ namespace Perspex.Media
         /// <param name="impl">The platform-specific implementation.</param>
         private StreamGeometry(IGeometryImpl impl)
         {
-            this.PlatformImpl = impl;
+            PlatformImpl = impl;
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds
-        {
-            get { return this.PlatformImpl.Bounds; }
-        }
+        public override Rect Bounds => PlatformImpl.Bounds;
 
         /// <summary>
         /// Creates a <see cref="StreamGeometry"/> from a string.
@@ -58,7 +52,7 @@ namespace Perspex.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(((IStreamGeometryImpl)this.PlatformImpl).Clone());
+            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl).Clone());
         }
 
         /// <summary>
@@ -69,7 +63,7 @@ namespace Perspex.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(((IStreamGeometryImpl)this.PlatformImpl).Open());
+            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl).Open());
         }
     }
 }

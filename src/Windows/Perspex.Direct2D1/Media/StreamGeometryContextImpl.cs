@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StreamGeometryContextImpl.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Platform;
+using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
-    using Perspex.Platform;
-    using SharpDX.Direct2D1;
-
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        private GeometrySink sink;
+        private readonly GeometrySink _sink;
 
         public StreamGeometryContextImpl(GeometrySink sink)
         {
-            this.sink = sink;
+            _sink = sink;
         }
 
         public void ArcTo(
@@ -25,7 +22,7 @@ namespace Perspex.Direct2D1.Media
             bool isLargeArc,
             Perspex.Media.SweepDirection sweepDirection)
         {
-            this.sink.AddArc(new ArcSegment
+            _sink.AddArc(new ArcSegment
             {
                 Point = point.ToSharpDX(),
                 Size = size.ToSharpDX(),
@@ -37,12 +34,12 @@ namespace Perspex.Direct2D1.Media
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            this.sink.BeginFigure(startPoint.ToSharpDX(), isFilled ? FigureBegin.Filled : FigureBegin.Hollow);
+            _sink.BeginFigure(startPoint.ToSharpDX(), isFilled ? FigureBegin.Filled : FigureBegin.Hollow);
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-            this.sink.AddBezier(new BezierSegment
+            _sink.AddBezier(new BezierSegment
             {
                 Point1 = point1.ToSharpDX(),
                 Point2 = point2.ToSharpDX(),
@@ -52,18 +49,18 @@ namespace Perspex.Direct2D1.Media
 
         public void LineTo(Point point)
         {
-            this.sink.AddLine(point.ToSharpDX());
+            _sink.AddLine(point.ToSharpDX());
         }
 
         public void EndFigure(bool isClosed)
         {
-            this.sink.EndFigure(isClosed ? FigureEnd.Closed : FigureEnd.Open);
+            _sink.EndFigure(isClosed ? FigureEnd.Closed : FigureEnd.Open);
         }
 
         public void Dispose()
         {
-            this.sink.Close();
-            this.sink.Dispose();
+            _sink.Close();
+            _sink.Dispose();
         }
     }
 }

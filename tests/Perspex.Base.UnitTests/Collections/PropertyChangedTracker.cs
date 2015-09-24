@@ -1,33 +1,30 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PropertyChangedTracker.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Perspex.Base.UnitTests.Collections
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-
     internal class PropertyChangedTracker
     {
         public PropertyChangedTracker(INotifyPropertyChanged obj)
         {
-            this.Names = new List<string>();
-            obj.PropertyChanged += this.PropertyChanged;
+            Names = new List<string>();
+            obj.PropertyChanged += PropertyChanged;
         }
 
-        public List<string> Names { get; private set; }
+        public List<string> Names { get; }
 
         public void Reset()
         {
-            this.Names.Clear();
+            Names.Clear();
         }
 
         private void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            this.Names.Add(e.PropertyName);
+            Names.Add(e.PropertyName);
         }
     }
 }

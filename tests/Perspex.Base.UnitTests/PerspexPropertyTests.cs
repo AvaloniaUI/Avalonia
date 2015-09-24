@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexPropertyTests.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    using System;
-    using Xunit;
-
     public class PerspexPropertyTests
     {
         [Fact]
@@ -26,6 +23,18 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(typeof(string), target.PropertyType);
             Assert.Equal(typeof(Class1), target.OwnerType);
             Assert.Equal(false, target.Inherits);
+        }
+
+        [Fact]
+        public void Name_Cannot_Contain_Periods()
+        {
+            Assert.Throws<ArgumentException>(() => new PerspexProperty<string>(
+                "Foo.Bar",
+                typeof(Class1),
+                "Foo",
+                false,
+                BindingMode.OneWay,
+                null));
         }
 
         [Fact]

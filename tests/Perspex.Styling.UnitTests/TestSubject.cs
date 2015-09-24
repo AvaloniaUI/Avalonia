@@ -1,34 +1,28 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TestSubject.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Disposables;
-
     internal class TestSubject<T> : IObserver<T>, IObservable<T>
     {
-        private T initial;
+        private readonly T _initial;
 
-        private List<IObserver<T>> subscribers = new List<IObserver<T>>();
+        private readonly List<IObserver<T>> _subscribers = new List<IObserver<T>>();
 
         public TestSubject(T initial)
         {
-            this.initial = initial;
+            _initial = initial;
         }
 
-        public int SubscriberCount
-        {
-            get { return this.subscribers.Count; }
-        }
+        public int SubscriberCount => _subscribers.Count;
 
         public void OnCompleted()
         {
-            foreach (IObserver<T> subscriber in this.subscribers.ToArray())
+            foreach (IObserver<T> subscriber in _subscribers.ToArray())
             {
                 subscriber.OnCompleted();
             }
@@ -36,7 +30,7 @@ namespace Perspex.Styling.UnitTests
 
         public void OnError(Exception error)
         {
-            foreach (IObserver<T> subscriber in this.subscribers.ToArray())
+            foreach (IObserver<T> subscriber in _subscribers.ToArray())
             {
                 subscriber.OnError(error);
             }
@@ -44,7 +38,7 @@ namespace Perspex.Styling.UnitTests
 
         public void OnNext(T value)
         {
-            foreach (IObserver<T> subscriber in this.subscribers.ToArray())
+            foreach (IObserver<T> subscriber in _subscribers.ToArray())
             {
                 subscriber.OnNext(value);
             }
@@ -52,9 +46,9 @@ namespace Perspex.Styling.UnitTests
 
         public IDisposable Subscribe(IObserver<T> observer)
         {
-            this.subscribers.Add(observer);
-            observer.OnNext(this.initial);
-            return Disposable.Create(() => this.subscribers.Remove(observer));
+            _subscribers.Add(observer);
+            observer.OnNext(_initial);
+            return Disposable.Create(() => _subscribers.Remove(observer));
         }
     }
 }

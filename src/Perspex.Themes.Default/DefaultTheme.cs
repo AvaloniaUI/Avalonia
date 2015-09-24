@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="DefaultTheme.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
-    using Perspex.Styling;
-
     /// <summary>
     /// The default Perspex theme.
     /// </summary>
@@ -18,33 +15,33 @@ namespace Perspex.Themes.Default
         /// </summary>
         public DefaultTheme()
         {
-            this.Add(new FocusAdornerStyle());
+            Add(new FocusAdornerStyle());
 
-            this.Add(new ButtonStyle());
-            this.Add(new CheckBoxStyle());
-            this.Add(new ContentControlStyle());
-            this.Add(new DeckStyle());
-            this.Add(new DropDownStyle());
-            this.Add(new GridSplitterStyle());
-            this.Add(new ItemsControlStyle());
-            this.Add(new ListBoxStyle());
-            this.Add(new ListBoxItemStyle());
-            this.Add(new MenuStyle());
-            this.Add(new MenuItemStyle());
-            this.Add(new PopupRootStyle());
-            this.Add(new ProgressBarStyle());
-            this.Add(new RadioButtonStyle());
-            this.Add(new ScrollBarStyle());
-            this.Add(new ScrollViewerStyle());
-            this.Add(new TabControlStyle());
-            this.Add(new TabItemStyle());
-            this.Add(new TabStripStyle());
-            this.Add(new TextBoxStyle());
-            this.Add(new ToggleButtonStyle());
-            this.Add(new ToolTipStyle());
-            this.Add(new TreeViewStyle());
-            this.Add(new TreeViewItemStyle());
-            this.Add(new WindowStyle());
+            Add(new ButtonStyle());
+            Add(new CheckBoxStyle());
+            Add(new ContentControlStyle());
+            Add(new DeckStyle());
+            Add(new DropDownStyle());
+            Add(new GridSplitterStyle());
+            Add(new ItemsControlStyle());
+            Add(new ListBoxStyle());
+            Add(new ListBoxItemStyle());
+            Add(new MenuStyle());
+            Add(new MenuItemStyle());
+            Add(new PopupRootStyle());
+            Add(new ProgressBarStyle());
+            Add(new RadioButtonStyle());
+            Add(new ScrollBarStyle());
+            Add(new ScrollViewerStyle());
+            Add(new TabControlStyle());
+            Add(new TabItemStyle());
+            Add(new TabStripStyle());
+            Add(new TextBoxStyle());
+            Add(new ToggleButtonStyle());
+            Add(new ToolTipStyle());
+            Add(new TreeViewStyle());
+            Add(new TreeViewItemStyle());
+            Add(new WindowStyle());
         }
     }
 }

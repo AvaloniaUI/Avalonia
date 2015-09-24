@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ScrollViewerTests.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Linq;
+using Perspex.Controls;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.VisualTree;
+using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    using System.Linq;
-    using Perspex.Controls;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.VisualTree;
-    using Xunit;
-
     public class ScrollViewerTests
     {
         [Fact]
@@ -21,7 +18,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ScrollViewer
             {
-                Template = new ControlTemplate<ScrollViewer>(this.CreateTemplate),
+                Template = new ControlTemplate<ScrollViewer>(CreateTemplate),
                 Content = "Foo",
             };
 
@@ -37,7 +34,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ContentControl
             {
-                Template = new ControlTemplate<ContentControl>(this.CreateNestedTemplate),
+                Template = new ControlTemplate<ContentControl>(CreateNestedTemplate),
                 Content = "Foo",
             };
 
@@ -69,7 +66,7 @@ namespace Perspex.Controls.UnitTests
                     new ScrollContentPresenter
                     {
                         Name = "contentPresenter",
-                        [~ScrollContentPresenter.ContentProperty] = control[~ScrollViewer.ContentProperty],
+                        [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                         [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
                         [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
@@ -79,8 +76,8 @@ namespace Perspex.Controls.UnitTests
                     {
                         Name = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
-                        [~ScrollBar.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
+                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
+                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
@@ -89,8 +86,8 @@ namespace Perspex.Controls.UnitTests
                     {
                         Name = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
-                        [~ScrollBar.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                        [~~ScrollBar.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
@@ -103,7 +100,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate<ScrollViewer>(this.CreateTemplate),
+                Template = new ControlTemplate<ScrollViewer>(CreateTemplate),
                 Content = new ContentPresenter
                 {
                     Name = "this"

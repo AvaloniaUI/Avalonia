@@ -1,37 +1,34 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Ellipse.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Media;
 
 namespace Perspex.Controls.Shapes
 {
-    using Perspex.Media;
-
     public class Ellipse : Shape
     {
-        private Geometry geometry;
+        private Geometry _geometry;
 
-        private Size geometrySize;
+        private Size _geometrySize;
 
         public override Geometry DefiningGeometry
         {
             get
             {
-                if (this.geometry == null || this.geometrySize != this.Bounds.Size)
+                if (_geometry == null || _geometrySize != Bounds.Size)
                 {
-                    var rect = new Rect(this.Bounds.Size).Deflate(this.StrokeThickness);
-                    this.geometry = new EllipseGeometry(rect);
-                    this.geometrySize = this.Bounds.Size;
+                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
+                    _geometry = new EllipseGeometry(rect);
+                    _geometrySize = Bounds.Size;
                 }
 
-                return this.geometry;
+                return _geometry;
             }
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            return new Size(this.StrokeThickness, this.StrokeThickness);
+            return new Size(StrokeThickness, StrokeThickness);
         }
     }
 }

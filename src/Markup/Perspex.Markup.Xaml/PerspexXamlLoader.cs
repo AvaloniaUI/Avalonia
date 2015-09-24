@@ -1,18 +1,17 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PerspexXamlLoader.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using OmniXaml;
+using Perspex.Markup.Xaml.Context;
+using Perspex.Platform;
+using Splat;
 
 namespace Perspex.Markup.Xaml
 {
-    using System;
-    using System.Reflection;
-    using OmniXaml;
-    using Perspex.Markup.Xaml.Context;
-    using Platform;
-    using Splat;
-
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
@@ -55,7 +54,26 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
-            return this.Load(GetUriFor(type), rootInstance);
+            // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
+            // in certain situations, so we try to load .xaml and if that's not found we try .paml.
+            // Ideally we'd be able to use .xaml everywhere
+            var assetLocator = Locator.Current.GetService<IAssetLoader>();
+            if (assetLocator == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
+            }
+            foreach (var uri in GetUrisFor(type))
+            {
+                if (assetLocator.Exists(uri))
+                {
+                    using (var stream = assetLocator.Open(uri))
+                    {
+                        return Load(stream, rootInstance);
+                    }
+                }
+            }
+            throw new FileNotFoundException("Unable to find view for " + type.FullName);
         }
 
         /// <summary>
@@ -78,7 +96,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return this.Load(stream, rootInstance);
+                return Load(stream, rootInstance);
             }
         }
 
@@ -87,23 +105,13 @@ namespace Perspex.Markup.Xaml
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The URI.</returns>
-        private static Uri GetUriFor(Type type)
+        private static IEnumerable<Uri> GetUrisFor(Type type)
         {
-            if (type.Namespace != null)
-            {
-                var toRemove = type.GetTypeInfo().Assembly.GetName().Name;
-                var substracted = toRemove.Length < type.Namespace.Length ? type.Namespace.Remove(0, toRemove.Length + 1) : "";
-                var replace = substracted.Replace('.', '/');
+            var asm = type.GetTypeInfo().Assembly.GetName().Name;
+            var typeName = type.FullName;
+            yield return new Uri("resource://application/" + asm + "/" + typeName+".xaml");
+            yield return new Uri("resource://application/" + asm + "/" + typeName + ".paml");
 
-                if (replace != string.Empty)
-                {
-                    replace = replace + "/";
-                }
-
-                return new Uri(replace + type.Name + ".xaml", UriKind.Relative);
-            }
-
-            return null;
         }
     }
 }

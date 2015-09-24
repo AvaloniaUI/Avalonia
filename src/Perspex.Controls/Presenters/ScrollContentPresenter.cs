@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ScrollContentPresenter.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.Input;
+using Perspex.Layout;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Presenters
 {
-    using System;
-    using System.Linq;
-    using Perspex.Input;
-    using Perspex.Layout;
-    using Perspex.VisualTree;
-
     public class ScrollContentPresenter : ContentPresenter, IPresenter
     {
         public static readonly PerspexProperty<Size> ExtentProperty =
@@ -26,63 +23,60 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
-        private Size measuredExtent;
+        private Size _measuredExtent;
 
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
-            Control.AffectsArrange(OffsetProperty);
+            AffectsArrange(OffsetProperty);
         }
 
         public ScrollContentPresenter()
         {
-            this.AddHandler(Control.RequestBringIntoViewEvent, this.BringIntoViewRequested);
+            AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
         }
 
         public Size Extent
         {
-            get { return this.GetValue(ExtentProperty); }
-            private set { this.SetValue(ExtentProperty, value); }
+            get { return GetValue(ExtentProperty); }
+            private set { SetValue(ExtentProperty, value); }
         }
 
         public Vector Offset
         {
-            get { return this.GetValue(OffsetProperty); }
-            set { this.SetValue(OffsetProperty, value); }
+            get { return GetValue(OffsetProperty); }
+            set { SetValue(OffsetProperty, value); }
         }
 
         public Size Viewport
         {
-            get { return this.GetValue(ViewportProperty); }
-            private set { this.SetValue(ViewportProperty, value); }
+            get { return GetValue(ViewportProperty); }
+            private set { SetValue(ViewportProperty, value); }
         }
 
-        public bool CanScrollHorizontally
-        {
-            get { return this.GetValue(CanScrollHorizontallyProperty); }
-        }
+        public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = this.Content as ILayoutable;
+            var content = Content as ILayoutable;
 
             if (content != null)
             {
                 var measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-                if (!this.CanScrollHorizontally)
+                if (!CanScrollHorizontally)
                 {
                     measureSize = measureSize.WithWidth(availableSize.Width);
                 }
 
                 content.Measure(measureSize);
                 var size = content.DesiredSize;
-                this.measuredExtent = size;
+                _measuredExtent = size;
                 return size.Constrain(availableSize);
             }
             else
             {
-                return this.Extent = new Size();
+                return Extent = new Size();
             }
         }
 
@@ -90,15 +84,15 @@ namespace Perspex.Controls.Presenters
         {
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
 
-            this.Viewport = finalSize;
-            this.Extent = this.measuredExtent;
+            Viewport = finalSize;
+            Extent = _measuredExtent;
 
             if (child != null)
             {
                 var size = new Size(
                     Math.Max(finalSize.Width, child.DesiredSize.Width),
                     Math.Max(finalSize.Height, child.DesiredSize.Height));
-                child.Arrange(new Rect((Point)(-this.Offset), size));
+                child.Arrange(new Rect((Point)(-Offset), size));
                 return finalSize;
             }
 
@@ -107,12 +101,12 @@ namespace Perspex.Controls.Presenters
 
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (this.Extent.Height > this.Viewport.Height)
+            if (Extent.Height > Viewport.Height)
             {
-                var y = this.Offset.Y + (-e.Delta.Y * 50);
+                var y = Offset.Y + (-e.Delta.Y * 50);
                 y = Math.Max(y, 0);
-                y = Math.Min(y, this.Extent.Height - this.Viewport.Height);
-                this.Offset = new Vector(this.Offset.X, y);
+                y = Math.Min(y, Extent.Height - Viewport.Height);
+                Offset = new Vector(Offset.X, y);
                 e.Handled = true;
             }
         }
@@ -121,11 +115,11 @@ namespace Perspex.Controls.Presenters
         {
             var transform = e.TargetObject.TransformToVisual(this.GetVisualChildren().Single());
             var rect = e.TargetRect * transform;
-            var offset = this.Offset;
+            var offset = Offset;
 
-            if (rect.Bottom > offset.Y + this.Viewport.Height)
+            if (rect.Bottom > offset.Y + Viewport.Height)
             {
-                offset = offset.WithY(rect.Bottom - this.Viewport.Height);
+                offset = offset.WithY(rect.Bottom - Viewport.Height);
                 e.Handled = true;
             }
 
@@ -135,9 +129,9 @@ namespace Perspex.Controls.Presenters
                 e.Handled = true;
             }
 
-            if (rect.Right > offset.X + this.Viewport.Width)
+            if (rect.Right > offset.X + Viewport.Width)
             {
-                offset = offset.WithX(rect.Right - this.Viewport.Width);
+                offset = offset.WithX(rect.Right - Viewport.Width);
                 e.Handled = true;
             }
 
@@ -147,7 +141,7 @@ namespace Perspex.Controls.Presenters
                 e.Handled = true;
             }
 
-            this.Offset = offset;
+            Offset = offset;
         }
     }
 }

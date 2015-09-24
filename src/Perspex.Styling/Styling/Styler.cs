@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Styler.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using Perspex.VisualTree;
+using Splat;
 
 namespace Perspex.Styling
 {
-    using System;
-    using System.Linq;
-    using Perspex.VisualTree;
-    using Splat;
-
     public class Styler : IStyler
     {
         public void ApplyStyles(IStyleable control)
@@ -24,12 +21,12 @@ namespace Perspex.Styling
 
             if (global != null)
             {
-                global.Styles.Attach(control);
+                global.Styles.Attach(control, null);
             }
 
             if (styleContainer != null)
             {
-                this.ApplyStyles(control, styleContainer);
+                ApplyStyles(control, styleContainer);
             }
         }
 
@@ -49,11 +46,11 @@ namespace Perspex.Styling
 
                 if (parentContainer != null)
                 {
-                    this.ApplyStyles(control, parentContainer);
+                    ApplyStyles(control, parentContainer);
                 }
             }
 
-            container.Styles.Attach(control);
+            container.Styles.Attach(control, container);
         }
 
         private IStyleHost GetParentContainer(IStyleHost container)

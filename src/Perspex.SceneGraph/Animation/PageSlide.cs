@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PageSlide.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
+using Perspex.Media;
 
 namespace Perspex.Animation
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Threading.Tasks;
-    using System.Threading.Tasks;
-    using Perspex.Media;
-
     /// <summary>
     /// Transitions between two pages by sliding them horizontally.
     /// </summary>
@@ -23,7 +20,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         public PageSlide(TimeSpan duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         /// <summary>
@@ -62,7 +59,7 @@ namespace Perspex.Animation
                     0.0,
                     forward ? -distance : distance,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             if (to != null)
@@ -76,7 +73,7 @@ namespace Perspex.Animation
                     forward ? distance : -distance,
                     0.0,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             await Task.WhenAll(tasks.ToArray());

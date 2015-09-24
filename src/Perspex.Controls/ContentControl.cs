@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ContentControl.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Collections;
+using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
+using Perspex.Layout;
 
 namespace Perspex.Controls
 {
-    using System;
-    using Perspex.Collections;
-    using Perspex.Controls.Presenters;
-    using Perspex.Controls.Primitives;
-    using Perspex.Controls.Templates;
-    using Perspex.Layout;
-
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="DataTemplate"/>.
     /// </summary>
@@ -48,8 +45,8 @@ namespace Perspex.Controls
         /// </summary>
         public object Content
         {
-            get { return this.GetValue(ContentProperty); }
-            set { this.SetValue(ContentProperty, value); }
+            get { return GetValue(ContentProperty); }
+            set { SetValue(ContentProperty, value); }
         }
 
         /// <summary>
@@ -66,8 +63,8 @@ namespace Perspex.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return this.GetValue(HorizontalContentAlignmentProperty); }
-            set { this.SetValue(HorizontalContentAlignmentProperty, value); }
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
         }
 
         /// <summary>
@@ -75,14 +72,14 @@ namespace Perspex.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return this.GetValue(VerticalContentAlignmentProperty); }
-            set { this.SetValue(VerticalContentAlignmentProperty, value); }
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
         /// <summary>
         /// Gets a writeable logical children collection from the host.
         /// </summary>
-        IPerspexList<ILogical> IReparentingHost.LogicalChildren => this.LogicalChildren;
+        IPerspexList<ILogical> IReparentingHost.LogicalChildren => LogicalChildren;
 
         /// <summary>
         /// Asks the control whether it wants to reparent the logical children of the specified
@@ -103,7 +100,7 @@ namespace Perspex.Controls
             // We allow ContentControls without ContentPresenters in the template. This can be
             // useful for e.g. a simple ToggleButton that displays an image. There's no need to
             // have a ContentPresenter in the visual tree for that.
-            this.Presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
+            Presenter = this.FindTemplateChild<ContentPresenter>("contentPresenter");
         }
     }
 }

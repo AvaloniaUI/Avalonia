@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ItemContainers.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System.Collections.Generic;
 
 namespace Perspex.Controls.Generators
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Holds details about a set of item containers in an <see cref="IItemContainerGenerator"/>.
     /// </summary>
@@ -20,8 +17,8 @@ namespace Perspex.Controls.Generators
         /// <param name="containers">The containers.</param>
         public ItemContainers(int startingIndex, IList<IControl> containers)
         {
-            this.StartingIndex = startingIndex;
-            this.Items = containers;
+            StartingIndex = startingIndex;
+            Items = containers;
         }
 
         /// <summary>

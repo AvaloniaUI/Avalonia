@@ -1,18 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TestObserver.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System;
-
     internal class TestObserver<T> : IObserver<T>
     {
-        private bool hasValue;
+        private bool _hasValue;
 
-        private T value;
+        private T _value;
 
         public bool Completed { get; private set; }
 
@@ -20,41 +17,41 @@ namespace Perspex.Styling.UnitTests
 
         public T GetValue()
         {
-            if (!this.hasValue)
+            if (!_hasValue)
             {
                 throw new Exception("Observable provided no value.");
             }
 
-            if (this.Completed)
+            if (Completed)
             {
                 throw new Exception("Observable completed unexpectedly.");
             }
 
-            if (this.Error != null)
+            if (Error != null)
             {
                 throw new Exception("Observable errored unexpectedly.");
             }
 
-            this.hasValue = false;
-            return this.value;
+            _hasValue = false;
+            return _value;
         }
 
         public void OnCompleted()
         {
-            this.Completed = true;
+            Completed = true;
         }
 
         public void OnError(Exception error)
         {
-            this.Error = error;
+            Error = error;
         }
 
         public void OnNext(T value)
         {
-            if (!this.hasValue)
+            if (!_hasValue)
             {
-                this.value = value;
-                this.hasValue = true;
+                _value = value;
+                _hasValue = true;
             }
             else
             {

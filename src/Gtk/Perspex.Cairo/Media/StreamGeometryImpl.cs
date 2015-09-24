@@ -1,107 +1,70 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="StreamGeometryImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Media;
+using Perspex.Platform;
+using Splat;
+using System.Collections.Generic;
 
 namespace Perspex.Cairo.Media
 {
-    using System;
-    using Perspex.Media;
-    using Perspex.Platform;
     using Cairo = global::Cairo;
-    using Splat;
-    using System.Collections.Generic;
-
-    public enum CairoGeometryType
-    {
-        Begin,
-        ArcTo,
-        LineTo,
-        End
-    }
-
-    public class BeginOp : GeometryOp
-    {
-        public Point Point { get; set; }
-        public bool IsFilled { get; set; }
-    }
-
-    public class EndOp : GeometryOp
-    {
-        public bool IsClosed { get; set; }
-    }
-
-    public class LineToOp : GeometryOp
-    {
-        public Point Point { get; set; }
-    }
-
-    public class CurveToOp : GeometryOp
-    {
-        public Point Point { get; set; }
-        public Point Point2 { get; set; }
-        public Point Point3 { get; set; }
-    }
-
-    public abstract class GeometryOp
-    {
-    }
 
     public class StreamGeometryImpl : IStreamGeometryImpl
     {
         public StreamGeometryImpl()
         {
-            this.Operations = new Queue<GeometryOp>();
+            _impl = new StreamGeometryContextImpl(null);
         }
 
-        public StreamGeometryImpl(Queue<GeometryOp> ops)
+        public StreamGeometryImpl(StreamGeometryContextImpl impl)
         {
-            this.Operations = ops;
-        }
-
-        public Queue<GeometryOp> Operations
-        {
-            get;
-            private set;
+            _impl = impl;
         }
 
         public Rect Bounds
         {
-            get;
-            set;
-        }
+			get { return _impl.Bounds; }
+		} 
 
-        // TODO: Implement
-        private Matrix transform = Matrix.Identity;
+		public Cairo.Path Path 
+		{
+			get { return _impl.Path; }
+		}
+
+        private readonly StreamGeometryContextImpl _impl;
+
+        private Matrix _transform = Matrix.Identity;
         public Matrix Transform
         {
-            get { return this.transform; }
+            get { return _transform; }
             set
             {
-                if (value != this.Transform)
+                if (value != Transform)
                 {
-                     if (!value.IsIdentity)
-                     {
-                        this.transform = value;
-                     }
+                    if (!value.IsIdentity)
+                    {
+                        _transform = value;
+                    }
                 }
             }
         }
 
         public IStreamGeometryImpl Clone()
-        {
-            return new StreamGeometryImpl(this.Operations);
+		{
+			return new StreamGeometryImpl(_impl);
         }
 
         public Rect GetRenderBounds(double strokeThickness)
         {
-            return this.Bounds;
+            // TODO: Calculate properly.
+			return Bounds.Inflate(strokeThickness);
         }
 
         public IStreamGeometryContextImpl Open()
         {
-            return new StreamGeometryContextImpl(this);
+            return _impl;
         }
     }
 }

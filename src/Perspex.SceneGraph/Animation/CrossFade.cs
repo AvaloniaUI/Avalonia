@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="CrossFade.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Perspex.Animation
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reactive.Threading.Tasks;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Defines a cross-fade animation between two <see cref="IVisual"/>s.
     /// </summary>
@@ -22,7 +19,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         public CrossFade(TimeSpan duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         /// <summary>
@@ -59,7 +56,7 @@ namespace Perspex.Animation
                     from.Opacity,
                     0,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             if (to != null)
@@ -73,7 +70,7 @@ namespace Perspex.Animation
                     0,
                     1,
                     LinearEasing.For<double>(),
-                    this.Duration).ToTask());
+                    Duration).ToTask());
             }
 
             await Task.WhenAll(tasks.ToArray());
@@ -104,7 +101,7 @@ namespace Perspex.Animation
         /// </returns>
         Task IPageTransition.Start(IVisual from, IVisual to, bool forward)
         {
-            return this.Start(from, to);
+            return Start(from, to);
         }
     }
 }

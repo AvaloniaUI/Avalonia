@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="LogicalTreeNode.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Controls;
+using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    using System;
-    using Perspex.Controls;
-    using ReactiveUI;
-
     internal class LogicalTreeNode : TreeNode
     {
         public LogicalTreeNode(ILogical logical)
             : base((Control)logical)
         {
-            this.Children = logical.LogicalChildren.CreateDerivedCollection(x => new LogicalTreeNode(x));
+            Children = logical.LogicalChildren.CreateDerivedCollection(x => new LogicalTreeNode(x));
         }
 
         public static LogicalTreeNode[] Create(object control)

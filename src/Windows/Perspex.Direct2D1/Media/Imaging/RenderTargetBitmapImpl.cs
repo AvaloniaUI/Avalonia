@@ -1,19 +1,16 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RenderTargetBitmapImpl.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Platform;
+using SharpDX.Direct2D1;
+using SharpDX.WIC;
 
 namespace Perspex.Direct2D1.Media
 {
-    using System;
-    using Perspex.Platform;
-    using SharpDX.Direct2D1;
-    using SharpDX.WIC;
-
     public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl, IDisposable
     {
-        private WicRenderTarget target;
+        private readonly WicRenderTarget _target;
 
         public RenderTargetBitmapImpl(
             ImagingFactory imagingFactory,
@@ -28,9 +25,9 @@ namespace Perspex.Direct2D1.Media
                 DpiY = 96,
             };
 
-            this.target = new WicRenderTarget(
+            _target = new WicRenderTarget(
                 d2dFactory,
-                this.WicImpl,
+                WicImpl,
                 props);
         }
 
@@ -41,7 +38,7 @@ namespace Perspex.Direct2D1.Media
 
         public void Render(IVisual visual)
         {
-            Renderer renderer = new Renderer(this.target);
+            Renderer renderer = new Renderer(_target);
             renderer.Render(visual, null);
         }
     }

@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PrimitiveExtensions.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Linq;
+using SharpDX;
+using SharpDX.Direct2D1;
+using DWrite = SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1
 {
-    using System;
-    using System.Linq;
-    using SharpDX;
-    using SharpDX.Direct2D1;
-    using DWrite = SharpDX.DirectWrite;
-
     public static class PrimitiveExtensions
     {
         public static Rect ToPerspex(this RectangleF r)
@@ -24,17 +21,17 @@ namespace Perspex.Direct2D1
             return new RectangleF((float)r.X, (float)r.Y, (float)r.Width, (float)r.Height);
         }
 
-        public static Vector2 ToSharpDX(this Perspex.Point p)
+        public static Vector2 ToSharpDX(this Point p)
         {
             return new Vector2((float)p.X, (float)p.Y);
         }
 
-        public static Size2F ToSharpDX(this Perspex.Size p)
+        public static Size2F ToSharpDX(this Size p)
         {
             return new Size2F((float)p.Width, (float)p.Height);
         }
 
-        public static SharpDX.Direct2D1.ExtendMode ToDirect2D(this Perspex.Media.GradientSpreadMethod spreadMethod)
+        public static ExtendMode ToDirect2D(this Perspex.Media.GradientSpreadMethod spreadMethod)
         {
             if (spreadMethod == Perspex.Media.GradientSpreadMethod.Pad)
                 return ExtendMode.Clamp;
@@ -43,6 +40,29 @@ namespace Perspex.Direct2D1
             else
                 return ExtendMode.Wrap;
         }
+
+        public static SharpDX.Direct2D1.LineJoin ToDirect2D(this Perspex.Media.PenLineJoin lineJoin)
+        {
+            if (lineJoin == Perspex.Media.PenLineJoin.Round)
+                return LineJoin.Round;
+            else if (lineJoin == Perspex.Media.PenLineJoin.Miter)
+                return LineJoin.Miter;
+            else
+                return LineJoin.Bevel;
+        }
+        
+        public static SharpDX.Direct2D1.CapStyle ToDirect2D(this Perspex.Media.PenLineCap lineCap)
+        {
+            if (lineCap == Perspex.Media.PenLineCap.Flat)
+                return CapStyle.Flat;
+            else if (lineCap == Perspex.Media.PenLineCap.Round)
+                return CapStyle.Round;
+            else if (lineCap == Perspex.Media.PenLineCap.Square)
+                return CapStyle.Square;
+            else
+                return CapStyle.Triangle;
+        }
+
         /// <summary>
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
@@ -51,19 +71,26 @@ namespace Perspex.Direct2D1
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, RenderTarget target)
         {
-            if (pen.DashArray != null && pen.DashArray.Count > 0)
+            if (pen.DashStyle != null)
             {
-                var properties = new StrokeStyleProperties
+                if (pen.DashStyle.Dashes != null && pen.DashStyle.Dashes.Count > 0)
                 {
-                    DashStyle = DashStyle.Custom,
-                };
+                    var properties = new StrokeStyleProperties
+                    {
+                        DashStyle = DashStyle.Custom,
+                        DashOffset = (float)pen.DashStyle.Offset,
+                        MiterLimit = (float)pen.MiterLimit,
+                        LineJoin = pen.LineJoin.ToDirect2D(),
+                        StartCap = pen.StartLineCap.ToDirect2D(),
+                        EndCap = pen.EndLineCap.ToDirect2D(),
+                        DashCap = pen.DashCap.ToDirect2D()
+                    };
 
-                return new StrokeStyle(target.Factory, properties, pen.DashArray.Select(x => (float)x).ToArray());
+                    return new StrokeStyle(target.Factory, properties, pen.DashStyle?.Dashes.Select(x => (float)x).ToArray());
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -85,7 +112,7 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="matrix">The <see cref="Matrix"/>.</param>
         /// <returns>The <see cref="Matrix3x2"/>.</returns>
-        public static Matrix3x2 ToDirect2D(this Perspex.Matrix matrix)
+        public static Matrix3x2 ToDirect2D(this Matrix matrix)
         {
             return new Matrix3x2(
                 (float)matrix.M11,
@@ -101,9 +128,9 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>a <see cref="Perspex.Matrix"/>.</returns>
-        public static Perspex.Matrix ToPerspex(this Matrix3x2 matrix)
+        public static Matrix ToPerspex(this Matrix3x2 matrix)
         {
-            return new Perspex.Matrix(
+            return new Matrix(
                 matrix.M11,
                 matrix.M12,
                 matrix.M21,

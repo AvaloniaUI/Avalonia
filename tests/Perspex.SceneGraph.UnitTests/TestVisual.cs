@@ -1,20 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TestVisual.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Perspex.Rendering;
+
 namespace Perspex.SceneGraph.UnitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Perspex.Rendering;
-
     public class ParamEventArgs<T> : EventArgs
     {
         public ParamEventArgs(T param)
         {
-            this.Param = param;
+            Param = param;
         }
 
         public T Param { get; set; }
@@ -26,44 +24,41 @@ namespace Perspex.SceneGraph.UnitTests
 
         public event EventHandler<ParamEventArgs<IRenderRoot>> DetachedFromVisualTreeCalled;
 
-        public new PerspexObject InheritanceParent
-        {
-            get { return base.InheritanceParent; }
-        }
+        public new PerspexObject InheritanceParent => base.InheritanceParent;
 
         public void AddChild(Visual v)
         {
-            this.AddVisualChild(v);
+            AddVisualChild(v);
         }
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            this.AddVisualChildren(v);
+            AddVisualChildren(v);
         }
 
         public void RemoveChild(Visual v)
         {
-            this.RemoveVisualChild(v);
+            RemoveVisualChild(v);
         }
 
         public void ClearChildren()
         {
-            this.ClearVisualChildren();
+            ClearVisualChildren();
         }
 
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
-            if (this.AttachedToVisualTreeCalled != null)
+            if (AttachedToVisualTreeCalled != null)
             {
-                this.AttachedToVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(root));
+                AttachedToVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(root));
             }
         }
 
         protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
         {
-            if (this.DetachedFromVisualTreeCalled != null)
+            if (DetachedFromVisualTreeCalled != null)
             {
-                this.DetachedFromVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(oldRoot));
+                DetachedFromVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(oldRoot));
             }
         }
     }

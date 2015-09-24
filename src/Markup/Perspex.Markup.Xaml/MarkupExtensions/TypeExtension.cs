@@ -1,17 +1,14 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TypeExtension.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Glass;
+using OmniXaml;
+using OmniXaml.Attributes;
+using OmniXaml.Typing;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
-    using System;
-    using Glass;
-    using OmniXaml;
-    using OmniXaml.Attributes;
-    using OmniXaml.Typing;
-
     [ContentProperty("TargetType")]
     public class TypeExtension : MarkupExtension
     {
@@ -23,7 +20,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public TypeExtension(Type type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         public string TypeName { get; set; }
@@ -40,12 +37,12 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext markupExtensionContext)
         {
-            if (this.Type != null)
+            if (Type != null)
             {
-                return this.Type;
+                return Type;
             }
 
-            return this.ResolveFromString(this.TypeName, markupExtensionContext.TypeRepository);
+            return ResolveFromString(TypeName, markupExtensionContext.TypeRepository);
         }
     }
 }

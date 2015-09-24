@@ -1,18 +1,20 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IWindowImpl.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Platform
 {
-    using System;
-
     /// <summary>
     /// Defines a platform-specific window implementation.
     /// </summary>
     public interface IWindowImpl : ITopLevelImpl
     {
+        /// <summary>
+        /// Gets the maximum size of a window on the system.
+        /// </summary>
+        Size MaxClientSize { get; }
+
         /// <summary>
         /// Sets the title of the window.
         /// </summary>

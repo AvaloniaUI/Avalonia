@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="PriorityBindingEntry.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex
 {
-    using System;
-
     /// <summary>
     /// A registered binding in a <see cref="PriorityValue"/>.
     /// </summary>
@@ -16,7 +13,7 @@ namespace Perspex
         /// <summary>
         /// The binding subscription.
         /// </summary>
-        private IDisposable subscription;
+        private IDisposable _subscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityBindingEntry"/> class.
@@ -26,7 +23,7 @@ namespace Perspex
         /// </param>
         public PriorityBindingEntry(int index)
         {
-            this.Index = index;
+            Index = index;
         }
 
         /// <summary>
@@ -75,23 +72,23 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(changed != null);
             Contract.Requires<ArgumentNullException>(completed != null);
 
-            if (this.subscription != null)
+            if (_subscription != null)
             {
                 throw new Exception("PriorityValue.Entry.Start() called more than once.");
             }
 
-            this.Observable = binding;
-            this.Value = PerspexProperty.UnsetValue;
+            Observable = binding;
+            Value = PerspexProperty.UnsetValue;
 
             if (binding is IDescription)
             {
-                this.Description = ((IDescription)binding).Description;
+                Description = ((IDescription)binding).Description;
             }
 
-            this.subscription = binding.Subscribe(
+            _subscription = binding.Subscribe(
                 value =>
                 {
-                    this.Value = value;
+                    Value = value;
                     changed(this);
                 },
                 () => completed(this));
@@ -102,9 +99,9 @@ namespace Perspex
         /// </summary>
         public void Dispose()
         {
-            if (this.subscription != null)
+            if (_subscription != null)
             {
-                this.subscription.Dispose();
+                _subscription.Dispose();
             }
         }
     }

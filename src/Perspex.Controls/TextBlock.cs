@@ -1,16 +1,13 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TextBlock.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using Perspex.Media;
 
 namespace Perspex.Controls
 {
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using Perspex.Media;
-
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
@@ -85,12 +82,12 @@ namespace Perspex.Controls
         /// <summary>
         /// The formatted text used for rendering.
         /// </summary>
-        private FormattedText formattedText;
+        private FormattedText _formattedText;
 
         /// <summary>
         /// Stores the last constraint passed to MeasureOverride.
         /// </summary>
-        private Size constraint;
+        private Size _constraint;
 
         /// <summary>
         /// Initializes static members of the <see cref="TextBlock"/> class.
@@ -106,13 +103,13 @@ namespace Perspex.Controls
         public TextBlock()
         {
             Observable.Merge(
-                this.GetObservable(TextProperty).Select(_ => Unit.Default),
-                this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontStyleProperty).Select(_ => Unit.Default))
+                GetObservable(TextProperty).Select(_ => Unit.Default),
+                GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
+                GetObservable(FontSizeProperty).Select(_ => Unit.Default),
+                GetObservable(FontStyleProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
-                    this.InvalidateFormattedText();
+                    InvalidateFormattedText();
                 });
         }
 
@@ -121,8 +118,8 @@ namespace Perspex.Controls
         /// </summary>
         public Brush Background
         {
-            get { return this.GetValue(BackgroundProperty); }
-            set { this.SetValue(BackgroundProperty, value); }
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         /// <summary>
@@ -130,8 +127,8 @@ namespace Perspex.Controls
         /// </summary>
         public string Text
         {
-            get { return this.GetValue(TextProperty); }
-            set { this.SetValue(TextProperty, value); }
+            get { return GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
         }
 
         /// <summary>
@@ -139,8 +136,8 @@ namespace Perspex.Controls
         /// </summary>
         public string FontFamily
         {
-            get { return this.GetValue(FontFamilyProperty); }
-            set { this.SetValue(FontFamilyProperty, value); }
+            get { return GetValue(FontFamilyProperty); }
+            set { SetValue(FontFamilyProperty, value); }
         }
 
         /// <summary>
@@ -148,8 +145,8 @@ namespace Perspex.Controls
         /// </summary>
         public double FontSize
         {
-            get { return this.GetValue(FontSizeProperty); }
-            set { this.SetValue(FontSizeProperty, value); }
+            get { return GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
         }
 
         /// <summary>
@@ -157,8 +154,8 @@ namespace Perspex.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return this.GetValue(FontStyleProperty); }
-            set { this.SetValue(FontStyleProperty, value); }
+            get { return GetValue(FontStyleProperty); }
+            set { SetValue(FontStyleProperty, value); }
         }
 
         /// <summary>
@@ -166,8 +163,8 @@ namespace Perspex.Controls
         /// </summary>
         public FontWeight FontWeight
         {
-            get { return this.GetValue(FontWeightProperty); }
-            set { this.SetValue(FontWeightProperty, value); }
+            get { return GetValue(FontWeightProperty); }
+            set { SetValue(FontWeightProperty, value); }
         }
 
         /// <summary>
@@ -175,8 +172,8 @@ namespace Perspex.Controls
         /// </summary>
         public Brush Foreground
         {
-            get { return this.GetValue(ForegroundProperty); }
-            set { this.SetValue(ForegroundProperty, value); }
+            get { return GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
         }
 
         /// <summary>
@@ -186,12 +183,12 @@ namespace Perspex.Controls
         {
             get
             {
-                if (this.formattedText == null)
+                if (_formattedText == null)
                 {
-                    this.formattedText = this.CreateFormattedText(this.constraint);
+                    _formattedText = CreateFormattedText(_constraint);
                 }
 
-                return this.formattedText;
+                return _formattedText;
             }
         }
 
@@ -200,8 +197,8 @@ namespace Perspex.Controls
         /// </summary>
         public TextWrapping TextWrapping
         {
-            get { return this.GetValue(TextWrappingProperty); }
-            set { this.SetValue(TextWrappingProperty, value); }
+            get { return GetValue(TextWrappingProperty); }
+            set { SetValue(TextWrappingProperty, value); }
         }
 
         /// <summary>
@@ -209,8 +206,8 @@ namespace Perspex.Controls
         /// </summary>
         public TextAlignment TextAlignment
         {
-            get { return this.GetValue(TextAlignmentProperty); }
-            set { this.SetValue(TextAlignmentProperty, value); }
+            get { return GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
         }
 
         /// <summary>
@@ -219,15 +216,15 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(IDrawingContext context)
         {
-            Brush background = this.Background;
+            Brush background = Background;
 
             if (background != null)
             {
-                context.FillRectange(background, new Rect(this.Bounds.Size));
+                context.FillRectange(background, new Rect(Bounds.Size));
             }
 
-            this.FormattedText.Constraint = this.Bounds.Size;
-            context.DrawText(this.Foreground, new Point(), this.FormattedText);
+            FormattedText.Constraint = Bounds.Size;
+            context.DrawText(Foreground, new Point(), FormattedText);
         }
 
         /// <summary>
@@ -238,12 +235,12 @@ namespace Perspex.Controls
         protected virtual FormattedText CreateFormattedText(Size constraint)
         {
             var result = new FormattedText(
-                this.Text,
-                this.FontFamily,
-                this.FontSize,
-                this.FontStyle,
-                this.TextAlignment,
-                this.FontWeight);
+                Text,
+                FontFamily,
+                FontSize,
+                FontStyle,
+                TextAlignment,
+                FontWeight);
             result.Constraint = constraint;
             return result;
         }
@@ -253,14 +250,14 @@ namespace Perspex.Controls
         /// </summary>
         protected void InvalidateFormattedText()
         {
-            if (this.formattedText != null)
+            if (_formattedText != null)
             {
-                this.constraint = this.formattedText.Constraint;
-                this.formattedText.Dispose();
-                this.formattedText = null;
+                _constraint = _formattedText.Constraint;
+                _formattedText.Dispose();
+                _formattedText = null;
             }
 
-            this.InvalidateMeasure();
+            InvalidateMeasure();
         }
 
         /// <summary>
@@ -270,18 +267,18 @@ namespace Perspex.Controls
         /// <returns>The desired size.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!string.IsNullOrEmpty(this.Text))
+            if (!string.IsNullOrEmpty(Text))
             {
-                if (this.TextWrapping == TextWrapping.Wrap)
+                if (TextWrapping == TextWrapping.Wrap)
                 {
-                    this.FormattedText.Constraint = new Size(availableSize.Width, double.PositiveInfinity);
+                    FormattedText.Constraint = new Size(availableSize.Width, double.PositiveInfinity);
                 }
                 else
                 {
-                    this.FormattedText.Constraint = Size.Infinity;
+                    FormattedText.Constraint = Size.Infinity;
                 }
 
-                return this.FormattedText.Measure();
+                return FormattedText.Measure();
             }
 
             return new Size();

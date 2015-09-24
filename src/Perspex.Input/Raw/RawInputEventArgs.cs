@@ -1,21 +1,18 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RawInputEventArgs.cs" company="Steven Kirk">
-// Copyright 2013 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Input.Raw
 {
-    using System;
-
     public class RawInputEventArgs : EventArgs
     {
         public RawInputEventArgs(IInputDevice device, uint timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
 
-            this.Device = device;
-            this.Timestamp = timestamp;
+            Device = device;
+            Timestamp = timestamp;
         }
 
         public IInputDevice Device { get; private set; }

@@ -1,15 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Image.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Media;
+using Perspex.Media.Imaging;
 
 namespace Perspex.Controls
 {
-    using System;
-    using Perspex.Media;
-    using Perspex.Media.Imaging;
-
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -26,14 +23,14 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly PerspexProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
-
+        
         /// <summary>
         /// Gets or sets the bitmap image that will be displayed.
         /// </summary>
         public Bitmap Source
         {
-            get { return this.GetValue(SourceProperty); }
-            set { this.SetValue(SourceProperty, value); }
+            get { return GetValue(SourceProperty); }
+            set { SetValue(SourceProperty, value); }
         }
 
         /// <summary>
@@ -41,8 +38,8 @@ namespace Perspex.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)this.GetValue(StretchProperty); }
-            set { this.SetValue(StretchProperty, value); }
+            get { return (Stretch)GetValue(StretchProperty); }
+            set { SetValue(StretchProperty, value); }
         }
 
         /// <summary>
@@ -51,13 +48,13 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(IDrawingContext context)
         {
-            Bitmap source = this.Source;
+            Bitmap source = Source;
 
             if (source != null)
             {
-                Rect viewPort = new Rect(this.Bounds.Size);
+                Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-                Vector scale = this.Stretch.CalculateScaling(this.Bounds.Size, sourceSize);
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterIn(new Rect(scaledSize))
@@ -76,29 +73,14 @@ namespace Perspex.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            double width = 0;
-            double height = 0;
-            Vector scale = new Vector();
-
-            if (this.Source != null)
+            if (Source != null)
             {
-                width = this.Source.PixelWidth;
-                height = this.Source.PixelHeight;
-
-                if (this.Width > 0)
-                {
-                    availableSize = new Size(this.Width, availableSize.Height);
-                }
-
-                if (this.Height > 0)
-                {
-                    availableSize = new Size(availableSize.Width, this.Height);
-                }
-
-                scale = this.Stretch.CalculateScaling(availableSize, new Size(width, height));
+                return new Size(Source.PixelWidth, Source.PixelHeight);
             }
-
-            return new Size(width * scale.X, height * scale.Y);
+            else
+            {
+                return new Size();
+            }
         }
     }
 }

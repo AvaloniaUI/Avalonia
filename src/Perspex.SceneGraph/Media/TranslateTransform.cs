@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="TranslateTransform.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Media
 {
-    using System;
-
     /// <summary>
     /// Translates (moves) an <see cref="IVisual"/>.
     /// </summary>
@@ -30,8 +27,8 @@ namespace Perspex.Media
         /// </summary>
         public TranslateTransform()
         {
-            this.GetObservable(XProperty).Subscribe(_ => this.RaiseChanged());
-            this.GetObservable(YProperty).Subscribe(_ => this.RaiseChanged());
+            GetObservable(XProperty).Subscribe(_ => RaiseChanged());
+            GetObservable(YProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -42,8 +39,8 @@ namespace Perspex.Media
         public TranslateTransform(double x, double y)
             : this()
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -51,8 +48,8 @@ namespace Perspex.Media
         /// </summary>
         public double X
         {
-            get { return this.GetValue(XProperty); }
-            set { this.SetValue(XProperty, value); }
+            get { return GetValue(XProperty); }
+            set { SetValue(XProperty, value); }
         }
 
         /// <summary>
@@ -60,16 +57,13 @@ namespace Perspex.Media
         /// </summary>
         public double Y
         {
-            get { return this.GetValue(YProperty); }
-            set { this.SetValue(YProperty, value); }
+            get { return GetValue(YProperty); }
+            set { SetValue(YProperty, value); }
         }
 
         /// <summary>
         /// Gets the tranform's <see cref="Matrix"/>.
         /// </summary>
-        public override Matrix Value
-        {
-            get { return Matrix.CreateTranslation(this.X, this.Y); }
-        }
+        public override Matrix Value => Matrix.CreateTranslation(X, Y);
     }
 }

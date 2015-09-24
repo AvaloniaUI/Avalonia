@@ -1,13 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ObservableSetter.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Perspex.Styling
 {
-    using System;
-
     /// <summary>
     /// A setter for a <see cref="Style"/> whose source is an observable.
     /// </summary>
@@ -24,8 +21,8 @@ namespace Perspex.Styling
         /// <param name="source">An observable which produces the value for the property.</param>
         public ObservableSetter(PerspexProperty property, IObservable<object> source)
         {
-            this.Property = property;
-            this.Source = source;
+            Property = property;
+            Source = source;
         }
 
         /// <summary>
@@ -56,12 +53,12 @@ namespace Perspex.Styling
         {
             if (activator == null)
             {
-                control.Bind(this.Property, this.Source, BindingPriority.Style);
+                control.Bind(Property, Source, BindingPriority.Style);
             }
             else
             {
-                var binding = new StyleBinding(activator, this.Source, style.ToString());
-                control.Bind(this.Property, binding, BindingPriority.StyleTrigger);
+                var binding = new StyleBinding(activator, Source, style.ToString());
+                control.Bind(Property, binding, BindingPriority.StyleTrigger);
             }
         }
     }

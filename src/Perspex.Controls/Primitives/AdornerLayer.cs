@@ -1,26 +1,23 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="AdornerLayer.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections.Specialized;
+using System.Linq;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using Perspex.VisualTree;
-
     // TODO: Need to track position of adorned elements and move the adorner if they move.
     public class AdornerLayer : Panel
     {
         public static PerspexProperty<Visual> AdornedElementProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
-        private static PerspexProperty<AdornedElementInfo> AdornedElementInfoProperty =
+        private static readonly PerspexProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
-        private BoundsTracker tracker = new BoundsTracker();
+        private readonly BoundsTracker _tracker = new BoundsTracker();
 
         static AdornerLayer()
         {
@@ -30,7 +27,7 @@ namespace Perspex.Controls.Primitives
 
         public AdornerLayer()
         {
-            this.Children.CollectionChanged += this.ChildrenCollectionChanged;
+            Children.CollectionChanged += ChildrenCollectionChanged;
         }
 
         public static Visual GetAdornedElement(Visual adorner)
@@ -53,11 +50,11 @@ namespace Perspex.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var parent = this.Parent;
+            var parent = Parent;
 
-            foreach (var child in this.Children)
+            foreach (var child in Children)
             {
-                var info = (AdornedElementInfo)child.GetValue(AdornedElementInfoProperty);
+                var info = (AdornedElementInfo)child.GetValue(s_adornedElementInfoProperty);
 
                 if (info != null)
                 {
@@ -91,18 +88,18 @@ namespace Perspex.Controls.Primitives
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual i in e.NewItems)
                     {
-                        this.UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                        UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
                     }
 
                     break;
             }
 
-            this.InvalidateArrange();
+            InvalidateArrange();
         }
 
         private void UpdateAdornedElement(Visual adorner, Visual adorned)
         {
-            var info = adorner.GetValue(AdornedElementInfoProperty);
+            var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)
             {
@@ -110,7 +107,7 @@ namespace Perspex.Controls.Primitives
 
                 if (adorned == null)
                 {
-                    adorner.ClearValue(AdornedElementInfoProperty);
+                    adorner.ClearValue(s_adornedElementInfoProperty);
                 }
             }
 
@@ -119,13 +116,13 @@ namespace Perspex.Controls.Primitives
                 if (info == null)
                 {
                     info = new AdornedElementInfo();
-                    adorner.SetValue(AdornedElementInfoProperty, info);
+                    adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = this.tracker.Track(adorned).Subscribe(x =>
+                info.Subscription = _tracker.Track(adorned).Subscribe(x =>
                 {
                     info.Bounds = x;
-                    this.InvalidateArrange();
+                    InvalidateArrange();
                 });
             }
         }

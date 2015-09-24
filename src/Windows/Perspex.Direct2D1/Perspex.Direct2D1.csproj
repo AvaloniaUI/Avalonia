@@ -46,10 +46,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.DXGI.dll</HintPath>
     </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -68,6 +64,9 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\..\..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
@@ -75,14 +74,16 @@
     </Compile>
     <Compile Include="Direct2D1Platform.cs" />
     <Compile Include="Disposable.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
+    <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\PerspexTextRenderer.cs" />
+    <Compile Include="Media\ImageBrushImpl.cs" />
+    <Compile Include="Media\TileBrushImpl.cs" />
     <Compile Include="Media\VisualBrushImpl.cs" />
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
@@ -99,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
@@ -107,16 +108,13 @@
       <Name>Perspex.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\..\packages\StyleCop.Analyzers.1.0.0-beta008\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />

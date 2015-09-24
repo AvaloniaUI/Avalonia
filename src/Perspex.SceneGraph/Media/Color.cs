@@ -1,8 +1,10 @@
-// -----------------------------------------------------------------------
-// <copyright file="Color.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 namespace Perspex.Media
 {
@@ -85,6 +87,45 @@ namespace Perspex.Media
         }
 
         /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        public static Color Parse(string s)
+        {
+            if (s[0] == '#')
+            {
+                var or = 0u;
+
+                if (s.Length == 7)
+                {
+                    or = 0xff000000;
+                }
+                else if (s.Length != 9)
+                {
+                    throw new FormatException($"Invalid color string: '{s}'.");
+                }
+
+                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber) | or);
+            }
+            else
+            {
+                var upper = s.ToUpperInvariant();
+                var member = typeof(Colors).GetTypeInfo().DeclaredProperties
+                    .FirstOrDefault(x => x.Name.ToUpperInvariant() == upper);
+
+                if (member != null)
+                {
+                    return (Color)member.GetValue(null);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid color string: '{s}'.");
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the string representation of the color.
         /// </summary>
         /// <returns>
@@ -92,7 +133,7 @@ namespace Perspex.Media
         /// </returns>
         public override string ToString()
         {
-            uint rgb = ((uint)this.A << 24) | ((uint)this.R << 16) | ((uint)this.G << 8) | (uint)this.B;
+            uint rgb = ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
             return string.Format("#{0:x8}", rgb);
         }
 
@@ -104,7 +145,7 @@ namespace Perspex.Media
         /// </returns>
         public uint ToUint32()
         {
-            return ((uint)this.A << 24) | ((uint)this.R << 16) | ((uint)this.G << 8) | (uint)this.B;
+            return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
         }
     }
 }

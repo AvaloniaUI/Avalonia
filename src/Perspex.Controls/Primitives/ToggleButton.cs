@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ToggleButton.cs" company="Steven Kirk">
-// Copyright 2014 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using Perspex.Interactivity;
 
 namespace Perspex.Controls.Primitives
 {
-    using System;
-    using Perspex.Interactivity;
-
     public class ToggleButton : Button
     {
         public static readonly PerspexProperty<bool> IsCheckedProperty =
@@ -16,7 +13,7 @@ namespace Perspex.Controls.Primitives
 
         static ToggleButton()
         {
-            Control.PseudoClass(IsCheckedProperty, ":checked");
+            PseudoClass(IsCheckedProperty, ":checked");
         }
 
         public ToggleButton()
@@ -25,18 +22,18 @@ namespace Perspex.Controls.Primitives
 
         public bool IsChecked
         {
-            get { return this.GetValue(IsCheckedProperty); }
-            set { this.SetValue(IsCheckedProperty, value); }
+            get { return GetValue(IsCheckedProperty); }
+            set { SetValue(IsCheckedProperty, value); }
         }
 
         protected override void OnClick(RoutedEventArgs e)
         {
-            this.Toggle();
+            Toggle();
         }
 
         protected virtual void Toggle()
         {
-            this.IsChecked = !this.IsChecked;
+            IsChecked = !IsChecked;
         }
     }
 }
