@@ -41,7 +41,7 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CommonDialog.cs" />
+    <Compile Include="SystemDialog.cs" />
     <Compile Include="DockPanel\Aligner.cs" />
     <Compile Include="DockPanel\Alignment.cs" />
     <Compile Include="DockPanel\Alignments.cs" />
@@ -65,7 +65,7 @@
     <Compile Include="Margins.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
-    <Compile Include="Platform\ICommonDialogImpl.cs" />
+    <Compile Include="Platform\ISystemDialogImpl.cs" />
     <Compile Include="Presenters\IContentPresenter.cs" />
     <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />

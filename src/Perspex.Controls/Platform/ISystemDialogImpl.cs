@@ -7,7 +7,7 @@ using Perspex.Platform;
 
 namespace Perspex.Controls.Platform
 {
-    public interface ICommonDialogImpl
+    public interface ISystemDialogImpl
     {
         Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent);
     }

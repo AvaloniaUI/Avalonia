@@ -13,7 +13,7 @@ using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
-    class CommonDialogImpl : ICommonDialogImpl
+    class SystemDialogImpl : ISystemDialogImpl
     {
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {

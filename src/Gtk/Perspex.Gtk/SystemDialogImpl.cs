@@ -10,7 +10,7 @@ using Perspex.Platform;
 namespace Perspex.Gtk
 {
     using global::Gtk;
-    class CommonDialogImpl : ICommonDialogImpl
+    class SystemDialogImpl : ISystemDialogImpl
     {
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {

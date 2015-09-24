@@ -37,7 +37,7 @@ namespace Perspex.Gtk
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => s_instance, typeof(IPlatformSettings));
             locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
-            locator.Register(() => new CommonDialogImpl(), typeof (ICommonDialogImpl));
+            locator.Register(() => new SystemDialogImpl(), typeof (ISystemDialogImpl));
             SharedPlatform.Register();
         }
 
