@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="CommonDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="GtkExtensions.cs" />
     <Compile Include="PopupImpl.cs" />
