@@ -15,7 +15,7 @@ namespace Perspex.Win32
 {
     class CommonDialogImpl : ICommonDialogImpl
     {
-        public unsafe Task<string[]> ShowAsync(CommonDialog dialog, IWindowImpl parent)
+        public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
             return Task.Factory.StartNew(() =>
@@ -39,11 +39,11 @@ namespace Perspex.Win32
                 var filterBuffer = new char[filters.Length];
                 filters.CopyTo(0, filterBuffer, 0, filterBuffer.Length);
 
-
+                var defExt = (dialog as SaveFileDialog)?.DefaultExtension;
                 var buffer = new char[256];
                 fixed (char* pBuffer = buffer)
                 fixed (char* pFilterBuffer = filterBuffer)
-                fixed (char* pDefExt = dialog.DefaultExtension)
+                fixed (char* pDefExt = defExt)
                 fixed (char* pInitDir = dialog.InitialDirectory)
                 fixed (char* pTitle = dialog.Title)
                 {
@@ -72,16 +72,16 @@ namespace Perspex.Win32
 
                     };
                     ofn.lStructSize = Marshal.SizeOf(ofn);
-                    if (dialog.AllowMultiple && dialog.Action == CommonDialogAction.OpenFile)
+                    if ((dialog as OpenFileDialog)?.AllowMultiple == true)
                         ofn.Flags |= UnmanagedMethods.OpenFileNameFlags.OFN_ALLOWMULTISELECT;
 
-                    if (dialog.Action == CommonDialogAction.SaveFile)
+                    if (dialog is SaveFileDialog)
                         ofn.Flags |= UnmanagedMethods.OpenFileNameFlags.OFN_NOREADONLYRETURN |
                                      UnmanagedMethods.OpenFileNameFlags.OFN_OVERWRITEPROMPT;
 
                     var pofn = &ofn;
 
-                    var res = dialog.Action == CommonDialogAction.OpenFile
+                    var res = dialog is OpenFileDialog
                         ? UnmanagedMethods.GetOpenFileName(new IntPtr(pofn))
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
                     if (!res)

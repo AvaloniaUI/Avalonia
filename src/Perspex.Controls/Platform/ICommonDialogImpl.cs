@@ -9,6 +9,6 @@ namespace Perspex.Controls.Platform
 {
     public interface ICommonDialogImpl
     {
-        Task<string[]> ShowAsync(CommonDialog dialog, IWindowImpl parent);
+        Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent);
     }
 }

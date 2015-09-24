@@ -12,17 +12,17 @@ namespace Perspex.Gtk
     using global::Gtk;
     class CommonDialogImpl : ICommonDialogImpl
     {
-        public Task<string[]> ShowAsync(CommonDialog dialog, IWindowImpl parent)
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var tcs = new TaskCompletionSource<string[]>();
             var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl) parent),
-                dialog.Action == CommonDialogAction.OpenFile
+                dialog is OpenFileDialog
                     ? FileChooserAction.Open
                     : FileChooserAction.Save,
                 "Cancel", ResponseType.Cancel,
                 "Open", ResponseType.Accept)
             {
-                SelectMultiple = dialog.AllowMultiple,
+                SelectMultiple = (dialog as OpenFileDialog)?.AllowMultiple ?? false,
             };
             foreach (var filter in dialog.Filters)
             {
