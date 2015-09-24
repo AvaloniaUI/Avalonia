@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 
 #pragma warning disable CS1591 // Enable me later
 
@@ -89,25 +90,17 @@ namespace Perspex
             }
         }
 
-        class NullDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-                
-            }
-        }
 
         public static IDisposable EnterScope()
         {
-            return new NullDisposable();
-
+            return Disposable.Empty;
             //Switch to that code when we are ready to fix tests
             /*
             var d = new ResolverDisposable(Current, CurrentMutable);
             Current = CurrentMutable =  new PerspexLocator(Current);
             return d;
             */
-            
+
         }
     }
 
