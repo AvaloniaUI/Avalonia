@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Disposables;
+using Perspex.Controls.Platform;
 using Perspex.Input.Platform;
 using Perspex.Input;
 using Perspex.Platform;
@@ -36,6 +37,7 @@ namespace Perspex.Gtk
             locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
             locator.Register(() => s_instance, typeof(IPlatformSettings));
             locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
+            locator.Register(() => new SystemDialogImpl(), typeof (ISystemDialogImpl));
             SharedPlatform.Register();
         }
 

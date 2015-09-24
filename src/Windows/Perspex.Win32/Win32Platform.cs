@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using Perspex.Controls.Platform;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
@@ -41,6 +42,7 @@ namespace Perspex.Win32
         private static void InitializeInternal()
         {
             var locator = Locator.CurrentMutable;
+            locator.Register(() => new SystemDialogImpl(), typeof (ISystemDialogImpl));
             locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
             locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
             locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));

@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 // ReSharper disable InconsistentNaming
+#pragma warning disable 169
 
 namespace Perspex.Win32.Interop
 {
@@ -677,7 +678,14 @@ namespace Perspex.Win32.Interop
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
 
+        [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetSaveFileNameW")]
+        public static extern bool GetSaveFileName(IntPtr lpofn);
 
+        [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetOpenFileNameW")]
+        public static extern bool GetOpenFileName(IntPtr lpofn);
+
+        [DllImport("comdlg32.dll")]
+        public static extern int CommDlgExtendedError();
 
         public enum ClipboardFormat
         {
@@ -744,6 +752,50 @@ namespace Perspex.Win32.Interop
             public string lpszMenuName;
             public string lpszClassName;
             public IntPtr hIconSm;
+        }
+
+        [Flags]
+        public enum OpenFileNameFlags
+        {
+
+            OFN_ALLOWMULTISELECT = 0x00000200,
+
+            OFN_EXPLORER = 0x00080000,
+
+            OFN_HIDEREADONLY = 0x00000004,
+
+            OFN_NOREADONLYRETURN = 0x00008000,
+
+            OFN_OVERWRITEPROMPT = 0x00000002
+
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct OpenFileName
+        {
+            public int lStructSize;
+            public IntPtr hwndOwner;
+            public IntPtr hInstance;
+            public IntPtr lpstrFilter;
+            public IntPtr lpstrCustomFilter;
+            public int nMaxCustFilter;
+            public int nFilterIndex;
+            public IntPtr lpstrFile;
+            public int nMaxFile;
+            public IntPtr lpstrFileTitle;
+            public int nMaxFileTitle;
+            public IntPtr lpstrInitialDir;
+            public IntPtr lpstrTitle;
+            public OpenFileNameFlags Flags;
+            private ushort Unused;
+            private ushort Unused2;
+            public IntPtr lpstrDefExt;
+            public IntPtr lCustData;
+            public IntPtr lpfnHook;
+            public IntPtr lpTemplateName;
+            public IntPtr reservedPtr;
+            public int reservedInt;
+            public int flagsEx;
         }
     }
 }
