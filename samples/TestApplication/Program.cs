@@ -340,8 +340,10 @@ namespace TestApplication
 								Foreground = SolidColorBrush.Parse("#727272"),
 								Margin = new Thickness(0, 0, 0, 10)
 							},
-							new TextBox { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", Width = 200 },
-							new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Width = 200, Height = 150, Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." },
+
+							new TextBox { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", Width = 200},
+                            new TextBox { Width = 200, Watermark="Watermark"},
+                            new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Width = 200, Height = 150, Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." },
 							new TextBlock
 							{
 								Margin = new Thickness(0, 40, 0, 0),

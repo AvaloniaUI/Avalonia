@@ -39,6 +39,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
+        public static readonly PerspexProperty<string> WatermarkProperty =
+            PerspexProperty.Register<TextBox, string>("Watermark");
+
         private TextPresenter _presenter;
 
         static TextBox()
@@ -99,6 +102,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
+        }
+
+        public string Watermark
+        {
+            get { return GetValue(WatermarkProperty); }
+            set { SetValue(WatermarkProperty, value); }
         }
 
         public TextWrapping TextWrapping
