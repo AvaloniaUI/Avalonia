@@ -93,15 +93,19 @@ namespace Perspex.Controls.Presenters
             if (selectionStart == selectionEnd)
             {
                 var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-
-                var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush).Color;
                 
-                byte red = (byte)~(backgroundColor.R);
-                byte green = (byte)~(backgroundColor.G);
-                byte blue = (byte)~(backgroundColor.B);
+                var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
+                var caretBrush = Brushes.Black;
 
-                var caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                if(backgroundColor.HasValue)
+                {
+                    byte red = (byte)~(backgroundColor.Value.R);
+                    byte green = (byte)~(backgroundColor.Value.G);
+                    byte blue = (byte)~(backgroundColor.Value.B);
 
+                    caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                }
+                
                 if (_caretBlink)
                 {
                     var x = Math.Floor(charPos.X) + 0.5;
