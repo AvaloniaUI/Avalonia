@@ -299,7 +299,7 @@ namespace Perspex.Win32
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
-                    if (wParam.ToInt32() > 32)
+                    if (wParam.ToInt32() >= 32)
                     {
                         e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
                             new string((char)wParam.ToInt32(), 1));
