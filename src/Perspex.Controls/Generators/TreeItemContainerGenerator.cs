@@ -46,9 +46,8 @@ namespace Perspex.Controls.Generators
         /// The index of the first item of the data in the containing collection.
         /// </param>
         /// <param name="items">The items.</param>
-        /// <param name="itemTemplate">An optional item template.</param>
         /// <returns>The created container controls.</returns>
-        public IList<IControl> CreateContainers(int startingIndex, IEnumerable items, IDataTemplate itemTemplate)
+        public IList<IControl> CreateContainers(int startingIndex, IEnumerable items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
@@ -57,7 +56,7 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                var container = CreateContainer(item, itemTemplate);
+                var container = CreateContainer(item);
                 _containers.Add(item, container);
                 result.Add(container);
             }
@@ -156,9 +155,8 @@ namespace Perspex.Controls.Generators
         /// Creates the container for an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="itemTemplate">An optional item template.</param>
         /// <returns>The created container control.</returns>
-        protected virtual T CreateContainer(object item, IDataTemplate itemTemplate)
+        protected virtual T CreateContainer(object item)
         {
             T result = item as T;
 

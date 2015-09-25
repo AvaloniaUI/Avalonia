@@ -172,7 +172,7 @@ namespace Perspex.Controls.Presenters
             if (items != null)
             {
                 Panel.Children.AddRange(
-                    ItemContainerGenerator.CreateContainers(0, Items, null));
+                    ItemContainerGenerator.CreateContainers(0, Items));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -229,7 +229,7 @@ namespace Perspex.Controls.Presenters
                 {
                     case NotifyCollectionChangedAction.Add:
                         Panel.Children.AddRange(
-                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, null));
+                            generator.CreateContainers(e.NewStartingIndex, e.NewItems));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:

@@ -181,7 +181,7 @@ namespace Perspex.Controls.Presenters
             if (toIndex != -1)
             {
                 var item = Items.Cast<object>().ElementAt(toIndex);
-                to = generator.CreateContainers(toIndex, new[] { item }, null).FirstOrDefault();
+                to = generator.CreateContainers(toIndex, new[] { item }).FirstOrDefault();
 
                 if (to != null)
                 {
