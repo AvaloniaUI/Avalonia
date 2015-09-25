@@ -78,14 +78,21 @@ namespace Perspex.Input
                     break;
                 case RawMouseEventType.LeftButtonDown:
                 case RawMouseEventType.RightButtonDown:
+                case RawMouseEventType.MiddleButtonDown:
                     MouseDown(mouse, e.Timestamp, e.Root, e.Position,
-                        e.Type == RawMouseEventType.LeftButtonDown ? MouseButton.Left : MouseButton.Right,
+                         e.Type == RawMouseEventType.LeftButtonDown
+                            ? MouseButton.Left
+                            : e.Type == RawMouseEventType.RightButtonDown ? MouseButton.Right : MouseButton.Middle,
                         e.InputModifiers);
                     break;
                 case RawMouseEventType.LeftButtonUp:
                 case RawMouseEventType.RightButtonUp:
+                case RawMouseEventType.MiddleButtonUp:
                     MouseUp(mouse, e.Root, e.Position,
-                        e.Type == RawMouseEventType.LeftButtonUp ? MouseButton.Left : MouseButton.Right, e.InputModifiers);
+                        e.Type == RawMouseEventType.LeftButtonUp
+                            ? MouseButton.Left
+                            : e.Type == RawMouseEventType.RightButtonUp ? MouseButton.Right : MouseButton.Middle,
+                        e.InputModifiers);
                     break;
                 case RawMouseEventType.Move:
                     MouseMove(mouse, e.Root, e.Position, e.InputModifiers);

@@ -12,6 +12,8 @@ namespace Perspex.Input.Raw
         LeftButtonUp,
         RightButtonDown,
         RightButtonUp,
+        MiddleButtonDown,
+        MiddleButtonUp,
         Move,
         Wheel,
     }

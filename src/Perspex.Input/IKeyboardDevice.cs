@@ -14,7 +14,8 @@ namespace Perspex.Input
         Shift = 4,
         Windows = 8,
         LeftMouseButton = 16,
-        RightMouseButton = 32
+        RightMouseButton = 32,
+        MiddleMouseButton = 64
     }
 
     [Flags]

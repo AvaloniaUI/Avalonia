@@ -22,7 +22,8 @@ namespace Perspex.Input
     {
         None,
         Left,
-        Right
+        Right,
+        Middle
     }
 
     public class PointerPressEventArgs : PointerEventArgs

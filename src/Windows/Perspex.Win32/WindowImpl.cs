@@ -308,25 +308,31 @@ namespace Perspex.Win32
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        msg == (int) UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN
                             ? RawMouseEventType.LeftButtonDown
-                            : RawMouseEventType.RightButtonDown,
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
+                                ? RawMouseEventType.RightButtonDown
+                                : RawMouseEventType.MiddleButtonDown,
                         new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONUP:
+                case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
                         msg == (int) UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
                             ? RawMouseEventType.LeftButtonUp
-                            : RawMouseEventType.RightButtonUp,
+                            : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
+                                ? RawMouseEventType.RightButtonUp
+                                : RawMouseEventType.MiddleButtonUp,
                         new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
                     break;
 
@@ -414,6 +420,8 @@ namespace Perspex.Win32
                 modifiers |= InputModifiers.LeftMouseButton;
             if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
                 modifiers  |= InputModifiers.RightMouseButton;
+            if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
+                modifiers |= InputModifiers.MiddleMouseButton;
             return modifiers;
         }
 

@@ -147,7 +147,8 @@ namespace Perspex.Gtk
                 rv |= InputModifiers.LeftMouseButton;
             if (state.HasFlag(ModifierType.Button2Mask))
                 rv |= InputModifiers.RightMouseButton;
-
+            if (state.HasFlag(ModifierType.Button3Mask))
+                rv |= InputModifiers.MiddleMouseButton;
             return rv;
         }
 
@@ -160,7 +161,7 @@ namespace Perspex.Gtk
                 _owner,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonDown
-                    : RawMouseEventType.RightButtonDown,
+                    : evnt.Button == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
@@ -174,7 +175,7 @@ namespace Perspex.Gtk
                 _owner,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonUp
-                    : RawMouseEventType.RightButtonUp,
+                    : evnt.Button == 1 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
