@@ -19,28 +19,37 @@ namespace Perspex.Controls.Templates
         /// <returns>The data materialized as a control.</returns>
         public static IControl MaterializeDataTemplate(this IControl control, object data)
         {
-            IDataTemplate template = control.FindDataTemplate(data);
-            IControl result;
-
-            if (template != null)
+            if (data == null)
             {
-                result = template.Build(data);
-
-                if (result != null && result.DataContext == null)
-                {
-                    result.DataContext = data;
-                }
-            }
-            else if (data is IControl)
-            {
-                result = (IControl)data;
+                return null;
             }
             else
             {
-                result = DataTemplate.Default.Build(data);
-            }
+                var asControl = data as IControl;
 
-            return result;
+                if (asControl != null)
+                {
+                    return asControl;
+                }
+                else
+                {
+                    IDataTemplate template = control.FindDataTemplate(data);
+                    IControl result;
+
+                    if (template != null)
+                    {
+                        result = template.Build(data);
+                    }
+                    else
+                    {
+                        result = DataTemplate.Default.Build(data);
+                    }
+
+                    result.DataContext = data;
+
+                    return result;
+                }
+            }
         }
 
         /// <summary>

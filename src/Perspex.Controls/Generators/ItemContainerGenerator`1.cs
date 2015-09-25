@@ -23,15 +23,23 @@ namespace Perspex.Controls.Generators
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
         {
-            T result = item as T;
+            var container = item as T;
 
-            if (result == null)
+            if (item == null)
             {
-                result = new T();
-                result.Content = Owner.MaterializeDataTemplate(item);
+                return null;
             }
-
-            return result;
+            else if (container != null)
+            {
+                return container;
+            }
+            else
+            {
+                var result = new T();
+                result.Content = Owner.MaterializeDataTemplate(item);
+                result.DataContext = item;
+                return result;
+            }
         }
     }
 }
