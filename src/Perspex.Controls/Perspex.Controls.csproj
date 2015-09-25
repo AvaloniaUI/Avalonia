@@ -43,17 +43,6 @@
     </Compile>
     <Compile Include="DockPanel.cs" />
     <Compile Include="SystemDialog.cs" />
-    <Compile Include="DockPanel\Aligner.cs" />
-    <Compile Include="DockPanel\Alignment.cs" />
-    <Compile Include="DockPanel\Alignments.cs" />
-    <Compile Include="DockPanel\CoordinateMixin.cs" />
-    <Compile Include="DockPanel\Dock.cs" />
-    <Compile Include="DockPanel\Docker.cs" />
-    <Compile Include="DockPanel\DockingArranger.cs" />
-    <Compile Include="DockPanel\DockPanel.cs" />
-    <Compile Include="DockPanel\EnumerableMixin.cs" />
-    <Compile Include="DockPanel\LayoutSizes.cs" />
-    <Compile Include="DockPanel\RectMixin.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
     <Compile Include="IContentControl.cs" />
