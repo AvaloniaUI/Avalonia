@@ -60,35 +60,48 @@ namespace Perspex.Themes.Default
                 [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
 
-                Child = new Panel
+                Child = new StackPanel
                 {
                     Children = new Controls.Controls
                     {
                         new TextBlock
                         {
-                            Name="waterMark",
-                            Opacity=0.5,                            
+                            Name  = "floatingWatermark",
+                            Foreground = SolidColorBrush.Parse("#007ACC"),
+                            FontSize = 10,
                             [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
-                            [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)string.IsNullOrEmpty(x))
+                            [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)(!string.IsNullOrEmpty(x) && control.UseFloatingWatermark))
                         },
-
-                        new ScrollViewer
+                        new Panel
                         {
-                            [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
-                            [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
-                            [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
-                            Content = new TextPresenter
+                            Children = new Controls.Controls
                             {
-                                Name = "textPresenter",
-                                [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
-                                [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
-                                [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
-                                [~TextBlock.TextProperty] = control[~TextBox.TextProperty],
-                                [~TextBlock.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
+                                new TextBlock
+                                {
+                                    Name = "watermark",
+                                    Opacity = 0.5,
+                                    [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
+                                    [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)string.IsNullOrEmpty(x))
+                                },
+                                new ScrollViewer
+                                {
+                                    [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
+                                    [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
+                                    [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
+                                    Content = new TextPresenter
+                                    {
+                                        Name = "textPresenter",
+                                        [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
+                                        [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
+                                        [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],
+                                        [~TextBlock.TextProperty] = control[~TextBox.TextProperty],
+                                        [~TextBlock.TextWrappingProperty] = control[~TextBox.TextWrappingProperty],
+                                    }
+                                }
                             }
-                        }
+                        }                        
                     }
-                }
+                },
             };
 
             return result;

@@ -42,6 +42,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> WatermarkProperty =
             PerspexProperty.Register<TextBox, string>("Watermark");
 
+        public static readonly PerspexProperty<bool> UseFloatingWatermarkProperty =
+            PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
+
         private TextPresenter _presenter;
 
         static TextBox()
@@ -108,6 +111,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(WatermarkProperty); }
             set { SetValue(WatermarkProperty, value); }
+        }
+
+        public bool UseFloatingWatermark
+        {
+            get { return GetValue(UseFloatingWatermarkProperty); }
+            set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
         public TextWrapping TextWrapping
