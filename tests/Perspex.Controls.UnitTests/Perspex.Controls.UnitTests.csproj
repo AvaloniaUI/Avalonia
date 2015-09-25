@@ -81,13 +81,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="DockPanelTests\AlignerTests.cs" />
-    <Compile Include="DockPanelTests\RectAlignerTests.cs" />
-    <Compile Include="DockPanelTests\RightDockerTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
-    <Compile Include="DockPanelTests\LeftDockerTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="Primitives\TrackTests.cs" />
     <Compile Include="Primitives\PopupTests.cs" />
