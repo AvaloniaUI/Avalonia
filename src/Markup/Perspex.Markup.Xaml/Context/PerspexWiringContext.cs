@@ -87,7 +87,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
-                new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanConverter()),
+                new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);

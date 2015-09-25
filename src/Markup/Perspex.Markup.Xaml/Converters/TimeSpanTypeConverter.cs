@@ -8,7 +8,7 @@ using Perspex.Media;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class TimeSpanConverter : ITypeConverter
+    public class TimeSpanTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
         {
@@ -22,10 +22,15 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            // TimeSpan does not parse seconds format directly, restrict
-            // syntax to seconds for now (ie. "0.25")
-            var secs = double.Parse((string)value);
-            return TimeSpan.FromSeconds(secs);
+            var valueStr = (string)value;
+            if (!valueStr.Contains(":"))
+            {
+                // shorthand seconds format (ie. "0.25")
+                var secs = double.Parse(valueStr);
+                return TimeSpan.FromSeconds(secs);
+            }
+
+            return TimeSpan.Parse(valueStr);
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
