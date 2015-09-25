@@ -9,11 +9,28 @@ using Perspex.Media;
 
 namespace Perspex.Animation
 {
+    // TODO: Perhaps we want a common base for Transitions with Duration so that we can 
+    // consolidate the property declarations, etc
+    //
+
     /// <summary>
     /// Transitions between two pages by sliding them horizontally.
     /// </summary>
-    public class PageSlide : IPageTransition
+    public class PageSlide : PerspexObject, IPageTransition
     {
+        /// <summary>
+        /// Defines the <see cref="Duration"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<TimeSpan> DurationProperty =
+            PerspexProperty.Register<PageSlide, TimeSpan>(nameof(Duration));
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageSlide"/> class.
+        /// </summary>
+        public PageSlide()
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PageSlide"/> class.
         /// </summary>
@@ -26,7 +43,11 @@ namespace Perspex.Animation
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
-        public TimeSpan Duration { get; }
+        public TimeSpan Duration
+        {
+            get { return GetValue(DurationProperty); }
+            set { SetValue(DurationProperty, value); }
+        }
 
         /// <summary>
         /// Starts the animation.
