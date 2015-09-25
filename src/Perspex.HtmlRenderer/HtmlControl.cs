@@ -85,8 +85,8 @@ namespace Perspex.Controls.Html
         public static readonly PerspexProperty TextProperty =
             PropertyHelper.Register<HtmlControl, string>("Text", null, OnPerspexProperty_valueChanged);
 
-        public static readonly PerspexProperty BackgroundProperty =
-            PerspexProperty.Register<HtmlControl, Brush>("Background", Brushes.White);
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<HtmlControl>();
 
         public static readonly PerspexProperty BorderThicknessProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("BorderThickness", new Thickness(0));
