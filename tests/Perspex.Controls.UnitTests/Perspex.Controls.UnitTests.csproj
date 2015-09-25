@@ -59,9 +59,6 @@
     <Reference Include="Ploeh.AutoFixture.AutoMoq, Version=3.31.1.0, Culture=neutral, PublicKeyToken=b24654c590009d4f">
       <HintPath>..\..\packages\AutoFixture.AutoMoq.3.31.1\lib\net40\Ploeh.AutoFixture.AutoMoq.dll</HintPath>
     </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -84,13 +81,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="DockPanelTests\AlignerTests.cs" />
-    <Compile Include="DockPanelTests\RectAlignerTests.cs" />
-    <Compile Include="DockPanelTests\RightDockerTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
-    <Compile Include="DockPanelTests\LeftDockerTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="Primitives\TrackTests.cs" />
     <Compile Include="Primitives\PopupTests.cs" />

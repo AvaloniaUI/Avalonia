@@ -1,6 +1,7 @@
 // Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -20,7 +21,6 @@ using Perspex.Media.Imaging;
 using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
-using Splat;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -52,7 +52,7 @@ namespace Perspex.Markup.Xaml.Context
 
             foreach (var nsa in 
                 forcedAssemblies
-                    .Concat(Locator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
+                    .Concat(PerspexLocator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
                     .Distinct()
                     .SelectMany(asm
                         => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new {asm, attr}))
@@ -87,6 +87,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
+                new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);

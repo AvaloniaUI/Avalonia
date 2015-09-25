@@ -8,7 +8,6 @@ using Perspex.Input.Platform;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
-using Splat;
 
 namespace Perspex.Gtk
 {
@@ -29,15 +28,16 @@ namespace Perspex.Gtk
 
         public static void Initialize()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
-            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
-            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
-            locator.Register(() => GtkKeyboardDevice.Instance, typeof(IKeyboardDevice));
-            locator.Register(() => s_instance, typeof(IPlatformSettings));
-            locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
-            locator.Register(() => new SystemDialogImpl(), typeof (ISystemDialogImpl));
+            PerspexLocator.CurrentMutable
+                .Bind<IWindowImpl>().ToTransient<WindowImpl>()
+                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
+                .Bind<IKeyboardDevice>().ToConstant(GtkKeyboardDevice.Instance)
+                .Bind<IMouseDevice>().ToConstant(GtkMouseDevice.Instance)
+                .Bind<IPlatformSettings>().ToConstant(s_instance)
+                .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
             SharedPlatform.Register();
         }
 

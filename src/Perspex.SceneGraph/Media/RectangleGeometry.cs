@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Media
 {
@@ -17,7 +16,7 @@ namespace Perspex.Media
         /// <param name="rect">The rectangle bounds.</param>
         public RectangleGeometry(Rect rect)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             IStreamGeometryImpl impl = factory.CreateStreamGeometry();
 
             using (IStreamGeometryContextImpl context = impl.Open())

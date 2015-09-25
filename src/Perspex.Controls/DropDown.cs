@@ -86,7 +86,7 @@ namespace Perspex.Controls
             if (!e.Handled)
             {
                 if (e.Key == Key.F4 ||
-                    (e.Key == Key.Down && ((e.Modifiers & ModifierKeys.Alt) != 0)))
+                    (e.Key == Key.Down && ((e.Modifiers & InputModifiers.Alt) != 0)))
                 {
                     IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;

@@ -14,7 +14,6 @@ using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Win32.Input;
 using Perspex.Win32.Interop;
-using Splat;
 
 namespace Perspex.Win32
 {
@@ -41,29 +40,28 @@ namespace Perspex.Win32
 
         private static void InitializeInternal()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new SystemDialogImpl(), typeof (ISystemDialogImpl));
-            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
-            locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
-            locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
-            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
-            locator.Register(() => s_instance, typeof(IPlatformSettings));
-            locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
+            PerspexLocator.CurrentMutable
+                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
+                .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
+                .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
+                .Bind<IPlatformSettings>().ToConstant(s_instance)
+                .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
+
             SharedPlatform.Register();
         }
 
         public static void Initialize()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
+            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<WindowImpl>();
             InitializeInternal();
         }
 
         public static void InitializeEmbedded()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new EmbeddedWindowImpl(), typeof(IWindowImpl));
+            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<EmbeddedWindowImpl>();
             InitializeInternal();
         }
 

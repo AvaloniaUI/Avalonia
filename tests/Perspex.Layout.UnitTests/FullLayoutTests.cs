@@ -17,7 +17,6 @@ using Perspex.Styling;
 using Perspex.Themes.Default;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
-using Splat;
 using Xunit;
 
 namespace Perspex.Layout.UnitTests
@@ -27,7 +26,7 @@ namespace Perspex.Layout.UnitTests
         [Fact]
         public void Grandchild_Size_Changed()
         {
-            using (var context = Locator.CurrentMutable.WithResolver())
+            using (var context = PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -66,7 +65,7 @@ namespace Perspex.Layout.UnitTests
         [Fact]
         public void Test_ScrollViewer_With_TextBlock()
         {
-            using (var context = Locator.CurrentMutable.WithResolver())
+            using (var context = PerspexLocator.EnterScope())
             {
                 RegisterServices();
 
@@ -130,7 +129,7 @@ namespace Perspex.Layout.UnitTests
         private void RegisterServices()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var l = Locator.CurrentMutable;
+
 
             var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
@@ -143,14 +142,15 @@ namespace Perspex.Layout.UnitTests
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1024, 1024));
             globalStyles.Setup(x => x.Styles).Returns(theme);
 
-            l.RegisterConstant(new Mock<IInputManager>().Object, typeof(IInputManager));
-            l.RegisterConstant(globalStyles.Object, typeof(IGlobalStyles));
-            l.RegisterConstant(new LayoutManager(), typeof(ILayoutManager));
-            l.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
-            l.RegisterConstant(new Mock<IPlatformThreadingInterface>().Object, typeof(IPlatformThreadingInterface));
-            l.RegisterConstant(renderManager, typeof(IRenderManager));
-            l.RegisterConstant(new Styler(), typeof(IStyler));
-            l.RegisterConstant(windowImpl.Object, typeof(IWindowImpl));
+            PerspexLocator.CurrentMutable
+                .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
+                .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
+                .Bind<ILayoutManager>().ToConstant(new LayoutManager())
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
+                .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
+                .Bind<IRenderManager>().ToConstant(renderManager)
+                .Bind<IStyler>().ToConstant(new Styler())
+                .Bind<IWindowImpl>().ToConstant(windowImpl.Object);
         }
     }
 }

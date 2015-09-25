@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using Perspex.Input.Raw;
-using Splat;
 
 namespace Perspex.Input
 {
@@ -16,7 +15,7 @@ namespace Perspex.Input
 
         private readonly Subject<RawInputEventArgs> _postProcess = new Subject<RawInputEventArgs>();
 
-        public static IInputManager Instance => Locator.Current.GetService<IInputManager>();
+        public static IInputManager Instance => PerspexLocator.Current.GetService<IInputManager>();
 
         public IObservable<RawInputEventArgs> RawEventReceived => _rawEventReceived;
 

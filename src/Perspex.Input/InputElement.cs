@@ -123,8 +123,8 @@ namespace Perspex.Input
         /// <summary>
         /// Defines the <see cref="PointerReleased"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(
+        public static readonly RoutedEvent<PointerReleasedEventArgs> PointerReleasedEvent =
+            RoutedEvent.Register<InputElement, PointerReleasedEventArgs>(
                 "PointerReleased",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
@@ -240,7 +240,7 @@ namespace Perspex.Input
         /// <summary>
         /// Occurs when the pointer is released over the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs> PointerReleased
+        public event EventHandler<PointerReleasedEventArgs> PointerReleased
         {
             add { AddHandler(PointerReleasedEvent, value); }
             remove { RemoveHandler(PointerReleasedEvent, value); }

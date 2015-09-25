@@ -3,7 +3,6 @@
 
 using Perspex.Platform;
 using SharpDX.Direct2D1;
-using Splat;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -59,7 +58,7 @@ namespace Perspex.Direct2D1.Media
 
                     if (!value.IsIdentity)
                     {
-                        Factory factory = Locator.Current.GetService<Factory>();
+                        Factory factory = PerspexLocator.Current.GetService<Factory>();
                         _transformed = new TransformedGeometry(
                             factory,
                             DefiningGeometry,
