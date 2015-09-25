@@ -10,9 +10,29 @@ namespace Perspex.Input
     {
         public IPointerDevice Device { get; set; }
 
+        public InputModifiers InputModifiers { get; set; }
+
         public Point GetPosition(IVisual relativeTo)
         {
             return Device.GetPosition(relativeTo);
         }
+    }
+    
+    public enum MouseButton
+    {
+        None,
+        Left,
+        Right
+    }
+
+    public class PointerPressEventArgs : PointerEventArgs
+    {
+        public int ClickCount { get; set; }
+        public MouseButton MouseButton { get; set; }
+    }
+
+    public class PointerReleasedEventArgs : PointerEventArgs
+    {
+        public MouseButton MouseButton { get; set; }
     }
 }

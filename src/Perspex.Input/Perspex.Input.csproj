@@ -98,7 +98,6 @@
     <Compile Include="Navigation\DirectionalNavigation.cs" />
     <Compile Include="Navigation\TabNavigation.cs" />
     <Compile Include="Platform\IPlatformSettings.cs" />
-    <Compile Include="PointerPressEventArgs.cs" />
     <Compile Include="PointerWheelEventArgs.cs" />
     <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
     <Compile Include="Raw\RawSizeEventArgs.cs" />

@@ -60,7 +60,7 @@ namespace Perspex.Input
         /// <summary>
         /// Occurs when the pointer is released over the control.
         /// </summary>
-        event EventHandler<PointerEventArgs> PointerReleased;
+        event EventHandler<PointerReleasedEventArgs> PointerReleased;
 
         /// <summary>
         /// Occurs when the mouse wheen is scrolled over the control.

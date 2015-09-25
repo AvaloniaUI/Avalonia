@@ -10,6 +10,8 @@ namespace Perspex.Input.Raw
         LeaveWindow,
         LeftButtonDown,
         LeftButtonUp,
+        RightButtonDown,
+        RightButtonUp,
         Move,
         Wheel,
     }
@@ -21,7 +23,7 @@ namespace Perspex.Input.Raw
             uint timestamp,
             IInputRoot root,
             RawMouseEventType type,
-            Point position, ModifierKeys modifierKeys)
+            Point position, InputModifiers inputModifiers)
             : base(device, timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
@@ -30,7 +32,7 @@ namespace Perspex.Input.Raw
             Root = root;
             Position = position;
             Type = type;
-            ModifierKeys = modifierKeys;
+            InputModifiers = inputModifiers;
         }
 
         public IInputRoot Root { get; private set; }
@@ -39,6 +41,6 @@ namespace Perspex.Input.Raw
 
         public RawMouseEventType Type { get; private set; }
 
-        public ModifierKeys ModifierKeys { get; private set; }
+        public InputModifiers InputModifiers { get; private set; }
     }
 }

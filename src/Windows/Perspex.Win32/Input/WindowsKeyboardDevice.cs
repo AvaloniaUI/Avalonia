@@ -16,31 +16,31 @@ namespace Perspex.Win32.Input
 
         public static new WindowsKeyboardDevice Instance => s_instance;
 
-        public ModifierKeys Modifiers
+        public InputModifiers Modifiers
         {
             get
             {
                 UpdateKeyStates();
-                ModifierKeys result = 0;
+                InputModifiers result = 0;
 
                 if (IsDown(Key.LeftAlt) || IsDown(Key.RightAlt))
                 {
-                    result |= ModifierKeys.Alt;
+                    result |= InputModifiers.Alt;
                 }
 
                 if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
                 {
-                    result |= ModifierKeys.Control;
+                    result |= InputModifiers.Control;
                 }
 
                 if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
                 {
-                    result |= ModifierKeys.Shift;
+                    result |= InputModifiers.Shift;
                 }
 
                 if (IsDown(Key.LWin) || IsDown(Key.RWin))
                 {
-                    result |= ModifierKeys.Windows;
+                    result |= InputModifiers.Windows;
                 }
 
                 return result;

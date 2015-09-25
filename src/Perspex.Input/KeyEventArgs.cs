@@ -12,6 +12,6 @@ namespace Perspex.Input
 
         public Key Key { get; set; }
 
-        public ModifierKeys Modifiers { get; set; }
+        public InputModifiers Modifiers { get; set; }
     }
 }
