@@ -26,7 +26,7 @@ namespace Perspex.Markup.Xaml.Converters
             if (!valueStr.Contains(":"))
             {
                 // shorthand seconds format (ie. "0.25")
-                var secs = double.Parse(valueStr);
+                var secs = double.Parse(valueStr, CultureInfo.InvariantCulture);
                 return TimeSpan.FromSeconds(secs);
             }
 
