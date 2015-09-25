@@ -1,6 +1,7 @@
 // Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -86,6 +87,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
+                new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);

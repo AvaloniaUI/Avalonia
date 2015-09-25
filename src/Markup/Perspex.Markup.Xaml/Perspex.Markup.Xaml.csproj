@@ -48,6 +48,7 @@
     <Compile Include="Converters\PerspexPropertyTypeConverter.cs" />
     <Compile Include="Converters\SelectorTypeConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
+    <Compile Include="Converters\TimeSpanTypeConverter.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\BitmapTypeConverter.cs" />
