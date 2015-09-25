@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input.Platform;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,13 +149,13 @@ namespace Perspex.Controls
 
         private async void Copy()
         {
-            await ((IClipboard)Locator.Current.GetService(typeof(IClipboard)))
+            await ((IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard)))
                 .SetTextAsync(GetSelection());
         }
 
         private async void Paste()
         {
-            var text = await ((IClipboard)Locator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+            var text = await ((IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
             if (text == null)
             {
                 return;

@@ -9,7 +9,6 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Styling;
 using Perspex.VisualTree;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -143,10 +142,11 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (Locator.Current.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 var styler = new Mock<IStyler>();
-                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
+
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
 
                 TestTemplatedControl target;
 

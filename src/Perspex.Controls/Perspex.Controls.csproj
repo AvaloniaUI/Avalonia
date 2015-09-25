@@ -42,6 +42,18 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DockPanel.cs" />
+    <Compile Include="SystemDialog.cs" />
+    <Compile Include="DockPanel\Aligner.cs" />
+    <Compile Include="DockPanel\Alignment.cs" />
+    <Compile Include="DockPanel\Alignments.cs" />
+    <Compile Include="DockPanel\CoordinateMixin.cs" />
+    <Compile Include="DockPanel\Dock.cs" />
+    <Compile Include="DockPanel\Docker.cs" />
+    <Compile Include="DockPanel\DockingArranger.cs" />
+    <Compile Include="DockPanel\DockPanel.cs" />
+    <Compile Include="DockPanel\EnumerableMixin.cs" />
+    <Compile Include="DockPanel\LayoutSizes.cs" />
+    <Compile Include="DockPanel\RectMixin.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
     <Compile Include="IContentControl.cs" />
@@ -51,6 +63,7 @@
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
+    <Compile Include="Platform\ISystemDialogImpl.cs" />
     <Compile Include="Presenters\IContentPresenter.cs" />
     <Compile Include="Primitives\AccessText.cs" />
     <Compile Include="Border.cs" />
@@ -170,9 +183,6 @@
     </Reference>
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
       <HintPath>..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
-    </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -14,7 +14,6 @@ using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Threading;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -489,7 +488,7 @@ namespace Perspex.Controls
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.
         /// </summary>
-        private class DependencyResolver : IDependencyResolver
+        private class DependencyResolver : IPerspexDependencyResolver
         {
             /// <summary>
             /// Gets the default instance of <see cref="DependencyResolver"/>.
@@ -509,7 +508,7 @@ namespace Perspex.Controls
             /// <param name="serviceType">The service type.</param>
             /// <param name="contract">An optional contract.</param>
             /// <returns>A service of the requested type.</returns>
-            public object GetService(Type serviceType, string contract = null)
+            public object GetService(Type serviceType)
             {
                 if (serviceType == typeof(IAccessKeyHandler))
                 {
@@ -517,19 +516,8 @@ namespace Perspex.Controls
                 }
                 else
                 {
-                    return Locator.Current.GetService(serviceType, contract);
+                    return PerspexLocator.Current.GetService(serviceType);
                 }
-            }
-
-            /// <summary>
-            /// Gets collection of services of the specified type.
-            /// </summary>
-            /// <param name="serviceType">The service type.</param>
-            /// <param name="contract">An optional contract.</param>
-            /// <returns>A collection of services of the requested type.</returns>
-            public IEnumerable<object> GetServices(Type serviceType, string contract = null)
-            {
-                return Locator.Current.GetServices(serviceType, contract);
             }
         }
     }

@@ -9,7 +9,6 @@ using Perspex.Input.Raw;
 using Perspex.Interactivity;
 using Perspex.Platform;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Input
 {
@@ -31,7 +30,7 @@ namespace Perspex.Input
                 .Subscribe(ProcessRawEvent);
         }
 
-        public static IMouseDevice Instance => Locator.Current.GetService<IMouseDevice>();
+        public static IMouseDevice Instance => PerspexLocator.Current.GetService<IMouseDevice>();
 
         public IInputElement Captured
         {
@@ -39,7 +38,7 @@ namespace Perspex.Input
             protected set;
         }
 
-        public IInputManager InputManager => Locator.Current.GetService<IInputManager>();
+        public IInputManager InputManager => PerspexLocator.Current.GetService<IInputManager>();
 
         public Point Position
         {
@@ -107,7 +106,7 @@ namespace Perspex.Input
 
                 if (source != null)
                 {
-                    var settings = Locator.Current.GetService<IPlatformSettings>();
+                    var settings = PerspexLocator.Current.GetService<IPlatformSettings>();
                     var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
 
                     if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
@@ -261,7 +260,7 @@ namespace Perspex.Input
                 control.RaiseEvent(e);
             }
 
-            root.PointerOverElement = elements.FirstOrDefault();
+            root.PointerOverElement = elements.FirstOrDefault() ?? root;
             return root.PointerOverElement;
         }
     }

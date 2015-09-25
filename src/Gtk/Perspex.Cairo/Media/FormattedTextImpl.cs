@@ -4,15 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Cairo.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
         private Size _size;
+        private string _text;
 
         public FormattedTextImpl(
             Pango.Context context,
@@ -26,6 +27,7 @@ namespace Perspex.Cairo.Media
             Contract.Requires<NullReferenceException>(context != null);
 
             Layout = new Pango.Layout(context);
+            _text = text;
             Layout.SetText(text);
             Layout.FontDescription = new Pango.FontDescription
             {
@@ -49,7 +51,7 @@ namespace Perspex.Cairo.Media
             set
             {
                 _size = value;
-                Layout.Width = double.IsPositiveInfinity(value.Width) ? 
+                Layout.Width = double.IsPositiveInfinity(value.Width) ?
                     -1 : Pango.Units.FromDouble(value.Width);
             }
         }
@@ -80,6 +82,8 @@ namespace Perspex.Cairo.Media
                 out textPosition,
                 out trailing);
 
+            textPosition = PangoIndexToTextIndex(textPosition);
+
             return new TextHitTestResult
             {
                 IsInside = isInside,
@@ -88,9 +92,19 @@ namespace Perspex.Cairo.Media
             };
         }
 
+        int PangoIndexToTextIndex(int pangoIndex)
+        {
+            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(_text), 0, Math.Min(pangoIndex, _text.Length)).Length;
+        }
+
         public Rect HitTestTextPosition(int index)
         {
-            return Layout.IndexToPos(index).ToPerspex();
+            return Layout.IndexToPos(TextIndexToPangoIndex(index)).ToPerspex();
+        }
+
+        int TextIndexToPangoIndex(int textIndex)
+        {
+            return Encoding.UTF8.GetByteCount(textIndex < _text.Length ? _text.Remove(textIndex) : _text);
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
@@ -124,8 +138,8 @@ namespace Perspex.Cairo.Media
                 color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
 
                 var brushAttr = new Pango.AttrForeground(color);
-                brushAttr.StartIndex = (uint)startIndex;
-                brushAttr.EndIndex = (uint)(startIndex + count);
+                brushAttr.StartIndex = (uint)TextIndexToPangoIndex(startIndex);
+                brushAttr.EndIndex = (uint)TextIndexToPangoIndex(startIndex + count);
 
                 Layout.Attributes.Insert(brushAttr);
             }

@@ -7,7 +7,6 @@ using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -25,13 +24,13 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Adding_Control_To_IRenderRoot_Should_Style_Control()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 var root = new TestRoot();
                 var target = new Control();
                 var styler = new Mock<IStyler>();
 
-                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
 
                 root.Child = target;
 
@@ -42,7 +41,7 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Adding_Tree_To_ILayoutRoot_Should_Style_Controls()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (PerspexLocator.EnterScope())
             {
                 var root = new TestRoot();
                 var parent = new Border();
@@ -50,7 +49,7 @@ namespace Perspex.Controls.UnitTests
                 var grandchild = new Control();
                 var styler = new Mock<IStyler>();
 
-                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
 
                 parent.Child = child;
                 child.Child = grandchild;

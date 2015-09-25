@@ -12,7 +12,7 @@ A multi-platform .NET UI framework.
 ## NuGet
 
 Perspex is delivered as a NuGet package.
-You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Perspex/), [nightly](https://www.myget.org/F/perspex-nightly/api/v2/Packages))
+You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Perspex/), [nightly](https://github.com/Perspex/Perspex/wiki/Using-nightly-build-feed))
 
 You can install the package like this:
 `Install-Package Perspex -Pre`

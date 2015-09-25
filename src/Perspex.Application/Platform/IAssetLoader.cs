@@ -12,6 +12,13 @@ namespace Perspex.Platform
     public interface IAssetLoader
     {
         /// <summary>
+        /// Checks if an asset with the specified URI exists.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>True if the asset could be found; otherwise false.</returns>
+        bool Exists(Uri uri);
+
+        /// <summary>
         /// Opens the resource with the requested URI.
         /// </summary>
         /// <param name="uri">The URI.</param>

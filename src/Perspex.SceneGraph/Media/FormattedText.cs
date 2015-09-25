@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Media
 {
@@ -37,7 +36,7 @@ namespace Perspex.Media
             FontWeight = fontWeight;
             TextAlignment = textAlignment;
 
-            var platform = Locator.Current.GetService<IPlatformRenderInterface>();
+            var platform = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
 
             PlatformImpl = platform.CreateFormattedText(
                 text,

@@ -4,7 +4,6 @@
 using Perspex.Media;
 using Perspex.Platform;
 using SharpDX.Direct2D1;
-using Splat;
 using D2DGeometry = SharpDX.Direct2D1.Geometry;
 
 namespace Perspex.Direct2D1.Media
@@ -21,7 +20,7 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public StreamGeometryImpl()
         {
-            Factory factory = Locator.Current.GetService<Factory>();
+            Factory factory = PerspexLocator.Current.GetService<Factory>();
             _path = new PathGeometry(factory);
         }
 
@@ -46,7 +45,7 @@ namespace Perspex.Direct2D1.Media
         /// <returns>A cloned geometry.</returns>
         public IStreamGeometryImpl Clone()
         {
-            Factory factory = Locator.Current.GetService<Factory>();
+            Factory factory = PerspexLocator.Current.GetService<Factory>();
             var result = new PathGeometry(factory);
             var sink = result.Open();
             _path.Stream(sink);
