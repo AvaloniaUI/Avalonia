@@ -107,13 +107,10 @@ namespace TestApplication
                     new Deck
                     {
                         Name = "deck",
-                        DataTemplates = new DataTemplates
-                        {
-                            new DataTemplate<TabItem>(x => (Control)control.MaterializeDataTemplate(x.Content)),
-                        },
+                        MemberSelector = control.ContentSelector,
                         [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
-                        [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                        [!SelectingItemsControl.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
+                        [!Deck.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!Deck.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
                         [Grid.ColumnProperty] = 1,
                     }
                 }

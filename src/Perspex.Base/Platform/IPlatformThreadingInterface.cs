@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Threading;
 
 namespace Perspex.Platform
 {
@@ -10,16 +11,7 @@ namespace Perspex.Platform
     /// </summary>
     public interface IPlatformThreadingInterface
     {
-        /// <summary>
-        /// Checks whether there are messages waiting to be processed.
-        /// </summary>
-        /// <returns>True if there are messages waiting, otherwise false.</returns>
-        bool HasMessages();
-
-        /// <summary>
-        /// Process a single message from the windowing system, blocking until one is available.
-        /// </summary>
-        void ProcessMessage();
+        void RunLoop(CancellationToken cancellationToken);
 
         /// <summary>
         /// Starts a timer.
@@ -32,6 +24,9 @@ namespace Perspex.Platform
         /// <summary>
         /// Sends a message that causes <see cref="ProcessMessage"/> to exit.
         /// </summary>
-        void Wake();
+        void Signal();
+
+        event Action Signaled;
+
     }
 }

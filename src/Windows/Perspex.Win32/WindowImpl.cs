@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input;
@@ -306,6 +306,21 @@ namespace Perspex.Win32
                     }
 
                     break;
+
+                case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+                    e = new RawMouseEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN
+                            ? RawMouseEventType.LeftButtonDown
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
+                                ? RawMouseEventType.RightButtonDown
+                                : RawMouseEventType.MiddleButtonDown,
+                        new Point(0, 0), GetMouseModifiers(wParam));
+                    break;
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
@@ -320,7 +335,7 @@ namespace Perspex.Win32
                                 : RawMouseEventType.MiddleButtonDown,
                         new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
                     break;
-
+                    
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
@@ -406,6 +421,10 @@ namespace Perspex.Win32
             if (e != null && Input != null)
             {
                 Input(e);
+
+                if (msg >= 161 && msg <= 173)
+                    return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+
                 return IntPtr.Zero;
             }
 

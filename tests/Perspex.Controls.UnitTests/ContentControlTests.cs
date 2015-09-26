@@ -262,6 +262,30 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
         }
 
+        [Fact]
+        public void DataContext_Should_Be_Set_For_Templated_Data()
+        {
+            var target = new ContentControl();
+
+            target.Template = GetTemplate();
+            target.Content = "Foo";
+            target.ApplyTemplate();
+
+            Assert.Equal("Foo", target.Presenter.Child.DataContext);
+        }
+
+        [Fact]
+        public void DataContext_Should_Not_Be_Set_For_Control_Data()
+        {
+            var target = new ContentControl();
+
+            target.Template = GetTemplate();
+            target.Content = new TextBlock();
+            target.ApplyTemplate();
+
+            Assert.Null(target.Presenter.Child.DataContext);
+        }
+
         private ControlTemplate GetTemplate()
         {
             return new ControlTemplate<ContentControl>(parent =>

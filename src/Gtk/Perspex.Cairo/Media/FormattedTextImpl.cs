@@ -25,7 +25,7 @@ namespace Perspex.Cairo.Media
             FontWeight fontWeight)
         {
             Contract.Requires<NullReferenceException>(context != null);
-
+            Contract.Requires<NullReferenceException> (text != null);
             Layout = new Pango.Layout(context);
             _text = text;
             Layout.SetText(text);

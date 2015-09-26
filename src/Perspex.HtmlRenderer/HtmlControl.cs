@@ -563,7 +563,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnLoadComplete(e);
             else
-                Dispatcher.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
 
         }
 
@@ -572,7 +572,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnLinkClicked(e);
             else
-                Dispatcher.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
         }
 
         private void OnRenderError(object sender, HtmlRenderErrorEventArgs e)
@@ -580,7 +580,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnRenderError(e);
             else
-                Dispatcher.Invoke(new Action<HtmlRenderErrorEventArgs>(OnRenderError), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlRenderErrorEventArgs>(OnRenderError), e);
         }
 
         private void OnStylesheetLoad(object sender, HtmlStylesheetLoadEventArgs e)
@@ -588,7 +588,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnStylesheetLoad(e);
             else
-                Dispatcher.Invoke(new Action<HtmlStylesheetLoadEventArgs>(OnStylesheetLoad), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlStylesheetLoadEventArgs>(OnStylesheetLoad), e);
         }
 
         private void OnImageLoad(object sender, HtmlImageLoadEventArgs e)
@@ -596,7 +596,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnImageLoad(e);
             else
-                Dispatcher.Invoke(new Action<HtmlImageLoadEventArgs>(OnImageLoad), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlImageLoadEventArgs>(OnImageLoad), e);
         }
 
         private void OnRefresh(object sender, HtmlRefreshEventArgs e)
@@ -604,7 +604,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnRefresh(e);
             else
-                Dispatcher.Invoke(new Action<HtmlRefreshEventArgs>(OnRefresh), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlRefreshEventArgs>(OnRefresh), e);
         }
         */
     }

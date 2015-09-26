@@ -28,6 +28,12 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="MemberSelector"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+            ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenter>();
+
         private bool _createdPanel;
 
         private IItemContainerGenerator _generator;
@@ -94,6 +100,15 @@ namespace Perspex.Controls.Presenters
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Selects a member from <see cref="Items"/> to use as the list item.
+        /// </summary>
+        public IMemberSelector MemberSelector
+        {
+            get { return GetValue(MemberSelectorProperty); }
+            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>
@@ -171,8 +186,7 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                Panel.Children.AddRange(
-                    ItemContainerGenerator.CreateContainers(0, Items, null));
+                Panel.Children.AddRange(ItemContainerGenerator.CreateContainers(0, Items, MemberSelector));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -229,7 +243,7 @@ namespace Perspex.Controls.Presenters
                 {
                     case NotifyCollectionChangedAction.Add:
                         Panel.Children.AddRange(
-                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, null));
+                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, MemberSelector));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:

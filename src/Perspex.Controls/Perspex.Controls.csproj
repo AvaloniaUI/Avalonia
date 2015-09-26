@@ -71,6 +71,7 @@
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
     <Compile Include="Templates\DataTemplate`1.cs" />
+    <Compile Include="Templates\FuncMemberSelector.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
     <Compile Include="Templates\FuncTemplate`2.cs" />
     <Compile Include="Templates\FuncTemplate`1.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
     <Compile Include="Shapes\Ellipse.cs" />
+    <Compile Include="Templates\IMemberSelector.cs" />
     <Compile Include="Templates\ITemplate`2.cs" />
     <Compile Include="Templates\ITemplate`1.cs" />
     <Compile Include="Templates\ITreeDataTemplate.cs" />
