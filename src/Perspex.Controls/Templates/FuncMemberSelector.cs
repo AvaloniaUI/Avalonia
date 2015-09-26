@@ -29,7 +29,7 @@ namespace Perspex.Controls.Templates
         /// <returns>The selected member.</returns>
         public object Select(object o)
         {
-            return (o is TObject) ? _selector((TObject)o) : o;
+            return (o is TObject) ? _selector((TObject)o) : default(TMember);
         }
     }
 }

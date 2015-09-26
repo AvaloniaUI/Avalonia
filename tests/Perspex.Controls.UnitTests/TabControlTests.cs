@@ -187,7 +187,7 @@ namespace Perspex.Controls.UnitTests
                     {
                         Name = "deck",
                         Template = new ControlTemplate<Deck>(CreateDeckTemplate),
-                        MemberSelector = new FuncMemberSelector<TabItem, object>(x => x.Content),
+                        MemberSelector = parent.ContentSelector,
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!SelectingItemsControl.SelectedItemProperty] = parent[!SelectingItemsControl.SelectedItemProperty],
                     }
