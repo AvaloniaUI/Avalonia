@@ -6,41 +6,20 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Perspex.Platform;
-using Perspex.Threading;
 
-namespace Perspex.Win32.Threading
+namespace Perspex.Threading
 {
     /// <summary>
     /// A main loop in a <see cref="Dispatcher"/>.
     /// </summary>
-    internal class MainLoop
+    internal class JobRunner
     {
-        private static readonly IPlatformThreadingInterface s_platform;
-
+        private readonly IPlatformThreadingInterface _platform;
         private readonly Queue<Job> _queue = new Queue<Job>();
 
-        /// <summary>
-        /// Initializes static members of the <see cref="MainLoop"/> class.
-        /// </summary>
-        static MainLoop()
+        public JobRunner(IPlatformThreadingInterface platform)
         {
-            s_platform = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
-        }
-
-        /// <summary>
-        /// Runs the main loop.
-        /// </summary>
-        /// <param name="cancellationToken">
-        /// A cancellation token used to exit the main loop.
-        /// </param>
-        public void Run(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                RunJobs();
-
-                s_platform.ProcessMessage();
-            }
+            _platform = platform;
         }
 
         /// <summary>
@@ -48,21 +27,15 @@ namespace Perspex.Win32.Threading
         /// </summary>
         public void RunJobs()
         {
-            Job job = null;
-
-            while (job != null || _queue.Count > 0)
+            while (true)
             {
-                if (job == null)
-                {
-                    lock (_queue)
-                    {
-                        job = _queue.Dequeue();
-                    }
-                }
+                Job job;
 
-                if (job.Priority < DispatcherPriority.Input && s_platform.HasMessages())
+                lock (_queue)
                 {
-                    break;
+                    if (_queue.Count == 0)
+                        return;
+                    job = _queue.Dequeue();
                 }
 
                 if (job.TaskCompletionSource == null)
@@ -81,8 +54,6 @@ namespace Perspex.Win32.Threading
                         job.TaskCompletionSource.SetException(e);
                     }
                 }
-
-                job = null;
             }
         }
 
@@ -113,11 +84,14 @@ namespace Perspex.Win32.Threading
 
         private void AddJob(Job job)
         {
+            var needWake = false;
             lock (_queue)
             {
+                needWake = _queue.Count == 0;
                 _queue.Enqueue(job);
             }
-            s_platform.Wake();
+            if (needWake)
+                _platform.Signal();
         }
 
         /// <summary>

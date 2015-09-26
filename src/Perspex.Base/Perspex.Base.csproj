@@ -72,7 +72,7 @@
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
-    <Compile Include="Threading\MainLoop.cs" />
+    <Compile Include="Threading\JobRunner.cs" />
     <Compile Include="Threading\PerspexScheduler.cs" />
     <Compile Include="Threading\PerspexSynchronizationContext.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />

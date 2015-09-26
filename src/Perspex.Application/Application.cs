@@ -144,7 +144,7 @@ namespace Perspex
         {
             var source = new CancellationTokenSource();
             closable.Closed += (s, e) => source.Cancel();
-            Dispatcher.UIThread.MainLoop(source.Token);
+            Dispatcher.MainLoop(source.Token);
         }
 
         /// <summary>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Disposables;
+using System.Threading;
 using Perspex.Controls.Platform;
 using Perspex.Input.Platform;
 using Perspex.Input;
@@ -51,6 +52,12 @@ namespace Perspex.Gtk
             Gtk.Application.RunIteration();
         }
 
+        public void RunLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+                Gtk.Application.RunIteration();
+        }
+
         public IDisposable StartTimer(TimeSpan interval, Action tick)
         {
             var result = true;
@@ -65,8 +72,13 @@ namespace Perspex.Gtk
             return Disposable.Create(() => result = false);
         }
 
-        public void Wake()
+
+
+        public void Signal()
         {
+            Gtk.Application.Invoke(delegate { Signaled?.Invoke(); });
         }
+
+        public event Action Signaled;
     }
 }

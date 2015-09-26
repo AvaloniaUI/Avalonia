@@ -7,7 +7,7 @@ using System.Reactive.Concurrency;
 namespace Perspex.Threading
 {
     /// <summary>
-    /// A reactive scheduler that uses Perspex's <see cref="Dispatcher.UIThread"/>.
+    /// A reactive scheduler that uses Perspex's <see cref="Dispatcher"/>.
     /// </summary>
     public class PerspexScheduler : LocalScheduler
     {

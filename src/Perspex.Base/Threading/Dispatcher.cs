@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Perspex.Win32.Threading;
+using Perspex.Platform;
 
 namespace Perspex.Threading
 {
@@ -15,23 +15,18 @@ namespace Perspex.Threading
     /// In Perspex, there is usually only a single <see cref="Dispatcher"/> in the application -
     /// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
     /// </remarks>
-    public class Dispatcher
+    public static class Dispatcher
     {
-        private static readonly Dispatcher s_instance = new Dispatcher();
-
-        private readonly MainLoop _mainLoop = new MainLoop();
+        private static readonly JobRunner _jobRunner =
+            new JobRunner(PerspexLocator.Current.GetService<IPlatformThreadingInterface>());
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dispatcher"/> class.
         /// </summary>
-        private Dispatcher()
+        static Dispatcher()
         {
+            PerspexLocator.Current.GetService<IPlatformThreadingInterface>().Signaled += _jobRunner.RunJobs;
         }
-
-        /// <summary>
-        /// Gets the <see cref="Dispatcher"/> for the UI thread.
-        /// </summary>
-        public static Dispatcher UIThread => s_instance;
 
         /// <summary>
         /// Runs the dispatcher's main loop.
@@ -39,17 +34,19 @@ namespace Perspex.Threading
         /// <param name="cancellationToken">
         /// A cancellation token used to exit the main loop.
         /// </param>
-        public void MainLoop(CancellationToken cancellationToken)
+        public static void MainLoop(CancellationToken cancellationToken)
         {
-            _mainLoop.Run(cancellationToken);
+            var platform = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
+            cancellationToken.Register(platform.Signal);
+            platform.RunLoop(cancellationToken);
         }
 
         /// <summary>
         /// Runs continuations pushed on the loop.
         /// </summary>
-        public void RunJobs()
+        public static void RunJobs()
         {
-            _mainLoop.RunJobs();
+            _jobRunner.RunJobs();
         }
 
         /// <summary>
@@ -58,9 +55,9 @@ namespace Perspex.Threading
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
         /// <returns>A task that can be used to track the method's execution.</returns>
-        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public static Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            return _mainLoop.InvokeAsync(action, priority);
+            return _jobRunner.InvokeAsync(action, priority);
         }
 
         /// <summary>
@@ -68,9 +65,9 @@ namespace Perspex.Threading
         /// </summary>
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
-        internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        internal static void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            _mainLoop.Post(action, priority);
+            _jobRunner.Post(action, priority);
         }
     }
 }

@@ -44,11 +44,6 @@ namespace Perspex.Controls
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
         /// <summary>
-        /// The dispatcher for the window.
-        /// </summary>
-        private readonly Dispatcher _dispatcher;
-
-        /// <summary>
         /// The render manager for the window.s
         /// </summary>
         private readonly IRenderManager _renderManager;
@@ -125,8 +120,6 @@ namespace Perspex.Controls
             PlatformImpl.Resized = HandleResized;
 
             Size clientSize = ClientSize = PlatformImpl.ClientSize;
-
-            _dispatcher = Dispatcher.UIThread;
 
             if (renderInterface != null)
             {
@@ -404,7 +397,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            _dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            Dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -420,7 +413,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleRenderNeeded()
         {
-            _dispatcher.InvokeAsync(
+            Dispatcher.InvokeAsync(
                 () => PlatformImpl.Invalidate(new Rect(ClientSize)),
                 DispatcherPriority.Render);
         }
