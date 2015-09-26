@@ -130,6 +130,46 @@ namespace Perspex.Controls.UnitTests
             Assert.Same(target.SelectedTab, target.SelectedItem);
         }
 
+        [Fact]
+        public void DataContexts_Should_Be_Correctly_Set()
+        {
+            var items = new object[]
+            {
+                "Foo",
+                new Item("Bar"),
+                new TextBlock { Text = "Baz" },
+                new TabItem { Content = "Qux" },
+            };
+
+            var target = new TabControl
+            {
+                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                DataContext = "Base",
+                DataTemplates = new DataTemplates
+                {
+                    new DataTemplate<Item>(x => new Button { Content = x })
+                },
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+
+            var dataContext = ((TextBlock)target.GetLogicalChildren().Single()).DataContext;
+            Assert.Equal(items[0], dataContext);
+
+            target.SelectedIndex = 1;
+            dataContext = ((Button)target.GetLogicalChildren().Single()).DataContext;
+            Assert.Equal(items[1], dataContext);
+
+            target.SelectedIndex = 2;
+            dataContext = ((TextBlock)target.GetLogicalChildren().Single()).DataContext;
+            Assert.Equal("Base", dataContext);
+
+            target.SelectedIndex = 3;
+            dataContext = ((TextBlock)target.GetLogicalChildren().Single()).DataContext;
+            Assert.Equal("Qux", dataContext);
+        }
+
         private Control CreateTabControlTemplate(TabControl parent)
         {
             return new StackPanel
@@ -147,10 +187,7 @@ namespace Perspex.Controls.UnitTests
                     {
                         Name = "deck",
                         Template = new ControlTemplate<Deck>(CreateDeckTemplate),
-                        DataTemplates = new DataTemplates
-                        {
-                            new DataTemplate<TabItem>(x => (Control)parent.MaterializeDataTemplate(x.Content)),
-                        },
+                        MemberSelector = new FuncMemberSelector<TabItem, object>(x => x.Content),
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!SelectingItemsControl.SelectedItemProperty] = parent[!SelectingItemsControl.SelectedItemProperty],
                     }
@@ -172,11 +209,22 @@ namespace Perspex.Controls.UnitTests
             return new DeckPresenter
             {
                 Name = "itemsPresenter",
-                [!ItemsPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                [!ItemsPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
+                [!DeckPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                [!DeckPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
+                [!DeckPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
                 [!DeckPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
                 [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
             };
+        }
+
+        private class Item
+        {
+            public Item(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
         }
     }
 }

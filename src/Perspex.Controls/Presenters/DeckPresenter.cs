@@ -30,6 +30,12 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<DeckPresenter>();
+        
+        /// <summary>
+        /// Defines the <see cref="MemberSelector"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+            ItemsControl.MemberSelectorProperty.AddOwner<DeckPresenter>();
 
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
@@ -99,6 +105,15 @@ namespace Perspex.Controls.Presenters
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Selects a member from <see cref="Items"/> to use as the list item.
+        /// </summary>
+        public IMemberSelector MemberSelector
+        {
+            get { return GetValue(MemberSelectorProperty); }
+            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>
@@ -181,7 +196,7 @@ namespace Perspex.Controls.Presenters
             if (toIndex != -1)
             {
                 var item = Items.Cast<object>().ElementAt(toIndex);
-                to = generator.CreateContainers(toIndex, new[] { item }).FirstOrDefault();
+                to = generator.CreateContainers(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
 
                 if (to != null)
                 {

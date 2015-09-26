@@ -45,10 +45,12 @@ namespace Perspex.Controls.Generators
         /// The index of the first item of the data in the containing collection.
         /// </param>
         /// <param name="items">The items.</param>
+        /// <param name="selector">An optional member selector.</param>
         /// <returns>The created container controls.</returns>
         public IList<IControl> CreateContainers(
             int startingIndex,
-            IEnumerable items)
+            IEnumerable items,
+            IMemberSelector selector)
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
@@ -57,7 +59,8 @@ namespace Perspex.Controls.Generators
 
             foreach (var item in items)
             {
-                IControl container = CreateContainer(item);
+                var i = selector != null ? selector.Select(item) : item;
+                var container = CreateContainer(i);
                 result.Add(container);
             }
 

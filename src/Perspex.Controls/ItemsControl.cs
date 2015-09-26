@@ -33,13 +33,19 @@ namespace Perspex.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>("Items");
+            PerspexProperty.Register<ItemsControl, IEnumerable>(nameof(Items));
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
-            PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>("ItemsPanel", defaultValue: DefaultPanel);
+            PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>(nameof(ItemsPanel), DefaultPanel);
+
+        /// <summary>
+        /// Defines the <see cref="MemberSelector"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+            PerspexProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
 
         private IItemContainerGenerator _itemContainerGenerator;
 
@@ -92,6 +98,15 @@ namespace Perspex.Controls
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Selects a member from <see cref="Items"/> to use as the list item.
+        /// </summary>
+        public IMemberSelector MemberSelector
+        {
+            get { return GetValue(MemberSelectorProperty); }
+            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>

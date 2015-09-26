@@ -6,6 +6,7 @@ using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 using Perspex.VisualTree;
 using Xunit;
@@ -321,6 +322,26 @@ namespace Perspex.Controls.UnitTests
                 dataContexts);
         }
 
+        [Fact]
+        public void MemberSelector_Should_Select_Member()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new[] { new Item("Foo"), new Item("Bar") },
+                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
+            };
+
+            target.ApplyTemplate();
+
+            var text = target.Presenter.Panel.Children
+                .Cast<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "Foo", "Bar" }, text);
+        }
+
         private class Item
         {
             public Item(string value)
@@ -341,6 +362,7 @@ namespace Perspex.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
+                        MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }
                 };

@@ -128,6 +128,7 @@ namespace Perspex.Themes.Default
                                 Padding = new Thickness(4),
                                 Child = new ItemsPresenter
                                 {
+                                    MemberSelector = control.MemberSelector,
                                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                                 }
                             },
