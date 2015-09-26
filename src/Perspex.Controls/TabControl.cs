@@ -4,6 +4,7 @@
 using Perspex.Animation;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
 
 namespace Perspex.Controls
 {
@@ -24,6 +25,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<TabControl>();
 
+        private static readonly IMemberSelector s_contentSelector =
+            new FuncMemberSelector<object, object>(SelectContent);
+
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
@@ -32,6 +36,14 @@ namespace Perspex.Controls
             AutoSelectProperty.OverrideDefaultValue<TabControl>(true);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             SelectedIndexProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedIndexChanged);
+        }
+
+        /// <summary>
+        /// Gets an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
+        /// </summary>
+        public IMemberSelector ContentSelector
+        {
+            get { return s_contentSelector; }
         }
 
         /// <summary>
@@ -63,6 +75,25 @@ namespace Perspex.Controls
         bool IReparentingHost.WillReparentChildrenOf(IControl control)
         {
             return control is DeckPresenter;
+        }
+
+        /// <summary>
+        /// Selects the content of a tab item.
+        /// </summary>
+        /// <param name="o">The tab item.</param>
+        /// <returns>The content.</returns>
+        private static object SelectContent(object o)
+        {
+            var content = o as IContentControl;
+
+            if (content != null)
+            {
+                return content.Content;
+            }
+            else
+            {
+                return o;
+            }       
         }
 
         /// <summary>

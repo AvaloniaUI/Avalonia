@@ -6,6 +6,7 @@ using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 using Perspex.VisualTree;
 using Xunit;
@@ -287,6 +288,70 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(target, ((ILogical)child).LogicalParent);
         }
 
+        [Fact]
+        public void DataContexts_Should_Be_Correctly_Set()
+        {
+            var items = new object[]
+            {
+                "Foo",
+                new Item("Bar"),
+                new TextBlock { Text = "Baz" },
+                new ListBoxItem { Content = "Qux" },
+            };
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DataContext = "Base",
+                DataTemplates = new DataTemplates
+                {
+                    new DataTemplate<Item>(x => new Button { Content = x })
+                },
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+
+            var dataContexts = target.Presenter.Panel.Children
+                .Cast<Control>()
+                .Select(x => x.DataContext)
+                .ToList();
+
+            Assert.Equal(
+                new object[] { items[0], items[1], "Base", "Base" },
+                dataContexts);
+        }
+
+        [Fact]
+        public void MemberSelector_Should_Select_Member()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new[] { new Item("Foo"), new Item("Bar") },
+                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
+            };
+
+            target.ApplyTemplate();
+
+            var text = target.Presenter.Panel.Children
+                .Cast<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "Foo", "Bar" }, text);
+        }
+
+        private class Item
+        {
+            public Item(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
         private ControlTemplate GetTemplate()
         {
             return new ControlTemplate<ItemsControl>(parent =>
@@ -297,6 +362,7 @@ namespace Perspex.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "itemsPresenter",
+                        MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }
                 };

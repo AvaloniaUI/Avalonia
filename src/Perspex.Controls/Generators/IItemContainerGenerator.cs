@@ -25,12 +25,12 @@ namespace Perspex.Controls.Generators
         /// The index of the first item of the data in the containing collection.
         /// </param>
         /// <param name="items">The items.</param>
-        /// <param name="itemTemplate">An optional item template.</param>
+        /// <param name="selector">An optional member selector.</param>
         /// <returns>The created controls.</returns>
         IList<IControl> CreateContainers(
             int startingIndex,
             IEnumerable items,
-            IDataTemplate itemTemplate);
+            IMemberSelector selector);
 
         /// <summary>
         /// Removes a set of created containers from the index and returns the removed controls.
