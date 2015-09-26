@@ -75,6 +75,7 @@
     <Compile Include="Threading\JobRunner.cs" />
     <Compile Include="Threading\PerspexScheduler.cs" />
     <Compile Include="Threading\PerspexSynchronizationContext.cs" />
+    <Compile Include="Threading\SingleThreadDispatcher.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
   </ItemGroup>

@@ -397,7 +397,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            Dispatcher.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            Dispatcher.UIThread.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleRenderNeeded()
         {
-            Dispatcher.InvokeAsync(
+            Dispatcher.UIThread.InvokeAsync(
                 () => PlatformImpl.Invalidate(new Rect(ClientSize)),
                 DispatcherPriority.Render);
         }

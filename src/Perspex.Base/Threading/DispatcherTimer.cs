@@ -177,7 +177,7 @@ namespace Perspex.Threading
         /// </summary>
         private void InternalTick()
         {
-            Dispatcher.Post(RaiseTick, _priority);
+            Dispatcher.UIThread.Post(RaiseTick, _priority);
         }
 
         /// <summary>
