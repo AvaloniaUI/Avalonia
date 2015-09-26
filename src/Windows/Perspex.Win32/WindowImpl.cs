@@ -306,6 +306,10 @@ namespace Perspex.Win32
                     }
 
                     break;
+                    
+                case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
