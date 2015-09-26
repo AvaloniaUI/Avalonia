@@ -5,22 +5,27 @@ using System.Text;
 using Perspex.Controls;
 using Perspex.Input.Raw;
 using UIKit;
+using CoreGraphics;
 
 namespace Perspex.iOS
 {
     public class WindowImpl : IWindowImpl
     {
         private TopLevel _owner;
-        static private UIWindow _iosRootWindow;
+        private UIWindow _iosWindow;
 
         public WindowImpl()
         {
-            Handle = new PlatformHandle(_iosRootWindow.Handle, "UIWindow");
-        }
+            // create a new window instance based on the screen size
+            _iosWindow = new UIWindow(UIScreen.MainScreen.Bounds);
 
-        public static void SetHostUIWindow(UIWindow wnd)
-        {
-            _iosRootWindow = wnd;
+            // test ui
+            var controller = new UIViewController();
+            controller.View.BackgroundColor = UIColor.Red;
+            controller.View.Add(new iOSHostView(UIScreen.MainScreen.Bounds, this));
+            _iosWindow.RootViewController = controller;
+
+            Handle = new PlatformHandle(_iosWindow.Handle, "UIWindow");
         }
 
         public Action Activated { get; set; }
@@ -37,7 +42,7 @@ namespace Perspex.iOS
             get
             {
                 // TODO: This should take into account things such as taskbar and window border thickness etc.
-                return new Size(_iosRootWindow.Bounds.Width, _iosRootWindow.Bounds.Height);
+                return new Size(_iosWindow.Bounds.Width, _iosWindow.Bounds.Height);
             }
 
             // Can we allow changing this on iOS?
@@ -49,7 +54,7 @@ namespace Perspex.iOS
             get
             {
                 // TODO: This should take into account things such as taskbar and window border thickness etc.
-                return new Size(_iosRootWindow.Bounds.Width, _iosRootWindow.Bounds.Height);
+                return new Size(_iosWindow.Bounds.Width, _iosWindow.Bounds.Height);
             }
         }
 
@@ -101,12 +106,51 @@ namespace Perspex.iOS
 
         public void Show()
         {
-            throw new NotImplementedException();
+            // TODO: once we have multiple windows instances this will not be good!!
+
+            // make the window visible
+            _iosWindow.MakeKeyAndVisible();
         }
 
         public IDisposable ShowDialog()
         {
             throw new NotImplementedException();
+        }
+    }
+
+    internal class iOSHostView : UIView
+    {
+        WindowImpl _WindowImpl;
+
+        public iOSHostView(CGRect frame, WindowImpl impl) : base(frame)
+        {
+            _WindowImpl = impl;
+        }
+
+        public override void Draw(CGRect rect)
+        {
+            base.Draw(rect);
+
+			// Test code
+            //get graphics context
+            //using (var g = UIGraphics.GetCurrentContext())
+            //{
+            //    // set up drawing attributes
+            //    g.SetLineWidth(10.0f);
+            //    UIColor.Green.SetFill();
+            //    UIColor.Blue.SetStroke();
+
+            //    // create geometry
+            //    var path = new CGPath();
+            //    path.AddArc(Bounds.GetMidX(), Bounds.GetMidY(), 50f, 0, 2.0f * (float)Math.PI, true);
+
+            //    // add geometry to graphics context and draw
+            //    g.AddPath(path);
+            //    g.DrawPath(CGPathDrawingMode.FillStroke);
+            //}
+
+            // call into Perspex rendering
+            _WindowImpl.Paint(new Rect(rect.Left, rect.Top, rect.Width, rect.Height), _WindowImpl.Handle);
         }
     }
 }

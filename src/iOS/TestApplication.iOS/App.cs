@@ -58,8 +58,9 @@ namespace TestApplication.iOS
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                Width = 900,
-                Height = 480,
+                Background = Brushes.Green,
+                //Width = 900,
+                //Height = 480,
                 Content = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitions
@@ -69,18 +70,48 @@ namespace TestApplication.iOS
                     },
                     RowDefinitions = new RowDefinitions
                     {
-                        new RowDefinition(GridLength.Auto),
                         new RowDefinition(1, GridUnitType.Star),
-                        new RowDefinition(GridLength.Auto),
+                        new RowDefinition(1, GridUnitType.Star),
                     },
                     Children = new Controls
                     {
                         new Rectangle
                         {
-                            Width = 200,
-                            Height = 200,
+                            [Grid.RowProperty] = 0,
+                            [Grid.ColumnProperty] = 0,
+                            Margin = new Thickness(20),
+                            Fill = Brushes.Red
+                        },
+
+                        new Ellipse
+                        {
+                            [Grid.RowProperty] = 1,
+                            [Grid.ColumnProperty] = 0,
+                            Margin = new Thickness(20),
+                            Fill = Brushes.Blue
+                        },
+
+                        // need a 4th shape!!
+                        new Rectangle
+                        {
+                            [Grid.RowProperty] = 0,
+                            [Grid.ColumnProperty] = 1,
+                            Margin = new Thickness(20),
                             Fill = Brushes.Yellow
+                        },
+
+                        new Path
+                        {
+                            Data = StreamGeometry.Parse("M 50,50 l 15,0 l 5,-15 l 5,15 l 15,0 l -10,10 l 4,15 l -15,-9 l -15,9 l 7,-15 Z"),
+                            [Grid.RowProperty] = 1,
+                            [Grid.ColumnProperty] = 1,
+                            Margin = new Thickness(20),
+                            Fill = Brushes.White,
+                            Stroke = Brushes.Blue,
+                            StrokeThickness = 4
                         }
+
+
                         //(container = new TabControl
                         //{
                         //    Padding = new Thickness(5),
@@ -105,7 +136,9 @@ namespace TestApplication.iOS
             //container.Classes.Add(":container");
 
             window.Show();
-            Perspex.Application.Current.Run(window);
+
+            // this is a problem for iOS
+            //Perspex.Application.Current.Run(window);
         }
 
 

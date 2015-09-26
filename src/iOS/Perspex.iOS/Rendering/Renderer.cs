@@ -45,21 +45,7 @@ namespace Perspex.iOS.Rendering
         /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
         protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
-            //switch (handle.HandleDescriptor)
-            //{
-            //    case "RTB":
-            //        return new DrawingContext(_surface);
-            //    case "GdkWindow":
-            //        if (_window == null)
-            //            _window = new Gdk.Window(handle.Handle);
-
-            //        return new DrawingContext(_window);
-            //    default:
-            //        throw new NotSupportedException(string.Format(
-            //            "Don't know how to create a Cairo renderer from a '{0}' handle",
-            //            handle.HandleDescriptor));
-            //}
-            throw new NotImplementedException();
+            return new DrawingContext(handle);
         }
 
         //[DllImport("user32.dll")]

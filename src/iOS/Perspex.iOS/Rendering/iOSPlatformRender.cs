@@ -34,7 +34,7 @@ namespace Perspex.iOS.Rendering
 
         public IStreamGeometryImpl CreateStreamGeometry()
         {
-            throw new NotImplementedException();
+            return new StreamGeometryImpl();
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)

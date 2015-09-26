@@ -21,16 +21,21 @@ namespace TestApplication.iOS
 
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
+#if TEST
             // create a new window instance based on the screen size
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
-
-            WindowImpl.SetHostUIWindow(Window);
 
             // If you have defined a root view controller, set it here:
             // Window.RootViewController = myViewController;
 
+            // test ui
+            var controller = new UIViewController();
+            controller.View.BackgroundColor = UIColor.Red;
+            Window.RootViewController = controller;
+
             // make the window visible
             Window.MakeKeyAndVisible();
+#endif
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Perspex stuff
