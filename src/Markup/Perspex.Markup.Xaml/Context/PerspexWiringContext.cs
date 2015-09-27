@@ -107,7 +107,7 @@ namespace Perspex.Markup.Xaml.Context
                 new ContentPropertyDefinition(typeof(Style), "Setters"),
                 new ContentPropertyDefinition(typeof(TextBlock), "Text"),
                 new ContentPropertyDefinition(typeof(TextBox), "Text"),
-                new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),
+                new ContentPropertyDefinition(typeof(DataTemplate), "Content"),
             };
 
             contentPropertyProvider.AddAll(contentProperties);

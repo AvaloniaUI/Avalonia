@@ -1,6 +1,7 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplication"
         Title="Perspex Test Application" Height="350" Width="525" SizeToContent="WidthAndHeight" >
    
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
@@ -49,20 +50,14 @@
             </TabItem>
             <TabItem Header="Lists">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ListBox>
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 1" FontSize="24" />
-                                <TextBlock Text="Item 1 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 2" FontSize="24" />
-                                <TextBlock Text="Item 2 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                    </ListBox>
+                  <ListBox Items="{Binding Items}">
+                    <ListBox.DataTemplates>
+                      <DataTemplate DataType="vm:TestItem">
+                        <TextBlock Text="{Binding Header}" FontSize="24"/>
+                        <TextBlock Text="{Binding SubHeader}"/>
+                      </DataTemplate>
+                    </ListBox.DataTemplates>
+                  </ListBox>
                     <DropDown VerticalAlignment="Center">
                         <StackPanel>
                             <TextBlock Text="Item 1" FontSize="24" />

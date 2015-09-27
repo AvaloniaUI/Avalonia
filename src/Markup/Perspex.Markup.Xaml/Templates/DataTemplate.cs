@@ -9,7 +9,7 @@ using Perspex.Controls.Templates;
 namespace Perspex.Markup.Xaml.Templates
 {
     [ContentProperty("Content")]
-    public class XamlDataTemplate : IDataTemplate
+    public class DataTemplate : IDataTemplate
     {
         private bool MyMatch(object data)
         {

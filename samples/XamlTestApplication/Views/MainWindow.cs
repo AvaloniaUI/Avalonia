@@ -10,6 +10,7 @@ using OmniXaml;
 using Perspex.Controls;
 using Perspex.Diagnostics;
 using Perspex.Markup.Xaml;
+using XamlTestApplication.ViewModels;
 
 namespace XamlTestApplication.Views
 {
@@ -18,7 +19,7 @@ namespace XamlTestApplication.Views
         public MainWindow()
         {
             InitializeComponent();
-
+            DataContext = new MainWindowViewModel();
             DevTools.Attach(this);
         }
 
