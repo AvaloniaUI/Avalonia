@@ -138,6 +138,7 @@ namespace TestApplication
 
             container.Classes.Add(":container");
 
+            DevTools.Attach(window);
             window.Show();
             Application.Current.Run(window);
         }
