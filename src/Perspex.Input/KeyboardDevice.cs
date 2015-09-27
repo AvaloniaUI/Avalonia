@@ -104,6 +104,20 @@ namespace Perspex.Input
                                 Source = element,
                             };
 
+                            IVisual currentHandler = element;
+                            while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
+                            {
+                                var bindings = (currentHandler as IInputElement)?.KeyBindings;
+                                if(bindings!=null)
+                                    foreach (var binding in bindings)
+                                    {
+                                        if(ev.Handled)
+                                            break;
+                                        binding.TryHandle(ev);
+                                    }
+                                currentHandler = currentHandler.VisualParent;
+                            }
+
                             element.RaiseEvent(ev);
                             break;
                     }
