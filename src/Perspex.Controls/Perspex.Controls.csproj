@@ -70,7 +70,7 @@
     <Compile Include="Primitives\ScrollInfoAdapter.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
-    <Compile Include="Templates\DataTemplate`1.cs" />
+    <Compile Include="Templates\FuncDataTemplate`1.cs" />
     <Compile Include="Templates\FuncMemberSelector.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
     <Compile Include="Templates\FuncTemplate`2.cs" />
@@ -100,7 +100,7 @@
     <Compile Include="Controls.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\DataTemplateExtensions.cs" />
-    <Compile Include="Templates\DataTemplate.cs" />
+    <Compile Include="Templates\FuncDataTemplate.cs" />
     <Compile Include="Generators\TreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerGenerator`1.cs" />
     <Compile Include="Generators\ItemContainerGenerator.cs" />

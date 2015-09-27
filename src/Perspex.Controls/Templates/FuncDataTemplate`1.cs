@@ -9,21 +9,21 @@ namespace Perspex.Controls.Templates
     /// Builds a control for a piece of data of specified type.
     /// </summary>
     /// <typeparam name="T">The type of the template's data.</typeparam>
-    public class DataTemplate<T> : DataTemplate
+    public class FuncDataTemplate<T> : FuncDataTemplate
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataTemplate{T}"/> class.
+        /// Initializes a new instance of the <see cref="FuncDataTemplate{T}"/> class.
         /// </summary>
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public DataTemplate(Func<T, IControl> build)
+        public FuncDataTemplate(Func<T, IControl> build)
             : base(typeof(T), CastBuild(build))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataTemplate{T}"/> class.
+        /// Initializes a new instance of the <see cref="FuncDataTemplate{T}"/> class.
         /// </summary>
         /// <param name="match">
         /// A function which determines whether the data template matches the specified data.
@@ -31,7 +31,7 @@ namespace Perspex.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public DataTemplate(Func<T, bool> match, Func<T, IControl> build)
+        public FuncDataTemplate(Func<T, bool> match, Func<T, IControl> build)
             : base(CastMatch(match), CastBuild(build))
         {
         }

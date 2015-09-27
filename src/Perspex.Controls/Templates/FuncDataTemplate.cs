@@ -9,13 +9,13 @@ namespace Perspex.Controls.Templates
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
-    public class DataTemplate : FuncTemplate<object, IControl>, IDataTemplate
+    public class FuncDataTemplate : FuncTemplate<object, IControl>, IDataTemplate
     {
         /// <summary>
         /// The default data template used in the case where not matching data template is found.
         /// </summary>
-        public static readonly DataTemplate Default =
-           new DataTemplate(typeof(object), o => (o != null) ? new TextBlock { Text = o.ToString() } : null);
+        public static readonly FuncDataTemplate Default =
+           new FuncDataTemplate(typeof(object), o => (o != null) ? new TextBlock { Text = o.ToString() } : null);
 
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
@@ -23,19 +23,19 @@ namespace Perspex.Controls.Templates
         private readonly Func<object, bool> _match;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncDataTemplate"/> class.
         /// </summary>
         /// <param name="type">The type of data which the data template matches.</param>
         /// <param name="build">
         /// A function which when passed an object of <paramref name="type"/> returns a control.
         /// </param>
-        public DataTemplate(Type type, Func<object, IControl> build)
+        public FuncDataTemplate(Type type, Func<object, IControl> build)
             : this(o => IsInstance(o, type), build)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncDataTemplate"/> class.
         /// </summary>
         /// <param name="match">
         /// A function which determines whether the data template matches the specified data.
@@ -43,7 +43,7 @@ namespace Perspex.Controls.Templates
         /// <param name="build">
         /// A function which returns a control for matching data.
         /// </param>
-        public DataTemplate(Func<object, bool> match, Func<object, IControl> build)
+        public FuncDataTemplate(Func<object, bool> match, Func<object, IControl> build)
             : base(build)
         {
             Contract.Requires<ArgumentNullException>(match != null);

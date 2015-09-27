@@ -192,7 +192,7 @@ namespace Perspex.Controls.Generators
 
             if (template == null)
             {
-                template = DataTemplate.Default;
+                template = FuncDataTemplate.Default;
             }
 
             var treeTemplate = template as ITreeDataTemplate;

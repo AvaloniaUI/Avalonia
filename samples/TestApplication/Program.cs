@@ -401,7 +401,7 @@ namespace TestApplication
 						Margin = new Thickness(10),
 						DataTemplates = new DataTemplates
 						{
-							new DataTemplate<Item>(x =>
+							new FuncDataTemplate<Item>(x =>
 								new StackPanel
 								{
 									Gap = 4,

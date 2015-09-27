@@ -10,7 +10,7 @@ namespace Perspex.Controls.Templates
     /// <summary>
     /// A template used to build hierachical data.
     /// </summary>
-    public class TreeDataTemplate : DataTemplate, ITreeDataTemplate
+    public class TreeDataTemplate : FuncDataTemplate, ITreeDataTemplate
     {
         private readonly Func<object, IEnumerable> _itemsSelector;
 
