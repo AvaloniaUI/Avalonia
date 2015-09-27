@@ -1,4 +1,5 @@
 ﻿using CoreGraphics;
+using CoreText;
 using Perspex.Media;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,16 @@ namespace Perspex.iOS.Rendering
             return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
+        public static CGSize ToCoreGraphics(this Size rect)
+        {
+            return new CGSize(rect.Width, rect.Height);
+        }
+
+        public static Size ToPerspex(this CGSize size)
+        {
+            return new Size(size.Width, size.Height);
+        }
+
         public static CGLineJoin ToCoreGraphics(this PenLineJoin join)
         {
             switch (join)
@@ -63,34 +74,18 @@ namespace Perspex.iOS.Rendering
             }
         }
 
-
-        //public static Rect ToPerspex(this Pango.Rectangle rect)
-        //{
-        //    return new Rect(
-        //        Pango.Units.ToDouble(rect.X),
-        //        Pango.Units.ToDouble(rect.Y),
-        //        Pango.Units.ToDouble(rect.Width),
-        //        Pango.Units.ToDouble(rect.Height));
-        //}
-
-        //public static Pango.Weight ToCoreGraphics(this Perspex.Media.FontWeight weight)
-        //{
-        //    return (Pango.Weight)weight;
-        //}
-
-        //public static Pango.Alignment ToCoreGraphics(this Perspex.Media.TextAlignment alignment)
-        //{
-        //    if (alignment == Perspex.Media.TextAlignment.Left)
-        //    {
-        //        return Pango.Alignment.Left;
-        //    }
-
-        //    if (alignment == Perspex.Media.TextAlignment.Center)
-        //    {
-        //        return Pango.Alignment.Center;
-        //    }
-
-        //    return Pango.Alignment.Right;
-        //}
+        public static CTTextAlignment ToCoreGraphics(this TextAlignment align)
+        {
+            switch (align)
+            {
+                default:
+                case TextAlignment.Left:
+                    return CTTextAlignment.Left;
+                case TextAlignment.Center:
+                    return CTTextAlignment.Center;
+                case TextAlignment.Right:
+                    return CTTextAlignment.Right;
+            }
+        }
     }
 }

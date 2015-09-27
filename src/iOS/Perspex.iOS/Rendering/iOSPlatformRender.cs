@@ -19,7 +19,7 @@ namespace Perspex.iOS.Rendering
 
         public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle, TextAlignment textAlignment, FontWeight fontWeight)
         {
-            throw new NotImplementedException();
+            return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
         public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)

@@ -52,6 +52,7 @@
     <Compile Include="Rendering\BrushImpl.cs" />
     <Compile Include="Rendering\CoreGraphicsExtensions.cs" />
     <Compile Include="Rendering\DrawingContext.cs" />
+    <Compile Include="Rendering\FormattedTextImpl.cs" />
     <Compile Include="Rendering\iOSPlatformRender.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\StreamGeometryImpl.cs" />

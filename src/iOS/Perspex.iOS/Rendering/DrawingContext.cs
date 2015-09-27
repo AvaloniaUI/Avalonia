@@ -7,6 +7,8 @@ using UIKit;
 using CoreGraphics;
 using Perspex.Platform;
 using System.Reactive.Disposables;
+using Foundation;
+using CoreText;
 
 namespace Perspex.iOS.Rendering
 {
@@ -86,12 +88,72 @@ namespace Perspex.iOS.Rendering
 
         public void DrawRectange(Pen pen, Rect rect, float cornerRadius = 0)
         {
-            throw new NotImplementedException();
+            using (SetPen(pen, rect.Size))
+            {
+                if (cornerRadius == 0)
+                {
+                    _nativeContext.StrokeRect(rect.ToCoreGraphics());
+                }
+                else
+                {
+                    throw new NotImplementedException();
+
+                    //_renderTarget.FillRoundedRectangle(
+                    //    new RoundedRectangle
+                    //    {
+                    //        Rect = new RectangleF(
+                    //                (float)rect.X,
+                    //                (float)rect.Y,
+                    //                (float)rect.Width,
+                    //                (float)rect.Height),
+                    //        RadiusX = cornerRadius,
+                    //        RadiusY = cornerRadius
+                    //    },
+                    //    b.PlatformBrush);
+                }
+            }
         }
 
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
-            throw new NotImplementedException();
+            // Useful resource:
+            // https://developer.apple.com/library/mac/documentation/StringsTextFonts/Conceptual/CoreText_Programming/LayoutOperations/LayoutOperations.html#//apple_ref/doc/uid/TP40005533-CH12-SW2
+
+            var impl = text.PlatformImpl as FormattedTextImpl;
+
+            using (SetBrush(foreground, new Size(0, 0), BrushUsage.Fill))
+            {
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                // Single Line drawing (good for labels)
+                //
+                //using (var textLine = new CTLine(impl.AttributedString))
+                //{
+                //    // Flip the context coordinates, in iOS only. TODO: Confirm this is true
+                //    _nativeContext.TranslateCTM(0, textLine.GetBounds(CTLineBoundsOptions.UseGlyphPathBounds).Height);
+                //    _nativeContext.ScaleCTM(1.0f, -1.0f);
+
+                //    _nativeContext.TextPosition = new CGPoint(0, 0);
+                //    textLine.Draw(_nativeContext);
+                //}
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                // Simple Paragraph layout
+                //
+                _nativeContext.TranslateCTM(0, (nfloat) impl.Constraint.Height);
+                _nativeContext.ScaleCTM(1.0f, -1.0f);
+                _nativeContext.TextMatrix = CGAffineTransform.MakeIdentity();
+
+                // Create a path which bounds the area where you will be drawing text.
+                // The path need not be rectangular.
+                var path = new CGPath();
+                path.AddRect(new CGRect(origin.ToCoreGraphics(), impl.Constraint.ToCoreGraphics()));
+
+                var framesetter = impl.Framesetter;
+                var frame = framesetter.GetFrame(new NSRange(), path, null);
+                frame.Draw(_nativeContext);
+            }
+
         }
 
         /// <summary>
@@ -107,7 +169,6 @@ namespace Perspex.iOS.Rendering
                 if (cornerRadius == 0)
                 {
                     _nativeContext.FillRect(rect.ToCoreGraphics());
-                    //_renderTarget.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
                 }
                 else
                 {

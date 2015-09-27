@@ -42,7 +42,7 @@ namespace TestApplication.iOS
             //var foo = Dispatcher.CurrentDispatcher;
 
             _app = new App();
-            _app.BuildAndRun();
+            _app.BuildGridWithSomeButtonsAndStuff();
 
             ////////////////////////////////////////////////////////////////////////////////////////////
 

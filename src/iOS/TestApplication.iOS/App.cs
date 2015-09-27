@@ -51,7 +51,28 @@ namespace TestApplication.iOS
             iOSPlatform.Initialize();
         }
 
-        public void BuildAndRun()
+        public void BuildSimpleTextUI()
+        {
+            Window window = new Window
+            {
+                Title = "Perspex Test Application",
+                Background = Brushes.Green,
+                Content = new TextBlock
+                {
+                    Text = "How does this look? Is this text going to wrap and then look nice within the bounds of this widget? If not I will be extremely disappointed!\n\nWill we start a new paragraph here? If not there will be hell to pay!!!!",
+                    Foreground = Brushes.White,
+                    Background = Brushes.SteelBlue,
+                    //FontFamily = ""       // what is available on iOS??? 
+                    FontSize = 12,
+                    Margin = new Thickness(50),
+                    //TextAlignment = TextAlignment.Center
+                }
+            };
+
+            window.Show();
+        }
+
+        public void BuildGridWithSomeButtonsAndStuff()
         {
             //TabControl container;
 
@@ -59,10 +80,9 @@ namespace TestApplication.iOS
             {
                 Title = "Perspex Test Application",
                 Background = Brushes.Green,
-                //Width = 900,
-                //Height = 480,
                 Content = new Grid
                 {
+                    Margin = new Thickness(0, 20, 0, 0),    // skip the status bar area on iOS
                     ColumnDefinitions = new ColumnDefinitions
                     {
                         new ColumnDefinition(1, GridUnitType.Star),
@@ -70,14 +90,59 @@ namespace TestApplication.iOS
                     },
                     RowDefinitions = new RowDefinitions
                     {
+                        new RowDefinition(40, GridUnitType.Pixel),
+                        new RowDefinition(40, GridUnitType.Pixel),
                         new RowDefinition(1, GridUnitType.Star),
                         new RowDefinition(1, GridUnitType.Star),
                     },
                     Children = new Controls
                     {
-                        new Rectangle
+                        new TextBlock
                         {
                             [Grid.RowProperty] = 0,
+                            [Grid.ColumnSpanProperty] = 2,
+                            Text = "Welcome to Perspex on iOS !!!",
+                            Foreground = Brushes.SteelBlue,
+                            Background = Brushes.White,
+                            FontSize = 22,
+                            Margin = new Thickness(5,7,5,5),
+                            TextAlignment = TextAlignment.Center
+                        },
+
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            [Grid.RowProperty] = 1,
+                            [Grid.ColumnSpanProperty] = 2,
+                            Background = SolidColorBrush.Parse("#000000"),
+                            Children = new Controls
+                            {
+                                new Button
+                                {
+                                    Content = "Button 1",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                },
+
+                                new Button
+                                {
+                                    Content = "Button 2",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                },
+
+                                new Button
+                                {
+                                    Content = "Button 3",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                }
+                            }
+                        },
+
+                        new Rectangle
+                        {
+                            [Grid.RowProperty] = 2,
                             [Grid.ColumnProperty] = 0,
                             Margin = new Thickness(20),
                             Fill = Brushes.Red
@@ -85,25 +150,27 @@ namespace TestApplication.iOS
 
                         new Ellipse
                         {
-                            [Grid.RowProperty] = 1,
+                            [Grid.RowProperty] = 3,
                             [Grid.ColumnProperty] = 0,
                             Margin = new Thickness(20),
                             Fill = Brushes.Blue
                         },
 
-                        // need a 4th shape!!
-                        new Rectangle
+                        new TextBlock
                         {
-                            [Grid.RowProperty] = 0,
+                            [Grid.RowProperty] = 2,
                             [Grid.ColumnProperty] = 1,
-                            Margin = new Thickness(20),
-                            Fill = Brushes.Yellow
+                            Text = "How does this look? Is this text going to wrap and then look nice within the bounds of this widget? If not I will be extremely disappointed!\n\nWill we start a new paragraph here? If not there will be hell to pay!!!!",
+                            Foreground = Brushes.White,
+                            Background = Brushes.Transparent,
+                            FontSize = 14,
+                            Margin = new Thickness(10,30,10,10),
                         },
 
                         new Path
                         {
                             Data = StreamGeometry.Parse("M 50,50 l 15,0 l 5,-15 l 5,15 l 15,0 l -10,10 l 4,15 l -15,-9 l -15,9 l 7,-15 Z"),
-                            [Grid.RowProperty] = 1,
+                            [Grid.RowProperty] = 3,
                             [Grid.ColumnProperty] = 1,
                             Margin = new Thickness(20),
                             Fill = Brushes.White,
