@@ -47,7 +47,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
             PerspexProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
 
-        private IEnumerable _items;
+        private IEnumerable _items = new PerspexList<object>();
         private IItemContainerGenerator _itemContainerGenerator;
 
         /// <summary>
@@ -64,6 +64,7 @@ namespace Perspex.Controls
         public ItemsControl()
         {
             Classes.Add(":empty");
+            SubscribeToItems(_items);
         }
 
         /// <summary>
@@ -87,20 +88,8 @@ namespace Perspex.Controls
         /// </summary>
         public IEnumerable Items
         {
-            get
-            {
-                if (_items == null)
-                {
-                    _items = new PerspexList<object>();
-                }
-
-                return _items;
-            }
-
-            set
-            {
-                SetAndRaise(ItemsProperty, ref _items, value);
-            }
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
         /// <summary>
@@ -175,22 +164,7 @@ namespace Perspex.Controls
             }
 
             var newValue = e.NewValue as IEnumerable;
-
-            if (newValue == null || newValue.Count() == 0)
-            {
-                Classes.Add(":empty");
-            }
-            else
-            {
-                Classes.Remove(":empty");
-            }
-
-            incc = newValue as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged += ItemsCollectionChanged;
-            }
+            SubscribeToItems(newValue);
         }
 
         /// <summary>
@@ -210,6 +184,29 @@ namespace Perspex.Controls
             else
             {
                 Classes.Remove(":empty");
+            }
+        }
+
+        /// <summary>
+        /// Subscribes to an <see cref="Items"/> collection.
+        /// </summary>
+        /// <param name="items"></param>
+        private void SubscribeToItems(IEnumerable items)
+        {
+            if (items == null || items.Count() == 0)
+            {
+                Classes.Add(":empty");
+            }
+            else
+            {
+                Classes.Remove(":empty");
+            }
+
+            var incc = items as INotifyCollectionChanged;
+
+            if (incc != null)
+            {
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
         }
     }

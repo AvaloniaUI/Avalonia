@@ -773,13 +773,21 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="field">The backing field.</param>
         /// <param name="value">The value.</param>
-        protected void SetAndRaise<T>(PerspexProperty<T> property, ref T field, T value)
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        protected bool SetAndRaise<T>(PerspexProperty<T> property, ref T field, T value)
         {
             if (!object.Equals(field, value))
             {
                 var old = field;
                 field = value;
                 RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
