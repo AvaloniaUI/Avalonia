@@ -37,8 +37,8 @@ namespace Perspex.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
         {
-            Contract.Requires<NullReferenceException>(routedEvent != null);
-            Contract.Requires<NullReferenceException>(handler != null);
+            Contract.Requires<ArgumentNullException>(routedEvent != null);
+            Contract.Requires<ArgumentNullException>(handler != null);
 
             List<EventSubscription> subscriptions;
 
@@ -85,8 +85,8 @@ namespace Perspex.Interactivity
         /// <param name="handler">The handler.</param>
         public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
         {
-            Contract.Requires<NullReferenceException>(routedEvent != null);
-            Contract.Requires<NullReferenceException>(handler != null);
+            Contract.Requires<ArgumentNullException>(routedEvent != null);
+            Contract.Requires<ArgumentNullException>(handler != null);
 
             List<EventSubscription> subscriptions;
 
@@ -114,7 +114,7 @@ namespace Perspex.Interactivity
         /// <param name="e">The event args.</param>
         public void RaiseEvent(RoutedEventArgs e)
         {
-            Contract.Requires<NullReferenceException>(e != null);
+            Contract.Requires<ArgumentNullException>(e != null);
 
             e.Source = e.Source ?? this;
 
@@ -141,7 +141,7 @@ namespace Perspex.Interactivity
         /// <param name="e">The event args.</param>
         private void BubbleEvent(RoutedEventArgs e)
         {
-            Contract.Requires<NullReferenceException>(e != null);
+            Contract.Requires<ArgumentNullException>(e != null);
 
             e.Route = RoutingStrategies.Bubble;
 
@@ -157,7 +157,7 @@ namespace Perspex.Interactivity
         /// <param name="e">The event args.</param>
         private void TunnelEvent(RoutedEventArgs e)
         {
-            Contract.Requires<NullReferenceException>(e != null);
+            Contract.Requires<ArgumentNullException>(e != null);
 
             e.Route = RoutingStrategies.Tunnel;
 
@@ -173,7 +173,7 @@ namespace Perspex.Interactivity
         /// <param name="e">The event args.</param>
         private void RaiseEventImpl(RoutedEventArgs e)
         {
-            Contract.Requires<NullReferenceException>(e != null);
+            Contract.Requires<ArgumentNullException>(e != null);
 
             e.RoutedEvent.InvokeClassHandlers(this, e);
 

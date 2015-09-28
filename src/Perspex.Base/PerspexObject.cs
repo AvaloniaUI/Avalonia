@@ -215,7 +215,7 @@ namespace Perspex
         /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
         public static IEnumerable<PerspexProperty> GetRegisteredProperties(Type type)
         {
-            Contract.Requires<NullReferenceException>(type != null);
+            Contract.Requires<ArgumentNullException>(type != null);
 
             TypeInfo i = type.GetTypeInfo();
 
@@ -263,8 +263,8 @@ namespace Perspex
         /// </remarks>
         public static void Register(Type type, PerspexProperty property)
         {
-            Contract.Requires<NullReferenceException>(type != null);
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             List<PerspexProperty> list;
 
@@ -300,7 +300,7 @@ namespace Perspex
         /// <param name="property">The property.</param>
         public void ClearValue(PerspexProperty property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             SetValue(property, PerspexProperty.UnsetValue);
         }
@@ -312,7 +312,7 @@ namespace Perspex
         /// <returns>An observable.</returns>
         public IObservable<object> GetObservable(PerspexProperty property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             return new PerspexObservable<object>(
                 observer =>
@@ -345,7 +345,7 @@ namespace Perspex
         /// <returns>An observable.</returns>
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             return GetObservable((PerspexProperty)property).Cast<T>();
         }
@@ -387,7 +387,7 @@ namespace Perspex
         /// <returns>The value.</returns>
         public object GetValue(PerspexProperty property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -425,7 +425,7 @@ namespace Perspex
         /// <returns>The value.</returns>
         public T GetValue<T>(PerspexProperty<T> property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -455,7 +455,7 @@ namespace Perspex
         /// <returns>True if the property is set, otherwise false.</returns>
         public bool IsSet(PerspexProperty property)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             return _values.ContainsKey(property);
         }
@@ -481,7 +481,7 @@ namespace Perspex
             object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -546,7 +546,7 @@ namespace Perspex
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -579,7 +579,7 @@ namespace Perspex
             IObservable<object> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -638,7 +638,7 @@ namespace Perspex
             IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             if (property.IsDirect)
             {
@@ -741,7 +741,7 @@ namespace Perspex
             object newValue,
             BindingPriority priority)
         {
-            Contract.Requires<NullReferenceException>(property != null);
+            Contract.Requires<ArgumentNullException>(property != null);
 
             PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
                 this,

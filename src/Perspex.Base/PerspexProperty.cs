@@ -74,9 +74,9 @@ namespace Perspex
             Func<PerspexObject, object, object> validate = null,
             bool isAttached = false)
         {
-            Contract.Requires<NullReferenceException>(name != null);
-            Contract.Requires<NullReferenceException>(valueType != null);
-            Contract.Requires<NullReferenceException>(ownerType != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentNullException>(valueType != null);
+            Contract.Requires<ArgumentNullException>(ownerType != null);
 
             if (name.Contains("."))
             {
@@ -113,10 +113,10 @@ namespace Perspex
             Func<PerspexObject, object> getter,
             Action<PerspexObject, object> setter)
         {
-            Contract.Requires<NullReferenceException>(name != null);
-            Contract.Requires<NullReferenceException>(valueType != null);
-            Contract.Requires<NullReferenceException>(ownerType != null);
-            Contract.Requires<NullReferenceException>(getter != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentNullException>(valueType != null);
+            Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.Requires<ArgumentNullException>(getter != null);
 
             if (name.Contains("."))
             {
@@ -143,8 +143,8 @@ namespace Perspex
             Func<PerspexObject, object> getter,
             Action<PerspexObject, object> setter)
         {
-            Contract.Requires<NullReferenceException>(source != null);
-            Contract.Requires<NullReferenceException>(getter != null);
+            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(getter != null);
 
             if (!source.IsDirect)
             {
@@ -321,7 +321,7 @@ namespace Perspex
             Func<TOwner, TValue, TValue> validate = null)
             where TOwner : PerspexObject
         {
-            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<ArgumentNullException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
                 name,
@@ -352,7 +352,7 @@ namespace Perspex
             Action<TOwner, TValue> setter = null)
                 where TOwner : PerspexObject
         {
-            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<ArgumentNullException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
                 name,
@@ -384,7 +384,7 @@ namespace Perspex
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<PerspexObject, TValue, TValue> validate = null)
         {
-            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<ArgumentNullException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
                 name,
@@ -420,7 +420,7 @@ namespace Perspex
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<PerspexObject, TValue, TValue> validate = null)
         {
-            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<ArgumentNullException>(name != null);
 
             PerspexProperty<TValue> result = new PerspexProperty<TValue>(
                 name,
@@ -478,7 +478,7 @@ namespace Perspex
         /// <returns>The default value.</returns>
         public object GetDefaultValue(Type type)
         {
-            Contract.Requires<NullReferenceException>(type != null);
+            Contract.Requires<ArgumentNullException>(type != null);
 
             while (type != null)
             {
@@ -504,7 +504,7 @@ namespace Perspex
         /// </returns>
         public Func<PerspexObject, object, object> GetValidationFunc(Type type)
         {
-            Contract.Requires<NullReferenceException>(type != null);
+            Contract.Requires<ArgumentNullException>(type != null);
 
             while (type != null)
             {
@@ -548,7 +548,7 @@ namespace Perspex
         /// <param name="defaultValue">The default value.</param>
         public void OverrideDefaultValue(Type type, object defaultValue)
         {
-            Contract.Requires<NullReferenceException>(type != null);
+            Contract.Requires<ArgumentNullException>(type != null);
 
             if (!TypeUtilities.TryCast(PropertyType, defaultValue, out defaultValue))
             {
@@ -574,7 +574,7 @@ namespace Perspex
         /// <param name="validation">The validation function.</param>
         public void OverrideValidation(Type type, Func<PerspexObject, object, object> validation)
         {
-            Contract.Requires<NullReferenceException>(type != null);
+            Contract.Requires<ArgumentNullException>(type != null);
 
             if (_validation.ContainsKey(type))
             {
