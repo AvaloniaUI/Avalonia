@@ -171,7 +171,7 @@ namespace Perspex.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged += ItemsCollectionChanged;
+                incc.CollectionChanged -= ItemsCollectionChanged;
             }
 
             var newValue = e.NewValue as IEnumerable;
