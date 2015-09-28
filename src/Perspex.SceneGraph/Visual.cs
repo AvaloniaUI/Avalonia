@@ -65,6 +65,12 @@ namespace Perspex
             PerspexProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
+        /// Defines the <see cref="IVisual.VisualParent"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IVisual> VisualParentProperty =
+            PerspexProperty.RegisterDirect<Visual, IVisual>("VisualParent", o => o._visualParent);
+
+        /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
         /// </summary>
         public static readonly PerspexProperty<int> ZIndexProperty =
@@ -83,7 +89,7 @@ namespace Perspex
         /// <summary>
         /// Holds the parent of the visual.
         /// </summary>
-        private Visual _visualParent;
+        private IVisual _visualParent;
 
         /// <summary>
         /// Whether the element is attached to the visual tree.
@@ -444,6 +450,8 @@ namespace Perspex
                 {
                     NotifyAttachedToVisualTree(newRoot);
                 }
+
+                RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
             }
         }
 
