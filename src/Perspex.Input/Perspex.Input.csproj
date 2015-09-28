@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="Cursors.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="HotkeyManager.cs" />
     <Compile Include="KeyBinding.cs" />
     <Compile Include="KeyGesture.cs" />
     <Compile Include="Platform\IClipboard.cs" />
