@@ -28,12 +28,13 @@ namespace Perspex.Controls.UnitTests.Utils
                 var gesture2 = new KeyGesture {Key = Key.B, Modifiers = InputModifiers.Control};
 
                 var tl = new Window();
-                
                 var button = new Button();
+                tl.Content = button;
+                tl.Template = CreateWindowTemplate();
+                tl.ApplyTemplate();
+
                 HotKeyManager.SetHotKey(button, gesture1);
 
-                //ContentPresenter's parent management is broken for now, so I'm setting parent property directly
-                button.SetValue(Control.ParentProperty, tl);
                 Assert.Equal(gesture1, tl.KeyBindings[0].Gesture);
 
                 HotKeyManager.SetHotKey(button, gesture2);
@@ -51,6 +52,18 @@ namespace Perspex.Controls.UnitTests.Utils
                 Assert.Empty(tl.KeyBindings);
 
             }
+        }
+
+        private ControlTemplate CreateWindowTemplate()
+        {
+            return new ControlTemplate<Window>(parent =>
+            {
+                return new ContentPresenter
+                {
+                    Name = "contentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                };
+            });
         }
     }
 }
