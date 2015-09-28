@@ -125,6 +125,18 @@ namespace Perspex.Base.UnitTests
             Assert.Equal("newvalue", value);
         }
 
+        [Fact]
+        public void IsDirect_Property_Set_On_Direct_PerspexProperty()
+        {
+            PerspexProperty<string> target = new PerspexProperty<string>(
+                "test",
+                typeof(Class1),
+                o => null,
+                (o, v) => { });
+
+            Assert.True(target.IsDirect);
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =

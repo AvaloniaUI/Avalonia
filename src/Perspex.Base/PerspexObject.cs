@@ -112,11 +112,15 @@ namespace Perspex
 
             foreach (var property in GetRegisteredProperties())
             {
+                object value = property.IsDirect ? 
+                    property.Getter(this) : 
+                    property.GetDefaultValue(GetType());
+
                 var e = new PerspexPropertyChangedEventArgs(
                     this,
                     property,
                     PerspexProperty.UnsetValue,
-                    property.GetDefaultValue(GetType()),
+                    value,
                     BindingPriority.Unset);
 
                 property.NotifyInitialized(e);
@@ -427,25 +431,27 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            object result;
-
-            PriorityValue value;
-
-            if (_values.TryGetValue(property, out value))
+            if (property.IsDirect)
             {
-                result = value.Value;
+                return property.Getter(this);
             }
             else
             {
-                result = PerspexProperty.UnsetValue;
-            }
+                object result = PerspexProperty.UnsetValue;
+                PriorityValue value;
 
-            if (result == PerspexProperty.UnsetValue)
-            {
-                result = GetDefaultValue(property);
-            }
+                if (_values.TryGetValue(property, out value))
+                {
+                    result = value.Value;
+                }
 
-            return result;
+                if (result == PerspexProperty.UnsetValue)
+                {
+                    result = GetDefaultValue(property);
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -458,7 +464,14 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return (T)GetValue((PerspexProperty)property);
+            if (property.IsDirect)
+            {
+                return property.Getter(this);
+            }
+            else
+            {
+                return (T)GetValue((PerspexProperty)property);
+            }
         }
 
         /// <summary>
@@ -524,35 +537,49 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            PriorityValue v;
-            var originalValue = value;
-
-            if (!IsRegistered(property))
+            if (property.IsDirect)
             {
-                throw new InvalidOperationException(string.Format(
-                    "Property '{0}' not registered on '{1}'",
-                    property.Name,
-                    GetType()));
-            }
-
-            if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': '{1}' ({2})",
-                    property.Name,
-                    originalValue,
-                    originalValue?.GetType().FullName ?? "(null)"));
-            }
-
-            if (!_values.TryGetValue(property, out v))
-            {
-                if (value == PerspexProperty.UnsetValue)
+                if (property.Setter == null)
                 {
-                    return;
+                    throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                v = CreatePriorityValue(property);
-                _values.Add(property, v);
+                property.Setter(this, value);
+            }
+            else
+            {
+                PriorityValue v;
+                var originalValue = value;
+
+                if (!IsRegistered(property))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Property '{0}' not registered on '{1}'",
+                        property.Name,
+                        GetType()));
+                }
+
+                if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Invalid value for Property '{0}': '{1}' ({2})",
+                        property.Name,
+                        originalValue,
+                        originalValue?.GetType().FullName ?? "(null)"));
+                }
+
+                if (!_values.TryGetValue(property, out v))
+                {
+                    if (value == PerspexProperty.UnsetValue)
+                    {
+                        return;
+                    }
+
+                    v = CreatePriorityValue(property);
+                    _values.Add(property, v);
+                }
+
+                v.SetValue(value, (int)priority);
             }
 
             _propertyLog.Verbose(
@@ -560,7 +587,6 @@ namespace Perspex
                 property,
                 value,
                 priority);
-            v.SetDirectValue(value, (int)priority);
         }
 
         /// <summary>
@@ -577,7 +603,19 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            SetValue((PerspexProperty)property, value, priority);
+            if (property.IsDirect)
+            {
+                if (property.Setter == null)
+                {
+                    throw new ArgumentException($"The property {property.Name} is readonly.");
+                }
+
+                property.Setter(this, value);
+            }
+            else
+            {
+                SetValue((PerspexProperty)property, value, priority);
+            }
         }
 
         /// <summary>
@@ -596,30 +634,47 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            PriorityValue v;
-            IDescription description = source as IDescription;
-
-            if (!IsRegistered(property))
+            if (property.IsDirect)
             {
-                throw new InvalidOperationException(string.Format(
-                    "Property '{0}' not registered on '{1}'",
-                    property.Name,
-                    GetType()));
-            }
+                if (property.Setter == null)
+                {
+                    throw new ArgumentException($"The property {property.Name} is readonly.");
+                }
 
-            if (!_values.TryGetValue(property, out v))
+                _propertyLog.Verbose(
+                    "Bound {Property} to {Binding} with priority LocalValue",
+                    property,
+                    source);
+
+                return source.Subscribe(x => SetValue(property, x));
+            }
+            else
             {
-                v = CreatePriorityValue(property);
-                _values.Add(property, v);
+                PriorityValue v;
+                IDescription description = source as IDescription;
+
+                if (!IsRegistered(property))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Property '{0}' not registered on '{1}'",
+                        property.Name,
+                        GetType()));
+                }
+
+                if (!_values.TryGetValue(property, out v))
+                {
+                    v = CreatePriorityValue(property);
+                    _values.Add(property, v);
+                }
+
+                _propertyLog.Verbose(
+                    "Bound {Property} to {Binding} with priority {Priority}",
+                    property,
+                    source,
+                    priority);
+
+                return v.Add(source, (int)priority);
             }
-
-            _propertyLog.Verbose(
-                "Bound {Property} to {Binding} with priority {Priority}",
-                property,
-                source,
-                priority);
-
-            return v.Add(source, (int)priority);
         }
 
         /// <summary>
@@ -639,7 +694,19 @@ namespace Perspex
         {
             Contract.Requires<NullReferenceException>(property != null);
 
-            return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
+            if (property.IsDirect)
+            {
+                if (property.Setter == null)
+                {
+                    throw new ArgumentException($"The property {property.Name} is readonly.");
+                }
+
+                return source.Subscribe(x => SetValue(property, x));
+            }
+            else
+            {
+                return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
+            }
         }
 
         /// <summary>
@@ -711,6 +778,61 @@ namespace Perspex
         /// <param name="e">The event arguments.</param>
         protected virtual void OnPropertyChanged(PerspexPropertyChangedEventArgs e)
         {
+        }
+
+        /// <summary>
+        /// Raises the <see cref="PropertyChanged"/> event.
+        /// </summary>
+        /// <param name="property">The property that has changed.</param>
+        /// <param name="oldValue">The old property value.</param>
+        /// <param name="newValue">The new property value.</param>
+        /// <param name="priority">The priority of the binding that produced the value.</param>
+        protected void RaisePropertyChanged(
+            PerspexProperty property,
+            object oldValue,
+            object newValue,
+            BindingPriority priority)
+        {
+            Contract.Requires<NullReferenceException>(property != null);
+
+            PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
+                this,
+                property,
+                oldValue,
+                newValue,
+                priority);
+
+            OnPropertyChanged(e);
+            property.NotifyChanged(e);
+
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, e);
+            }
+
+            if (_inpcChanged != null)
+            {
+                PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
+                _inpcChanged(this, e2);
+            }
+        }
+
+        /// <summary>
+        /// Sets the backing field for a direct perspex property, raising the 
+        /// <see cref="PropertyChanged"/> event if the value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="value">The value.</param>
+        protected void SetAndRaise<T>(PerspexProperty<T> property, ref T field, T value)
+        {
+            if (!object.Equals(field, value))
+            {
+                var old = field;
+                field = value;
+                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
+            }
         }
 
         /// <summary>
@@ -798,43 +920,6 @@ namespace Perspex
         private string GetObservableDescription(PerspexProperty property)
         {
             return string.Format("{0}.{1}", GetType().Name, property.Name);
-        }
-
-        /// <summary>
-        /// Raises the <see cref="PropertyChanged"/> event.
-        /// </summary>
-        /// <param name="property">The property that has changed.</param>
-        /// <param name="oldValue">The old property value.</param>
-        /// <param name="newValue">The new property value.</param>
-        /// <param name="priority">The priority of the binding that produced the value.</param>
-        private void RaisePropertyChanged(
-            PerspexProperty property,
-            object oldValue,
-            object newValue,
-            BindingPriority priority)
-        {
-            Contract.Requires<NullReferenceException>(property != null);
-
-            PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
-                this,
-                property,
-                oldValue,
-                newValue,
-                priority);
-
-            OnPropertyChanged(e);
-            property.NotifyChanged(e);
-
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, e);
-            }
-
-            if (_inpcChanged != null)
-            {
-                PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
-                _inpcChanged(this, e2);
-            }
         }
     }
 }

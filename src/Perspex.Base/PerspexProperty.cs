@@ -88,6 +88,39 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="valueType">The type of the property's value.</param>
+        /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="getter">Gets the current value of the property.</param>
+        /// <param name="setter">Sets the value of the property.</param>
+        public PerspexProperty(
+            string name,
+            Type valueType,
+            Type ownerType,
+            Func<PerspexObject, object> getter,
+            Action<PerspexObject, object> setter)
+        {
+            Contract.Requires<NullReferenceException>(name != null);
+            Contract.Requires<NullReferenceException>(valueType != null);
+            Contract.Requires<NullReferenceException>(ownerType != null);
+            Contract.Requires<NullReferenceException>(getter != null);
+
+            if (name.Contains("."))
+            {
+                throw new ArgumentException("'name' may not contain periods.");
+            }
+
+            Name = name;
+            PropertyType = valueType;
+            OwnerType = ownerType;
+            Getter = getter;
+            Setter = setter;
+            IsDirect = true;
+        }
+
+        /// <summary>
         /// Gets the name of the property.
         /// </summary>
         /// <value>
@@ -134,6 +167,11 @@ namespace Perspex
         /// A value indicating whether this is an attached property.
         /// </value>
         public bool IsAttached { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this is a direct property.
+        /// </summary>
+        public bool IsDirect { get; }
 
         /// <summary>
         /// Gets an observable that is fired when this property is initialized on a
@@ -192,6 +230,16 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the getter function for direct properties.
+        /// </summary>
+        internal Func<PerspexObject, object> Getter { get; }
+
+        /// <summary>
+        /// Gets the etter function for direct properties.
+        /// </summary>
+        internal Action<PerspexObject, object> Setter { get; }
+
+        /// <summary>
         /// Registers a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
@@ -220,6 +268,34 @@ namespace Perspex
                 defaultBindingMode,
                 Cast(validate),
                 false);
+
+            PerspexObject.Register(typeof(TOwner), result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Registers a direct <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
+        /// <typeparam name="TValue">The type of the property's value.</typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="getter">Gets the current value of the property.</param>
+        /// <param name="setter">Sets the value of the property.</param>
+        /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
+        public static PerspexProperty<TValue> RegisterDirect<TOwner, TValue>(
+            string name,
+            Func<TOwner, TValue> getter,
+            Action<TOwner, TValue> setter = null)
+                where TOwner : PerspexObject
+        {
+            Contract.Requires<NullReferenceException>(name != null);
+
+            PerspexProperty<TValue> result = new PerspexProperty<TValue>(
+                name,
+                typeof(TOwner),
+                Cast(getter),
+                Cast(setter));
 
             PerspexObject.Register(typeof(TOwner), result);
 
@@ -454,8 +530,36 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Casts a getter function accepting a typed owner to one accepting a
+        /// <see cref="PerspexObject"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The owner type.</typeparam>
+        /// <typeparam name="TValue">The property value type.</typeparam>
+        /// <param name="f">The typed function.</param>
+        /// <returns>The untyped function.</returns>
+        private static Func<PerspexObject, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue> f)
+            where TOwner : PerspexObject
+        {
+            return (f != null) ? o => f((TOwner)o) : (Func<PerspexObject, TValue >)null;
+        }
+
+        /// <summary>
+        /// Casts a setter action accepting a typed owner to one accepting a
+        /// <see cref="PerspexObject"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The owner type.</typeparam>
+        /// <typeparam name="TValue">The property value type.</typeparam>
+        /// <param name="f">The typed action.</param>
+        /// <returns>The untyped action.</returns>
+        private static Action<PerspexObject, TValue> Cast<TOwner, TValue>(Action<TOwner, TValue> f)
+            where TOwner : PerspexObject
+        {
+            return f != null ? (o, v) => f((TOwner)o, v) : (Action<PerspexObject, TValue>)null;
+        }
+
+        /// <summary>
         /// Casts a validation function accepting a typed owner to one accepting a
-        /// <see cref="Perspex"/>.
+        /// <see cref="PerspexObject"/>.
         /// </summary>
         /// <typeparam name="TOwner">The owner type.</typeparam>
         /// <typeparam name="TValue">The property value type.</typeparam>
