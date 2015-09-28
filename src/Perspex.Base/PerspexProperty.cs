@@ -15,12 +15,17 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyProperty in WPF.
     /// </remarks>
-    public class PerspexProperty
+    public class PerspexProperty : IEquatable<PerspexProperty>
     {
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
         public static readonly object UnsetValue = new Unset();
+
+        /// <summary>
+        /// Gets the next ID that will be allocated to a property.
+        /// </summary>
+        private static int s_nextId = 1;
 
         /// <summary>
         /// The default values for the property, by type.
@@ -42,6 +47,11 @@ namespace Perspex
         /// </summary>
         private readonly Dictionary<Type, Func<PerspexObject, object, object>> _validation =
             new Dictionary<Type, Func<PerspexObject, object, object>>();
+
+        /// <summary>
+        /// Gets the ID of the property.
+        /// </summary>
+        private int _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
@@ -80,6 +90,7 @@ namespace Perspex
             Inherits = inherits;
             DefaultBindingMode = defaultBindingMode;
             IsAttached = isAttached;
+            _id = s_nextId++;
 
             if (validate != null)
             {
@@ -118,6 +129,36 @@ namespace Perspex
             Getter = getter;
             Setter = setter;
             IsDirect = true;
+            _id = s_nextId++;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
+        /// </summary>
+        /// <param name="source">The direct property to copy.</param>
+        /// <param name="getter">A new getter.</param>
+        /// <param name="setter">A new setter.</param>
+        protected PerspexProperty(
+            PerspexProperty source,
+            Func<PerspexObject, object> getter,
+            Action<PerspexObject, object> setter)
+        {
+            Contract.Requires<NullReferenceException>(source != null);
+            Contract.Requires<NullReferenceException>(getter != null);
+
+            if (!source.IsDirect)
+            {
+                throw new InvalidOperationException(
+                    "This method can only be called on direct PerspexProperties.");
+            }
+
+            Name = source.Name;
+            PropertyType = source.PropertyType;
+            OwnerType = source.OwnerType;
+            Getter = getter;
+            Setter = setter;
+            IsDirect = true;
+            _id = source._id;
         }
 
         /// <summary>
@@ -238,6 +279,28 @@ namespace Perspex
         /// Gets the etter function for direct properties.
         /// </summary>
         internal Action<PerspexObject, object> Setter { get; }
+
+        /// <summary>
+        /// Tests two <see cref="PerspexProperty"/>s for equality.
+        /// </summary>
+        /// <param name="a">The first property.</param>
+        /// <param name="b">The second property.</param>
+        /// <returns>True if the properties are equal, otherwise false.</returns>
+        public static bool operator ==(PerspexProperty a, PerspexProperty b)
+        {
+            return a?.Equals(b) ?? false;
+        }
+
+        /// <summary>
+        /// Tests two <see cref="PerspexProperty"/>s for unequality.
+        /// </summary>
+        /// <param name="a">The first property.</param>
+        /// <param name="b">The second property.</param>
+        /// <returns>True if the properties are equal, otherwise false.</returns>
+        public static bool operator !=(PerspexProperty a, PerspexProperty b)
+        {
+            return !a?.Equals(b) ?? false;
+        }
 
         /// <summary>
         /// Registers a <see cref="PerspexProperty"/>.
@@ -371,6 +434,25 @@ namespace Perspex
             PerspexObject.Register(typeof(THost), result);
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var p = obj as PerspexProperty;
+            return p != null ? Equals(p) : false;
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(PerspexProperty other)
+        {
+            return other != null && _id == other._id;
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return _id;
         }
 
         /// <summary>

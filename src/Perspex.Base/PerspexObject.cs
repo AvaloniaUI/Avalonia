@@ -391,12 +391,17 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                return property.Getter(this);
+                return GetRegistered(property).Getter(this);
             }
             else
             {
                 object result = PerspexProperty.UnsetValue;
                 PriorityValue value;
+
+                if (!IsRegistered(property))
+                {
+                    ThrowNotRegistered(property);
+                }
 
                 if (_values.TryGetValue(property, out value))
                 {
@@ -424,7 +429,7 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                return property.Getter(this);
+                return ((PerspexProperty<T>)GetRegistered(property)).Getter(this);
             }
             else
             {
@@ -462,24 +467,7 @@ namespace Perspex
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(PerspexProperty property)
         {
-            Type type = GetType();
-
-            while (type != null)
-            {
-                List<PerspexProperty> list;
-
-                if (s_registered.TryGetValue(type, out list))
-                {
-                    if (list.Contains(property))
-                    {
-                        return true;
-                    }
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-
-            return false;
+            return FindRegistered(property) != null;
         }
 
         /// <summary>
@@ -497,6 +485,8 @@ namespace Perspex
 
             if (property.IsDirect)
             {
+                property = GetRegistered(property);
+
                 if (property.Setter == null)
                 {
                     throw new ArgumentException($"The property {property.Name} is readonly.");
@@ -511,15 +501,12 @@ namespace Perspex
 
                 if (!IsRegistered(property))
                 {
-                    throw new InvalidOperationException(string.Format(
-                        "Property '{0}' not registered on '{1}'",
-                        property.Name,
-                        GetType()));
+                    ThrowNotRegistered(property);
                 }
 
                 if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
                 {
-                    throw new InvalidOperationException(string.Format(
+                    throw new ArgumentException(string.Format(
                         "Invalid value for Property '{0}': '{1}' ({2})",
                         property.Name,
                         originalValue,
@@ -563,6 +550,8 @@ namespace Perspex
 
             if (property.IsDirect)
             {
+                property = (PerspexProperty<T>)GetRegistered(property);
+
                 if (property.Setter == null)
                 {
                     throw new ArgumentException($"The property {property.Name} is readonly.");
@@ -594,6 +583,8 @@ namespace Perspex
 
             if (property.IsDirect)
             {
+                property = GetRegistered(property);
+
                 if (property.Setter == null)
                 {
                     throw new ArgumentException($"The property {property.Name} is readonly.");
@@ -613,10 +604,7 @@ namespace Perspex
 
                 if (!IsRegistered(property))
                 {
-                    throw new InvalidOperationException(string.Format(
-                        "Property '{0}' not registered on '{1}'",
-                        property.Name,
-                        GetType()));
+                    ThrowNotRegistered(property);
                 }
 
                 if (!_values.TryGetValue(property, out v))
@@ -654,6 +642,8 @@ namespace Perspex
 
             if (property.IsDirect)
             {
+                property = (PerspexProperty<T>)GetRegistered(property);
+
                 if (property.Setter == null)
                 {
                     throw new ArgumentException($"The property {property.Name} is readonly.");
@@ -853,6 +843,59 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Given a <see cref="PerspexProperty"/> returns a registered perspex property that is
+        /// equal.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The registered property or null if not found.</returns>
+        /// <remarks>
+        /// Calling AddOwner on a direct PerspexProperty creates new new PerspexProperty with
+        /// an overridden getter and setter. This property is a different object but is equal
+        /// according to <see cref="object.Equals(object)"/>.
+        /// </remarks>
+        public PerspexProperty FindRegistered(PerspexProperty property)
+        {
+            Type type = GetType();
+
+            while (type != null)
+            {
+                List<PerspexProperty> list;
+
+                if (s_registered.TryGetValue(type, out list))
+                {
+                    var index = list.IndexOf(property);
+
+                    if (index != -1)
+                    {
+                        return list[index];
+                    }
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Given a <see cref="PerspexProperty"/> returns a registered perspex property that is
+        /// equal or throws if not found.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The registered property.</returns>
+        public PerspexProperty GetRegistered(PerspexProperty property)
+        {
+            var result = FindRegistered(property);
+
+            if (result == null)
+            {
+                ThrowNotRegistered(property);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Called when a property is changed on the current <see cref="InheritanceParent"/>.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -878,6 +921,16 @@ namespace Perspex
         private string GetObservableDescription(PerspexProperty property)
         {
             return string.Format("{0}.{1}", GetType().Name, property.Name);
+        }
+
+        /// <summary>
+        /// Throws an exception indicating that the specified property is not registered on this
+        /// object.
+        /// </summary>
+        /// <param name="p">The property</param>
+        private void ThrowNotRegistered(PerspexProperty p)
+        {
+            throw new ArgumentException($"Property '{p.Name} not registered on '{this.GetType()}");
         }
     }
 }

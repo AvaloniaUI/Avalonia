@@ -64,7 +64,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Direct_Property_Works_As_Binding_Source()
+        public void GetObservable_Returns_Values()
         {
             var target = new Class1();
             List<string> values = new List<string>();
@@ -76,7 +76,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Direct_Property_Can_Be_Bound()
+        public void Bind_Binds_Property_Value()
         {
             var target = new Class1();
             var source = new Subject<string>();
@@ -96,7 +96,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Direct_Property_Can_Be_Bound_NonGeneric()
+        public void Bind_Binds_Property_Value_NonGeneric()
         {
             var target = new Class1();
             var source = new Subject<string>();
@@ -153,6 +153,90 @@ namespace Perspex.Base.UnitTests
                 target.Bind(Class1.BarProperty, source));
         }
 
+        [Fact]
+        public void GetValue_Gets_Value_On_AddOwnered_Property()
+        {
+            var target = new Class2();
+
+            Assert.Equal("initial2", target.GetValue(Class2.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Gets_Value_On_AddOwnered_Property_Using_Original()
+        {
+            var target = new Class2();
+
+            Assert.Equal("initial2", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Gets_Value_On_AddOwnered_Property_Using_Original_NonGeneric()
+        {
+            var target = new Class2();
+
+            Assert.Equal("initial2", target.GetValue((PerspexProperty)Class1.FooProperty));
+        }
+
+        [Fact]
+        public void SetValue_Sets_Value_On_AddOwnered_Property_Using_Original()
+        {
+            var target = new Class2();
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.Equal("newvalue", target.Foo);
+        }
+
+        [Fact]
+        public void SetValue_Sets_Value_On_AddOwnered_Property_Using_Original_NonGeneric()
+        {
+            var target = new Class2();
+
+            target.SetValue((PerspexProperty)Class1.FooProperty, "newvalue");
+
+            Assert.Equal("newvalue", target.Foo);
+        }
+
+        [Fact]
+        public void Bind_Binds_AddOwnered_Property_Value()
+        {
+            var target = new Class2();
+            var source = new Subject<string>();
+
+            var sub = target.Bind(Class1.FooProperty, source);
+
+            Assert.Equal("initial2", target.Foo);
+            source.OnNext("first");
+            Assert.Equal("first", target.Foo);
+            source.OnNext("second");
+            Assert.Equal("second", target.Foo);
+
+            sub.Dispose();
+
+            source.OnNext("third");
+            Assert.Equal("second", target.Foo);
+        }
+
+        [Fact]
+        public void Bind_Binds_AddOwnered_Property_Value_NonGeneric()
+        {
+            var target = new Class2();
+            var source = new Subject<string>();
+
+            var sub = target.Bind((PerspexProperty)Class1.FooProperty, source);
+
+            Assert.Equal("initial2", target.Foo);
+            source.OnNext("first");
+            Assert.Equal("first", target.Foo);
+            source.OnNext("second");
+            Assert.Equal("second", target.Foo);
+
+            sub.Dispose();
+
+            source.OnNext("third");
+            Assert.Equal("second", target.Foo);
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =
@@ -174,6 +258,20 @@ namespace Perspex.Base.UnitTests
             public string Bar
             {
                 get { return _bar; }
+            }
+        }
+
+        private class Class2 : PerspexObject
+        {
+            public static readonly PerspexProperty<string> FooProperty =
+                Class1.FooProperty.AddOwner<Class2>(o => o.Foo, (o, v) => o.Foo = v);
+
+            private string _foo = "initial2";
+
+            public string Foo
+            {
+                get { return _foo; }
+                set { SetAndRaise(FooProperty, ref _foo, value); }
             }
         }
     }
