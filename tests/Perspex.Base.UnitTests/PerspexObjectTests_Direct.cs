@@ -64,6 +64,23 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Raises_Changed()
+        {
+            var target = new Class1();
+            bool raised = false;
+
+            Class1.FooProperty.Changed.Subscribe(e =>
+                raised = e.Property == Class1.FooProperty &&
+                         (string)e.OldValue == "initial" &&
+                         (string)e.NewValue == "newvalue" &&
+                         e.Priority == BindingPriority.LocalValue);
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void GetObservable_Returns_Values()
         {
             var target = new Class1();
@@ -235,6 +252,23 @@ namespace Perspex.Base.UnitTests
 
             source.OnNext("third");
             Assert.Equal("second", target.Foo);
+        }
+
+        [Fact]
+        public void Property_Notifies_Initialized()
+        {
+            Class1 target;
+            bool raised = false;
+
+            Class1.FooProperty.Initialized.Subscribe(e =>
+                raised = e.Property == Class1.FooProperty &&
+                         e.OldValue == PerspexProperty.UnsetValue &&
+                         (string)e.NewValue == "initial" &&
+                         e.Priority == BindingPriority.Unset);
+
+            target = new Class1();
+
+            Assert.True(raised);
         }
 
         private class Class1 : PerspexObject
