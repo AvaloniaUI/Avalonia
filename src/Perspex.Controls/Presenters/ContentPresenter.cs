@@ -15,7 +15,9 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Child"/> property.
         /// </summary>
         public static readonly PerspexProperty<IControl> ChildProperty =
-            PerspexProperty.Register<ContentPresenter, IControl>("Child");
+            PerspexProperty.RegisterDirect<ContentPresenter, IControl>(
+                nameof(Child),
+                o => o.Child);
 
         /// <summary>
         /// Defines the <see cref="Content"/> property.
@@ -23,6 +25,7 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
+        private IControl _child;
         private bool _createdChild;
 
         /// <summary>
@@ -38,8 +41,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IControl Child
         {
-            get { return GetValue(ChildProperty); }
-            private set { SetValue(ChildProperty, value); }
+            get { return _child; }
+            private set { SetAndRaise(ChildProperty, ref _child, value); }
         }
 
         /// <summary>

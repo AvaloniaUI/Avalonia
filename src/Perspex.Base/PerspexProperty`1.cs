@@ -109,7 +109,7 @@ namespace Perspex
         /// <returns>The property.</returns>
         public PerspexProperty<TValue> AddOwner<TOwner>(
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter)
+            Action<TOwner, TValue> setter = null)
                 where TOwner : PerspexObject
         {
             var result = new PerspexProperty<TValue>(this, CastReturn(getter), CastParam1(setter));

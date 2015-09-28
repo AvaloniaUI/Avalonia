@@ -28,7 +28,11 @@ namespace Perspex.Controls
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsOpenProperty =
-            PerspexProperty.Register<Menu, bool>(nameof(IsOpen));
+            PerspexProperty.RegisterDirect<Menu, bool>(
+                nameof(IsOpen),
+                o => o.IsOpen);
+
+        private bool _isOpen;
 
         /// <summary>
         /// Tracks event handlers added to the root of the visual tree.
@@ -50,8 +54,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsOpen
         {
-            get { return GetValue(IsOpenProperty); }
-            private set { SetValue(IsOpenProperty, value); }
+            get { return _isOpen; }
+            private set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
         }
 
         /// <summary>
