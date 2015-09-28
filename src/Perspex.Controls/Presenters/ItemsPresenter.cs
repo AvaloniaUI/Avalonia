@@ -20,7 +20,7 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
+            ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -34,8 +34,8 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
             ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenter>();
 
+        private IEnumerable _items;
         private bool _createdPanel;
-
         private IItemContainerGenerator _generator;
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IEnumerable Items
         {
-            get { return GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
         /// <summary>

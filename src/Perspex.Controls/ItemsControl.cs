@@ -33,7 +33,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>(nameof(Items));
+            PerspexProperty.RegisterDirect<ItemsControl, IEnumerable>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -47,6 +47,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
             PerspexProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
 
+        private IEnumerable _items;
         private IItemContainerGenerator _itemContainerGenerator;
 
         /// <summary>
@@ -63,7 +64,6 @@ namespace Perspex.Controls
         public ItemsControl()
         {
             Classes.Add(":empty");
-            Items = new PerspexList<object>();
         }
 
         /// <summary>
@@ -87,8 +87,20 @@ namespace Perspex.Controls
         /// </summary>
         public IEnumerable Items
         {
-            get { return GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get
+            {
+                if (_items == null)
+                {
+                    _items = new PerspexList<object>();
+                }
+
+                return _items;
+            }
+
+            set
+            {
+                SetAndRaise(ItemsProperty, ref _items, value);
+            }
         }
 
         /// <summary>

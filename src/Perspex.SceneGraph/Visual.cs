@@ -32,7 +32,7 @@ namespace Perspex
         /// Defines the <see cref="Bounds"/> property.
         /// </summary>
         public static readonly PerspexProperty<Rect> BoundsProperty =
-            PerspexProperty.Register<Visual, Rect>(nameof(Bounds));
+            PerspexProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
 
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
@@ -74,6 +74,11 @@ namespace Perspex
         /// Holds the children of the visual.
         /// </summary>
         private readonly PerspexList<IVisual> _visualChildren;
+
+        /// <summary>
+        /// The visual's bounds relative to its parent.
+        /// </summary>
+        private Rect _bounds;
 
         /// <summary>
         /// Holds the parent of the visual.
@@ -121,8 +126,8 @@ namespace Perspex
         /// </summary>
         public Rect Bounds
         {
-            get { return GetValue(BoundsProperty); }
-            protected set { SetValue(BoundsProperty, value); }
+            get { return _bounds; }
+            protected set { SetAndRaise(BoundsProperty, ref _bounds, value); }
         }
 
         /// <summary>
