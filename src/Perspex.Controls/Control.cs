@@ -68,7 +68,7 @@ namespace Perspex.Controls
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
-        private string _id;
+        private string _name;
         private IPerspexList<ILogical> _logicalChildren;
         private Styles _styles;
 
@@ -173,22 +173,22 @@ namespace Perspex.Controls
         {
             get
             {
-                return _id;
+                return _name;
             }
 
             set
             {
-                if (_id != null)
+                if (_name != null)
                 {
-                    throw new InvalidOperationException("ID already set.");
+                    throw new InvalidOperationException("Name already set.");
                 }
 
                 if (((IVisual)this).VisualParent != null)
                 {
-                    throw new InvalidOperationException("Cannot set ID : control already added to tree.");
+                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
                 }
 
-                _id = value;
+                _name = value;
             }
         }
 
