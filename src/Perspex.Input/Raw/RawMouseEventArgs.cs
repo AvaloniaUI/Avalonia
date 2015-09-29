@@ -37,7 +37,7 @@ namespace Perspex.Input.Raw
             InputModifiers = inputModifiers;
         }
 
-        public IInputRoot Root { get; private set; }
+        public IInputRoot Root { get; set; }
 
         public Point Position { get; private set; }
 

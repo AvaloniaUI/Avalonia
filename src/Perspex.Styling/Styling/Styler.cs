@@ -18,11 +18,8 @@ namespace Perspex.Styling
                 .FirstOrDefault();
             IGlobalStyles global = PerspexLocator.Current.GetService<IGlobalStyles>();
 
-            if (global != null)
-            {
-                global.Styles.Attach(control, null);
-            }
-
+            global?.Styles?.Attach(control, null);
+            
             if (styleContainer != null)
             {
                 ApplyStyles(control, styleContainer);
