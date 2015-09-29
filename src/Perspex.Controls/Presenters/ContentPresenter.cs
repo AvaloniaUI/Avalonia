@@ -104,8 +104,12 @@ namespace Perspex.Controls.Presenters
             var logicalHost = this.FindReparentingHost();
             var logicalChildren = logicalHost?.LogicalChildren ?? LogicalChildren;
 
-            logicalChildren.Remove(old);
-            ClearVisualChildren();
+            if (old != null)
+            {
+                logicalChildren.Remove(old);
+                ((ISetLogicalParent)old).SetParent(null);
+                ClearVisualChildren();
+            }
 
             Child = result;
 
