@@ -138,6 +138,19 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Property_Equals_Should_Handle_Null()
+        {
+            var p1 = new PerspexProperty<string>("p1", typeof(Class1));
+
+            Assert.NotEqual(p1, null);
+            Assert.NotEqual(null, p1);
+            Assert.False(p1 == null);
+            Assert.False(null == p1);
+            Assert.False(p1.Equals(null));
+            Assert.True((PerspexProperty)null == (PerspexProperty)null);
+        }
+
+        [Fact]
         public void AddOwnered_Property_Should_Equal_Original()
         {
             var p1 = new PerspexProperty<string>("p1", typeof(Class1));

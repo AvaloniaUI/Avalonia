@@ -27,6 +27,14 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void GetValue_On_Unregistered_Property_Throws_Exception()
+        {
+            var target = new Class2();
+
+            Assert.Throws<ArgumentException>(() => target.GetValue(Class1.BarProperty));
+        }
+
+        [Fact]
         public void SetValue_Sets_Value()
         {
             var target = new Class1();
@@ -78,6 +86,14 @@ namespace Perspex.Base.UnitTests
             target.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void SetValue_On_Unregistered_Property_Throws_Exception()
+        {
+            var target = new Class2();
+
+            Assert.Throws<ArgumentException>(() => target.SetValue(Class1.BarProperty, "value"));
         }
 
         [Fact]

@@ -288,7 +288,18 @@ namespace Perspex
         /// <returns>True if the properties are equal, otherwise false.</returns>
         public static bool operator ==(PerspexProperty a, PerspexProperty b)
         {
-            return a?.Equals(b) ?? false;
+            if (object.ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            else if (((object)a == null) || ((object)b == null))
+            {
+                return false;
+            }
+            else
+            {
+                return a.Equals(b);
+            }
         }
 
         /// <summary>
@@ -299,7 +310,7 @@ namespace Perspex
         /// <returns>True if the properties are equal, otherwise false.</returns>
         public static bool operator !=(PerspexProperty a, PerspexProperty b)
         {
-            return !a?.Equals(b) ?? false;
+            return !(a == b);
         }
 
         /// <summary>
