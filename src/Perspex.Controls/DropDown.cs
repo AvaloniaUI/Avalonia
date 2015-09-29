@@ -26,11 +26,15 @@ namespace Perspex.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<DropDown>();
 
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
-            PerspexProperty.Register<DropDown, bool>("IsDropDownOpen");
+            PerspexProperty.RegisterDirect<DropDown, bool>(
+                nameof(IsDropDownOpen),
+                o => o.IsDropDownOpen,
+                (o, v) => o.IsDropDownOpen = v);
 
         public static readonly PerspexProperty<object> SelectionBoxItemProperty =
             PerspexProperty.Register<DropDown, object>("SelectionBoxItem");
 
+        private bool _isDropDownOpen;
         private Popup _popup;
 
         static DropDown()
@@ -64,8 +68,8 @@ namespace Perspex.Controls
 
         public bool IsDropDownOpen
         {
-            get { return GetValue(IsDropDownOpenProperty); }
-            set { SetValue(IsDropDownOpenProperty, value); }
+            get { return _isDropDownOpen; }
+            set { SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value); }
         }
 
         public object SelectionBoxItem

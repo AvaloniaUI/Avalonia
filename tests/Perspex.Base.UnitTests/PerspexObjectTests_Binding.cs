@@ -39,7 +39,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<ArgumentException>(() =>
             {
                 target.Bind(Class2.BarProperty, Observable.Return("foo"));
             });
@@ -212,7 +212,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<ArgumentException>(() =>
             {
                 target[Class1.FooProperty] = Observable.Return("newvalue");
             });

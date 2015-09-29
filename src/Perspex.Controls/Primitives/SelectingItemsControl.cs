@@ -31,18 +31,19 @@ namespace Perspex.Controls.Primitives
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly PerspexProperty<int> SelectedIndexProperty =
-            PerspexProperty.Register<SelectingItemsControl, int>(
+            PerspexProperty.RegisterDirect<SelectingItemsControl, int>(
                 nameof(SelectedIndex),
-                defaultValue: -1,
-                validate: ValidateSelectedIndex);
+                o => o.SelectedIndex,
+                (o, v) => o.SelectedIndex = v);
 
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
         public static readonly PerspexProperty<object> SelectedItemProperty =
-            PerspexProperty.Register<SelectingItemsControl, object>(
+            PerspexProperty.RegisterDirect<SelectingItemsControl, object>(
                 nameof(SelectedItem),
-                validate: ValidateSelectedItem);
+                o => o.SelectedItem,
+                (o, v) => o.SelectedItem = v);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -51,6 +52,9 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
+
+        private int _selectedIndex = -1;
+        private object _selectedItem;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -85,8 +89,16 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get { return GetValue(SelectedIndexProperty); }
-            set { SetValue(SelectedIndexProperty, value); }
+            get
+            {
+                return _selectedIndex;
+            }
+
+            set
+            {
+                value = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
+                SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value);
+            }
         }
 
         /// <summary>
@@ -94,8 +106,16 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public object SelectedItem
         {
-            get { return GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            get
+            {
+                return _selectedItem;
+            }
+
+            set
+            {
+                value = Items?.Cast<object>().Contains(value) == true ? value : null;
+                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+            }
         }
 
         /// <inheritdoc/>
@@ -232,30 +252,6 @@ namespace Perspex.Controls.Primitives
                     styleable.Classes.Remove("selected");
                 }
             }
-        }
-
-        /// <summary>
-        /// Coerces the <see cref="SelectedIndex"/> property.
-        /// </summary>
-        /// <param name="sender">The object with the property.</param>
-        /// <param name="index">The proposed value of the property.</param>
-        /// <returns>The final value of the property.</returns>
-        private static int ValidateSelectedIndex(SelectingItemsControl sender, int index)
-        {
-            var items = sender.Items;
-            return (index >= 0 && index < items?.Cast<object>().Count()) ? index : -1;
-        }
-
-        /// <summary>
-        /// Coerces the <see cref="SelectedItem"/> property.
-        /// </summary>
-        /// <param name="sender">The object with the property.</param>
-        /// <param name="item">The proposed value of the property.</param>
-        /// <returns>The final value of the property.</returns>
-        private static object ValidateSelectedItem(SelectingItemsControl sender, object item)
-        {
-            var items = sender.Items;
-            return items?.Cast<object>().Contains(item) == true ? item : null;
         }
 
         /// <summary>

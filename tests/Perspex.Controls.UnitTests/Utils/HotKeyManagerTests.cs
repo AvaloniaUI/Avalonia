@@ -43,11 +43,13 @@ namespace Perspex.Controls.UnitTests.Utils
                 HotKeyManager.SetHotKey(button, gesture2);
                 Assert.Equal(gesture2, tl.KeyBindings[0].Gesture);
 
-                button.SetValue(Control.ParentProperty, null);
+                tl.Content = null;
+                tl.Presenter.ApplyTemplate();
 
                 Assert.Empty(tl.KeyBindings);
 
-                button.SetValue(Control.ParentProperty, tl);
+                tl.Content = button;
+                tl.Presenter.ApplyTemplate();
 
                 Assert.Equal(gesture2, tl.KeyBindings[0].Gesture);
 
