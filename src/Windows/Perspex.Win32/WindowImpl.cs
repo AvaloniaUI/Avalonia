@@ -31,9 +31,11 @@ namespace Perspex.Win32
 
         private IntPtr _hwnd;
 
-        private TopLevel _owner;
+        private IInputRoot _owner;
 
         private bool _trackingMouse;
+
+        private bool _isActive;
 
         public WindowImpl()
         {
@@ -163,9 +165,9 @@ namespace Perspex.Win32
             return new Point(p.X, p.Y);
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
-            _owner = owner;
+            _owner = inputRoot;
         }
 
         public void SetTitle(string title)
@@ -181,13 +183,13 @@ namespace Perspex.Win32
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
-            TopLevel activated = null;
+            WindowImpl activated = null;
 
             foreach (var window in disabled)
             {
-                if (window._owner.IsActive)
+                if (window._isActive)
                 {
-                    activated = window._owner;
+                    activated = window;
                 }
 
                 window.IsEnabled = false;
@@ -253,6 +255,7 @@ namespace Perspex.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
+                            _isActive = true;
                             if (Activated != null)
                             {
                                 Activated();
@@ -261,6 +264,7 @@ namespace Perspex.Win32
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
+                            _isActive = false;
                             if (Deactivated != null)
                             {
                                 Deactivated();

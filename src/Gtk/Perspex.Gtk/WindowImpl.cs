@@ -16,7 +16,7 @@ namespace Perspex.Gtk
 
     public class WindowImpl : Gtk.Window, IWindowImpl
     {
-        private TopLevel _owner;
+        private IInputRoot _inputRoot;
 
         private IPlatformHandle _windowHandle;
 
@@ -105,9 +105,9 @@ namespace Perspex.Gtk
             return new Point(point.X + x, point.Y + y);
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
-            _owner = owner;
+            _inputRoot = inputRoot;
         }
 
         public void SetTitle(string title)
@@ -158,7 +158,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonDown
                     : evnt.Button == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
@@ -172,7 +172,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonUp
                     : evnt.Button == 1 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
@@ -241,7 +241,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt.State));
             Input(e);
