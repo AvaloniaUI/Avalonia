@@ -302,6 +302,10 @@ namespace Perspex.Base.UnitTests
 
             private string _foo = "initial2";
 
+            static Class2()
+            {
+            }
+
             public string Foo
             {
                 get { return _foo; }
