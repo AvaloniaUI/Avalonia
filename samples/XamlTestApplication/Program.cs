@@ -40,7 +40,7 @@ namespace XamlTestApplication
             {
                 DataTemplates = new DataTemplates
                 {
-                    new TreeDataTemplate<Node>(
+                    new FuncTreeDataTemplate<Node>(
                         x => new TextBlock { Text = x.Name },
                         x => x.Children,
                         x => true),

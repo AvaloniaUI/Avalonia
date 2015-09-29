@@ -10,14 +10,14 @@ namespace Perspex.Controls.Templates
     /// <summary>
     /// A template used to build hierachical data.
     /// </summary>
-    public class TreeDataTemplate : FuncDataTemplate, ITreeDataTemplate
+    public class FuncTreeDataTemplate : FuncDataTemplate, ITreeDataTemplate
     {
         private readonly Func<object, IEnumerable> _itemsSelector;
 
         private readonly Func<object, bool> _isExpanded;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate"/> class.
         /// </summary>
         /// <param name="type">The type of data which the data template matches.</param>
         /// <param name="build">
@@ -27,7 +27,7 @@ namespace Perspex.Controls.Templates
         /// A function which when passed an object of <paramref name="type"/> returns the child
         /// items.
         /// </param>
-        public TreeDataTemplate(
+        public FuncTreeDataTemplate(
             Type type,
             Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector)
@@ -36,7 +36,7 @@ namespace Perspex.Controls.Templates
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate"/> class.
         /// </summary>
         /// <param name="type">The type of data which the data template matches.</param>
         /// <param name="build">
@@ -50,7 +50,7 @@ namespace Perspex.Controls.Templates
         /// A function which when passed an object of <paramref name="type"/> returns the the
         /// initial expanded state of the node.
         /// </param>
-        public TreeDataTemplate(
+        public FuncTreeDataTemplate(
             Type type,
             Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector,
@@ -60,7 +60,7 @@ namespace Perspex.Controls.Templates
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate"/> class.
         /// </summary>
         /// <param name="match">
         /// A function which determines whether the data template matches the specified data.
@@ -71,7 +71,7 @@ namespace Perspex.Controls.Templates
         /// <param name="itemsSelector">
         /// A function which when passed a matching object returns the child items.
         /// </param>
-        public TreeDataTemplate(
+        public FuncTreeDataTemplate(
             Func<object, bool> match,
             Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector)
@@ -81,7 +81,7 @@ namespace Perspex.Controls.Templates
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TreeDataTemplate"/> class.
+        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate"/> class.
         /// </summary>
         /// <param name="match">
         /// A function which determines whether the data template matches the specified data.
@@ -96,7 +96,7 @@ namespace Perspex.Controls.Templates
         /// A function which when passed a matching object returns the the initial expanded state
         /// of the node.
         /// </param>
-        public TreeDataTemplate(
+        public FuncTreeDataTemplate(
             Func<object, bool> match,
             Func<object, IControl> build,
             Func<object, IEnumerable> itemsSelector,
