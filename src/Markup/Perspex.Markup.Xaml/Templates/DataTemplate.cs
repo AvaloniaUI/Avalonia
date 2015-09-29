@@ -11,14 +11,23 @@ namespace Perspex.Markup.Xaml.Templates
     [ContentProperty("Content")]
     public class DataTemplate : IDataTemplate
     {
-        private bool MyMatch(object data)
+        public Type DataType { get; set; }
+
+        public TemplateContent Content { get; set; }
+
+        public bool Match(object data)
         {
             if (DataType == null)
             {
-                throw new InvalidOperationException("XAML DataTemplates must have a DataType");
+                throw new InvalidOperationException("DataTemplate must have a DataType.");
             }
 
             return DataType == data.GetType();
+        }
+
+        public IControl Build(object param)
+        {
+            return CreateVisualTreeForItem(param);
         }
 
         private Control CreateVisualTreeForItem(object data)
@@ -26,20 +35,6 @@ namespace Perspex.Markup.Xaml.Templates
             var visualTreeForItem = Content.Load();
             visualTreeForItem.DataContext = data;
             return visualTreeForItem;
-        }
-
-        public Type DataType { get; set; }
-
-        public TemplateContent Content { get; set; }
-
-        public IControl Build(object param)
-        {
-            return CreateVisualTreeForItem(param);
-        }
-
-        public bool Match(object data)
-        {
-            return MyMatch(data);
         }
     }
 }
