@@ -236,7 +236,7 @@ namespace Perspex.Controls
         {
             var result = new FormattedText(
                 Text ?? string.Empty,
-                FontFamily ?? "Ariel",
+                FontFamily ?? "Arial",
                 FontSize > 0 ? FontSize : 12,
                 FontStyle,
                 TextAlignment,
