@@ -60,16 +60,26 @@
                       </DataTemplate>
                     </ListBox.DataTemplates>
                   </ListBox>
-                    <DropDown VerticalAlignment="Center">
+                  <DropDown VerticalAlignment="Center">
+                      <StackPanel>
+                          <TextBlock Text="Item 1" FontSize="24" />
+                          <TextBlock Text="Item 1 Value" />
+                      </StackPanel>
+                      <StackPanel>
+                          <TextBlock Text="Item 2" FontSize="24" />
+                          <TextBlock Text="Item 2 Value" />
+                      </StackPanel>
+                  </DropDown>
+                  <TreeView Items="{Binding Nodes}">
+                    <TreeView.DataTemplates>
+                      <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                         <StackPanel>
-                            <TextBlock Text="Item 1" FontSize="24" />
-                            <TextBlock Text="Item 1 Value" />
+                          <TextBlock Text="{Binding Header}" FontSize="24"/>
+                          <TextBlock Text="{Binding SubHeader}"/>
                         </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="Item 2" FontSize="24" />
-                            <TextBlock Text="Item 2 Value" />
-                        </StackPanel>
-                    </DropDown>
+                      </TreeDataTemplate>
+                    </TreeView.DataTemplates>  
+                  </TreeView>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Layout">

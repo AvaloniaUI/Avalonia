@@ -15,8 +15,44 @@ namespace XamlTestApplication.ViewModels
             {
                 Items.Add(new TestItem($"Item {i}", $"Item {i} Value"));
             }
+
+            Nodes = new List<TestNode>
+            {
+                new TestNode
+                {
+                    Header = "Root",
+                    SubHeader = "Root Item",
+                    Children = new[]
+                    {
+                        new TestNode
+                        {
+                            Header = "Child 1",
+                            SubHeader = "Child 1 Value",
+                        },
+                        new TestNode
+                        {
+                            Header = "Child 2",
+                            SubHeader = "Child 2 Value",
+                            Children = new[]
+                            {
+                                new TestNode
+                                {
+                                    Header = "Grandchild",
+                                    SubHeader = "Grandchild Value",
+                                },
+                                new TestNode
+                                {
+                                    Header = "Grandmaster Flash",
+                                    SubHeader = "White Lines",
+                                },
+                            }
+                        },
+                    }
+                }
+            };
         }
 
         public List<TestItem> Items { get; }
+        public List<TestNode> Nodes { get; }
     }
 }

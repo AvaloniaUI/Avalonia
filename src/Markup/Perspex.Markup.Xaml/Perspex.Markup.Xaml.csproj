@@ -245,6 +245,7 @@
     <Compile Include="Context\PerspexXamlType.cs" />
     <Compile Include="Templates\DataTemplate.cs" />
     <Compile Include="PerspexXamlLoader.cs" />
+    <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
