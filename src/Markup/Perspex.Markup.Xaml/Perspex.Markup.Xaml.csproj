@@ -58,6 +58,7 @@
     <Compile Include="DataBinding\ChangeTracking\PropertyPath.cs" />
     <Compile Include="DataBinding\ChangeTracking\TargettedProperty.cs" />
     <Compile Include="Context\PerspexParserFactory.cs" />
+    <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservableProperty.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservablePropertyChain.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\Property.cs" />
