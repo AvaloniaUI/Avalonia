@@ -53,8 +53,10 @@
                   <ListBox Items="{Binding Items}">
                     <ListBox.DataTemplates>
                       <DataTemplate DataType="vm:TestItem">
-                        <TextBlock Text="{Binding Header}" FontSize="24"/>
-                        <TextBlock Text="{Binding SubHeader}"/>
+                        <StackPanel>
+                          <TextBlock Text="{Binding Header}" FontSize="24"/>
+                          <TextBlock Text="{Binding SubHeader}"/>
+                        </StackPanel>
                       </DataTemplate>
                     </ListBox.DataTemplates>
                   </ListBox>
