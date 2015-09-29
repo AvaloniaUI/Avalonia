@@ -21,8 +21,11 @@ namespace Perspex.Controls.UnitTests.Utils
             using (PerspexLocator.EnterScope())
             {
                 var windowImpl = new Mock<IWindowImpl>();
+                var styler = new Mock<Styler>();
+
                 PerspexLocator.CurrentMutable
-                    .Bind<IWindowImpl>().ToConstant(windowImpl.Object);
+                    .Bind<IWindowImpl>().ToConstant(windowImpl.Object)
+                    .Bind<IStyler>().ToConstant(styler.Object);
 
                 var gesture1 = new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control};
                 var gesture2 = new KeyGesture {Key = Key.B, Modifiers = InputModifiers.Control};
