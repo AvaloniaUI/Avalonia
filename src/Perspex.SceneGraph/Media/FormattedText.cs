@@ -29,9 +29,10 @@ namespace Perspex.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            //TODO: Find out why it was null in the first place. Demo project - AvalonStudio
-            //https://github.com/VitalElement/AvalonStudio/commit/787fb9396feb74e6ca6bd4e08436269a349df9c6
-            text = text ?? "";
+            Contract.Requires<ArgumentNullException>(text != null);
+            Contract.Requires<ArgumentNullException>(fontFamilyName != null);
+            Contract.Requires<ArgumentException>(fontSize > 0);
+
             Text = text;
             FontFamilyName = fontFamilyName;
             FontSize = fontSize;

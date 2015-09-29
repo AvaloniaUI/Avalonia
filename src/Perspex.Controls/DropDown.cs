@@ -140,6 +140,8 @@ namespace Perspex.Controls
 
             if (control != null)
             {
+                control.Measure(Size.Infinity);
+
                 SelectionBoxItem = new Rectangle
                 {
                     Width = control.DesiredSize.Width,
