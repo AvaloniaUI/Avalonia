@@ -66,6 +66,8 @@
     </Compile>
     <Compile Include="Cursors.cs" />
     <Compile Include="AccessKeyHandler.cs" />
+    <Compile Include="KeyBinding.cs" />
+    <Compile Include="KeyGesture.cs" />
     <Compile Include="Platform\IClipboard.cs" />
     <Compile Include="Platform\IStandardCursorFactory.cs" />
     <Compile Include="Raw\RawTextInputEventArgs.cs" />

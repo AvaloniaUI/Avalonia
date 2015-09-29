@@ -295,6 +295,8 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"{this.GetType().Name} set selected index");
+
             var index = (int)e.OldValue;
 
             if (index != -1)

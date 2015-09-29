@@ -2,5 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Reflection;
+using Perspex.Metadata;
 
 [assembly: AssemblyTitle("Perspex.Input")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Input")]

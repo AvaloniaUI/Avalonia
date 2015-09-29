@@ -3,6 +3,7 @@
 
 using System.Diagnostics.Contracts;
 using System;
+using System.Collections.Generic;
 using Perspex.Interactivity;
 
 namespace Perspex.Input
@@ -119,5 +120,8 @@ namespace Perspex.Input
         /// <param name="p">The position, in control coordinates.</param>
         /// <returns>The <see cref="IInputElement"/> at the specified position.</returns>
         IInputElement InputHitTest(Point p);
+
+
+        List<KeyBinding> KeyBindings { get; }
     }
 }

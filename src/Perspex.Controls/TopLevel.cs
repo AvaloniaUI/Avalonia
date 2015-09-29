@@ -94,7 +94,7 @@ namespace Perspex.Controls
             LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
             _renderManager = TryGetService<IRenderManager>(dependencyResolver);
 
-            PlatformImpl.SetOwner(this);
+            PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
             PlatformImpl.Deactivated = HandleDeactivated;
             PlatformImpl.Closed = HandleClosed;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Perspex.Interactivity;
 using Perspex.Rendering;
@@ -335,6 +336,8 @@ namespace Perspex.Input
             get { return GetValue(IsEnabledCoreProperty); }
             set { SetValue(IsEnabledCoreProperty, value); }
         }
+
+        public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
 
         /// <summary>
         /// Returns the input element that can be found within the current control at the specified

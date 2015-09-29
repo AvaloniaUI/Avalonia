@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="KeyboardNavigationTests_Arrows.cs" />
     <Compile Include="KeyboardNavigationTests_Tab.cs" />
+    <Compile Include="KeyGestureParseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

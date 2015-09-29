@@ -156,6 +156,8 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"{this.GetType().Name} set items");
+
             var incc = e.OldValue as INotifyCollectionChanged;
 
             if (incc != null)
