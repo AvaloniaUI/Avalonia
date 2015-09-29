@@ -41,18 +41,9 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DockPanel.cs" />
+    <Compile Include="HotkeyManager.cs" />
     <Compile Include="SystemDialog.cs" />
-    <Compile Include="DockPanel\Aligner.cs" />
-    <Compile Include="DockPanel\Alignment.cs" />
-    <Compile Include="DockPanel\Alignments.cs" />
-    <Compile Include="DockPanel\CoordinateMixin.cs" />
-    <Compile Include="DockPanel\Dock.cs" />
-    <Compile Include="DockPanel\Docker.cs" />
-    <Compile Include="DockPanel\DockingArranger.cs" />
-    <Compile Include="DockPanel\DockPanel.cs" />
-    <Compile Include="DockPanel\EnumerableMixin.cs" />
-    <Compile Include="DockPanel\LayoutSizes.cs" />
-    <Compile Include="DockPanel\RectMixin.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
     <Compile Include="IContentControl.cs" />
@@ -60,9 +51,6 @@
     <Compile Include="IPanel.cs" />
     <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
-    <Compile Include="DockPanel\LeftDocker.cs" />
-    <Compile Include="DockPanel\Segment.cs" />
-    <Compile Include="Margins.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
     <Compile Include="Platform\ISystemDialogImpl.cs" />
@@ -81,10 +69,10 @@
     <Compile Include="Primitives\IScrollInfo.cs" />
     <Compile Include="Primitives\Popup.cs" />
     <Compile Include="Primitives\ScrollInfoAdapter.cs" />
-    <Compile Include="DockPanel\RightDocker.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
     <Compile Include="Templates\DataTemplate`1.cs" />
+    <Compile Include="Templates\FuncMemberSelector.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
     <Compile Include="Templates\FuncTemplate`2.cs" />
     <Compile Include="Templates\FuncTemplate`1.cs" />
@@ -136,6 +124,7 @@
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
     <Compile Include="Shapes\Ellipse.cs" />
+    <Compile Include="Templates\IMemberSelector.cs" />
     <Compile Include="Templates\ITemplate`2.cs" />
     <Compile Include="Templates\ITemplate`1.cs" />
     <Compile Include="Templates\ITreeDataTemplate.cs" />
@@ -144,6 +133,7 @@
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
     <Compile Include="TextWrapping.cs" />
+    <Compile Include="Utils\AncestorFinder.cs" />
     <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
@@ -222,6 +212,7 @@
       <Name>Perspex.Styling</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

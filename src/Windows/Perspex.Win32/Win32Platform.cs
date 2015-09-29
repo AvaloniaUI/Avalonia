@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Perspex.Controls.Platform;
 using Perspex.Input;
 using Perspex.Platform;
@@ -79,6 +80,17 @@ namespace Perspex.Win32
             UnmanagedMethods.DispatchMessage(ref msg);
         }
 
+        public void RunLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                UnmanagedMethods.MSG msg;
+                UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
+                UnmanagedMethods.TranslateMessage(ref msg);
+                UnmanagedMethods.DispatchMessage(ref msg);
+            }
+        }
+
         public IDisposable StartTimer(TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
@@ -100,18 +112,27 @@ namespace Perspex.Win32
             });
         }
 
-        public void Wake()
+        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
+        private static readonly int SignalL = unchecked((int)0x12345678);
+
+        public void Signal()
         {
-            //UnmanagedMethods.PostMessage(
-            //    this.hwnd,
-            //    (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
-            //    IntPtr.Zero,
-            //    IntPtr.Zero);
+            UnmanagedMethods.PostMessage(
+                _hwnd,
+                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                new IntPtr(SignalW),
+                new IntPtr(SignalL));
         }
+
+        public event Action Signaled;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            {
+                Signaled?.Invoke();
+            }
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 

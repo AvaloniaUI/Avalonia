@@ -36,7 +36,7 @@ namespace Perspex.Threading
         /// <inheritdoc/>
         public override void Post(SendOrPostCallback d, object state)
         {
-            Dispatcher.UIThread.Post(() => d(state));
+           Dispatcher.UIThread.Post(() => d(state));
         }
 
         /// <inheritdoc/>

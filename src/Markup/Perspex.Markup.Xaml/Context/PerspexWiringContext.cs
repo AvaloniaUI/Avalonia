@@ -12,6 +12,7 @@ using OmniXaml.Builder;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
 using Perspex.Controls;
+using Perspex.Input;
 using Perspex.Markup.Xaml.Templates;
 using Perspex.Markup.Xaml.Converters;
 using Perspex.Markup.Xaml.DataBinding;
@@ -88,6 +89,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
+                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter())
             };
 
             typeConverterProvider.AddAll(converters);

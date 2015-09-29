@@ -38,8 +38,6 @@ namespace Perspex
         /// <param name="uniformLength">The length that should be applied to all sides.</param>
         public Thickness(double uniformLength)
         {
-            Contract.Requires<ArgumentException>(uniformLength >= 0);
-
             _left = _top = _right = _bottom = uniformLength;
         }
 
@@ -50,9 +48,6 @@ namespace Perspex
         /// <param name="vertical">The thickness on the top and bottom.</param>
         public Thickness(double horizontal, double vertical)
         {
-            Contract.Requires<ArgumentException>(horizontal >= 0);
-            Contract.Requires<ArgumentException>(vertical >= 0);
-
             _left = _right = horizontal;
             _top = _bottom = vertical;
         }
@@ -66,11 +61,6 @@ namespace Perspex
         /// <param name="bottom">The thickness on the bottom.</param>
         public Thickness(double left, double top, double right, double bottom)
         {
-            Contract.Requires<ArgumentException>(left >= 0);
-            Contract.Requires<ArgumentException>(top >= 0);
-            Contract.Requires<ArgumentException>(right >= 0);
-            Contract.Requires<ArgumentException>(bottom >= 0);
-
             _left = left;
             _top = top;
             _right = right;

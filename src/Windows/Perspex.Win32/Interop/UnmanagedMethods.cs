@@ -5,6 +5,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
+using Perspex.Input;
+
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169
 
@@ -189,6 +191,24 @@ namespace Perspex.Win32.Interop
 
             SM_CONVERTABLESLATEMODE = 0x2003,
             SM_SYSTEMDOCKED = 0x2004,
+        }
+
+        [Flags]
+        public enum ModifierKeys
+        {
+            MK_CONTROL = 0x0008,
+
+            MK_LBUTTON = 0x0001,
+
+            MK_MBUTTON = 0x0010,
+
+            MK_RBUTTON = 0x0002,
+
+            MK_SHIFT = 0x0004,
+
+            MK_XBUTTON1 = 0x0020,
+
+            MK_XBUTTON2 = 0x0040
         }
 
         public enum WindowActivate

@@ -81,13 +81,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="DockPanelTests\AlignerTests.cs" />
-    <Compile Include="DockPanelTests\RectAlignerTests.cs" />
-    <Compile Include="DockPanelTests\RightDockerTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
-    <Compile Include="DockPanelTests\LeftDockerTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="Primitives\TrackTests.cs" />
     <Compile Include="Primitives\PopupTests.cs" />
@@ -116,6 +112,8 @@
     <Compile Include="Templates\TemplateExtensionsTests.cs" />
     <Compile Include="TestTemplatedControl.cs" />
     <Compile Include="TestRoot.cs" />
+    <Compile Include="Utils\AncestorFinderTests.cs" />
+    <Compile Include="Utils\HotKeyManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">

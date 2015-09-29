@@ -134,26 +134,34 @@ namespace Perspex.Gtk
             Activate();
         }
 
-        private static ModifierKeys GetModifierKeys(ModifierType state)
+        private static InputModifiers GetModifierKeys(ModifierType state)
         {
-            var rv = ModifierKeys.None;
+            var rv = InputModifiers.None;
             if (state.HasFlag(ModifierType.ControlMask))
-                rv |= ModifierKeys.Control;
+                rv |= InputModifiers.Control;
             if (state.HasFlag(ModifierType.ShiftMask))
-                rv |= ModifierKeys.Shift;
+                rv |= InputModifiers.Shift;
             if (state.HasFlag(ModifierType.Mod1Mask))
-                rv |= ModifierKeys.Control;
-
+                rv |= InputModifiers.Control;
+            if(state.HasFlag(ModifierType.Button1Mask))
+                rv |= InputModifiers.LeftMouseButton;
+            if (state.HasFlag(ModifierType.Button2Mask))
+                rv |= InputModifiers.RightMouseButton;
+            if (state.HasFlag(ModifierType.Button3Mask))
+                rv |= InputModifiers.MiddleMouseButton;
             return rv;
         }
 
         protected override bool OnButtonPressEvent(EventButton evnt)
         {
+
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
                 _owner,
-                RawMouseEventType.LeftButtonDown,
+                evnt.Button == 0
+                    ? RawMouseEventType.LeftButtonDown
+                    : evnt.Button == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
@@ -165,7 +173,9 @@ namespace Perspex.Gtk
                 GtkMouseDevice.Instance,
                 evnt.Time,
                 _owner,
-                RawMouseEventType.LeftButtonUp,
+                evnt.Button == 0
+                    ? RawMouseEventType.LeftButtonUp
+                    : evnt.Button == 1 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;

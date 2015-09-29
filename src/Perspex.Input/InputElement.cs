@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Perspex.Interactivity;
 using Perspex.Rendering;
@@ -123,8 +124,8 @@ namespace Perspex.Input
         /// <summary>
         /// Defines the <see cref="PointerReleased"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerReleasedEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(
+        public static readonly RoutedEvent<PointerReleasedEventArgs> PointerReleasedEvent =
+            RoutedEvent.Register<InputElement, PointerReleasedEventArgs>(
                 "PointerReleased",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
@@ -240,7 +241,7 @@ namespace Perspex.Input
         /// <summary>
         /// Occurs when the pointer is released over the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs> PointerReleased
+        public event EventHandler<PointerReleasedEventArgs> PointerReleased
         {
             add { AddHandler(PointerReleasedEvent, value); }
             remove { RemoveHandler(PointerReleasedEvent, value); }
@@ -332,6 +333,8 @@ namespace Perspex.Input
             get { return GetValue(IsEnabledCoreProperty); }
             set { SetValue(IsEnabledCoreProperty, value); }
         }
+
+        public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
 
         /// <summary>
         /// Returns the input element that can be found within the current control at the specified

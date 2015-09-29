@@ -39,6 +39,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Converters\ColorTypeConverter.cs" />
+    <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\RelativePointTypeConverter.cs" />
     <Compile Include="Converters\PointTypeConverter.cs" />
     <Compile Include="Converters\ClassesTypeConverter.cs" />
