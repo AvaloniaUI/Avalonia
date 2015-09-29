@@ -235,9 +235,9 @@ namespace Perspex.Controls
         protected virtual FormattedText CreateFormattedText(Size constraint)
         {
             var result = new FormattedText(
-                Text,
-                FontFamily,
-                FontSize,
+                Text ?? string.Empty,
+                FontFamily ?? "Ariel",
+                FontSize > 0 ? FontSize : 12,
                 FontStyle,
                 TextAlignment,
                 FontWeight);

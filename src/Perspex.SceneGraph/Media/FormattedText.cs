@@ -30,6 +30,10 @@ namespace Perspex.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
+            Contract.Requires<ArgumentNullException>(text != null);
+            Contract.Requires<ArgumentNullException>(fontFamilyName != null);
+            Contract.Requires<ArgumentException>(fontSize > 0);
+
             Text = text;
             FontFamilyName = fontFamilyName;
             FontSize = fontSize;
