@@ -94,9 +94,8 @@ namespace Perspex.Direct2D1
         /// <summary>
         /// Creates a drawing context for a rendering session.
         /// </summary>
-        /// <param name="handle">The platform handle. Unused.</param>
         /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        public IDrawingContext CreateDrawingContext(IPlatformHandle handle)
+        public IDrawingContext CreateDrawingContext()
         {
             return new DrawingContext(_renderTarget, DirectWriteFactory);
         }

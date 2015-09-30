@@ -20,9 +20,7 @@ namespace Perspex.Platform
         /// <summary>
         /// Creates an <see cref="IDrawingContext"/> for a rendering session.
         /// </summary>
-        /// <param name="handle">The handle to use to create the context.</param>
-        /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        IDrawingContext CreateDrawingContext(IPlatformHandle target);
+        IDrawingContext CreateDrawingContext();
 
         /// <summary>
         /// Resizes the rendered viewport.

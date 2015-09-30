@@ -44,9 +44,9 @@ namespace Perspex.Controls.Platform
             resources.Add(queueManager.RenderNeeded.Subscribe(_
                 => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize))));
 
-            topLevel.PlatformImpl.Paint = (rect, handle) =>
+            topLevel.PlatformImpl.Paint = rect =>
             {
-                viewport.Render(topLevel, handle);
+                viewport.Render(topLevel);
                 queueManager.RenderFinished();
             };
 

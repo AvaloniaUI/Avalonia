@@ -116,7 +116,7 @@ namespace Perspex.Cairo.Media
                 context.Rectangle(drawRect.ToCairo());
                 context.Clip();
                 context.Transform(transform.ToCairo());
-                renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"), transform, drawRect);
+                renderer.Render(visual, transform, drawRect);
 
                 var result = new SurfacePattern(intermediate);
 

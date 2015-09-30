@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
 
@@ -11,10 +12,12 @@ namespace Perspex.Cairo.Media.Imaging
 
     public class RenderTargetBitmapImpl : IRenderTargetBitmapImpl
     {
+
+        private readonly RenderTarget _renderTarget;
         public RenderTargetBitmapImpl(Cairo.ImageSurface surface)
         {
             Surface = surface;
-            renderTarget = new RenderTarget(Surface);
+            _renderTarget = new RenderTarget(Surface);
         }
 
         public int PixelWidth => Surface.Width;
@@ -23,7 +26,7 @@ namespace Perspex.Cairo.Media.Imaging
 
         public void Dispose()
         {
-            renderTarget.Dispose();
+            _renderTarget.Dispose();
         }
 
         public Cairo.ImageSurface Surface
@@ -31,15 +34,19 @@ namespace Perspex.Cairo.Media.Imaging
             get;
         }
 
-        private RenderTarget renderTarget;
-        public void Render(IVisual visual)
-        {
-            renderTarget.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"));
-        }
-
         public void Save(string fileName)
         {
             Surface.WriteToPng(fileName);
+        }
+
+        public IDrawingContext CreateDrawingContext()
+        {
+            return _renderTarget.CreateDrawingContext();
+        }
+
+        void IRenderTarget.Resize(int width, int height)
+        {
+            throw new NotSupportedException();
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Perspex.Direct2D1.Media
                     out drawRect);
                 var renderer = new RenderTarget(intermediate);
 
-                renderer.Render(visual, null, transform, drawRect);
+                renderer.Render(visual, transform, drawRect);
 
                 this.PlatformBrush = new BitmapBrush(
                     target,

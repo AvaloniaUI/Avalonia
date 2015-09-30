@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
 using SharpDX.Direct2D1;
@@ -37,10 +38,11 @@ namespace Perspex.Direct2D1.Media
             // TODO:
         }
 
-        public void Render(IVisual visual)
+        public IDrawingContext CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
+
+        void IRenderTarget.Resize(int width, int height)
         {
-            RenderTarget renderTarget = new RenderTarget(_target);
-            renderTarget.Render(visual, null);
+            throw new NotSupportedException();
         }
     }
 }

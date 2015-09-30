@@ -21,10 +21,9 @@ namespace Perspex.Rendering
         /// </summary>
         /// <param name="renderTarget">IRenderer instance</param>
         /// <param name="visual">The visual to render.</param>
-        /// <param name="target">An optional platform-specific handle.</param>
-        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual)
         {
-            using (var ctx = renderTarget.CreateDrawingContext(target))
+            using (var ctx = renderTarget.CreateDrawingContext())
                 ctx.Render(visual);
         }
 
@@ -32,13 +31,12 @@ namespace Perspex.Rendering
         /// Renders the specified visual.
         /// </summary>
         /// <param name="renderTarget">IRenderer instance</param>
-        /// <param name="target">An optional platform-specific handle.</param>
         /// <param name="visual">The visual to render.</param>
         /// <param name="translation">The current translation.</param>
         /// <param name="transform">The current transform.</param>
-        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target, Matrix translation, Matrix transform)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, Matrix translation, Matrix transform)
         {
-            using (var ctx = renderTarget.CreateDrawingContext(target))
+            using (var ctx = renderTarget.CreateDrawingContext())
                 ctx.Render(visual, translation, transform);
         }
 
@@ -46,13 +44,12 @@ namespace Perspex.Rendering
         /// Renders the specified visual with the specified transform and clip.
         /// </summary>
         /// <param name="renderTarget">IRenderer instance</param>
-        /// <param name="target">An optional platform-specific handle.</param>
         /// <param name="visual">The visual to render.</param>
         /// <param name="transform">The transform.</param>
         /// <param name="clip">An optional clip rectangle.</param>
-        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target, Matrix transform, Rect? clip = null)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, Matrix transform, Rect? clip = null)
         {
-            using (var context = renderTarget.CreateDrawingContext(target))
+            using (var context = renderTarget.CreateDrawingContext())
                 context.Render(visual, transform, clip);
         }
 
