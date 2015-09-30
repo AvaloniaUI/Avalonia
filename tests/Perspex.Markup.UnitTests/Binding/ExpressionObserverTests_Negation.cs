@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Reactive.Linq;
 using Perspex.Markup.Binding;
 using Xunit;
@@ -65,6 +66,16 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public async void Should_Return_Empty_For_String_Not_Convertible_To_Boolean()
+        {
+            var data = new { Foo = "foo" };
+            var target = new ExpressionObserver(data, "!Foo");
+            var result = await target.Take(1);
+
+            Assert.False(result.HasValue);
+        }
+
+        [Fact]
         public async void Should_Return_Empty_For_Value_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = new object() };
@@ -72,6 +83,15 @@ namespace Perspex.Markup.UnitTests.Binding
             var result = await target.Take(1);
 
             Assert.False(result.HasValue);
+        }
+
+        [Fact]
+        public void SetValue_Should_Throw()
+        {
+            var data = new { Foo = "foo" };
+            var target = new ExpressionObserver(data, "!Foo");
+
+            Assert.Throws<NotSupportedException>(() => target.SetValue("bar"));
         }
     }
 }

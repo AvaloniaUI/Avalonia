@@ -14,6 +14,11 @@ namespace Perspex.Markup.Binding
         {
         }
 
+        public override bool SetValue(object value)
+        {
+            throw new NotSupportedException("Cannot set a negated binding.");
+        }
+
         public override IDisposable Subscribe(IObserver<ExpressionValue> observer)
         {
             return Next.Select(x => Negate(x)).Subscribe(observer);
