@@ -47,7 +47,10 @@ namespace TestApplication.iOS
             //var foo = Dispatcher.CurrentDispatcher;
 
             _app = new App();
-            _app.BuildGridWithSomeButtonsAndStuff();
+            var window = _app.BuildListTest();
+
+            window.Show();
+            Perspex.Application.Current.Run(window);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
 #endif

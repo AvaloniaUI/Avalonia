@@ -1,5 +1,6 @@
 ﻿using Perspex;
 using Perspex.Animation;
+using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
@@ -139,6 +140,91 @@ namespace TestApplication.iOS
             };
 
             window.Show();
+        }
+
+        public Window BuildListTest()
+        {
+            Window window = new Window
+            {
+                Title = "Perspex Test Application",
+                Background = Brushes.Green,
+                Content = new Grid
+                {
+                    Margin = new Thickness(0, 20, 0, 0),    // skip the status bar area on iOS
+                    RowDefinitions = new RowDefinitions
+                    {
+                        new RowDefinition(60, GridUnitType.Pixel),
+                        new RowDefinition(1, GridUnitType.Star),
+                    },
+                    Children = new Controls
+                    {
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            [Grid.RowProperty] = 0,
+                            Background = SolidColorBrush.Parse("#000000"),
+                            Children = new Controls
+                            {
+                                new Button
+                                {
+                                    Content = "Button 1",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                },
+
+                                new Button
+                                {
+                                    Content = "Button 2",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                },
+
+                                new Button
+                                {
+                                    Content = "Button 3",
+                                    Width = 100,
+                                    Margin = new Thickness(5)
+                                }
+                            }
+                        },
+
+                        new ListBox
+                        {
+                            [Grid.RowProperty] = 1,
+                            Items = new PerspexList<ListBoxItem>
+                            {
+                                new ListBoxItem
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        Text = "hello there",
+                                        Background = Brushes.Yellow
+                                    }
+                                },
+                                new ListBoxItem
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        Text = "hello there",
+                                        Background = Brushes.Yellow
+                                    }
+                                },
+                                new ListBoxItem
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        Text = "hello there",
+                                        Background = Brushes.Yellow
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            };
+
+            return window;
         }
 
         public void BuildGridWithSomeButtonsAndStuff()

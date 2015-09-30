@@ -193,7 +193,9 @@ namespace Perspex.iOS.Rendering
 
         public IDisposable PushClip(Rect clip)
         {
-            throw new NotImplementedException();
+            _nativeContext.SaveState();
+            _nativeContext.ClipToRect(clip.ToCoreGraphics());
+            return Disposable.Create(() => _nativeContext.RestoreState());
         }
 
         private float _currentOpacity = 1.0f;
