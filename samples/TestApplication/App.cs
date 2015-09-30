@@ -3,6 +3,9 @@
 
 using System;
 using Perspex;
+using Perspex.Controls;
+using Perspex.Media;
+using Perspex.Styling;
 using Perspex.Themes.Default;
 
 namespace TestApplication
@@ -15,6 +18,15 @@ namespace TestApplication
             InitializeSubsystems((int)Environment.OSVersion.Platform);            
             Styles = new DefaultTheme();
             Styles.Add(new SampleTabStyle());
+            var testStyle = new Style(x => x.OfType<Button>())
+            {
+                Setters = new[]
+            {
+                new Setter(Button.BackgroundProperty, Brushes.Red),
+            }
+            };
+
+            Styles.Add(testStyle);
         }
     }
 }

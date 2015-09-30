@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DrawingBrush x:Key="ErrorIcon" Stretch="Uniform">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.Children>
+                    <GeometryDrawing Geometry="F1 M 164.373,24.407L 22.3449,304.134L 306.402,304.134L 164.373,24.407 Z ">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="32" LineJoin="Round" Brush="#FFFF0000"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFF0000" Geometry="F1 M 174.788,95.2479L 172.242,222.581L 154.256,222.581L 151.868,95.2479L 174.788,95.2479 Z M 163.328,276.061C 159.455,276.061 156.153,274.708 153.42,272.002C 150.688,269.297 149.322,266.007 149.322,262.134C 149.322,258.235 150.688,254.912 153.42,252.166C 156.153,249.421 159.455,248.048 163.328,248.048C 167.122,248.048 170.405,249.421 173.177,252.166C 175.949,254.912 177.335,258.235 177.335,262.134C 177.335,266.007 175.949,269.297 173.177,272.002C 170.405,274.708 167.122,276.061 163.328,276.061 Z "/>
+                </DrawingGroup.Children>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+</ResourceDictionary>
