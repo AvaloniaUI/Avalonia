@@ -17,19 +17,18 @@ namespace Perspex.Cairo
     /// </summary>
     public class RenderTarget : IRenderTarget
     {
-        private readonly IPlatformHandle _handle;
         private readonly Surface _surface;
-        private Gdk.Window _window;
+        private Gtk.Window _window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTarget"/> class.
         /// </summary>
-        /// <param name="handle">The window handle.</param>
+        /// <param name="window">The window.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public RenderTarget(IPlatformHandle handle, double width, double height)
+        public RenderTarget(Gtk.Window window, double width, double height)
         {
-            _handle = handle;
+            _window = window;
         }
 
         public RenderTarget(ImageSurface surface)
@@ -56,19 +55,7 @@ namespace Perspex.Cairo
         {
             if(_surface != null)
                 return new DrawingContext(_surface);
-
-            switch (_handle.HandleDescriptor)
-            {
-                case "GdkWindow":
-                    if (_window == null)
-                        _window = new Gdk.Window(_handle.Handle);
-
-                    return new DrawingContext(_window);
-                default:
-                    throw new NotSupportedException(string.Format(
-                        "Don't know how to create a Cairo renderer from a '{0}' handle",
-                        _handle.HandleDescriptor));
-            }
+            return new DrawingContext(_window.GdkWindow);
         }
         
         public void Dispose() => _surface?.Dispose();
