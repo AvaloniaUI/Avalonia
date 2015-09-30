@@ -21,33 +21,11 @@ namespace Perspex.Markup.Binding
 
             var syntaxTree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Interactive));
             var syntaxRoot = syntaxTree.GetRoot();
-            var syntax = syntaxRoot.ChildNodes().SingleOrDefault()?.ChildNodes()?.SingleOrDefault() as ExpressionStatementSyntax;
+            var syntax = syntaxRoot.ChildNodes().SingleOrDefault()?.ChildNodes()?.SingleOrDefault();
 
             if (syntax != null)
             {
-                var result = new List<ExpressionNode>();
-
-                foreach (SyntaxNode node in syntax.ChildNodes())
-                {
-                    var identifier = node as IdentifierNameSyntax;
-                    var memberAccess = node as MemberAccessExpressionSyntax;
-
-                    if (identifier != null)
-                    {
-                        result.Add(new PropertyAccessorNode(identifier.Identifier.ValueText));
-                    }
-                    else if (memberAccess != null)
-                    {
-                        Build(memberAccess, result);
-                    }
-                }
-
-                for (int i = 0; i < result.Count - 1; ++i)
-                {
-                    result[i].Next = result[i + 1];
-                }
-
-                return result[0];
+                return Build(expression, syntax, null);
             }
             else
             {
@@ -55,22 +33,37 @@ namespace Perspex.Markup.Binding
             }
         }
 
-        private static void Build(MemberAccessExpressionSyntax syntax, IList<ExpressionNode> result)
+        private static ExpressionNode Build(string expression, SyntaxNode syntax, ExpressionNode next)
         {
-            foreach (SyntaxNode node in syntax.ChildNodes())
-            {
-                var identifier = node as IdentifierNameSyntax;
-                var memberAccess = node as MemberAccessExpressionSyntax;
+            var expressionStatement = syntax as ExpressionStatementSyntax;
+            var identifier = syntax as IdentifierNameSyntax;
+            var memberAccess = syntax as MemberAccessExpressionSyntax;
+            var unaryExpression = syntax as PrefixUnaryExpressionSyntax;
 
-                if (identifier != null)
-                {
-                    result.Add(new PropertyAccessorNode(identifier.Identifier.ValueText));
-                }
-                else if (memberAccess != null)
-                {
-                    Build(memberAccess, result);
-                }
+            if (expressionStatement != null)
+            {
+                return Build(expression, expressionStatement.Expression, next);
             }
+            else if (identifier != null)
+            {
+                next = new PropertyAccessorNode(next, identifier.Identifier.ValueText);
+            }
+            else if (memberAccess != null)
+            {
+                next = new PropertyAccessorNode(next, memberAccess.Name.Identifier.ValueText);
+                next = Build(expression, memberAccess.Expression, next);
+            }
+            else if (unaryExpression != null && unaryExpression.Kind() == SyntaxKind.LogicalNotExpression)
+            {
+                next = Build(expression, unaryExpression.Operand, next);
+                next = new LogicalNotNode(next);
+            }
+            else
+            {
+                throw new Exception($"Invalid expression: {expression}");
+            }
+
+            return next;
         }
     }
 }

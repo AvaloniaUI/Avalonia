@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Perspex.Markup.UnitTests.Binding
 {
-    public class ExpressionObserverTests
+    public class ExpressionObserverTests_Property
     {
         [Fact]
         public async void Should_Get_Simple_Property_Value()

@@ -14,11 +14,12 @@ namespace Perspex.Markup.Binding
 
         private ExpressionValue _value = ExpressionValue.None;
 
-        public ExpressionNode Next
+        public ExpressionNode(ExpressionNode next)
         {
-            get;
-            set;
+            Next = next;
         }
+
+        public ExpressionNode Next { get; }
 
         public object Target
         {
@@ -76,7 +77,7 @@ namespace Perspex.Markup.Binding
             return Next?.SetValue(value) ?? false;
         }
 
-        public IDisposable Subscribe(IObserver<ExpressionValue> observer)
+        public virtual IDisposable Subscribe(IObserver<ExpressionValue> observer)
         {
             if (Next != null)
             {
