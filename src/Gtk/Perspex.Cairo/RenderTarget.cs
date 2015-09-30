@@ -13,24 +13,26 @@ namespace Perspex.Cairo
     using global::Cairo;
 
     /// <summary>
-    /// A cairo renderer.
+    /// A cairo render target.
     /// </summary>
-    public class Renderer : RendererBase
+    public class RenderTarget : IRenderTarget
     {
+        private readonly IPlatformHandle _handle;
         private readonly Surface _surface;
         private Gdk.Window _window;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Renderer"/> class.
+        /// Initializes a new instance of the <see cref="RenderTarget"/> class.
         /// </summary>
         /// <param name="handle">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public Renderer(IPlatformHandle handle, double width, double height)
+        public RenderTarget(IPlatformHandle handle, double width, double height)
         {
+            _handle = handle;
         }
 
-        public Renderer(ImageSurface surface)
+        public RenderTarget(ImageSurface surface)
         {
             _surface = surface;
         }
@@ -40,7 +42,7 @@ namespace Perspex.Cairo
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public override void Resize(int width, int height)
+        public  void Resize(int width, int height)
         {
             // Don't need to do anything here.
         }
@@ -49,33 +51,26 @@ namespace Perspex.Cairo
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
-        /// <param name="handle">The platform-specific handle.</param>
         /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
-        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
+        public IDrawingContext CreateDrawingContext()
         {
-            switch (handle.HandleDescriptor)
+            if(_surface != null)
+                return new DrawingContext(_surface);
+
+            switch (_handle.HandleDescriptor)
             {
-                case "RTB":
-                    return new DrawingContext(_surface);
                 case "GdkWindow":
                     if (_window == null)
-                        _window = new Gdk.Window(handle.Handle);
+                        _window = new Gdk.Window(_handle.Handle);
 
                     return new DrawingContext(_window);
                 default:
                     throw new NotSupportedException(string.Format(
                         "Don't know how to create a Cairo renderer from a '{0}' handle",
-                        handle.HandleDescriptor));
+                        _handle.HandleDescriptor));
             }
         }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hwnd);
-
-        public override void Dispose()
-        {
-			if (_surface != null)
-		        _surface.Dispose();
-        }
+        
+        public void Dispose() => _surface?.Dispose();
     }
 }

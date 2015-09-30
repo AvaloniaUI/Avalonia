@@ -134,7 +134,7 @@ namespace Perspex.Layout.UnitTests
             var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            var renderManager = fixture.Create<IRenderManager>();
+            var renderManager = fixture.Create<IRenderQueueManager>();
             var theme = new DefaultTheme();
             var windowImpl = new Mock<IWindowImpl>();
 
@@ -148,7 +148,7 @@ namespace Perspex.Layout.UnitTests
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
-                .Bind<IRenderManager>().ToConstant(renderManager)
+                .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowImpl>().ToConstant(windowImpl.Object);
         }

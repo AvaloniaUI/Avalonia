@@ -18,7 +18,7 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// The Direct2D1 render target.
         /// </summary>
-        private readonly RenderTarget _renderTarget;
+        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
 
         /// <summary>
         /// The DirectWrite factory.
@@ -31,7 +31,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         public DrawingContext(
-            RenderTarget renderTarget,
+            SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory)
         {
             _renderTarget = renderTarget;

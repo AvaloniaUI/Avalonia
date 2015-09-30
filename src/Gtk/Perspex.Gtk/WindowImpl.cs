@@ -83,7 +83,7 @@ namespace Perspex.Gtk
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
 
@@ -223,7 +223,7 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(EventExpose evnt)
         {
-            Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
+            Paint(evnt.Area.ToPerspex());
             return true;
         }
 

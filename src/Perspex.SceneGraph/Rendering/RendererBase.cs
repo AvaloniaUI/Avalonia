@@ -12,63 +12,73 @@ namespace Perspex.Rendering
     /// Base class for standard renderers.
     /// </summary>
     /// <remarks>
-    /// This class provides implements the platform-independent parts of <see cref="IRenderer"/>.
+    /// This class provides implements the platform-independent parts of <see cref="IRenderTarget"/>.
     /// </remarks>
-    public abstract class RendererBase : IRenderer
+    public static class RendererMixin
     {
         /// <summary>
-        /// Gets the number of times <see cref="Render(IVisual, IPlatformHandle)"/> has been called.
+        /// Renders the specified visual.
         /// </summary>
-        public int RenderCount
+        /// <param name="renderTarget">IRenderer instance</param>
+        /// <param name="visual">The visual to render.</param>
+        public static void Render(this IRenderTarget renderTarget, IVisual visual)
         {
-            get;
-            private set;
+            using (var ctx = renderTarget.CreateDrawingContext())
+                ctx.Render(visual);
         }
 
-        public abstract void Dispose();
+        /// <summary>
+        /// Renders the specified visual.
+        /// </summary>
+        /// <param name="renderTarget">IRenderer instance</param>
+        /// <param name="visual">The visual to render.</param>
+        /// <param name="translation">The current translation.</param>
+        /// <param name="transform">The current transform.</param>
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, Matrix translation, Matrix transform)
+        {
+            using (var ctx = renderTarget.CreateDrawingContext())
+                ctx.Render(visual, translation, transform);
+        }
+
+        /// <summary>
+        /// Renders the specified visual with the specified transform and clip.
+        /// </summary>
+        /// <param name="renderTarget">IRenderer instance</param>
+        /// <param name="visual">The visual to render.</param>
+        /// <param name="transform">The transform.</param>
+        /// <param name="clip">An optional clip rectangle.</param>
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, Matrix transform, Rect? clip = null)
+        {
+            using (var context = renderTarget.CreateDrawingContext())
+                context.Render(visual, transform, clip);
+        }
 
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle)
+        /// 
+        /// <param name="context">The drawing context.</param>
+        public static void Render(this IDrawingContext context, IVisual visual)
         {
-            Render(visual, handle, Matrix.Identity);
-            ++RenderCount;
+            context.Render(visual, Matrix.Identity);
         }
 
         /// <summary>
         /// Renders the specified visual with the specified transform and clip.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
+        /// <param name="context">The drawing context.</param>
         /// <param name="transform">The transform.</param>
         /// <param name="clip">An optional clip rectangle.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform, Rect? clip = null)
+        public static void Render(this IDrawingContext context, IVisual visual, Matrix transform, Rect? clip = null)
         {
-            using (var context = CreateDrawingContext(handle))
             using (clip.HasValue ? context.PushClip(clip.Value) : null)
             {
-                Render(visual, context, Matrix.Identity, transform);
+                context.Render(visual, Matrix.Identity, transform);
             }
         }
-
-        /// <summary>
-        /// Resizes the rendered viewport.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        public abstract void Resize(int width, int height);
-
-        /// <summary>
-        /// When overriden by a derived class creates an <see cref="IDrawingContext"/> for a
-        /// rendering session.
-        /// </summary>
-        /// <param name="handle">The handle to use to create the context.</param>
-        /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        protected abstract IDrawingContext CreateDrawingContext(IPlatformHandle handle);
-
+        
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
@@ -76,7 +86,7 @@ namespace Perspex.Rendering
         /// <param name="context">The drawing context.</param>
         /// <param name="translation">The current translation.</param>
         /// <param name="transform">The current transform.</param>
-        protected virtual void Render(IVisual visual, IDrawingContext context, Matrix translation, Matrix transform)
+        public static void Render(this IDrawingContext context, IVisual visual, Matrix translation, Matrix transform)
         {
             var opacity = visual.Opacity;
 
@@ -108,7 +118,7 @@ namespace Perspex.Rendering
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
-                        Render(child, context, translation, transform);
+                        context.Render(child, translation, transform);
                     }
                 }
             }
