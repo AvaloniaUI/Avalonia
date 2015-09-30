@@ -10,7 +10,7 @@ namespace Perspex.iOS.Rendering
     /// <summary>
     /// iOS renderer.
     /// </summary>
-    public class Renderer : RendererBase
+    public class RenderTarget : IRenderTarget
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Renderer"/> class.
@@ -18,43 +18,30 @@ namespace Perspex.iOS.Rendering
         /// <param name="handle">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public Renderer(IPlatformHandle handle, double width, double height)
+        public RenderTarget(IPlatformHandle handle, double width, double height)
         {
         }
 
-        //public Renderer(ImageSurface surface)
-        //{
-        //    _surface = surface;
-        //}
+        public void Dispose()
+        {
+        }
 
         /// <summary>
-        /// Resizes the renderer.
+        /// Creates an <see cref="IDrawingContext"/> for a rendering session.
+        /// </summary>
+        public IDrawingContext CreateDrawingContext()
+        {
+            return new DrawingContext();
+        }
+
+        /// <summary>
+        /// Resizes the rendered viewport.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public override void Resize(int width, int height)
+        public void Resize(int width, int height)
         {
-            // Don't need to do anything here.
-        }
-
-
-        /// <summary>
-        /// Creates a cairo surface that targets a platform-specific resource.
-        /// </summary>
-        /// <param name="handle">The platform-specific handle.</param>
-        /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
-        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
-        {
-            return new DrawingContext(handle);
-        }
-
-        //[DllImport("user32.dll")]
-        //private static extern IntPtr GetDC(IntPtr hwnd);
-
-        public override void Dispose()
-        {
-            //if (_surface != null)
-            //    _surface.Dispose();
+            // do we need to do anything here for iOS?
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Perspex.iOS
 {
     public class WindowImpl : IWindowImpl
     {
-        public TopLevel Owner { get; private set; }
+        public IInputRoot InputRoot { get; private set; }
 
         private UIWindow _iosWindow;
         private UIViewController _viewController;
@@ -42,7 +42,7 @@ namespace Perspex.iOS
         public Action Deactivated { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
 
         // Can we allow changing this on iOS?
@@ -106,9 +106,9 @@ namespace Perspex.iOS
             // noop on iOS
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
-            Owner = owner;
+            InputRoot = inputRoot;
         }
 
         public void SetTitle(string title)
@@ -172,7 +172,7 @@ namespace Perspex.iOS
             // call into Perspex rendering
             if (_WindowImpl != null)
             {
-                _WindowImpl.Paint(new Rect(rect.Left, rect.Top, rect.Width, rect.Height), _WindowImpl.Handle);
+                _WindowImpl.Paint(new Rect(rect.Left, rect.Top, rect.Width, rect.Height));
             }
         }
 
@@ -194,7 +194,7 @@ namespace Perspex.iOS
                     var me = new RawMouseEventArgs(
                         iOSMouseDevice.Instance,
                         (uint)touch.Timestamp, // TODO: not sure about this cast
-                        _WindowImpl.Owner,
+                        _WindowImpl.InputRoot,
                         RawMouseEventType.Move,
                         location,
                         InputModifiers.None);
@@ -204,7 +204,7 @@ namespace Perspex.iOS
                     var e = new RawMouseEventArgs(
                         iOSMouseDevice.Instance,
                         (uint) touch.Timestamp, // TODO: not sure about this cast
-                        _WindowImpl.Owner,
+                        _WindowImpl.InputRoot,
                         RawMouseEventType.LeftButtonDown,
                         location,
                         InputModifiers.None);
@@ -234,7 +234,7 @@ namespace Perspex.iOS
                     var e = new RawMouseEventArgs(
                         iOSMouseDevice.Instance,
                         (uint)touch.Timestamp, // TODO: not sure about this cast
-                        _WindowImpl.Owner,
+                        _WindowImpl.InputRoot,
                         RawMouseEventType.LeftButtonUp,
                         location,
                         InputModifiers.None);
@@ -264,7 +264,7 @@ namespace Perspex.iOS
                     var e = new RawMouseEventArgs(
                         iOSMouseDevice.Instance,
                         (uint)touch.Timestamp, // TODO: not sure about this cast
-                        _WindowImpl.Owner,
+                        _WindowImpl.InputRoot,
                         RawMouseEventType.Move,
                         location,
                         InputModifiers.None);

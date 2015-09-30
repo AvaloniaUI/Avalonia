@@ -22,9 +22,9 @@ namespace Perspex.iOS.Rendering
             return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
+        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            return new Renderer(handle, width, height);
+            return new RenderTarget(handle, width, height);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

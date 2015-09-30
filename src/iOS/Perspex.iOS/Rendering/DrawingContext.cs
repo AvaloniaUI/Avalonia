@@ -16,7 +16,7 @@ namespace Perspex.iOS.Rendering
     {
         CGContext _nativeContext;
 
-        public DrawingContext(IPlatformHandle windowHandle)
+        public DrawingContext()
         {
             _nativeContext = UIGraphics.GetCurrentContext();
         }
