@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.HtmlRenderer", "src
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PlatformSupport", "src\Shared\PlatformSupport\PlatformSupport.shproj", "{E4D9629C-F168-4224-3F51-A5E482FFBC42}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplicationPcl", "samples\XamlTestApplicationPcl\XamlTestApplicationPcl.csproj", "{EA113F1A-D8D7-4142-9948-353270E7EBAE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
@@ -235,6 +237,10 @@ Global
 		{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -260,5 +266,6 @@ Global
 		{54F237D5-A70A-4752-9656-0C70B1A7B047} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{FB05AC90-89BA-4F2F-A924-F37875FB547C} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{E4D9629C-F168-4224-3F51-A5E482FFBC42} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 EndGlobal
