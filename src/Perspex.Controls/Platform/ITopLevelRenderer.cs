@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Platform;
 using Perspex.Rendering;
+using Perspex.Threading;
 
 namespace Perspex.Controls.Platform
 {
@@ -42,7 +43,8 @@ namespace Perspex.Controls.Platform
                 viewport.Resize((int) clientSize.Width, (int) clientSize.Height);
             }));
             resources.Add(queueManager.RenderNeeded.Subscribe(_
-                => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize))));
+                =>
+                Dispatcher.UIThread.InvokeAsync(() => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize)))));
 
             topLevel.PlatformImpl.Paint = rect =>
             {
