@@ -41,6 +41,8 @@ namespace Perspex.Win32
 
                 var defExt = (dialog as SaveFileDialog)?.DefaultExtension;
                 var buffer = new char[256];
+                dialog.InitialFileName?.CopyTo(0, buffer, 0, dialog.InitialFileName.Length);
+
                 fixed (char* pBuffer = buffer)
                 fixed (char* pFilterBuffer = filterBuffer)
                 fixed (char* pDefExt = defExt)
