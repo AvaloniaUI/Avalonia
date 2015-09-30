@@ -1,4 +1,5 @@
 ﻿using Perspex.Collections;
+using Perspex.Controls;
 using Perspex.Media;
 
 namespace Perspex.MobilePlatform
@@ -16,7 +17,7 @@ namespace Perspex.MobilePlatform
         {
             get
             {
-                var rc = new Rect((_topLevel.Renderer.CapturedVisual?.Bounds ?? default(Rect)).Size);
+                var rc = new Rect((_topLevel.TopLevel?.Bounds ?? default(Rect)).Size);
                 var position = _topLevel as IHaveScreenPosition;
                 if (position != null)
                     rc = new Rect(new Point(position.X, position.Y), rc.Size);
@@ -34,11 +35,12 @@ namespace Perspex.MobilePlatform
         public IPerspexReadOnlyList<IVisual> VisualChildren => _visualChildren;
         public IVisual VisualParent => Platform.Scene;
         public int ZIndex { get; set; }
+
         public void Render(IDrawingContext context)
         {
             _visualChildren.Clear();
-            if (_topLevel.Renderer.CapturedVisual != null)
-                _visualChildren.Add(_topLevel.Renderer.CapturedVisual);
+            if (_topLevel.TopLevel != null)
+                _visualChildren.Add(_topLevel.TopLevel);
         }
 
         public Matrix TransformToVisual(IVisual visual)

@@ -9,6 +9,7 @@ using Perspex.Input.Raw;
 using Perspex.Media;
 using Perspex.MobilePlatform.Fakes;
 using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.MobilePlatform
 {
@@ -20,7 +21,7 @@ namespace Perspex.MobilePlatform
         private readonly List<MobilePopup> _popups = new List<MobilePopup>();
         private readonly PerspexList<IVisual> _visibleVisuals = new PerspexList<IVisual>();
         private MobileWindow _activeWindow;
-        private IRenderer _render;
+        private IRenderTarget _render;
         private InvalidationHelper _renderHelper = new InvalidationHelper();
 
         public SceneComposer(IWindowImpl window)
@@ -29,10 +30,10 @@ namespace Perspex.MobilePlatform
             _render = Platform.NativeRenderInterface.CreateRenderer(window.Handle, window.ClientSize.Width,
                 window.ClientSize.Height);
             _window.SetInputRoot(new FakeInputRoot());
-            _window.Paint = (rect, handle) =>
+            _window.Paint = (rect) =>
             {
                 _render.Resize((int) _window.ClientSize.Width, (int) _window.ClientSize.Height);
-                _render.Render(this, handle);
+                _render.Render(this);
             };
             _window.Resized = HandleResize;
 

@@ -71,7 +71,6 @@
   <ItemGroup>
     <Compile Include="Fakes\FakeInputRoot.cs" />
     <Compile Include="Fakes\FakePlatformHandle.cs" />
-    <Compile Include="Fakes\FakeRenderer.cs" />
     <Compile Include="Fakes\FakeWindow.cs" />
     <Compile Include="IHaveScreenPosition.cs" />
     <Compile Include="InvalidationHelper.cs" />
@@ -80,8 +79,8 @@
     <Compile Include="MobileWindow.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Fakes\MobileRenderInterfaceDecorator.cs" />
     <Compile Include="SceneComposer.cs" />
+    <Compile Include="TopLevelRenderManager.cs" />
     <Compile Include="VisualWrapper.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -16,15 +16,11 @@ namespace Perspex.MobilePlatform
     abstract class MobileTopLevel : ITopLevelImpl
     {
         public IPlatformHandle Handle { get; }
-        public FakeRenderer Renderer { get; }
-        public VisualWrapper Visual { get; }
-        private InvalidationHelper _invalidator = new InvalidationHelper();
+        public VisualWrapper Visual { get; set; }
         public MobileTopLevel()
         {
             Handle = new FakePlatformHandle(this);
-            Renderer = new FakeRenderer();
             Visual = new VisualWrapper(this);
-            _invalidator.Invalidated += () => Paint?.Invoke(new Rect(ClientSize), Handle);
         }
         
         public virtual void Dispose()
@@ -38,7 +34,7 @@ namespace Perspex.MobilePlatform
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
 
         public void Activate()
@@ -48,7 +44,7 @@ namespace Perspex.MobilePlatform
 
         public void Invalidate(Rect rect)
         {
-            _invalidator.Invalidate();
+            Platform.Scene.RenderRequestedBy(this);
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -57,6 +53,7 @@ namespace Perspex.MobilePlatform
         }
 
         public IInputRoot InputRoot { get; set; }
+        public TopLevel TopLevel { get; set; }
 
         public Point PointToScreen(Point point)
         {

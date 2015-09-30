@@ -34,8 +34,8 @@ namespace Perspex.Rendering
         {
             if (!_renderQueued)
             {
-                _renderNeeded.OnNext(Unit.Default);
                 _renderQueued = true;
+                _renderNeeded.OnNext(Unit.Default);
             }
         }
 

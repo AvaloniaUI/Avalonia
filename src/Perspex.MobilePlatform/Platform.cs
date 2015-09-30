@@ -1,4 +1,5 @@
-﻿using Perspex.MobilePlatform.Fakes;
+﻿using Perspex.Controls.Platform;
+using Perspex.MobilePlatform.Fakes;
 using Perspex.Platform;
 
 namespace Perspex.MobilePlatform
@@ -17,7 +18,7 @@ namespace Perspex.MobilePlatform
             FakeWindow = new FakeWindow(NativeWindowImpl);
             NativeRenderInterface =  PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             Scene = new SceneComposer(NativeWindowImpl);
-            PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new MobileRenderInterfaceDecorator());
+            PerspexLocator.CurrentMutable.Bind<ITopLevelRenderer>().ToConstant(new TopLevelRenderManager());
             PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<MobileWindow>();
             PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<MobilePopup>();
         }

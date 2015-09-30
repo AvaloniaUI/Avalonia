@@ -45,7 +45,6 @@ namespace Perspex.Controls
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
         private readonly IRenderQueueManager _renderQueueManager;
-        private readonly IRenderTarget _renderTarget;
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
@@ -104,11 +103,6 @@ namespace Perspex.Controls
             PlatformImpl.Resized = HandleResized;
 
             Size clientSize = ClientSize = PlatformImpl.ClientSize;
-
-            if (renderInterface != null)
-            {
-                _renderTarget = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
-            }
 
             if (LayoutManager != null)
             {
