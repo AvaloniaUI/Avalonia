@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Perspex.Controls;
 using Perspex.Input.Raw;
+using Perspex.Input;
 
 namespace Perspex.iOS
 {
@@ -82,7 +83,7 @@ namespace Perspex.iOS
             }
         }
 
-        public Action<Rect, IPlatformHandle> Paint
+        public Action<Rect> Paint
         {
             get
             {
@@ -138,7 +139,7 @@ namespace Perspex.iOS
             throw new NotImplementedException();
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
             throw new NotImplementedException();
         }

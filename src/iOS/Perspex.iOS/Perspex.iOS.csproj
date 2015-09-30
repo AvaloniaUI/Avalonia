@@ -54,7 +54,7 @@
     <Compile Include="Rendering\DrawingContext.cs" />
     <Compile Include="Rendering\FormattedTextImpl.cs" />
     <Compile Include="Rendering\iOSPlatformRender.cs" />
-    <Compile Include="Rendering\Renderer.cs" />
+    <Compile Include="Rendering\RenderTarget.cs" />
     <Compile Include="Rendering\StreamGeometryImpl.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="WindowImpl.cs" />

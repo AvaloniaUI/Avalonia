@@ -86,7 +86,7 @@ namespace Perspex.iOS.Rendering
             throw new NotImplementedException();
         }
 
-        public void DrawRectange(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
         {
             using (SetPen(pen, rect.Size))
             {
@@ -162,7 +162,7 @@ namespace Perspex.iOS.Rendering
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = SetBrush(brush, rect.Size, BrushUsage.Fill))
             {
