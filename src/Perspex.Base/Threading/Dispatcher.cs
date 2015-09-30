@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Perspex.Win32.Threading;
+using Perspex.Platform;
 
 namespace Perspex.Threading
 {
@@ -17,21 +17,19 @@ namespace Perspex.Threading
     /// </remarks>
     public class Dispatcher
     {
-        private static readonly Dispatcher s_instance = new Dispatcher();
+        private readonly IPlatformThreadingInterface _platform;
+        private readonly JobRunner _jobRunner;
 
-        private readonly MainLoop _mainLoop = new MainLoop();
+        public static Dispatcher UIThread { get; } =
+            new Dispatcher(PerspexLocator.Current.GetService<IPlatformThreadingInterface>());
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Dispatcher"/> class.
-        /// </summary>
-        private Dispatcher()
+        public Dispatcher(IPlatformThreadingInterface platform)
         {
+            _platform = platform;
+            _jobRunner = new JobRunner(platform);
+            _platform.Signaled += _jobRunner.RunJobs;
         }
 
-        /// <summary>
-        /// Gets the <see cref="Dispatcher"/> for the UI thread.
-        /// </summary>
-        public static Dispatcher UIThread => s_instance;
 
         /// <summary>
         /// Runs the dispatcher's main loop.
@@ -41,7 +39,9 @@ namespace Perspex.Threading
         /// </param>
         public void MainLoop(CancellationToken cancellationToken)
         {
-            _mainLoop.Run(cancellationToken);
+            var platform = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
+            cancellationToken.Register(platform.Signal);
+            platform.RunLoop(cancellationToken);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Perspex.Threading
         /// </summary>
         public void RunJobs()
         {
-            _mainLoop.RunJobs();
+            _jobRunner.RunJobs();
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Perspex.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            return _mainLoop.InvokeAsync(action, priority);
+            return _jobRunner.InvokeAsync(action, priority);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Perspex.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            _mainLoop.Post(action, priority);
+            _jobRunner.Post(action, priority);
         }
     }
 }

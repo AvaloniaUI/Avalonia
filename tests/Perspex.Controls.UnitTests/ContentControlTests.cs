@@ -13,7 +13,6 @@ using Perspex.Styling;
 using Perspex.VisualTree;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
-using Splat;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -49,7 +48,7 @@ namespace Perspex.Controls.UnitTests
                 var target = new ContentControl();
                 var styler = new Mock<IStyler>();
 
-                Locator.CurrentMutable.Register(() => styler.Object, typeof(IStyler));
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
                 target.Content = "Foo";
                 target.Template = GetTemplate();
                 root.Child = target;
@@ -263,6 +262,30 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
         }
 
+        [Fact]
+        public void DataContext_Should_Be_Set_For_Templated_Data()
+        {
+            var target = new ContentControl();
+
+            target.Template = GetTemplate();
+            target.Content = "Foo";
+            target.ApplyTemplate();
+
+            Assert.Equal("Foo", target.Presenter.Child.DataContext);
+        }
+
+        [Fact]
+        public void DataContext_Should_Not_Be_Set_For_Control_Data()
+        {
+            var target = new ContentControl();
+
+            target.Template = GetTemplate();
+            target.Content = new TextBlock();
+            target.ApplyTemplate();
+
+            Assert.Null(target.Presenter.Child.DataContext);
+        }
+
         private ControlTemplate GetTemplate()
         {
             return new ControlTemplate<ContentControl>(parent =>
@@ -281,10 +304,11 @@ namespace Perspex.Controls.UnitTests
 
         private IDisposable RegisterServices()
         {
-            var result = Locator.CurrentMutable.WithResolver();
+            var result = PerspexLocator.EnterScope();
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            Locator.CurrentMutable.RegisterConstant(renderInterface, typeof(IPlatformRenderInterface));
+            PerspexLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
             return result;
         }
     }

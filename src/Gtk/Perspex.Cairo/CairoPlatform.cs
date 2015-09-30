@@ -6,7 +6,6 @@ using Perspex.Cairo.Media;
 using Perspex.Cairo.Media.Imaging;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Cairo
 {
@@ -19,11 +18,7 @@ namespace Perspex.Cairo
 
         private static Pango.Context s_pangoContext = CreatePangoContext();
 
-        public static void Initialize()
-        {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => s_instance, typeof(IPlatformRenderInterface));
-        }
+        public static void Initialize() => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {

@@ -143,7 +143,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
             using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
@@ -199,7 +199,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

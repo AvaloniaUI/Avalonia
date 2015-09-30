@@ -8,7 +8,6 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Perspex.Input.Raw;
 using Perspex.Interactivity;
-using Splat;
 
 namespace Perspex.Input
 {
@@ -26,11 +25,11 @@ namespace Perspex.Input
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public static IKeyboardDevice Instance => Locator.Current.GetService<IKeyboardDevice>();
+        public static IKeyboardDevice Instance => PerspexLocator.Current.GetService<IKeyboardDevice>();
 
-        public IInputManager InputManager => Locator.Current.GetService<IInputManager>();
+        public IInputManager InputManager => PerspexLocator.Current.GetService<IInputManager>();
 
-        public IFocusManager FocusManager => Locator.Current.GetService<IFocusManager>();
+        public IFocusManager FocusManager => PerspexLocator.Current.GetService<IFocusManager>();
 
         public IInputElement FocusedElement
         {
@@ -104,6 +103,20 @@ namespace Perspex.Input
                                 Modifiers = keyInput.Modifiers,
                                 Source = element,
                             };
+
+                            IVisual currentHandler = element;
+                            while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
+                            {
+                                var bindings = (currentHandler as IInputElement)?.KeyBindings;
+                                if(bindings!=null)
+                                    foreach (var binding in bindings)
+                                    {
+                                        if(ev.Handled)
+                                            break;
+                                        binding.TryHandle(ev);
+                                    }
+                                currentHandler = currentHandler.VisualParent;
+                            }
 
                             element.RaiseEvent(ev);
                             break;

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Interactivity;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Input
 {
@@ -35,7 +34,7 @@ namespace Perspex.Input
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance => Locator.Current.GetService<IFocusManager>();
+        public static IFocusManager Instance => PerspexLocator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.

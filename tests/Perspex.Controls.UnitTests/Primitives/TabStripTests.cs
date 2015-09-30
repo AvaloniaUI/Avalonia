@@ -33,6 +33,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
+            Assert.Equal(0, target.SelectedIndex);
             Assert.Equal(target.Items.Cast<TabItem>().First(), target.SelectedItem);
             Assert.Equal(target.Items.Cast<TabItem>().First(), target.SelectedTab);
         }

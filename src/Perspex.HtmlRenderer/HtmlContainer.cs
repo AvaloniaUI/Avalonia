@@ -462,7 +462,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex
         /// </summary>
         private static RKeyEvent CreateKeyEevent(KeyEventArgs e)
         {
-            var control = (e.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+            var control = (e.Modifiers & InputModifiers.Control) == InputModifiers.Control;
             return new RKeyEvent(control, e.Key == Key.A, e.Key == Key.C);
         }
 

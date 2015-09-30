@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -44,6 +45,14 @@ namespace Perspex.Base.UnitTests
             Assert.Equal("changed", child.GetValue(Class1.BazProperty));
         }
 
+        [Fact]
+        public void GetValue_Throws_Exception_For_Unregistered_Property()
+        {
+            var target = new Class3();
+
+            Assert.Throws<ArgumentException>(() => target.GetValue(Class1.FooProperty));
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =
@@ -65,6 +74,10 @@ namespace Perspex.Base.UnitTests
                 get { return (Class1)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
+        }
+
+        private class Class3 : PerspexObject
+        {
         }
     }
 }

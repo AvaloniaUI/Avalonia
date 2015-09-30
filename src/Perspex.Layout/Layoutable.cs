@@ -549,6 +549,7 @@ namespace Perspex.Layout
                 switch (HorizontalAlignment)
                 {
                     case HorizontalAlignment.Center:
+                    case HorizontalAlignment.Stretch:
                         originX += (sizeMinusMargins.Width - size.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
@@ -559,6 +560,7 @@ namespace Perspex.Layout
                 switch (VerticalAlignment)
                 {
                     case VerticalAlignment.Center:
+                    case VerticalAlignment.Stretch:
                         originY += (sizeMinusMargins.Height - size.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:

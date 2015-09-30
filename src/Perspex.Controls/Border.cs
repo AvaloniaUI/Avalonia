@@ -93,12 +93,12 @@ namespace Perspex.Controls
 
             if (background != null)
             {
-                context.FillRectange(background, rect, cornerRadius);
+                context.FillRectangle(background, rect, cornerRadius);
             }
 
             if (borderBrush != null && borderThickness > 0)
             {
-                context.DrawRectange(new Pen(borderBrush, borderThickness), rect, cornerRadius);
+                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
             }
         }
 

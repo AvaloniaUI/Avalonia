@@ -8,7 +8,6 @@ using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Controls.Primitives
 {
@@ -41,8 +40,8 @@ namespace Perspex.Controls.Primitives
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public PopupRoot(IDependencyResolver dependencyResolver)
-            : base(Locator.Current.GetService<IPopupImpl>(), dependencyResolver)
+        public PopupRoot(IPerspexDependencyResolver dependencyResolver)
+            : base(PerspexLocator.Current.GetService<IPopupImpl>(), dependencyResolver)
         {
             GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }

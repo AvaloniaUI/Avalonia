@@ -8,12 +8,13 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading;
+using Perspex.Controls.Platform;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Win32.Input;
 using Perspex.Win32.Interop;
-using Splat;
 
 namespace Perspex.Win32
 {
@@ -40,28 +41,28 @@ namespace Perspex.Win32
 
         private static void InitializeInternal()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new PopupImpl(), typeof(IPopupImpl));
-            locator.Register(() => new ClipboardImpl(), typeof(IClipboard));
-            locator.Register(() => WindowsKeyboardDevice.Instance, typeof(IKeyboardDevice));
-            locator.Register(() => WindowsMouseDevice.Instance, typeof(IMouseDevice));
-            locator.Register(() => CursorFactory.Instance, typeof(IStandardCursorFactory));
-            locator.Register(() => s_instance, typeof(IPlatformSettings));
-            locator.Register(() => s_instance, typeof(IPlatformThreadingInterface));
+            PerspexLocator.CurrentMutable
+                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
+                .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
+                .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
+                .Bind<IPlatformSettings>().ToConstant(s_instance)
+                .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
+
             SharedPlatform.Register();
         }
 
         public static void Initialize()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new WindowImpl(), typeof(IWindowImpl));
+            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<WindowImpl>();
             InitializeInternal();
         }
 
         public static void InitializeEmbedded()
         {
-            var locator = Locator.CurrentMutable;
-            locator.Register(() => new EmbeddedWindowImpl(), typeof(IWindowImpl));
+            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<EmbeddedWindowImpl>();
             InitializeInternal();
         }
 
@@ -77,6 +78,17 @@ namespace Perspex.Win32
             UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
             UnmanagedMethods.TranslateMessage(ref msg);
             UnmanagedMethods.DispatchMessage(ref msg);
+        }
+
+        public void RunLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                UnmanagedMethods.MSG msg;
+                UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
+                UnmanagedMethods.TranslateMessage(ref msg);
+                UnmanagedMethods.DispatchMessage(ref msg);
+            }
         }
 
         public IDisposable StartTimer(TimeSpan interval, Action callback)
@@ -100,18 +112,27 @@ namespace Perspex.Win32
             });
         }
 
-        public void Wake()
+        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
+        private static readonly int SignalL = unchecked((int)0x12345678);
+
+        public void Signal()
         {
-            //UnmanagedMethods.PostMessage(
-            //    this.hwnd,
-            //    (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
-            //    IntPtr.Zero,
-            //    IntPtr.Zero);
+            UnmanagedMethods.PostMessage(
+                _hwnd,
+                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                new IntPtr(SignalW),
+                new IntPtr(SignalL));
         }
+
+        public event Action Signaled;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            {
+                Signaled?.Invoke();
+            }
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 

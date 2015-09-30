@@ -17,6 +17,13 @@ namespace Perspex.Animation
         /// <summary>
         /// Initializes a new instance of the <see cref="PageSlide"/> class.
         /// </summary>
+        public PageSlide()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageSlide"/> class.
+        /// </summary>
         /// <param name="duration">The duration of the animation.</param>
         public PageSlide(TimeSpan duration)
         {
@@ -26,7 +33,7 @@ namespace Perspex.Animation
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
-        public TimeSpan Duration { get; }
+        public TimeSpan Duration { get; set; }
 
         /// <summary>
         /// Starts the animation.

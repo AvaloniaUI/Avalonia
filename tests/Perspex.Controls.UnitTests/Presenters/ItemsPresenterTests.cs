@@ -101,12 +101,12 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            var text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text).ToList();
+            var text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
             Assert.Equal(new[] { "foo", "bar" }, text);
 
             items.RemoveAt(1);
 
-            text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text).ToList();
+            text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
             Assert.Equal(new[] { "foo", "bar" }, text);
         }
 
@@ -172,6 +172,55 @@ namespace Perspex.Controls.UnitTests.Presenters
             var child = target.GetVisualChildren().Single();
 
             Assert.Equal(target.Panel, child);
+        }
+
+        [Fact]
+        public void MemberSelector_Should_Select_Member()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] { new Item("Foo"), new Item("Bar") },
+                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
+            };
+
+            target.ApplyTemplate();
+
+            var text = target.Panel.Children
+                .Cast<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "Foo", "Bar" }, text);
+        }
+
+        [Fact]
+        public void MemberSelector_Should_Set_DataContext()
+        {
+            var items = new[] { new Item("Foo"), new Item("Bar") };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
+            };
+
+            target.ApplyTemplate();
+
+            var dataContexts = target.Panel.Children
+                .Cast<TextBlock>()
+                .Select(x => x.DataContext)
+                .ToList();
+
+            Assert.Equal(new[] { "Foo", "Bar" }, dataContexts);
+        }
+
+        private class Item
+        {
+            public Item(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
         }
 
         private class TestItem : ContentControl

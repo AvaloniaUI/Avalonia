@@ -84,7 +84,7 @@ namespace Perspex.Controls.Presenters
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectange(brush, rect);
+                    context.FillRectangle(brush, rect);
                 }
             }
 
@@ -93,8 +93,19 @@ namespace Perspex.Controls.Presenters
             if (selectionStart == selectionEnd)
             {
                 var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-                Brush caretBrush = Brushes.Black;
+                
+                var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
+                var caretBrush = Brushes.Black;
 
+                if(backgroundColor.HasValue)
+                {
+                    byte red = (byte)~(backgroundColor.Value.R);
+                    byte green = (byte)~(backgroundColor.Value.G);
+                    byte blue = (byte)~(backgroundColor.Value.B);
+
+                    caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                }
+                
                 if (_caretBlink)
                 {
                     var x = Math.Floor(charPos.X) + 0.5;

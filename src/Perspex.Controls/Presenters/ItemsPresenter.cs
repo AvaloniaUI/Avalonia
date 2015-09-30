@@ -20,7 +20,7 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>();
+            ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -28,8 +28,14 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        private bool _createdPanel;
+        /// <summary>
+        /// Defines the <see cref="MemberSelector"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+            ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenter>();
 
+        private IEnumerable _items;
+        private bool _createdPanel;
         private IItemContainerGenerator _generator;
 
         /// <summary>
@@ -83,8 +89,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IEnumerable Items
         {
-            get { return GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
         /// <summary>
@@ -94,6 +100,15 @@ namespace Perspex.Controls.Presenters
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Selects a member from <see cref="Items"/> to use as the list item.
+        /// </summary>
+        public IMemberSelector MemberSelector
+        {
+            get { return GetValue(MemberSelectorProperty); }
+            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>
@@ -171,8 +186,7 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                Panel.Children.AddRange(
-                    ItemContainerGenerator.CreateContainers(0, Items, null));
+                Panel.Children.AddRange(ItemContainerGenerator.CreateContainers(0, Items, MemberSelector));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -229,7 +243,7 @@ namespace Perspex.Controls.Presenters
                 {
                     case NotifyCollectionChangedAction.Add:
                         Panel.Children.AddRange(
-                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, null));
+                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, MemberSelector));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:

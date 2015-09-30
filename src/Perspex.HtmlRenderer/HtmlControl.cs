@@ -85,8 +85,8 @@ namespace Perspex.Controls.Html
         public static readonly PerspexProperty TextProperty =
             PropertyHelper.Register<HtmlControl, string>("Text", null, OnPerspexProperty_valueChanged);
 
-        public static readonly PerspexProperty BackgroundProperty =
-            PerspexProperty.Register<HtmlControl, Brush>("Background", Brushes.White);
+        public static readonly PerspexProperty<Brush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<HtmlControl>();
 
         public static readonly PerspexProperty BorderThicknessProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("BorderThickness", new Thickness(0));
@@ -329,19 +329,19 @@ namespace Perspex.Controls.Html
         
         public override void Render(IDrawingContext context)
         {
-            context.FillRectange(Background,  new Rect(RenderSize));
+            context.FillRectangle(Background,  new Rect(RenderSize));
 
             if (BorderThickness != new Thickness(0) && BorderBrush != null)
             {
                 var brush = new SolidColorBrush(Colors.Black);
                 if (BorderThickness.Top > 0)
-                    context.FillRectange(brush, new Rect(0, 0, RenderSize.Width, BorderThickness.Top));
+                    context.FillRectangle(brush, new Rect(0, 0, RenderSize.Width, BorderThickness.Top));
                 if (BorderThickness.Bottom > 0)
-                    context.FillRectange(brush, new Rect(0, RenderSize.Height - BorderThickness.Bottom, RenderSize.Width, BorderThickness.Bottom));
+                    context.FillRectangle(brush, new Rect(0, RenderSize.Height - BorderThickness.Bottom, RenderSize.Width, BorderThickness.Bottom));
                 if (BorderThickness.Left > 0)
-                    context.FillRectange(brush, new Rect(0, 0, BorderThickness.Left, RenderSize.Height));
+                    context.FillRectangle(brush, new Rect(0, 0, BorderThickness.Left, RenderSize.Height));
                 if (BorderThickness.Right > 0)
-                    context.FillRectange(brush, new Rect(RenderSize.Width - BorderThickness.Right, 0, BorderThickness.Right, RenderSize.Height));
+                    context.FillRectangle(brush, new Rect(RenderSize.Width - BorderThickness.Right, 0, BorderThickness.Right, RenderSize.Height));
             }
 
             var htmlWidth = HtmlWidth(RenderSize);
@@ -563,7 +563,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnLoadComplete(e);
             else
-                Dispatcher.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
 
         }
 
@@ -572,7 +572,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnLinkClicked(e);
             else
-                Dispatcher.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlLinkClickedEventArgs>(OnLinkClicked), e);
         }
 
         private void OnRenderError(object sender, HtmlRenderErrorEventArgs e)
@@ -580,7 +580,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnRenderError(e);
             else
-                Dispatcher.Invoke(new Action<HtmlRenderErrorEventArgs>(OnRenderError), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlRenderErrorEventArgs>(OnRenderError), e);
         }
 
         private void OnStylesheetLoad(object sender, HtmlStylesheetLoadEventArgs e)
@@ -588,7 +588,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnStylesheetLoad(e);
             else
-                Dispatcher.Invoke(new Action<HtmlStylesheetLoadEventArgs>(OnStylesheetLoad), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlStylesheetLoadEventArgs>(OnStylesheetLoad), e);
         }
 
         private void OnImageLoad(object sender, HtmlImageLoadEventArgs e)
@@ -596,7 +596,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnImageLoad(e);
             else
-                Dispatcher.Invoke(new Action<HtmlImageLoadEventArgs>(OnImageLoad), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlImageLoadEventArgs>(OnImageLoad), e);
         }
 
         private void OnRefresh(object sender, HtmlRefreshEventArgs e)
@@ -604,7 +604,7 @@ namespace Perspex.Controls.Html
             if (CheckAccess())
                 OnRefresh(e);
             else
-                Dispatcher.Invoke(new Action<HtmlRefreshEventArgs>(OnRefresh), e);
+                Dispatcher.UIThread.Invoke(new Action<HtmlRefreshEventArgs>(OnRefresh), e);
         }
         */
     }

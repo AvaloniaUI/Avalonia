@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input;
@@ -31,9 +31,11 @@ namespace Perspex.Win32
 
         private IntPtr _hwnd;
 
-        private TopLevel _owner;
+        private IInputRoot _owner;
 
         private bool _trackingMouse;
+
+        private bool _isActive;
 
         public WindowImpl()
         {
@@ -163,9 +165,9 @@ namespace Perspex.Win32
             return new Point(p.X, p.Y);
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
-            _owner = owner;
+            _owner = inputRoot;
         }
 
         public void SetTitle(string title)
@@ -181,13 +183,13 @@ namespace Perspex.Win32
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
-            TopLevel activated = null;
+            WindowImpl activated = null;
 
             foreach (var window in disabled)
             {
-                if (window._owner.IsActive)
+                if (window._isActive)
                 {
-                    activated = window._owner;
+                    activated = window;
                 }
 
                 window.IsEnabled = false;
@@ -253,6 +255,7 @@ namespace Perspex.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
+                            _isActive = true;
                             if (Activated != null)
                             {
                                 Activated();
@@ -261,6 +264,7 @@ namespace Perspex.Win32
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
+                            _isActive = false;
                             if (Deactivated != null)
                             {
                                 Deactivated();
@@ -299,29 +303,56 @@ namespace Perspex.Win32
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
-                    if (wParam.ToInt32() > 32)
+                    if (wParam.ToInt32() >= 32)
                     {
                         e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
                             new string((char)wParam.ToInt32(), 1));
                     }
 
                     break;
-                case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
-                    e = new RawMouseEventArgs(
-                        WindowsMouseDevice.Instance,
-                        timestamp,
-                        _owner,
-                        RawMouseEventType.LeftButtonDown,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
-                    break;
 
-                case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
+                case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        RawMouseEventType.LeftButtonUp,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN
+                            ? RawMouseEventType.LeftButtonDown
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
+                                ? RawMouseEventType.RightButtonDown
+                                : RawMouseEventType.MiddleButtonDown,
+                        new Point(0, 0), GetMouseModifiers(wParam));
+                    break;
+                case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
+                    e = new RawMouseEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN
+                            ? RawMouseEventType.LeftButtonDown
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
+                                ? RawMouseEventType.RightButtonDown
+                                : RawMouseEventType.MiddleButtonDown,
+                        new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
+                    break;
+                    
+                case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
+                case UnmanagedMethods.WindowsMessage.WM_RBUTTONUP:
+                case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
+                    e = new RawMouseEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        msg == (int) UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
+                            ? RawMouseEventType.LeftButtonUp
+                            : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
+                                ? RawMouseEventType.RightButtonUp
+                                : RawMouseEventType.MiddleButtonUp,
+                        new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
@@ -343,7 +374,7 @@ namespace Perspex.Win32
                         timestamp,
                         _owner,
                         RawMouseEventType.Move,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), WindowsKeyboardDevice.Instance.Modifiers);
+                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
@@ -352,7 +383,7 @@ namespace Perspex.Win32
                         timestamp,
                         _owner,
                         ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
-                        new Vector(0, ((int)wParam >> 16) / wheelDelta), WindowsKeyboardDevice.Instance.Modifiers);
+                        new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -394,10 +425,27 @@ namespace Perspex.Win32
             if (e != null && Input != null)
             {
                 Input(e);
+
+                if (msg >= 161 && msg <= 173)
+                    return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+
                 return IntPtr.Zero;
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        static InputModifiers GetMouseModifiers(IntPtr wParam)
+        {
+            var keys = (UnmanagedMethods.ModifierKeys)wParam.ToInt32();
+            var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
+            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
+                modifiers |= InputModifiers.LeftMouseButton;
+            if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
+                modifiers  |= InputModifiers.RightMouseButton;
+            if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
+                modifiers |= InputModifiers.MiddleMouseButton;
+            return modifiers;
         }
 
         private void CreateWindow()

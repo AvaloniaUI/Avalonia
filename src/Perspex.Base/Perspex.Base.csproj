@@ -46,10 +46,12 @@
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />
     <Compile Include="IPropertyBag.cs" />
+    <Compile Include="PerspexLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PerspexProperty`1.cs" />
     <Compile Include="Platform\IPclPlatformWrapper.cs" />
+    <Compile Include="BindingPriority.cs" />
     <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IPerspexList.cs" />
     <Compile Include="Collections\PerspexList.cs" />
@@ -71,9 +73,10 @@
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
-    <Compile Include="Threading\MainLoop.cs" />
+    <Compile Include="Threading\JobRunner.cs" />
     <Compile Include="Threading\PerspexScheduler.cs" />
     <Compile Include="Threading\PerspexSynchronizationContext.cs" />
+    <Compile Include="Threading\SingleThreadDispatcher.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
   </ItemGroup>
@@ -93,19 +96,10 @@
     <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
       <HintPath>..\..\packages\Serilog.1.5.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NGenerics\NGenerics.csproj">
-      <Project>{415E048E-4611-4815-9CF2-D774E29079AC}</Project>
-      <Name>NGenerics</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -4,7 +4,6 @@
 using System;
 using Perspex.Media;
 using Perspex.Platform;
-using Splat;
 using System.Collections.Generic;
 
 namespace Perspex.Cairo.Media

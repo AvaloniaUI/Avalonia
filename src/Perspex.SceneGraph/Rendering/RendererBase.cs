@@ -101,7 +101,7 @@ namespace Perspex.Rendering
                 var d = context.PushTransform(m);
 
                 using (context.PushOpacity(opacity))
-                using (visual.ClipToBounds ? context.PushClip(visual.Bounds) : null)
+                using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : null)
                 {
                     visual.Render(context);
                     d.Dispose();

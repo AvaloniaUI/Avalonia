@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Styling
 {
@@ -17,7 +16,7 @@ namespace Perspex.Styling
                 .GetSelfAndVisualAncestors()
                 .OfType<IStyleHost>()
                 .FirstOrDefault();
-            IGlobalStyles global = Locator.Current.GetService<IGlobalStyles>();
+            IGlobalStyles global = PerspexLocator.Current.GetService<IGlobalStyles>();
 
             if (global != null)
             {

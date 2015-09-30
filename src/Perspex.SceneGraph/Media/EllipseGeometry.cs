@@ -3,7 +3,6 @@
 
 using System;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Media
 {
@@ -18,7 +17,7 @@ namespace Perspex.Media
         /// <param name="rect">The rectangle that the ellipse should fill.</param>
         public EllipseGeometry(Rect rect)
         {
-            IPlatformRenderInterface factory = Locator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             IStreamGeometryImpl impl = factory.CreateStreamGeometry();
 
             using (IStreamGeometryContextImpl ctx = impl.Open())

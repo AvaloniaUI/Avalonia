@@ -23,19 +23,27 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<DeckPresenter>();
+            ItemsControl.ItemsProperty.AddOwner<DeckPresenter>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<DeckPresenter>();
+        
+        /// <summary>
+        /// Defines the <see cref="MemberSelector"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+            ItemsControl.MemberSelectorProperty.AddOwner<DeckPresenter>();
 
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly PerspexProperty<int> SelectedIndexProperty =
-            SelectingItemsControl.SelectedIndexProperty.AddOwner<DeckPresenter>();
+            SelectingItemsControl.SelectedIndexProperty.AddOwner<DeckPresenter>(
+                o => o.SelectedIndex,
+                (o, v) => o.SelectedIndex = v);
 
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
@@ -43,8 +51,9 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
             Deck.TransitionProperty.AddOwner<DeckPresenter>();
 
+        private IEnumerable _items;
+        private int _selectedIndex = -1;
         private bool _createdPanel;
-
         private IItemContainerGenerator _generator;
 
         /// <summary>
@@ -88,8 +97,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public IEnumerable Items
         {
-            get { return GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
         /// <summary>
@@ -102,12 +111,21 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <summary>
+        /// Selects a member from <see cref="Items"/> to use as the list item.
+        /// </summary>
+        public IMemberSelector MemberSelector
+        {
+            get { return GetValue(MemberSelectorProperty); }
+            set { SetValue(MemberSelectorProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the index of the selected page.
         /// </summary>
         public int SelectedIndex
         {
-            get { return GetValue(SelectedIndexProperty); }
-            set { SetValue(SelectedIndexProperty, value); }
+            get { return _selectedIndex; }
+            set { SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value); }
         }
 
         /// <summary>
@@ -181,7 +199,7 @@ namespace Perspex.Controls.Presenters
             if (toIndex != -1)
             {
                 var item = Items.Cast<object>().ElementAt(toIndex);
-                to = generator.CreateContainers(toIndex, new[] { item }, null).FirstOrDefault();
+                to = generator.CreateContainers(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
 
                 if (to != null)
                 {
@@ -189,7 +207,7 @@ namespace Perspex.Controls.Presenters
                 }
             }
 
-            if (Transition != null)
+            if (Transition != null && (from != null || to != null))
             {
                 await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
             }

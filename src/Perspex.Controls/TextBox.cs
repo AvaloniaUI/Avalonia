@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Input.Platform;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +38,12 @@ namespace Perspex.Controls
 
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+
+        public static readonly PerspexProperty<string> WatermarkProperty =
+            PerspexProperty.Register<TextBox, string>("Watermark");
+
+        public static readonly PerspexProperty<bool> UseFloatingWatermarkProperty =
+            PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
 
         private TextPresenter _presenter;
 
@@ -102,6 +107,18 @@ namespace Perspex.Controls
             set { SetValue(TextProperty, value); }
         }
 
+        public string Watermark
+        {
+            get { return GetValue(WatermarkProperty); }
+            set { SetValue(WatermarkProperty, value); }
+        }
+
+        public bool UseFloatingWatermark
+        {
+            get { return GetValue(UseFloatingWatermarkProperty); }
+            set { SetValue(UseFloatingWatermarkProperty, value); }
+        }
+
         public TextWrapping TextWrapping
         {
             get { return GetValue(TextWrappingProperty); }
@@ -150,13 +167,13 @@ namespace Perspex.Controls
 
         private async void Copy()
         {
-            await ((IClipboard)Locator.Current.GetService(typeof(IClipboard)))
+            await ((IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard)))
                 .SetTextAsync(GetSelection());
         }
 
         private async void Paste()
         {
-            var text = await ((IClipboard)Locator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+            var text = await ((IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
             if (text == null)
             {
                 return;
@@ -176,21 +193,21 @@ namespace Perspex.Controls
             switch (e.Key)
             {
                 case Key.A:
-                    if (modifiers == ModifierKeys.Control)
+                    if (modifiers == InputModifiers.Control)
                     {
                         SelectAll();
                     }
 
                     break;
                 case Key.C:
-                    if (modifiers == ModifierKeys.Control)
+                    if (modifiers == InputModifiers.Control)
                     {
                         Copy();
                     }
 
                     break;
                 case Key.V:
-                    if (modifiers == ModifierKeys.Control)
+                    if (modifiers == InputModifiers.Control)
                     {
                         Paste();
                     }
@@ -265,7 +282,7 @@ namespace Perspex.Controls
                     break;
             }
 
-            if (movement && ((modifiers & ModifierKeys.Shift) != 0))
+            if (movement && ((modifiers & InputModifiers.Shift) != 0))
             {
                 SelectionEnd = CaretIndex;
             }
@@ -336,12 +353,12 @@ namespace Perspex.Controls
             return Math.Max(0, Math.Min(length, value));
         }
 
-        private void MoveHorizontal(int count, ModifierKeys modifiers)
+        private void MoveHorizontal(int count, InputModifiers modifiers)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
+            if ((modifiers & InputModifiers.Control) != 0)
             {
                 if (count > 0)
                 {
@@ -356,7 +373,7 @@ namespace Perspex.Controls
             CaretIndex = caretIndex += count;
         }
 
-        private void MoveVertical(int count, ModifierKeys modifiers)
+        private void MoveVertical(int count, InputModifiers modifiers)
         {
             var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
@@ -374,12 +391,12 @@ namespace Perspex.Controls
             }
         }
 
-        private void MoveHome(ModifierKeys modifiers)
+        private void MoveHome(InputModifiers modifiers)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
+            if ((modifiers & InputModifiers.Control) != 0)
             {
                 caretIndex = 0;
             }
@@ -404,12 +421,12 @@ namespace Perspex.Controls
             CaretIndex = caretIndex;
         }
 
-        private void MoveEnd(ModifierKeys modifiers)
+        private void MoveEnd(InputModifiers modifiers)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & ModifierKeys.Control) != 0)
+            if ((modifiers & InputModifiers.Control) != 0)
             {
                 caretIndex = text.Length;
             }

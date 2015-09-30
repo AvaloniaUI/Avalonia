@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Disposables;
 using Perspex.Platform;
-using Splat;
 
 namespace Perspex.Threading
 {
@@ -25,17 +24,6 @@ namespace Perspex.Threading
         public DispatcherTimer()
         {
             _priority = DispatcherPriority.Normal;
-            Dispatcher = Dispatcher.UIThread;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
-        /// </summary>
-        /// <param name="priority">The priority to use.</param>
-        public DispatcherTimer(DispatcherPriority priority)
-        {
-            _priority = priority;
-            Dispatcher = Dispatcher.UIThread;
         }
 
         /// <summary>
@@ -43,10 +31,9 @@ namespace Perspex.Threading
         /// </summary>
         /// <param name="priority">The priority to use.</param>
         /// <param name="dispatcher">The dispatcher to use.</param>
-        public DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher)
+        public DispatcherTimer(DispatcherPriority priority)
         {
             _priority = priority;
-            Dispatcher = dispatcher;
         }
 
         /// <summary>
@@ -56,10 +43,9 @@ namespace Perspex.Threading
         /// <param name="priority">The priority to use.</param>
         /// <param name="dispatcher">The dispatcher to use.</param>
         /// <param name="callback">The event to call when the timer ticks.</param>
-        public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback, Dispatcher dispatcher)
+        public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback)
         {
             _priority = priority;
-            Dispatcher = dispatcher;
             Interval = interval;
             Tick += callback;
         }
@@ -79,13 +65,6 @@ namespace Perspex.Threading
         /// Raised when the timer ticks.
         /// </summary>
         public event EventHandler Tick;
-
-        /// <summary>
-        /// Gets the dispatcher that the timer uses.
-        /// </summary>
-        public Dispatcher Dispatcher
-        {
-            get; }
 
         /// <summary>
         /// Gets or sets the interval at which the timer ticks.
@@ -175,7 +154,7 @@ namespace Perspex.Threading
         {
             if (!IsEnabled)
             {
-                IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
+                IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
                 _timer = threading.StartTimer(Interval, InternalTick);
             }
         }
@@ -187,7 +166,7 @@ namespace Perspex.Threading
         {
             if (IsEnabled)
             {
-                IPlatformThreadingInterface threading = Locator.Current.GetService<IPlatformThreadingInterface>();
+                IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
                 _timer.Dispose();
                 _timer = null;
             }
@@ -198,7 +177,7 @@ namespace Perspex.Threading
         /// </summary>
         private void InternalTick()
         {
-            Dispatcher.Post(RaiseTick, _priority);
+            Dispatcher.UIThread.Post(RaiseTick, _priority);
         }
 
         /// <summary>

@@ -12,7 +12,6 @@ using Perspex.Layout;
 using Perspex.Rendering;
 using Perspex.Styling;
 using Perspex.Threading;
-using Splat;
 
 namespace Perspex
 {
@@ -40,7 +39,7 @@ namespace Perspex
         private DataTemplates _dataTemplates;
 
         private readonly Lazy<IClipboard> _clipboard =
-            new Lazy<IClipboard>(() => (IClipboard)Locator.Current.GetService(typeof(IClipboard)));
+            new Lazy<IClipboard>(() => (IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard)));
 
         /// <summary>
         /// The styler that will be used to apply styles to controls.
@@ -120,6 +119,9 @@ namespace Perspex
             private set;
         }
 
+        /// <summary>
+        /// Gets the application clipboard.
+        /// </summary>
         public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>
@@ -157,15 +159,16 @@ namespace Perspex
             FocusManager = new FocusManager();
             InputManager = new InputManager();
 
-            Locator.CurrentMutable.Register(() => new AccessKeyHandler(), typeof(IAccessKeyHandler));
-            Locator.CurrentMutable.Register(() => this, typeof(IGlobalDataTemplates));
-            Locator.CurrentMutable.Register(() => this, typeof(IGlobalStyles));
-            Locator.CurrentMutable.Register(() => FocusManager, typeof(IFocusManager));
-            Locator.CurrentMutable.Register(() => InputManager, typeof(IInputManager));
-            Locator.CurrentMutable.Register(() => new KeyboardNavigationHandler(), typeof(IKeyboardNavigationHandler));
-            Locator.CurrentMutable.Register(() => _styler, typeof(IStyler));
-            Locator.CurrentMutable.Register(() => new LayoutManager(), typeof(ILayoutManager));
-            Locator.CurrentMutable.Register(() => new RenderManager(), typeof(IRenderManager));
+            PerspexLocator.CurrentMutable
+                .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
+                .Bind<IGlobalDataTemplates>().ToConstant(this)
+                .Bind<IGlobalStyles>().ToConstant(this)
+                .Bind<IFocusManager>().ToConstant(FocusManager)
+                .Bind<IInputManager>().ToConstant(InputManager)
+                .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
+                .Bind<IStyler>().ToConstant(_styler)
+                .Bind<ILayoutManager>().ToTransient<LayoutManager>()
+                .Bind<IRenderManager>().ToTransient<RenderManager>();
         }
 
         /// <summary>

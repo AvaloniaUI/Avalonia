@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Resources;
 using Perspex.Platform;
 
 namespace Perspex.Shared.PlatformSupport
@@ -20,7 +18,6 @@ namespace Perspex.Shared.PlatformSupport
         private static readonly Dictionary<string, Assembly> AssemblyNameCache
             = new Dictionary<string, Assembly>();
 
-
         static Assembly GetAssembly(string name)
         {
             Assembly rv;
@@ -29,6 +26,20 @@ namespace Perspex.Shared.PlatformSupport
                     AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == name)
                     ?? Assembly.Load(name);
             return rv;
+        }
+
+        /// <summary>
+        /// Checks if an asset with the specified URI exists.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>True if the asset could be found; otherwise false.</returns>
+        public bool Exists(Uri uri)
+        {
+            var parts = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var asm = parts.Length == 1 ? Assembly.GetEntryAssembly() : GetAssembly(parts[0]);
+            var typeName = parts[parts.Length == 1 ? 0 : 1];
+            var rv = asm.GetManifestResourceStream(typeName);
+            return rv != null;
         }
 
         /// <summary>
@@ -46,7 +57,7 @@ namespace Perspex.Shared.PlatformSupport
             var typeName = parts[parts.Length == 1 ? 0 : 1];
             var rv = asm.GetManifestResourceStream(typeName);
             if (rv == null)
-                throw new FileNotFoundException(uri.ToString());
+                throw new FileNotFoundException($"The resource {uri} could not be found.");
             return rv;
         }
     }

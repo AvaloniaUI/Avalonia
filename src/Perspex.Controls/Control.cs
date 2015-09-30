@@ -2,17 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Interactivity;
-using Perspex.LogicalTree;
 using Perspex.Rendering;
 using Perspex.Styling;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -47,7 +44,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Parent"/> property.
         /// </summary>
         public static readonly PerspexProperty<IControl> ParentProperty =
-            PerspexProperty.Register<Control, IControl>(nameof(Parent));
+            PerspexProperty.RegisterDirect<Control, IControl>(nameof(Parent), o => o.Parent);
 
         /// <summary>
         /// Defines the <see cref="Tag"/> property.
@@ -67,16 +64,12 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+        private IControl _parent;
         private readonly Classes _classes = new Classes();
-
         private DataTemplates _dataTemplates;
-
         private IControl _focusAdorner;
-
-        private string _id;
-
+        private string _name;
         private IPerspexList<ILogical> _logicalChildren;
-
         private Styles _styles;
 
         /// <summary>
@@ -180,22 +173,22 @@ namespace Perspex.Controls
         {
             get
             {
-                return _id;
+                return _name;
             }
 
             set
             {
-                if (_id != null)
+                if (_name != null)
                 {
-                    throw new InvalidOperationException("ID already set.");
+                    throw new InvalidOperationException("Name already set.");
                 }
 
                 if (((IVisual)this).VisualParent != null)
                 {
-                    throw new InvalidOperationException("Cannot set ID : control already added to tree.");
+                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
                 }
 
-                _id = value;
+                _name = value;
             }
         }
 
@@ -228,7 +221,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        public IControl Parent => GetValue(ParentProperty);
+        public IControl Parent => _parent;
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
@@ -298,7 +291,7 @@ namespace Perspex.Controls
                 throw new InvalidOperationException("The Control already has a parent.");
             }
 
-            SetValue(ParentProperty, parent);
+            SetAndRaise(ParentProperty, ref _parent, (IControl)parent);
         }
 
         /// <summary>
@@ -397,7 +390,7 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(root);
 
-            IStyler styler = Locator.Current.GetService<IStyler>();
+            IStyler styler = PerspexLocator.Current.GetService<IStyler>();
             styler.ApplyStyles(this);
         }
 

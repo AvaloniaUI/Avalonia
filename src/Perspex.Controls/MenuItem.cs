@@ -14,7 +14,6 @@ using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Threading;
 using Perspex.VisualTree;
-using Splat;
 
 namespace Perspex.Controls
 {
@@ -28,6 +27,9 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly PerspexProperty<ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>();
+
+        public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
+            HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
@@ -129,6 +131,16 @@ namespace Perspex.Controls
         {
             get { return GetValue(CommandProperty); }
             set { SetValue(CommandProperty, value); }
+        }
+
+
+        /// <summary>
+        /// Gets or sets an <see cref="KeyGesture"/> associated with this control
+        /// </summary>
+        public KeyGesture HotKey
+        {
+            get { return GetValue(HotKeyProperty); }
+            set { SetValue(HotKeyProperty, value); }
         }
 
         /// <summary>
@@ -489,7 +501,7 @@ namespace Perspex.Controls
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.
         /// </summary>
-        private class DependencyResolver : IDependencyResolver
+        private class DependencyResolver : IPerspexDependencyResolver
         {
             /// <summary>
             /// Gets the default instance of <see cref="DependencyResolver"/>.
@@ -509,7 +521,7 @@ namespace Perspex.Controls
             /// <param name="serviceType">The service type.</param>
             /// <param name="contract">An optional contract.</param>
             /// <returns>A service of the requested type.</returns>
-            public object GetService(Type serviceType, string contract = null)
+            public object GetService(Type serviceType)
             {
                 if (serviceType == typeof(IAccessKeyHandler))
                 {
@@ -517,19 +529,8 @@ namespace Perspex.Controls
                 }
                 else
                 {
-                    return Locator.Current.GetService(serviceType, contract);
+                    return PerspexLocator.Current.GetService(serviceType);
                 }
-            }
-
-            /// <summary>
-            /// Gets collection of services of the specified type.
-            /// </summary>
-            /// <param name="serviceType">The service type.</param>
-            /// <param name="contract">An optional contract.</param>
-            /// <returns>A collection of services of the requested type.</returns>
-            public IEnumerable<object> GetServices(Type serviceType, string contract = null)
-            {
-                return Locator.Current.GetServices(serviceType, contract);
             }
         }
     }
