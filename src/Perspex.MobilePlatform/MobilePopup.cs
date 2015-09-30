@@ -16,6 +16,8 @@ namespace Perspex.MobilePlatform
             Platform.Scene.RenderRequestedBy(this);
         }
 
+        public override Rect Bounds => new Rect(new Point(X, Y), ClientSize);
+
         public void Show()
         {
             Platform.Scene.AddPopup(this);

@@ -16,16 +16,16 @@ namespace Perspex.MobilePlatform
     abstract class MobileTopLevel : ITopLevelImpl
     {
         public IPlatformHandle Handle { get; }
-        public VisualWrapper Visual { get; set; }
         public MobileTopLevel()
         {
             Handle = new FakePlatformHandle(this);
-            Visual = new VisualWrapper(this);
         }
         
         public virtual void Dispose()
         {
         }
+
+        public virtual Rect Bounds => new Rect(ClientSize);
 
         public abstract Size ClientSize { get; set; }
 
