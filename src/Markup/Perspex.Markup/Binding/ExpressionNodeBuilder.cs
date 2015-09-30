@@ -1,16 +1,18 @@
-﻿using System;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Perspex.Markup.Binding
 {
-    public class ExpressionNodeBuilder
+    internal class ExpressionNodeBuilder
     {
-        public static IList<ExpressionNode> Build(string expression)
+        public static ExpressionNode Build(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -45,7 +47,7 @@ namespace Perspex.Markup.Binding
                     result[i].Next = result[i + 1];
                 }
 
-                return result;
+                return result[0];
             }
             else
             {

@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Perspex.Markup.Binding
 {
-    public class PropertyAccessorNode : ExpressionNode
+    internal class PropertyAccessorNode : ExpressionNode
     {
         private PropertyInfo _propertyInfo;
 
@@ -16,18 +16,25 @@ namespace Perspex.Markup.Binding
             PropertyName = propertyName;
         }
 
-        public bool SetValue(object value)
-        {
-            if (_propertyInfo != null)
-            {
-                _propertyInfo.SetValue(Target, value);
-                return true;
-            }
-
-            return false;
-        }
-
         public string PropertyName { get; }
+
+        public override bool SetValue(object value)
+        {
+            if (Next != null)
+            {
+                return Next.SetValue(value);
+            }
+            else
+            {
+                if (_propertyInfo != null)
+                {
+                    _propertyInfo.SetValue(Target, value);
+                    return true;
+                }
+
+                return false;
+            }
+        }
 
         protected override void SubscribeAndUpdate(object target)
         {

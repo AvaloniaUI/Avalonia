@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
 using System.Reactive.Subjects;
 
 namespace Perspex.Markup.Binding
 {
-    public abstract class ExpressionNode : IObservable<ExpressionValue>
+    internal abstract class ExpressionNode : IObservable<ExpressionValue>
     {
         private object _target;
 
@@ -70,6 +69,11 @@ namespace Perspex.Markup.Binding
                     _subject.OnNext(value);
                 }
             }
+        }
+
+        public virtual bool SetValue(object value)
+        {
+            return Next?.SetValue(value) ?? false;
         }
 
         public IDisposable Subscribe(IObserver<ExpressionValue> observer)
