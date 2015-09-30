@@ -30,6 +30,14 @@ namespace Perspex.Controls
         private ILogical _childLogicalParent;
 
         /// <summary>
+        /// Initializes static members of the <see cref="Panel"/> class.
+        /// </summary>
+        static Panel()
+        {
+            ClipToBoundsProperty.OverrideDefaultValue<StackPanel>(true);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
         /// </summary>
         public Panel()
