@@ -19,6 +19,26 @@ namespace Perspex.Markup.Binding
             Nodes = ExpressionNodeBuilder.Build(expression);
         }
 
+        public bool SetValue(object value)
+        {
+            var last = Nodes.Last() as PropertyAccessorNode;
+
+            if (last != null)
+            {
+                try
+                {
+                    IncrementCount();
+                    return last.SetValue(value);
+                }
+                finally
+                {
+                    DecrementCount();
+                }
+            }
+
+            return false;
+        }
+
         public object Root { get; }
 
         public IList<ExpressionNode> Nodes { get; }

@@ -16,6 +16,17 @@ namespace Perspex.Markup.Binding
             PropertyName = propertyName;
         }
 
+        public bool SetValue(object value)
+        {
+            if (_propertyInfo != null)
+            {
+                _propertyInfo.SetValue(Target, value);
+                return true;
+            }
+
+            return false;
+        }
+
         public string PropertyName { get; }
 
         protected override void SubscribeAndUpdate(object target)

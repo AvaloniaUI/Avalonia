@@ -142,6 +142,53 @@ namespace Perspex.Markup.UnitTests.Binding
             Assert.Equal(0, old.SubscriptionCount);
         }
 
+        [Fact]
+        public void SetValue_Should_Set_Simple_Property_Value()
+        {
+            var data = new Class1 { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+
+            Assert.True(target.SetValue("bar"));
+            Assert.Equal("bar", data.Foo);
+        }
+
+        [Fact]
+        public void SetValue_Should_Set_Property_At_The_End_Of_Chain()
+        {
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var target = new ExpressionObserver(data, "Next.Bar");
+
+            Assert.True(target.SetValue("baz"));
+            Assert.Equal("baz", ((Class2)data.Next).Bar);
+        }
+
+        [Fact]
+        public void SetValue_Should_Return_False_For_Missing_Property()
+        {
+            var data = new Class1 { Next = new WithoutBar()};
+            var target = new ExpressionObserver(data, "Next.Bar");
+
+            Assert.False(target.SetValue("baz"));
+        }
+
+        [Fact]
+        public void SetValue_Should_Return_False_For_Missing_Object()
+        {
+            var data = new Class1();
+            var target = new ExpressionObserver(data, "Next.Bar");
+
+            Assert.False(target.SetValue("baz"));
+        }
+
+        [Fact]
+        public void SetValue_Should_Throw_For_Wrong_Type()
+        {
+            var data = new Class1 { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+
+            Assert.Throws<ArgumentException>(() => target.SetValue(1.2));
+        }
+
         private interface INext
         {
             int SubscriptionCount { get; }
