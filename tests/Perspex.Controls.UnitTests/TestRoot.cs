@@ -15,12 +15,12 @@ namespace Perspex.Controls.UnitTests
 
         public ILayoutManager LayoutManager => new Mock<ILayoutManager>().Object;
 
-        public IRenderer Renderer
+        public IRenderTarget RenderTarget
         {
             get { throw new NotImplementedException(); }
         }
 
-        public IRenderManager RenderManager
+        public IRenderQueueManager RenderQueueManager
         {
             get { throw new NotImplementedException(); }
         }

@@ -36,9 +36,13 @@ namespace Perspex.Cairo
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
+        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            return new Renderer(handle, width, height);
+            if (handle.HandleDescriptor != "GtkWindow")
+                throw new NotSupportedException(string.Format(
+                    "Don't know how to create a Cairo renderer from a '{0}' handle",
+                    handle.HandleDescriptor));
+            return new RenderTarget((Gtk.Window)handle, width, height);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

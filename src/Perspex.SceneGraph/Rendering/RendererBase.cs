@@ -12,103 +12,54 @@ namespace Perspex.Rendering
     /// Base class for standard renderers.
     /// </summary>
     /// <remarks>
-    /// This class provides implements the platform-independent parts of <see cref="IRenderer"/>.
+    /// This class provides implements the platform-independent parts of <see cref="IRenderTarget"/>.
     /// </remarks>
-    public abstract class RendererBase : IRenderer
+    public static class RendererMixin
     {
         /// <summary>
-        /// Gets the number of times <see cref="Render(IVisual, IPlatformHandle)"/> has been called.
+        /// Renders the specified visual.
         /// </summary>
-        public int RenderCount
+        /// <param name="renderTarget">IRenderer instance</param>
+        /// <param name="visual">The visual to render.</param>
+        public static void Render(this IRenderTarget renderTarget, IVisual visual)
         {
-            get;
-            private set;
+            using (var ctx = renderTarget.CreateDrawingContext())
+                ctx.Render(visual);
         }
 
-        public abstract void Dispose();
+
 
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle)
-        {
-            Render(visual, handle, Matrix.Identity);
-            ++RenderCount;
-        }
-
-        /// <summary>
-        /// Renders the specified visual with the specified transform and clip.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        /// <param name="transform">The transform.</param>
-        /// <param name="clip">An optional clip rectangle.</param>
-        public virtual void Render(IVisual visual, IPlatformHandle handle, Matrix transform, Rect? clip = null)
-        {
-            using (var context = CreateDrawingContext(handle))
-            using (clip.HasValue ? context.PushClip(clip.Value) : null)
-            {
-                Render(visual, context, Matrix.Identity, transform);
-            }
-        }
-
-        /// <summary>
-        /// Resizes the rendered viewport.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        public abstract void Resize(int width, int height);
-
-        /// <summary>
-        /// When overriden by a derived class creates an <see cref="IDrawingContext"/> for a
-        /// rendering session.
-        /// </summary>
-        /// <param name="handle">The handle to use to create the context.</param>
-        /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        protected abstract IDrawingContext CreateDrawingContext(IPlatformHandle handle);
-
-        /// <summary>
-        /// Renders the specified visual.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
+        /// 
         /// <param name="context">The drawing context.</param>
-        /// <param name="translation">The current translation.</param>
-        /// <param name="transform">The current transform.</param>
-        protected virtual void Render(IVisual visual, IDrawingContext context, Matrix translation, Matrix transform)
+        public static void Render(this IDrawingContext context, IVisual visual)
         {
             var opacity = visual.Opacity;
-
             if (visual.IsVisible && opacity > 0)
             {
-                // Translate any existing transform into this controls coordinate system.
-                Matrix offset = Matrix.CreateTranslation(visual.Bounds.Position);
-                transform = offset * transform * -offset;
+                var m = Matrix.CreateTranslation(visual.Bounds.Position);
 
-                // Update the current offset.
-                translation *= Matrix.CreateTranslation(visual.Bounds.Position);
+                var renderTransform = Matrix.Identity;
 
-                // Apply the control's render transform, if any.
                 if (visual.RenderTransform != null)
                 {
-                    offset = Matrix.CreateTranslation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
-                    transform *= -offset * visual.RenderTransform.Value * offset;
+                    var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                    var offset = Matrix.CreateTranslation(origin);
+                    renderTransform = (-offset)*visual.RenderTransform.Value*(offset);
                 }
+                m = context.CurrentTransform.Invert()*renderTransform*m*context.CurrentTransform;
 
-                // Draw the control and its children.
-                var m = transform * translation;
-                var d = context.PushTransform(m);
-
+                using (context.PushTransform(m))
                 using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : null)
                 {
                     visual.Render(context);
-                    d.Dispose();
-
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
                     {
-                        Render(child, context, translation, transform);
+                        context.Render(child);
                     }
                 }
             }
