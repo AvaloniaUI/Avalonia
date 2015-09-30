@@ -46,8 +46,9 @@ namespace Perspex.Rendering
 
                 if (visual.RenderTransform != null)
                 {
-                    var offset = -Matrix.CreateTranslation(visual.TransformOrigin.ToPixels(visual.Bounds.Size));
-                    renderTransform = offset*visual.RenderTransform.Value;
+                    var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                    var offset = Matrix.CreateTranslation(origin);
+                    renderTransform = (-offset)*visual.RenderTransform.Value*(offset);
                 }
                 m = context.CurrentTransform.Invert()*renderTransform*m*context.CurrentTransform;
 
