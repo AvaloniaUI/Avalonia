@@ -177,7 +177,7 @@ namespace Perspex
         /// <param name="platformID">The value of Environment.OSVersion.Platform.</param>
         protected void InitializeSubsystems(int platformID)
         {
-            if (true)
+            if (platformID == 4 || platformID == 6)
             {
                 InitializeSubsystem("Perspex.Cairo");
                 InitializeSubsystem("Perspex.Gtk");
