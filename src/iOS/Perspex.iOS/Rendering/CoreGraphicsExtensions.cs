@@ -24,6 +24,11 @@ namespace Perspex.iOS.Rendering
             return new CGPoint(p.X, p.Y);
         }
 
+        public static Point ToPerspex(this CGPoint pt)
+        {
+            return new Point(pt.X, pt.Y);
+        }
+
         public static CGRect ToCoreGraphics(this Rect rect)
         {
             return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);

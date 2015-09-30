@@ -31,11 +31,16 @@ namespace TestApplication.iOS
             // test ui
             var controller = new UIViewController();
             controller.View.BackgroundColor = UIColor.Red;
+
+			// patch the host view in directly to rule out Perspex input issues
+            var clientView = new iOSHostView(UIScreen.MainScreen.Bounds, null);
+            controller.View.AddSubview(clientView);
+
             Window.RootViewController = controller;
 
             // make the window visible
             Window.MakeKeyAndVisible();
-#endif
+#else
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Perspex stuff
@@ -45,6 +50,7 @@ namespace TestApplication.iOS
             _app.BuildGridWithSomeButtonsAndStuff();
 
             ////////////////////////////////////////////////////////////////////////////////////////////
+#endif
 
             return true;
         }

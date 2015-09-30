@@ -5,8 +5,72 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.iOS;
 using Perspex.Media;
+using Serilog;
 using System;
 
+// We should move this sink implementation elsewhere, for now I need this here for iOS dev
+// the other question is, is there another sink already part of Serilog we could use?
+namespace TestApplication.iOS
+{
+    using Serilog;
+    using Serilog.Configuration;
+    using Serilog.Core;
+    using Serilog.Events;
+    using Serilog.Formatting;
+    using Serilog.Formatting.Display;
+    using System.IO;
+
+    // Copied this from Serilog.MonoTouch package that refuses to install for some reason
+    //
+
+    class NSLogSink : ILogEventSink
+    {
+        readonly ITextFormatter _textFormatter;
+
+        public NSLogSink(ITextFormatter textFormatter)
+        {
+            if (textFormatter == null) throw new ArgumentNullException("textFormatter");
+            _textFormatter = textFormatter;
+        }
+
+        public void Emit(LogEvent logEvent)
+        {
+            if (logEvent == null) throw new ArgumentNullException("logEvent");
+            var renderSpace = new StringWriter();
+            _textFormatter.Format(logEvent, renderSpace);
+            Console.WriteLine(renderSpace.ToString());
+        }
+    }
+
+    public static class LoggerConfigurationMonoTouchExtensions
+    {
+        const string DefaultNSLogOutputTemplate = "[{Level}] {Message:l{NewLine:l}{Exception:l}";
+
+        /// <summary>
+        /// Adds a sink that writes log events to a Azure DocumentDB table in the provided endpoint.
+        /// </summary>
+        /// <param name="sinkConfiguration">The configuration being modified.</param>
+        /// <param name="restrictedToMinimumLevel">The minimum log event level required in order to write an event to the sink.</param>
+        /// <param name="outputTemplate">Template for the output events</param>
+        /// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
+        /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
+        public static LoggerConfiguration NSLog(this LoggerSinkConfiguration sinkConfiguration,
+            LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+            string outputTemplate = DefaultNSLogOutputTemplate,
+            IFormatProvider formatProvider = null)
+        {
+
+            if (sinkConfiguration == null)
+                throw new ArgumentNullException("sinkConfiguration");
+
+            if (outputTemplate == null)
+                throw new ArgumentNullException("outputTemplate");
+
+            var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
+            return sinkConfiguration.Sink(new NSLogSink(formatter), restrictedToMinimumLevel);
+        }
+    }
+}
 
 namespace TestApplication.iOS
 {
@@ -38,6 +102,11 @@ namespace TestApplication.iOS
         /// <param name="assemblyName">The name of the assembly.</param>
         protected void InitializePlatform()
         {
+            // Setup logging which will be useful for tracking certain issues
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.NSLog()
+                .CreateLogger();
+
             // on iOS due to AOT we cannot dynamically load an assembly
             //
             //var assembly = Assembly.Load(new AssemblyName(assemblyName));
@@ -91,7 +160,7 @@ namespace TestApplication.iOS
                     RowDefinitions = new RowDefinitions
                     {
                         new RowDefinition(40, GridUnitType.Pixel),
-                        new RowDefinition(40, GridUnitType.Pixel),
+                        new RowDefinition(80, GridUnitType.Pixel),
                         new RowDefinition(1, GridUnitType.Star),
                         new RowDefinition(1, GridUnitType.Star),
                     },
@@ -204,8 +273,8 @@ namespace TestApplication.iOS
 
             window.Show();
 
-            // this is a problem for iOS
-            //Perspex.Application.Current.Run(window);
+            // this is now safe to call, and would be what we do in a cross-platform application
+            Perspex.Application.Current.Run(window);
         }
 
 

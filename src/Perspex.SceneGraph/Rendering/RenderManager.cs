@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Serilog;
 using System;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -34,8 +35,8 @@ namespace Perspex.Rendering
         {
             if (!_renderQueued)
             {
-                _renderNeeded.OnNext(Unit.Default);
                 _renderQueued = true;
+                _renderNeeded.OnNext(Unit.Default);
             }
         }
 

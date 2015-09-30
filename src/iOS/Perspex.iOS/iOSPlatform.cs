@@ -1,13 +1,17 @@
-﻿using Perspex.Controls.Platform;
+﻿using Foundation;
+using Perspex.Controls.Platform;
 using Perspex.Input;
 using Perspex.Input.Platform;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
+using Perspex.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Perspex.iOS
 {
@@ -17,12 +21,13 @@ namespace Perspex.iOS
 
         public iOSPlatform()
         {
-            //Gtk.Application.Init();
         }
 
         // this does not make sense on iOS??
         public Size DoubleClickSize => new Size(4, 4);
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);  // Gtk.Settings.Default.DoubleClickTime);
+
+        public event Action Signaled;
 
         public static void Initialize()
         {
@@ -41,33 +46,33 @@ namespace Perspex.iOS
             SharedPlatform.Register();
         }
 
-        public bool HasMessages()
+        public void RunLoop(CancellationToken cancellationToken)
         {
-            return false; // Gtk.Application.EventsPending();
+            // noop on iOS
         }
 
-        public void ProcessMessage()
+        public void Signal()
         {
-            //Gtk.Application.RunIteration();
+            EnsureInvokedOnMainThread(() => Signaled?.Invoke());
         }
 
         public IDisposable StartTimer(TimeSpan interval, Action tick)
         {
-            var result = true;
-
-            //var handle = GLib.Timeout.Add(
-            //    (uint)interval.TotalMilliseconds,
-            //    () =>
-            //    {
-            //        tick();
-            //        return result;
-            //    });
-
-            return Disposable.Create(() => result = false);
+            // hopefully this implementation is satisfactory, or do we need a
+            // platform specific/native implementation?
+            return Observable.Timer(interval, interval).Subscribe(_ => tick());
         }
 
-        public void Wake()
+        // We could share this out if necessary
+        static NSObject Invoker = new NSObject();
+        private static void EnsureInvokedOnMainThread(Action action)
         {
+            if (NSThread.Current.IsMainThread)
+            {
+                action();
+                return;
+            }
+            Invoker.BeginInvokeOnMainThread(() => action());
         }
     }
 }
