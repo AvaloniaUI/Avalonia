@@ -65,14 +65,6 @@ namespace Perspex.Markup.Binding
             CurrentValue = result;
         }
 
-        private void PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == PropertyName)
-            {
-                CurrentValue = new ExpressionValue(_propertyInfo.GetValue(Target));
-            }
-        }
-
         protected override void Unsubscribe(object target)
         {
             var inpc = target as INotifyPropertyChanged;
@@ -80,6 +72,14 @@ namespace Perspex.Markup.Binding
             if (inpc != null)
             {
                 inpc.PropertyChanged -= PropertyChanged;
+            }
+        }
+
+        private void PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == PropertyName)
+            {
+                CurrentValue = new ExpressionValue(_propertyInfo.GetValue(Target));
             }
         }
     }

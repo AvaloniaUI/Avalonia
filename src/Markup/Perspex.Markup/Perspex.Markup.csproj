@@ -37,6 +37,7 @@
     <Compile Include="Binding\ExpressionNodeBuilder.cs" />
     <Compile Include="Binding\ExpressionValue.cs" />
     <Compile Include="Binding\LogicalNotNode.cs" />
+    <Compile Include="Binding\ElementAccessorNode.cs" />
     <Compile Include="Binding\PropertyAccessorNode.cs" />
     <Compile Include="Binding\ExpressionNode.cs" />
     <Compile Include="Binding\ExpressionObserver.cs" />

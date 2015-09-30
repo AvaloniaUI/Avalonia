@@ -39,6 +39,7 @@ namespace Perspex.Markup.Binding
             var identifier = syntax as IdentifierNameSyntax;
             var memberAccess = syntax as MemberAccessExpressionSyntax;
             var unaryExpression = syntax as PrefixUnaryExpressionSyntax;
+            var elementAccess = syntax as ElementAccessExpressionSyntax;
 
             if (expressionStatement != null)
             {
@@ -58,12 +59,47 @@ namespace Perspex.Markup.Binding
                 next = Build(expression, unaryExpression.Operand, next);
                 next = new LogicalNotNode(next);
             }
+            else if (elementAccess != null)
+            {
+                next = Build(expression, elementAccess, next);
+                next = Build(expression, elementAccess.Expression, next);
+            }
             else
             {
                 throw new Exception($"Invalid expression: {expression}");
             }
 
             return next;
+        }
+
+        private static ExpressionNode Build(string expression, ElementAccessExpressionSyntax syntax, ExpressionNode next)
+        {
+            var argList = syntax.ArgumentList as BracketedArgumentListSyntax;
+
+            if (argList != null)
+            {
+                var args = new List<object>();
+
+                foreach (var arg in argList.Arguments)
+                {
+                    var literal = arg.Expression as LiteralExpressionSyntax;
+
+                    if (literal != null)
+                    {
+                        args.Add(literal.Token.Value);
+                    }
+                    else
+                    {
+                        throw new Exception($"Invalid expression: {expression}");
+                    }
+                }
+
+                return new ElementAccessorNode(next, args);
+            }
+            else
+            {
+                throw new Exception($"Invalid expression: {expression}");
+            }
         }
     }
 }
