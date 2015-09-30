@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Perspex.Platform;
 using Perspex.Threading;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
-    class MobileWindow : MobileTopLevel, IWindowImpl
+    class WindowImpl : TopLevelImpl, IWindowImpl
     {
         public Size MaxClientSize => ClientSize;
         public void SetTitle(string title)

@@ -1,4 +1,4 @@
-﻿namespace Perspex.MobilePlatform
+﻿namespace Perspex.TinyWM
 {
     interface IHaveScreenPosition
     {

@@ -1,8 +1,8 @@
 ﻿using Perspex.Controls.Platform;
-using Perspex.MobilePlatform.Fakes;
+using Perspex.TinyWM.Fakes;
 using Perspex.Platform;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
     public static class Platform
     {
@@ -19,8 +19,8 @@ namespace Perspex.MobilePlatform
             NativeRenderInterface =  PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             Scene = new SceneComposer(NativeWindowImpl);
             PerspexLocator.CurrentMutable.Bind<ITopLevelRenderer>().ToConstant(new TopLevelRenderManager());
-            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<MobileWindow>();
-            PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<MobilePopup>();
+            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<WindowImpl>();
+            PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<PopupImpl>();
         }
     }
 }

@@ -8,8 +8,8 @@
     <ProjectGuid>{1D36D6B3-2994-41C5-8330-19FBDEC5769B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.MobilePlatform</RootNamespace>
-    <AssemblyName>Perspex.MobilePlatform</AssemblyName>
+    <RootNamespace>Perspex.TinyWM</RootNamespace>
+    <AssemblyName>Perspex.TinyWM</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -74,9 +74,9 @@
     <Compile Include="Fakes\FakeWindow.cs" />
     <Compile Include="IHaveScreenPosition.cs" />
     <Compile Include="InvalidationHelper.cs" />
-    <Compile Include="MobilePopup.cs" />
-    <Compile Include="MobileTopLevel.cs" />
-    <Compile Include="MobileWindow.cs" />
+    <Compile Include="PopupImpl.cs" />
+    <Compile Include="TopLevelImpl.cs" />
+    <Compile Include="WindowImpl.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SceneComposer.cs" />

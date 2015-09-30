@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Threading;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
     class InvalidationHelper
     {

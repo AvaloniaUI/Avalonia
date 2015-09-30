@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Input.Raw;
-using Perspex.MobilePlatform.Fakes;
+using Perspex.TinyWM.Fakes;
 using Perspex.Platform;
 using Perspex.Threading;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
-    abstract class MobileTopLevel : ITopLevelImpl
+    abstract class TopLevelImpl : ITopLevelImpl
     {
         public IPlatformHandle Handle { get; }
-        public MobileTopLevel()
+        public TopLevelImpl()
         {
             Handle = new FakePlatformHandle(this);
         }
@@ -29,7 +29,7 @@ namespace Perspex.MobilePlatform
 
         public abstract Size ClientSize { get; set; }
 
-        public string HandleDescriptor => "MobilePlatformVirtualHandle";
+        public string HandleDescriptor => "TinyWMVirtualHandle";
         public Action Activated { get; set; }
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }

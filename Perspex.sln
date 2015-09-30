@@ -96,7 +96,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.HtmlRenderer", "src
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PlatformSupport", "src\Shared\PlatformSupport\PlatformSupport.shproj", "{E4D9629C-F168-4224-3F51-A5E482FFBC42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.MobilePlatform", "src\Perspex.MobilePlatform\Perspex.MobilePlatform.csproj", "{1D36D6B3-2994-41C5-8330-19FBDEC5769B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.TinyWM", "src\Perspex.TinyWM\Perspex.TinyWM.csproj", "{1D36D6B3-2994-41C5-8330-19FBDEC5769B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Perspex.Controls;
 using Perspex.Platform;
 
-namespace Perspex.MobilePlatform.Fakes
+namespace Perspex.TinyWM.Fakes
 {
     class FakeWindow : TopLevel
     {

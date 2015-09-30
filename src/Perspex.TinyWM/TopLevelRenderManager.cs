@@ -7,13 +7,13 @@ using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Rendering;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
     class TopLevelRenderManager : ITopLevelRenderer
     {
         public void Attach(TopLevel topLevel)
         {
-            var impl= ((MobileTopLevel)topLevel.PlatformImpl);
+            var impl= ((TopLevelImpl)topLevel.PlatformImpl);
             impl.TopLevel = topLevel;
             var queueManager = ((IRenderRoot) topLevel).RenderQueueManager;
             queueManager.RenderNeeded.Subscribe(_ =>

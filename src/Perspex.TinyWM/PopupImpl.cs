@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Platform;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
-    class MobilePopup : MobileTopLevel, IPopupImpl, IHaveScreenPosition
+    class PopupImpl : TopLevelImpl, IPopupImpl, IHaveScreenPosition
     {
         public void SetPosition(Point p)
         {

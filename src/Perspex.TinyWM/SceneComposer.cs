@@ -7,19 +7,19 @@ using Perspex.Collections;
 using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Media;
-using Perspex.MobilePlatform.Fakes;
+using Perspex.TinyWM.Fakes;
 using Perspex.Platform;
 using Perspex.Rendering;
 
-namespace Perspex.MobilePlatform
+namespace Perspex.TinyWM
 {
     class SceneComposer
     {
         private readonly IWindowImpl _window;
 
-        private readonly List<MobileWindow> _windows = new List<MobileWindow>();
-        private readonly List<MobilePopup> _popups = new List<MobilePopup>();
-        private MobileWindow _activeWindow;
+        private readonly List<WindowImpl> _windows = new List<WindowImpl>();
+        private readonly List<PopupImpl> _popups = new List<PopupImpl>();
+        private WindowImpl _activeWindow;
         private IRenderTarget _render;
         private InvalidationHelper _renderHelper = new InvalidationHelper();
 
@@ -60,16 +60,16 @@ namespace Perspex.MobilePlatform
         }
 
 
-        MobileTopLevel GetEventTargetAndTransformEvent(RawInputEventArgs ev)
+        TopLevelImpl GetEventTargetAndTransformEvent(RawInputEventArgs ev)
         {
             if (ev is RawKeyEventArgs)
             {
-                return (MobileTopLevel)_popups.FirstOrDefault() ?? _activeWindow;
+                return (TopLevelImpl)_popups.FirstOrDefault() ?? _activeWindow;
             }
             var mouseEv = ev as RawMouseEventArgs;
             if (mouseEv != null)
             {
-                MobileTopLevel target = _activeWindow;
+                TopLevelImpl target = _activeWindow;
                 foreach (var popup in Enumerable.Reverse(_popups))
                 {
                     if (popup.Bounds.Contains(mouseEv.Position))
@@ -92,7 +92,7 @@ namespace Perspex.MobilePlatform
             GetEventTargetAndTransformEvent(ev)?.Input?.Invoke(ev);
         }
 
-        public void AddWindow(MobileWindow window)
+        public void AddWindow(WindowImpl window)
         {
             _windows.Add(window);
             window.SetSize(_window.ClientSize);
@@ -109,24 +109,24 @@ namespace Perspex.MobilePlatform
             _window.Invalidate(new Rect(_window.ClientSize));
         }
 
-        public void RemoveWindow(MobileWindow window)
+        public void RemoveWindow(WindowImpl window)
         {
             _windows.Remove(window);
             HandleActivation();
         }
 
-        public void RenderRequestedBy(MobileTopLevel topLevel)
+        public void RenderRequestedBy(TopLevelImpl topLevel)
         {
             _renderHelper.Invalidate();
         }
 
-        public void AddPopup(MobilePopup mobilePopup)
+        public void AddPopup(PopupImpl mobilePopup)
         {
             _popups.Add(mobilePopup);
             HandleActivation();
         }
 
-        public void RemovePopup(MobilePopup mobilePopup)
+        public void RemovePopup(PopupImpl mobilePopup)
         {
             _popups.Remove(mobilePopup);
             HandleActivation();
