@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Media;
 
 namespace Perspex.Platform
 {
@@ -17,16 +18,11 @@ namespace Perspex.Platform
     public interface IRenderer : IDisposable
     {
         /// <summary>
-        /// Gets the number of times <see cref="Render"/> has been called.
+        /// Creates an <see cref="IDrawingContext"/> for a rendering session.
         /// </summary>
-        int RenderCount { get; }
-
-        /// <summary>
-        /// Renders the specified visual.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        void Render(IVisual visual, IPlatformHandle handle);
+        /// <param name="handle">The handle to use to create the context.</param>
+        /// <returns>An <see cref="IDrawingContext"/>.</returns>
+        IDrawingContext CreateDrawingContext(IPlatformHandle target);
 
         /// <summary>
         /// Resizes the rendered viewport.

@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo.Media.Imaging
 {

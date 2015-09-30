@@ -12,7 +12,7 @@ using DwFactory = SharpDX.DirectWrite.Factory;
 
 namespace Perspex.Direct2D1
 {
-    public class Renderer : RendererBase
+    public class Renderer : IRenderer
     {
         /// <summary>
         /// The render target.
@@ -77,7 +77,7 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public override void Resize(int width, int height)
+        public void Resize(int width, int height)
         {
             WindowRenderTarget window = _renderTarget as WindowRenderTarget;
 
@@ -96,12 +96,12 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="handle">The platform handle. Unused.</param>
         /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
+        public IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
             return new DrawingContext(_renderTarget, DirectWriteFactory);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             _renderTarget.Dispose();
         }

@@ -4,6 +4,7 @@
 using System;
 using Perspex.Layout;
 using Perspex.Media;
+using Perspex.Rendering;
 using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media

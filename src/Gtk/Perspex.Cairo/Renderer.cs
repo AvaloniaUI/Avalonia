@@ -15,7 +15,7 @@ namespace Perspex.Cairo
     /// <summary>
     /// A cairo renderer.
     /// </summary>
-    public class Renderer : RendererBase
+    public class Renderer : IRenderer
     {
         private readonly Surface _surface;
         private Gdk.Window _window;
@@ -40,7 +40,7 @@ namespace Perspex.Cairo
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
-        public override void Resize(int width, int height)
+        public  void Resize(int width, int height)
         {
             // Don't need to do anything here.
         }
@@ -51,7 +51,7 @@ namespace Perspex.Cairo
         /// </summary>
         /// <param name="handle">The platform-specific handle.</param>
         /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
-        protected override IDrawingContext CreateDrawingContext(IPlatformHandle handle)
+        public IDrawingContext CreateDrawingContext(IPlatformHandle handle)
         {
             switch (handle.HandleDescriptor)
             {
@@ -68,11 +68,8 @@ namespace Perspex.Cairo
                         handle.HandleDescriptor));
             }
         }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hwnd);
-
-        public override void Dispose()
+        
+        public void Dispose()
         {
 			if (_surface != null)
 		        _surface.Dispose();

@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Platform;
+using Perspex.Rendering;
 using SharpDX.Direct2D1;
 using SharpDX.WIC;
 

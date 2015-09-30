@@ -7,6 +7,7 @@ using Perspex.Cairo.Media.Imaging;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo.Media
 {
