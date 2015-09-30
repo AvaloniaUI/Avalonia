@@ -40,10 +40,12 @@ namespace Perspex.Win32
                 filters.CopyTo(0, filterBuffer, 0, filterBuffer.Length);
 
                 var defExt = (dialog as SaveFileDialog)?.DefaultExtension;
-                var buffer = new char[256];
-                dialog.InitialFileName?.CopyTo(0, buffer, 0, dialog.InitialFileName.Length);
+                var fileBuffer = new char[256];
+                dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
-                fixed (char* pBuffer = buffer)
+                string userSelectedExt = null;
+
+                fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
                 fixed (char* pDefExt = defExt)
                 fixed (char* pInitDir = dialog.InitialDirectory)
@@ -60,13 +62,13 @@ namespace Perspex.Win32
                             UnmanagedMethods.OpenFileNameFlags.OFN_EXPLORER |
                             UnmanagedMethods.OpenFileNameFlags.OFN_HIDEREADONLY,
                         nMaxCustFilter = 0,
-                        nMaxFile = buffer.Length - 1,
+                        nMaxFile = fileBuffer.Length - 1,
                         nMaxFileTitle = 0,
                         lpTemplateName = IntPtr.Zero,
                         lpfnHook = IntPtr.Zero,
                         lpstrCustomFilter = IntPtr.Zero,
                         lpstrDefExt = new IntPtr(pDefExt),
-                        lpstrFile = new IntPtr(pBuffer),
+                        lpstrFile = new IntPtr(pFileBuffer),
                         lpstrFileTitle = IntPtr.Zero,
                         lpstrFilter = new IntPtr(pFilterBuffer),
                         lpstrInitialDir = new IntPtr(pInitDir),
@@ -89,19 +91,20 @@ namespace Perspex.Win32
                     if (!res)
                         return null;
 
+                    userSelectedExt = dialog.Filters[ofn.nFilterIndex - 1].Extensions[0];
                 }
                 var cStart = 0;
                 string dir = null;
                 var files = new List<string>();
-                for (var c = 0; c < buffer.Length; c++)
+                for (var c = 0; c < fileBuffer.Length; c++)
                 {
-                    if (buffer[c] == 0)
+                    if (fileBuffer[c] == 0)
                     {
                         //Encountered double zero char
                         if (cStart == c)
                             break;
 
-                        var s = new string(buffer, cStart, c - cStart);
+                        var s = new string(fileBuffer, cStart, c - cStart);
                         if (dir == null)
                             dir = s;
                         else
@@ -110,7 +113,17 @@ namespace Perspex.Win32
                     }
                 }
                 if (files.Count == 0)
+                {
+                    if (dialog is SaveFileDialog)
+                    {
+                        if (string.IsNullOrWhiteSpace(Path.GetExtension(dir)) &&
+                        !string.IsNullOrWhiteSpace(userSelectedExt) &&
+                        !userSelectedExt.Contains("*"))
+                            dir = Path.ChangeExtension(dir, userSelectedExt);
+                    }
+                    
                     return new[] {dir};
+                }
 
                 return files.Select(f => Path.Combine(dir, f)).ToArray();
             });
