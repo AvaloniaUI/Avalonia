@@ -211,8 +211,6 @@ namespace Perspex.Cairo.Media
         public IDisposable PushClip(Rect clip)
         {
             _context.Save();
-            uint fill = 0x90000000 | (unchecked((uint) Random.Next(int.MinValue, int.MaxValue)));
-            FillRectangle(new SolidColorBrush(fill), clip, 0);
             _context.Rectangle(clip.ToCairo());
             _context.Clip();
 
