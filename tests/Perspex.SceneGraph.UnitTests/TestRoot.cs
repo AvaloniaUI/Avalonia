@@ -9,7 +9,7 @@ namespace Perspex.SceneGraph.UnitTests
 {
     public class TestRoot : TestVisual, IRenderRoot
     {
-        public IRenderingViewport Viewport
+        public IRenderTarget RenderTarget
         {
             get { throw new NotImplementedException(); }
         }

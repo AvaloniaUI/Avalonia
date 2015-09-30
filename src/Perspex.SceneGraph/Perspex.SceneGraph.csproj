@@ -105,7 +105,7 @@
     <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
     <Compile Include="Platform\IPlatformRenderInterface.cs" />
-    <Compile Include="Platform\IRenderingViewport.cs" />
+    <Compile Include="Platform\IRenderTarget.cs" />
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
     <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
     <Compile Include="Platform\IStreamGeometryImpl.cs" />

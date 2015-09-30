@@ -45,7 +45,7 @@ namespace Perspex.Controls
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
         private readonly IRenderQueueManager _renderQueueManager;
-        private readonly IRenderingViewport _viewport;
+        private readonly IRenderTarget _renderTarget;
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
@@ -107,7 +107,7 @@ namespace Perspex.Controls
 
             if (renderInterface != null)
             {
-                _viewport = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
+                _renderTarget = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
             }
 
             if (LayoutManager != null)

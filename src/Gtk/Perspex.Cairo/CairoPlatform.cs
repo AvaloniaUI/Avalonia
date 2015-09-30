@@ -36,9 +36,9 @@ namespace Perspex.Cairo
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderingViewport CreateRenderer(IPlatformHandle handle, double width, double height)
+        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            return new Viewport(handle, width, height);
+            return new RenderTarget(handle, width, height);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

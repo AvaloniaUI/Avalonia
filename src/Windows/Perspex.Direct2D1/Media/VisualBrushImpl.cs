@@ -13,7 +13,7 @@ namespace Perspex.Direct2D1.Media
     {
         public VisualBrushImpl(
             VisualBrush brush,
-            RenderTarget target,
+            SharpDX.Direct2D1.RenderTarget target,
             Size targetSize)
         {
             var visual = brush.Visual;
@@ -51,7 +51,7 @@ namespace Perspex.Direct2D1.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Viewport(intermediate);
+                var renderer = new RenderTarget(intermediate);
 
                 renderer.Render(visual, null, transform, drawRect);
 

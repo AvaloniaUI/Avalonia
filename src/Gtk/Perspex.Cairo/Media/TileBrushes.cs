@@ -111,7 +111,7 @@ namespace Perspex.Cairo.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Viewport(intermediate);
+                var renderer = new RenderTarget(intermediate);
 
                 context.Rectangle(drawRect.ToCairo());
                 context.Clip();

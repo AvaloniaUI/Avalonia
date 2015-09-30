@@ -76,7 +76,7 @@ namespace Perspex.Controls.UnitTests
                 get { throw new NotImplementedException(); }
             }
 
-            public IRenderingViewport Viewport
+            public IRenderTarget RenderTarget
             {
                 get { throw new NotImplementedException(); }
             }

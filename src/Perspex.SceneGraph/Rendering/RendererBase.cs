@@ -12,47 +12,47 @@ namespace Perspex.Rendering
     /// Base class for standard renderers.
     /// </summary>
     /// <remarks>
-    /// This class provides implements the platform-independent parts of <see cref="IRenderingViewport"/>.
+    /// This class provides implements the platform-independent parts of <see cref="IRenderTarget"/>.
     /// </remarks>
     public static class RendererMixin
     {
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
-        /// <param name="viewport">IRenderer instance</param>
+        /// <param name="renderTarget">IRenderer instance</param>
         /// <param name="visual">The visual to render.</param>
         /// <param name="target">An optional platform-specific handle.</param>
-        public static void Render(this IRenderingViewport viewport, IVisual visual, IPlatformHandle target)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target)
         {
-            using (var ctx = viewport.CreateDrawingContext(target))
+            using (var ctx = renderTarget.CreateDrawingContext(target))
                 ctx.Render(visual);
         }
 
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
-        /// <param name="viewport">IRenderer instance</param>
+        /// <param name="renderTarget">IRenderer instance</param>
         /// <param name="target">An optional platform-specific handle.</param>
         /// <param name="visual">The visual to render.</param>
         /// <param name="translation">The current translation.</param>
         /// <param name="transform">The current transform.</param>
-        public static void Render(this IRenderingViewport viewport, IVisual visual, IPlatformHandle target, Matrix translation, Matrix transform)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target, Matrix translation, Matrix transform)
         {
-            using (var ctx = viewport.CreateDrawingContext(target))
+            using (var ctx = renderTarget.CreateDrawingContext(target))
                 ctx.Render(visual, translation, transform);
         }
 
         /// <summary>
         /// Renders the specified visual with the specified transform and clip.
         /// </summary>
-        /// <param name="viewport">IRenderer instance</param>
+        /// <param name="renderTarget">IRenderer instance</param>
         /// <param name="target">An optional platform-specific handle.</param>
         /// <param name="visual">The visual to render.</param>
         /// <param name="transform">The transform.</param>
         /// <param name="clip">An optional clip rectangle.</param>
-        public static void Render(this IRenderingViewport viewport, IVisual visual, IPlatformHandle target, Matrix transform, Rect? clip = null)
+        public static void Render(this IRenderTarget renderTarget, IVisual visual, IPlatformHandle target, Matrix transform, Rect? clip = null)
         {
-            using (var context = viewport.CreateDrawingContext(target))
+            using (var context = renderTarget.CreateDrawingContext(target))
                 context.Render(visual, transform, clip);
         }
 

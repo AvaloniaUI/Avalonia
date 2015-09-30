@@ -49,8 +49,8 @@ namespace Perspex.Platform
         /// <param name="handle">The platform handle for the renderer.</param>
         /// <param name="width">The initial width of the render.</param>
         /// <param name="height">The initial height of the render.</param>
-        /// <returns>An <see cref="IRenderingViewport"/>.</returns>
-        IRenderingViewport CreateRenderer(IPlatformHandle handle, double width, double height);
+        /// <returns>An <see cref="IRenderTarget"/>.</returns>
+        IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height);
 
         /// <summary>
         /// Creates a render target bitmap implementation.

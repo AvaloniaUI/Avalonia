@@ -22,7 +22,7 @@ namespace Perspex
     /// </summary>
     /// <remarks>
     /// The <see cref="Visual"/> class acts as a node in the Perspex scene graph and holds
-    /// all the information needed for an <see cref="IRenderingViewport"/> to render the control.
+    /// all the information needed for an <see cref="IRenderTarget"/> to render the control.
     /// To traverse the scene graph (aka Visual Tree), use the extension methods defined
     /// in <see cref="VisualExtensions"/>.
     /// </remarks>
