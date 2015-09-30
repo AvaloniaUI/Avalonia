@@ -199,7 +199,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

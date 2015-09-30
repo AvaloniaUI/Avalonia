@@ -220,7 +220,7 @@ namespace Perspex.Controls
 
             if (background != null)
             {
-                context.FillRectange(background, new Rect(Bounds.Size));
+                context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
             FormattedText.Constraint = Bounds.Size;

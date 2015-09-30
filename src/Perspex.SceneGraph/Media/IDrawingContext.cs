@@ -63,7 +63,7 @@ namespace Perspex.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectange(Brush brush, Rect rect, float cornerRadius = 0.0f);
+        void FillRectangle(Brush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
         /// Pushes a clip rectange.

@@ -191,7 +191,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void FillRectange(Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(Brush brush, Rect rect, float cornerRadius)
         {
 			using (var b = SetBrush(brush, rect.Size)) 
 			{

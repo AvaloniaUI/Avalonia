@@ -84,7 +84,7 @@ namespace Perspex.Controls.Presenters
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectange(brush, rect);
+                    context.FillRectangle(brush, rect);
                 }
             }
 
