@@ -14,12 +14,10 @@ namespace Perspex.Gtk
 {
     using Gtk = global::Gtk;
 
-    public class WindowImpl : Gtk.Window, IWindowImpl
+    public class WindowImpl : Gtk.Window, IWindowImpl, IPlatformHandle
     {
-        private TopLevel _owner;
-
-        private IPlatformHandle _windowHandle;
-
+        private IInputRoot _inputRoot;
+        
         private Size _clientSize;
 
         private Gtk.IMContext _imContext;
@@ -46,7 +44,6 @@ namespace Perspex.Gtk
             Events = EventMask.PointerMotionMask |
               EventMask.ButtonPressMask |
               EventMask.ButtonReleaseMask;
-            _windowHandle = new PlatformHandle(Handle, "GtkWindow");
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
         }
@@ -73,7 +70,8 @@ namespace Perspex.Gtk
             }
         }
 
-        IPlatformHandle ITopLevelImpl.Handle => _windowHandle;
+        IPlatformHandle ITopLevelImpl.Handle => this;
+        public string HandleDescriptor => "GtkWindow";
 
         public Action Activated { get; set; }
 
@@ -83,7 +81,7 @@ namespace Perspex.Gtk
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
 
@@ -94,7 +92,9 @@ namespace Perspex.Gtk
 
         public void Invalidate(Rect rect)
         {
-            base.GdkWindow.InvalidateRect (new Rectangle ((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), true);
+            if (base.GdkWindow != null)
+                base.GdkWindow.InvalidateRect(
+                    new Rectangle((int) rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height), true);
         }
 
         public Point PointToScreen(Point point)
@@ -105,9 +105,9 @@ namespace Perspex.Gtk
             return new Point(point.X + x, point.Y + y);
         }
 
-        public void SetOwner(TopLevel owner)
+        public void SetInputRoot(IInputRoot inputRoot)
         {
-            _owner = owner;
+            _inputRoot = inputRoot;
         }
 
         public void SetTitle(string title)
@@ -158,7 +158,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonDown
                     : evnt.Button == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
@@ -172,7 +172,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 evnt.Button == 0
                     ? RawMouseEventType.LeftButtonUp
                     : evnt.Button == 1 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
@@ -223,7 +223,7 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(EventExpose evnt)
         {
-            Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
+            Paint(evnt.Area.ToPerspex());
             return true;
         }
 
@@ -241,7 +241,7 @@ namespace Perspex.Gtk
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
                 evnt.Time,
-                _owner,
+                _inputRoot,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt.State));
             Input(e);

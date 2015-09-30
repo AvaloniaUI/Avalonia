@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Perspex.Controls.Platform;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Input.Raw;
@@ -29,13 +30,13 @@ namespace Perspex.Controls
         /// Defines the <see cref="ClientSize"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ClientSizeProperty =
-            PerspexProperty.Register<TopLevel, Size>("ClientSize");
+            PerspexProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
         /// Defines the <see cref="IsActive"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsActiveProperty =
-            PerspexProperty.Register<TopLevel, bool>("IsActive");
+            PerspexProperty.RegisterDirect<TopLevel, bool>(nameof(IsActive), o => o.IsActive);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -43,30 +44,12 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IInputElement> PointerOverElementProperty =
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
-        /// <summary>
-        /// The render manager for the window.s
-        /// </summary>
-        private readonly IRenderManager _renderManager;
-
-        /// <summary>
-        /// The window renderer.
-        /// </summary>
-        private readonly IRenderer _renderer;
-
-        /// <summary>
-        /// The input manager for the window.
-        /// </summary>
+        private readonly IRenderQueueManager _renderQueueManager;
         private readonly IInputManager _inputManager;
-
-        /// <summary>
-        /// The access key handler for the window.
-        /// </summary>
         private readonly IAccessKeyHandler _accessKeyHandler;
-
-        /// <summary>
-        /// The access keyboard navigation handler for the window.
-        /// </summary>
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
+        private Size _clientSize;
+        private bool _isActive;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -109,33 +92,23 @@ namespace Perspex.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
-            _renderManager = TryGetService<IRenderManager>(dependencyResolver);
+            _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
+            (TryGetService<ITopLevelRenderer>(dependencyResolver) ?? new DefaultTopLevelRenderer()).Attach(this);
 
-            PlatformImpl.SetOwner(this);
+            PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
             PlatformImpl.Deactivated = HandleDeactivated;
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = HandlePaint;
             PlatformImpl.Resized = HandleResized;
 
             Size clientSize = ClientSize = PlatformImpl.ClientSize;
-
-            if (renderInterface != null)
-            {
-                _renderer = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
-            }
 
             if (LayoutManager != null)
             {
                 LayoutManager.Root = this;
                 LayoutManager.LayoutNeeded.Subscribe(_ => HandleLayoutNeeded());
                 LayoutManager.LayoutCompleted.Subscribe(_ => HandleLayoutCompleted());
-            }
-
-            if (_renderManager != null)
-            {
-                _renderManager.RenderNeeded.Subscribe(_ => HandleRenderNeeded());
             }
 
             if (_keyboardNavigationHandler != null)
@@ -177,8 +150,8 @@ namespace Perspex.Controls
         /// </summary>
         public Size ClientSize
         {
-            get { return GetValue(ClientSizeProperty); }
-            private set { SetValue(ClientSizeProperty, value); }
+            get { return _clientSize; }
+            private set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
         /// <summary>
@@ -186,8 +159,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsActive
         {
-            get { return GetValue(IsActiveProperty); }
-            private set { SetValue(IsActiveProperty, value); }
+            get { return _isActive; }
+            private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
 
         /// <summary>
@@ -195,7 +168,8 @@ namespace Perspex.Controls
         /// </summary>
         public ILayoutManager LayoutManager
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
@@ -204,16 +178,11 @@ namespace Perspex.Controls
         {
             get;
         }
-
-        /// <summary>
-        /// Gets the window renderer.
-        /// </summary>
-        IRenderer IRenderRoot.Renderer => _renderer;
-
+        
         /// <summary>
         /// Gets the window render manager.
         /// </summary>
-        IRenderManager IRenderRoot.RenderManager => _renderManager;
+        IRenderQueueManager IRenderRoot.RenderQueueManager => _renderQueueManager;
 
         /// <summary>
         /// Gets the access key handler for the window.
@@ -313,7 +282,6 @@ namespace Perspex.Controls
             }
 
             ClientSize = clientSize;
-            _renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
             LayoutManager.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
@@ -405,28 +373,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutCompleted()
         {
-            _renderManager?.InvalidateRender(this);
-        }
-
-        /// <summary>
-        /// Handles a render request from <see cref="RenderManager.RenderNeeded"/>.
-        /// </summary>
-        private void HandleRenderNeeded()
-        {
-            Dispatcher.UIThread.InvokeAsync(
-                () => PlatformImpl.Invalidate(new Rect(ClientSize)),
-                DispatcherPriority.Render);
-        }
-
-        /// <summary>
-        /// Handles a paint request from <see cref="ITopLevelImpl.Paint"/>.
-        /// </summary>
-        /// <param name="rect">The rectangle to paint.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        private void HandlePaint(Rect rect, IPlatformHandle handle)
-        {
-            _renderer.Render(this, handle);
-            _renderManager.RenderFinished();
+            _renderQueueManager?.InvalidateRender(this);
         }
     }
 }

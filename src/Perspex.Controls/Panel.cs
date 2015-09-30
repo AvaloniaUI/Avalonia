@@ -173,7 +173,7 @@ namespace Perspex.Controls
             if (background != null)
             {
                 var renderSize = Bounds.Size;
-                context.FillRectange(background, new Rect(renderSize));
+                context.FillRectangle(background, new Rect(renderSize));
             }
 
             base.Render(context);

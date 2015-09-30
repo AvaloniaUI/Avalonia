@@ -4,6 +4,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Controls.Presenters;
+using Perspex.LogicalTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -29,9 +30,26 @@ namespace Perspex.Controls.UnitTests
             var child = new Control();
 
             target.Content = child;
+            target.ApplyTemplate();
             target.Content = null;
+            target.ApplyTemplate();
 
             Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
+        }
+
+        [Fact]
+        public void Clearing_Content_Clear_Childs_Parent()
+        {
+            var target = new ContentPresenter();
+            var child = new Control();
+
+            target.Content = child;
+            target.ApplyTemplate();
+            target.Content = null;
+            target.ApplyTemplate();
+
+            Assert.Null(child.Parent);
+            Assert.Null(child.GetLogicalParent());
         }
 
         [Fact]

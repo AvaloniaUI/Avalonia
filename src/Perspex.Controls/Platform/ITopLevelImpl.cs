@@ -22,7 +22,7 @@ namespace Perspex.Platform
 
         Action<RawInputEventArgs> Input { get; set; }
 
-        Action<Rect, IPlatformHandle> Paint { get; set; }
+        Action<Rect> Paint { get; set; }
 
         Action<Size> Resized { get; set; }
 
@@ -30,7 +30,7 @@ namespace Perspex.Platform
 
         void Invalidate(Rect rect);
 
-        void SetOwner(TopLevel owner);
+        void SetInputRoot(IInputRoot inputRoot);
 
         Point PointToScreen(Point point);
 

@@ -29,7 +29,7 @@ namespace Perspex.Controls
             Button.CommandProperty.AddOwner<MenuItem>();
 
         public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
-            HotKeyManager.HotKeyProperty.AddOwner<Button>();
+            HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.

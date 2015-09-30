@@ -7,9 +7,9 @@ using System.Reactive;
 namespace Perspex.Rendering
 {
     /// <summary>
-    /// Defines the interface for a <see cref="RenderManager"/>.
+    /// Defines the interface for a <see cref="RenderQueueManager"/>.
     /// </summary>
-    public interface IRenderManager
+    public interface IRenderQueueManager
     {
         /// <summary>
         /// Gets an observable that is fired whenever a render is required.

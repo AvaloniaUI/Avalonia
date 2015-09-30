@@ -11,7 +11,7 @@ namespace Perspex.Rendering
     /// <summary>
     /// Schedules the rendering of a tree.
     /// </summary>
-    public class RenderManager : IRenderManager
+    public class RenderQueueManager : IRenderQueueManager
     {
         private readonly Subject<Unit> _renderNeeded = new Subject<Unit>();
 

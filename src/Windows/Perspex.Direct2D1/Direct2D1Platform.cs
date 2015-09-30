@@ -41,11 +41,11 @@ namespace Perspex.Direct2D1
             return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderer CreateRenderer(IPlatformHandle handle, double width, double height)
+        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
             if (handle.HandleDescriptor == "HWND")
             {
-                return new Renderer(handle.Handle, width, height);
+                return new RenderTarget(handle.Handle, width, height);
             }
             else
             {

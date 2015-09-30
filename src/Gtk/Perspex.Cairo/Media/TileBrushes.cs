@@ -7,6 +7,7 @@ using Perspex.Cairo.Media.Imaging;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo.Media
 {
@@ -110,12 +111,12 @@ namespace Perspex.Cairo.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Renderer(intermediate);
+                var renderer = new RenderTarget(intermediate);
 
                 context.Rectangle(drawRect.ToCairo());
                 context.Clip();
                 context.Transform(transform.ToCairo());
-                renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"), transform, drawRect);
+                renderer.Render(visual, transform, drawRect);
 
                 var result = new SurfacePattern(intermediate);
 
