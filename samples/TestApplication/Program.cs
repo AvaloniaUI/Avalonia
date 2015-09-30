@@ -742,6 +742,7 @@ namespace TestApplication
 					VerticalAlignment = VerticalAlignment.Top,
 					Gap = 4,
 					Margin = new Thickness(10),
+                    ClipToBounds = false,
                     Children = new Controls
                     {
 						new TextBlock
