@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Binding\ExpressionObserverTests.cs" />
     <Compile Include="Binding\ExpressionNodeBuilderTests.cs" />
+    <Compile Include="Binding\NotifyingBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

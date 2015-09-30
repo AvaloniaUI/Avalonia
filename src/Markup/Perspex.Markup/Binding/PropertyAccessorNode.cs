@@ -18,7 +18,7 @@ namespace Perspex.Markup.Binding
 
         public string PropertyName { get; }
 
-        protected override void Subscribe(object target)
+        protected override void SubscribeAndUpdate(object target)
         {
             var result = ExpressionValue.None;
 

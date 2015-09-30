@@ -63,66 +63,94 @@ namespace Perspex.Markup.UnitTests.Binding
         [Fact]
         public void Should_Track_End_Of_Property_Chain_Changing()
         {
-            var data = new Class1 { Class2 = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Class2.Bar");
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x.Value));
-            data.Class2.Bar = "baz";
+            ((Class2)data.Next).Bar = "baz";
 
             Assert.Equal(new[] { "bar", "baz" }, result);
 
             sub.Dispose();
 
             Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Class2.SubscriptionCount);
+            Assert.Equal(0, data.Next.SubscriptionCount);
         }
 
         [Fact]
-        public void Should_Track_Middle_Of_Property_Chain_Changing()
+        public void Should_Track_Property_Chain_Changing()
         {
-            var data = new Class1 { Class2 = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Class2.Bar");
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x.Value));
-            var old = data.Class2;
-            data.Class2 = new Class2 { Bar = "baz" };
+            var old = data.Next;
+            data.Next = new Class2 { Bar = "baz" };
 
             Assert.Equal(new[] { "bar", "baz" }, result);
 
             sub.Dispose();
 
             Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Class2.SubscriptionCount);
+            Assert.Equal(0, data.Next.SubscriptionCount);
             Assert.Equal(0, old.SubscriptionCount);
         }
 
         [Fact]
-        public void Should_Track_Middle_Of_Property_Chain_Breaking_Then_Mending()
+        public void Should_Track_Property_Chain_Breaking_With_Null_Then_Mending()
         {
-            var data = new Class1 { Class2 = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Class2.Bar");
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x.Value));
-            var old = data.Class2;
-            data.Class2 = null;
-            data.Class2 = new Class2 { Bar = "baz" };
+            var old = data.Next;
+            data.Next = null;
+            data.Next = new Class2 { Bar = "baz" };
 
             Assert.Equal(new[] { "bar", null, "baz" }, result);
 
             sub.Dispose();
 
             Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Class2.SubscriptionCount);
+            Assert.Equal(0, data.Next.SubscriptionCount);
             Assert.Equal(0, old.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Should_Track_Property_Chain_Breaking_With_Object_Then_Mending()
+        {
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var target = new ExpressionObserver(data, "Next.Bar");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x.Value));
+            var old = data.Next;
+            var breaking = new WithoutBar();
+            data.Next = breaking;
+            data.Next = new Class2 { Bar = "baz" };
+
+            Assert.Equal(new[] { "bar", null, "baz" }, result);
+
+            sub.Dispose();
+
+            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.Next.SubscriptionCount);
+            Assert.Equal(0, breaking.SubscriptionCount);
+            Assert.Equal(0, old.SubscriptionCount);
+        }
+
+        private interface INext
+        {
+            int SubscriptionCount { get; }
         }
 
         private class Class1 : NotifyingBase
         {
             private string _foo;
-            private Class2 _class2;
+            private INext _next;
 
             public string Foo
             {
@@ -134,18 +162,18 @@ namespace Perspex.Markup.UnitTests.Binding
                 }
             }
 
-            public Class2 Class2
+            public INext Next
             {
-                get { return _class2; }
+                get { return _next; }
                 set
                 {
-                    _class2 = value;
-                    RaisePropertyChanged(nameof(Class2));
+                    _next = value;
+                    RaisePropertyChanged(nameof(Next));
                 }
             }
         }
 
-        private class Class2 : NotifyingBase
+        private class Class2 : NotifyingBase, INext
         {
             private string _bar;
 
@@ -158,6 +186,10 @@ namespace Perspex.Markup.UnitTests.Binding
                     RaisePropertyChanged(nameof(Bar));
                 }
             }
+        }
+
+        private class WithoutBar : NotifyingBase, INext
+        {
         }
     }
 }

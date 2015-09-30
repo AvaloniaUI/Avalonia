@@ -35,7 +35,7 @@ namespace Perspex.Markup.Binding
 
                 if (_target != null)
                 {
-                    Subscribe(_target);
+                    SubscribeAndUpdate(_target);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace Perspex.Markup.Binding
             }
         }
 
-        protected abstract void Subscribe(object target);
+        protected abstract void SubscribeAndUpdate(object target);
 
         protected abstract void Unsubscribe(object target);
 
