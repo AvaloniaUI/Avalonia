@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Perspex.Markup.Parsers.CSharp;
 
 namespace Perspex.Markup.Binding
 {
@@ -19,9 +16,7 @@ namespace Perspex.Markup.Binding
                 throw new ArgumentException("'expression' may not be empty.");
             }
 
-            var syntaxTree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Interactive));
-            var syntaxRoot = syntaxTree.GetRoot();
-            var syntax = syntaxRoot.ChildNodes().SingleOrDefault()?.ChildNodes()?.SingleOrDefault();
+            var syntax = CSharpSyntaxTree.ParseExpression(expression);
 
             if (syntax != null)
             {
@@ -36,9 +31,10 @@ namespace Perspex.Markup.Binding
         private static ExpressionNode Build(string expression, SyntaxNode syntax, ExpressionNode next)
         {
             var expressionStatement = syntax as ExpressionStatementSyntax;
-            var identifier = syntax as IdentifierNameSyntax;
+            var identifier = syntax as IdentifierSyntax;
             var memberAccess = syntax as MemberAccessExpressionSyntax;
             var unaryExpression = syntax as PrefixUnaryExpressionSyntax;
+            var elementAccess = syntax as ElementAccessExpressionSyntax;
 
             if (expressionStatement != null)
             {
@@ -46,17 +42,22 @@ namespace Perspex.Markup.Binding
             }
             else if (identifier != null)
             {
-                next = new PropertyAccessorNode(next, identifier.Identifier.ValueText);
+                next = new PropertyAccessorNode(next, identifier.Name);
             }
             else if (memberAccess != null)
             {
-                next = new PropertyAccessorNode(next, memberAccess.Name.Identifier.ValueText);
                 next = Build(expression, memberAccess.Expression, next);
+                next = new PropertyAccessorNode(next, memberAccess.Member.Name);
             }
             else if (unaryExpression != null && unaryExpression.Kind() == SyntaxKind.LogicalNotExpression)
             {
                 next = Build(expression, unaryExpression.Operand, next);
                 next = new LogicalNotNode(next);
+            }
+            else if (elementAccess != null)
+            {
+                next = Build(expression, elementAccess, next);
+                next = Build(expression, elementAccess.Expression, next);
             }
             else
             {
@@ -64,6 +65,36 @@ namespace Perspex.Markup.Binding
             }
 
             return next;
+        }
+
+        private static ExpressionNode Build(string expression, ElementAccessExpressionSyntax syntax, ExpressionNode next)
+        {
+            var argList = syntax.ArgumentList as BracketedArgumentListSyntax;
+
+            if (argList != null)
+            {
+                var args = new List<object>();
+
+                foreach (var arg in argList.Arguments)
+                {
+                    var literal = arg as LiteralExpressionSyntax;
+
+                    if (literal != null)
+                    {
+                        args.Add(literal.Value);
+                    }
+                    else
+                    {
+                        throw new Exception($"Invalid expression: {expression}");
+                    }
+                }
+
+                return new ElementAccessorNode(next, args);
+            }
+            else
+            {
+                throw new Exception($"Invalid expression: {expression}");
+            }
         }
     }
 }

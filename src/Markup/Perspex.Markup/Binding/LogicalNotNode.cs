@@ -24,15 +24,6 @@ namespace Perspex.Markup.Binding
             return Next.Select(x => Negate(x)).Subscribe(observer);
         }
 
-        protected override void SubscribeAndUpdate(object target)
-        {
-            CurrentValue = new ExpressionValue(target);
-        }
-
-        protected override void Unsubscribe(object target)
-        {
-        }
-
         private ExpressionValue Negate(ExpressionValue v)
         {
             if (v.HasValue)

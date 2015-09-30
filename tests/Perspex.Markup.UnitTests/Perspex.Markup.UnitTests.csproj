@@ -72,6 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Binding\ExpressionObserverTests_Indexer.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Negation.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Property.cs" />
     <Compile Include="Binding\ExpressionNodeBuilderTests.cs" />

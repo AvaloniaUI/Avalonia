@@ -95,9 +95,13 @@ namespace Perspex.Markup.Binding
             }
         }
 
-        protected abstract void SubscribeAndUpdate(object target);
+        protected virtual void SubscribeAndUpdate(object target)
+        {
+            CurrentValue = new ExpressionValue(target);
+        }
 
-        protected abstract void Unsubscribe(object target);
-
+        protected virtual void Unsubscribe(object target)
+        {
+        }
     }
 }
