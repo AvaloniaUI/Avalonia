@@ -13,7 +13,7 @@ namespace Perspex.Cairo
     using global::Cairo;
 
     /// <summary>
-    /// A cairo renderer.
+    /// A cairo render target.
     /// </summary>
     public class RenderTarget : IRenderTarget
     {
@@ -51,7 +51,6 @@ namespace Perspex.Cairo
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
-        /// <param name="handle">The platform-specific handle.</param>
         /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
         public IDrawingContext CreateDrawingContext()
         {
@@ -72,10 +71,6 @@ namespace Perspex.Cairo
             }
         }
         
-        public void Dispose()
-        {
-			if (_surface != null)
-		        _surface.Dispose();
-        }
+        public void Dispose() => _surface?.Dispose();
     }
 }
