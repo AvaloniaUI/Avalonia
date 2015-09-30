@@ -220,7 +220,7 @@ namespace Perspex.Controls
 
             if (background != null)
             {
-                context.FillRectange(background, new Rect(Bounds.Size));
+                context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
             FormattedText.Constraint = Bounds.Size;
@@ -236,7 +236,7 @@ namespace Perspex.Controls
         {
             var result = new FormattedText(
                 Text ?? string.Empty,
-                FontFamily ?? "Ariel",
+                FontFamily ?? "Arial",
                 FontSize > 0 ? FontSize : 12,
                 FontStyle,
                 TextAlignment,

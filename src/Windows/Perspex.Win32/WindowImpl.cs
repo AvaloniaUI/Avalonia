@@ -51,7 +51,7 @@ namespace Perspex.Win32
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
 
@@ -405,7 +405,7 @@ namespace Perspex.Win32
                         {
                             UnmanagedMethods.RECT r;
                             UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
-                            Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top), Handle);
+                            Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top));
                             UnmanagedMethods.EndPaint(_hwnd, ref ps);
                         }
                     }

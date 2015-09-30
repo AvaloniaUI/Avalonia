@@ -22,7 +22,7 @@ namespace Perspex
     /// </summary>
     /// <remarks>
     /// The <see cref="Visual"/> class acts as a node in the Perspex scene graph and holds
-    /// all the information needed for an <see cref="IRenderer"/> to render the control.
+    /// all the information needed for an <see cref="IRenderTarget"/> to render the control.
     /// To traverse the scene graph (aka Visual Tree), use the extension methods defined
     /// in <see cref="VisualExtensions"/>.
     /// </remarks>
@@ -32,7 +32,7 @@ namespace Perspex
         /// Defines the <see cref="Bounds"/> property.
         /// </summary>
         public static readonly PerspexProperty<Rect> BoundsProperty =
-            PerspexProperty.Register<Visual, Rect>(nameof(Bounds));
+            PerspexProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
 
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
@@ -65,6 +65,12 @@ namespace Perspex
             PerspexProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
+        /// Defines the <see cref="IVisual.VisualParent"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<IVisual> VisualParentProperty =
+            PerspexProperty.RegisterDirect<Visual, IVisual>("VisualParent", o => o._visualParent);
+
+        /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
         /// </summary>
         public static readonly PerspexProperty<int> ZIndexProperty =
@@ -76,9 +82,14 @@ namespace Perspex
         private readonly PerspexList<IVisual> _visualChildren;
 
         /// <summary>
+        /// The visual's bounds relative to its parent.
+        /// </summary>
+        private Rect _bounds;
+
+        /// <summary>
         /// Holds the parent of the visual.
         /// </summary>
-        private Visual _visualParent;
+        private IVisual _visualParent;
 
         /// <summary>
         /// Whether the element is attached to the visual tree.
@@ -121,8 +132,8 @@ namespace Perspex
         /// </summary>
         public Rect Bounds
         {
-            get { return GetValue(BoundsProperty); }
-            protected set { SetValue(BoundsProperty, value); }
+            get { return _bounds; }
+            protected set { SetAndRaise(BoundsProperty, ref _bounds, value); }
         }
 
         /// <summary>
@@ -211,9 +222,9 @@ namespace Perspex
                 .OfType<IRenderRoot>()
                 .FirstOrDefault();
 
-            if (root != null && root.RenderManager != null)
+            if (root != null && root.RenderQueueManager != null)
             {
-                root.RenderManager.InvalidateRender(this);
+                root.RenderQueueManager.InvalidateRender(this);
             }
         }
 
@@ -439,6 +450,8 @@ namespace Perspex
                 {
                     NotifyAttachedToVisualTree(newRoot);
                 }
+
+                RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
             }
         }
 

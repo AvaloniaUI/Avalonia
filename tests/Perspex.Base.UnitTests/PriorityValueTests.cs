@@ -47,7 +47,7 @@ namespace Perspex.Base.UnitTests
             var target = new PriorityValue("Test", typeof(string));
 
             target.Add(Single("foo"), 0);
-            target.SetDirectValue("bar", 0);
+            target.SetValue("bar", 0);
 
             Assert.Equal("bar", target.Value);
         }
@@ -60,7 +60,7 @@ namespace Perspex.Base.UnitTests
 
             target.Add(source, 0);
             Assert.Equal("initial", target.Value);
-            target.SetDirectValue("first", 0);
+            target.SetValue("first", 0);
             Assert.Equal("first", target.Value);
             source.OnNext("second");
             Assert.Equal("second", target.Value);
@@ -76,7 +76,7 @@ namespace Perspex.Base.UnitTests
             target.Add(nonActive, 0);
             target.Add(source, 0);
             Assert.Equal("initial", target.Value);
-            target.SetDirectValue("first", 0);
+            target.SetValue("first", 0);
             Assert.Equal("first", target.Value);
             nonActive.OnNext("second");
             Assert.Equal("second", target.Value);
@@ -92,7 +92,7 @@ namespace Perspex.Base.UnitTests
             target.Add(nonActive, 1);
             target.Add(source, 1);
             Assert.Equal("initial", target.Value);
-            target.SetDirectValue("first", 1);
+            target.SetValue("first", 1);
             Assert.Equal("first", target.Value);
             nonActive.OnNext("second");
             Assert.Equal("first", target.Value);
@@ -106,7 +106,7 @@ namespace Perspex.Base.UnitTests
 
             target.Add(source, 0);
             Assert.Equal("initial", target.Value);
-            target.SetDirectValue("first", 0);
+            target.SetValue("first", 0);
             Assert.Equal("first", target.Value);
             source.OnNext("second");
             Assert.Equal("second", target.Value);
@@ -267,9 +267,9 @@ namespace Perspex.Base.UnitTests
         {
             var target = new PriorityValue("Test", typeof(int), x => Math.Min((int)x, 10));
 
-            target.SetDirectValue(5, 0);
+            target.SetValue(5, 0);
             Assert.Equal(5, target.Value);
-            target.SetDirectValue(15, 0);
+            target.SetValue(15, 0);
             Assert.Equal(10, target.Value);
         }
 

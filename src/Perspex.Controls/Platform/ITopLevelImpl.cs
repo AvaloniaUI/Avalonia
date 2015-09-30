@@ -22,7 +22,7 @@ namespace Perspex.Platform
 
         Action<RawInputEventArgs> Input { get; set; }
 
-        Action<Rect, IPlatformHandle> Paint { get; set; }
+        Action<Rect> Paint { get; set; }
 
         Action<Size> Resized { get; set; }
 

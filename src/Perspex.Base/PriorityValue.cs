@@ -105,11 +105,11 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Sets the direct value for a specified priority.
+        /// Sets the value for a specified priority.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority</param>
-        public void SetDirectValue(object value, int priority)
+        public void SetValue(object value, int priority)
         {
             GetLevel(priority).DirectValue = value;
         }

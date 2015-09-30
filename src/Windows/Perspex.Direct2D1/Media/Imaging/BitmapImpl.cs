@@ -67,12 +67,12 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
-        public int PixelWidth => WicImpl.Size.Height;
+        public int PixelWidth => WicImpl.Size.Width;
 
         /// <summary>
         /// Gets the height of the bitmap, in pixels.
         /// </summary>
-        public int PixelHeight => WicImpl.Size.Width;
+        public int PixelHeight => WicImpl.Size.Height;
 
         /// <summary>
         /// Gets the WIC implementation of the bitmap.

@@ -33,7 +33,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            PerspexProperty.Register<ItemsControl, IEnumerable>(nameof(Items));
+            PerspexProperty.RegisterDirect<ItemsControl, IEnumerable>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -47,6 +47,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
             PerspexProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
 
+        private IEnumerable _items = new PerspexList<object>();
         private IItemContainerGenerator _itemContainerGenerator;
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace Perspex.Controls
         public ItemsControl()
         {
             Classes.Add(":empty");
-            Items = new PerspexList<object>();
+            SubscribeToItems(_items);
         }
 
         /// <summary>
@@ -87,8 +88,8 @@ namespace Perspex.Controls
         /// </summary>
         public IEnumerable Items
         {
-            get { return GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
         /// <summary>
@@ -161,26 +162,11 @@ namespace Perspex.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged += ItemsCollectionChanged;
+                incc.CollectionChanged -= ItemsCollectionChanged;
             }
 
             var newValue = e.NewValue as IEnumerable;
-
-            if (newValue == null || newValue.Count() == 0)
-            {
-                Classes.Add(":empty");
-            }
-            else
-            {
-                Classes.Remove(":empty");
-            }
-
-            incc = newValue as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged += ItemsCollectionChanged;
-            }
+            SubscribeToItems(newValue);
         }
 
         /// <summary>
@@ -200,6 +186,29 @@ namespace Perspex.Controls
             else
             {
                 Classes.Remove(":empty");
+            }
+        }
+
+        /// <summary>
+        /// Subscribes to an <see cref="Items"/> collection.
+        /// </summary>
+        /// <param name="items"></param>
+        private void SubscribeToItems(IEnumerable items)
+        {
+            if (items == null || items.Count() == 0)
+            {
+                Classes.Add(":empty");
+            }
+            else
+            {
+                Classes.Remove(":empty");
+            }
+
+            var incc = items as INotifyCollectionChanged;
+
+            if (incc != null)
+            {
+                incc.CollectionChanged += ItemsCollectionChanged;
             }
         }
     }

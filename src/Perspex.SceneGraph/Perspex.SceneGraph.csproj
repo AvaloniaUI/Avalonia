@@ -106,7 +106,7 @@
     <Compile Include="Platform\IBitmapImpl.cs" />
     <Compile Include="Platform\IGeometryImpl.cs" />
     <Compile Include="Platform\IPlatformRenderInterface.cs" />
-    <Compile Include="Platform\IRenderer.cs" />
+    <Compile Include="Platform\IRenderTarget.cs" />
     <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
     <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
     <Compile Include="Platform\IStreamGeometryImpl.cs" />
@@ -115,9 +115,9 @@
     <Compile Include="RelativeRect.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
-    <Compile Include="Rendering\IRenderManager.cs" />
+    <Compile Include="Rendering\IRenderQueueManager.cs" />
     <Compile Include="Rendering\RendererBase.cs" />
-    <Compile Include="Rendering\RenderManager.cs" />
+    <Compile Include="Rendering\RenderQueueManager.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />

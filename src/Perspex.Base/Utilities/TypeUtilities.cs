@@ -35,7 +35,7 @@ namespace Perspex.Utilities
         /// <returns>True if the cast was sucessful, otherwise false.</returns>
         public static bool TryCast(Type to, object value, out object result)
         {
-            Contract.Requires<NullReferenceException>(to != null);
+            Contract.Requires<ArgumentNullException>(to != null);
 
             if (value == null)
             {

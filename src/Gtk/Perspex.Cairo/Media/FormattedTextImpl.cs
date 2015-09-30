@@ -24,8 +24,8 @@ namespace Perspex.Cairo.Media
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            Contract.Requires<NullReferenceException>(context != null);
-            Contract.Requires<NullReferenceException> (text != null);
+            Contract.Requires<ArgumentNullException>(context != null);
+            Contract.Requires<ArgumentNullException> (text != null);
             Layout = new Pango.Layout(context);
             _text = text;
             Layout.SetText(text);

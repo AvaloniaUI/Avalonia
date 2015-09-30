@@ -69,7 +69,7 @@ namespace Perspex.Direct2D1
         /// <param name="pen">The pen to convert.</param>
         /// <param name="target">The render target.</param>
         /// <returns>The Direct2D brush.</returns>
-        public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, RenderTarget target)
+        public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, SharpDX.Direct2D1.RenderTarget target)
         {
             if (pen.DashStyle != null)
             {

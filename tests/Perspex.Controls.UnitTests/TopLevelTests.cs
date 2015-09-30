@@ -180,7 +180,7 @@ namespace Perspex.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
                 completed.OnNext(Unit.Default);
 
-                var renderManagerMock = Mock.Get(PerspexLocator.Current.GetService<IRenderManager>());
+                var renderManagerMock = Mock.Get(PerspexLocator.Current.GetService<IRenderQueueManager>());
                 renderManagerMock.Verify(x => x.InvalidateRender(target));
             }
         }
@@ -313,7 +313,7 @@ namespace Perspex.Controls.UnitTests
             var globalStyles = new Mock<IGlobalStyles>();
             var layoutManager = fixture.Create<ILayoutManager>();
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            var renderManager = fixture.Create<IRenderManager>();
+            var renderManager = fixture.Create<IRenderQueueManager>();
             var windowImpl = new Mock<IWindowImpl>();
             var theme = new Styles();
 
@@ -327,7 +327,7 @@ namespace Perspex.Controls.UnitTests
                 .Bind<ILayoutManager>().ToConstant(layoutManager)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
-                .Bind<IRenderManager>().ToConstant(renderManager)
+                .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler());
         }
 

@@ -244,12 +244,12 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
                 x += .5;
                 y += .5;
             }
-            _g.DrawRectange(((PenAdapter) pen).CreatePen(), new Rect(x, y, width, height));
+            _g.DrawRectangle(((PenAdapter) pen).CreatePen(), new Rect(x, y, width, height));
         }
 
         public override void DrawRectangle(RBrush brush, double x, double y, double width, double height)
         {
-            _g.FillRectange(((BrushAdapter) brush).Brush, new Rect(x, y, width, height));
+            _g.FillRectangle(((BrushAdapter) brush).Brush, new Rect(x, y, width, height));
         }
 
         public override void DrawImage(RImage image, RRect destRect, RRect srcRect)

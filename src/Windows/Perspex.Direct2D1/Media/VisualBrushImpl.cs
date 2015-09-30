@@ -4,6 +4,7 @@
 using System;
 using Perspex.Layout;
 using Perspex.Media;
+using Perspex.Rendering;
 using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
@@ -12,7 +13,7 @@ namespace Perspex.Direct2D1.Media
     {
         public VisualBrushImpl(
             VisualBrush brush,
-            RenderTarget target,
+            SharpDX.Direct2D1.RenderTarget target,
             Size targetSize)
         {
             var visual = brush.Visual;
@@ -50,9 +51,9 @@ namespace Perspex.Direct2D1.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Renderer(intermediate);
+                var renderer = new RenderTarget(intermediate);
 
-                renderer.Render(visual, null, transform, drawRect);
+                renderer.Render(visual, transform, drawRect);
 
                 this.PlatformBrush = new BitmapBrush(
                     target,
