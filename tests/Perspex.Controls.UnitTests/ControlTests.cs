@@ -76,12 +76,12 @@ namespace Perspex.Controls.UnitTests
                 get { throw new NotImplementedException(); }
             }
 
-            public IRenderer Renderer
+            public IRenderingViewport Viewport
             {
                 get { throw new NotImplementedException(); }
             }
 
-            public IRenderManager RenderManager
+            public IRenderQueueManager RenderQueueManager
             {
                 get { throw new NotImplementedException(); }
             }

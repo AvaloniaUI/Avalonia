@@ -15,22 +15,22 @@ namespace Perspex.Cairo
     /// <summary>
     /// A cairo renderer.
     /// </summary>
-    public class Renderer : IRenderer
+    public class Viewport : IRenderingViewport
     {
         private readonly Surface _surface;
         private Gdk.Window _window;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Renderer"/> class.
+        /// Initializes a new instance of the <see cref="Viewport"/> class.
         /// </summary>
         /// <param name="handle">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public Renderer(IPlatformHandle handle, double width, double height)
+        public Viewport(IPlatformHandle handle, double width, double height)
         {
         }
 
-        public Renderer(ImageSurface surface)
+        public Viewport(ImageSurface surface)
         {
             _surface = surface;
         }

@@ -15,7 +15,7 @@ namespace Perspex.Platform
     /// as RenderBase has a default implementation for the non-platform specific parts of a
     /// renderer.
     /// </remarks>
-    public interface IRenderer : IDisposable
+    public interface IRenderingViewport : IDisposable
     {
         /// <summary>
         /// Creates an <see cref="IDrawingContext"/> for a rendering session.

@@ -51,7 +51,7 @@ namespace Perspex.Direct2D1.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Renderer(intermediate);
+                var renderer = new Viewport(intermediate);
 
                 renderer.Render(visual, null, transform, drawRect);
 

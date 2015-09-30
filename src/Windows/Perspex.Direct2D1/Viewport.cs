@@ -12,7 +12,7 @@ using DwFactory = SharpDX.DirectWrite.Factory;
 
 namespace Perspex.Direct2D1
 {
-    public class Renderer : IRenderer
+    public class Viewport : IRenderingViewport
     {
         /// <summary>
         /// The render target.
@@ -20,12 +20,12 @@ namespace Perspex.Direct2D1
         private readonly RenderTarget _renderTarget;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Renderer"/> class.
+        /// Initializes a new instance of the <see cref="Viewport"/> class.
         /// </summary>
         /// <param name="hwnd">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public Renderer(IntPtr hwnd, double width, double height)
+        public Viewport(IntPtr hwnd, double width, double height)
         {
             Direct2DFactory = PerspexLocator.Current.GetService<Factory>();
             DirectWriteFactory = PerspexLocator.Current.GetService<DwFactory>();
@@ -48,10 +48,10 @@ namespace Perspex.Direct2D1
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Renderer"/> class.
+        /// Initializes a new instance of the <see cref="Viewport"/> class.
         /// </summary>
         /// <param name="renderTarget">The render target.</param>
-        public Renderer(RenderTarget renderTarget)
+        public Viewport(RenderTarget renderTarget)
         {
             Direct2DFactory = PerspexLocator.Current.GetService<Factory>();
             DirectWriteFactory = PerspexLocator.Current.GetService<DwFactory>();

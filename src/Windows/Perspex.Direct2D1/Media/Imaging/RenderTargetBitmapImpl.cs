@@ -39,8 +39,8 @@ namespace Perspex.Direct2D1.Media
 
         public void Render(IVisual visual)
         {
-            Renderer renderer = new Renderer(_target);
-            renderer.Render(visual, null);
+            Viewport viewport = new Viewport(_target);
+            viewport.Render(visual, null);
         }
     }
 }

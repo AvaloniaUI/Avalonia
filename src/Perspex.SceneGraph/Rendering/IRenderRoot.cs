@@ -11,14 +11,9 @@ namespace Perspex.Rendering
     public interface IRenderRoot
     {
         /// <summary>
-        /// Gets the renderer for the tree.
-        /// </summary>
-        IRenderer Renderer { get; }
-
-        /// <summary>
         /// Gets the render manager which schedules renders.
         /// </summary>
-        IRenderManager RenderManager { get; }
+        IRenderQueueManager RenderQueueManager { get; }
 
         /// <summary>
         /// Translates a point to screen co-ordinates.

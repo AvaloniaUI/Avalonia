@@ -61,7 +61,7 @@
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\TileBrushes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer.cs" />
+    <Compile Include="Viewport.cs" />
     <Compile Include="CairoExtensions.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
     <Compile Include="Media\StreamGeometryImpl.cs" />
