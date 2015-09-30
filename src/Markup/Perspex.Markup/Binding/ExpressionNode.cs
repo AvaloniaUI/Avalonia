@@ -58,11 +58,6 @@ namespace Perspex.Markup.Binding
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _value = value;
 
                 if (Next != null)
