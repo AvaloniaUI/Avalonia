@@ -34,7 +34,7 @@ namespace Perspex.Controls
         /// </summary>
         static Panel()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<StackPanel>(true);
+            ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
         }
 
         /// <summary>
