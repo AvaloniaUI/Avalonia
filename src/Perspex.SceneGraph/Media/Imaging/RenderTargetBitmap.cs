@@ -10,7 +10,7 @@ namespace Perspex.Media.Imaging
     /// <summary>
     /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
     /// </summary>
-    public class RenderTargetBitmap : Bitmap, IDisposable
+    public class RenderTargetBitmap : Bitmap, IDisposable, IRenderTarget
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
@@ -26,18 +26,6 @@ namespace Perspex.Media.Imaging
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
         public new IRenderTargetBitmapImpl PlatformImpl => (IRenderTargetBitmapImpl)base.PlatformImpl;
-
-        /// <summary>
-        /// Renders an <see cref="IVisual"/> into the bitmap.
-        /// </summary>
-        /// <param name="visual">The visual to render.</param>
-        /// <remarks>
-        /// Before calling this method, ensure that <paramref name="visual"/> has been measured.
-        /// </remarks>
-        public void Render(IVisual visual)
-        {
-            PlatformImpl.Render(visual);
-        }
 
         /// <summary>
         /// Disposes of the bitmap.
@@ -57,6 +45,13 @@ namespace Perspex.Media.Imaging
         {
             IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(width, height);
+        }
+
+        public IDrawingContext CreateDrawingContext() => PlatformImpl.CreateDrawingContext();
+
+        void IRenderTarget.Resize(int width, int height)
+        {
+            throw new NotSupportedException();
         }
     }
 }
