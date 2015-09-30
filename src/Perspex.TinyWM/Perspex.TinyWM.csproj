@@ -70,14 +70,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Fakes\FakeInputRoot.cs" />
-    <Compile Include="Fakes\FakePlatformHandle.cs" />
-    <Compile Include="Fakes\FakeWindow.cs" />
     <Compile Include="IHaveScreenPosition.cs" />
     <Compile Include="InvalidationHelper.cs" />
     <Compile Include="PopupImpl.cs" />
     <Compile Include="TopLevelImpl.cs" />
     <Compile Include="WindowImpl.cs" />
-    <Compile Include="Platform.cs" />
+    <Compile Include="WindowManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SceneComposer.cs" />
     <Compile Include="TopLevelRenderManager.cs" />

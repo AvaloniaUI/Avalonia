@@ -19,7 +19,7 @@ namespace Perspex.TinyWM
             queueManager.RenderNeeded.Subscribe(_ =>
             {
                 queueManager.RenderFinished();
-                Platform.Scene.RenderRequestedBy(impl);
+                WindowManager.Scene.RenderRequestedBy(impl);
             });
         }
     }

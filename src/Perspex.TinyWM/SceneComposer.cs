@@ -26,7 +26,7 @@ namespace Perspex.TinyWM
         public SceneComposer(IWindowImpl window)
         {
             _window = window;
-            _render = Platform.NativeRenderInterface.CreateRenderer(window.Handle, window.ClientSize.Width,
+            _render = WindowManager.NativeRenderInterface.CreateRenderer(window.Handle, window.ClientSize.Width,
                 window.ClientSize.Height);
             _window.SetInputRoot(new FakeInputRoot());
             _window.Paint = (rect) =>
@@ -36,7 +36,11 @@ namespace Perspex.TinyWM
                     Render(ctx);
             };
             _window.Resized = HandleResize;
-
+            _window.Closed += () =>
+            {
+                foreach (var tl in _windows.Cast<TopLevelImpl>().Concat(_popups))
+                    tl?.Closed();
+            };
             _window.Input = DispatchInput;
             _renderHelper.Invalidated += () => _window.Invalidate(new Rect(_window.ClientSize));
 

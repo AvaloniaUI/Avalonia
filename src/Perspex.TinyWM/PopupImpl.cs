@@ -13,19 +13,19 @@ namespace Perspex.TinyWM
         {
             X = (int) p.X;
             Y = (int) p.Y;
-            Platform.Scene.RenderRequestedBy(this);
+            WindowManager.Scene.RenderRequestedBy(this);
         }
 
         public override Rect Bounds => new Rect(new Point(X, Y), ClientSize);
 
         public void Show()
         {
-            Platform.Scene.AddPopup(this);
+            WindowManager.Scene.AddPopup(this);
         }
 
         public void Hide()
         {
-            Platform.Scene.RemovePopup(this);
+            WindowManager.Scene.RemovePopup(this);
         }
 
         public int X { get; set; }

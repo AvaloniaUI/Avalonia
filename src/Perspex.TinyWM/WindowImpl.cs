@@ -16,7 +16,7 @@ namespace Perspex.TinyWM
         {
         }
 
-        public void Show() => Platform.Scene.AddWindow(this);
+        public void Show() => WindowManager.Scene.AddWindow(this);
 
         public IDisposable ShowDialog()
         {
@@ -26,7 +26,7 @@ namespace Perspex.TinyWM
 
         public override Size ClientSize
         {
-            get { return Platform.NativeWindowImpl.ClientSize; }
+            get { return WindowManager.NativeWindowImpl.ClientSize; }
             set
             {
                 Resized?.Invoke(ClientSize);
@@ -35,7 +35,7 @@ namespace Perspex.TinyWM
 
         }
 
-        public void Hide() => Platform.Scene.RemoveWindow(this);
+        public void Hide() => WindowManager.Scene.RemoveWindow(this);
 
         public void SetSize(Size clientSize)
         {

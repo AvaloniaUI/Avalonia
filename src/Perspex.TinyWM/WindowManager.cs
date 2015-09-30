@@ -4,10 +4,9 @@ using Perspex.Platform;
 
 namespace Perspex.TinyWM
 {
-    public static class Platform
+    public static class WindowManager
     {
         internal static IWindowImpl NativeWindowImpl;
-        private static FakeWindow FakeWindow;
         internal static IPlatformRenderInterface NativeRenderInterface;
         internal static SceneComposer Scene;
         public static void InitAndReplace()
@@ -15,7 +14,6 @@ namespace Perspex.TinyWM
             NativeWindowImpl = PerspexLocator.Current.GetService<IWindowImpl>();
             NativeWindowImpl.Show();
             NativeWindowImpl.ClientSize = new Size(640, 480);
-            FakeWindow = new FakeWindow(NativeWindowImpl);
             NativeRenderInterface =  PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             Scene = new SceneComposer(NativeWindowImpl);
             PerspexLocator.CurrentMutable.Bind<ITopLevelRenderer>().ToConstant(new TopLevelRenderManager());

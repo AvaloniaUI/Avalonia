@@ -1,26 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Text;
-using System.Threading.Tasks;
 using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Input.Raw;
-using Perspex.TinyWM.Fakes;
 using Perspex.Platform;
-using Perspex.Threading;
 
 namespace Perspex.TinyWM
 {
-    abstract class TopLevelImpl : ITopLevelImpl
+    abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
     {
-        public IPlatformHandle Handle { get; }
-        public TopLevelImpl()
-        {
-            Handle = new FakePlatformHandle(this);
-        }
-        
         public virtual void Dispose()
         {
         }
@@ -29,7 +16,10 @@ namespace Perspex.TinyWM
 
         public abstract Size ClientSize { get; set; }
 
+        IPlatformHandle ITopLevelImpl.Handle => this;
+        IntPtr IPlatformHandle.Handle => IntPtr.Zero;
         public string HandleDescriptor => "TinyWMVirtualHandle";
+
         public Action Activated { get; set; }
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }
@@ -44,7 +34,7 @@ namespace Perspex.TinyWM
 
         public void Invalidate(Rect rect)
         {
-            Platform.Scene.RenderRequestedBy(this);
+            WindowManager.Scene.RenderRequestedBy(this);
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
