@@ -7,13 +7,10 @@ using Perspex.Media;
 namespace Perspex.Platform
 {
     /// <summary>
-    /// Defines a renderer.
+    /// Defines a render target
     /// </summary>
     /// <remarks>
-    /// The interface used to render <see cref="IVisual"/>s. You will usually want to inherit from
-    /// <see cref="Perspex.Rendering.RendererBase"/> rather than implementing the whole interface
-    /// as RenderBase has a default implementation for the non-platform specific parts of a
-    /// renderer.
+    /// The interface used for obtaining drawing context from surfaces you can render on.
     /// </remarks>
     public interface IRenderTarget : IDisposable
     {
