@@ -12,8 +12,19 @@ namespace Perspex.MobilePlatform
             _topLevel = topLevel;
         }
 
-        public Rect Bounds => new Rect((_topLevel.Renderer.CapturedVisual?.Bounds ?? default(Rect)).Size);
-        public bool ClipToBounds { get; set; } = true;
+        public Rect Bounds
+        {
+            get
+            {
+                var rc = new Rect((_topLevel.Renderer.CapturedVisual?.Bounds ?? default(Rect)).Size);
+                var position = _topLevel as IHaveScreenPosition;
+                if (position != null)
+                    rc = new Rect(new Point(position.X, position.Y), rc.Size);
+                return rc;
+            }
+        }
+
+        public bool ClipToBounds { get; set; } = false;
         public bool IsAttachedToVisualTree => true;
         public bool IsEffectivelyVisible => true;
         public bool IsVisible { get; set; } = true;

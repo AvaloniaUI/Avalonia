@@ -13,7 +13,7 @@ using Perspex.Threading;
 
 namespace Perspex.MobilePlatform
 {
-    class MobileTopLevel : ITopLevelImpl
+    abstract class MobileTopLevel : ITopLevelImpl
     {
         public IPlatformHandle Handle { get; }
         public FakeRenderer Renderer { get; }
@@ -31,15 +31,7 @@ namespace Perspex.MobilePlatform
         {
         }
 
-        public Size ClientSize
-        {
-            get { return Platform.NativeWindowImpl.ClientSize; }
-            set
-            {
-                Resized?.Invoke(ClientSize);
-                Dispatcher.UIThread.InvokeAsync(() => Resized?.Invoke(ClientSize));
-            }
-        }
+        public abstract Size ClientSize { get; set; }
 
         public string HandleDescriptor => "MobilePlatformVirtualHandle";
         public Action Activated { get; set; }

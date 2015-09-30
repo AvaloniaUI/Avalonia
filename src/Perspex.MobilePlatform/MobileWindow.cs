@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Platform;
+using Perspex.Threading;
 
 namespace Perspex.MobilePlatform
 {
@@ -21,6 +22,17 @@ namespace Perspex.MobilePlatform
         {
             Show();
             return Disposable.Create(Hide);
+        }
+
+        public override Size ClientSize
+        {
+            get { return Platform.NativeWindowImpl.ClientSize; }
+            set
+            {
+                Resized?.Invoke(ClientSize);
+                Dispatcher.UIThread.InvokeAsync(() => Resized?.Invoke(ClientSize));
+            }
+
         }
 
         public void Hide() => Platform.Scene.RemoveWindow(this);

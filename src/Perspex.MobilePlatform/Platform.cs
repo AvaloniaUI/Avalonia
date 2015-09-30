@@ -19,6 +19,7 @@ namespace Perspex.MobilePlatform
             Scene = new SceneComposer(NativeWindowImpl);
             PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new MobileRenderInterfaceDecorator());
             PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<MobileWindow>();
+            PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<MobilePopup>();
         }
     }
 }

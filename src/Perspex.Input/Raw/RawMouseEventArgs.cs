@@ -39,7 +39,7 @@ namespace Perspex.Input.Raw
 
         public IInputRoot Root { get; set; }
 
-        public Point Position { get; private set; }
+        public Point Position { get; set; }
 
         public RawMouseEventType Type { get; private set; }
 

@@ -17,6 +17,7 @@ namespace Perspex.MobilePlatform
         private readonly IWindowImpl _window;
 
         private readonly List<MobileWindow> _windows = new List<MobileWindow>();
+        private readonly List<MobilePopup> _popups = new List<MobilePopup>();
         private readonly PerspexList<IVisual> _visibleVisuals = new PerspexList<IVisual>();
         private MobileWindow _activeWindow;
         private IRenderer _render;
@@ -46,14 +47,36 @@ namespace Perspex.MobilePlatform
                 w.SetSize(_window.ClientSize);
         }
 
+        MobileTopLevel GetEventTargetAndTransformEvent(RawInputEventArgs ev)
+        {
+            if (ev is RawKeyEventArgs)
+            {
+                return (MobileTopLevel)_popups.FirstOrDefault() ?? _activeWindow;
+            }
+            var mouseEv = ev as RawMouseEventArgs;
+            if (mouseEv != null)
+            {
+                MobileTopLevel target = _activeWindow;
+                foreach (var popup in Enumerable.Reverse(_popups))
+                {
+                    if (popup.Visual.Bounds.Contains(mouseEv.Position))
+                    {
+                        mouseEv.Position = new Point(mouseEv.Position.X - popup.Y, mouseEv.Position.Y - popup.Y);
+                        target = popup;
+                        break;
+                    }
+                }
+                mouseEv.Root = target?.InputRoot;
+                return target;
+            }
+            return _activeWindow;
+        }
+
         private void DispatchInput(RawInputEventArgs ev)
         {
             if(_activeWindow == null)
                 return;
-            var mouseEv = ev as RawMouseEventArgs;
-            if (mouseEv != null)
-                mouseEv.Root = _activeWindow.InputRoot;
-            _activeWindow?.Input?.Invoke(ev);
+            GetEventTargetAndTransformEvent(ev)?.Input?.Invoke(ev);
         }
 
         public bool IsVisible { get; set; } = true;
@@ -96,11 +119,18 @@ namespace Perspex.MobilePlatform
                 _visibleVisuals.Add(topMost.Visual);
                 _activeWindow = topMost;
             }
-            _window.Invalidate(new Rect(_window.ClientSize));
+            var zIndex = 1;
+            foreach (var popup in _popups)
+            {
+                popup.Visual.ZIndex = zIndex;
+                zIndex++;
+                _visibleVisuals.Add(popup.Visual);
+            }
             foreach(var w in _windows)
                 if (_activeWindow != w)
                     w.Deactivated?.Invoke();
             _activeWindow?.Activated?.Invoke();
+            _window.Invalidate(new Rect(_window.ClientSize));
         }
 
         public void RemoveWindow(MobileWindow window)
@@ -112,6 +142,18 @@ namespace Perspex.MobilePlatform
         public void RenderRequestedBy(MobileTopLevel topLevel)
         {
             _renderHelper.Invalidate();
+        }
+
+        public void AddPopup(MobilePopup mobilePopup)
+        {
+            _popups.Add(mobilePopup);
+            RecalcTree();
+        }
+
+        public void RemovePopup(MobilePopup mobilePopup)
+        {
+            _popups.Remove(mobilePopup);
+            RecalcTree();
         }
     }
 }

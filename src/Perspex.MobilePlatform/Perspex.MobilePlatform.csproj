@@ -73,7 +73,9 @@
     <Compile Include="Fakes\FakePlatformHandle.cs" />
     <Compile Include="Fakes\FakeRenderer.cs" />
     <Compile Include="Fakes\FakeWindow.cs" />
+    <Compile Include="IHaveScreenPosition.cs" />
     <Compile Include="InvalidationHelper.cs" />
+    <Compile Include="MobilePopup.cs" />
     <Compile Include="MobileTopLevel.cs" />
     <Compile Include="MobileWindow.cs" />
     <Compile Include="Platform.cs" />
