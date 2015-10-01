@@ -30,7 +30,22 @@ namespace Perspex.Markup.UnitTests.Binding
                 Assert.Equal(new object[] { null, "foo" }, result.ToArray());
             }
         }
-        
+
+        [Fact]
+        public void Should_Get_Completed_Task_Value()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new { Foo = Task.FromResult("foo") };
+                var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x.Value));
+
+                Assert.Equal(new object[] { "foo" }, result.ToArray());
+            }
+        }
+
         [Fact]
         public void Should_Get_Property_Value_From_Task()
         {

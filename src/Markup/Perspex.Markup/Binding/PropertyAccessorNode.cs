@@ -87,10 +87,12 @@ namespace Perspex.Markup.Binding
             var value = _propertyInfo.GetValue(target);
             var observable = value as IObservable<object>;
             var task = value as Task;
+            bool set = false;
 
             if (observable != null)
             {
                 CurrentValue = ExpressionValue.None;
+                set = true;
                 _subscription = observable
                     .ObserveOn(SynchronizationContext.Current)
                     .Subscribe(x => CurrentValue = new ExpressionValue(x));
@@ -101,15 +103,29 @@ namespace Perspex.Markup.Binding
 
                 if (resultProperty != null)
                 {
-                    task.ContinueWith(
-                            x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)),
-                            TaskScheduler.FromCurrentSynchronizationContext())
-                        .ConfigureAwait(false);
+                    if (task.Status == TaskStatus.RanToCompletion)
+                    {
+                        CurrentValue = new ExpressionValue(resultProperty.GetValue(task));
+                        set = true;
+                    }
+                    else
+                    {
+                        task.ContinueWith(
+                                x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)),
+                                TaskScheduler.FromCurrentSynchronizationContext())
+                            .ConfigureAwait(false);
+                    }
                 }
             }
             else
             {
                 CurrentValue = new ExpressionValue(value);
+                set = true;
+            }
+
+            if (!set)
+            {
+                CurrentValue = ExpressionValue.None;
             }
         }
 
