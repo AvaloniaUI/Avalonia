@@ -14,12 +14,7 @@ namespace Perspex.Markup.Binding
 
         private ExpressionValue _value = ExpressionValue.None;
 
-        public ExpressionNode(ExpressionNode next)
-        {
-            Next = next;
-        }
-
-        public ExpressionNode Next { get; }
+        public ExpressionNode Next { get; set; }
 
         public object Target
         {

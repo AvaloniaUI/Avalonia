@@ -11,8 +11,7 @@ namespace Perspex.Markup.Binding
     {
         private PropertyInfo _propertyInfo;
 
-        public PropertyAccessorNode(ExpressionNode next, string propertyName)
-            : base(next)
+        public PropertyAccessorNode(string propertyName)
         {
             PropertyName = propertyName;
         }

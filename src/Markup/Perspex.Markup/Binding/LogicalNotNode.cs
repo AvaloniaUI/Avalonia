@@ -9,11 +9,6 @@ namespace Perspex.Markup.Binding
 {
     internal class LogicalNotNode : ExpressionNode
     {
-        public LogicalNotNode(ExpressionNode next)
-            : base(next)
-        {
-        }
-
         public override bool SetValue(object value)
         {
             throw new NotSupportedException("Cannot set a negated binding.");

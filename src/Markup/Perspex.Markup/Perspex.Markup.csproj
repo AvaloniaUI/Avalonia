@@ -35,34 +35,21 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Binding\ExpressionNodeBuilder.cs" />
+    <Compile Include="Binding\ExpressionParseException.cs" />
     <Compile Include="Binding\ExpressionValue.cs" />
     <Compile Include="Binding\LogicalNotNode.cs" />
-    <Compile Include="Binding\ElementAccessorNode.cs" />
+    <Compile Include="Binding\IndexerNode.cs" />
+    <Compile Include="Binding\Parsers\ArgumentListParser.cs" />
+    <Compile Include="Binding\Parsers\LiteralParser.cs" />
+    <Compile Include="Binding\Parsers\IdentifierParser.cs" />
+    <Compile Include="Binding\Parsers\ExpressionParser.cs" />
+    <Compile Include="Binding\Parsers\Reader.cs" />
     <Compile Include="Binding\PropertyAccessorNode.cs" />
     <Compile Include="Binding\ExpressionNode.cs" />
     <Compile Include="Binding\ExpressionObserver.cs" />
-    <Compile Include="Parsers\CSharp\BracketedArgumentListSyntax.cs" />
-    <Compile Include="Parsers\CSharp\CSharpSyntaxTree.cs" />
-    <Compile Include="Parsers\CSharp\ElementAccessExpressionSyntax.cs" />
-    <Compile Include="Parsers\CSharp\ExpressionSyntax.cs" />
-    <Compile Include="Parsers\CSharp\ExpressionStatementSyntax.cs" />
-    <Compile Include="Parsers\CSharp\Grammar\ExpressionGrammar.cs" />
-    <Compile Include="Parsers\CSharp\Grammar\IdentifierGrammar.cs" />
-    <Compile Include="Parsers\CSharp\Grammar\LiteralGrammar.cs" />
-    <Compile Include="Parsers\CSharp\IdentifierSyntax.cs" />
-    <Compile Include="Parsers\CSharp\LiteralExpressionSyntax.cs" />
-    <Compile Include="Parsers\CSharp\MemberAccessExpressionSyntax.cs" />
-    <Compile Include="Parsers\CSharp\PrefixUnaryExpressionSyntax.cs" />
-    <Compile Include="Parsers\CSharp\SyntaxKind.cs" />
-    <Compile Include="Parsers\CSharp\SyntaxToken.cs" />
-    <Compile Include="Parsers\CSharp\SyntaxNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Sprache, Version=2.0.0.47, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sprache.2.0.0.47\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid1+MonoTouch1\Sprache.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>

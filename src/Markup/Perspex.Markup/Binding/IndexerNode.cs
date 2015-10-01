@@ -10,12 +10,11 @@ using System.Reflection;
 
 namespace Perspex.Markup.Binding
 {
-    internal class ElementAccessorNode : ExpressionNode
+    internal class IndexerNode : ExpressionNode
     {
         private int[] _intArgs;
 
-        public ElementAccessorNode(ExpressionNode next, IList<object> arguments)
-            : base(next)
+        public IndexerNode(IList<object> arguments)
         {
             Arguments = arguments;
 
