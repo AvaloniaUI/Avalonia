@@ -4,6 +4,7 @@ using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
 using Perspex.iOS;
 using Perspex.Media;
 using Serilog;
@@ -75,6 +76,23 @@ namespace TestApplication.iOS
 
 namespace TestApplication.iOS
 {
+    internal class Item
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    internal class Node
+    {
+        public Node()
+        {
+            Children = new PerspexList<Node>();
+        }
+
+        public string Name { get; set; }
+        public PerspexList<Node> Children { get; set; }
+    }
+
     // This should be moved into a shared project across all platforms???
     public class App : Perspex.Application
     {
@@ -142,6 +160,56 @@ namespace TestApplication.iOS
             window.Show();
         }
 
+        private static readonly PerspexList<Item> s_listBoxData = new PerspexList<Item>
+        {
+            new Item { Name = "Item 1", Value = "Value 1" },
+            new Item { Name = "Item 2", Value = "Value 2" },
+            new Item { Name = "Item 3", Value = "Value 3" },
+            new Item { Name = "Item 4", Value = "Value 4" },
+            new Item { Name = "Item 5", Value = "Value 5" },
+            new Item { Name = "Item 6", Value = "Value 6" },
+            new Item { Name = "Item 7", Value = "Value 7" },
+            new Item { Name = "Item 8", Value = "Value 8" },
+        };
+
+        private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
+        {
+            new Node
+            {
+                Name = "Root 1",
+                Children = new PerspexList<Node>
+                {
+                    new Node
+                    {
+                        Name = "Child 1",
+                    },
+                    new Node
+                    {
+                        Name = "Child 2",
+                        Children = new PerspexList<Node>
+                        {
+                            new Node
+                            {
+                                Name = "Grandchild 1",
+                            },
+                            new Node
+                            {
+                                Name = "Grandmaster Flash",
+                            },
+                        }
+                    },
+                    new Node
+                    {
+                        Name = "Child 3",
+                    },
+                }
+            },
+            new Node
+            {
+                Name = "Root 2",
+            },
+        };
+
         public Window BuildListTest()
         {
             Window window = new Window
@@ -150,10 +218,27 @@ namespace TestApplication.iOS
                 Background = Brushes.Green,
                 Content = new Grid
                 {
+                    DataTemplates = new DataTemplates
+                    {
+                        new DataTemplate<Item>(x =>
+                            new StackPanel
+                            {
+                                Gap = 4,
+                                Orientation = Orientation.Horizontal,
+                                Children = new Controls
+                                {
+                                    //new Image { Width = 50, Height = 50, Source = new Bitmap("github_icon.png") },
+                                    new TextBlock { Text = x.Name, FontSize = 18 },
+                                    new TextBlock { Text = x.Value, FontSize = 18 }
+                                }
+                            })
+                    },
+
                     Margin = new Thickness(0, 20, 0, 0),    // skip the status bar area on iOS
                     RowDefinitions = new RowDefinitions
                     {
                         new RowDefinition(60, GridUnitType.Pixel),
+                        new RowDefinition(1, GridUnitType.Star),
                         new RowDefinition(1, GridUnitType.Star),
                     },
                     Children = new Controls
@@ -191,35 +276,21 @@ namespace TestApplication.iOS
                         new ListBox
                         {
                             [Grid.RowProperty] = 1,
-                            Items = new PerspexList<ListBoxItem>
-                            {
-                                new ListBoxItem
-                                {
-                                    Content = new TextBlock
-                                    {
-                                        Text = "hello there",
-                                        Background = Brushes.Yellow
-                                    }
-                                },
-                                new ListBoxItem
-                                {
-                                    Content = new TextBlock
-                                    {
-                                        Text = "hello there",
-                                        Background = Brushes.Yellow
-                                    }
-                                },
-                                new ListBoxItem
-                                {
-                                    Content = new TextBlock
-                                    {
-                                        Text = "hello there",
-                                        Background = Brushes.Yellow
-                                    }
-                                }
-                            }
-                        }
+                            BorderThickness = 2,
+                            Items = s_listBoxData,
+                            Height = 300,
+                            Width =  300,
+                        },
 
+                        new TreeView
+                        {
+                            [Grid.RowProperty] = 2,
+                            Name = "treeView",
+                            Items = s_treeData,
+                            Height = 300,
+                            BorderThickness = 2,
+                            Width =  300,
+                        }
                     }
                 }
             };
