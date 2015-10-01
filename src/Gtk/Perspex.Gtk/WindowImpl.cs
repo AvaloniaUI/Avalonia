@@ -167,6 +167,23 @@ namespace Perspex.Gtk
             return true;
         }
 
+        protected override bool OnScrollEvent(EventScroll evnt)
+        {
+            double step = 1;
+            var delta = new Vector();
+            if (evnt.Direction == ScrollDirection.Down)
+                delta = new Vector(0, -step);
+            else if (evnt.Direction == ScrollDirection.Up)
+                delta = new Vector(0, step);
+            else if (evnt.Direction == ScrollDirection.Right)
+                delta = new Vector(-step, 0);
+            if (evnt.Direction == ScrollDirection.Left)
+                delta = new Vector(step, 0);
+            var e = new RawMouseWheelEventArgs(GtkMouseDevice.Instance, evnt.Time, _inputRoot, new Point(evnt.X, evnt.Y), delta, GetModifierKeys(evnt.State));
+            Input(e);
+            return base.OnScrollEvent(evnt);
+        }
+
         protected override bool OnButtonReleaseEvent(EventButton evnt)
         {
             var e = new RawMouseEventArgs(
