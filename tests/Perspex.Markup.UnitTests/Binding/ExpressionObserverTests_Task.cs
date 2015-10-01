@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Perspex.Markup.Binding;
 using Xunit;
@@ -15,29 +16,37 @@ namespace Perspex.Markup.UnitTests.Binding
         [Fact]
         public void Should_Get_Simple_Task_Value()
         {
-            var tcs = new TaskCompletionSource<string>();
-            var data = new { Foo = tcs.Task };
-            var target = new ExpressionObserver(data, "Foo");
-            var result = new List<object>();
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var tcs = new TaskCompletionSource<string>();
+                var data = new { Foo = tcs.Task };
+                var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
-            tcs.SetResult("foo");
+                var sub = target.Subscribe(x => result.Add(x.Value));
+                tcs.SetResult("foo");
+                sync.ExecutePostedCallbacks();
 
-            Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+                Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+            }
         }
         
         [Fact]
         public void Should_Get_Property_Value_From_Task()
         {
-            var tcs = new TaskCompletionSource<Class2>();
-            var data = new Class1(tcs.Task);
-            var target = new ExpressionObserver(data, "Next.Foo");
-            var result = new List<object>();
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var tcs = new TaskCompletionSource<Class2>();
+                var data = new Class1(tcs.Task);
+                var target = new ExpressionObserver(data, "Next.Foo");
+                var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
-            tcs.SetResult(new Class2("foo"));
+                var sub = target.Subscribe(x => result.Add(x.Value));
+                tcs.SetResult(new Class2("foo"));
+                sync.ExecutePostedCallbacks();
 
-            Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+                Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+            }
         }
 
         private class Class1 : NotifyingBase

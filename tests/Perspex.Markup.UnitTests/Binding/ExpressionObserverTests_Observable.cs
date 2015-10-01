@@ -15,32 +15,39 @@ namespace Perspex.Markup.UnitTests.Binding
         [Fact]
         public void Should_Get_Simple_Observable_Value()
         {
-            var source = new BehaviorSubject<string>("foo");
-            var data = new { Foo = source };
-            var target = new ExpressionObserver(data, "Foo");
-            var result = new List<object>();
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var source = new BehaviorSubject<string>("foo");
+                var data = new { Foo = source };
+                var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
-            source.OnNext("bar");
+                var sub = target.Subscribe(x => result.Add(x.Value));
+                source.OnNext("bar");
+                sync.ExecutePostedCallbacks();
 
-            Assert.Equal(new[] { "foo", "bar" }, result);
+                Assert.Equal(new[] { null, "foo", "bar" }, result);
+            }
         }
 
         [Fact]
         public void Should_Get_Property_Value_From_Observable()
         {
-            var data = new Class1();
-            var target = new ExpressionObserver(data, "Next.Foo");
-            var result = new List<object>();
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new Class1();
+                var target = new ExpressionObserver(data, "Next.Foo");
+                var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
-            data.Next.OnNext(new Class2("foo"));
+                var sub = target.Subscribe(x => result.Add(x.Value));
+                data.Next.OnNext(new Class2("foo"));
+                sync.ExecutePostedCallbacks();
 
-            Assert.Equal(new[] { null, "foo" }, result);
+                Assert.Equal(new[] { null, "foo" }, result);
 
-            sub.Dispose();
-
-            Assert.Equal(0, data.SubscriptionCount);
+                sub.Dispose();
+                Assert.Equal(0, data.SubscriptionCount);
+            }
         }
 
         private class Class1 : NotifyingBase

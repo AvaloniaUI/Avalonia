@@ -81,6 +81,7 @@
     <Compile Include="Binding\ExpressionNodeBuilderTests.cs" />
     <Compile Include="Binding\NotifyingBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTestSynchronizationContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

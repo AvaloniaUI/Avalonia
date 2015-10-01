@@ -3,11 +3,10 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-using Perspex.Threading;
 
 namespace Perspex.Markup.Binding
 {
@@ -93,6 +92,7 @@ namespace Perspex.Markup.Binding
             {
                 CurrentValue = ExpressionValue.None;
                 _subscription = observable
+                    .ObserveOn(SynchronizationContext.Current)
                     .Subscribe(x => CurrentValue = new ExpressionValue(x));
             }
             else if (task != null)
@@ -101,7 +101,9 @@ namespace Perspex.Markup.Binding
 
                 if (resultProperty != null)
                 {
-                    task.ContinueWith(x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)))                        
+                    task.ContinueWith(
+                            x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)),
+                            TaskScheduler.FromCurrentSynchronizationContext())
                         .ConfigureAwait(false);
                 }
             }
