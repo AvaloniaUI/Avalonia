@@ -10,6 +10,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Perspex.Controls;
+using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Platform;
 
@@ -90,7 +91,7 @@ namespace Perspex.Android
             }
         }
 
-        public Action<Rect, IPlatformHandle> Paint
+        public Action<Rect> Paint
         {
             get
             {
@@ -136,6 +137,11 @@ namespace Perspex.Android
             throw new NotImplementedException();
         }
 
+        public void SetInputRoot(IInputRoot inputRoot)
+        {
+            throw new NotImplementedException();
+        }
+
         public Point PointToScreen(Point point)
         {
             throw new NotImplementedException();
@@ -161,5 +167,4 @@ namespace Perspex.Android
             throw new NotImplementedException();
         }
     }
-}
 }
