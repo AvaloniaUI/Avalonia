@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Perspex.Markup.Binding.Parsers
 {
@@ -28,11 +29,12 @@ namespace Perspex.Markup.Binding.Parsers
                     case State.BeforeMember:
                         state = ParseBeforeMember(r, nodes);
                         break;
-
-                    default:
-                        state = State.End;
-                        break;
                 }
+            }
+
+            if (state == State.BeforeMember)
+            {
+                throw new ExpressionParseException(r, "Unexpected end of expression.");
             }
 
             for (int n = 0; n < nodes.Count - 1; ++n)
@@ -40,7 +42,7 @@ namespace Perspex.Markup.Binding.Parsers
                 nodes[n].Next = nodes[n + 1];
             }
 
-            return nodes[0];
+            return nodes.FirstOrDefault();
         }
 
         private static State ParseStart(Reader r, IList<ExpressionNode> nodes)
@@ -104,41 +106,12 @@ namespace Perspex.Markup.Binding.Parsers
 
         private static bool ParseNot(Reader r)
         {
-            if (!r.End && r.Peek == '!')
-            {
-                r.Take();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return !r.End && r.TakeIf('!');
         }
 
         private static bool ParseMemberAccessor(Reader r)
         {
-            if (!r.End && r.Peek == '.')
-            {
-                r.Take();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private static bool ParseIndexer(Reader r)
-        {
-            if (!r.End && r.Peek == '[')
-            {
-                r.Take();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return !r.End && r.TakeIf('.');
         }
 
         private enum State

@@ -16,7 +16,7 @@ namespace Perspex.Markup.Binding.Parsers
 
                 r.Take();
 
-                while (!r.End && r.Peek != close)
+                while (!r.End)
                 {
                     var literal = LiteralParser.Parse(r);
 
@@ -35,7 +35,11 @@ namespace Perspex.Markup.Binding.Parsers
                     {
                         throw new ExpressionParseException(r, "Expected ','.");
                     }
-                    if (r.Peek != close)
+                    else if (r.TakeIf(close))
+                    {
+                        return result;
+                    }
+                    else
                     {
                         if (r.Take() != ',')
                         {

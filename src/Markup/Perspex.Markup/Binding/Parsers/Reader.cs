@@ -27,5 +27,18 @@ namespace Perspex.Markup.Binding.Parsers
                 Take();
             }
         }
+
+        public bool TakeIf(char c)
+        {
+            if (Peek == c)
+            {
+                Take();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

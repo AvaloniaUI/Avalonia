@@ -15,8 +15,15 @@ namespace Perspex.Markup.UnitTests.Binding
         {
             var result = ToList(ExpressionNodeBuilder.Build("Foo"));
 
-            Assert.Equal(1, result.Count);
-            Assert.IsType<PropertyAccessorNode>(result[0]);
+            AssertIsProperty(result[0], "Foo");
+        }
+
+        [Fact]
+        public void Should_Build_Underscored_Property()
+        {
+            var result = ToList(ExpressionNodeBuilder.Build("_Foo"));
+
+            AssertIsProperty(result[0], "_Foo");
         }
 
         [Fact]
