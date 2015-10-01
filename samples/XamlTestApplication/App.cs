@@ -7,13 +7,11 @@ using Perspex.Themes.Default;
 
 namespace XamlTestApplication
 {
-    public class App : Application
+    public class App : XamlTestApp
     {
-        public App()
+        protected override void RegisterPlatform()
         {
-            RegisterServices();
             InitializeSubsystems((int)Environment.OSVersion.Platform);
-            Styles = new DefaultTheme();
         }
     }
 }

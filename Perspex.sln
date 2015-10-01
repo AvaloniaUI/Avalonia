@@ -97,6 +97,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PlatformSupport", "src\Shared\PlatformSupport\PlatformSupport.shproj", "{E4D9629C-F168-4224-3F51-A5E482FFBC42}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.TinyWM", "src\Perspex.TinyWM\Perspex.TinyWM.csproj", "{1D36D6B3-2994-41C5-8330-19FBDEC5769B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplicationPcl", "samples\XamlTestApplicationPcl\XamlTestApplicationPcl.csproj", "{EA113F1A-D8D7-4142-9948-353270E7EBAE}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -241,6 +242,10 @@ Global
 		{1D36D6B3-2994-41C5-8330-19FBDEC5769B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D36D6B3-2994-41C5-8330-19FBDEC5769B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D36D6B3-2994-41C5-8330-19FBDEC5769B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -266,5 +271,6 @@ Global
 		{54F237D5-A70A-4752-9656-0C70B1A7B047} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{FB05AC90-89BA-4F2F-A924-F37875FB547C} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
 		{E4D9629C-F168-4224-3F51-A5E482FFBC42} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 EndGlobal

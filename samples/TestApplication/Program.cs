@@ -737,12 +737,9 @@ namespace TestApplication
                 Header = "Animations",
                 Content = new StackPanel
                 {
-					HorizontalAlignment = HorizontalAlignment.Left,
 					Orientation = Orientation.Vertical,
-					VerticalAlignment = VerticalAlignment.Top,
 					Gap = 4,
 					Margin = new Thickness(10),
-                    ClipToBounds = false,
                     Children = new Controls
                     {
 						new TextBlock
@@ -768,6 +765,7 @@ namespace TestApplication
 						}),
 						new Canvas 
 						{
+                            ClipToBounds = false,
 							Children = new Controls 
 							{
 								(border1 = new Border
