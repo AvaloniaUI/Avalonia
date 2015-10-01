@@ -3,13 +3,18 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using Perspex.Threading;
 
 namespace Perspex.Markup.Binding
 {
     internal class PropertyAccessorNode : ExpressionNode
     {
         private PropertyInfo _propertyInfo;
+        private IDisposable _subscription;
 
         public PropertyAccessorNode(string propertyName)
         {
@@ -38,7 +43,7 @@ namespace Perspex.Markup.Binding
 
         protected override void SubscribeAndUpdate(object target)
         {
-            var result = ExpressionValue.None;
+            bool set = false;
 
             if (target != null)
             {
@@ -46,7 +51,8 @@ namespace Perspex.Markup.Binding
 
                 if (_propertyInfo != null)
                 {
-                    result = new ExpressionValue(_propertyInfo.GetValue(target));
+                    ReadValue(target);
+                    set = true;
 
                     var inpc = target as INotifyPropertyChanged;
 
@@ -61,7 +67,10 @@ namespace Perspex.Markup.Binding
                 _propertyInfo = null;
             }
 
-            CurrentValue = result;
+            if (!set)
+            {
+                CurrentValue = ExpressionValue.None;
+            }
         }
 
         protected override void Unsubscribe(object target)
@@ -74,11 +83,39 @@ namespace Perspex.Markup.Binding
             }
         }
 
+        private void ReadValue(object target)
+        {
+            var value = _propertyInfo.GetValue(target);
+            var observable = value as IObservable<object>;
+            var task = value as Task;
+
+            if (observable != null)
+            {
+                CurrentValue = ExpressionValue.None;
+                _subscription = observable
+                    .Subscribe(x => CurrentValue = new ExpressionValue(x));
+            }
+            else if (task != null)
+            {
+                var resultProperty = task.GetType().GetTypeInfo().GetDeclaredProperty("Result");
+
+                if (resultProperty != null)
+                {
+                    task.ContinueWith(x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)))                        
+                        .ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                CurrentValue = new ExpressionValue(value);
+            }
+        }
+
         private void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == PropertyName)
             {
-                CurrentValue = new ExpressionValue(_propertyInfo.GetValue(Target));
+                ReadValue(sender);
             }
         }
     }
