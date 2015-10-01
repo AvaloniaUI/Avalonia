@@ -139,6 +139,7 @@ namespace Perspex.Controls.UnitTests
                 new Item("Bar"),
                 new TextBlock { Text = "Baz" },
                 new TabItem { Content = "Qux" },
+                new TabItem { Content = new TextBlock { Text = "Bob" } }
             };
 
             var target = new TabControl
@@ -168,6 +169,10 @@ namespace Perspex.Controls.UnitTests
             target.SelectedIndex = 3;
             dataContext = ((TextBlock)target.GetLogicalChildren().Single()).DataContext;
             Assert.Equal("Qux", dataContext);
+
+            target.SelectedIndex = 4;
+            dataContext = ((TextBlock)target.GetLogicalChildren().Single()).DataContext;
+            Assert.Equal("Base", dataContext);
         }
 
         private Control CreateTabControlTemplate(TabControl parent)

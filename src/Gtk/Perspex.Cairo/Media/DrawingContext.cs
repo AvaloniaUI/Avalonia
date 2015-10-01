@@ -160,7 +160,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void DrawRectange(Pen pen, Rect rect, float cornerRadius)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
 			using (var p = SetPen(pen, rect.Size)) 
 			{

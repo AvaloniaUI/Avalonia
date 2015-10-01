@@ -98,7 +98,7 @@ namespace Perspex.Controls
 
             if (borderBrush != null && borderThickness > 0)
             {
-                context.DrawRectange(new Pen(borderBrush, borderThickness), rect, cornerRadius);
+                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
             }
         }
 

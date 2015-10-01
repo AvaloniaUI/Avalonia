@@ -30,7 +30,7 @@ namespace Perspex.Platform
 
         void Invalidate(Rect rect);
 
-        void SetOwner(TopLevel owner);
+        void SetInputRoot(IInputRoot inputRoot);
 
         Point PointToScreen(Point point);
 

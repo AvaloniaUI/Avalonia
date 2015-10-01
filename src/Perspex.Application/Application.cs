@@ -119,6 +119,9 @@ namespace Perspex
             private set;
         }
 
+        /// <summary>
+        /// Gets the application clipboard.
+        /// </summary>
         public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>

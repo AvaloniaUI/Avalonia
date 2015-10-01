@@ -29,13 +29,13 @@ namespace Perspex.Controls
         /// Defines the <see cref="ClientSize"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ClientSizeProperty =
-            PerspexProperty.Register<TopLevel, Size>("ClientSize");
+            PerspexProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
         /// Defines the <see cref="IsActive"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsActiveProperty =
-            PerspexProperty.Register<TopLevel, bool>("IsActive");
+            PerspexProperty.RegisterDirect<TopLevel, bool>(nameof(IsActive), o => o.IsActive);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -43,30 +43,13 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IInputElement> PointerOverElementProperty =
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
-        /// <summary>
-        /// The render manager for the window.s
-        /// </summary>
         private readonly IRenderManager _renderManager;
-
-        /// <summary>
-        /// The window renderer.
-        /// </summary>
         private readonly IRenderer _renderer;
-
-        /// <summary>
-        /// The input manager for the window.
-        /// </summary>
         private readonly IInputManager _inputManager;
-
-        /// <summary>
-        /// The access key handler for the window.
-        /// </summary>
         private readonly IAccessKeyHandler _accessKeyHandler;
-
-        /// <summary>
-        /// The access keyboard navigation handler for the window.
-        /// </summary>
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
+        private Size _clientSize;
+        private bool _isActive;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -111,7 +94,7 @@ namespace Perspex.Controls
             LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
             _renderManager = TryGetService<IRenderManager>(dependencyResolver);
 
-            PlatformImpl.SetOwner(this);
+            PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
             PlatformImpl.Deactivated = HandleDeactivated;
             PlatformImpl.Closed = HandleClosed;
@@ -177,8 +160,8 @@ namespace Perspex.Controls
         /// </summary>
         public Size ClientSize
         {
-            get { return GetValue(ClientSizeProperty); }
-            private set { SetValue(ClientSizeProperty, value); }
+            get { return _clientSize; }
+            private set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
         /// <summary>
@@ -186,8 +169,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsActive
         {
-            get { return GetValue(IsActiveProperty); }
-            private set { SetValue(IsActiveProperty, value); }
+            get { return _isActive; }
+            private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
 
         /// <summary>
@@ -195,7 +178,8 @@ namespace Perspex.Controls
         /// </summary>
         public ILayoutManager LayoutManager
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets the platform-specific window implementation.

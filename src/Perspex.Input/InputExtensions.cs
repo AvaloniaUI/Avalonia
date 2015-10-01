@@ -11,7 +11,7 @@ namespace Perspex.Input
     {
         public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Point p)
         {
-            Contract.Requires<NullReferenceException>(element != null);
+            Contract.Requires<ArgumentNullException>(element != null);
 
             if (element.Bounds.Contains(p) &&
                 element.IsVisible &&

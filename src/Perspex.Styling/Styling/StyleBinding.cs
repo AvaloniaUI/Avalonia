@@ -86,7 +86,7 @@ namespace Perspex.Styling
         /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
-            Contract.Requires<NullReferenceException>(observer != null);
+            Contract.Requires<ArgumentNullException>(observer != null);
 
             if (Source == null)
             {

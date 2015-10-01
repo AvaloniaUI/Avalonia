@@ -87,7 +87,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<ArgumentException>(() =>
             {
                 target.SetValue(Class2.BarProperty, "invalid");
             });
@@ -98,7 +98,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<ArgumentException>(() =>
             {
                 target.SetValue(Class1.FooProperty, 123);
             });

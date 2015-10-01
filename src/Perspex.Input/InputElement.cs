@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Perspex.Interactivity;
 using Perspex.Rendering;
@@ -42,7 +43,7 @@ namespace Perspex.Input
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsFocusedProperty =
-            PerspexProperty.Register<InputElement, bool>("IsFocused");
+            PerspexProperty.RegisterDirect<InputElement, bool>("IsFocused", o => o.IsFocused);
 
         /// <summary>
         /// Defines the <see cref="IsHitTestVisible"/> property.
@@ -54,7 +55,7 @@ namespace Perspex.Input
         /// Defines the <see cref="IsPointerOver"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsPointerOverProperty =
-            PerspexProperty.Register<InputElement, bool>("IsPointerOver");
+            PerspexProperty.RegisterDirect<InputElement, bool>("IsPointerOver", o => o.IsPointerOver);
 
         /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
@@ -135,6 +136,9 @@ namespace Perspex.Input
             RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
                 "PointerWheelChanged",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+
+        private bool _isFocused;
+        private bool _isPointerOver;
 
         /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
@@ -287,8 +291,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsFocused
         {
-            get { return GetValue(IsFocusedProperty); }
-            private set { SetValue(IsFocusedProperty, value); }
+            get { return _isFocused; }
+            private set { SetAndRaise(IsFocusedProperty, ref _isFocused, value); }
         }
 
         /// <summary>
@@ -305,8 +309,8 @@ namespace Perspex.Input
         /// </summary>
         public bool IsPointerOver
         {
-            get { return GetValue(IsPointerOverProperty); }
-            internal set { SetValue(IsPointerOverProperty, value); }
+            get { return _isPointerOver; }
+            internal set { SetAndRaise(IsPointerOverProperty, ref _isPointerOver, value); }
         }
 
         /// <summary>
@@ -332,6 +336,8 @@ namespace Perspex.Input
             get { return GetValue(IsEnabledCoreProperty); }
             set { SetValue(IsEnabledCoreProperty, value); }
         }
+
+        public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
 
         /// <summary>
         /// Returns the input element that can be found within the current control at the specified

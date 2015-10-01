@@ -42,6 +42,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DockPanel.cs" />
+    <Compile Include="HotkeyManager.cs" />
     <Compile Include="SystemDialog.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainers.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
     <Compile Include="TextWrapping.cs" />
+    <Compile Include="Utils\AncestorFinder.cs" />
     <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
