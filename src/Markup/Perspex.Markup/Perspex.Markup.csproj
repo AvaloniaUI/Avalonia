@@ -48,7 +48,9 @@
     <Compile Include="Parsers\CSharp\ExpressionStatementSyntax.cs" />
     <Compile Include="Parsers\CSharp\Grammar\ExpressionGrammar.cs" />
     <Compile Include="Parsers\CSharp\Grammar\IdentifierGrammar.cs" />
+    <Compile Include="Parsers\CSharp\Grammar\LiteralGrammar.cs" />
     <Compile Include="Parsers\CSharp\IdentifierSyntax.cs" />
+    <Compile Include="Parsers\CSharp\LiteralExpressionSyntax.cs" />
     <Compile Include="Parsers\CSharp\MemberAccessExpressionSyntax.cs" />
     <Compile Include="Parsers\CSharp\PrefixUnaryExpressionSyntax.cs" />
     <Compile Include="Parsers\CSharp\SyntaxKind.cs" />
