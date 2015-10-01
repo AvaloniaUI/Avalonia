@@ -7,8 +7,10 @@ using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;
 using Perspex.iOS;
 using Perspex.Media;
+using Perspex.Media.Imaging;
 using Serilog;
 using System;
+using System.Linq;
 
 // We should move this sink implementation elsewhere, for now I need this here for iOS dev
 // the other question is, is there another sink already part of Serilog we could use?
@@ -160,17 +162,28 @@ namespace TestApplication.iOS
             window.Show();
         }
 
-        private static readonly PerspexList<Item> s_listBoxData = new PerspexList<Item>
+        private static PerspexList<Item> ListBoxData
         {
-            new Item { Name = "Item 1", Value = "Value 1" },
-            new Item { Name = "Item 2", Value = "Value 2" },
-            new Item { Name = "Item 3", Value = "Value 3" },
-            new Item { Name = "Item 4", Value = "Value 4" },
-            new Item { Name = "Item 5", Value = "Value 5" },
-            new Item { Name = "Item 6", Value = "Value 6" },
-            new Item { Name = "Item 7", Value = "Value 7" },
-            new Item { Name = "Item 8", Value = "Value 8" },
-        };
+            get
+            {
+                if(s_listBoxData == null)
+                {
+                    var data = Enumerable.Range(1, 20).Select(i =>
+                    {
+                        return new Item
+                        {
+                            Name = "Item " + i,
+                            Value = "Value " + i
+                        };
+
+                    }).ToList();
+
+                    s_listBoxData = new PerspexList<Item>(data);
+                }
+                return s_listBoxData;
+            }
+        }
+        private static PerspexList<Item> s_listBoxData;
 
         private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
         {
@@ -215,7 +228,7 @@ namespace TestApplication.iOS
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                Background = Brushes.Green,
+                Background = Brushes.Gray,
                 Content = new Grid
                 {
                     DataTemplates = new DataTemplates
@@ -277,7 +290,7 @@ namespace TestApplication.iOS
                         {
                             [Grid.RowProperty] = 1,
                             BorderThickness = 2,
-                            Items = s_listBoxData,
+                            Items = ListBoxData,
                             Height = 300,
                             Width =  300,
                         },
@@ -298,10 +311,8 @@ namespace TestApplication.iOS
             return window;
         }
 
-        public void BuildGridWithSomeButtonsAndStuff()
+        public Window BuildGridWithSomeButtonsAndStuff()
         {
-            //TabControl container;
-
             Window window = new Window
             {
                 Title = "Perspex Test Application",
@@ -366,12 +377,13 @@ namespace TestApplication.iOS
                             }
                         },
 
-                        new Rectangle
+                        new Image
                         {
                             [Grid.RowProperty] = 2,
                             [Grid.ColumnProperty] = 0,
                             Margin = new Thickness(20),
-                            Fill = Brushes.Red
+                            Source = new Bitmap("github_icon.png"),
+                            Opacity = 0.4
                         },
 
                         new Ellipse
@@ -403,35 +415,11 @@ namespace TestApplication.iOS
                             Stroke = Brushes.Blue,
                             StrokeThickness = 4
                         }
-
-
-                        //(container = new TabControl
-                        //{
-                        //    Padding = new Thickness(5),
-                        //    Items = new[]
-                        //    {
-                        //        ButtonsTab(),
-                        //        //TextTab(),
-                        //        //HtmlTab(),
-                        //        //ImagesTab(),
-                        //        //ListsTab(),
-                        //        //LayoutTab(),
-                        //        //AnimationsTab(),
-                        //    },
-                        //    Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
-                        //    [Grid.RowProperty] = 1,
-                        //    [Grid.ColumnSpanProperty] = 2,
-                        //})
                     }
                 },
             };
 
-            //container.Classes.Add(":container");
-
-            window.Show();
-
-            // this is now safe to call, and would be what we do in a cross-platform application
-            Perspex.Application.Current.Run(window);
+            return window;
         }
 
 
@@ -509,6 +497,21 @@ namespace TestApplication.iOS
 
 
             return result;
+        }
+    }
+
+    // Let's try the new XamlApp (PCL) and see if that works
+    public class XamlApp : XamlTestApplication.XamlTestApp
+    {
+        protected override void RegisterPlatform()
+        {
+            // Setup logging which will be useful for tracking certain issues
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.NSLog()
+                .CreateLogger();
+
+            // just call init method directly
+            iOSPlatform.Initialize();
         }
     }
 }

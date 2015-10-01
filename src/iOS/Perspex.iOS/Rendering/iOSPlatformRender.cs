@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Perspex.Media;
 using System.IO;
+using Perspex.iOS.Rendering.Media;
 
 namespace Perspex.iOS.Rendering
 {
@@ -44,7 +45,8 @@ namespace Perspex.iOS.Rendering
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            throw new NotImplementedException();
+            var bitmnap = new BitmapImpl(fileName);
+            return bitmnap;
         }
     }
 }

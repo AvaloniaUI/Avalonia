@@ -1,6 +1,7 @@
 ﻿using Foundation;
 using Perspex.iOS;
 using UIKit;
+using XamlTestApplication.Views;
 
 namespace TestApplication.iOS
 {
@@ -18,6 +19,7 @@ namespace TestApplication.iOS
         }
 
         App _app;
+        //Perspex.Application _app;
 
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
@@ -43,11 +45,15 @@ namespace TestApplication.iOS
 #else
 
             ////////////////////////////////////////////////////////////////////////////////////////////
-            // Perspex stuff
-            //var foo = Dispatcher.CurrentDispatcher;
 
+            // iOS specific test Application
             _app = new App();
-            var window = _app.BuildListTest();
+            //var window = _app.BuildListTest();
+            var window = _app.BuildGridWithSomeButtonsAndStuff();
+
+            // PCL shared application, currently does not work well on iPhone form factor
+            //_app = new XamlApp();
+            //var window = new MainWindow();
 
             window.Show();
             Perspex.Application.Current.Run(window);

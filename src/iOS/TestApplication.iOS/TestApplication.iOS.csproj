@@ -87,6 +87,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
+    <BundleResource Include="Resources\github_icon.png" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <InterfaceDefinition Include="Resources\LaunchScreen.xib" />
@@ -120,6 +121,10 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\samples\XamlTestApplicationPcl\XamlTestApplicationPcl.csproj">
+      <Project>{ea113f1a-d8d7-4142-9948-353270e7ebae}</Project>
+      <Name>XamlTestApplicationPcl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>

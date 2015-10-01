@@ -9,6 +9,7 @@ using Perspex.Platform;
 using System.Reactive.Disposables;
 using Foundation;
 using CoreText;
+using Perspex.iOS.Rendering.Media;
 
 namespace Perspex.iOS.Rendering
 {
@@ -23,10 +24,7 @@ namespace Perspex.iOS.Rendering
 
         public Matrix CurrentTransform
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { return _currentTransform; }
         }
 
         public void Dispose()
@@ -76,9 +74,29 @@ namespace Perspex.iOS.Rendering
             //_nativeContext.DrawPath(CGPathDrawingMode.FillStroke);
         }
 
+        /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacity">The opacity to draw with.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
-            throw new NotImplementedException();
+            var impl = source.PlatformImpl as BitmapImpl;
+            var size = new Size(impl.PixelWidth, impl.PixelHeight);
+            var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
+            destRect /= scale;
+
+            _nativeContext.SaveState();
+
+            // we also need to account for the fact that CG coordinate system is upside down!! :(
+            _nativeContext.TranslateCTM(0, (nfloat)destRect.Height / 2);
+            _nativeContext.ScaleCTM((nfloat)scale.X, -(nfloat)scale.Y);
+
+            // do the draw
+            _nativeContext.DrawImage(destRect.ToCoreGraphics(), impl.Image);
+            _nativeContext.RestoreState();
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
@@ -241,15 +259,20 @@ namespace Perspex.iOS.Rendering
 
         }
 
+        Matrix _currentTransform = Matrix.Identity;
+
         public IDisposable PushTransform(Matrix matrix)
         {
             // i wonder if we should use Save/Restore state instead?
             //
+            var prevTransform = _currentTransform;
+            _currentTransform = matrix;
             _nativeContext.ConcatCTM(matrix.ToCoreGraphics());
 
             return Disposable.Create(() =>
             {
                 _nativeContext.ConcatCTM(matrix.Invert().ToCoreGraphics());
+                _currentTransform = prevTransform;
             });
         }
 

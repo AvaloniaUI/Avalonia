@@ -19,6 +19,11 @@ namespace Perspex.iOS.Rendering
             return new CGAffineTransform((float)m.M11, (float)m.M12, (float)m.M21, (float)m.M22, (float)m.M31, (float)m.M32);
         }
 
+        public static Matrix ToPerspex(this CGAffineTransform m)
+        {
+            return new Matrix(m.xx, m.yx, m.xy, m.yy, m.x0, m.y0);
+        }
+
         public static CGPoint ToCoreGraphics(this Point p)
         {
             return new CGPoint(p.X, p.Y);
