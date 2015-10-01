@@ -69,7 +69,7 @@
                           <TextBlock Text="Item 2 Value" />
                       </StackPanel>
                   </DropDown>
-                  <TreeView Items="{Binding Nodes}">
+                  <!--<TreeView Items="{Binding Nodes}">
                     <TreeView.DataTemplates>
                       <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                         <StackPanel>
@@ -78,7 +78,7 @@
                         </StackPanel>
                       </TreeDataTemplate>
                     </TreeView.DataTemplates>  
-                  </TreeView>
+                  </TreeView>-->
                 </StackPanel>
             </TabItem>
             <TabItem Header="Layout">
