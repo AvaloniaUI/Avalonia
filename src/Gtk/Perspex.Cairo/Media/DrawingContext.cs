@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Runtime.InteropServices;
 using Perspex.Cairo.Media.Imaging;
 using Perspex.Media;
 
@@ -200,6 +201,8 @@ namespace Perspex.Cairo.Media
 			}
         }
 
+        private static Random Random = new Random();
+
         /// <summary>
         /// Pushes a clip rectange.
         /// </summary>
@@ -207,10 +210,11 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public IDisposable PushClip(Rect clip)
         {
+            _context.Save();
             _context.Rectangle(clip.ToCairo());
             _context.Clip();
 
-            return Disposable.Create(() => _context.ResetClip());
+            return Disposable.Create(() => _context.Restore());
         }
 
         /// <summary>
@@ -238,11 +242,12 @@ namespace Perspex.Cairo.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
+            _context.Save();
             _context.Transform(matrix.ToCairo());
 
             return Disposable.Create(() =>
             {
-                _context.Transform(matrix.Invert().ToCairo());
+               _context.Restore();
             });
         }
         

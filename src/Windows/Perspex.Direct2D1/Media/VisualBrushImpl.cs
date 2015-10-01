@@ -53,8 +53,12 @@ namespace Perspex.Direct2D1.Media
                     out drawRect);
                 var renderer = new RenderTarget(intermediate);
 
-                renderer.Render(visual, transform, drawRect);
-
+                using (var ctx = renderer.CreateDrawingContext())
+                using (ctx.PushClip(drawRect))
+                using (ctx.PushTransform(transform))
+                {
+                    ctx.Render(visual);
+                }
                 this.PlatformBrush = new BitmapBrush(
                     target,
                     intermediate.Bitmap,
