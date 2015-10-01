@@ -63,8 +63,6 @@ namespace Perspex.Markup.UnitTests.Binding
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], 15);
-            Assert.IsType<ElementAccessorNode>(result[1]);
-            Assert.Equal(new object[] { 15 }, ((ElementAccessorNode)result[1]).Arguments.ToArray());
         }
 
         [Fact]
@@ -74,8 +72,7 @@ namespace Perspex.Markup.UnitTests.Binding
 
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
-            Assert.IsType<ElementAccessorNode>(result[1]);
-            Assert.Equal(new object[] { 15, 6 }, ((ElementAccessorNode)result[1]).Arguments.ToArray());
+            AssertIsIndexer(result[1], 15, 6);
         }
 
         [Fact]
@@ -85,8 +82,18 @@ namespace Perspex.Markup.UnitTests.Binding
 
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
-            Assert.IsType<ElementAccessorNode>(result[1]);
-            Assert.Equal(new object[] { 5, 16 }, ((ElementAccessorNode)result[1]).Arguments.ToArray());
+            AssertIsIndexer(result[1], 5, 16);
+        }
+
+        [Fact]
+        public void Should_Build_Consecutive_Indexers()
+        {
+            var result = ToList(ExpressionNodeBuilder.Build("Foo[15][16]"));
+
+            Assert.Equal(2, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsIndexer(result[1], 15);
+            AssertIsIndexer(result[2], 16);
         }
 
         [Fact]
@@ -97,7 +104,7 @@ namespace Perspex.Markup.UnitTests.Binding
             Assert.Equal(4, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
-            Assert.IsType<ElementAccessorNode>(result[2]);
+            AssertIsIndexer(result[2], 5, 6);
             AssertIsProperty(result[3], "Baz");
         }
 
