@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using OmniXaml.TypeConversion;
+using Perspex.Controls;
 using Perspex.Markup.Binding;
 
 namespace Perspex.Markup.Xaml.Binding
@@ -26,8 +27,6 @@ namespace Perspex.Markup.Xaml.Binding
 
         public PerspexProperty TargetProperty { get; set; }
 
-        public object Source { get; set; }
-
         public string SourcePropertyPath { get; set; }
 
         public BindingMode BindingMode { get; set; }
@@ -39,20 +38,10 @@ namespace Perspex.Markup.Xaml.Binding
 
         public ExpressionObserver CreateExpressionObserver()
         {
-            var path = SourcePropertyPath;
-            var source = Source;
-
-            if (source == null)
-            {
-                if (!string.IsNullOrWhiteSpace(path))
-                {
-                    path = "DataContext." + path;
-                }
-
-                source = Target;
-            }
-
-            return new ExpressionObserver(source, path);
+            var result = new ExpressionObserver(null, SourcePropertyPath);
+            var dataContext = Target.GetObservable(Control.DataContextProperty);
+            dataContext.Subscribe(x => result.Root = x);
+            return result;
         }
 
         internal void Bind(ISubject<object> subject)
@@ -70,7 +59,11 @@ namespace Perspex.Markup.Xaml.Binding
                     Target.BindTwoWay(TargetProperty, subject);
                     break;
                 case BindingMode.OneTime:
-                    throw new NotImplementedException();
+                    Target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
+                    {
+                        subject.Take(1).Subscribe(x => Target.SetValue(TargetProperty, x));
+                    });                    
+                    break;
                 case BindingMode.OneWayToSource:
                     Target.GetObservable(TargetProperty).Subscribe(subject);
                     break;

@@ -54,6 +54,37 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
         }
 
         [Fact]
+        public void OneTime_Binding_Should_Be_Set_Up()
+        {
+            var dataContext = new BehaviorSubject<object>(null);
+            var expression = new BehaviorSubject<object>(null);
+            var target = CreateTarget(dataContext: dataContext);
+            var binding = new XamlBinding
+            {
+                Target = target.Object,
+                TargetProperty = TextBox.TextProperty,
+                SourcePropertyPath = "Foo",
+                BindingMode = BindingMode.OneTime,
+            };
+
+            binding.Bind(expression);
+
+            target.Verify(x => x.SetValue(
+                (PerspexProperty)TextBox.TextProperty, 
+                null, 
+                BindingPriority.LocalValue));
+            target.ResetCalls();
+
+            expression.OnNext("foo");
+            dataContext.OnNext(1);
+
+            target.Verify(x => x.SetValue(
+                (PerspexProperty)TextBox.TextProperty,
+                "foo",
+                BindingPriority.LocalValue));
+        }
+
+        [Fact]
         public void OneWayToSource_Binding_Should_Be_Set_Up()
         {
             var textObservable = new Mock<IObservable<string>>();
@@ -101,6 +132,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             dataContext = dataContext ?? Observable.Never<object>().StartWith((object)null);
             text = text ?? Observable.Never<string>().StartWith((string)null);
 
+            result.Setup(x => x.GetObservable(Control.DataContextProperty)).Returns(dataContext);
             result.Setup(x => x.GetObservable((PerspexProperty)Control.DataContextProperty)).Returns(dataContext);
             result.Setup(x => x.GetObservable((PerspexProperty)TextBox.TextProperty)).Returns(text);
             return result;
