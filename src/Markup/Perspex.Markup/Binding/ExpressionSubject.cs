@@ -42,7 +42,7 @@ namespace Perspex.Markup.Binding
         /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<object> observer)
         {
-            return _inner.Select(x => x.Value).Distinct().Subscribe(observer);
+            return _inner.Select(x => x.Value).Subscribe(observer);
         }
     }
 }

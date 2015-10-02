@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Reactive;
 using Perspex.Utilities;
@@ -492,6 +493,7 @@ namespace Perspex
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
+                LogPropertySet(property, value, priority);
                 property.Setter(this, value);
             }
             else
@@ -524,14 +526,9 @@ namespace Perspex
                     _values.Add(property, v);
                 }
 
+                LogPropertySet(property, value, priority);
                 v.SetValue(value, (int)priority);
             }
-
-            _propertyLog.Verbose(
-                "Set {Property} to {$Value} with priority {Priority}",
-                property,
-                value,
-                priority);
         }
 
         /// <summary>
@@ -557,6 +554,7 @@ namespace Perspex
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
+                LogPropertySet(property, value, priority);
                 property.Setter(this, value);
             }
             else
@@ -658,7 +656,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Initialites a two-way bind between <see cref="PerspexProperty"/>s.
+        /// Initiates a two-way binding between <see cref="PerspexProperty"/>s.
         /// </summary>
         /// <param name="property">The property on this object.</param>
         /// <param name="source">The source object.</param>
@@ -676,9 +674,44 @@ namespace Perspex
             PerspexProperty sourceProperty,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            _propertyLog.Verbose(
+                "Bound two way {Property} to {Binding} with priority {Priority}",
+                property,
+                source,
+                priority);
+
             return new CompositeDisposable(
                 Bind(property, source.GetObservable(sourceProperty)),
                 source.Bind(sourceProperty, GetObservable(property)));
+        }
+
+        /// <summary>
+        /// Initiates a two-way binding between a <see cref="PerspexProperty"/> and an 
+        /// <see cref="ISubject{Object}"/>.
+        /// </summary>
+        /// <param name="property">The property on this object.</param>
+        /// <param name="source">The subject to bind to.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        /// <remarks>
+        /// The binding is first carried out from <paramref name="source"/> to this.
+        /// </remarks>
+        public IDisposable BindTwoWay(
+            PerspexProperty property,
+            ISubject<object> source,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            _propertyLog.Verbose(
+                "Bound two way {Property} to {Binding} with priority {Priority}",
+                property,
+                source,
+                priority);
+
+            return new CompositeDisposable(
+                Bind(property, source),
+                GetObservable(property).Subscribe(source));
         }
 
         /// <summary>
@@ -929,6 +962,21 @@ namespace Perspex
         private string GetObservableDescription(PerspexProperty property)
         {
             return string.Format("{0}.{1}", GetType().Name, property.Name);
+        }
+
+        /// <summary>
+        /// Logs a property set message.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new value.</param>
+        /// <param name="priority">The priority.</param>
+        private void LogPropertySet(PerspexProperty property, object value, BindingPriority priority)
+        {
+            _propertyLog.Verbose(
+                "Set {Property} to {$Value} with priority {Priority}",
+                property,
+                value,
+                priority);
         }
 
         /// <summary>

@@ -53,7 +53,8 @@ namespace Perspex.Markup.Xaml.DataBinding
                     Target.Bind(TargetProperty, observable.Select(x => x.Value));
                     break;
                 case BindingMode.TwoWay:
-                    throw new NotImplementedException();
+                    Target.BindTwoWay(TargetProperty, new ExpressionSubject(observable));
+                    break;
                 case BindingMode.OneTime:
                     throw new NotImplementedException();
                 case BindingMode.OneWayToSource:

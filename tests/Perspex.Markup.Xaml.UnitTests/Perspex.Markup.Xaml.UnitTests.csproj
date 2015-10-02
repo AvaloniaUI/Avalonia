@@ -46,12 +46,13 @@
     <Reference Include="Octokit">
       <HintPath>..\..\packages\Octokit.0.14.0\lib\net45\Octokit.dll</HintPath>
     </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920">
       <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="Splat, Version=1.6.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\Splat.1.6.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
     <Reference Include="Sprache, Version=2.0.0.47, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\packages\Sprache.2.0.0.47\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid1+MonoTouch1\Sprache.dll</HintPath>
