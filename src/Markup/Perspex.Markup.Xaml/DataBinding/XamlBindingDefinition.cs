@@ -2,31 +2,29 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Controls;
-using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
     public class XamlBindingDefinition
     {
-        private readonly PropertyPath _sourcePropertyPath;
-        private readonly BindingMode _bindingMode;
-        private readonly Control _target;
-        private readonly PerspexProperty _targetProperty;
-
-        public XamlBindingDefinition(Control target, PerspexProperty targetProperty, PropertyPath sourcePropertyPath, BindingMode bindingMode)
+        public XamlBindingDefinition(
+            Control target, 
+            PerspexProperty targetProperty, 
+            string sourcePropertyPath, 
+            BindingMode bindingMode)
         {
-            _target = target;
-            _targetProperty = targetProperty;
-            _sourcePropertyPath = sourcePropertyPath;
-            _bindingMode = bindingMode;
+            Target = target;
+            TargetProperty = targetProperty;
+            SourcePropertyPath = sourcePropertyPath;
+            BindingMode = bindingMode;
         }
 
-        public Control Target => _target;
+        public Control Target { get; }
 
-        public PerspexProperty TargetProperty => _targetProperty;
+        public PerspexProperty TargetProperty { get; }
 
-        public PropertyPath SourcePropertyPath => _sourcePropertyPath;
+        public string SourcePropertyPath { get; }
 
-        public BindingMode BindingMode => _bindingMode;
+        public BindingMode BindingMode { get; }
     }
 }

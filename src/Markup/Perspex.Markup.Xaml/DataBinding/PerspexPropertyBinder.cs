@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OmniXaml.TypeConversion;
+using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
@@ -47,7 +48,7 @@ namespace Perspex.Markup.Xaml.DataBinding
             var binding = new XamlBinding(_typeConverterProvider)
             {
                 BindingMode = xamlBinding.BindingMode,
-                SourcePropertyPath = xamlBinding.SourcePropertyPath,
+                SourcePropertyPath = new PropertyPath(xamlBinding.SourcePropertyPath),
                 Target = xamlBinding.Target,
                 TargetProperty = xamlBinding.TargetProperty
             };

@@ -27,13 +27,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             var targetPropertyName = targetProperty.Name;
             var perspexProperty = target.GetRegisteredProperties().First(property => property.Name == targetPropertyName);
 
-            return new XamlBindingDefinition
-                (
-                target,
-                perspexProperty,
-                new PropertyPath(Path),
-                Mode == BindingMode.Default ? BindingMode.OneWay : Mode
-                );
+            return new XamlBindingDefinition(target, perspexProperty, Path, Mode);
         }
 
         /// <summary> The source path (for CLR bindings).</summary>
