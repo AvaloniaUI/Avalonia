@@ -89,6 +89,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BindingDefinitionBuilder.cs" />
+    <Compile Include="Binding\XamlBindingTests.cs" />
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
