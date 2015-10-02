@@ -200,6 +200,33 @@ namespace Perspex.Markup.UnitTests.Binding
             Assert.Throws<ArgumentException>(() => target.SetValue(1.2));
         }
 
+        [Fact]
+        public async void Should_Handle_Null_Root()
+        {
+            var target = new ExpressionObserver(null, "Foo");
+            var result = await target.Take(1);
+
+            Assert.False(result.HasValue);
+        }
+
+        [Fact]
+        public void Can_Replace_Root()
+        {
+            var first = new Class1 { Foo = "foo" };
+            var second = new Class1 { Foo = "bar" };
+            var target = new ExpressionObserver(first, "Foo");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x.Value));
+            target.Root = second;
+            target.Root = null;
+
+            Assert.Equal(new[] { "foo", "bar", null }, result);
+
+            Assert.Equal(0, first.SubscriptionCount);
+            Assert.Equal(0, second.SubscriptionCount);
+        }
+
         private interface INext
         {
             int SubscriptionCount { get; }
