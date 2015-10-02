@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections;
-using OmniXaml.Attributes;
+using System.Reactive.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Markup.Binding;
 using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.Templates
@@ -14,7 +15,7 @@ namespace Perspex.Markup.Xaml.Templates
     {
         public Type DataType { get; set; }
         public TemplateContent Content { get; set; }
-        public XamlBinding ItemsSource { get; set; }
+        public XamlBindingDefinition ItemsSource { get; set; }
 
         public bool Match(object data)
         {
@@ -30,7 +31,8 @@ namespace Perspex.Markup.Xaml.Templates
         {
             if (ItemsSource != null)
             {
-                // TODO: Get value of ItemsSource here.
+                var obs = new ExpressionObserver(item, ItemsSource.SourcePropertyPath);
+                return obs.Take(1).Wait().Value as IEnumerable;
             }
 
             return null;

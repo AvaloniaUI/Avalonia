@@ -70,14 +70,14 @@
                       </StackPanel>
                   </DropDown>
                   <TreeView Items="{Binding Nodes}">
-                    <!--<TreeView.DataTemplates>
+                    <TreeView.DataTemplates>
                       <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                         <StackPanel>
                           <TextBlock Text="{Binding Header}" FontSize="24"/>
                           <TextBlock Text="{Binding SubHeader}"/>
                         </StackPanel>
                       </TreeDataTemplate>
-                    </TreeView.DataTemplates>-->  
+                    </TreeView.DataTemplates>  
                   </TreeView>
                 </StackPanel>
             </TabItem>

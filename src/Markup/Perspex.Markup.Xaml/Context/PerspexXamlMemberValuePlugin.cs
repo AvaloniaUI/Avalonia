@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
@@ -57,39 +58,46 @@ namespace Perspex.Markup.Xaml.Context
 
         private void HandleXamlBindingDefinition(object instance, XamlBindingDefinition def)
         {
-            var perspexObject = instance as PerspexObject;
-
-            if (perspexObject == null)
+            if (_xamlMember.XamlType.UnderlyingType == typeof(XamlBindingDefinition))
             {
-                throw new InvalidOperationException(
-                    $"Cannot bind to an object of type '{instance.GetType()}");
+                // TODO: This should search base classes.
+                var property = instance.GetType().GetTypeInfo().GetDeclaredProperty(_xamlMember.Name);
+
+                if (property == null || !property.CanWrite)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot assign to '{_xamlMember.Name}' on '{instance.GetType()}");
+                }
+
+                property.SetValue(instance, def);
             }
-
-            var property = perspexObject.GetRegisteredProperties()
-                .FirstOrDefault(x => x.Name == _xamlMember.Name);
-
-            if (property == null)
+            else
             {
-                throw new InvalidOperationException(
-                    $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
+                var perspexObject = instance as PerspexObject;
+
+                if (perspexObject == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot bind to an object of type '{instance.GetType()}");
+                }
+
+                var property = perspexObject.GetRegisteredProperties()
+                    .FirstOrDefault(x => x.Name == _xamlMember.Name);
+
+                if (property == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
+                }
+
+                var binding = new XamlBinding(_propertyBinder.TypeConverterProvider)
+                {
+                    BindingMode = def.BindingMode,
+                    SourcePropertyPath = def.SourcePropertyPath,
+                };
+
+                binding.Bind(perspexObject, property);
             }
-
-            var binding = new XamlBinding(_propertyBinder.TypeConverterProvider)
-            {
-                BindingMode = def.BindingMode,
-                SourcePropertyPath = def.SourcePropertyPath,
-            };
-
-            binding.Bind(perspexObject, property);
-        }
-
-        private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)
-        {
-        //    var target = definition.Target;
-        //    var dataContext = target.DataContext;
-
-        //    var binding = _propertyBinder.GetBinding(target, definition.TargetProperty);
-        //    binding.BindToDataContext(dataContext);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global

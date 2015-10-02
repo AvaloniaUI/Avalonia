@@ -16,6 +16,7 @@ namespace Perspex.Markup.Xaml.Context
         {
             var mapping = new DeferredLoaderMapping();
             mapping.Map<DataTemplate>(template => template.Content, new TemplateLoader());
+            mapping.Map<TreeDataTemplate>(template => template.Content, new TemplateLoader());
 
             var assembler = new ObjectAssembler(wiringContext, new TopDownValueContext(), objectAssemblerSettings);
             _objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
