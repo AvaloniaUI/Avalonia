@@ -14,12 +14,10 @@ namespace Perspex.Gtk
 {
     using Gtk = global::Gtk;
 
-    public class WindowImpl : Gtk.Window, IWindowImpl
+    public class WindowImpl : Gtk.Window, IWindowImpl, IPlatformHandle
     {
         private IInputRoot _inputRoot;
-
-        private IPlatformHandle _windowHandle;
-
+        
         private Size _clientSize;
 
         private Gtk.IMContext _imContext;
@@ -46,7 +44,6 @@ namespace Perspex.Gtk
             Events = EventMask.PointerMotionMask |
               EventMask.ButtonPressMask |
               EventMask.ButtonReleaseMask;
-            _windowHandle = new PlatformHandle(Handle, "GtkWindow");
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
         }
@@ -73,7 +70,8 @@ namespace Perspex.Gtk
             }
         }
 
-        IPlatformHandle ITopLevelImpl.Handle => _windowHandle;
+        IPlatformHandle ITopLevelImpl.Handle => this;
+        public string HandleDescriptor => "GtkWindow";
 
         public Action Activated { get; set; }
 
@@ -83,7 +81,7 @@ namespace Perspex.Gtk
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        public Action<Rect, IPlatformHandle> Paint { get; set; }
+        public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
 
@@ -94,7 +92,9 @@ namespace Perspex.Gtk
 
         public void Invalidate(Rect rect)
         {
-            base.GdkWindow.InvalidateRect (new Rectangle ((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), true);
+            if (base.GdkWindow != null)
+                base.GdkWindow.InvalidateRect(
+                    new Rectangle((int) rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height), true);
         }
 
         public Point PointToScreen(Point point)
@@ -167,6 +167,23 @@ namespace Perspex.Gtk
             return true;
         }
 
+        protected override bool OnScrollEvent(EventScroll evnt)
+        {
+            double step = 1;
+            var delta = new Vector();
+            if (evnt.Direction == ScrollDirection.Down)
+                delta = new Vector(0, -step);
+            else if (evnt.Direction == ScrollDirection.Up)
+                delta = new Vector(0, step);
+            else if (evnt.Direction == ScrollDirection.Right)
+                delta = new Vector(-step, 0);
+            if (evnt.Direction == ScrollDirection.Left)
+                delta = new Vector(step, 0);
+            var e = new RawMouseWheelEventArgs(GtkMouseDevice.Instance, evnt.Time, _inputRoot, new Point(evnt.X, evnt.Y), delta, GetModifierKeys(evnt.State));
+            Input(e);
+            return base.OnScrollEvent(evnt);
+        }
+
         protected override bool OnButtonReleaseEvent(EventButton evnt)
         {
             var e = new RawMouseEventArgs(
@@ -223,7 +240,7 @@ namespace Perspex.Gtk
 
         protected override bool OnExposeEvent(EventExpose evnt)
         {
-            Paint(evnt.Area.ToPerspex(), GetHandle(evnt.Window));
+            Paint(evnt.Area.ToPerspex());
             return true;
         }
 

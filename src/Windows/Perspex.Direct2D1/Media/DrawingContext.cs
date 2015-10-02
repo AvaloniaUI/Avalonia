@@ -18,7 +18,7 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// The Direct2D1 render target.
         /// </summary>
-        private readonly RenderTarget _renderTarget;
+        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
 
         /// <summary>
         /// The DirectWrite factory.
@@ -31,7 +31,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         public DrawingContext(
-            RenderTarget renderTarget,
+            SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory)
         {
             _renderTarget = renderTarget;
@@ -199,7 +199,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectange(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

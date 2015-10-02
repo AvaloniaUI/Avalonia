@@ -9,12 +9,12 @@ namespace Perspex.SceneGraph.UnitTests
 {
     public class TestRoot : TestVisual, IRenderRoot
     {
-        public IRenderer Renderer
+        public IRenderTarget RenderTarget
         {
             get { throw new NotImplementedException(); }
         }
 
-        public IRenderManager RenderManager
+        public IRenderQueueManager RenderQueueManager
         {
             get { throw new NotImplementedException(); }
         }

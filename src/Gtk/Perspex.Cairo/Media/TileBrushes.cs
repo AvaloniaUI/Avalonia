@@ -7,6 +7,7 @@ using Perspex.Cairo.Media.Imaging;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.Rendering;
 
 namespace Perspex.Cairo.Media
 {
@@ -100,7 +101,7 @@ namespace Perspex.Cairo.Media
             var intermediateSize = CalculateIntermediateSize(tileMode, targetSize, destinationRect.Size);
             
 			using (var intermediate = new ImageSurface(Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height))
-            using (var context = new Context(intermediate))
+            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
             {
                 Rect drawRect;
                 var transform = CalculateIntermediateTransform(
@@ -110,12 +111,12 @@ namespace Perspex.Cairo.Media
                     scale,
                     translate,
                     out drawRect);
-                var renderer = new Renderer(intermediate);
 
-                context.Rectangle(drawRect.ToCairo());
-                context.Clip();
-                context.Transform(transform.ToCairo());
-                renderer.Render(visual, new PlatformHandle(IntPtr.Zero, "RTB"), transform, drawRect);
+                using (ctx.PushClip(drawRect))
+                using (ctx.PushTransform(transform))
+                {
+                    ctx.Render(visual);
+                }
 
                 var result = new SurfacePattern(intermediate);
 

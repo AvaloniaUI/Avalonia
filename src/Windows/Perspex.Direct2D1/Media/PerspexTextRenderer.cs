@@ -12,13 +12,13 @@ namespace Perspex.Direct2D1.Media
     {
         private readonly DrawingContext _context;
 
-        private readonly RenderTarget _renderTarget;
+        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
 
         private readonly Brush _foreground;
 
         public PerspexTextRenderer(
             DrawingContext context,
-            RenderTarget target,
+            SharpDX.Direct2D1.RenderTarget target,
             Brush foreground)
         {
             _context = context;

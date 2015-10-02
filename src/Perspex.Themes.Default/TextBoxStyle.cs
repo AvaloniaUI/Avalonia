@@ -60,35 +60,35 @@ namespace Perspex.Themes.Default
                 [~Border.BorderBrushProperty] = control[~TemplatedControl.BorderBrushProperty],
                 [~Border.BorderThicknessProperty] = control[~TemplatedControl.BorderThicknessProperty],
 
-                Child = new StackPanel
+                Child = new ScrollViewer
                 {
-                    Children = new Controls.Controls
+                    [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
+                    [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
+                    [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
+                    Content = new StackPanel
                     {
-                        new TextBlock
+                        Children = new Controls.Controls
                         {
-                            Name  = "floatingWatermark",
-                            Foreground = SolidColorBrush.Parse("#007ACC"),
-                            FontSize = 10,
-                            [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
-                            [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)(!string.IsNullOrEmpty(x) && control.UseFloatingWatermark))
-                        },
-                        new Panel
-                        {
-                            Children = new Controls.Controls
+                            new TextBlock
                             {
-                                new TextBlock
+                                Name  = "floatingWatermark",
+                                Foreground = SolidColorBrush.Parse("#007ACC"),
+                                FontSize = 10,
+                                [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
+                                [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)(!string.IsNullOrEmpty(x) && control.UseFloatingWatermark))
+                            },
+                            new Panel
+                            {
+                                Children = new Controls.Controls
                                 {
-                                    Name = "watermark",
-                                    Opacity = 0.5,
-                                    [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
-                                    [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)string.IsNullOrEmpty(x))
-                                },
-                                new ScrollViewer
-                                {
-                                    [~ScrollViewer.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
-                                    [~ScrollViewer.HorizontalScrollBarVisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
-                                    [~ScrollViewer.VerticalScrollBarVisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
-                                    Content = new TextPresenter
+                                    new TextBlock
+                                    {
+                                        Name = "watermark",
+                                        Opacity = 0.5,
+                                        [~TextBlock.TextProperty] = control[~TextBox.WatermarkProperty],
+                                        [~TextBlock.IsVisibleProperty] = control[~TextBox.TextProperty].Cast<string>().Select(x => (object)string.IsNullOrEmpty(x))
+                                    },
+                                    new TextPresenter
                                     {
                                         Name = "textPresenter",
                                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
@@ -99,9 +99,9 @@ namespace Perspex.Themes.Default
                                     }
                                 }
                             }
-                        }                        
+                        }
                     }
-                },
+                }
             };
 
             return result;

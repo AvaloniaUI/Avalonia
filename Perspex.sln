@@ -101,6 +101,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup.UnitTests", "tests\Perspex.Markup.UnitTests\Perspex.Markup.UnitTests.csproj", "{8EF392D5-1416-45AA-9956-7CBBC3229E8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "samples\BindingTest\BindingTest.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplicationPcl", "samples\XamlTestApplicationPcl\XamlTestApplicationPcl.csproj", "{EA113F1A-D8D7-4142-9948-353270E7EBAE}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -253,6 +254,10 @@ Global
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -281,5 +286,6 @@ Global
 		{6417E941-21BC-467B-A771-0DE389353CE6} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{EA113F1A-D8D7-4142-9948-353270E7EBAE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 EndGlobal

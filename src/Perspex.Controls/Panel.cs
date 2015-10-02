@@ -30,6 +30,14 @@ namespace Perspex.Controls
         private ILogical _childLogicalParent;
 
         /// <summary>
+        /// Initializes static members of the <see cref="Panel"/> class.
+        /// </summary>
+        static Panel()
+        {
+            ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
         /// </summary>
         public Panel()
@@ -173,7 +181,7 @@ namespace Perspex.Controls
             if (background != null)
             {
                 var renderSize = Bounds.Size;
-                context.FillRectange(background, new Rect(renderSize));
+                context.FillRectangle(background, new Rect(renderSize));
             }
 
             base.Render(context);

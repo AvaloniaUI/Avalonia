@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Perspex.Controls.Platform;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Input.Raw;
@@ -43,8 +44,7 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<IInputElement> PointerOverElementProperty =
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
-        private readonly IRenderManager _renderManager;
-        private readonly IRenderer _renderer;
+        private readonly IRenderQueueManager _renderQueueManager;
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
@@ -92,33 +92,23 @@ namespace Perspex.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
-            _renderManager = TryGetService<IRenderManager>(dependencyResolver);
+            _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
+            (TryGetService<ITopLevelRenderer>(dependencyResolver) ?? new DefaultTopLevelRenderer()).Attach(this);
 
             PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
             PlatformImpl.Deactivated = HandleDeactivated;
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = HandlePaint;
             PlatformImpl.Resized = HandleResized;
 
             Size clientSize = ClientSize = PlatformImpl.ClientSize;
-
-            if (renderInterface != null)
-            {
-                _renderer = renderInterface.CreateRenderer(PlatformImpl.Handle, clientSize.Width, clientSize.Height);
-            }
 
             if (LayoutManager != null)
             {
                 LayoutManager.Root = this;
                 LayoutManager.LayoutNeeded.Subscribe(_ => HandleLayoutNeeded());
                 LayoutManager.LayoutCompleted.Subscribe(_ => HandleLayoutCompleted());
-            }
-
-            if (_renderManager != null)
-            {
-                _renderManager.RenderNeeded.Subscribe(_ => HandleRenderNeeded());
             }
 
             if (_keyboardNavigationHandler != null)
@@ -188,16 +178,11 @@ namespace Perspex.Controls
         {
             get;
         }
-
-        /// <summary>
-        /// Gets the window renderer.
-        /// </summary>
-        IRenderer IRenderRoot.Renderer => _renderer;
-
+        
         /// <summary>
         /// Gets the window render manager.
         /// </summary>
-        IRenderManager IRenderRoot.RenderManager => _renderManager;
+        IRenderQueueManager IRenderRoot.RenderQueueManager => _renderQueueManager;
 
         /// <summary>
         /// Gets the access key handler for the window.
@@ -297,7 +282,6 @@ namespace Perspex.Controls
             }
 
             ClientSize = clientSize;
-            _renderer.Resize((int)clientSize.Width, (int)clientSize.Height);
             LayoutManager.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
@@ -389,28 +373,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutCompleted()
         {
-            _renderManager?.InvalidateRender(this);
-        }
-
-        /// <summary>
-        /// Handles a render request from <see cref="RenderManager.RenderNeeded"/>.
-        /// </summary>
-        private void HandleRenderNeeded()
-        {
-            Dispatcher.UIThread.InvokeAsync(
-                () => PlatformImpl.Invalidate(new Rect(ClientSize)),
-                DispatcherPriority.Render);
-        }
-
-        /// <summary>
-        /// Handles a paint request from <see cref="ITopLevelImpl.Paint"/>.
-        /// </summary>
-        /// <param name="rect">The rectangle to paint.</param>
-        /// <param name="handle">An optional platform-specific handle.</param>
-        private void HandlePaint(Rect rect, IPlatformHandle handle)
-        {
-            _renderer.Render(this, handle);
-            _renderManager.RenderFinished();
+            _renderQueueManager?.InvalidateRender(this);
         }
     }
 }

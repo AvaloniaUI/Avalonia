@@ -11,7 +11,7 @@ namespace Perspex.Direct2D1.Media
     {
         public ImageBrushImpl(
             ImageBrush brush,
-            RenderTarget target,
+            SharpDX.Direct2D1.RenderTarget target,
             Size targetSize)
         {
             if (brush.Source == null)
@@ -59,7 +59,7 @@ namespace Perspex.Direct2D1.Media
 
         private BitmapBrush CreateDirectBrush(
             ImageBrush brush,
-            RenderTarget target,
+            SharpDX.Direct2D1.RenderTarget target,
             Bitmap image, 
             Rect sourceRect, 
             Rect destinationRect)

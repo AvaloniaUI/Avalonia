@@ -329,19 +329,19 @@ namespace Perspex.Controls.Html
         
         public override void Render(IDrawingContext context)
         {
-            context.FillRectange(Background,  new Rect(RenderSize));
+            context.FillRectangle(Background,  new Rect(RenderSize));
 
             if (BorderThickness != new Thickness(0) && BorderBrush != null)
             {
                 var brush = new SolidColorBrush(Colors.Black);
                 if (BorderThickness.Top > 0)
-                    context.FillRectange(brush, new Rect(0, 0, RenderSize.Width, BorderThickness.Top));
+                    context.FillRectangle(brush, new Rect(0, 0, RenderSize.Width, BorderThickness.Top));
                 if (BorderThickness.Bottom > 0)
-                    context.FillRectange(brush, new Rect(0, RenderSize.Height - BorderThickness.Bottom, RenderSize.Width, BorderThickness.Bottom));
+                    context.FillRectangle(brush, new Rect(0, RenderSize.Height - BorderThickness.Bottom, RenderSize.Width, BorderThickness.Bottom));
                 if (BorderThickness.Left > 0)
-                    context.FillRectange(brush, new Rect(0, 0, BorderThickness.Left, RenderSize.Height));
+                    context.FillRectangle(brush, new Rect(0, 0, BorderThickness.Left, RenderSize.Height));
                 if (BorderThickness.Right > 0)
-                    context.FillRectange(brush, new Rect(RenderSize.Width - BorderThickness.Right, 0, BorderThickness.Right, RenderSize.Height));
+                    context.FillRectangle(brush, new Rect(RenderSize.Width - BorderThickness.Right, 0, BorderThickness.Right, RenderSize.Height));
             }
 
             var htmlWidth = HtmlWidth(RenderSize);
