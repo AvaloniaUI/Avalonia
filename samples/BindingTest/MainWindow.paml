@@ -1,0 +1,6 @@
+﻿<Window xmlns="https://github.com/perspex">
+  <StackPanel Margin="18">
+    <TextBlock Text="{Binding SimpleBinding}"/>
+    <TextBox Watermark="Simple Binding" Text="{Binding SimpleBinding}"/>
+  </StackPanel>
+</Window>

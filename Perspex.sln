@@ -100,6 +100,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup", "src\Marku
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup.UnitTests", "tests\Perspex.Markup.UnitTests\Perspex.Markup.UnitTests.csproj", "{8EF392D5-1416-45AA-9956-7CBBC3229E8A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "samples\BindingTest\BindingTest.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
@@ -247,6 +249,10 @@ Global
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,5 +280,6 @@ Global
 		{E4D9629C-F168-4224-3F51-A5E482FFBC42} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
 		{6417E941-21BC-467B-A771-0DE389353CE6} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 EndGlobal
