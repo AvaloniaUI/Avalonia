@@ -6,7 +6,8 @@ namespace BindingTest.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private string _simpleBinding = "Simple Binding";
+        private string _booleanString = "True";
+        private string _stringValue = "Simple Binding";
 
         public MainWindowViewModel()
         {
@@ -28,10 +29,16 @@ namespace BindingTest.ViewModels
         public ObservableCollection<TestItem> Items { get; }
         public ReactiveCommand<object> ShuffleItems { get; }
 
-        public string SimpleBinding
+        public string BooleanString
         {
-            get { return _simpleBinding; }
-            set { this.RaiseAndSetIfChanged(ref _simpleBinding, value); }
+            get { return _booleanString; }
+            set { this.RaiseAndSetIfChanged(ref _booleanString, value); }
+        }
+
+        public string StringValue
+        {
+            get { return _stringValue; }
+            set { this.RaiseAndSetIfChanged(ref _stringValue, value); }
         }
     }
 }
