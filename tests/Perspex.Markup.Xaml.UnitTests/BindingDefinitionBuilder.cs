@@ -11,7 +11,6 @@ namespace Perspex.Xaml.Base.UnitTest
         private readonly BindingMode _bindingMode;
         private readonly string _sourcePropertyPath;
         private Control _target;
-        private PerspexProperty _targetProperty;
 
         public BindingDefinitionBuilder()
         {
@@ -31,7 +30,7 @@ namespace Perspex.Xaml.Base.UnitTest
                 bindingMode: _bindingMode,
                 sourcePropertyPath: _sourcePropertyPath,
                 target: _target,
-                targetProperty: _targetProperty);
+                targetProperty: null);
         }
     }
 }

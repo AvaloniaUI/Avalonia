@@ -2,15 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 
 namespace Perspex.Markup.Binding
 {
     /// <summary>
-    /// Observes the value of an expression on a root object.
+    /// Observes and sets the value of an expression on an object.
     /// </summary>
     public class ExpressionObserver : ObservableBase<ExpressionValue>
     {

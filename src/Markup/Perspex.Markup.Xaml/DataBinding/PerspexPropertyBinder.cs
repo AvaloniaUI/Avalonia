@@ -5,21 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OmniXaml.TypeConversion;
-using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.DataBinding
 {
     public class PerspexPropertyBinder : IPerspexPropertyBinder
     {
-        private readonly ITypeConverterProvider _typeConverterProvider;
-
         private readonly HashSet<XamlBinding> _bindings;
 
         public PerspexPropertyBinder(ITypeConverterProvider typeConverterProvider)
         {
-            _typeConverterProvider = typeConverterProvider;
+            TypeConverterProvider = typeConverterProvider;
             _bindings = new HashSet<XamlBinding>();
         }
+
+        public ITypeConverterProvider TypeConverterProvider { get; }
 
         public XamlBinding GetBinding(PerspexObject po, PerspexProperty pp)
         {
@@ -45,10 +44,10 @@ namespace Perspex.Markup.Xaml.DataBinding
                 throw new InvalidOperationException();
             }
 
-            var binding = new XamlBinding(_typeConverterProvider)
+            var binding = new XamlBinding(TypeConverterProvider)
             {
                 BindingMode = xamlBinding.BindingMode,
-                SourcePropertyPath = new PropertyPath(xamlBinding.SourcePropertyPath),
+                SourcePropertyPath = xamlBinding.SourcePropertyPath,
                 Target = xamlBinding.Target,
                 TargetProperty = xamlBinding.TargetProperty
             };

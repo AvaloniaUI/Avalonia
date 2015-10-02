@@ -88,9 +88,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BindingDefinitionBuilder.cs" />
-    <Compile Include="ChangeBranchTest.cs" />
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
-    <Compile Include="DataContextChangeSynchronizerTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleModel\Level1.cs" />
@@ -105,7 +103,6 @@
     <Compile Include="TypeProviderMock.cs" />
     <Compile Include="BinderTest.cs" />
     <Compile Include="XamlBindingTest.cs" />
-    <Compile Include="PropertyMountPointTest.cs" />
     <Compile Include="ViewModelMock.cs" />
   </ItemGroup>
   <ItemGroup>

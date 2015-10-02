@@ -54,22 +54,26 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleXamlBindingDefinition(XamlBindingDefinition xamlBindingDefinition)
+        private void HandleXamlBindingDefinition(XamlBindingDefinition def)
         {
-            PerspexObject subjectObject = xamlBindingDefinition.Target;
-            _propertyBinder.Create(xamlBindingDefinition);
+            var binding = new XamlBinding(_propertyBinder.TypeConverterProvider)
+            {
+                BindingMode = def.BindingMode,
+                SourcePropertyPath = def.SourcePropertyPath,
+                Target = def.Target,
+                TargetProperty = def.TargetProperty,
+            };
 
-            var observableForDataContext = subjectObject.GetObservable(Control.DataContextProperty);
-            observableForDataContext.Where(o => o != null).Subscribe(_ => BindToDataContextWhenItsSet(xamlBindingDefinition));
+            binding.Bind();
         }
 
         private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)
         {
-            var target = definition.Target;
-            var dataContext = target.DataContext;
+        //    var target = definition.Target;
+        //    var dataContext = target.DataContext;
 
-            var binding = _propertyBinder.GetBinding(target, definition.TargetProperty);
-            binding.BindToDataContext(dataContext);
+        //    var binding = _propertyBinder.GetBinding(target, definition.TargetProperty);
+        //    binding.BindToDataContext(dataContext);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global

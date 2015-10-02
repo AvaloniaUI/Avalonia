@@ -9,5 +9,6 @@ using Perspex.Metadata;
 [assembly: InternalsVisibleTo("Perspex.Controls.UnitTests")]
 
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Presenters")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Primitives")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Shapes")]

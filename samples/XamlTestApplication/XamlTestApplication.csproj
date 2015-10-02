@@ -80,8 +80,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
-    <Compile Include="Views\TestNode.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
+    <Compile Include="ViewModels\TestNode.cs" />
     <Compile Include="Views\MainWindow.cs" />
   </ItemGroup>
   <ItemGroup>

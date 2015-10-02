@@ -20,11 +20,8 @@ namespace Perspex.Markup.Xaml.DataBinding
         }
 
         public Control Target { get; }
-
         public PerspexProperty TargetProperty { get; }
-
         public string SourcePropertyPath { get; }
-
         public BindingMode BindingMode { get; }
     }
 }
