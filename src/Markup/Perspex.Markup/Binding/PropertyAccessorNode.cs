@@ -31,7 +31,7 @@ namespace Perspex.Markup.Binding
             }
             else
             {
-                if (_propertyInfo != null)
+                if (_propertyInfo != null && _propertyInfo.CanWrite)
                 {
                     _propertyInfo.SetValue(Target, value);
                     return true;
