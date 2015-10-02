@@ -8,7 +8,6 @@ using Perspex.Controls.Templates;
 
 namespace Perspex.Markup.Xaml.Templates
 {
-    [ContentProperty("Content")]
     public class DataTemplate : IDataTemplate
     {
         public Type DataType { get; set; }

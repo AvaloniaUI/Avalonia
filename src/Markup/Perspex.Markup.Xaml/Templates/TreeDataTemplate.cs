@@ -10,7 +10,6 @@ using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.Templates
 {
-    [ContentProperty("Content")]
     public class TreeDataTemplate : ITreeDataTemplate
     {
         public Type DataType { get; set; }
