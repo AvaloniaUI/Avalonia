@@ -48,7 +48,7 @@ namespace Perspex.Diagnostics.Views
                     {
                         DataTemplates = new DataTemplates
                         {
-                            new TreeDataTemplate<LogicalTreeNode>(GetHeader, x => x.Children),
+                            new FuncTreeDataTemplate<LogicalTreeNode>(GetHeader, x => x.Children),
                         },
                         [!ItemsControl.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
                     }),

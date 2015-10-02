@@ -1,6 +1,7 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplication"
         Title="Perspex Test Application" Height="350" Width="525" SizeToContent="WidthAndHeight" >
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
         <TabControl Grid.Row="1" Grid.ColumnSpan="2" Padding="5">
@@ -48,30 +49,36 @@
             </TabItem>
             <TabItem Header="Lists">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ListBox SelectedIndex="0">
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 1" FontSize="24" />
-                                <TextBlock Text="Item 1 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 2" FontSize="24" />
-                                <TextBlock Text="Item 2 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                    </ListBox>
-                    <DropDown VerticalAlignment="Center" SelectedIndex="0">
+                  <ListBox Items="{Binding Items}">
+                    <ListBox.DataTemplates>
+                      <DataTemplate DataType="vm:TestItem">
                         <StackPanel>
-                            <TextBlock Text="Item 1" FontSize="24" />
-                            <TextBlock Text="Item 1 Value" />
+                          <TextBlock Text="{Binding Header}" FontSize="24"/>
+                          <TextBlock Text="{Binding SubHeader}"/>
                         </StackPanel>
+                      </DataTemplate>
+                    </ListBox.DataTemplates>
+                  </ListBox>
+                  <DropDown VerticalAlignment="Center" SelectedIndex="0">
+                      <StackPanel>
+                          <TextBlock Text="Item 1" FontSize="24" />
+                          <TextBlock Text="Item 1 Value" />
+                      </StackPanel>
+                      <StackPanel>
+                          <TextBlock Text="Item 2" FontSize="24" />
+                          <TextBlock Text="Item 2 Value" />
+                      </StackPanel>
+                  </DropDown>
+                  <TreeView Items="{Binding Nodes}">
+                    <TreeView.DataTemplates>
+                      <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                         <StackPanel>
-                            <TextBlock Text="Item 2" FontSize="24" />
-                            <TextBlock Text="Item 2 Value" />
+                          <TextBlock Text="{Binding Header}" FontSize="24"/>
+                          <TextBlock Text="{Binding SubHeader}"/>
                         </StackPanel>
-                    </DropDown>
+                      </TreeDataTemplate>
+                    </TreeView.DataTemplates>  
+                  </TreeView>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Layout">

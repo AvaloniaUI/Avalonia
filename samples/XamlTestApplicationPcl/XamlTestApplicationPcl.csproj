@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\TestItem.cs" />
+    <Compile Include="ViewModels\TestNode.cs" />
     <Compile Include="Views\MainWindow.cs" />
     <Compile Include="XamlTestApp.cs" />
   </ItemGroup>

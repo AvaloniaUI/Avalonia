@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Perspex.Collections;
 using Perspex.Styling;
@@ -138,6 +139,16 @@ namespace Perspex.Styling.UnitTests
             }
 
             public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable BindTwoWay(PerspexProperty property, PerspexObject source, PerspexProperty sourceProperty, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable BindTwoWay(PerspexProperty property, ISubject<object> source, BindingPriority priority = BindingPriority.LocalValue)
             {
                 throw new NotImplementedException();
             }
