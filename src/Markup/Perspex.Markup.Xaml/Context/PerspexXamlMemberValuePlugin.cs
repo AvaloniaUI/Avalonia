@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using Glass;
 using OmniXaml.ObjectAssembler;
@@ -27,7 +28,7 @@ namespace Perspex.Markup.Xaml.Context
         {
             if (value is XamlBindingDefinition)
             {
-                HandleXamlBindingDefinition((XamlBindingDefinition)value);
+                HandleXamlBindingDefinition(instance, (XamlBindingDefinition)value);
             }
             else if (IsPerspexProperty)
             {
@@ -54,17 +55,32 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleXamlBindingDefinition(XamlBindingDefinition def)
+        private void HandleXamlBindingDefinition(object instance, XamlBindingDefinition def)
         {
+            var perspexObject = instance as PerspexObject;
+
+            if (perspexObject == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot bind to an object of type '{instance.GetType()}");
+            }
+
+            var property = perspexObject.GetRegisteredProperties()
+                .FirstOrDefault(x => x.Name == _xamlMember.Name);
+
+            if (property == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
+            }
+
             var binding = new XamlBinding(_propertyBinder.TypeConverterProvider)
             {
                 BindingMode = def.BindingMode,
                 SourcePropertyPath = def.SourcePropertyPath,
-                Target = def.Target,
-                TargetProperty = def.TargetProperty,
             };
 
-            binding.Bind();
+            binding.Bind(perspexObject, property);
         }
 
         private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)

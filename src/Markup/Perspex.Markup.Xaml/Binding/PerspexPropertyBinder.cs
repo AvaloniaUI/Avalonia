@@ -22,38 +22,41 @@ namespace Perspex.Markup.Xaml.Binding
 
         public XamlBinding GetBinding(PerspexObject po, PerspexProperty pp)
         {
-            return _bindings.First(xamlBinding => xamlBinding.Target == po && xamlBinding.TargetProperty == pp);
+            throw new NotImplementedException();
+            //return _bindings.First(xamlBinding => xamlBinding.Target == po && xamlBinding.TargetProperty == pp);
         }
 
         public IEnumerable<XamlBinding> GetBindings(PerspexObject source)
         {
-            return from binding in _bindings
-                   where binding.Target == source
-                   select binding;
+            throw new NotImplementedException();
+            //return from binding in _bindings
+            //       where binding.Target == source
+            //       select binding;
         }
 
         public XamlBinding Create(XamlBindingDefinition xamlBinding)
         {
-            if (xamlBinding.Target == null)
-            {
-                throw new InvalidOperationException();
-            }
+            throw new NotImplementedException();
+            //if (xamlBinding.Target == null)
+            //{
+            //    throw new InvalidOperationException();
+            //}
 
-            if (xamlBinding.TargetProperty == null)
-            {
-                throw new InvalidOperationException();
-            }
+            //if (xamlBinding.TargetProperty == null)
+            //{
+            //    throw new InvalidOperationException();
+            //}
 
-            var binding = new XamlBinding(TypeConverterProvider)
-            {
-                BindingMode = xamlBinding.BindingMode,
-                SourcePropertyPath = xamlBinding.SourcePropertyPath,
-                Target = xamlBinding.Target,
-                TargetProperty = xamlBinding.TargetProperty
-            };
+            //var binding = new XamlBinding(TypeConverterProvider)
+            //{
+            //    BindingMode = xamlBinding.BindingMode,
+            //    SourcePropertyPath = xamlBinding.SourcePropertyPath,
+            //    Target = xamlBinding.Target,
+            //    TargetProperty = xamlBinding.TargetProperty
+            //};
 
-            _bindings.Add(binding);
-            return binding;
+            //_bindings.Add(binding);
+            //return binding;
         }
     }
 }

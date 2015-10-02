@@ -21,11 +21,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            var target = extensionContext.TargetObject as Control;
-            var targetProperty = extensionContext.TargetProperty;
-            var targetPropertyName = targetProperty.Name;
-            var perspexProperty = target.GetRegisteredProperties().First(property => property.Name == targetPropertyName);
-            return new XamlBindingDefinition(target, perspexProperty, Path, Mode);
+            return new XamlBindingDefinition(Path, Mode);
         }
 
         public string Path { get; set; }

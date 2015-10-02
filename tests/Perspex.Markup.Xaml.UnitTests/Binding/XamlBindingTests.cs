@@ -19,13 +19,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var target = CreateTarget();
             var binding = new XamlBinding
             {
-                Target = target.Object,
-                TargetProperty = TextBox.TextProperty,
                 SourcePropertyPath = "Foo",
                 BindingMode = BindingMode.OneWay,
             };
 
-            binding.Bind();
+            binding.Bind(target.Object, TextBox.TextProperty);
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty, 
@@ -39,13 +37,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var target = CreateTarget();
             var binding = new XamlBinding
             {
-                Target = target.Object,
-                TargetProperty = TextBox.TextProperty,
                 SourcePropertyPath = "Foo",
                 BindingMode = BindingMode.TwoWay,
             };
 
-            binding.Bind();
+            binding.Bind(target.Object, TextBox.TextProperty);
 
             target.Verify(x => x.BindTwoWay(
                 TextBox.TextProperty,
@@ -61,13 +57,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var target = CreateTarget(dataContext: dataContext);
             var binding = new XamlBinding
             {
-                Target = target.Object,
-                TargetProperty = TextBox.TextProperty,
                 SourcePropertyPath = "Foo",
                 BindingMode = BindingMode.OneTime,
             };
 
-            binding.Bind(expression);
+            binding.Bind(target.Object, TextBox.TextProperty, expression);
 
             target.Verify(x => x.SetValue(
                 (PerspexProperty)TextBox.TextProperty, 
@@ -92,13 +86,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var target = CreateTarget(text: textObservable.Object);
             var binding = new XamlBinding
             {
-                Target = target.Object,
-                TargetProperty = TextBox.TextProperty,
                 SourcePropertyPath = "Foo",
                 BindingMode = BindingMode.OneWayToSource,
             };
 
-            binding.Bind(expression.Object);
+            binding.Bind(target.Object, TextBox.TextProperty, expression.Object);
 
             textObservable.Verify(x => x.Subscribe(expression.Object));
         }
@@ -109,12 +101,10 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var target = CreateTarget(null);
             var binding = new XamlBinding
             {
-                Target = target.Object,
-                TargetProperty = TextBox.TextProperty,
                 SourcePropertyPath = "Foo",
             };
 
-            binding.Bind();
+            binding.Bind(target.Object, TextBox.TextProperty);
 
             // Default for TextBox.Text is two-way.
             target.Verify(x => x.BindTwoWay(

@@ -23,49 +23,46 @@ namespace Perspex.Markup.Xaml.Binding
             _typeConverterProvider = typeConverterProvider;
         }
 
-        public IObservablePropertyBag Target { get; set; }
-
-        public PerspexProperty TargetProperty { get; set; }
-
         public string SourcePropertyPath { get; set; }
 
         public BindingMode BindingMode { get; set; }
 
-        public void Bind()
+        public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
-            Bind(new ExpressionSubject(CreateExpressionObserver()));
+            var subject = new ExpressionSubject(CreateExpressionObserver(instance));
+            Bind(instance, property, subject);
         }
 
-        public ExpressionObserver CreateExpressionObserver()
+        public ExpressionObserver CreateExpressionObserver(IObservablePropertyBag instance)
         {
             var result = new ExpressionObserver(null, SourcePropertyPath);
-            var dataContext = Target.GetObservable(Control.DataContextProperty);
+            var dataContext = instance.GetObservable(Control.DataContextProperty);
             dataContext.Subscribe(x => result.Root = x);
             return result;
         }
 
-        internal void Bind(ISubject<object> subject)
+        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = BindingMode == BindingMode.Default ?
-                TargetProperty.DefaultBindingMode : BindingMode;
+                property.DefaultBindingMode : BindingMode;
 
             switch (mode)
             {
                 case BindingMode.Default:
                 case BindingMode.OneWay:
-                    Target.Bind(TargetProperty, subject);
+                    target.Bind(property, subject);
                     break;
                 case BindingMode.TwoWay:
-                    Target.BindTwoWay(TargetProperty, subject);
+                    target.BindTwoWay(property, subject);
                     break;
                 case BindingMode.OneTime:
-                    Target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
+                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
                     {
-                        subject.Take(1).Subscribe(x => Target.SetValue(TargetProperty, x));
+                        subject.Take(1).Subscribe(x => target.SetValue(property, x));
                     });                    
                     break;
                 case BindingMode.OneWayToSource:
-                    Target.GetObservable(TargetProperty).Subscribe(subject);
+                    target.GetObservable(property).Subscribe(subject);
                     break;
             }
         }
