@@ -4,21 +4,19 @@
 using System;
 using Perspex.Controls;
 using Perspex.Markup.Xaml.DataBinding;
-using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Xaml.Base.UnitTest
 {
     public class BindingDefinitionBuilder
     {
         private readonly BindingMode _bindingMode;
-        private readonly PropertyPath _sourcePropertyPath;
+        private readonly string _sourcePropertyPath;
         private Control _target;
-        private PerspexProperty _targetProperty;
 
         public BindingDefinitionBuilder()
         {
             _bindingMode = BindingMode.Default;
-            _sourcePropertyPath = new PropertyPath(string.Empty);
+            _sourcePropertyPath = string.Empty;
         }
 
         public BindingDefinitionBuilder WithNullTarget()
@@ -33,7 +31,7 @@ namespace Perspex.Xaml.Base.UnitTest
                 bindingMode: _bindingMode,
                 sourcePropertyPath: _sourcePropertyPath,
                 target: _target,
-                targetProperty: _targetProperty);
+                targetProperty: null);
         }
     }
 }

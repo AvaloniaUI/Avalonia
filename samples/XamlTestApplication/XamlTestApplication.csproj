@@ -77,9 +77,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="MainViewModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\TestItem.cs" />
+    <Compile Include="ViewModels\TestNode.cs" />
     <Compile Include="Views\MainWindow.cs" />
   </ItemGroup>
   <ItemGroup>

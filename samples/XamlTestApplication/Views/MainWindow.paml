@@ -48,20 +48,8 @@
             </TabItem>
             <TabItem Header="Lists">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ListBox SelectedIndex="0">
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 1" FontSize="24" />
-                                <TextBlock Text="Item 1 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <StackPanel>
-                                <TextBlock Text="Item 2" FontSize="24" />
-                                <TextBlock Text="Item 2 Value" />
-                            </StackPanel>
-                        </ListBoxItem>
-                    </ListBox>
+                  <ListBox Items="{Binding Items}">
+                  </ListBox>
                     <DropDown VerticalAlignment="Center" SelectedIndex="0">
                         <StackPanel>
                             <TextBlock Text="Item 1" FontSize="24" />

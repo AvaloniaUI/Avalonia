@@ -5,7 +5,6 @@ using System.Linq;
 using OmniXaml;
 using Perspex.Controls;
 using Perspex.Markup.Xaml.DataBinding;
-using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -26,19 +25,10 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             var targetProperty = extensionContext.TargetProperty;
             var targetPropertyName = targetProperty.Name;
             var perspexProperty = target.GetRegisteredProperties().First(property => property.Name == targetPropertyName);
-
-            return new XamlBindingDefinition
-                (
-                target,
-                perspexProperty,
-                new PropertyPath(Path),
-                Mode == BindingMode.Default ? BindingMode.OneWay : Mode
-                );
+            return new XamlBindingDefinition(target, perspexProperty, Path, Mode);
         }
 
-        /// <summary> The source path (for CLR bindings).</summary>
         public string Path { get; set; }
-
         public BindingMode Mode { get; set; }
     }
 }
