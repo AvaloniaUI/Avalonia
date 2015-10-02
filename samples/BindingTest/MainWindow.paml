@@ -1,9 +1,15 @@
 ﻿<Window xmlns="https://github.com/perspex">
-  <StackPanel Margin="18" Gap="4">
-    <TextBlock Text="{Binding SimpleBinding}"/>
-    <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding SimpleBinding}"/>
-    <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneWay}"/>
-    <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneTime}"/>
-    <TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneWayToSource}"/>
+  <StackPanel Orientation="Horizontal">
+    <StackPanel Margin="18" Gap="4" Width="200">
+      <TextBlock Text="{Binding SimpleBinding}"/>
+      <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding SimpleBinding}"/>
+      <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneWay}"/>
+      <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneTime}"/>
+      <TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding SimpleBinding, Mode=OneWayToSource}"/>
+    </StackPanel>
+    <StackPanel Margin="18" Gap="4" Width="200">
+      <TextBox Watermark="Items[1].StringValue" UseFloatingWatermark="True" Text="{Binding Items[1].StringValue}"/>
+      <Button Command="{Binding ShuffleItems}">Shuffle</Button>
+    </StackPanel>
   </StackPanel>
 </Window>

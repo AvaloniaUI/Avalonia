@@ -187,7 +187,7 @@ namespace Perspex
 
                 if (sourceBinding == null && mode > BindingMode.OneWay)
                 {
-                    throw new InvalidOperationException("Can only bind OneWay to plain IObservable.");
+                    mode = BindingMode.OneWay;
                 }
 
                 switch (mode)

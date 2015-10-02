@@ -18,7 +18,6 @@ namespace BindingTest
 
             Log.Logger = new LoggerConfiguration()
                 .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Property"))
-                .Filter.ByIncludingOnly(Matching.WithProperty<string>("Property", x => x == "Text"))
                 .MinimumLevel.Verbose()
                 .WriteTo.Trace(outputTemplate: "[{Id:X8}] [{SourceContext}] {Message}")
                 .CreateLogger();
