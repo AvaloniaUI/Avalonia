@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Perspex.Markup.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Binding\ExpressionNodeBuilder.cs" />
