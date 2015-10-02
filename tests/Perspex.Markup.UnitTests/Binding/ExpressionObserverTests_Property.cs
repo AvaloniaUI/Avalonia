@@ -23,6 +23,17 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public async void Should_Get_Simple_Property_From_Base_Class()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+            var result = await target.Take(1);
+
+            Assert.True(result.HasValue);
+            Assert.Equal("foo", result.Value);
+        }
+
+        [Fact]
         public async void Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } }  };
@@ -233,6 +244,10 @@ namespace Perspex.Markup.UnitTests.Binding
                     RaisePropertyChanged(nameof(Bar));
                 }
             }
+        }
+
+        private class Class3 : Class1
+        {
         }
 
         private class WithoutBar : NotifyingBase, INext
