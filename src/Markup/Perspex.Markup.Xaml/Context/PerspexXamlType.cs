@@ -4,7 +4,7 @@
 using System;
 using OmniXaml;
 using OmniXaml.Typing;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.Context
 {

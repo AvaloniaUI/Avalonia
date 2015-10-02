@@ -3,7 +3,7 @@
 
 using System;
 using Moq;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 using OmniXaml.TypeConversion;
 using Xunit;
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Moq;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 using OmniXaml.TypeConversion;
 using Xunit;
 

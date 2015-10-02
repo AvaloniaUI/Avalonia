@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using OmniXaml.TypeConversion;
 
-namespace Perspex.Markup.Xaml.DataBinding
+namespace Perspex.Markup.Xaml.Binding
 {
     public interface IPerspexPropertyBinder
     {

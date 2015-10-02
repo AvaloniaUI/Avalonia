@@ -4,7 +4,7 @@
 using System.Linq;
 using OmniXaml;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {

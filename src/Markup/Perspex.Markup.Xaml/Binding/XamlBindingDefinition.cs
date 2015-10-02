@@ -3,7 +3,7 @@
 
 using Perspex.Controls;
 
-namespace Perspex.Markup.Xaml.DataBinding
+namespace Perspex.Markup.Xaml.Binding
 {
     public class XamlBindingDefinition
     {

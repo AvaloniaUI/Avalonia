@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OmniXaml.TypeConversion;
 
-namespace Perspex.Markup.Xaml.DataBinding
+namespace Perspex.Markup.Xaml.Binding
 {
     public class PerspexPropertyBinder : IPerspexPropertyBinder
     {

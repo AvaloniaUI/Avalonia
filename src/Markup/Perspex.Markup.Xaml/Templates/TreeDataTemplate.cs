@@ -6,7 +6,7 @@ using System.Collections;
 using OmniXaml.Attributes;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.Templates
 {

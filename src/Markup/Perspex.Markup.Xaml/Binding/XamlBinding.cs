@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 using OmniXaml.TypeConversion;
 using Perspex.Markup.Binding;
 
-namespace Perspex.Markup.Xaml.DataBinding
+namespace Perspex.Markup.Xaml.Binding
 {
     public class XamlBinding
     {

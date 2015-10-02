@@ -7,7 +7,7 @@ using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
