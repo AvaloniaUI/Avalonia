@@ -21,7 +21,7 @@ namespace BindingTest.ViewModels
             ShuffleItems.Subscribe(_ =>
             {
                 var r = new Random();
-                Items[r.Next(Items.Count)] = Items[r.Next(Items.Count)];
+                Items[1] = Items[r.Next(Items.Count)];
             });
         }
 
