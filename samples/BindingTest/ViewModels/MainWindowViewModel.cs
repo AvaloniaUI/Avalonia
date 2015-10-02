@@ -22,7 +22,7 @@ namespace BindingTest.ViewModels
             ShuffleItems.Subscribe(_ =>
             {
                 var r = new Random();
-                Items[1] = Items[r.Next(Items.Count)];
+                Items.Move(r.Next(Items.Count), 1);
             });
         }
 
