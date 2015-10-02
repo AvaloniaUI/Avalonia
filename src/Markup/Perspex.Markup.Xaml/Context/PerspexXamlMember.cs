@@ -9,21 +9,17 @@ namespace Perspex.Markup.Xaml.Context
 {
     public class PerspexXamlMember : XamlMember
     {
-        private readonly IPerspexPropertyBinder _propertyBinder;
-
         public PerspexXamlMember(string name,
             XamlType owner,
             IXamlTypeRepository xamlTypeRepository,
-            ITypeFeatureProvider featureProvider,
-            IPerspexPropertyBinder propertyBinder)
+            ITypeFeatureProvider featureProvider)
             : base(name, owner, xamlTypeRepository, featureProvider)
         {
-            _propertyBinder = propertyBinder;
         }
 
         protected override IXamlMemberValuePlugin LookupXamlMemberValueConnector()
         {
-            return new PerspexXamlMemberValuePlugin(this, _propertyBinder);
+            return new PerspexXamlMemberValuePlugin(this);
         }
 
         public override string ToString()

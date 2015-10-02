@@ -17,12 +17,11 @@ namespace Perspex.Markup.Xaml.Context
     public class PerspexXamlMemberValuePlugin : MemberValuePlugin
     {
         private readonly XamlMember _xamlMember;
-        private readonly IPerspexPropertyBinder _propertyBinder;
 
-        public PerspexXamlMemberValuePlugin(XamlMember xamlMember, IPerspexPropertyBinder propertyBinder) : base(xamlMember)
+        public PerspexXamlMemberValuePlugin(XamlMember xamlMember) 
+            : base(xamlMember)
         {
             _xamlMember = xamlMember;
-            _propertyBinder = propertyBinder;
         }
 
         public override void SetValue(object instance, object value)
@@ -90,7 +89,7 @@ namespace Perspex.Markup.Xaml.Context
                         $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
                 }
 
-                var binding = new XamlBinding(_propertyBinder.TypeConverterProvider)
+                var binding = new XamlBinding
                 {
                     BindingMode = def.BindingMode,
                     SourcePropertyPath = def.SourcePropertyPath,

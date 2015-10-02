@@ -43,8 +43,7 @@ namespace Perspex.Markup.Xaml.Context
         private static ITypeContext CreateTypeContext(ITypeFactory typeFactory, TypeFeatureProvider featureProvider)
         {
             var xamlNamespaceRegistry = CreateXamlNamespaceRegistry();
-            var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
-            var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
+            var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider);
 
             typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
             typeRepository.RegisterMetadata(
