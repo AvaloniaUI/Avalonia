@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Perspex.Markup.Binding
 {
@@ -107,10 +108,12 @@ namespace Perspex.Markup.Binding
         {
             var value = _propertyInfo.GetValue(target);
             var observable = value as IObservable<object>;
+            var command = value as ICommand;
             var task = value as Task;
             bool set = false;
 
-            if (observable != null)
+            // ReactiveCommand is an IObservable but we want to bind to it, not its value.
+            if (observable != null && command == null)
             {
                 CurrentValue = ExpressionValue.None;
                 set = true;
