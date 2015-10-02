@@ -37,21 +37,22 @@ namespace Perspex.Markup.Xaml.DataBinding
             {
                 var bindingSource = new DataContextChangeSynchronizer.BindingSource(SourcePropertyPath, dataContext);
                 var bindingTarget = new DataContextChangeSynchronizer.BindingTarget(Target, TargetProperty);
+                var mode = BindingMode == BindingMode.Default ? TargetProperty.DefaultBindingMode : BindingMode;
 
                 _changeSynchronizer = new DataContextChangeSynchronizer(bindingSource, bindingTarget, _typeConverterProvider);
 
-                if (BindingMode == BindingMode.TwoWay)
+                if (mode == BindingMode.TwoWay)
                 {
                     _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                     _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
 
-                if (BindingMode == BindingMode.OneWay)
+                if (mode == BindingMode.OneWay || mode == BindingMode.Default)
                 {
                     _changeSynchronizer.StartUpdatingTargetWhenSourceChanges();
                 }
 
-                if (BindingMode == BindingMode.OneWayToSource)
+                if (mode == BindingMode.OneWayToSource)
                 {
                     _changeSynchronizer.StartUpdatingSourceWhenTargetChanges();
                 }
