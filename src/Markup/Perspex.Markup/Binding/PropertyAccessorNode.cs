@@ -46,7 +46,7 @@ namespace Perspex.Markup.Binding
 
             if (target != null)
             {
-                _propertyInfo = target.GetType().GetTypeInfo().GetDeclaredProperty(PropertyName);
+                _propertyInfo = FindProperty(target, PropertyName);
 
                 if (_propertyInfo != null)
                 {
@@ -80,6 +80,27 @@ namespace Perspex.Markup.Binding
             {
                 inpc.PropertyChanged -= PropertyChanged;
             }
+        }
+
+        private static PropertyInfo FindProperty(object target, string propertyName)
+        {
+            var typeInfo = target.GetType().GetTypeInfo();
+
+            do
+            {
+                var result = typeInfo.GetDeclaredProperty(propertyName);
+
+                if (result != null)
+                {
+                    return result;
+                }
+                else
+                {
+                    typeInfo = typeInfo.BaseType?.GetTypeInfo();
+                }
+            } while (typeInfo != null);
+
+            return null;
         }
 
         private void ReadValue(object target)
