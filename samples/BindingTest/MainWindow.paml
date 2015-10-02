@@ -1,6 +1,9 @@
 ﻿<Window xmlns="https://github.com/perspex">
-  <StackPanel Margin="18">
+  <StackPanel Margin="18" Gap="4">
     <TextBlock Text="{Binding SimpleBinding}"/>
-    <TextBox Watermark="Simple Binding" Text="{Binding SimpleBinding}"/>
+    <TextBox Watermark="Two Way" Text="{Binding SimpleBinding}"/>
+    <TextBox Watermark="One Way" Text="{Binding SimpleBinding, Mode=OneWay}"/>
+    <TextBox Watermark="One Time" Text="{Binding SimpleBinding, Mode=OneTime}"/>
+    <TextBox Watermark="One Way To Source" Text="{Binding SimpleBinding, Mode=OneWayToSource}"/>
   </StackPanel>
 </Window>

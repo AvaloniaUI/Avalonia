@@ -58,7 +58,8 @@ namespace Perspex.Markup.Xaml.DataBinding
                 case BindingMode.OneTime:
                     throw new NotImplementedException();
                 case BindingMode.OneWayToSource:
-                    throw new NotImplementedException();
+                    Target.GetObservable(TargetProperty).Subscribe(new ExpressionSubject(observable));
+                    break;
             }
         }
     }
