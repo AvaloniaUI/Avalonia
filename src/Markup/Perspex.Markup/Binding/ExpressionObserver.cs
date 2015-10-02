@@ -10,7 +10,7 @@ namespace Perspex.Markup.Binding
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : ObservableBase<ExpressionValue>
+    public class ExpressionObserver : ObservableBase<ExpressionValue>, IDescription
     {
         private object _root;
         private int _count;
@@ -25,6 +25,7 @@ namespace Perspex.Markup.Binding
         {
             _root = root;
             _node = ExpressionNodeBuilder.Build(expression);
+            Expression = expression;
         }
 
         /// <summary>
@@ -50,6 +51,11 @@ namespace Perspex.Markup.Binding
         }
 
         /// <summary>
+        /// Gets the expression being observed.
+        /// </summary>
+        public string Expression { get; }
+
+        /// <summary>
         /// Gets or sets the root object that the expression is being observed on.
         /// </summary>
         public object Root
@@ -72,6 +78,9 @@ namespace Perspex.Markup.Binding
                 }
             }
         }
+
+        /// <inheritdoc/>
+        string IDescription.Description => Expression;
 
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<ExpressionValue> observer)

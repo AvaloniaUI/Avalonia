@@ -335,7 +335,7 @@ namespace Perspex
                         PropertyChanged -= handler;
                     });
                 },
-                GetObservableDescription(property));
+                GetDescription(property));
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace Perspex
                         PropertyChanged -= handler;
                     });
                 },
-                GetObservableDescription(property));
+                GetDescription(property));
         }
 
         /// <summary>
@@ -591,14 +591,13 @@ namespace Perspex
                 _propertyLog.Verbose(
                     "Bound {Property} to {Binding} with priority LocalValue",
                     property,
-                    source);
+                    GetDescription(source));
 
                 return source.Subscribe(x => SetValue(property, x));
             }
             else
             {
                 PriorityValue v;
-                IDescription description = source as IDescription;
 
                 if (!IsRegistered(property))
                 {
@@ -614,7 +613,7 @@ namespace Perspex
                 _propertyLog.Verbose(
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    source,
+                    GetDescription(source),
                     priority);
 
                 return v.Add(source, (int)priority);
@@ -706,7 +705,7 @@ namespace Perspex
             _propertyLog.Verbose(
                 "Bound two way {Property} to {Binding} with priority {Priority}",
                 property,
-                source,
+                GetDescription(source),
                 priority);
 
             return new CompositeDisposable(
@@ -959,9 +958,20 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property</param>
         /// <returns>The description.</returns>
-        private string GetObservableDescription(PerspexProperty property)
+        private string GetDescription(PerspexProperty property)
         {
             return string.Format("{0}.{1}", GetType().Name, property.Name);
+        }
+
+        /// <summary>
+        /// Gets a description of an observable that van be used in logs.
+        /// </summary>
+        /// <param name="o">The observable.</param>
+        /// <returns>The description.</returns>
+        private string GetDescription(IObservable<object> o)
+        {
+            var description = o as IDescription;
+            return description?.Description ?? o.ToString();
         }
 
         /// <summary>

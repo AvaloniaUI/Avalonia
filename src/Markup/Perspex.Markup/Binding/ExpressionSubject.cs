@@ -10,7 +10,7 @@ namespace Perspex.Markup.Binding
     /// <summary>
     /// Turns an <see cref="ExpressionObserver"/> into a subject that can be bound two-ways.
     /// </summary>
-    public class ExpressionSubject : ISubject<object>
+    public class ExpressionSubject : ISubject<object>, IDescription
     {
         private ExpressionObserver _inner;
 
@@ -22,6 +22,9 @@ namespace Perspex.Markup.Binding
         {
             _inner = inner;
         }
+
+        /// <inheritdoc/>
+        string IDescription.Description => _inner.Expression;
 
         /// <inheritdoc/>
         public void OnCompleted()
