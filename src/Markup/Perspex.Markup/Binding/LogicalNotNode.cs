@@ -14,19 +14,19 @@ namespace Perspex.Markup.Binding
             throw new NotSupportedException("Cannot set a negated binding.");
         }
 
-        public override IDisposable Subscribe(IObserver<ExpressionValue> observer)
+        public override IDisposable Subscribe(IObserver<object> observer)
         {
             return Next.Select(x => Negate(x)).Subscribe(observer);
         }
 
-        private ExpressionValue Negate(ExpressionValue v)
+        private object Negate(object v)
         {
-            if (v.HasValue)
+            if (v != PerspexProperty.UnsetValue)
             {
                 try
                 {
-                    var boolean = Convert.ToBoolean(v.Value, CultureInfo.InvariantCulture);
-                    return new ExpressionValue(!boolean);
+                    var boolean = Convert.ToBoolean(v, CultureInfo.InvariantCulture);
+                    return !boolean;
                 }
                 catch
                 {
@@ -34,7 +34,7 @@ namespace Perspex.Markup.Binding
                 }
             }
 
-            return ExpressionValue.None;
+            return PerspexProperty.UnsetValue;
         }
     }
 }

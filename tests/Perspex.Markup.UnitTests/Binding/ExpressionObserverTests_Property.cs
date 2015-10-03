@@ -18,8 +18,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal("foo", result.Value);
+            Assert.Equal("foo", result);
         }
 
         [Fact]
@@ -29,8 +28,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal("foo", result.Value);
+            Assert.Equal("foo", result);
         }
 
         [Fact]
@@ -40,8 +38,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal("baz", result.Value);
+            Assert.Equal("baz", result);
         }
 
         [Fact]
@@ -51,7 +48,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
-            Assert.False(result.HasValue);
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         [Fact]
@@ -61,7 +58,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Foo");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             data.Foo = "bar";
 
             Assert.Equal(new[] { "foo", "bar" }, result);
@@ -78,7 +75,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             ((Class2)data.Next).Bar = "baz";
 
             Assert.Equal(new[] { "bar", "baz" }, result);
@@ -96,7 +93,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
 
@@ -116,12 +113,12 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = null;
             data.Next = new Class2 { Bar = "baz" };
 
-            Assert.Equal(new[] { "bar", null, "baz" }, result);
+            Assert.Equal(new[] { "bar", PerspexProperty.UnsetValue, "baz" }, result);
 
             sub.Dispose();
 
@@ -137,13 +134,13 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "Next.Bar");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
             var breaking = new WithoutBar();
             data.Next = breaking;
             data.Next = new Class2 { Bar = "baz" };
 
-            Assert.Equal(new[] { "bar", null, "baz" }, result);
+            Assert.Equal(new[] { "bar", PerspexProperty.UnsetValue, "baz" }, result);
 
             sub.Dispose();
 
@@ -206,7 +203,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(null, "Foo");
             var result = await target.Take(1);
 
-            Assert.False(result.HasValue);
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         [Fact]
@@ -217,11 +214,11 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(first, "Foo");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = target.Subscribe(x => result.Add(x));
             target.Root = second;
             target.Root = null;
 
-            Assert.Equal(new[] { "foo", "bar", null }, result);
+            Assert.Equal(new[] { "foo", "bar", PerspexProperty.UnsetValue }, result);
 
             Assert.Equal(0, first.SubscriptionCount);
             Assert.Equal(0, second.SubscriptionCount);

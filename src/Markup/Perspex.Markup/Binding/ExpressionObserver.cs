@@ -10,7 +10,7 @@ namespace Perspex.Markup.Binding
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : ObservableBase<ExpressionValue>, IDescription
+    public class ExpressionObserver : ObservableBase<object>, IDescription
     {
         private object _root;
         private int _count;
@@ -83,7 +83,7 @@ namespace Perspex.Markup.Binding
         string IDescription.Description => Expression;
 
         /// <inheritdoc/>
-        protected override IDisposable SubscribeCore(IObserver<ExpressionValue> observer)
+        protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
             IncrementCount();
 

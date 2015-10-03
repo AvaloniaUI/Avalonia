@@ -29,16 +29,42 @@ namespace Perspex.Markup.Xaml.Binding
 
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
-            var subject = new ExpressionSubject(CreateExpressionObserver(instance));
-            Bind(instance, property, subject);
+            var subject = new ExpressionSubject(CreateExpressionObserver(instance, property));
+
+            if (subject != null)
+            {
+                Bind(instance, property, subject);
+            }
         }
 
-        public ExpressionObserver CreateExpressionObserver(IObservablePropertyBag instance)
+        public ExpressionObserver CreateExpressionObserver(
+            IObservablePropertyBag instance, 
+            PerspexProperty property)
         {
-            var result = new ExpressionObserver(null, SourcePropertyPath);
-            var dataContext = instance.GetObservable(Control.DataContextProperty);
-            dataContext.Subscribe(x => result.Root = x);
-            return result;
+            IObservable<object> dataContext = null;
+
+            if (property != Control.DataContextProperty)
+            {
+                dataContext = instance.GetObservable(Control.DataContextProperty);
+            }
+            else
+            {
+                var parent = instance.InheritanceParent as IObservablePropertyBag;
+
+                if (parent != null)
+                {
+                    dataContext = parent.GetObservable(Control.DataContextProperty);
+                }
+            }
+
+            if (dataContext != null)
+            {
+                var result = new ExpressionObserver(null, SourcePropertyPath);
+                dataContext.Subscribe(x => result.Root = x);
+                return result;
+            }
+
+            return null;
         }
 
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)

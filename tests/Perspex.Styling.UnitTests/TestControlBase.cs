@@ -28,6 +28,14 @@ namespace Perspex.Styling.UnitTests
             set;
         }
 
+        public IPropertyBag InheritanceParent
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
         {
             throw new NotImplementedException();

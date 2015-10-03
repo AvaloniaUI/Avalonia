@@ -101,6 +101,11 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
+        /// </summary>
+        IPropertyBag IPropertyBag.InheritanceParent => InheritanceParent;
+
+        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
         /// are inherited from.
         /// </summary>
@@ -457,8 +462,15 @@ namespace Perspex
         public bool IsSet(PerspexProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            
+            PriorityValue value;
 
-            return _values.ContainsKey(property);
+            if (_values.TryGetValue(property, out value))
+            {
+                return value.Value != PerspexProperty.UnsetValue;
+            }
+
+            return false;
         }
 
         /// <summary>

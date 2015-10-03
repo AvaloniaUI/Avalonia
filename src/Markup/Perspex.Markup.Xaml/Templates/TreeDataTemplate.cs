@@ -32,7 +32,7 @@ namespace Perspex.Markup.Xaml.Templates
             if (ItemsSource != null)
             {
                 var obs = new ExpressionObserver(item, ItemsSource.SourcePropertyPath);
-                return obs.Take(1).Wait().Value as IEnumerable;
+                return obs.Take(1).Wait() as IEnumerable;
             }
 
             return null;
