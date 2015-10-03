@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,15 +13,42 @@ namespace Perspex.Media
         private readonly IDrawingContextImpl _impl;
         private int _currentLevel;
 
+        private Stack<TransformContainer> _transformContainers = new Stack<TransformContainer>();
+
+        struct TransformContainer
+        {
+            public Matrix LocalTransform;
+            public Matrix ContainerTransform;
+
+            public TransformContainer(Matrix localTransform, Matrix containerTransform)
+            {
+                LocalTransform = localTransform;
+                ContainerTransform = containerTransform;
+            }
+        }
+
         public DrawingContext(IDrawingContextImpl impl)
         {
             _impl = impl;
         }
 
+
+        private Matrix _currentTransform = Matrix.Identity;
+
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
-        public Matrix CurrentTransform => _impl.Transform;
+        public Matrix CurrentTransform
+        {
+            get { return _currentTransform; }
+            private set
+            {
+                _currentTransform = value;
+                _impl.Transform = _currentTransform*_currentContainerTransform;
+            }
+        }
+
+        private Matrix _currentContainerTransform = Matrix.Identity;
 
         /// <summary>
         /// Draws a bitmap image.
@@ -87,7 +115,8 @@ namespace Perspex.Media
                 None,
                 Matrix,
                 Opacity,
-                Clip
+                Clip,
+                MatrixContainer
             }
 
             public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
@@ -107,15 +136,18 @@ namespace Perspex.Media
                     throw new InvalidOperationException("Wrong Push/Pop state order");
                 _context._currentLevel--;
                 if (_type == PushedStateType.Matrix)
-                    _context._impl.Transform = _matrix;
+                    _context.CurrentTransform = _matrix;
                 else if(_type == PushedStateType.Clip)
                     _context._impl.PopClip();
-
                 else if(_type == PushedStateType.Opacity)
                     _context._impl.PopOpacity();
+                else if (_type == PushedStateType.MatrixContainer)
+                {
+                    var cont = _context._transformContainers.Pop();
+                    _context._currentContainerTransform = cont.ContainerTransform;
+                    _context.CurrentTransform = cont.LocalTransform;
+                }
             }
-
-
         }
 
 
@@ -155,8 +187,18 @@ namespace Perspex.Media
         PushedState PushSetTransform(Matrix matrix)
         {
             var oldMatrix = CurrentTransform;
-            _impl.Transform = matrix;
+            CurrentTransform = matrix;
+            
             return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
+        }
+
+
+        public PushedState PushTransformContainer()
+        {
+            _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
+            _currentContainerTransform = CurrentTransform*_currentContainerTransform;
+            _currentTransform = Matrix.Identity;
+            return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }
 
         public void Dispose() => _impl.Dispose();

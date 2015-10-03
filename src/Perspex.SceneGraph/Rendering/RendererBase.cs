@@ -52,10 +52,10 @@ namespace Perspex.Rendering
                 }
                 m = renderTransform*m;
 
-
-                using (context.PushPreTransform(m))
+                using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : default(DrawingContext.PushedState))
+                using (context.PushTransformContainer())
                 {
                     visual.Render(context);
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
