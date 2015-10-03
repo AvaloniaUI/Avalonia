@@ -54,7 +54,6 @@ namespace Perspex.Android.Rendering
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
 
         public IEnumerable<FormattedTextLine> GetLines()

@@ -11,6 +11,7 @@ using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Perspex.Controls.Shapes;
@@ -175,6 +176,9 @@ namespace Perspex.Android.Rendering
             return SetBrush(pen.Brush, dstRect, BrushUsage.Stroke);
         }
 
+
+        private static BrushImpl FallbackBrush = new SolidColorBrushImpl(new SolidColorBrush(Colors.Magenta));
+
         private IDisposable SetBrush(Brush brush, Size dstRect, BrushUsage usage)
         {
             var solid = brush as SolidColorBrush;
@@ -190,24 +194,27 @@ namespace Perspex.Android.Rendering
             }
             else if (linearGradientBrush != null)
             {
-                // TODO: Fallback Color for now
-                impl = new SolidColorBrushImpl(new SolidColorBrush(Color.Parse("#FFD0417E"))); 
-                //impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "LinearGradientBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (radialGradientBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "RadialGradientBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (imageBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new ImageBrushImpl(imageBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "ImageBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (visualBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new VisualBrushImpl(visualBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "VisualBrush not implemented");
+                impl = FallbackBrush;
             }
             else
             {

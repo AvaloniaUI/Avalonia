@@ -61,7 +61,7 @@ namespace Perspex.Android.Rendering
 
         public Point PointToScreen(Point point)
         {
-            throw new NotImplementedException();
+            return point;
         }
 
         public void SetCursor(IPlatformHandle cursor)
