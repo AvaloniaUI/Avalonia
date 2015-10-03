@@ -16,7 +16,7 @@ namespace Perspex.Controls.Generators
     /// <typeparam name="T">The type of the container.</typeparam>
     public class TreeItemContainerGenerator<T> : ITreeItemContainerGenerator where T : TreeViewItem, new()
     {
-        private readonly Dictionary<object, T> _containers = new Dictionary<object, T>();
+        private Dictionary<object, T> _containers = new Dictionary<object, T>();
 
         private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
@@ -102,7 +102,9 @@ namespace Perspex.Controls.Generators
         /// <returns>The removed controls.</returns>
         public IList<IControl> ClearContainers()
         {
-            throw new NotImplementedException();
+            var result = _containers;
+            _containers = new Dictionary<object, T>();
+            return result.Values.Cast<IControl>().ToList();
         }
 
         /// <summary>
