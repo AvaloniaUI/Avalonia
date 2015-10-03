@@ -39,6 +39,14 @@ namespace Perspex.Controls.Primitives
                 (o, v) => o.SelectedItem = v);
 
         /// <summary>
+        /// Defines the <see cref="SelectedIndexes"/> property.
+        /// </summary>
+        protected static readonly PerspexProperty<IList<int>> SelectedIndexesProperty =
+            PerspexProperty.RegisterDirect<SelectingItemsControl, IList<int>>(
+                nameof(SelectedIndexes),
+                o => o.SelectedIndexes);
+
+        /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         protected static readonly PerspexProperty<IList<object>> SelectedItemsProperty =
@@ -61,8 +69,8 @@ namespace Perspex.Controls.Primitives
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
 
-        private int _selectedIndex = -1;
-        private IList<object> _selectedItems = new PerspexList<object>();
+        private PerspexList<int> _selectedIndexes = new PerspexList<int>();
+        private PerspexList<object> _selectedItems = new PerspexList<object>();
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -89,13 +97,25 @@ namespace Perspex.Controls.Primitives
         {
             get
             {
-                return _selectedIndex;
+                return _selectedIndexes.Count > 0 ? _selectedIndexes[0]: -1;
             }
 
             set
             {
-                value = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
-                SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value);
+                var old = SelectedIndex;
+                var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
+
+                if (old != effective)
+                {
+                    _selectedIndexes.Clear();
+
+                    if (effective != -1)
+                    {
+                        _selectedIndexes.Add(effective);
+                    }
+
+                    RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
+                }
             }
         }
 
@@ -126,6 +146,14 @@ namespace Perspex.Controls.Primitives
                     RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the selected indexes.
+        /// </summary>
+        protected IList<int> SelectedIndexes
+        {
+            get { return _selectedIndexes; }
         }
 
         /// <summary>
