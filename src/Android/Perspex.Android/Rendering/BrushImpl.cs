@@ -1,15 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
 using Android.Graphics;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
+using Perspex.Media;
 using AColor = Android.Graphics.Color;
 
 namespace Perspex.Android.Rendering
@@ -25,7 +16,6 @@ namespace Perspex.Android.Rendering
     {
         public virtual void Dispose()
         {
-            
         }
 
         public abstract void Apply(Paint context, BrushUsage usage);
@@ -33,11 +23,11 @@ namespace Perspex.Android.Rendering
 
     public class SolidColorBrushImpl : BrushImpl
     {
-        private AColor _nativeColor;
+        private readonly AColor _nativeColor;
 
-        public SolidColorBrushImpl(Media.SolidColorBrush brush)
+        public SolidColorBrushImpl(SolidColorBrush brush)
         {
-            _nativeColor = brush?.Color.ToAndroidGraphics() ?? new AColor(0,0,0,255);
+            _nativeColor = brush?.Color.ToAndroidGraphics() ?? new AColor(0, 0, 0, 255);
         }
 
         public override void Apply(Paint context, BrushUsage usage)

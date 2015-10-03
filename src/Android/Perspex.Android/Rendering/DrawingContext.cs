@@ -1,34 +1,24 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
-using System.Text;
-
-using Android.App;
-using Android.Content;
 using Android.Graphics;
-using Android.OS;
-using Android.Runtime;
 using Android.Text;
 using Android.Util;
-using Android.Views;
-using Android.Widget;
-using Perspex.Controls.Shapes;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using ARect = Android.Graphics.Rect;
 using AMatrix = Android.Graphics.Matrix;
-using Color = Perspex.Media.Color;
-using Path = Android.Graphics.Path;
 using ATextAlign = Android.Graphics.Paint.Align;
 
 namespace Perspex.Android.Rendering
 {
     public class DrawingContext : IDrawingContext
     {
-        public Canvas Canvas;
+        private static readonly BrushImpl FallbackBrush = new SolidColorBrushImpl(new SolidColorBrush(Colors.Magenta));
+
+        private float _currentOpacity = 1.0f;
         private TextPaint _nativebrush;
+        public Canvas Canvas;
 
         public DrawingContext()
         {
@@ -41,15 +31,12 @@ namespace Perspex.Android.Rendering
             Canvas = null;
             _nativebrush = null;
         }
-			
-		public Matrix CurrentTransform {
-			get {
-				return Canvas.Matrix.ToPerspex ();
-			}
-			set {
-				Canvas.Matrix = value.ToAndroidGraphics ();
-			}
-		}
+
+        public Matrix CurrentTransform
+        {
+            get { return Canvas.Matrix.ToPerspex(); }
+            set { Canvas.Matrix = value.ToAndroidGraphics(); }
+        }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
@@ -61,7 +48,7 @@ namespace Perspex.Android.Rendering
             var Rect = new Rect(p1.X, p1.Y, p2.X, p2.Y);
             using ((SetPen(pen, new Size(Rect.Width, Rect.Height))))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, _nativebrush);   
+                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, _nativebrush);
             }
         }
 
@@ -101,27 +88,6 @@ namespace Perspex.Android.Rendering
             }
         }
 
-        private Path RoundRectPath(Rect rc, float radius)
-        {
-            var x =(float) rc.TopLeft.X;
-            var y = (float)rc.TopLeft.Y;
-            var width = (float)rc.Width;
-            var height = (float) rc.Height;
-            var rx = radius;
-            var ry = radius;
-            var path = new Path();
-            path.MoveTo(x + rx, y);
-            path.LineTo(x + width - rx, y + 0);
-            path.QuadTo(x + width, y, x + width, y + ry);
-            path.LineTo(x + width, y + height - ry);
-            path.QuadTo(x + width, y + height, x + width - rx, y + height);
-            path.LineTo(x + rx, y + height);
-            path.QuadTo(x, y + height, x, y + height - ry);
-            path.LineTo(x, y + ry);
-            path.QuadTo(x, y, x + rx, y);
-            return path;
-        }
-
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
             var impl = text.PlatformImpl as FormattedTextImpl;
@@ -130,16 +96,16 @@ namespace Perspex.Android.Rendering
             {
                 Canvas.Save();
 
-				var alignment = global::Android.Text.Layout.Alignment.AlignNormal;
+                var alignment = global::Android.Text.Layout.Alignment.AlignNormal;
 
 //				if (impl.TextFormatting.TextAlign == ATextAlign.Center) This causes wierd issues
 //					alignment = global::Android.Text.Layout.Alignment.AlignCenter;
 
-				impl.TextFormatting.Color = _nativebrush.Color;
-				StaticLayout mTextLayout = new StaticLayout(impl.String, impl.TextFormatting, (int)impl.Constraint.Width,
-					alignment, 1.0f, 0.0f, false);
-				
-				mTextLayout.Draw(Canvas);
+                impl.TextFormatting.Color = _nativebrush.Color;
+                var mTextLayout = new StaticLayout(impl.String, impl.TextFormatting, (int) impl.Constraint.Width,
+                    alignment, 1.0f, 0.0f, false);
+
+                mTextLayout.Draw(Canvas);
                 Canvas.Restore();
             }
         }
@@ -166,12 +132,11 @@ namespace Perspex.Android.Rendering
             return Disposable.Create(() => Canvas.Restore());
         }
 
-        private float _currentOpacity = 1.0f;
         public IDisposable PushOpacity(double opacity)
         {
             var previous = _currentOpacity;
             _currentOpacity = (float) opacity;
-            _nativebrush.Alpha = (int)_currentOpacity;
+            _nativebrush.Alpha = (int) _currentOpacity;
 
             return Disposable.Create(() =>
             {
@@ -182,14 +147,31 @@ namespace Perspex.Android.Rendering
 
         public IDisposable PushTransform(Matrix matrix)
         {
-			var oldMatrix = CurrentTransform;
-			CurrentTransform = oldMatrix * matrix;
+            var oldMatrix = CurrentTransform;
+            CurrentTransform = oldMatrix*matrix;
 
-			return Disposable.Create(() =>
-				{
-					CurrentTransform = oldMatrix;
-				});
+            return Disposable.Create(() => { CurrentTransform = oldMatrix; });
+        }
 
+        private Path RoundRectPath(Rect rc, float radius)
+        {
+            var x = (float) rc.TopLeft.X;
+            var y = (float) rc.TopLeft.Y;
+            var width = (float) rc.Width;
+            var height = (float) rc.Height;
+            var rx = radius;
+            var ry = radius;
+            var path = new Path();
+            path.MoveTo(x + rx, y);
+            path.LineTo(x + width - rx, y + 0);
+            path.QuadTo(x + width, y, x + width, y + ry);
+            path.LineTo(x + width, y + height - ry);
+            path.QuadTo(x + width, y + height, x + width - rx, y + height);
+            path.LineTo(x + rx, y + height);
+            path.QuadTo(x, y + height, x, y + height - ry);
+            path.LineTo(x, y + ry);
+            path.QuadTo(x, y, x + rx, y);
+            return path;
         }
 
         private IDisposable SetPen(Pen pen, Size dstRect)
@@ -197,7 +179,7 @@ namespace Perspex.Android.Rendering
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 var cray = pen.DashStyle.Dashes.Select(d => (float) d).ToArray();
-                _nativebrush.SetPathEffect(new DashPathEffect(cray, (float)pen.DashStyle.Offset));
+                _nativebrush.SetPathEffect(new DashPathEffect(cray, (float) pen.DashStyle.Offset));
             }
 
             _nativebrush.StrokeWidth = (float) pen.Thickness;
@@ -211,9 +193,6 @@ namespace Perspex.Android.Rendering
 
             return SetBrush(pen.Brush, dstRect, BrushUsage.Stroke);
         }
-
-
-        private static BrushImpl FallbackBrush = new SolidColorBrushImpl(new SolidColorBrush(Colors.Magenta));
 
         private IDisposable SetBrush(Brush brush, Size dstRect, BrushUsage usage)
         {
@@ -262,7 +241,7 @@ namespace Perspex.Android.Rendering
             return Disposable.Create(() =>
             {
                 impl.Dispose();
-                _nativebrush = new TextPaint { AntiAlias = true };
+                _nativebrush = new TextPaint {AntiAlias = true};
             });
         }
     }

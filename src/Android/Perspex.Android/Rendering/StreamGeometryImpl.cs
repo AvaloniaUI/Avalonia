@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Perspex.Media;
 using Perspex.Platform;
 using APath = Android.Graphics.Path;
@@ -18,6 +7,9 @@ namespace Perspex.Android.Rendering
 {
     public class StreamGeometryImpl : IStreamGeometryImpl
     {
+        private readonly StreamGeometryContextImpl _impl;
+        private Matrix _transform = Matrix.Identity;
+
         public StreamGeometryImpl()
         {
             _impl = new StreamGeometryContextImpl(null);
@@ -28,12 +20,10 @@ namespace Perspex.Android.Rendering
             _impl = impl;
         }
 
-        private readonly StreamGeometryContextImpl _impl;
-
         public APath Path => _impl.Path;
 
         public Rect Bounds => _impl.Bounds;
-        private Matrix _transform = Matrix.Identity;
+
         public Matrix Transform
         {
             get { return _transform; }
@@ -46,6 +36,7 @@ namespace Perspex.Android.Rendering
                 }
             }
         }
+
         public Rect GetRenderBounds(double strokeThickness)
         {
             return Bounds.Inflate(strokeThickness);
@@ -66,8 +57,8 @@ namespace Perspex.Android.Rendering
     {
         public StreamGeometryContextImpl(APath path = null)
         {
-            this.Path = path != null ? new APath(path) : new APath();
-            this.Path.AddRect(new ARect(), APath.Direction.Cw);
+            Path = path != null ? new APath(path) : new APath();
+            Path.AddRect(new ARect(), APath.Direction.Cw);
         }
 
         public APath Path { get; }
@@ -76,7 +67,7 @@ namespace Perspex.Android.Rendering
         {
             get
             {
-				ARect _bounds = new ARect();
+                var _bounds = new ARect();
 
                 Path.ComputeBounds(_bounds, true);
                 return _bounds.ToPerspex();
@@ -85,36 +76,35 @@ namespace Perspex.Android.Rendering
 
         public void Dispose()
         {
-
         }
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            this.Path.ArcTo(new Rect(point, size).ToAndroidGraphicsF(), 0, (float) rotationAngle);
+            Path.ArcTo(new Rect(point, size).ToAndroidGraphicsF(), 0, (float) rotationAngle);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            this.Path.MoveTo((float)startPoint.X, (float)startPoint.Y);
+            Path.MoveTo((float) startPoint.X, (float) startPoint.Y);
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-            this.Path.CubicTo((float)point1.X, (float)point1.Y,
-                (float)point2.X, (float)point2.Y,
-                (float)point3.X, (float)point3.Y);
+            Path.CubicTo((float) point1.X, (float) point1.Y,
+                (float) point2.X, (float) point2.Y,
+                (float) point3.X, (float) point3.Y);
         }
 
         public void LineTo(Point point)
         {
-            this.Path.LineTo((float)point.X, (float)point.Y);
+            Path.LineTo((float) point.X, (float) point.Y);
         }
 
         public void EndFigure(bool isClosed)
         {
-            if (this.Path != null)
+            if (Path != null)
                 if (isClosed)
-                    this.Path.Close();
+                    Path.Close();
         }
     }
 }

@@ -1,34 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Perspex.Media;
 using Perspex.Platform;
-using TextAlignment = Perspex.Media.TextAlignment;
 
 namespace Perspex.Android.Rendering
 {
     public class AndroidPlatformRender : IPlatformRenderInterface
     {
-        private readonly static AndroidPlatformRender instance = new AndroidPlatformRender();
-
-        public static void Initialize()
-            => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(instance);
+        private static readonly AndroidPlatformRender instance = new AndroidPlatformRender();
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
             throw new NotImplementedException();
         }
 
-        public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
+        public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize,
+            FontStyle fontStyle,
             TextAlignment textAlignment, FontWeight fontWeight)
         {
             return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight);
@@ -58,5 +45,8 @@ namespace Perspex.Android.Rendering
         {
             throw new NotImplementedException();
         }
+
+        public static void Initialize()
+            => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(instance);
     }
 }

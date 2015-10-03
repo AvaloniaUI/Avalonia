@@ -1,27 +1,22 @@
 using System;
-using Android.App;
 using Android.Content;
-using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
 using Android.Views;
-using Android.Widget;
+using Perspex.Android.Input;
 using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Media;
 using Perspex.Platform;
-using Perspex.Rendering;
 using ARect = Android.Graphics.Rect;
 using APoint = Android.Graphics.Point;
 using AApplication = Android.App.Application;
-using Perspex.Android.Input;
 
 namespace Perspex.Android.Rendering
 {
     public class PerspexView : View, IWindowImpl, IRenderTarget, IPlatformHandle
     {
         private TextPaint _painter;
-        public Rect Bounds { get; set; }
 
         public PerspexView(Context context) : base(context)
         {
@@ -32,27 +27,42 @@ namespace Perspex.Android.Rendering
 
         public PerspexView() : this(PerspexActivity.Instance)
         {
-            
         }
 
+        public Rect Bounds { get; set; }
+
         public IInputRoot InputRoot { get; private set; }
-        public Size ClientSize { get; set; }
-        IntPtr IPlatformHandle.Handle => Handle; 
-        IPlatformHandle ITopLevelImpl.Handle => this;
+        IntPtr IPlatformHandle.Handle => Handle;
         public string HandleDescriptor => "Perspex View";
+
+        public IDrawingContext CreateDrawingContext()
+        {
+            return new DrawingContext();
+        }
+
+        public void Resize(int width, int height)
+        {
+            if (ClientSize == new Size(width, height)) return;
+            ClientSize = new Size(width, height);
+            Resized(ClientSize);
+        }
+
+        public Size ClientSize { get; set; }
+        IPlatformHandle ITopLevelImpl.Handle => this;
         Action ITopLevelImpl.Activated { get; set; }
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
+
         public void Activate()
         {
         }
 
         public void Invalidate(Rect rect)
         {
-            this.Invalidate(rect.ToAndroidGraphics());
+            Invalidate(rect.ToAndroidGraphics());
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -67,13 +77,13 @@ namespace Perspex.Android.Rendering
 
         public void SetCursor(IPlatformHandle cursor)
         {
-
         }
 
-        public Size MaxClientSize => new Size(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
+        public Size MaxClientSize
+            => new Size(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
+
         public void SetTitle(string title)
         {
-            
         }
 
         public void Show()
@@ -94,57 +104,54 @@ namespace Perspex.Android.Rendering
             throw new NotImplementedException();
         }
 
-        public IDrawingContext CreateDrawingContext()
+        public override bool DispatchTouchEvent(MotionEvent e)
         {
-            return new DrawingContext();
+            Console.WriteLine(actionToString(e.Action));
+
+            //Basic touch support
+            var mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(), (uint) DateTime.Now.Ticks, InputRoot,
+                RawMouseEventType.Move, new Point(e.GetX(0), e.GetY(0)), InputModifiers.None);
+            Input(mouseEvent);
+
+            mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(), (uint) DateTime.Now.Ticks, InputRoot,
+                RawMouseEventType.LeftButtonDown, new Point(e.GetX(0), e.GetY(0)), InputModifiers.None);
+            Input(mouseEvent);
+
+            mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(), (uint) DateTime.Now.Ticks, InputRoot,
+                RawMouseEventType.LeftButtonUp, new Point(e.GetX(0), e.GetY(0)), InputModifiers.None);
+            Input(mouseEvent);
+//			Invalidate();
+            return base.DispatchTouchEvent(e);
         }
 
-		public override bool DispatchTouchEvent (MotionEvent e)
-		{
-			
-			Console.WriteLine(actionToString(e.Action));
-
-			//Basic touch support
-			var mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.Move, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
-			Input(mouseEvent);
-
-			mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.LeftButtonDown, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
-			Input(mouseEvent);
-
-			mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.LeftButtonUp, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
-			Input(mouseEvent);
-//			Invalidate();
-			return base.DispatchTouchEvent (e);
-		}
-
-		// Given an action int, returns a string description
-		public static String actionToString(MotionEventActions action) {
-
-			switch (action) {
-
-			case MotionEventActions.Down: return "Down";
-			case MotionEventActions.Move: return "Move";
-			case MotionEventActions.PointerDown: return "Pointer Down";
-			case MotionEventActions.Up: return "Up";
-			case MotionEventActions.PointerUp: return "Pointer Up";
-			case MotionEventActions.Outside: return "Outside";
-			case MotionEventActions.Cancel: return "Cancel";
-			}
-			return "";
-		}
+        // Given an action int, returns a string description
+        public static string actionToString(MotionEventActions action)
+        {
+            switch (action)
+            {
+                case MotionEventActions.Down:
+                    return "Down";
+                case MotionEventActions.Move:
+                    return "Move";
+                case MotionEventActions.PointerDown:
+                    return "Pointer Down";
+                case MotionEventActions.Up:
+                    return "Up";
+                case MotionEventActions.PointerUp:
+                    return "Pointer Up";
+                case MotionEventActions.Outside:
+                    return "Outside";
+                case MotionEventActions.Cancel:
+                    return "Cancel";
+            }
+            return "";
+        }
 
         protected override void OnDraw(Canvas canvas)
         {
             base.OnDraw(canvas);
             PerspexActivity.Instance.Canvas = canvas;
-            this.Paint?.Invoke(new Rect(ClientSize));
-        }
-
-        public void Resize(int width, int height)
-        {
-            if (ClientSize == new Size(width, height)) return;
-            ClientSize = new Size(width, height);
-            Resized(ClientSize);
+            Paint?.Invoke(new Rect(ClientSize));
         }
     }
 }

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Perspex.Platform;
+﻿using Perspex.Platform;
 
 namespace Perspex.Shared.PlatformSupport
 {
-    static class SharedPlatform
+    internal static class SharedPlatform
     {
         public static void Register()
         {
