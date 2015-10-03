@@ -62,8 +62,7 @@ namespace Perspex.Controls.Primitives
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
 
         private int _selectedIndex = -1;
-        private object _selectedItem;
-        private IList<object> _selectedItems;
+        private IList<object> _selectedItems = new PerspexList<object>();
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -81,7 +80,6 @@ namespace Perspex.Controls.Primitives
         public SelectingItemsControl()
         {
             ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
-            _selectedItems = new PerspexList<object>();
         }
 
         /// <summary>
@@ -108,13 +106,25 @@ namespace Perspex.Controls.Primitives
         {
             get
             {
-                return _selectedItem;
+                return _selectedItems.FirstOrDefault();
             }
 
             set
             {
-                value = Items?.Cast<object>().Contains(value) == true ? value : null;
-                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+                var old = SelectedItem;
+                var effective = Items?.Cast<object>().Contains(value) == true ? value : null;
+
+                if (effective != old)
+                {
+                    _selectedItems.Clear();
+
+                    if (effective != null)
+                    {
+                        _selectedItems.Add(effective);
+                    }
+
+                    RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
+                }
             }
         }
 
