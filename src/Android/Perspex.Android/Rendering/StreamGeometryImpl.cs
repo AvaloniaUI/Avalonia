@@ -96,9 +96,7 @@ namespace Perspex.Android.Rendering
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            //TODO: Needs a rect?
-            ARect rect = new ARect((float)point.X, (float)point.Y, (float)point.X + (float)size.Width, (float)point.Y - (float)size.Height);
-            this.Path.ArcTo(rect, 0, (float) rotationAngle);
+            this.Path.ArcTo(new Rect(point, size).ToAndroidGraphicsF(), 0, (float) rotationAngle);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
