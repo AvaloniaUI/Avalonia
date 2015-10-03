@@ -33,7 +33,7 @@ namespace Perspex.Controls
         /// </summary>
         static TabControl()
         {
-            AutoSelectProperty.OverrideDefaultValue<TabControl>(true);
+            SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.SingleAlways);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             SelectedIndexProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedIndexChanged);
         }

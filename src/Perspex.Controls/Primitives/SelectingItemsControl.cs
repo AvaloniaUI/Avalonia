@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Perspex.Collections;
 using Perspex.Controls.Generators;
 using Perspex.Input;
 using Perspex.Interactivity;
@@ -16,17 +18,8 @@ namespace Perspex.Controls.Primitives
     /// <summary>
     /// An <see cref="ItemsControl"/> that maintains a selection.
     /// </summary>
-    /// <remarks>
-    /// TODO: Support multiple selection.
-    /// </remarks>
     public class SelectingItemsControl : ItemsControl
     {
-        /// <summary>
-        /// Defines the <see cref="AutoSelect"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<bool> AutoSelectProperty =
-            PerspexProperty.Register<SelectingItemsControl, bool>("AutoSelect");
-
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
@@ -46,6 +39,21 @@ namespace Perspex.Controls.Primitives
                 (o, v) => o.SelectedItem = v);
 
         /// <summary>
+        /// Defines the <see cref="SelectedItems"/> property.
+        /// </summary>
+        protected static readonly PerspexProperty<IList<object>> SelectedItemsProperty =
+            PerspexProperty.RegisterDirect<SelectingItemsControl, IList<object>>(
+                nameof(SelectedItems),
+                o => o.SelectedItems);
+
+        /// <summary>
+        /// Defines the <see cref="SelectionMode"/> property.
+        /// </summary>
+        protected static readonly PerspexProperty<SelectionMode> SelectionModeProperty =
+            PerspexProperty.Register<SelectingItemsControl, SelectionMode>(
+                nameof(SelectionMode));
+
+        /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
         /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
         /// has changed.
@@ -55,6 +63,7 @@ namespace Perspex.Controls.Primitives
 
         private int _selectedIndex = -1;
         private object _selectedItem;
+        private IList<object> _selectedItems;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -72,16 +81,7 @@ namespace Perspex.Controls.Primitives
         public SelectingItemsControl()
         {
             ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the control should always try to keep an item
-        /// selected where possible.
-        /// </summary>
-        public bool AutoSelect
-        {
-            get { return GetValue(AutoSelectProperty); }
-            set { SetValue(AutoSelectProperty, value); }
+            _selectedItems = new PerspexList<object>();
         }
 
         /// <summary>
@@ -118,6 +118,23 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Gets the selected items.
+        /// </summary>
+        protected IList<object> SelectedItems
+        {
+            get { return _selectedItems; }
+        }
+
+        /// <summary>
+        /// Gets or sets the selection mode.
+        /// </summary>
+        protected SelectionMode SelectionMode
+        {
+            get { return GetValue(SelectionModeProperty); }
+            set { SetValue(SelectionModeProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
@@ -127,7 +144,7 @@ namespace Perspex.Controls.Primitives
             {
                 SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
             }
-            else if (AutoSelect && Items != null & Items.Cast<object>().Any())
+            else if (SelectionMode == SelectionMode.SingleAlways && Items != null & Items.Cast<object>().Any())
             {
                 SelectedIndex = 0;
             }
@@ -141,7 +158,7 @@ namespace Perspex.Controls.Primitives
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (AutoSelect && SelectedIndex == -1)
+                    if (SelectionMode == SelectionMode.SingleAlways && SelectedIndex == -1)
                     {
                         SelectedIndex = 0;
                     }
@@ -155,7 +172,7 @@ namespace Perspex.Controls.Primitives
                     if (selectedIndex >= e.OldStartingIndex &&
                         selectedIndex < e.OldStartingIndex + e.OldItems.Count)
                     {
-                        if (!AutoSelect)
+                        if (SelectionMode != SelectionMode.SingleAlways)
                         {
                             SelectedIndex = -1;
                         }
@@ -350,13 +367,13 @@ namespace Perspex.Controls.Primitives
 
         /// <summary>
         /// Called when the currently selected item is lost and the selection must be changed
-        /// depending on the <see cref="AutoSelect"/> property.
+        /// depending on the <see cref="SelectionMode"/> property.
         /// </summary>
         private void LostSelection()
         {
             var items = Items?.Cast<object>();
 
-            if (items != null && AutoSelect)
+            if (items != null && SelectionMode == SelectionMode.SingleAlways)
             {
                 var index = Math.Min(SelectedIndex, items.Count() - 1);
 
