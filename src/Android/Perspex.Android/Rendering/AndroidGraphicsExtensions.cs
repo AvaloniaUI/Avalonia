@@ -33,12 +33,22 @@ namespace Perspex.Android.Rendering
             return new AColor(c.R, c.G, c.B, c.A);
         }
 
-        public static AMatrix ToAndroidGraphics(this Matrix m)
+        public static AMatrix ToAndroidGraphics(this Matrix matrix)
         {
-            AMatrix am = new AMatrix();
-            am.SetValues(new[] {(float)m.M11, (float)m.M12, 0,
-                (float)m.M21, (float)m.M22, 0,
-                (float)m.M31, (float)m.M32, 1});
+			var transformValues = new float[9];
+			transformValues[0] = (float)matrix.M11;
+			transformValues[1] = (float)matrix.M21;
+			transformValues[2] = (float)matrix.M31;
+
+			transformValues[3] = (float)matrix.M12;
+			transformValues[4] = (float)matrix.M22;
+			transformValues[5] = (float)matrix.M32;
+
+			transformValues[6] = 0;
+			transformValues[7] = 0;
+			transformValues[8] = 1;
+			var am = new AMatrix();
+			am.SetValues(transformValues);
             return am;
         }
 
@@ -46,7 +56,7 @@ namespace Perspex.Android.Rendering
         {
             float[] v = new float[9];
             m.GetValues(v);
-            return new Matrix(v[0], v[1], v[3], v[4], v[6], v[7]);
+			return new Matrix(v[0],v[3], v[1], v[4], v[2], v[5]);
         }
 
         public static APoint ToAndroidGraphics(this Point p)
@@ -71,7 +81,6 @@ namespace Perspex.Android.Rendering
 
         public static ARectF ToAndroidGraphicsF(this Rect r)
         {
-            //return new ARectF((float) r.Width, (float) r.Height, (float) r.X, (float) r.Y);
             return new ARectF((float) r.X, (float) r.Y, (float) r.Width, (float) r.Height);
         }
 

@@ -66,6 +66,58 @@ namespace Perspex.AndroidTestApplication
             return window;
         }
 
+
+		public Controls.Window BuildStackPanelUI()
+		{
+			Controls.Window window = new Controls.Window
+			{
+				Title = "Perspex Test Application",
+				Background = Brushes.Green,
+				Content = new Grid
+				{
+					VerticalAlignment = VerticalAlignment.Top,
+					HorizontalAlignment = HorizontalAlignment.Left,
+					Margin = new Thickness(10, 10, 0, 0),
+					Children = new Controls.Controls
+					{
+						new StackPanel
+						{
+							Orientation = Perspex.Controls.Orientation.Horizontal,
+							[Grid.RowProperty] = 1,
+							[Grid.ColumnSpanProperty] = 2,
+							//                                Background = SolidColorBrush.Parse("#000000"),
+							Children = new Perspex.Controls.Controls
+							{
+								new Perspex.Controls.Button
+								{
+									Content = "Button 1",
+									Width = 100,
+									Foreground = Brushes.Blue,
+									Margin = new Thickness(5)
+								},
+
+								new Perspex.Controls.Button
+								{
+									Content = "Button 2",
+									Width = 100,
+									Margin = new Thickness(5)
+								},
+
+								new Perspex.Controls.Button
+								{
+									Content = "Button 3",
+									Width = 100,
+									Margin = new Thickness(5)
+								}
+							}
+						},
+					}
+				}
+			};
+
+			return window;
+		}
+
         public Perspex.Controls.Window BuildGridWithSomeButtonsAndStuff()
         {
             Perspex.Controls.Window window = new Perspex.Controls.Window
@@ -101,75 +153,76 @@ namespace Perspex.AndroidTestApplication
 							TextAlignment = Perspex.Media.TextAlignment.Left
                             },
 ////
-//							new StackPanel
-//                            {
-//                                Orientation = Perspex.Controls.Orientation.Horizontal,
-//                                [Grid.RowProperty] = 1,
-//                                [Grid.ColumnSpanProperty] = 2,
-//                                Background = SolidColorBrush.Parse("#000000"),
-//                                Children = new Perspex.Controls.Controls
-//                                {
-//                                    new Perspex.Controls.Button
-//                                    {
-//                                        Content = "Button 1",
-//                                        Width = 100,
-//                                        Margin = new Thickness(5)
-//                                    },
-//
-//                                    new Perspex.Controls.Button
-//                                    {
-//                                        Content = "Button 2",
-//                                        Width = 100,
-//                                        Margin = new Thickness(5)
-//                                    },
-//
-//                                    new Perspex.Controls.Button
-//                                    {
-//                                        Content = "Button 3",
-//                                        Width = 100,
-//                                        Margin = new Thickness(5)
-//                                    }
-//                                }
-//                            },
+							new StackPanel
+                            {
+                                Orientation = Perspex.Controls.Orientation.Horizontal,
+                                [Grid.RowProperty] = 1,
+                                [Grid.ColumnSpanProperty] = 2,
+                                Background = SolidColorBrush.Parse("#000000"),
+                                Children = new Perspex.Controls.Controls
+                                {
+                                    new Perspex.Controls.Button
+                                    {
+                                        Content = "Button 1",
+                                        Width = 100,
+									Foreground = Brushes.Blue,
+                                        Margin = new Thickness(5)
+                                    },
+
+                                    new Perspex.Controls.Button
+                                    {
+                                        Content = "Button 2",
+                                        Width = 100,
+                                        Margin = new Thickness(5)
+                                    },
+
+                                    new Perspex.Controls.Button
+                                    {
+                                        Content = "Button 3",
+                                        Width = 100,
+                                        Margin = new Thickness(5)
+                                    }
+                                }
+                            },
 ////
-//							new Image
-//                            {
-//                                [Grid.RowProperty] = 2,
-//                                [Grid.ColumnProperty] = 0,
-//                                Margin = new Thickness(20),
-//								//                            Source = new Bitmap("github_icon.png"),
-//								Opacity = 0.4
-//                            },
+							new Image
+                            {
+                                [Grid.RowProperty] = 2,
+                                [Grid.ColumnProperty] = 0,
+                                Margin = new Thickness(20),
+								//                            Source = new Bitmap("github_icon.png"),
+								Opacity = 0.4
+                            },
 ////
-//							new Ellipse
-//                            {
-//                                [Grid.RowProperty] = 3,
-//                                [Grid.ColumnProperty] = 0,
-//                                Margin = new Thickness(20),
-//                                Fill = Brushes.Blue
-//                            },
+							new Ellipse
+                            {
+                                [Grid.RowProperty] = 3,
+                                [Grid.ColumnProperty] = 0,
+                                Margin = new Thickness(20),
+                                Fill = Brushes.Blue
+                            },
 ////
-//							new TextBlock
-//                            {
-//                                [Grid.RowProperty] = 2,
-//                                [Grid.ColumnProperty] = 1,
-//                                Text = "How does this look? Is this text going to wrap and then look nice within the bounds of this widget? If not I will be extremely disappointed!\n\nWill we start a new paragraph here? If not there will be hell to pay!!!!",
-//                                Foreground = Brushes.White,
-//                                Background = Brushes.Transparent,
-//                                FontSize = 14,
-//                                Margin = new Thickness(10,30,10,10),
-//                            },
-//
-//                            new Perspex.Controls.Shapes.Path
-//                            {
-//                                Data = StreamGeometry.Parse("M 50,50 l 15,0 l 5,-15 l 5,15 l 15,0 l -10,10 l 4,15 l -15,-9 l -15,9 l 7,-15 Z"),
-//                                [Grid.RowProperty] = 3,
-//                                [Grid.ColumnProperty] = 1,
-//                                Margin = new Thickness(20),
-//                                Fill = Brushes.White,
-//                                Stroke = Brushes.Blue,
-//                                StrokeThickness = 4
-//                            }
+							new TextBlock
+                            {
+                                [Grid.RowProperty] = 2,
+                                [Grid.ColumnProperty] = 1,
+                                Text = "How does this look? Is this text going to wrap and then look nice within the bounds of this widget? If not I will be extremely disappointed!\n\nWill we start a new paragraph here? If not there will be hell to pay!!!!",
+							Foreground = Brushes.Purple,
+                                Background = Brushes.Transparent,
+                                FontSize = 28,
+                                Margin = new Thickness(10,30,10,10),
+                            },
+
+                            new Perspex.Controls.Shapes.Path
+                            {
+                                Data = StreamGeometry.Parse("M 50,50 l 15,0 l 5,-15 l 5,15 l 15,0 l -10,10 l 4,15 l -15,-9 l -15,9 l 7,-15 Z"),
+                                [Grid.RowProperty] = 3,
+                                [Grid.ColumnProperty] = 1,
+                                Margin = new Thickness(20),
+                                Fill = Brushes.White,
+                                Stroke = Brushes.Blue,
+                                StrokeThickness = 4
+                            }
                         }
                 }
             };

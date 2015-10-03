@@ -40,7 +40,14 @@ namespace Perspex.Android.Rendering
             _nativebrush = null;
         }
 
-        public Matrix CurrentTransform => Canvas.Matrix.ToPerspex();
+		public Matrix CurrentTransform {
+			get {
+				return Canvas.Matrix.ToPerspex ();
+			}
+			set {
+				Canvas.Matrix = value.ToAndroidGraphics ();
+			}
+		}
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
@@ -152,12 +159,13 @@ namespace Perspex.Android.Rendering
 
         public IDisposable PushTransform(Matrix matrix)
         {
-            Canvas.Matrix.SetConcat(Canvas.Matrix, matrix.ToAndroidGraphics());
+			var oldMatrix = CurrentTransform;
+			CurrentTransform = oldMatrix * matrix;
 
-            return Disposable.Create(() =>
-            {
-                Canvas.Matrix.PostConcat(matrix.Invert().ToAndroidGraphics());
-            });
+			return Disposable.Create(() =>
+				{
+					CurrentTransform = oldMatrix;
+				});
         }
 
         private IDisposable SetPen(Pen pen, Size dstRect)
