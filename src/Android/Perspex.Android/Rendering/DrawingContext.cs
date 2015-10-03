@@ -19,6 +19,7 @@ using Perspex.Media.Imaging;
 using ARect = Android.Graphics.Rect;
 using Color = Perspex.Media.Color;
 using Path = Android.Graphics.Path;
+using ATextAlign = Android.Graphics.Paint.Align;
 
 namespace Perspex.Android.Rendering
 {
@@ -98,13 +99,17 @@ namespace Perspex.Android.Rendering
             using (SetBrush(foreground, new Size(0, 0), BrushUsage.Stroke))
             {
                 Canvas.Save();
-                Canvas.Translate(0, (float)impl.Constraint.Height);
-                var path = new Path();
-                var p = new Rect(origin, new Size(0, 0)); 
-                path.AddRect(p.ToAndroidGraphicsF(), Path.Direction.Ccw);
-                impl.TextFormatting.Color = _nativebrush.Color;
-                Canvas.DrawTextOnPath(impl.String, path, 0, 0, impl.TextFormatting);
-                Canvas.DrawPath(path, impl.TextFormatting);
+
+				var alignment = global::Android.Text.Layout.Alignment.AlignNormal;
+
+//				if (impl.TextFormatting.TextAlign == ATextAlign.Center) This causes wierd issues
+//					alignment = global::Android.Text.Layout.Alignment.AlignCenter;
+
+				impl.TextFormatting.Color = _nativebrush.Color;
+				StaticLayout mTextLayout = new StaticLayout(impl.String, impl.TextFormatting, (int)impl.Constraint.Width,
+					alignment, 1.0f, 0.0f, false);
+				
+				mTextLayout.Draw(Canvas);
                 Canvas.Restore();
             }
         }

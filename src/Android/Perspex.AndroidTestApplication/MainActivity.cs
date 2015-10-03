@@ -27,7 +27,7 @@ namespace Perspex.AndroidTestApplication
             else
                 app = new App();
 
-            var window = app.BuildSimpleTextUI();
+			var window = app.BuildGridWithSomeButtonsAndStuff();
             window.Show();
             app.Run(window);
         }

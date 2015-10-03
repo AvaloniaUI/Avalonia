@@ -15,6 +15,8 @@ using Perspex.Platform;
 using ATextPaint = Android.Text.TextPaint;
 using ARect = Android.Graphics.Rect;
 using AString = Java.Lang.String;
+using ATextAlign = Android.Graphics.Paint.Align;
+using Android.Text;
 
 namespace Perspex.Android.Rendering
 {
@@ -24,7 +26,7 @@ namespace Perspex.Android.Rendering
 
         public string String { get; private set; }
         public ATextPaint TextFormatting { get; private set; }
-        public ARect Bounds { get; private set; }
+       
 
         public FormattedTextImpl(
             string text,
@@ -34,7 +36,7 @@ namespace Perspex.Android.Rendering
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-            Bounds = new ARect();
+           
             String = text;
             TextFormatting = new ATextPaint {TextAlign = textAlignment.ToAndroidGraphics()};
             var style = fontStyle.ToAndroidGraphics();
@@ -59,7 +61,15 @@ namespace Perspex.Android.Rendering
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
-            throw new NotImplementedException();
+//            throw new NotImplementedException();
+			var textLines = String.Split(new string[] {System.Environment.NewLine},StringSplitOptions.None);
+
+			var bound = new ARect();
+			TextFormatting.GetTextBounds(String, 0, String.Length, bound);
+
+			foreach (var line in textLines) {
+				yield return new FormattedTextLine (line.Length, bound.Height ());
+			}
         }
 
         public TextHitTestResult HitTestPoint(Point point)
@@ -79,11 +89,18 @@ namespace Perspex.Android.Rendering
 
         public Size Measure()
         {
-            //TODO: Have the slightest feeling this is a disconnect here...
-            var bound = new ARect();
-            TextFormatting.GetTextBounds(String, 0, String.Length, bound);
-            Bounds = bound;
-            return new Size(bound.Width(), bound.Height());
+			var alignment = global::Android.Text.Layout.Alignment.AlignNormal;
+
+			if (TextFormatting.TextAlign == ATextAlign.Center)
+				alignment = global::Android.Text.Layout.Alignment.AlignCenter;
+
+			StaticLayout mTextLayout = new StaticLayout(String, TextFormatting, (int)Constraint.Width,
+				alignment, 1.0f, 0.0f, false);
+
+			var width = mTextLayout.Width;
+			var height = mTextLayout.Height;
+
+			return new Size(width, height );
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int length)
