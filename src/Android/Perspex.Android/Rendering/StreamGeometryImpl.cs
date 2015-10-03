@@ -69,13 +69,13 @@ namespace Perspex.Android.Rendering
             this.Path = path != null ? new APath(path) : new APath();
         }
 
-        public APath Path { get; private set; }
-        private ARect _bounds;
+        public APath Path { get; }
 
         public Rect Bounds
         {
             get
             {
+                ARect _bounds = default(ARect);
                 Path.ComputeBounds(_bounds, true);
                 return _bounds.ToPerspex();
             }

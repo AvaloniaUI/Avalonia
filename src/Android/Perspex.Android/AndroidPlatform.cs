@@ -31,7 +31,6 @@ namespace Perspex.Android
         {
             PerspexLocator.CurrentMutable
                 .Bind<IWindowImpl>().ToSingleton<PerspexView>()
-                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
