@@ -14,6 +14,7 @@ using Perspex.Rendering;
 using ARect = Android.Graphics.Rect;
 using APoint = Android.Graphics.Point;
 using AApplication = Android.App.Application;
+using Perspex.Android.Input;
 
 namespace Perspex.Android.Rendering
 {
@@ -97,6 +98,40 @@ namespace Perspex.Android.Rendering
         {
             return new DrawingContext();
         }
+
+		public override bool DispatchTouchEvent (MotionEvent e)
+		{
+			
+			Console.WriteLine(actionToString(e.Action));
+
+			//Basic touch support
+			var mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.Move, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
+			Input(mouseEvent);
+
+			mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.LeftButtonDown, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
+			Input(mouseEvent);
+
+			mouseEvent = new RawMouseEventArgs(new AndroidMouseDevice(),(uint)DateTime.Now.Ticks,InputRoot,RawMouseEventType.LeftButtonUp, new Point(e.GetX(0),e.GetY(0)),InputModifiers.None);
+			Input(mouseEvent);
+//			Invalidate();
+			return base.DispatchTouchEvent (e);
+		}
+
+		// Given an action int, returns a string description
+		public static String actionToString(MotionEventActions action) {
+
+			switch (action) {
+
+			case MotionEventActions.Down: return "Down";
+			case MotionEventActions.Move: return "Move";
+			case MotionEventActions.PointerDown: return "Pointer Down";
+			case MotionEventActions.Up: return "Up";
+			case MotionEventActions.PointerUp: return "Pointer Up";
+			case MotionEventActions.Outside: return "Outside";
+			case MotionEventActions.Cancel: return "Cancel";
+			}
+			return "";
+		}
 
         protected override void OnDraw(Canvas canvas)
         {
