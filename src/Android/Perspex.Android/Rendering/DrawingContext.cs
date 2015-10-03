@@ -11,12 +11,14 @@ using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Perspex.Controls.Shapes;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using ARect = Android.Graphics.Rect;
+using AMatrix = Android.Graphics.Matrix;
 using Color = Perspex.Media.Color;
 using Path = Android.Graphics.Path;
 using ATextAlign = Android.Graphics.Paint.Align;
@@ -39,7 +41,7 @@ namespace Perspex.Android.Rendering
             Canvas = null;
             _nativebrush = null;
         }
-
+			
 		public Matrix CurrentTransform {
 			get {
 				return Canvas.Matrix.ToPerspex ();
@@ -94,9 +96,30 @@ namespace Perspex.Android.Rendering
                 }
                 else
                 {
-                    Canvas.DrawRoundRect(rect.ToAndroidGraphicsF(), cornerRadius, cornerRadius, _nativebrush);
+                    Canvas.DrawPath(RoundRectPath(rect, cornerRadius), _nativebrush);
                 }
             }
+        }
+
+        private Path RoundRectPath(Rect rc, float radius)
+        {
+            var x =(float) rc.TopLeft.X;
+            var y = (float)rc.TopLeft.Y;
+            var width = (float)rc.Width;
+            var height = (float) rc.Height;
+            var rx = radius;
+            var ry = radius;
+            var path = new Path();
+            path.MoveTo(x + rx, y);
+            path.LineTo(x + width - rx, y + 0);
+            path.QuadTo(x + width, y, x + width, y + ry);
+            path.LineTo(x + width, y + height - ry);
+            path.QuadTo(x + width, y + height, x + width - rx, y + height);
+            path.LineTo(x + rx, y + height);
+            path.QuadTo(x, y + height, x, y + height - ry);
+            path.LineTo(x, y + ry);
+            path.QuadTo(x, y, x + rx, y);
+            return path;
         }
 
         public void DrawText(Brush foreground, Point origin, FormattedText text)
@@ -131,7 +154,7 @@ namespace Perspex.Android.Rendering
                 }
                 else
                 {
-                    Canvas.DrawRoundRect(rect.ToAndroidGraphicsF(), cornerRadius, cornerRadius, _nativebrush);
+                    Canvas.DrawPath(RoundRectPath(rect, cornerRadius), _nativebrush);
                 }
             }
         }
@@ -166,6 +189,7 @@ namespace Perspex.Android.Rendering
 				{
 					CurrentTransform = oldMatrix;
 				});
+
         }
 
         private IDisposable SetPen(Pen pen, Size dstRect)
@@ -188,6 +212,9 @@ namespace Perspex.Android.Rendering
             return SetBrush(pen.Brush, dstRect, BrushUsage.Stroke);
         }
 
+
+        private static BrushImpl FallbackBrush = new SolidColorBrushImpl(new SolidColorBrush(Colors.Magenta));
+
         private IDisposable SetBrush(Brush brush, Size dstRect, BrushUsage usage)
         {
             var solid = brush as SolidColorBrush;
@@ -203,24 +230,27 @@ namespace Perspex.Android.Rendering
             }
             else if (linearGradientBrush != null)
             {
-                // TODO: Fallback Color for now
-                impl = new SolidColorBrushImpl(new SolidColorBrush(Color.Parse("#FFD0417E"))); 
-                //impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "LinearGradientBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (radialGradientBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "RadialGradientBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (imageBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new ImageBrushImpl(imageBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "ImageBrush not implemented");
+                impl = FallbackBrush;
             }
             else if (visualBrush != null)
             {
-                throw new NotImplementedException();
-                //impl = new VisualBrushImpl(visualBrush, destinationSize);
+                // TODO: Implement me
+                Log.Debug("REND", "VisualBrush not implemented");
+                impl = FallbackBrush;
             }
             else
             {
