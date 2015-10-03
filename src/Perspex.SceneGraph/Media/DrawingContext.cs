@@ -147,10 +147,14 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushTransform(Matrix matrix)
+        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform*matrix);
+
+        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix*CurrentTransform);
+        
+
+        PushedState PushSetTransform(Matrix matrix)
         {
             var oldMatrix = CurrentTransform;
-            matrix = oldMatrix*matrix;
             _impl.Transform = matrix;
             return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
         }

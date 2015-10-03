@@ -50,9 +50,10 @@ namespace Perspex.Rendering
                     var offset = Matrix.CreateTranslation(origin);
                     renderTransform = (-offset)*visual.RenderTransform.Value*(offset);
                 }
-                m = context.CurrentTransform.Invert()*renderTransform*m*context.CurrentTransform;
+                m = renderTransform*m;
 
-                using (context.PushTransform(m))
+
+                using (context.PushPreTransform(m))
                 using (context.PushOpacity(opacity))
                 using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : default(DrawingContext.PushedState))
                 {

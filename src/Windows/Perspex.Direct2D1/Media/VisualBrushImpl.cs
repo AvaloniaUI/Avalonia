@@ -55,7 +55,7 @@ namespace Perspex.Direct2D1.Media
 
                 using (var ctx = renderer.CreateDrawingContext())
                 using (ctx.PushClip(drawRect))
-                using (ctx.PushTransform(transform))
+                using (ctx.PushPostTransform(transform))
                 {
                     ctx.Render(visual);
                 }
