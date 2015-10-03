@@ -2,19 +2,21 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Perspex.Controls.Generators;
+using Perspex.Controls.Primitives;
 using Perspex.Input;
-using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
     public class TreeView : ItemsControl
     {
         public static readonly PerspexProperty<object> SelectedItemProperty =
-            PerspexProperty.Register<TreeView, object>("SelectedItem");
+            SelectingItemsControl.SelectedItemProperty.AddOwner<TreeView>(
+                o => o.SelectedItem,
+                (o, v) => o.SelectedItem = v);
+
+        private object _selectedItem;
 
         static TreeView()
         {
@@ -33,8 +35,8 @@ namespace Perspex.Controls
 
         public object SelectedItem
         {
-            get { return GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            get { return _selectedItem; }
+            set { SetAndRaise(SelectedItemProperty, ref _selectedItem, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
