@@ -67,6 +67,7 @@ namespace Perspex.Android.Rendering
         public StreamGeometryContextImpl(APath path = null)
         {
             this.Path = path != null ? new APath(path) : new APath();
+            this.Path.AddRect(new ARect(), APath.Direction.Cw);
         }
 
         public APath Path { get; }

@@ -17,6 +17,7 @@ using Perspex.Controls.Shapes;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using ARect = Android.Graphics.Rect;
+using Color = Perspex.Media.Color;
 using Path = Android.Graphics.Path;
 
 namespace Perspex.Android.Rendering
@@ -189,7 +190,8 @@ namespace Perspex.Android.Rendering
             }
             else if (linearGradientBrush != null)
             {
-                throw new NotImplementedException();
+                // TODO: Fallback Color for now
+                impl = new SolidColorBrushImpl(new SolidColorBrush(Color.Parse("#FFD0417E"))); 
                 //impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
             }
             else if (radialGradientBrush != null)
