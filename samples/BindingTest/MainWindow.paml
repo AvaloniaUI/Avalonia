@@ -1,0 +1,22 @@
+﻿<Window xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Horizontal">
+    <StackPanel Margin="18" Gap="4" Width="200">
+      <TextBlock FontSize="16" Text="Simple Bindings"/>
+      <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding StringValue}"/>
+      <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding StringValue, Mode=OneWay}"/>
+      <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding StringValue, Mode=OneTime}"/>
+      <TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding StringValue, Mode=OneWayToSource}"/>
+    </StackPanel>
+    <StackPanel Margin="18" Gap="4" Width="200">
+      <TextBlock FontSize="16" Text="Collection Bindings"/>
+      <TextBox Watermark="Items[1].StringValue" UseFloatingWatermark="True" Text="{Binding Items[1].StringValue}"/>
+      <Button Command="{Binding ShuffleItems}">Shuffle</Button>
+    </StackPanel>
+    <StackPanel Margin="18" Gap="4" Width="200">
+      <TextBlock FontSize="16" Text="Negated Bindings"/>
+      <TextBox Watermark="Boolean String" UseFloatingWatermark="True" Text="{Binding BooleanString}"/>
+      <CheckBox IsChecked="{Binding !BooleanString}">!BooleanString</CheckBox>
+      <CheckBox IsChecked="{Binding !!BooleanString}">!!BooleanString</CheckBox>
+    </StackPanel>
+  </StackPanel>
+</Window>

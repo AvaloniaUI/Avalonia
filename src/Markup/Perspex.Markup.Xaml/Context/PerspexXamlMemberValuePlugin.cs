@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
@@ -15,19 +17,18 @@ namespace Perspex.Markup.Xaml.Context
     public class PerspexXamlMemberValuePlugin : MemberValuePlugin
     {
         private readonly XamlMember _xamlMember;
-        private readonly IPerspexPropertyBinder _propertyBinder;
 
-        public PerspexXamlMemberValuePlugin(XamlMember xamlMember, IPerspexPropertyBinder propertyBinder) : base(xamlMember)
+        public PerspexXamlMemberValuePlugin(XamlMember xamlMember) 
+            : base(xamlMember)
         {
             _xamlMember = xamlMember;
-            _propertyBinder = propertyBinder;
         }
 
         public override void SetValue(object instance, object value)
         {
             if (value is XamlBindingDefinition)
             {
-                HandleXamlBindingDefinition((XamlBindingDefinition)value);
+                HandleXamlBindingDefinition(instance, (XamlBindingDefinition)value);
             }
             else if (IsPerspexProperty)
             {
@@ -54,22 +55,48 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleXamlBindingDefinition(XamlBindingDefinition xamlBindingDefinition)
+        private void HandleXamlBindingDefinition(object instance, XamlBindingDefinition def)
         {
-            PerspexObject subjectObject = xamlBindingDefinition.Target;
-            _propertyBinder.Create(xamlBindingDefinition);
+            if (_xamlMember.XamlType.UnderlyingType == typeof(XamlBindingDefinition))
+            {
+                // TODO: This should search base classes.
+                var property = instance.GetType().GetTypeInfo().GetDeclaredProperty(_xamlMember.Name);
 
-            var observableForDataContext = subjectObject.GetObservable(Control.DataContextProperty);
-            observableForDataContext.Where(o => o != null).Subscribe(_ => BindToDataContextWhenItsSet(xamlBindingDefinition));
-        }
+                if (property == null || !property.CanWrite)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot assign to '{_xamlMember.Name}' on '{instance.GetType()}");
+                }
 
-        private void BindToDataContextWhenItsSet(XamlBindingDefinition definition)
-        {
-            var target = definition.Target;
-            var dataContext = target.DataContext;
+                property.SetValue(instance, def);
+            }
+            else
+            {
+                var perspexObject = instance as PerspexObject;
 
-            var binding = _propertyBinder.GetBinding(target, definition.TargetProperty);
-            binding.BindToDataContext(dataContext);
+                if (perspexObject == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot bind to an object of type '{instance.GetType()}");
+                }
+
+                var property = perspexObject.GetRegisteredProperties()
+                    .FirstOrDefault(x => x.Name == _xamlMember.Name);
+
+                if (property == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
+                }
+
+                var binding = new XamlBinding
+                {
+                    BindingMode = def.BindingMode,
+                    SourcePropertyPath = def.SourcePropertyPath,
+                };
+
+                binding.Bind(perspexObject, property);
+            }
         }
 
         // ReSharper disable once MemberCanBePrivate.Global

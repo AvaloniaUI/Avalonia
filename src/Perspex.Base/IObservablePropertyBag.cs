@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 
 namespace Perspex
 {
@@ -37,6 +38,43 @@ namespace Perspex
         IDisposable Bind<T>(
             PerspexProperty<T> property,
             IObservable<T> source,
+            BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Initiates a two-way binding between <see cref="PerspexProperty"/>s.
+        /// </summary>
+        /// <param name="property">The property on this object.</param>
+        /// <param name="source">The source object.</param>
+        /// <param name="sourceProperty">The property on the source object.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        /// <remarks>
+        /// The binding is first carried out from <paramref name="source"/> to this.
+        /// </remarks>
+        IDisposable BindTwoWay(
+            PerspexProperty property,
+            PerspexObject source,
+            PerspexProperty sourceProperty,
+            BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Initiates a two-way binding between a <see cref="PerspexProperty"/> and an 
+        /// <see cref="ISubject{Object}"/>.
+        /// </summary>
+        /// <param name="property">The property on this object.</param>
+        /// <param name="source">The subject to bind to.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        /// <remarks>
+        /// The binding is first carried out from <paramref name="source"/> to this.
+        /// </remarks>
+        IDisposable BindTwoWay(
+            PerspexProperty property,
+            ISubject<object> source,
             BindingPriority priority = BindingPriority.LocalValue);
 
         /// <summary>

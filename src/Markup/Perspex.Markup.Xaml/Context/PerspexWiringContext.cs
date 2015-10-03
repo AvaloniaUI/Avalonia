@@ -15,7 +15,7 @@ using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Markup.Xaml.Templates;
 using Perspex.Markup.Xaml.Converters;
-using Perspex.Markup.Xaml.DataBinding;
+using Perspex.Markup.Xaml.Binding;
 using Perspex.Markup.Xaml.MarkupExtensions;
 using Perspex.Media;
 using Perspex.Media.Imaging;
@@ -43,8 +43,7 @@ namespace Perspex.Markup.Xaml.Context
         private static ITypeContext CreateTypeContext(ITypeFactory typeFactory, TypeFeatureProvider featureProvider)
         {
             var xamlNamespaceRegistry = CreateXamlNamespaceRegistry();
-            var perspexPropertyBinder = new PerspexPropertyBinder(featureProvider.ConverterProvider);
-            var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider, perspexPropertyBinder);
+            var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider);
 
             typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
             typeRepository.RegisterMetadata(
@@ -116,6 +115,7 @@ namespace Perspex.Markup.Xaml.Context
             var contentProperties = new Collection<ContentPropertyDefinition>
             {
                 new ContentPropertyDefinition(typeof(ContentControl), "Content"),
+                new ContentPropertyDefinition(typeof(DataTemplate), "Content"),
                 new ContentPropertyDefinition(typeof(Decorator), "Child"),
                 new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
                 new ContentPropertyDefinition(typeof(GradientBrush), "GradientStops"),
@@ -123,7 +123,7 @@ namespace Perspex.Markup.Xaml.Context
                 new ContentPropertyDefinition(typeof(Style), "Setters"),
                 new ContentPropertyDefinition(typeof(TextBlock), "Text"),
                 new ContentPropertyDefinition(typeof(TextBox), "Text"),
-                new ContentPropertyDefinition(typeof(XamlDataTemplate), "Content"),
+                new ContentPropertyDefinition(typeof(TreeDataTemplate), "Content"),
             };
 
             contentPropertyProvider.AddAll(contentProperties);

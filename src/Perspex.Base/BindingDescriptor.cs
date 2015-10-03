@@ -27,7 +27,7 @@ namespace Perspex
         TwoWay,
 
         /// <summary>
-        /// Copies the target to the source one time and then disposes of the binding.
+        /// Updates the target when the application starts or when the data context changes.
         /// </summary>
         OneTime,
 

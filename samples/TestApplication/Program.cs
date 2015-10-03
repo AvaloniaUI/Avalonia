@@ -86,7 +86,7 @@ namespace TestApplication
             {
                 DataTemplates = new DataTemplates
                 {
-                    new TreeDataTemplate<Node>(
+                    new FuncTreeDataTemplate<Node>(
                         x => new TextBlock { Text = x.Name },
                         x => x.Children,
                         x => true),
@@ -405,7 +405,7 @@ namespace TestApplication
 						Margin = new Thickness(10),
 						DataTemplates = new DataTemplates
 						{
-							new DataTemplate<Item>(x =>
+							new FuncDataTemplate<Item>(x =>
 								new StackPanel
 								{
 									Gap = 4,

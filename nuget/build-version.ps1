@@ -28,6 +28,8 @@ Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.dll $lib
 Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.xml $lib
 Copy-Item ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.dll $lib
 Copy-Item ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.xml $lib
+Copy-Item ..\src\Markup\Perspex.Markup\bin\Release\Perspex.Markup.dll $lib
+Copy-Item ..\src\Markup\Perspex.Markup\bin\Release\Perspex.Markup.xml $lib
 Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.dll $lib
 Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.xml $lib
 Copy-Item ..\src\Perspex.HtmlRenderer\bin\Release\Perspex.HtmlRenderer.dll $lib
