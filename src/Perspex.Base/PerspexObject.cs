@@ -457,8 +457,15 @@ namespace Perspex
         public bool IsSet(PerspexProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            
+            PriorityValue value;
 
-            return _values.ContainsKey(property);
+            if (_values.TryGetValue(property, out value))
+            {
+                return value.Value != PerspexProperty.UnsetValue;
+            }
+
+            return false;
         }
 
         /// <summary>

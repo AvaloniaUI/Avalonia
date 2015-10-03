@@ -42,6 +42,35 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(new[] { "Attached" }, names);
         }
 
+        [Fact]
+        public void IsSet_Returns_False_For_Unset_Property()
+        {
+            var target = new Class1();
+
+            Assert.False(target.IsSet(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsSet_Returns_False_For_Set_Property()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo");
+
+            Assert.True(target.IsSet(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsSet_Returns_False_For_Cleared_Property()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo");
+            target.SetValue(Class1.FooProperty, PerspexProperty.UnsetValue);
+
+            Assert.False(target.IsSet(Class1.FooProperty));
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =
