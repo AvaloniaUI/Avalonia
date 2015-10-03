@@ -173,6 +173,11 @@ namespace Perspex.Controls.Primitives
             set { SetValue(SelectionModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether <see cref="SelectionMode.AlwaysSelected"/> is set.
+        /// </summary>
+        protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
+
         /// <inheritdoc/>
         protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
         {
@@ -182,7 +187,7 @@ namespace Perspex.Controls.Primitives
             {
                 SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
             }
-            else if (SelectionMode == SelectionMode.SingleAlways && Items != null & Items.Cast<object>().Any())
+            else if (AlwaysSelected && Items != null & Items.Cast<object>().Any())
             {
                 SelectedIndex = 0;
             }
@@ -196,7 +201,7 @@ namespace Perspex.Controls.Primitives
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (SelectionMode == SelectionMode.SingleAlways && SelectedIndex == -1)
+                    if (AlwaysSelected && SelectedIndex == -1)
                     {
                         SelectedIndex = 0;
                     }
@@ -210,7 +215,7 @@ namespace Perspex.Controls.Primitives
                     if (selectedIndex >= e.OldStartingIndex &&
                         selectedIndex < e.OldStartingIndex + e.OldItems.Count)
                     {
-                        if (SelectionMode != SelectionMode.SingleAlways)
+                        if (!AlwaysSelected)
                         {
                             SelectedIndex = -1;
                         }
@@ -411,7 +416,7 @@ namespace Perspex.Controls.Primitives
         {
             var items = Items?.Cast<object>();
 
-            if (items != null && SelectionMode == SelectionMode.SingleAlways)
+            if (items != null && AlwaysSelected)
             {
                 var index = Math.Min(SelectedIndex, items.Count() - 1);
 

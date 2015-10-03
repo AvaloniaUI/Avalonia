@@ -97,7 +97,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             static TestSelector()
             {
-                SelectionModeProperty.OverrideDefaultValue<TestSelector>(SelectionMode.SingleAlways);
+                SelectionModeProperty.OverrideDefaultValue<TestSelector>(SelectionMode.AlwaysSelected);
             }
         }
 

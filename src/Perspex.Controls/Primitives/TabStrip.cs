@@ -15,7 +15,7 @@ namespace Perspex.Controls.Primitives
 
         static TabStrip()
         {
-            SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.SingleAlways);
+            SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
         }
 

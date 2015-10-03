@@ -1,34 +1,34 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Perspex.Controls
 {
     /// <summary>
     /// Defines the selection mode for a control which can select multiple items.
     /// </summary>
+    [Flags]
     public enum SelectionMode
     {
         /// <summary>
-        /// One item can be selected at a time.
+        /// One item can be selected.
         /// </summary>
-        Single,
+        Single = 0x00,
 
         /// <summary>
-        /// One item can be selected at a time, and there will always be a selected item as long
-        /// as there are items to select.
+        /// Multiple items can be selected.
         /// </summary>
-        SingleAlways,
+        Multiple = 0x01,
 
         /// <summary>
-        /// Multiple items can be selected and their selection state is toggled by presses or by 
-        /// pressing the spacebar.
+        /// Item selection can be toggled by tapping/spacebar.
         /// </summary>
-        MultipleToggle,
+        Toggle = 0x02,
 
         /// <summary>
-        /// A range of items can be selected by holding the shift key, and individual items can be
-        /// selected by holding the ctrl key.
+        /// An item will always be selected as long as there are items to select.
         /// </summary>
-        MultipleRange,
+        AlwaysSelected = 0x04,
     }
 }
