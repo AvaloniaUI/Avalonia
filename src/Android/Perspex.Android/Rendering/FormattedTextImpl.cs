@@ -16,6 +16,7 @@ using ATextPaint = Android.Text.TextPaint;
 using ARect = Android.Graphics.Rect;
 using AString = Java.Lang.String;
 using ATextAlign = Android.Graphics.Paint.Align;
+using AAllignment = Android.Text.Layout.Alignment;
 using Android.Text;
 
 namespace Perspex.Android.Rendering
@@ -61,7 +62,7 @@ namespace Perspex.Android.Rendering
         public IEnumerable<FormattedTextLine> GetLines()
         {
 //            throw new NotImplementedException();
-			var textLines = String.Split(new string[] {System.Environment.NewLine},StringSplitOptions.None);
+			var textLines = String.Split(new[] {System.Environment.NewLine},StringSplitOptions.None);
 
 			var bound = new ARect();
 			TextFormatting.GetTextBounds(String, 0, String.Length, bound);
@@ -88,12 +89,17 @@ namespace Perspex.Android.Rendering
 
         public Size Measure()
         {
-			var alignment = global::Android.Text.Layout.Alignment.AlignNormal;
+			var alignment = AAllignment.AlignNormal;
 
 			if (TextFormatting.TextAlign == ATextAlign.Center)
-				alignment = global::Android.Text.Layout.Alignment.AlignCenter;
+				alignment = AAllignment.AlignCenter;
 
-			StaticLayout mTextLayout = new StaticLayout(String, TextFormatting, (int)Constraint.Width,
+            var rect = new ARect();
+            TextFormatting.GetTextBounds(String, 0, String.Length, rect);
+
+            Constraint = new Size(rect.Width(), rect.Height());
+
+            StaticLayout mTextLayout = new StaticLayout(String, TextFormatting, (int)Constraint.Width,
 				alignment, 1.0f, 0.0f, false);
 
 			var width = mTextLayout.Width;
