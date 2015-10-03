@@ -21,13 +21,14 @@ namespace Perspex.Android
 {
     public class PerspexActivity : Activity
     {
-        public static PerspexActivity Instance { get; private set; }
-        public Canvas Canvas { get; set; }
-        public PerspexView View { get; set; }
+        internal static PerspexActivity Instance { get; private set; }
+        internal Canvas Canvas { get; set; }
+        internal PerspexView View { get; set; }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             Instance = this;
+            RequestWindowFeature(WindowFeatures.NoTitle);
             base.OnCreate(savedInstanceState);
         }
     }

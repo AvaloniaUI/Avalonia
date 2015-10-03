@@ -16,9 +16,7 @@ namespace Perspex.Android
 {
     class CursorFactory : IStandardCursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-        {
-            throw new NotImplementedException();
-        }
+        public IPlatformHandle GetCursor(StandardCursorType cursorType) 
+            => new PlatformHandle(IntPtr.Zero, "ZeroCursor");
     }
 }
