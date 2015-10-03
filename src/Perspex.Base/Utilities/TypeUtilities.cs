@@ -32,8 +32,9 @@ namespace Perspex.Utilities
         /// <param name="to">The type to cast to.</param>
         /// <param name="value">The value to cast.</param>
         /// <param name="result">If sucessful, contains the cast value.</param>
+        /// <param name="allowUnset">Allow <see cref="PerspexProperty.UnsetValue"/>.</param>
         /// <returns>True if the cast was sucessful, otherwise false.</returns>
-        public static bool TryCast(Type to, object value, out object result)
+        public static bool TryCast(Type to, object value, out object result, bool allowUnset = true)
         {
             Contract.Requires<ArgumentNullException>(to != null);
 
@@ -46,7 +47,7 @@ namespace Perspex.Utilities
 
             var from = value.GetType();
 
-            if (value == PerspexProperty.UnsetValue)
+            if (allowUnset && value == PerspexProperty.UnsetValue)
             {
                 result = value;
                 return true;
@@ -76,6 +77,33 @@ namespace Perspex.Utilities
 
             result = null;
             return false;
+        }
+
+        /// <summary>
+        /// Casts a value to a type, returning the default for that type if the value could not be
+        /// cast.
+        /// </summary>
+        /// <param name="value">The value to cast.</param>
+        /// <param name="type">The type to cast to..</param>
+        /// <param name="allowUnset">Allow <see cref="PerspexProperty.UnsetValue"/>.</param>
+        /// <returns>A value of <paramref name="type"/>.</returns>
+        public static object CastOrDefault(object value, Type type, bool allowUnset = true)
+        {
+            var typeInfo = type.GetTypeInfo();
+            object result;
+
+            if (TypeUtilities.TryCast(type, value, out result, allowUnset))
+            {
+                return result;
+            }
+            else if (typeInfo.IsValueType)
+            {
+                return Activator.CreateInstance(type);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
