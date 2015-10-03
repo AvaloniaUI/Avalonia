@@ -143,7 +143,6 @@ namespace Perspex.Cairo.Media
             Transform *= impl.Transform;
 
             
-
             if (brush != null)
             {
                 _context.AppendPath(impl.Path);
@@ -155,6 +154,8 @@ namespace Perspex.Cairo.Media
                         _context.Fill();
                 }
             }
+            Transform = oldMatrix;
+
             if (pen != null)
             {
                 _context.AppendPath(impl.Path);
@@ -163,7 +164,6 @@ namespace Perspex.Cairo.Media
                     _context.Stroke();
                 }
             }
-            Transform = oldMatrix;
         }
 
         /// <summary>
