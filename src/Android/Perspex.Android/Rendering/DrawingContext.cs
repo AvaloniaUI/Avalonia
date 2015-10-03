@@ -101,8 +101,9 @@ namespace Perspex.Android.Rendering
                 var path = new Path();
                 var p = new Rect(origin, new Size(0, 0)); 
                 path.AddRect(p.ToAndroidGraphicsF(), Path.Direction.Ccw);
+                impl.TextFormatting.Color = _nativebrush.Color;
                 Canvas.DrawTextOnPath(impl.String, path, 0, 0, impl.TextFormatting);
-                Canvas.DrawPath(path, _nativebrush);
+                Canvas.DrawPath(path, impl.TextFormatting);
                 Canvas.Restore();
             }
         }

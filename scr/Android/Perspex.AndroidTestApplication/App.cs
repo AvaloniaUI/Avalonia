@@ -47,21 +47,16 @@ namespace Perspex.AndroidTestApplication
                     Margin = new Thickness(10, 10, 0, 0),
                     Children = new Controls.Controls
                     {
-                        new Controls.Button
+                        new Controls.TextBlock
                         {
-                            Content = new Controls.TextBlock
-                                {
-                                    Foreground = Brushes.Black,
-                                    VerticalAlignment = VerticalAlignment.Top,
-                                    HorizontalAlignment = HorizontalAlignment.Left,
-                                    Text = "Why am I upside down :(",
-                                    FontSize = 80,
-                                    Margin = new Thickness(10),
-                                },
-                            Margin = new Thickness(10),
+                                
+                            Foreground = Brushes.GhostWhite,
+                            Background = Brushes.BlueViolet,
                             VerticalAlignment = VerticalAlignment.Top,
                             HorizontalAlignment = HorizontalAlignment.Left,
-                            Height = 100, Width = 1000,
+                            Text = "Hello! This is a test of text wrapping and me actually getting something to render for the first time in life. Im and happy to say this was by no means all me. I want to thank everyone who helped me this far.",
+                            FontSize = 80,
+                            Margin = new Thickness(10),
                         },
                     }
                 }
