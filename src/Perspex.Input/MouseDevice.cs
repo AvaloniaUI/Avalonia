@@ -58,7 +58,7 @@ namespace Perspex.Input
 
             while (v != null)
             {
-                p -= v.Bounds.Position;
+                p -= v.Bounds.Position; 
                 v = v.VisualParent;
             }
 

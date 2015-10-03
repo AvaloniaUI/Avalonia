@@ -120,6 +120,22 @@ namespace Perspex.AndroidTestApplication
 
         public Perspex.Controls.Window BuildGridWithSomeButtonsAndStuff()
         {
+			var buttonToClick = new Perspex.Controls.Button {
+				Content = "Tap Me",
+				Width = 200,
+				Foreground = Brushes.White,
+				Margin = new Thickness (5),
+				Background = Brushes.Blue,
+				FontSize = 50
+			};
+
+			var clickCount = 0;
+			buttonToClick.Click += (object sender, Perspex.Interactivity.RoutedEventArgs e) => {
+				Console.WriteLine("You clicked it :)");
+				buttonToClick.Content = $"Tap x{clickCount}";
+				clickCount++;
+			};
+
             Perspex.Controls.Window window = new Perspex.Controls.Window
             {
                 Title = "Perspex Test Application",
@@ -161,25 +177,21 @@ namespace Perspex.AndroidTestApplication
                                 Background = SolidColorBrush.Parse("#000000"),
                                 Children = new Perspex.Controls.Controls
                                 {
-                                    new Perspex.Controls.Button
-                                    {
-                                        Content = "Button 1",
-                                        Width = 100,
-									Foreground = Brushes.Blue,
-                                        Margin = new Thickness(5)
-                                    },
+                                    buttonToClick,
 
                                     new Perspex.Controls.Button
                                     {
                                         Content = "Button 2",
-                                        Width = 100,
+                                        Width = 250,
+										FontSize = 50,
                                         Margin = new Thickness(5)
                                     },
 
                                     new Perspex.Controls.Button
                                     {
                                         Content = "Button 3",
-                                        Width = 100,
+										Width = 250,
+										FontSize = 50,
                                         Margin = new Thickness(5)
                                     }
                                 }
