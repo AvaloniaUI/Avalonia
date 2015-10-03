@@ -108,7 +108,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{1ADC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Android", "src\Android\Perspex.Android\Perspex.Android.csproj", "{7B92AF71-6287-4693-9DCB-BD5B6E927E23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.AndroidTestApplication", "scr\Android\Perspex.AndroidTestApplication\Perspex.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.AndroidTestApplication", "src\Android\Perspex.AndroidTestApplication\Perspex.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

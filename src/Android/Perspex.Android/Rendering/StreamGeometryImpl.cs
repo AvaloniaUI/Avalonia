@@ -30,27 +30,19 @@ namespace Perspex.Android.Rendering
 
         private readonly StreamGeometryContextImpl _impl;
 
-        public APath Path
-        {
-            get { return _impl.Path; }
-        }
+        public APath Path => _impl.Path;
 
-        public Rect Bounds
-        {
-            get { return _impl.Bounds; }
-        }
+        public Rect Bounds => _impl.Bounds;
         private Matrix _transform = Matrix.Identity;
         public Matrix Transform
         {
             get { return _transform; }
             set
             {
-                if (value != Transform)
+                if (value == Transform) return;
+                if (!value.IsIdentity)
                 {
-                    if (!value.IsIdentity)
-                    {
-                        _transform = value;
-                    }
+                    _transform = value;
                 }
             }
         }
