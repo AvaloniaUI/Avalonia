@@ -33,6 +33,36 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public async void Array_Out_Of_Bounds_Should_Return_UnsetValue()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[2]");
+            var result = await target.Take(1);
+
+            Assert.Equal(PerspexProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[1,2]");
+            var result = await target.Take(1);
+
+            Assert.Equal(PerspexProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void List_Out_Of_Bounds_Should_Return_UnsetValue()
+        {
+            var data = new { Foo = new List<string> { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[2]");
+            var result = await target.Take(1);
+
+            Assert.Equal(PerspexProperty.UnsetValue, result);
+        }
+
+        [Fact]
         public async void Should_Get_List_Value()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };

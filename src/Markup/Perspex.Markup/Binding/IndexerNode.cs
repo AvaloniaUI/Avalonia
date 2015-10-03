@@ -90,7 +90,12 @@ namespace Perspex.Markup.Binding
 
             if (typeInfo.IsArray && _intArgs != null)
             {
-                return ((Array)target).GetValue(_intArgs);
+                var array = (Array)target;
+
+                if (InBounds(_intArgs, array))
+                {
+                    return array.GetValue(_intArgs);
+                }
             }
             else if (target is IList && _intArgs?.Length == 1)
             {
@@ -101,6 +106,26 @@ namespace Perspex.Markup.Binding
             }
 
             return PerspexProperty.UnsetValue;
+        }
+
+        private bool InBounds(int[] args, Array array)
+        {
+            if (args.Length == array.Rank)
+            {
+                for (var i = 0; i < args.Length; ++i)
+                {
+                    if (args[i] >= array.GetLength(i))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
