@@ -29,6 +29,11 @@ namespace Perspex.Markup.Xaml.Binding
 
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
+            if (property == Control.DataContextProperty && instance.InheritanceParent != null)
+            {
+                instance = instance.InheritanceParent as IObservablePropertyBag ?? instance;
+            }
+
             var subject = new ExpressionSubject(CreateExpressionObserver(instance));
             Bind(instance, property, subject);
         }

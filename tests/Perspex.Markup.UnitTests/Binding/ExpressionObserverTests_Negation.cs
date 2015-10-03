@@ -17,8 +17,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal(false, result.Value);
+            Assert.Equal(false, result);
         }
 
         [Fact]
@@ -28,8 +27,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal(true, result.Value);
+            Assert.Equal(true, result);
         }
 
         [Fact]
@@ -39,8 +37,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal(false, result.Value);
+            Assert.Equal(false, result);
         }
 
         [Fact]
@@ -50,8 +47,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal(true, result.Value);
+            Assert.Equal(true, result);
         }
 
         [Fact]
@@ -61,8 +57,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True(result.HasValue);
-            Assert.Equal(false, result.Value);
+            Assert.Equal(false, result);
         }
 
         [Fact]
@@ -72,7 +67,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.False(result.HasValue);
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         [Fact]
@@ -82,7 +77,7 @@ namespace Perspex.Markup.UnitTests.Binding
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.False(result.HasValue);
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         [Fact]

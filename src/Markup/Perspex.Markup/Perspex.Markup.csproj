@@ -38,7 +38,6 @@
     <Compile Include="Binding\ExpressionNodeBuilder.cs" />
     <Compile Include="Binding\ExpressionParseException.cs" />
     <Compile Include="Binding\ExpressionSubject.cs" />
-    <Compile Include="Binding\ExpressionValue.cs" />
     <Compile Include="Binding\LogicalNotNode.cs" />
     <Compile Include="Binding\IndexerNode.cs" />
     <Compile Include="Binding\Parsers\ArgumentListParser.cs" />

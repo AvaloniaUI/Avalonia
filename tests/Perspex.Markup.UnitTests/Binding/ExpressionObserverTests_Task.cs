@@ -23,11 +23,11 @@ namespace Perspex.Markup.UnitTests.Binding
                 var target = new ExpressionObserver(data, "Foo");
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x.Value));
+                var sub = target.Subscribe(x => result.Add(x));
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+                Assert.Equal(new object[] { PerspexProperty.UnsetValue, "foo" }, result.ToArray());
             }
         }
 
@@ -40,7 +40,7 @@ namespace Perspex.Markup.UnitTests.Binding
                 var target = new ExpressionObserver(data, "Foo");
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x.Value));
+                var sub = target.Subscribe(x => result.Add(x));
 
                 Assert.Equal(new object[] { "foo" }, result.ToArray());
             }
@@ -56,11 +56,11 @@ namespace Perspex.Markup.UnitTests.Binding
                 var target = new ExpressionObserver(data, "Next.Foo");
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x.Value));
+                var sub = target.Subscribe(x => result.Add(x));
                 tcs.SetResult(new Class2("foo"));
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new object[] { null, "foo" }, result.ToArray());
+                Assert.Equal(new object[] { PerspexProperty.UnsetValue, "foo" }, result.ToArray());
             }
         }
 

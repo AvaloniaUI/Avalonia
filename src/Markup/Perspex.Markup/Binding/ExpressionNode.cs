@@ -6,13 +6,13 @@ using System.Reactive.Subjects;
 
 namespace Perspex.Markup.Binding
 {
-    internal abstract class ExpressionNode : IObservable<ExpressionValue>
+    internal abstract class ExpressionNode : IObservable<object>
     {
         private object _target;
 
-        private Subject<ExpressionValue> _subject;
+        private Subject<object> _subject;
 
-        private ExpressionValue _value = ExpressionValue.None;
+        private object _value = PerspexProperty.UnsetValue;
 
         public ExpressionNode Next { get; set; }
 
@@ -34,17 +34,17 @@ namespace Perspex.Markup.Binding
                 }
                 else
                 {
-                    CurrentValue = ExpressionValue.None;
+                    CurrentValue = PerspexProperty.UnsetValue;
                 }
 
                 if (Next != null)
                 {
-                    Next.Target = CurrentValue.Value;
+                    Next.Target = CurrentValue;
                 }
             }
         }
 
-        public ExpressionValue CurrentValue
+        public object CurrentValue
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Perspex.Markup.Binding
 
                 if (Next != null)
                 {
-                    Next.Target = value.Value;
+                    Next.Target = value;
                 }
 
                 if (_subject != null)
@@ -72,7 +72,7 @@ namespace Perspex.Markup.Binding
             return Next?.SetValue(value) ?? false;
         }
 
-        public virtual IDisposable Subscribe(IObserver<ExpressionValue> observer)
+        public virtual IDisposable Subscribe(IObserver<object> observer)
         {
             if (Next != null)
             {
@@ -82,7 +82,7 @@ namespace Perspex.Markup.Binding
             {
                 if (_subject == null)
                 {
-                    _subject = new Subject<ExpressionValue>();
+                    _subject = new Subject<object>();
                 }
 
                 observer.OnNext(CurrentValue);
@@ -92,7 +92,7 @@ namespace Perspex.Markup.Binding
 
         protected virtual void SubscribeAndUpdate(object target)
         {
-            CurrentValue = new ExpressionValue(target);
+            CurrentValue = target;
         }
 
         protected virtual void Unsubscribe(object target)

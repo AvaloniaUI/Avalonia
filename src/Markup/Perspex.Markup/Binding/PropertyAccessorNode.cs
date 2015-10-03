@@ -69,7 +69,7 @@ namespace Perspex.Markup.Binding
 
             if (!set)
             {
-                CurrentValue = ExpressionValue.None;
+                CurrentValue = PerspexProperty.UnsetValue;
             }
         }
 
@@ -115,11 +115,11 @@ namespace Perspex.Markup.Binding
             // ReactiveCommand is an IObservable but we want to bind to it, not its value.
             if (observable != null && command == null)
             {
-                CurrentValue = ExpressionValue.None;
+                CurrentValue = PerspexProperty.UnsetValue;
                 set = true;
                 _subscription = observable
                     .ObserveOn(SynchronizationContext.Current)
-                    .Subscribe(x => CurrentValue = new ExpressionValue(x));
+                    .Subscribe(x => CurrentValue = x);
             }
             else if (task != null)
             {
@@ -129,13 +129,13 @@ namespace Perspex.Markup.Binding
                 {
                     if (task.Status == TaskStatus.RanToCompletion)
                     {
-                        CurrentValue = new ExpressionValue(resultProperty.GetValue(task));
+                        CurrentValue = resultProperty.GetValue(task);
                         set = true;
                     }
                     else
                     {
                         task.ContinueWith(
-                                x => CurrentValue = new ExpressionValue(resultProperty.GetValue(task)),
+                                x => CurrentValue = resultProperty.GetValue(task),
                                 TaskScheduler.FromCurrentSynchronizationContext())
                             .ConfigureAwait(false);
                     }
@@ -143,13 +143,13 @@ namespace Perspex.Markup.Binding
             }
             else
             {
-                CurrentValue = new ExpressionValue(value);
+                CurrentValue = value;
                 set = true;
             }
 
             if (!set)
             {
-                CurrentValue = ExpressionValue.None;
+                CurrentValue = PerspexProperty.UnsetValue;
             }
         }
 

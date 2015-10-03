@@ -88,6 +88,14 @@ namespace Perspex.Styling.UnitTests
 
             public ITemplatedControl TemplatedParent { get; }
 
+            public IPropertyBag InheritanceParent
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
             {
                 throw new NotImplementedException();

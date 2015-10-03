@@ -83,24 +83,24 @@ namespace Perspex.Markup.Binding
             }
         }
 
-        private ExpressionValue GetValue(object target)
+        private object GetValue(object target)
         {
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
 
             if (typeInfo.IsArray && _intArgs != null)
             {
-                return new ExpressionValue(((Array)target).GetValue(_intArgs));
+                return ((Array)target).GetValue(_intArgs);
             }
             else if (target is IList && _intArgs?.Length == 1)
             {
                 if (_intArgs[0] < list.Count)
                 {
-                    return new ExpressionValue(list[_intArgs[0]]);
+                    return list[_intArgs[0]];
                 }
             }
 
-            return ExpressionValue.None;
+            return PerspexProperty.UnsetValue;
         }
     }
 }

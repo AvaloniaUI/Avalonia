@@ -101,6 +101,11 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
+        /// </summary>
+        IPropertyBag IPropertyBag.InheritanceParent => InheritanceParent;
+
+        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
         /// are inherited from.
         /// </summary>

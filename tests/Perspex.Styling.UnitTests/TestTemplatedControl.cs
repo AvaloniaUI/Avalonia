@@ -34,6 +34,14 @@ namespace Perspex.Styling.UnitTests
             get;
         }
 
+        public IPropertyBag InheritanceParent
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
         {
             throw new NotImplementedException();
