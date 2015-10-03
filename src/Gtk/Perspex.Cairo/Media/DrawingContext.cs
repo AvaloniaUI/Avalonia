@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ namespace Perspex.Cairo.Media
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
-    public class DrawingContext : IDrawingContext, IDisposable
+    public class DrawingContext : IDrawingContextImpl, IDisposable
     {
         /// <summary>
         /// The cairo context.
@@ -30,7 +31,6 @@ namespace Perspex.Cairo.Media
         public DrawingContext(Cairo.Surface surface)
         {
             _context = new Cairo.Context(surface);
-            CurrentTransform = Matrix.Identity;
         }
 
         /// <summary>
@@ -40,15 +40,23 @@ namespace Perspex.Cairo.Media
         public DrawingContext(Gdk.Drawable drawable)
         {
             _context = Gdk.CairoHelper.Create(drawable);
-            CurrentTransform = Matrix.Identity;
         }
 
+
+        private Matrix _transform = Matrix.Identity;
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
-        public Matrix CurrentTransform
+        public Matrix Transform
         {
-            get; }
+            get { return _transform; }
+            set
+            {
+                _transform = value;
+                _context.Matrix = value.ToCairo();
+                
+            }
+        }
 
         /// <summary>
         /// Ends a draw operation.
@@ -131,29 +139,31 @@ namespace Perspex.Cairo.Media
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
 
-            using (var pop = PushTransform(impl.Transform))
+            var oldMatrix = Transform;
+            Transform *= impl.Transform;
+
+            
+
+            if (brush != null)
             {
                 _context.AppendPath(impl.Path);
-
-                if (brush != null)
+                using (var b = SetBrush(brush, geometry.Bounds.Size))
                 {
-					using (var b = SetBrush(brush, geometry.Bounds.Size)) 
-					{
-						if (pen != null)
-							_context.FillPreserve();
-						else
-							_context.Fill();
-					}
+                    if (pen != null)
+                        _context.FillPreserve();
+                    else
+                        _context.Fill();
                 }
             }
-
             if (pen != null)
             {
-				using (var p = SetPen(pen, geometry.Bounds.Size)) 
-				{
-					_context.Stroke();
-				}
+                _context.AppendPath(impl.Path);
+                using (var p = SetPen(pen, geometry.Bounds.Size))
+                {
+                    _context.Stroke();
+                }
             }
+            Transform = oldMatrix;
         }
 
         /// <summary>
@@ -208,31 +218,37 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         /// <returns>A disposable used to undo the clip rectangle.</returns>
-        public IDisposable PushClip(Rect clip)
+        public void PushClip(Rect clip)
         {
             _context.Save();
             _context.Rectangle(clip.ToCairo());
             _context.Clip();
-
-            return Disposable.Create(() => _context.Restore());
         }
+
+        public void PopClip()
+        {
+            _context.Restore();
+        }
+
+        readonly Stack<double> _opacityStack = new Stack<double>();
 
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public IDisposable PushOpacity(double opacity)
+        public void PushOpacity(double opacity)
         {
-            var tmp = opacityOverride;
+            _opacityStack.Push(opacityOverride);
 
             if (opacity < 1.0f)
-                opacityOverride = opacity;
+                opacityOverride *= opacity;
 
-            return Disposable.Create(() =>
-            {
-                opacityOverride = tmp;
-            });
+        }
+
+        public void PopOpacity()
+        {
+            opacityOverride = _opacityStack.Pop();
         }
 
         /// <summary>

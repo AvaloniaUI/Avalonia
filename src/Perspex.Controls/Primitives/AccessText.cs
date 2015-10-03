@@ -62,7 +62,7 @@ namespace Perspex.Controls.Primitives
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             base.Render(context);
 

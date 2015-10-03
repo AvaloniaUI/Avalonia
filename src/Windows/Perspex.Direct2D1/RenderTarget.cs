@@ -8,6 +8,7 @@ using Perspex.Platform;
 using Perspex.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
+using DrawingContext = Perspex.Media.DrawingContext;
 using DwFactory = SharpDX.DirectWrite.Factory;
 
 namespace Perspex.Direct2D1
@@ -91,24 +92,12 @@ namespace Perspex.Direct2D1
             window.Resize(new Size2(width, height));
         }
 
-        IDrawingContext Wrap(IDrawingContext ctx)
-        {
-#if DEBUG
-            return new ValidatingDrawingContext(ctx);
-#endif
-#pragma warning disable 162
-            return ctx;
-#pragma warning restore 162
-        }
-
         /// <summary>
         /// Creates a drawing context for a rendering session.
         /// </summary>
-        /// <returns>An <see cref="IDrawingContext"/>.</returns>
-        public IDrawingContext CreateDrawingContext()
-        {
-            return Wrap(new DrawingContext(_renderTarget, DirectWriteFactory));
-        }
+        /// <returns>An <see cref="Perspex.Media.DrawingContext"/>.</returns>
+        public DrawingContext CreateDrawingContext() 
+            => new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
 
         public void Dispose()
         {
