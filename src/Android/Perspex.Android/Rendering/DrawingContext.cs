@@ -18,6 +18,7 @@ using Perspex.Controls.Shapes;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using ARect = Android.Graphics.Rect;
+using AMatrix = Android.Graphics.Matrix;
 using Color = Perspex.Media.Color;
 using Path = Android.Graphics.Path;
 
@@ -40,7 +41,32 @@ namespace Perspex.Android.Rendering
             _nativebrush = null;
         }
 
-        public Matrix CurrentTransform => Canvas.Matrix.ToPerspex();
+        private Matrix _currentTransform = Matrix.Identity;
+        private float[] _currentTransformValues = new float[9];
+        public Matrix CurrentTransform
+        {
+            get { return _currentTransform; }
+            private set
+            {
+                _currentTransform = value;
+                
+                _currentTransformValues[0] = (float)value.M11;
+                _currentTransformValues[1] = (float)value.M21;
+                _currentTransformValues[2] = (float)value.M31;
+
+                _currentTransformValues[3] = (float)value.M12;
+                _currentTransformValues[4] = (float)value.M22;
+                _currentTransformValues[5] = (float)value.M32;
+
+                _currentTransformValues[6] = 0;
+                _currentTransformValues[7] = 0;
+                _currentTransformValues[8] = 1;
+                var nmatrix = new AMatrix();
+                nmatrix.SetValues(_currentTransformValues);
+                Canvas.Matrix = nmatrix;
+                
+            }
+        }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
@@ -169,11 +195,12 @@ namespace Perspex.Android.Rendering
 
         public IDisposable PushTransform(Matrix matrix)
         {
-            Canvas.Matrix.SetConcat(Canvas.Matrix, matrix.ToAndroidGraphics());
+            var oldMatrix = CurrentTransform;
+            CurrentTransform = oldMatrix * matrix;
 
             return Disposable.Create(() =>
             {
-                Canvas.Matrix.PostConcat(matrix.Invert().ToAndroidGraphics());
+                CurrentTransform = oldMatrix;
             });
         }
 
