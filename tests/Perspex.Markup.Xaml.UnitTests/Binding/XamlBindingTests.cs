@@ -113,6 +113,36 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
                 BindingPriority.LocalValue));
         }
 
+        [Fact]
+        public void DataContext_Binding_Should_Use_Parent_DataContext()
+        {
+            var parentDataContext = Mock.Of<IHeadered>(x => x.Header == (object)"Foo");
+
+            var parent = new Decorator
+            {
+                Child = new Control(),
+                DataContext = parentDataContext,
+            };
+
+            var binding = new XamlBinding
+            {
+                SourcePropertyPath = "Header",
+            };
+
+            binding.Bind(parent.Child, Control.DataContextProperty);
+
+            Assert.Equal("Foo", parent.Child.DataContext);
+
+            parentDataContext = Mock.Of<IHeadered>(x => x.Header == (object)"Bar");
+            parent.DataContext = parentDataContext;
+            Assert.Equal("Bar", parent.Child.DataContext);
+        }
+
+        private Mock<IObservablePropertyBag> CreateTarget(object dataContext)
+        {
+            return CreateTarget(dataContext: Observable.Never<object>().StartWith(dataContext));
+        }
+
         private Mock<IObservablePropertyBag> CreateTarget(
             IObservable<object> dataContext = null,
             IObservable<string> text = null)
