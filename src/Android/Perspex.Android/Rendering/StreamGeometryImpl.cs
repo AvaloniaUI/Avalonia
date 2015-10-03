@@ -56,7 +56,7 @@ namespace Perspex.Android.Rendering
         }
         public Rect GetRenderBounds(double strokeThickness)
         {
-            throw new NotImplementedException();
+            return Bounds.Inflate(strokeThickness);
         }
 
         public IStreamGeometryImpl Clone()
@@ -91,14 +91,14 @@ namespace Perspex.Android.Rendering
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+
         }
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            throw new NotImplementedException();
             //TODO: Needs a rect?
-            //this.Path.ArcTo();
+            ARect rect = new ARect((float)point.X, (float)point.Y, (float)point.X + (float)size.Width, (float)point.Y - (float)size.Height);
+            this.Path.ArcTo(rect, 0, (float) rotationAngle);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)

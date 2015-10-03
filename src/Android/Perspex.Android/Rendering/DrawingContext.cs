@@ -1,40 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using Android.App;
 using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
+using Perspex.Controls.Shapes;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using ARect = Android.Graphics.Rect;
+using Path = Android.Graphics.Path;
 
 namespace Perspex.Android.Rendering
 {
     public class DrawingContext : IDrawingContext
     {
-        private PerspexActivity _nativeContext;
+        public Canvas Canvas;
+        private TextPaint _nativebrush;
 
         public DrawingContext()
         {
-           _nativeContext = (PerspexActivity) global::Android.App.Application.Context;
+            Canvas = PerspexActivity.Instance.Canvas;
+            _nativebrush = new TextPaint {AntiAlias = true};
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Canvas = null;
+            _nativebrush = null;
         }
 
-        public Matrix CurrentTransform
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public Matrix CurrentTransform => Canvas.Matrix.ToPerspex();
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
@@ -43,43 +47,177 @@ namespace Perspex.Android.Rendering
 
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
-            
-            //_nativeContext.PerspexView.Draw();
+            var Rect = new Rect(p1.X, p1.Y, p2.X, p2.Y);
+            using ((SetPen(pen, new Size(Rect.Width, Rect.Height))))
+            {
+                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, _nativebrush);   
+            }
         }
 
         public void DrawGeometry(Brush brush, Pen pen, Geometry geometry)
         {
-            throw new NotImplementedException();
+            var impl = geometry.PlatformImpl as StreamGeometryImpl;
+
+            if (brush != null)
+            {
+                using (var b = SetBrush(brush, geometry.Bounds.Size, BrushUsage.Fill))
+                {
+                    Canvas.DrawPath(impl.Path, _nativebrush);
+                }
+            }
+
+            if (pen != null)
+            {
+                using (var p = SetPen(pen, geometry.Bounds.Size))
+                {
+                    Canvas.DrawPath(impl.Path, _nativebrush);
+                }
+            }
         }
 
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
         {
-            throw new NotImplementedException();
+            using (SetPen(pen, rect.Size))
+            {
+                if (cornerRadius == 0)
+                {
+                    Canvas.DrawRect(rect.ToAndroidGraphicsF(), _nativebrush);
+                }
+                else
+                {
+                    Canvas.DrawRoundRect(rect.ToAndroidGraphicsF(), cornerRadius, cornerRadius, _nativebrush);
+                }
+            }
         }
 
         public void DrawText(Brush foreground, Point origin, FormattedText text)
         {
-            throw new NotImplementedException();
+            var impl = text.PlatformImpl as FormattedTextImpl;
+
+            using (SetBrush(foreground, new Size(0, 0), BrushUsage.Stroke))
+            {
+                Canvas.Save();
+                Canvas.Translate(0, (float)impl.Constraint.Height);
+                var path = new Path();
+                var p = new Rect(origin, new Size(0, 0)); 
+                path.AddRect(p.ToAndroidGraphicsF(), Path.Direction.Ccw);
+                Canvas.DrawTextOnPath(impl.String, path, 0, 0, impl.TextFormatting);
+                Canvas.DrawPath(path, _nativebrush);
+                Canvas.Restore();
+            }
         }
 
         public void FillRectangle(Brush brush, Rect rect, float cornerRadius = 0)
         {
-            throw new NotImplementedException();
+            using (var b = SetBrush(brush, rect.Size, BrushUsage.Fill))
+            {
+                if (cornerRadius == 0)
+                {
+                    Canvas.DrawRect(rect.ToAndroidGraphics(), _nativebrush);
+                }
+                else
+                {
+                    Canvas.DrawRoundRect(rect.ToAndroidGraphicsF(), cornerRadius, cornerRadius, _nativebrush);
+                }
+            }
         }
 
         public IDisposable PushClip(Rect clip)
         {
-            throw new NotImplementedException();
+            Canvas.Save();
+            Canvas.ClipBounds.Set(clip.ToAndroidGraphics());
+            return Disposable.Create(() => Canvas.Restore());
         }
 
+        private float _currentOpacity = 1.0f;
         public IDisposable PushOpacity(double opacity)
         {
-            throw new NotImplementedException();
+            var previous = _currentOpacity;
+            _currentOpacity = (float) opacity;
+            _nativebrush.Alpha = (int)_currentOpacity;
+
+            return Disposable.Create(() =>
+            {
+                _currentOpacity = previous;
+                _nativebrush.Alpha = (int) _currentOpacity;
+            });
         }
 
         public IDisposable PushTransform(Matrix matrix)
         {
-            throw new NotImplementedException();
+            Canvas.Matrix.SetConcat(Canvas.Matrix, matrix.ToAndroidGraphics());
+
+            return Disposable.Create(() =>
+            {
+                Canvas.Matrix.PostConcat(matrix.Invert().ToAndroidGraphics());
+            });
+        }
+
+        private IDisposable SetPen(Pen pen, Size dstRect)
+        {
+            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            {
+                var cray = pen.DashStyle.Dashes.Select(d => (float) d).ToArray();
+                _nativebrush.SetPathEffect(new DashPathEffect(cray, (float)pen.DashStyle.Offset));
+            }
+
+            _nativebrush.StrokeWidth = (float) pen.Thickness;
+            _nativebrush.StrokeMiter = (float) pen.MiterLimit;
+
+            _nativebrush.StrokeJoin = pen.LineJoin.ToAndroidGraphics();
+            _nativebrush.StrokeCap = pen.StartLineCap.ToAndroidGraphics();
+
+            if (pen.Brush == null)
+                return Disposable.Empty;
+
+            return SetBrush(pen.Brush, dstRect, BrushUsage.Stroke);
+        }
+
+        private IDisposable SetBrush(Brush brush, Size dstRect, BrushUsage usage)
+        {
+            var solid = brush as SolidColorBrush;
+            var linearGradientBrush = brush as LinearGradientBrush;
+            var radialGradientBrush = brush as RadialGradientBrush;
+            var imageBrush = brush as ImageBrush;
+            var visualBrush = brush as VisualBrush;
+            BrushImpl impl = null;
+
+            if (solid != null)
+            {
+                impl = new SolidColorBrushImpl(solid);
+            }
+            else if (linearGradientBrush != null)
+            {
+                throw new NotImplementedException();
+                //impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+            }
+            else if (radialGradientBrush != null)
+            {
+                throw new NotImplementedException();
+                //impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
+            }
+            else if (imageBrush != null)
+            {
+                throw new NotImplementedException();
+                //impl = new ImageBrushImpl(imageBrush, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                throw new NotImplementedException();
+                //impl = new VisualBrushImpl(visualBrush, destinationSize);
+            }
+            else
+            {
+                impl = new SolidColorBrushImpl(null);
+            }
+
+            impl.Apply(_nativebrush, usage);
+
+            return Disposable.Create(() =>
+            {
+                impl.Dispose();
+                _nativebrush = new TextPaint { AntiAlias = true };
+            });
         }
     }
 }

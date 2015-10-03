@@ -34,15 +34,16 @@ namespace Perspex.Android.Rendering
             TextAlignment textAlignment,
             FontWeight fontWeight)
         {
-         
+            Bounds = new ARect();
             String = text;
             TextFormatting = new ATextPaint {TextAlign = textAlignment.ToAndroidGraphics()};
             var style = fontStyle.ToAndroidGraphics();
             if (fontWeight >= FontWeight.Bold)
                 style = style == TypefaceStyle.Italic ? TypefaceStyle.BoldItalic : TypefaceStyle.Bold;
-            TextFormatting.SetTypeface(Typeface.Create(fontFamily, style));
+            // Override Typespace with default for testing
+            TextFormatting.SetTypeface(Typeface.Default);
             TextFormatting.TextSize = (float) fontSize;
-            TextFormatting.GetTextBounds(String, 0, String.Length, Bounds);
+            Constraint = Measure();
         }
 
         public Size Constraint
@@ -79,10 +80,10 @@ namespace Perspex.Android.Rendering
         public Size Measure()
         {
             //TODO: Have the slightest feeling this is a disconnect here...
-            var metrics = TextFormatting.GetFontMetrics();
-            float height = Math.Abs(metrics.Ascent) + Math.Abs(metrics.Descent);
-            float width = TextFormatting.MeasureText(String);
-            return new Size(width, height);
+            var bound = new ARect();
+            TextFormatting.GetTextBounds(String, 0, String.Length, bound);
+            Bounds = bound;
+            return new Size(bound.Width(), bound.Height());
         }
 
         public void SetForegroundBrush(Brush brush, int startIndex, int length)

@@ -36,12 +36,12 @@ namespace Perspex.Android.Rendering
 
         public IStreamGeometryImpl CreateStreamGeometry()
         {
-            throw new NotImplementedException();
+            return new StreamGeometryImpl();
         }
 
         public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            throw new NotImplementedException();
+            return PerspexActivity.Instance.View ?? new PerspexView();
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
