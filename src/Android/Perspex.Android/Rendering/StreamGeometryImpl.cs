@@ -76,7 +76,7 @@ namespace Perspex.Android.Rendering
         {
             get
             {
-                ARect _bounds = default(ARect);
+                ARect _bounds = new ARect();
                 Path.ComputeBounds(_bounds, true);
                 return _bounds.ToPerspex();
             }
