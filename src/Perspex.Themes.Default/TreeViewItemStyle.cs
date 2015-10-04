@@ -42,14 +42,14 @@ namespace Perspex.Themes.Default
                         new Setter(TemplatedControl.PaddingProperty, new Thickness(2)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Class("selected").Template().Name("header"))
+                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Template().Name("header"))
                 {
                     Setters = new[]
                     {
                         new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
                     },
                 },
-                new Style(x => x.OfType<TreeViewItem>().Class("selected").Class(":focus").Template().Name("header"))
+                new Style(x => x.OfType<TreeViewItem>().Class(":selected").Class(":focus").Template().Name("header"))
                 {
                     Setters = new[]
                     {

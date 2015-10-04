@@ -44,7 +44,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>().Class("selected"))
+                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>().Class(":selected"))
                 {
                     Setters = new[]
                     {

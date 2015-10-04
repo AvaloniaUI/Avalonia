@@ -305,11 +305,11 @@ namespace Perspex.Controls.Primitives
             {
                 if (selected)
                 {
-                    styleable.Classes.Add("selected");
+                    styleable.Classes.Add(":selected");
                 }
                 else
                 {
-                    styleable.Classes.Remove("selected");
+                    styleable.Classes.Remove(":selected");
                 }
             }
         }

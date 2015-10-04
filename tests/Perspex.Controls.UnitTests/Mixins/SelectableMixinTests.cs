@@ -24,7 +24,7 @@ namespace Perspex.Controls.UnitTests.Mixins
 
             target.IsSelected = true;
 
-            Assert.Equal(new[] { "selected" }, target.Classes);
+            Assert.Equal(new[] { ":selected" }, target.Classes);
         }
 
         [Fact]
