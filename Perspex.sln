@@ -104,8 +104,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "samples\Bind
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlTestApplicationPcl", "samples\XamlTestApplicationPcl\XamlTestApplicationPcl.csproj", "{EA113F1A-D8D7-4142-9948-353270E7EBAE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{1ADCBB8C-D5D3-4B4F-AFC9-6C19BFAE5F1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Android", "src\Android\Perspex.Android\Perspex.Android.csproj", "{7B92AF71-6287-4693-9DCB-BD5B6E927E23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.AndroidTestApplication", "src\Android\Perspex.AndroidTestApplication\Perspex.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
@@ -259,6 +266,16 @@ Global
 		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA113F1A-D8D7-4142-9948-353270E7EBAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B92AF71-6287-4693-9DCB-BD5B6E927E23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B92AF71-6287-4693-9DCB-BD5B6E927E23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B92AF71-6287-4693-9DCB-BD5B6E927E23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B92AF71-6287-4693-9DCB-BD5B6E927E23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -288,5 +305,7 @@ Global
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{EA113F1A-D8D7-4142-9948-353270E7EBAE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{7B92AF71-6287-4693-9DCB-BD5B6E927E23} = {1ADCBB8C-D5D3-4B4F-AFC9-6C19BFAE5F1E}
+		{FF69B927-C545-49AE-8E16-3D14D621AA12} = {1ADCBB8C-D5D3-4B4F-AFC9-6C19BFAE5F1E}
 	EndGlobalSection
 EndGlobal

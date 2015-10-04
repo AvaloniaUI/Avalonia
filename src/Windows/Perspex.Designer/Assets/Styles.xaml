@@ -1,0 +1,49 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ControlTemplate x:Key="ChromelessButtonTemplate"
+                     TargetType="{x:Type ButtonBase}">
+        <Grid Background="{TemplateBinding Background}">
+            <ContentPresenter x:Name="contentPresenter"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              Margin="{TemplateBinding Padding}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                              RecognizesAccessKey="True"
+                              Opacity="0.75" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver"
+                     Value="True">
+                <Setter TargetName="contentPresenter"
+                        Property="Opacity"
+                        Value="1" />
+            </Trigger>
+            <Trigger Property="IsMouseOver"
+                     Value="False">
+                <Setter TargetName="contentPresenter"
+                        Property="Opacity"
+                        Value=".5" />
+            </Trigger>
+            <Trigger Property="IsEnabled"
+                     Value="false">
+                <Setter Property="Foreground"
+                        Value="#ADADAD" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    <Style x:Key="ChromelessButtonStyle"
+           TargetType="{x:Type ButtonBase}">
+        <Setter Property="Background"
+                Value="{DynamicResource TransparentWhiteBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="Padding"
+                Value="1" />
+        <Setter Property="Template"
+                Value="{StaticResource ChromelessButtonTemplate}" />
+    </Style>
+</ResourceDictionary>
