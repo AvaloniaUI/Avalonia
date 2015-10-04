@@ -106,7 +106,7 @@ namespace Perspex.Media
                     throw new FormatException($"Invalid color string: '{s}'.");
                 }
 
-                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber) | or);
+                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture) | or);
             }
             else
             {

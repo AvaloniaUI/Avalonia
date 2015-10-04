@@ -192,6 +192,11 @@ namespace Perspex
         /// <summary>
         /// Gets the Z index of the node.
         /// </summary>
+        /// <remarks>
+        /// Controls with a higher <see cref="ZIndex"/> will appear in front of controls with
+        /// a lower ZIndex. If two controls have the same ZIndex then the control that appears
+        /// later in the containing element's children collection will appear on top.
+        /// </remarks>
         public int ZIndex
         {
             get { return GetValue(ZIndexProperty); }

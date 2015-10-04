@@ -114,14 +114,8 @@ namespace Perspex.Input
         void Focus();
 
         /// <summary>
-        /// Returns the input element that can be found within the current control at the specified
-        /// position.
+        /// Gets the key bindings for the element.
         /// </summary>
-        /// <param name="p">The position, in control coordinates.</param>
-        /// <returns>The <see cref="IInputElement"/> at the specified position.</returns>
-        IInputElement InputHitTest(Point p);
-
-
         List<KeyBinding> KeyBindings { get; }
     }
 }

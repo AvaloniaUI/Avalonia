@@ -605,7 +605,9 @@ namespace Perspex
                     property,
                     GetDescription(source));
 
-                return source.Subscribe(x => SetValue(property, x));
+                return source
+                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType, false))
+                    .Subscribe(x => SetValue(property, x));
             }
             else
             {
