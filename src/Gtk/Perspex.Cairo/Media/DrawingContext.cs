@@ -140,7 +140,7 @@ namespace Perspex.Cairo.Media
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
 
             var oldMatrix = Transform;
-            Transform *= impl.Transform;
+            Transform = impl.Transform * Transform;
 
             
             if (brush != null)
