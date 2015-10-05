@@ -305,7 +305,7 @@ namespace Perspex.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
-                    new DataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>(x => new Button { Content = x })
                 },
                 Items = items,
             };

@@ -65,7 +65,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly PerspexProperty<string> TextProperty =
-            PerspexProperty.Register<TextBlock, string>(nameof(Text));
+            PerspexProperty.Register<TextBlock, string>(nameof(Text), defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -214,7 +214,7 @@ namespace Perspex.Controls
         /// Renders the <see cref="TextBlock"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             Brush background = Background;
 

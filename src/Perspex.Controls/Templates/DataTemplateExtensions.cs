@@ -42,7 +42,7 @@ namespace Perspex.Controls.Templates
                     }
                     else
                     {
-                        result = DataTemplate.Default.Build(data);
+                        result = FuncDataTemplate.Default.Build(data);
                     }
 
                     result.DataContext = data;

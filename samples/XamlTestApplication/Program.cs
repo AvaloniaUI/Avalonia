@@ -23,7 +23,7 @@ namespace XamlTestApplication
             {
 
             };
-            
+
             var window = new MainWindow();
             window.Show();
             Application.Current.Run(window);

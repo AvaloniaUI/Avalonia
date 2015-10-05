@@ -327,7 +327,7 @@ namespace Perspex.Controls.Html
         private Size RenderSize => new Size(Bounds.Width, Bounds.Height);
 
         
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             context.FillRectangle(Background,  new Rect(RenderSize));
 

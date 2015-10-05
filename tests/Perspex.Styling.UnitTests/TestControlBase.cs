@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 
 namespace Perspex.Styling.UnitTests
 {
@@ -25,6 +26,14 @@ namespace Perspex.Styling.UnitTests
         {
             get;
             set;
+        }
+
+        public IPropertyBag InheritanceParent
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
@@ -78,6 +87,16 @@ namespace Perspex.Styling.UnitTests
         }
 
         public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BindTwoWay(PerspexProperty property, PerspexObject source, PerspexProperty sourceProperty, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BindTwoWay(PerspexProperty property, ISubject<object> source, BindingPriority priority = BindingPriority.LocalValue)
         {
             throw new NotImplementedException();
         }

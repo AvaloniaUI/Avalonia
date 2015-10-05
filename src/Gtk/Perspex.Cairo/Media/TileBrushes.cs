@@ -113,7 +113,7 @@ namespace Perspex.Cairo.Media
                     out drawRect);
 
                 using (ctx.PushClip(drawRect))
-                using (ctx.PushTransform(transform))
+                using (ctx.PushPostTransform(transform))
                 {
                     ctx.Render(visual);
                 }
