@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using Android.Graphics;
@@ -12,11 +13,22 @@ using ATextAlign = Android.Graphics.Paint.Align;
 
 namespace Perspex.Android.Rendering
 {
-    public class DrawingContext : IDrawingContext
+    public class DrawingContext : IDrawingContextImpl
     {
         private static readonly BrushImpl FallbackBrush = new SolidColorBrushImpl(new SolidColorBrush(Colors.Magenta));
 
-        private float _currentOpacity = 1.0f;
+        private double _currentOpacity = 1.0f;
+
+        private double CurrentOpacity
+        {
+            get { return _currentOpacity; }
+            set
+            {
+                _currentOpacity = value;
+                _nativebrush.Alpha = (int) (_currentOpacity*255);
+            }
+        }
+
         private TextPaint _nativebrush;
         public Canvas Canvas;
 
@@ -32,10 +44,17 @@ namespace Perspex.Android.Rendering
             _nativebrush = null;
         }
 
-        public Matrix CurrentTransform
+        Matrix _currentTransform = Matrix.Identity;
+        public Matrix Transform
         {
-            get { return Canvas.Matrix.ToPerspex(); }
-            set { Canvas.Matrix = value.ToAndroidGraphics(); }
+            get { return _currentTransform; }
+            set
+            {
+                if(_currentTransform == value)
+                    return;
+                _currentTransform = value;
+                Canvas.Matrix = value.ToAndroidGraphics();
+            }
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -125,33 +144,24 @@ namespace Perspex.Android.Rendering
             }
         }
 
-        public IDisposable PushClip(Rect clip)
+        public void PushClip(Rect clip)
         {
             Canvas.Save();
             Canvas.ClipBounds.Set(clip.ToAndroidGraphics());
-            return Disposable.Create(() => Canvas.Restore());
+            
         }
 
-        public IDisposable PushOpacity(double opacity)
+        public void PopClip() => Canvas.Restore();
+
+        Stack<double> _opacityStack = new Stack<double>();
+        public void PushOpacity(double opacity)
         {
-            var previous = _currentOpacity;
-            _currentOpacity = (float) opacity;
-            _nativebrush.Alpha = (int) _currentOpacity;
-
-            return Disposable.Create(() =>
-            {
-                _currentOpacity = previous;
-                _nativebrush.Alpha = (int) _currentOpacity;
-            });
+            _opacityStack.Push(_currentOpacity);
+            CurrentOpacity = CurrentOpacity*opacity;
         }
 
-        public IDisposable PushTransform(Matrix matrix)
-        {
-            var oldMatrix = CurrentTransform;
-            CurrentTransform = oldMatrix*matrix;
+        public void PopOpacity() => CurrentOpacity = _opacityStack.Pop();
 
-            return Disposable.Create(() => { CurrentTransform = oldMatrix; });
-        }
 
         private Path RoundRectPath(Rect rc, float radius)
         {

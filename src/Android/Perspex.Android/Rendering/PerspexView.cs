@@ -35,9 +35,9 @@ namespace Perspex.Android.Rendering
         IntPtr IPlatformHandle.Handle => Handle;
         public string HandleDescriptor => "Perspex View";
 
-        public IDrawingContext CreateDrawingContext()
+        public Media.DrawingContext CreateDrawingContext()
         {
-            return new DrawingContext();
+            return new Media.DrawingContext(new DrawingContext());
         }
 
         public void Resize(int width, int height)
