@@ -52,14 +52,15 @@ namespace Perspex.TinyWM
                 w.SetSize(_window.ClientSize);
         }
 
-        void Render(IDrawingContext ctx)
+        void Render(DrawingContext ctx)
         {
             if (_activeWindow == null)
                 return;
             ctx.Render(_activeWindow.TopLevel);
             foreach (var popup in _popups)
                 if (popup.TopLevel != null)
-                    using (ctx.PushTransform(Matrix.CreateTranslation(popup.X, popup.Y)))
+                    using (ctx.PushPostTransform(Matrix.CreateTranslation(popup.X, popup.Y)))
+                    using (ctx.PushTransformContainer())
                         ctx.Render(popup.TopLevel);
         }
 
