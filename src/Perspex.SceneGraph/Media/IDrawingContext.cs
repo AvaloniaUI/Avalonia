@@ -9,12 +9,12 @@ namespace Perspex.Media
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>
-    public interface IDrawingContext : IDisposable
+    public interface IDrawingContextImpl : IDisposable
     {
         /// <summary>
-        /// Gets the current transform of the drawing context.
+        /// Gets or sets the current transform of the drawing context.
         /// </summary>
-        Matrix CurrentTransform { get; }
+        Matrix Transform { get; set; }
 
         /// <summary>
         /// Draws a bitmap image.
@@ -70,20 +70,17 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         /// <returns>A disposable used to undo the clip rectangle.</returns>
-        IDisposable PushClip(Rect clip);
+        void PushClip(Rect clip);
+
+        void PopClip();
 
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        IDisposable PushOpacity(double opacity);
+        void PushOpacity(double opacity);
 
-        /// <summary>
-        /// Pushes a matrix transformation.
-        /// </summary>
-        /// <param name="matrix">The matrix</param>
-        /// <returns>A disposable used to undo the transformation.</returns>
-        IDisposable PushTransform(Matrix matrix);
+        void PopOpacity();
     }
 }

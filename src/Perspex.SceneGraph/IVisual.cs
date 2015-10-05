@@ -76,10 +76,10 @@ namespace Perspex
         int ZIndex { get; set; }
 
         /// <summary>
-        /// Renders the scene graph node to a <see cref="IDrawingContext"/>.
+        /// Renders the scene graph node to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The context.</param>
-        void Render(IDrawingContext context);
+        void Render(DrawingContext context);
 
         /// <summary>
         /// Returns a transform that transforms the visual's coordinates into the coordinates

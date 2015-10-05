@@ -172,10 +172,10 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Renders the visual to a <see cref="IDrawingContext"/>.
+        /// Renders the visual to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             Brush background = Background;
             if (background != null)
