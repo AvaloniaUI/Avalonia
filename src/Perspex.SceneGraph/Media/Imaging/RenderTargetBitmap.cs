@@ -47,7 +47,7 @@ namespace Perspex.Media.Imaging
             return factory.CreateRenderTargetBitmap(width, height);
         }
 
-        public IDrawingContext CreateDrawingContext() => PlatformImpl.CreateDrawingContext();
+        public DrawingContext CreateDrawingContext() => PlatformImpl.CreateDrawingContext();
 
         void IRenderTarget.Resize(int width, int height)
         {

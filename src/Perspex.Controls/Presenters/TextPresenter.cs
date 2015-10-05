@@ -69,7 +69,7 @@ namespace Perspex.Controls.Presenters
             return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
         }
 
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;

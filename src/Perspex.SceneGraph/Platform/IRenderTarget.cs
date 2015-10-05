@@ -15,9 +15,9 @@ namespace Perspex.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Creates an <see cref="IDrawingContext"/> for a rendering session.
+        /// Creates an <see cref="DrawingContext"/> for a rendering session.
         /// </summary>
-        IDrawingContext CreateDrawingContext();
+        DrawingContext CreateDrawingContext();
 
         /// <summary>
         /// Resizes the rendered viewport.

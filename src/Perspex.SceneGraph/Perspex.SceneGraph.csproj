@@ -64,6 +64,7 @@
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\DashStyle.cs" />
+    <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
@@ -99,7 +100,6 @@
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\ImageBush.cs" />
-    <Compile Include="Media\ValidatingDrawingContext.cs" />
     <Compile Include="Media\VisualBrush.cs" />
     <Compile Include="RelativePoint.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />

@@ -214,7 +214,7 @@ namespace Perspex.Controls
         /// Renders the <see cref="TextBlock"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             Brush background = Background;
 

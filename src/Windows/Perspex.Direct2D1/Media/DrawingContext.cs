@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Perspex.Media;
 using SharpDX;
@@ -13,7 +15,7 @@ namespace Perspex.Direct2D1.Media
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
-    public class DrawingContext : IDrawingContext, IDisposable
+    public class DrawingContext : IDrawingContextImpl, IDisposable
     {
         /// <summary>
         /// The Direct2D1 render target.
@@ -42,10 +44,10 @@ namespace Perspex.Direct2D1.Media
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
-        public Matrix CurrentTransform
+        public Matrix Transform
         {
             get { return _renderTarget.Transform.ToPerspex(); }
-            private set { _renderTarget.Transform = value.ToDirect2D(); }
+            set { _renderTarget.Transform = value.ToDirect2D(); }
         }
 
         /// <summary>
@@ -53,6 +55,8 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public void Dispose()
         {
+            foreach (var layer in _layerPool)
+                layer.Dispose();
             _renderTarget.EndDraw();
         }
 
@@ -233,22 +237,24 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         /// <returns>A disposable used to undo the clip rectangle.</returns>
-        public IDisposable PushClip(Rect clip)
+        public void PushClip(Rect clip)
         {
             _renderTarget.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
-
-            return Disposable.Create(() =>
-            {
-                _renderTarget.PopAxisAlignedClip();
-            });
         }
 
+        public void PopClip()
+        {
+            _renderTarget.PopAxisAlignedClip();
+        }
+
+        Stack<Layer> _layers = new Stack<Layer>();
+        private readonly Stack<Layer> _layerPool = new Stack<Layer>();
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public IDisposable PushOpacity(double opacity)
+        public void PushOpacity(double opacity)
         {
             if (opacity < 1)
             {
@@ -256,41 +262,26 @@ namespace Perspex.Direct2D1.Media
                 {
                     ContentBounds = RectangleF.Infinite,
                     MaskTransform = Matrix3x2.Identity,
-                    Opacity = (float)opacity,
+                    Opacity = (float) opacity,
                 };
 
-                var layer = new Layer(_renderTarget);
-
+                var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
                 _renderTarget.PushLayer(ref parameters, layer);
 
-                return Disposable.Create(() =>
-                {
-                    _renderTarget.PopLayer();
-                    layer.Dispose();
-                });
+                _layers.Push(layer);
             }
             else
-            {
-                return Disposable.Empty;
-            }
+                _layers.Push(null);
         }
 
-        /// <summary>
-        /// Pushes a matrix transformation.
-        /// </summary>
-        /// <param name="matrix">The matrix</param>
-        /// <returns>A disposable used to undo the transformation.</returns>
-        public IDisposable PushTransform(Matrix matrix)
+        public void PopOpacity()
         {
-            Matrix3x2 m3x2 = matrix.ToDirect2D();
-            Matrix3x2 transform = _renderTarget.Transform * m3x2;
-            _renderTarget.Transform = transform;
-
-            return Disposable.Create(() =>
+            var layer = _layers.Pop();
+            if (layer != null)
             {
-                m3x2.Invert();
-                _renderTarget.Transform = transform * m3x2;
-            });
+                _renderTarget.PopLayer();
+                _layerPool.Push(layer);
+            }
         }
 
         /// <summary>
