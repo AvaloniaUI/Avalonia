@@ -11,7 +11,7 @@ using Perspex.Layout;
 namespace Perspex.Controls
 {
     /// <summary>
-    /// Displays <see cref="Content"/> according to a <see cref="DataTemplate"/>.
+    /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
     public class ContentControl : TemplatedControl, IContentControl, IReparentingHost
     {

@@ -360,7 +360,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex
         /// </summary>
         /// <param name="g">the device to use to render</param>
         /// <param name="clip">the clip rectangle of the html container</param>
-        public void PerformPaint(IDrawingContext g, Rect clip)
+        public void PerformPaint(DrawingContext g, Rect clip)
         {
             ArgChecker.AssertArgNotNull(g, "g");
 

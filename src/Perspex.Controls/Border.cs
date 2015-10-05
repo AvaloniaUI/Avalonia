@@ -83,7 +83,7 @@ namespace Perspex.Controls
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             var background = Background;
             var borderBrush = BorderBrush;

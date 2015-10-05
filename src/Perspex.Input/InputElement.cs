@@ -340,17 +340,6 @@ namespace Perspex.Input
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
 
         /// <summary>
-        /// Returns the input element that can be found within the current control at the specified
-        /// position.
-        /// </summary>
-        /// <param name="p">The position, in control coordinates.</param>
-        /// <returns>The <see cref="IInputElement"/> at the specified position.</returns>
-        public IInputElement InputHitTest(Point p)
-        {
-            return this.GetInputElementsAt(p).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Focuses the control.
         /// </summary>
         public void Focus()

@@ -9,6 +9,11 @@ namespace Perspex
     public interface IPropertyBag
     {
         /// <summary>
+        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
+        /// </summary>
+        IPropertyBag InheritanceParent { get; }
+
+        /// <summary>
         /// Clears a <see cref="PerspexProperty"/>'s local value.
         /// </summary>
         /// <param name="property">The property.</param>

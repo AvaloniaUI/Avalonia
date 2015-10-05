@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Reactive;
 using Perspex.Utilities;
@@ -100,6 +101,11 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
+        /// </summary>
+        IPropertyBag IPropertyBag.InheritanceParent => InheritanceParent;
+
+        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
         /// are inherited from.
         /// </summary>
@@ -186,7 +192,7 @@ namespace Perspex
 
                 if (sourceBinding == null && mode > BindingMode.OneWay)
                 {
-                    throw new InvalidOperationException("Can only bind OneWay to plain IObservable.");
+                    mode = BindingMode.OneWay;
                 }
 
                 switch (mode)
@@ -334,7 +340,7 @@ namespace Perspex
                         PropertyChanged -= handler;
                     });
                 },
-                GetObservableDescription(property));
+                GetDescription(property));
         }
 
         /// <summary>
@@ -377,7 +383,7 @@ namespace Perspex
                         PropertyChanged -= handler;
                     });
                 },
-                GetObservableDescription(property));
+                GetDescription(property));
         }
 
         /// <summary>
@@ -456,8 +462,15 @@ namespace Perspex
         public bool IsSet(PerspexProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            
+            PriorityValue value;
 
-            return _values.ContainsKey(property);
+            if (_values.TryGetValue(property, out value))
+            {
+                return value.Value != PerspexProperty.UnsetValue;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -492,6 +505,7 @@ namespace Perspex
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
+                LogPropertySet(property, value, priority);
                 property.Setter(this, value);
             }
             else
@@ -524,14 +538,9 @@ namespace Perspex
                     _values.Add(property, v);
                 }
 
+                LogPropertySet(property, value, priority);
                 v.SetValue(value, (int)priority);
             }
-
-            _propertyLog.Verbose(
-                "Set {Property} to {$Value} with priority {Priority}",
-                property,
-                value,
-                priority);
         }
 
         /// <summary>
@@ -557,6 +566,7 @@ namespace Perspex
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
+                LogPropertySet(property, value, priority);
                 property.Setter(this, value);
             }
             else
@@ -593,14 +603,15 @@ namespace Perspex
                 _propertyLog.Verbose(
                     "Bound {Property} to {Binding} with priority LocalValue",
                     property,
-                    source);
+                    GetDescription(source));
 
-                return source.Subscribe(x => SetValue(property, x));
+                return source
+                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType, false))
+                    .Subscribe(x => SetValue(property, x));
             }
             else
             {
                 PriorityValue v;
-                IDescription description = source as IDescription;
 
                 if (!IsRegistered(property))
                 {
@@ -616,7 +627,7 @@ namespace Perspex
                 _propertyLog.Verbose(
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    source,
+                    GetDescription(source),
                     priority);
 
                 return v.Add(source, (int)priority);
@@ -658,7 +669,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Initialites a two-way bind between <see cref="PerspexProperty"/>s.
+        /// Initiates a two-way binding between <see cref="PerspexProperty"/>s.
         /// </summary>
         /// <param name="property">The property on this object.</param>
         /// <param name="source">The source object.</param>
@@ -676,9 +687,44 @@ namespace Perspex
             PerspexProperty sourceProperty,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            _propertyLog.Verbose(
+                "Bound two way {Property} to {Binding} with priority {Priority}",
+                property,
+                source,
+                priority);
+
             return new CompositeDisposable(
                 Bind(property, source.GetObservable(sourceProperty)),
                 source.Bind(sourceProperty, GetObservable(property)));
+        }
+
+        /// <summary>
+        /// Initiates a two-way binding between a <see cref="PerspexProperty"/> and an 
+        /// <see cref="ISubject{Object}"/>.
+        /// </summary>
+        /// <param name="property">The property on this object.</param>
+        /// <param name="source">The subject to bind to.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        /// <remarks>
+        /// The binding is first carried out from <paramref name="source"/> to this.
+        /// </remarks>
+        public IDisposable BindTwoWay(
+            PerspexProperty property,
+            ISubject<object> source,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            _propertyLog.Verbose(
+                "Bound two way {Property} to {Binding} with priority {Priority}",
+                property,
+                GetDescription(source),
+                priority);
+
+            return new CompositeDisposable(
+                Bind(property, source),
+                GetObservable(property).Subscribe(source));
         }
 
         /// <summary>
@@ -926,9 +972,35 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property</param>
         /// <returns>The description.</returns>
-        private string GetObservableDescription(PerspexProperty property)
+        private string GetDescription(PerspexProperty property)
         {
             return string.Format("{0}.{1}", GetType().Name, property.Name);
+        }
+
+        /// <summary>
+        /// Gets a description of an observable that van be used in logs.
+        /// </summary>
+        /// <param name="o">The observable.</param>
+        /// <returns>The description.</returns>
+        private string GetDescription(IObservable<object> o)
+        {
+            var description = o as IDescription;
+            return description?.Description ?? o.ToString();
+        }
+
+        /// <summary>
+        /// Logs a property set message.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new value.</param>
+        /// <param name="priority">The priority.</param>
+        private void LogPropertySet(PerspexProperty property, object value, BindingPriority priority)
+        {
+            _propertyLog.Verbose(
+                "Set {Property} to {$Value} with priority {Priority}",
+                property,
+                value,
+                priority);
         }
 
         /// <summary>

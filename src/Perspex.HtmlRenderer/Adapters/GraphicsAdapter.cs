@@ -32,7 +32,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// The wrapped Perspex graphics object
         /// </summary>
-        private readonly IDrawingContext _g;
+        private readonly DrawingContext _g;
 
         /// <summary>
         /// if to release the graphics object on dispose
@@ -51,7 +51,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <param name="g">the Perspex graphics object to use</param>
         /// <param name="initialClip">the initial clip of the graphics</param>
         /// <param name="releaseGraphics">optional: if to release the graphics object on dispose (default - false)</param>
-        public GraphicsAdapter(IDrawingContext g, RRect initialClip, bool releaseGraphics = false)
+        public GraphicsAdapter(DrawingContext g, RRect initialClip, bool releaseGraphics = false)
             : base(PerspexAdapter.Instance, initialClip)
         {
             ArgChecker.AssertArgNotNull(g, "g");

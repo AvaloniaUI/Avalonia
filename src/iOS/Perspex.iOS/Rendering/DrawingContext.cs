@@ -1,5 +1,6 @@
 ﻿using Perspex.Media;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Perspex.Media.Imaging;
@@ -13,7 +14,7 @@ using Perspex.iOS.Rendering.Media;
 
 namespace Perspex.iOS.Rendering
 {
-    public class DrawingContext : IDrawingContext, IDisposable
+    public class DrawingContext : IDrawingContextImpl, IDisposable
     {
         CGContext _nativeContext;
 
@@ -22,9 +23,19 @@ namespace Perspex.iOS.Rendering
             _nativeContext = UIGraphics.GetCurrentContext();
         }
 
-        public Matrix CurrentTransform
+        private Matrix _transform = Matrix.Identity;
+
+        public Matrix Transform
         {
-            get { return _currentTransform; }
+            get { return _transform; }
+            set
+            {
+                if (_transform == value)
+                    return;
+                _transform = value;
+                _nativeContext.ConcatCTM(_nativeContext.GetCTM().Invert());
+                _nativeContext.ConcatCTM(_transform.ToCoreGraphics());
+            }
         }
 
         public void Dispose()
@@ -209,72 +220,38 @@ namespace Perspex.iOS.Rendering
         }
 
 
-        public IDisposable PushClip(Rect clip)
+        public void PushClip(Rect clip)
         {
             _nativeContext.SaveState();
             _nativeContext.ClipToRect(clip.ToCoreGraphics());
-            return Disposable.Create(() => _nativeContext.RestoreState());
         }
 
-        private float _currentOpacity = 1.0f;
+        public void PopClip() => _nativeContext.RestoreState();
 
-        public IDisposable PushOpacity(double opacity)
+        private double _currentOpacity = 1.0;
+
+        private double CurrentOpacity
         {
-            // DirectX style using layers
-            //if (opacity < 1)
-            //{
-            //    //var parameters = new CGLayer()
-            //    //{
-            //    //    ContentBounds = RectangleF.Infinite,
-            //    //    MaskTransform = Matrix3x2.Identity,
-            //    //    Opacity = (float)opacity,
-            //    //};
 
-            //    var layer = new CGLayer(_renderTarget);
-
-            //    _nativeContext.BeginTransparencyLayer();
-            //    _renderTarget.PushLayer(ref parameters, layer);
-
-            //    return Disposable.Create(() =>
-            //    {
-            //        _renderTarget.PopLayer();
-            //        layer.Dispose();
-            //    });
-            //}
-            //else
-            //{
-            //    return Disposable.Empty;
-            //}
-
-            // Cairo style
-            var previous = _currentOpacity;
-            _currentOpacity = (float)opacity;
-            _nativeContext.SetAlpha(_currentOpacity);
-
-            return Disposable.Create(() =>
+            get { return _currentOpacity; }
+            set
             {
-                _currentOpacity = previous;
-                _nativeContext.SetAlpha(_currentOpacity);
-            });
+                if (_currentOpacity == value)
+                    return;
+                _currentOpacity = value;
+                _nativeContext.SetAlpha((float)_currentOpacity);
+            }
 
         }
 
-        Matrix _currentTransform = Matrix.Identity;
-
-        public IDisposable PushTransform(Matrix matrix)
+        private readonly Stack<double> _opacityStack = new Stack<double>();
+        public void PushOpacity(double opacity)
         {
-            // i wonder if we should use Save/Restore state instead?
-            //
-            var prevTransform = _currentTransform;
-            _currentTransform = matrix;
-            _nativeContext.ConcatCTM(matrix.ToCoreGraphics());
-
-            return Disposable.Create(() =>
-            {
-                _nativeContext.ConcatCTM(matrix.Invert().ToCoreGraphics());
-                _currentTransform = prevTransform;
-            });
+            _opacityStack.Push(CurrentOpacity);
+            CurrentOpacity = CurrentOpacity*opacity;
         }
+
+        public void PopOpacity() => CurrentOpacity = _opacityStack.Pop();
 
         private IDisposable SetBrush(Brush brush, Size destinationSize, BrushUsage usage)
         {

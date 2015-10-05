@@ -39,7 +39,7 @@ namespace Perspex.Cairo.Media.Imaging
             Surface.WriteToPng(fileName);
         }
 
-        public IDrawingContext CreateDrawingContext()
+        public Perspex.Media.DrawingContext CreateDrawingContext()
         {
             return _renderTarget.CreateDrawingContext();
         }
