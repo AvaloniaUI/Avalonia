@@ -145,7 +145,14 @@ namespace Perspex.Controls.Generators
         /// <returns>The created container control.</returns>
         protected virtual IControl CreateContainer(object item)
         {
-            return Owner.MaterializeDataTemplate(item);
+            var result = Owner.MaterializeDataTemplate(item);
+
+            if (result != null && !(item is IControl))
+            {
+                result.DataContext = item;
+            }
+
+            return result;
         }
 
         /// <summary>

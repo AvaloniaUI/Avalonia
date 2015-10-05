@@ -50,6 +50,40 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(1, target.SelectedIndex);
         }
 
+        [Fact]
+        public void DataContexts_Should_Be_Correctly_Set()
+        {
+            var items = new object[]
+            {
+                "Foo",
+                new Item("Bar"),
+                new TextBlock { Text = "Baz" },
+                new ListBoxItem { Content = "Qux" },
+            };
+
+            var target = new ListBox
+            {
+                Template = new ControlTemplate(CreateListBoxTemplate),
+                DataContext = "Base",
+                DataTemplates = new DataTemplates
+                {
+                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                },
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+
+            var dataContexts = target.Presenter.Panel.Children
+                .Cast<Control>()
+                .Select(x => x.DataContext)
+                .ToList();
+
+            Assert.Equal(
+                new object[] { items[0], items[1], "Base", "Base" },
+                dataContexts);
+        }
+
         private Control CreateListBoxTemplate(ITemplatedControl parent)
         {
             return new ScrollViewer
@@ -69,6 +103,16 @@ namespace Perspex.Controls.UnitTests
             {
                 [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
             };
+        }
+
+        private class Item
+        {
+            public Item(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
         }
     }
 }
