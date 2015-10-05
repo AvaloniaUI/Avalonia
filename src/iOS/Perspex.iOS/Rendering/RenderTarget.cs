@@ -29,9 +29,9 @@ namespace Perspex.iOS.Rendering
         /// <summary>
         /// Creates an <see cref="IDrawingContext"/> for a rendering session.
         /// </summary>
-        public IDrawingContext CreateDrawingContext()
+        public Media.DrawingContext CreateDrawingContext()
         {
-            return new DrawingContext();
+            return new Media.DrawingContext(new DrawingContext());
         }
 
         /// <summary>
