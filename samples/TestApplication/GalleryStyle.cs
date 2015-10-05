@@ -61,7 +61,7 @@ namespace TestApplication
             {
                 DataTemplates = new DataTemplates
                 {
-                    new DataTemplate<string>(x => new Border
+                    new FuncDataTemplate<string>(x => new Border
                     {
                         [~Border.BackgroundProperty] = control[~TemplatedControl.BackgroundProperty],
                         Padding = new Thickness(10),

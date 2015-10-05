@@ -4,8 +4,7 @@
 using System.Linq;
 using OmniXaml;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.DataBinding;
-using Perspex.Markup.Xaml.DataBinding.ChangeTracking;
+using Perspex.Markup.Xaml.Binding;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -22,23 +21,10 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            var target = extensionContext.TargetObject as Control;
-            var targetProperty = extensionContext.TargetProperty;
-            var targetPropertyName = targetProperty.Name;
-            var perspexProperty = target.GetRegisteredProperties().First(property => property.Name == targetPropertyName);
-
-            return new XamlBindingDefinition
-                (
-                target,
-                perspexProperty,
-                new PropertyPath(Path),
-                Mode == BindingMode.Default ? BindingMode.OneWay : Mode
-                );
+            return new XamlBindingDefinition(Path, Mode);
         }
 
-        /// <summary> The source path (for CLR bindings).</summary>
         public string Path { get; set; }
-
         public BindingMode Mode { get; set; }
     }
 }

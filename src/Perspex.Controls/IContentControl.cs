@@ -7,7 +7,7 @@ namespace Perspex.Controls
 {
     /// <summary>
     /// Defines a control that displays <see cref="Content"/> according to a
-    /// <see cref="Perspex.Controls.Templates.DataTemplate"/>.
+    /// <see cref="Perspex.Controls.Templates.FuncDataTemplate"/>.
     /// </summary>
     public interface IContentControl : IControl
     {

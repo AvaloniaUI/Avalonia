@@ -59,14 +59,11 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_Throws_Exception_For_Invalid_Value_Type()
+        public void Bind_Ignores_Invalid_Value_Type()
         {
             Class1 target = new Class1();
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
-            });
+            target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]

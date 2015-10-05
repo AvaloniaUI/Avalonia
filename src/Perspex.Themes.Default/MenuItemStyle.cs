@@ -21,8 +21,8 @@ namespace Perspex.Themes.Default
     /// </summary>
     public class MenuItemStyle : Styles
     {
-        private static readonly DataTemplate AccessKeyDataTemplate =
-            new DataTemplate<string>(x => new AccessText { Text = x });
+        private static readonly FuncDataTemplate AccessKeyDataTemplate =
+            new FuncDataTemplate<string>(x => new AccessText { Text = x });
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MenuItemStyle"/> class.

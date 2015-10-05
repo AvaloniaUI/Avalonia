@@ -212,25 +212,23 @@ namespace Perspex
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            if (!TypeUtilities.TryCast(_valueType, value, out value))
+            if (TypeUtilities.TryCast(_valueType, value, out value))
             {
-                throw new InvalidOperationException(string.Format(
-                    "Invalid value for Property '{0}': {1} ({2})",
-                    _name,
-                    value,
-                    value?.GetType().FullName ?? "(null)"));
+                var old = _value;
+
+                if (_validate != null)
+                {
+                    value = _validate(value);
+                }
+
+                ValuePriority = priority;
+                _value = value;
+                _changed.OnNext(Tuple.Create(old, _value));
             }
-
-            var old = _value;
-
-            if (_validate != null)
+            else
             {
-                value = _validate(value);
+                // TODO: Log error.
             }
-
-            ValuePriority = priority;
-            _value = value;
-            _changed.OnNext(Tuple.Create(old, _value));
         }
 
         /// <summary>

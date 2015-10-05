@@ -149,6 +149,45 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Bind_Handles_Wrong_Type()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            var sub = target.Bind(Class1.FooProperty, source);
+
+            source.OnNext(45);
+
+            Assert.Equal(null, target.Foo);
+        }
+
+        [Fact]
+        public void Bind_Handles_Wrong_Value_Type()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            var sub = target.Bind(Class1.BazProperty, source);
+
+            source.OnNext("foo");
+
+            Assert.Equal(0, target.Baz);
+        }
+
+        [Fact]
+        public void Bind_Handles_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            var sub = target.Bind(Class1.BazProperty, source);
+
+            source.OnNext(PerspexProperty.UnsetValue);
+
+            Assert.Equal(0, target.Baz);
+        }
+
+        [Fact]
         public void ReadOnly_Property_Cannot_Be_Set()
         {
             var target = new Class1();
@@ -295,9 +334,12 @@ namespace Perspex.Base.UnitTests
             public static readonly PerspexProperty<string> BarProperty =
                 PerspexProperty.RegisterDirect<Class1, string>("Bar", o => o.Bar);
 
-            private string _foo = "initial";
+            public static readonly PerspexProperty<int> BazProperty =
+                PerspexProperty.RegisterDirect<Class1, int>("Bar", o => o.Baz, (o,v) => o.Baz = v);
 
+            private string _foo = "initial";
             private string _bar = "bar";
+            private int _baz = 5;
 
             public string Foo
             {
@@ -308,6 +350,12 @@ namespace Perspex.Base.UnitTests
             public string Bar
             {
                 get { return _bar; }
+            }
+
+            public int Baz
+            {
+                get { return _baz; }
+                set { SetAndRaise(BazProperty, ref _baz, value); }
             }
         }
 

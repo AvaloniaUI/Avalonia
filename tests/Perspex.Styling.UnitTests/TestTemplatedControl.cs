@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 
 namespace Perspex.Styling.UnitTests
 {
@@ -31,6 +32,14 @@ namespace Perspex.Styling.UnitTests
         public abstract IEnumerable<IVisual> VisualChildren
         {
             get;
+        }
+
+        public IPropertyBag InheritanceParent
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
@@ -84,6 +93,16 @@ namespace Perspex.Styling.UnitTests
         }
 
         public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BindTwoWay(PerspexProperty property, PerspexObject source, PerspexProperty sourceProperty, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BindTwoWay(PerspexProperty property, ISubject<object> source, BindingPriority priority = BindingPriority.LocalValue)
         {
             throw new NotImplementedException();
         }
