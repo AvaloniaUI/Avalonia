@@ -72,7 +72,7 @@
     <Compile Include="Primitives\ScrollInfoAdapter.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\ControlTemplate`2.cs" />
-    <Compile Include="Templates\DataTemplate`1.cs" />
+    <Compile Include="Templates\FuncDataTemplate`1.cs" />
     <Compile Include="Templates\FuncMemberSelector.cs" />
     <Compile Include="Templates\IControlTemplate.cs" />
     <Compile Include="Templates\FuncTemplate`2.cs" />
@@ -102,7 +102,7 @@
     <Compile Include="Controls.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\DataTemplateExtensions.cs" />
-    <Compile Include="Templates\DataTemplate.cs" />
+    <Compile Include="Templates\FuncDataTemplate.cs" />
     <Compile Include="Generators\TreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerGenerator`1.cs" />
     <Compile Include="Generators\ItemContainerGenerator.cs" />
@@ -129,7 +129,7 @@
     <Compile Include="Templates\ITemplate`2.cs" />
     <Compile Include="Templates\ITemplate`1.cs" />
     <Compile Include="Templates\ITreeDataTemplate.cs" />
-    <Compile Include="Templates\TreeDataTemplate.cs" />
+    <Compile Include="Templates\FuncTreeDataTemplate.cs" />
     <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
@@ -157,7 +157,7 @@
     <Compile Include="TextBox.cs" />
     <Compile Include="Presenters\TextPresenter.cs" />
     <Compile Include="Primitives\ToggleButton.cs" />
-    <Compile Include="Templates\TreeDataTemplate`1.cs" />
+    <Compile Include="Templates\FuncTreeDataTemplate`1.cs" />
     <Compile Include="TreeView.cs" />
     <Compile Include="TreeViewItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

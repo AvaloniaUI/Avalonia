@@ -90,7 +90,7 @@ namespace Perspex.Controls.Shapes
             set { SetValue(StrokeThicknessProperty, value); }
         }
 
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
 

@@ -7,4 +7,4 @@
 	branch = perspex-pcl
 [submodule "src/Markup/Perspex.Markup.Xaml/OmniXAML"]
 	path = src/Markup/Perspex.Markup.Xaml/OmniXAML
-	url = https://github.com/SuperJMN/OmniXAML.git
+	url = https://github.com/Perspex/OmniXAML.git

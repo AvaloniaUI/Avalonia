@@ -38,6 +38,10 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Binding\SourceBindingEndpoint.cs" />
+    <Compile Include="Binding\TargetBindingEndpoint.cs" />
+    <Compile Include="Binding\XamlBinding.cs" />
+    <Compile Include="Binding\XamlBindingDefinition.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\RelativePointTypeConverter.cs" />
@@ -54,10 +58,6 @@
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\BitmapTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
-    <Compile Include="DataBinding\ChangeTracking\ObservablePropertyBranch.cs" />
-    <Compile Include="DataBinding\ChangeTracking\PropertyMountPoint.cs" />
-    <Compile Include="DataBinding\ChangeTracking\PropertyPath.cs" />
-    <Compile Include="DataBinding\ChangeTracking\TargettedProperty.cs" />
     <Compile Include="Context\PerspexParserFactory.cs" />
     <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservableProperty.cs" />
@@ -228,13 +228,6 @@
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DataBinding\DataContextChangeSynchronizer.cs" />
-    <Compile Include="DataBinding\IPerspexPropertyBinder.cs" />
-    <Compile Include="DataBinding\PerspexPropertyBinder.cs" />
-    <Compile Include="DataBinding\SourceBindingEndpoint.cs" />
-    <Compile Include="DataBinding\TargetBindingEndpoint.cs" />
-    <Compile Include="DataBinding\XamlBinding.cs" />
-    <Compile Include="DataBinding\XamlBindingDefinition.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\Template.cs" />
     <Compile Include="Templates\TemplateContent.cs" />
@@ -244,8 +237,9 @@
     <Compile Include="Context\PerspexXamlMember.cs" />
     <Compile Include="Context\PerspexXamlMemberValuePlugin.cs" />
     <Compile Include="Context\PerspexXamlType.cs" />
-    <Compile Include="Templates\XamlDataTemplate.cs" />
+    <Compile Include="Templates\DataTemplate.cs" />
     <Compile Include="PerspexXamlLoader.cs" />
+    <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -288,6 +282,10 @@
     <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
       <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Markup\Perspex.Markup.csproj">
+      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
+      <Name>Perspex.Markup</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
