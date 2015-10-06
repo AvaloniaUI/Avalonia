@@ -42,6 +42,7 @@
     <Compile Include="Binding\TargetBindingEndpoint.cs" />
     <Compile Include="Binding\XamlBinding.cs" />
     <Compile Include="Binding\XamlBindingDefinition.cs" />
+    <Compile Include="Context\PerspexAttachableXamlMember.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\RelativePointTypeConverter.cs" />
