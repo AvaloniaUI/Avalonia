@@ -25,7 +25,7 @@ namespace Perspex.iOS
         public WindowImpl()
         {
             // create a new window instance based on the screen size
-            _iosWindow = new UIWindow(UIScreen.MainScreen.Bounds);
+            _iosWindow = new UIWindow(UIScreen.MainScreen.NativeBounds);
 
             // create client view wrapper
             var clientView = new iOSHostView(UIScreen.MainScreen.Bounds, this);

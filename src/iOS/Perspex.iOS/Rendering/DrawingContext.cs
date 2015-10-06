@@ -14,16 +14,19 @@ using Perspex.iOS.Rendering.Media;
 
 namespace Perspex.iOS.Rendering
 {
-    public class DrawingContext : IDrawingContextImpl, IDisposable
+    public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
         CGContext _nativeContext;
 
-        public DrawingContext()
+        public DrawingContextImpl()
         {
             _nativeContext = UIGraphics.GetCurrentContext();
         }
 
         private Matrix _transform = Matrix.Identity;
+        CGAffineTransform _originalHWTransform;
+        CGAffineTransform _lastPushedTransform;
+        bool _firstTime = true;
 
         public Matrix Transform
         {
@@ -32,9 +35,32 @@ namespace Perspex.iOS.Rendering
             {
                 if (_transform == value)
                     return;
+
                 _transform = value;
-                _nativeContext.ConcatCTM(_nativeContext.GetCTM().Invert());
-                _nativeContext.ConcatCTM(_transform.ToCoreGraphics());
+
+                if (!_firstTime)
+                {
+                    // we must preserve the HW scaling transform that lives in here initially!
+                    var transform = _lastPushedTransform.Invert();
+                    _nativeContext.ConcatCTM(transform);
+
+                    // test to ensure we restored it back to original HW state
+                    transform = _nativeContext.GetCTM();
+                    if (transform != _originalHWTransform)
+                    {
+                        throw new InvalidOperationException("Corrupt iOS HW transform!");
+                    }
+                }
+                else
+                {
+                    // store away the initial CGContext HW transform so we can always return to it above
+                    _originalHWTransform = _nativeContext.GetCTM();
+                    _firstTime = false;
+                }
+
+                // store the change we are about to make so we can undo it on next transform
+                _lastPushedTransform = _transform.ToCoreGraphics();
+                _nativeContext.ConcatCTM(_lastPushedTransform);
             }
         }
 
