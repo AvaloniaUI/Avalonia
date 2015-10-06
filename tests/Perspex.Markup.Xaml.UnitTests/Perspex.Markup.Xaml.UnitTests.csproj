@@ -101,6 +101,7 @@
     <Compile Include="SampleModel\Repository.cs" />
     <Compile Include="SampleModel\UserRepositoriesViewModel.cs" />
     <Compile Include="SamplePerspexObject.cs" />
+    <Compile Include="Templates\DataTemplateTests.cs" />
     <Compile Include="TypeProviderMock.cs" />
     <Compile Include="XamlBindingTest.cs" />
     <Compile Include="ViewModelMock.cs" />
