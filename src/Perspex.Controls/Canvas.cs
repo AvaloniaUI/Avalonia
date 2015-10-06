@@ -6,28 +6,37 @@ using Perspex.Input;
 
 namespace Perspex.Controls
 {
+    /// <summary>
+    /// A panel that displays child controls at arbitrary locations.
+    /// </summary>
+    /// <remarks>
+    /// Unlike other <see cref="Panel"/> implementations, the <see cref="Canvas"/> doesn't lay out
+    /// its children in any particular layout. Instead, the positioning of each child control is
+    /// defined by the <code>Canvas.Left</code>, <code>Canvas.Top</code>, <code>Canvas.Right</code>
+    /// and <code>Canvas.Bottom</code> attached properties.
+    /// </remarks>
     public class Canvas : Panel, INavigableContainer
     {
         /// <summary>
-        /// Defines the <see cref="Left"/> property.
+        /// Defines the Left attached property.
         /// </summary>
         public static readonly PerspexProperty<double> LeftProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Left");
 
         /// <summary>
-        /// Defines the <see cref="Top"/> property.
+        /// Defines the Top attached property.
         /// </summary>
         public static readonly PerspexProperty<double> TopProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Top");
 
         /// <summary>
-        /// Defines the <see cref="Right"/> property.
+        /// Defines the Right attached property.
         /// </summary>
         public static readonly PerspexProperty<double> RightProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Right");
 
         /// <summary>
-        /// Defines the <see cref="Bottom"/> property.
+        /// Defines the Bottom attached property.
         /// </summary>
         public static readonly PerspexProperty<double> BottomProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Bottom");
