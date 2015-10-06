@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Binding\ExpressionNodeBuilderTests_Errors.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Observable.cs" />
+    <Compile Include="Binding\ExpressionObserverTests_SetValue.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Task.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Indexer.cs" />
     <Compile Include="Binding\ExpressionObserverTests_Negation.cs" />
