@@ -26,8 +26,19 @@ namespace Perspex.Threading
         public Dispatcher(IPlatformThreadingInterface platform)
         {
             _platform = platform;
+            if(_platform == null)
+                //TODO: Unit test mode, fix that somehow
+                return;
             _jobRunner = new JobRunner(platform);
             _platform.Signaled += _jobRunner.RunJobs;
+        }
+
+        public bool CheckAccess() => _platform?.CheckForLoopThread() ?? true;
+
+        public void VerifyAccess()
+        {
+            if (!CheckAccess())
+                throw new InvalidOperationException("Call from invalid thread");
         }
 
 
@@ -49,7 +60,7 @@ namespace Perspex.Threading
         /// </summary>
         public void RunJobs()
         {
-            _jobRunner.RunJobs();
+            _jobRunner?.RunJobs();
         }
 
         /// <summary>
@@ -60,7 +71,7 @@ namespace Perspex.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            return _jobRunner.InvokeAsync(action, priority);
+            return _jobRunner?.InvokeAsync(action, priority);
         }
 
         /// <summary>
@@ -70,7 +81,7 @@ namespace Perspex.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            _jobRunner.Post(action, priority);
+            _jobRunner?.Post(action, priority);
         }
     }
 }

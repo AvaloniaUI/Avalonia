@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Reactive;
+using Perspex.Threading;
 using Perspex.Utilities;
 using Serilog;
 using Serilog.Core.Enrichers;
@@ -300,6 +301,10 @@ namespace Perspex
             }
         }
 
+        public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
+
+        public void VerifyAccess() => Dispatcher.UIThread.VerifyAccess();
+
         /// <summary>
         /// Clears a <see cref="PerspexProperty"/>'s local value.
         /// </summary>
@@ -495,7 +500,7 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-
+            VerifyAccess();
             if (property.IsDirect)
             {
                 property = GetRegistered(property);
@@ -556,7 +561,7 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-
+            VerifyAccess();
             if (property.IsDirect)
             {
                 property = (PerspexProperty<T>)GetRegistered(property);
@@ -590,7 +595,7 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-
+            VerifyAccess();
             if (property.IsDirect)
             {
                 property = GetRegistered(property);
@@ -650,7 +655,7 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-
+            VerifyAccess();
             if (property.IsDirect)
             {
                 property = (PerspexProperty<T>)GetRegistered(property);
@@ -687,6 +692,7 @@ namespace Perspex
             PerspexProperty sourceProperty,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            VerifyAccess();
             _propertyLog.Verbose(
                 "Bound two way {Property} to {Binding} with priority {Priority}",
                 property,
@@ -716,6 +722,7 @@ namespace Perspex
             ISubject<object> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            VerifyAccess();
             _propertyLog.Verbose(
                 "Bound two way {Property} to {Binding} with priority {Priority}",
                 property,
@@ -733,6 +740,7 @@ namespace Perspex
         /// <param name="property">The property.</param>
         public void Revalidate(PerspexProperty property)
         {
+            VerifyAccess();
             PriorityValue value;
 
             if (_values.TryGetValue(property, out value))
@@ -788,6 +796,7 @@ namespace Perspex
             BindingPriority priority)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
 
             PerspexPropertyChangedEventArgs e = new PerspexPropertyChangedEventArgs(
                 this,
@@ -824,6 +833,7 @@ namespace Perspex
         /// </returns>
         protected bool SetAndRaise<T>(PerspexProperty<T> property, ref T field, T value)
         {
+            VerifyAccess();
             if (!object.Equals(field, value))
             {
                 var old = field;
