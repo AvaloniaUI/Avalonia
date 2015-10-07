@@ -58,7 +58,7 @@ namespace Perspex.Threading
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
         /// <returns>A task that can be used to track the method's execution.</returns>
-        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task InvokeTask(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             return _jobRunner.InvokeAsync(action, priority);
         }
@@ -68,7 +68,7 @@ namespace Perspex.Threading
         /// </summary>
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
-        internal void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public void Invoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner.Post(action, priority);
         }

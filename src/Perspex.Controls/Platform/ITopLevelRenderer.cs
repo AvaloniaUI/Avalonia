@@ -44,7 +44,7 @@ namespace Perspex.Controls.Platform
             }));
             resources.Add(queueManager.RenderNeeded.Subscribe(_
                 =>
-                Dispatcher.UIThread.InvokeAsync(() => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize)))));
+                Dispatcher.UIThread.Invoke(() => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize)))));
 
             topLevel.PlatformImpl.Paint = rect =>
             {

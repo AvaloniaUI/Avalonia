@@ -365,7 +365,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleLayoutNeeded()
         {
-            Dispatcher.UIThread.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
+            Dispatcher.UIThread.Invoke(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
         }
 
         /// <summary>
