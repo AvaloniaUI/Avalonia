@@ -46,6 +46,7 @@
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="IObservablePropertyBag.cs" />
     <Compile Include="IPropertyBag.cs" />
+    <Compile Include="PerspexDisposable.cs" />
     <Compile Include="PerspexLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />

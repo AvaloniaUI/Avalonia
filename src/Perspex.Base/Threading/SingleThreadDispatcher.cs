@@ -37,6 +37,8 @@ namespace Perspex.Threading
                     () => _timerJobRunner.Post(tick, DispatcherPriority.Normal));
 
             public void Signal() => _evnt.Set();
+            //TODO: Actually perform a check
+            public bool CurrentThreadIsLoopThread => true;
 
             public event Action Signaled;
         }

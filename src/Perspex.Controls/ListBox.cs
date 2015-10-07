@@ -6,8 +6,12 @@ using Perspex.Controls.Primitives;
 
 namespace Perspex.Controls
 {
+    /// <summary>
+    /// An <see cref="ItemsControl"/> in which individual items can be selected.
+    /// </summary>
     public class ListBox : SelectingItemsControl
     {
+        /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator<ListBoxItem>(this);

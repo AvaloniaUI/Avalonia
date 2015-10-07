@@ -10,7 +10,7 @@ namespace Perspex.Media
     /// <summary>
     /// Represents a piece of text with formatting.
     /// </summary>
-    public class FormattedText : IDisposable
+    public class FormattedText : PerspexDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -56,8 +56,16 @@ namespace Perspex.Media
         /// </summary>
         public Size Constraint
         {
-            get { return PlatformImpl.Constraint; }
-            set { PlatformImpl.Constraint = value; }
+            get
+            {
+                CheckDisposed();
+                return PlatformImpl.Constraint;
+            }
+            set
+            {
+                CheckDisposed();
+                PlatformImpl.Constraint = value;
+            }
         }
 
         /// <summary>
@@ -124,7 +132,7 @@ namespace Perspex.Media
         /// <summary>
         /// Disposes of unmanaged resources associated with the formatted text.
         /// </summary>
-        public void Dispose()
+        protected override void DoDispose()
         {
             PlatformImpl.Dispose();
         }
@@ -137,6 +145,7 @@ namespace Perspex.Media
         /// </returns>
         public IEnumerable<FormattedTextLine> GetLines()
         {
+            CheckDisposed();
             return PlatformImpl.GetLines();
         }
 
@@ -149,6 +158,7 @@ namespace Perspex.Media
         /// </returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
+            CheckDisposed();
             return PlatformImpl.HitTestPoint(point);
         }
 
@@ -159,6 +169,7 @@ namespace Perspex.Media
         /// <returns>The character bounds.</returns>
         public Rect HitTestTextPosition(int index)
         {
+            CheckDisposed();
             return PlatformImpl.HitTestTextPosition(index);
         }
 
@@ -170,6 +181,7 @@ namespace Perspex.Media
         /// <returns>The character bounds.</returns>
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
+            CheckDisposed();
             return PlatformImpl.HitTestTextRange(index, length);
         }
 
@@ -179,6 +191,7 @@ namespace Perspex.Media
         /// <returns>The bounds box of the text.</returns>
         public Size Measure()
         {
+            CheckDisposed();
             return PlatformImpl.Measure();
         }
 
@@ -190,6 +203,7 @@ namespace Perspex.Media
         /// <param name="length">The length of the text range.</param>
         public void SetForegroundBrush(Brush brush, int startIndex, int length)
         {
+            CheckDisposed();
             PlatformImpl.SetForegroundBrush(brush, startIndex, length);
         }
     }

@@ -26,6 +26,8 @@ namespace Perspex.Platform
         /// </summary>
         void Signal();
 
+        bool CurrentThreadIsLoopThread { get; }
+
         event Action Signaled;
 
     }

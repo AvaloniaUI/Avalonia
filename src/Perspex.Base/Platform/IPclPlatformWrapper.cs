@@ -12,5 +12,6 @@ namespace Perspex.Platform
         Assembly[] GetLoadedAssemblies();
         void PostThreadPoolItem(Action cb);
         IDisposable StartSystemTimer(TimeSpan interval, Action tick);
+        string GetStackTrace();
     }
 }

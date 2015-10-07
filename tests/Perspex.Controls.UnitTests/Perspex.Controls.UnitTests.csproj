@@ -84,6 +84,7 @@
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
+    <Compile Include="TreeViewTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="StackPanelTests.cs" />
     <Compile Include="Primitives\TrackTests.cs" />

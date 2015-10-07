@@ -234,10 +234,10 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Renders the visual to a <see cref="IDrawingContext"/>.
+        /// Renders the visual to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public virtual void Render(IDrawingContext context)
+        public virtual void Render(DrawingContext context)
         {
             Contract.Requires<ArgumentNullException>(context != null);
         }

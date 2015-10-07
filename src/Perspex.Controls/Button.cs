@@ -44,6 +44,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ICommand> CommandProperty =
             PerspexProperty.Register<Button, ICommand>(nameof(Command));
 
+        /// <summary>
+        /// Defines the <see cref="HotKey"/> property.
+        /// </summary>
         public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<Button>();
 

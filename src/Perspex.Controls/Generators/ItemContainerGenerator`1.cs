@@ -37,6 +37,12 @@ namespace Perspex.Controls.Generators
             {
                 var result = new T();
                 result.Content = Owner.MaterializeDataTemplate(item);
+
+                if (!(item is IControl))
+                {
+                    result.DataContext = item;
+                }
+
                 return result;
             }
         }

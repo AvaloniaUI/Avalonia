@@ -165,22 +165,33 @@ namespace Perspex.Controls.Generators
         /// <returns>The created container control.</returns>
         protected virtual T CreateContainer(object item)
         {
-            T result = item as T;
+            var container = item as T;
 
-            if (result == null)
+            if (item == null)
+            {
+                return null;
+            }
+            else if (container != null)
+            {
+                return container;
+            }
+            else
             {
                 var template = GetTreeDataTemplate(item);
-
-                result = new T
+                var result = new T
                 {
                     Header = template.Build(item),
                     Items = template.ItemsSelector(item),
                     IsExpanded = template.IsExpanded(item),
-                    DataContext = item,
                 };
-            }
 
-            return result;
+                if (!(item is IControl))
+                {
+                    result.DataContext = item;
+                }
+
+                return result;
+            }
         }
 
         /// <summary>

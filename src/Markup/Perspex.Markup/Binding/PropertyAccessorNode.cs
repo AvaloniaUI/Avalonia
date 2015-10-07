@@ -81,6 +81,8 @@ namespace Perspex.Markup.Binding
             {
                 inpc.PropertyChanged -= PropertyChanged;
             }
+
+            _propertyInfo = null;
         }
 
         private static PropertyInfo FindProperty(object target, string propertyName)

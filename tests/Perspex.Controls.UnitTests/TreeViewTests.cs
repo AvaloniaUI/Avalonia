@@ -12,14 +12,14 @@ using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    public class ListBoxTests
+    public class TreeViewTests
     {
         [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
-            var target = new ListBox
+            var target = new TreeView
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateTreeViewTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -29,25 +29,8 @@ namespace Perspex.Controls.UnitTests
 
             foreach (var child in target.GetLogicalChildren())
             {
-                Assert.IsType<ListBoxItem>(child);
+                Assert.IsType<TreeViewItem>(child);
             }
-        }
-
-        [Fact]
-        public void Setting_Item_IsSelected_Sets_ListBox_Selection()
-        {
-            var target = new ListBox
-            {
-                Template = new ControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            target.ApplyTemplate();
-
-            ((ListBoxItem)target.GetLogicalChildren().ElementAt(1)).IsSelected = true;
-
-            Assert.Equal("Bar", target.SelectedItem);
-            Assert.Equal(1, target.SelectedIndex);
         }
 
         [Fact]
@@ -58,12 +41,12 @@ namespace Perspex.Controls.UnitTests
                 "Foo",
                 new Item("Bar"),
                 new TextBlock { Text = "Baz" },
-                new ListBoxItem { Content = "Qux" },
+                new TreeViewItem { Header = "Qux" },
             };
 
-            var target = new ListBox
+            var target = new TreeView
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new ControlTemplate(CreateTreeViewTemplate),
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
@@ -84,7 +67,7 @@ namespace Perspex.Controls.UnitTests
                 dataContexts);
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent)
+        private Control CreateTreeViewTemplate(ITemplatedControl parent)
         {
             return new ScrollViewer
             {

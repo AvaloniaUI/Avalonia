@@ -21,6 +21,7 @@ namespace Perspex.Win32
     public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
+        private static Thread _uiThread;
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
 
@@ -52,6 +53,7 @@ namespace Perspex.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
 
             SharedPlatform.Register();
+            _uiThread = Thread.CurrentThread;
         }
 
         public static void Initialize()
@@ -123,6 +125,8 @@ namespace Perspex.Win32
                 new IntPtr(SignalW),
                 new IntPtr(SignalL));
         }
+
+        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
         public event Action Signaled;
 

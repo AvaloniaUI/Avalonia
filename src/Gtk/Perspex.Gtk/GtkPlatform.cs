@@ -17,6 +17,7 @@ namespace Perspex.Gtk
     public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings
     {
         private static readonly GtkPlatform s_instance = new GtkPlatform();
+        private static Thread _uiThread;
 
         public GtkPlatform()
         {
@@ -40,6 +41,7 @@ namespace Perspex.Gtk
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
             SharedPlatform.Register();
+            _uiThread = Thread.CurrentThread;
         }
 
         public bool HasMessages()
@@ -78,6 +80,8 @@ namespace Perspex.Gtk
         {
             Gtk.Application.Invoke(delegate { Signaled?.Invoke(); });
         }
+
+        public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _uiThread;
 
         public event Action Signaled;
     }

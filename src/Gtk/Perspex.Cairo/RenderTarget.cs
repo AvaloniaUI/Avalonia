@@ -7,6 +7,7 @@ using Perspex.Cairo.Media;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
+using DrawingContext = Perspex.Media.DrawingContext;
 
 namespace Perspex.Cairo
 {
@@ -50,12 +51,13 @@ namespace Perspex.Cairo
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
-        /// <returns>A surface wrapped in an <see cref="IDrawingContext"/>.</returns>
-        public IDrawingContext CreateDrawingContext()
+        /// <returns>A surface wrapped in an <see cref="Perspex.Media.DrawingContext"/>.</returns>
+        public DrawingContext CreateDrawingContext()
         {
-            if(_surface != null)
-                return new DrawingContext(_surface);
-            return new DrawingContext(_window.GdkWindow);
+            var ctx = _surface != null
+                ? new Media.DrawingContext(_surface)
+                : new Media.DrawingContext(_window.GdkWindow);
+            return new DrawingContext(ctx);
         }
         
         public void Dispose() => _surface?.Dispose();

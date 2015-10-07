@@ -35,7 +35,7 @@ namespace Perspex.Rendering
         /// <param name="visual">The visual to render.</param>
         /// 
         /// <param name="context">The drawing context.</param>
-        public static void Render(this IDrawingContext context, IVisual visual)
+        public static void Render(this DrawingContext context, IVisual visual)
         {
             var opacity = visual.Opacity;
             if (visual.IsVisible && opacity > 0)
@@ -50,11 +50,12 @@ namespace Perspex.Rendering
                     var offset = Matrix.CreateTranslation(origin);
                     renderTransform = (-offset)*visual.RenderTransform.Value*(offset);
                 }
-                m = context.CurrentTransform.Invert()*renderTransform*m*context.CurrentTransform;
+                m = renderTransform*m;
 
-                using (context.PushTransform(m))
+                using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : null)
+                using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : default(DrawingContext.PushedState))
+                using (context.PushTransformContainer())
                 {
                     visual.Render(context);
                     foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))

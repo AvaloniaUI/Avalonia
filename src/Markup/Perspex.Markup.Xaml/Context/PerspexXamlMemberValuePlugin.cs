@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
@@ -16,9 +17,9 @@ namespace Perspex.Markup.Xaml.Context
 {
     public class PerspexXamlMemberValuePlugin : MemberValuePlugin
     {
-        private readonly XamlMember _xamlMember;
+        private readonly MutableXamlMember _xamlMember;
 
-        public PerspexXamlMemberValuePlugin(XamlMember xamlMember) 
+        public PerspexXamlMemberValuePlugin(MutableXamlMember xamlMember) 
             : base(xamlMember)
         {
             _xamlMember = xamlMember;
@@ -73,6 +74,7 @@ namespace Perspex.Markup.Xaml.Context
             else
             {
                 var perspexObject = instance as PerspexObject;
+                var attached = _xamlMember as PerspexAttachableXamlMember;
 
                 if (perspexObject == null)
                 {
@@ -80,13 +82,31 @@ namespace Perspex.Markup.Xaml.Context
                         $"Cannot bind to an object of type '{instance.GetType()}");
                 }
 
-                var property = perspexObject.GetRegisteredProperties()
-                    .FirstOrDefault(x => x.Name == _xamlMember.Name);
+                PerspexProperty property;
+                string propertyName;
+
+                if (attached == null)
+                {
+                    propertyName = _xamlMember.Name;
+                    property = perspexObject.GetRegisteredProperties()
+                        .FirstOrDefault(x => x.Name == propertyName);
+                }
+                else
+                {
+                    // Ensure the OwnerType's static ctor has been run.
+                    RuntimeHelpers.RunClassConstructor(attached.DeclaringType.UnderlyingType.TypeHandle);
+
+                    propertyName = attached.DeclaringType.UnderlyingType.Name + '.' + _xamlMember.Name;
+
+                    property = perspexObject.GetRegisteredProperties()
+                        .Where(x => x.IsAttached && x.OwnerType == attached.DeclaringType.UnderlyingType)
+                        .FirstOrDefault(x => x.Name == _xamlMember.Name);
+                }
 
                 if (property == null)
                 {
                     throw new InvalidOperationException(
-                        $"Cannot find '{_xamlMember.Name}' on '{instance.GetType()}");
+                        $"Cannot find '{propertyName}' on '{instance.GetType()}");
                 }
 
                 var binding = new XamlBinding

@@ -28,6 +28,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>();
 
+        /// <summary>
+        /// Defines the <see cref="HotKey"/> property.
+        /// </summary>
         public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
@@ -519,7 +522,6 @@ namespace Perspex.Controls
             /// Gets a service of the specified type.
             /// </summary>
             /// <param name="serviceType">The service type.</param>
-            /// <param name="contract">An optional contract.</param>
             /// <returns>A service of the requested type.</returns>
             public object GetService(Type serviceType)
             {

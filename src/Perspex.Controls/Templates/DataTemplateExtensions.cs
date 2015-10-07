@@ -45,8 +45,6 @@ namespace Perspex.Controls.Templates
                         result = FuncDataTemplate.Default.Build(data);
                     }
 
-                    result.DataContext = data;
-
                     return result;
                 }
             }

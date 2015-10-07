@@ -211,10 +211,94 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font family.</returns>
+        public static string GetFontFamily(Control control)
+        {
+            return control.GetValue(FontFamilyProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FontSizeProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font family.</returns>
+        public static double GetFontSize(Control control)
+        {
+            return control.GetValue(FontSizeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FontStyleProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font family.</returns>
+        public static FontStyle GetFontStyle(Control control)
+        {
+            return control.GetValue(FontStyleProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FontWeightProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font family.</returns>
+        public static FontWeight GetFontWeight(Control control)
+        {
+            return control.GetValue(FontWeightProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontFamilyProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        /// <returns>The font family.</returns>
+        public static void SetFontFamily(Control control, string value)
+        {
+            control.SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontSizeProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        /// <returns>The font family.</returns>
+        public static void SetFontSize(Control control, double value)
+        {
+            control.SetValue(FontSizeProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontStyleProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        /// <returns>The font family.</returns>
+        public static void SetFontStyle(Control control, FontStyle value)
+        {
+            control.SetValue(FontStyleProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontWeightProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        /// <returns>The font family.</returns>
+        public static void SetFontWeight(Control control, FontWeight value)
+        {
+            control.SetValue(FontWeightProperty, value);
+        }
+
+        /// <summary>
         /// Renders the <see cref="TextBlock"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(IDrawingContext context)
+        public override void Render(DrawingContext context)
         {
             Brush background = Background;
 

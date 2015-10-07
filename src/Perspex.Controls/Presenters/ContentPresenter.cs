@@ -115,6 +115,11 @@ namespace Perspex.Controls.Presenters
 
             if (result != null)
             {
+                if (!(content is IControl))
+                {
+                    result.DataContext = content;
+                }
+
                 AddVisualChild(result);
 
                 if (result.Parent == null)
