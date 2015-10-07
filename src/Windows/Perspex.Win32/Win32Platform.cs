@@ -126,7 +126,7 @@ namespace Perspex.Win32
                 new IntPtr(SignalL));
         }
 
-        public bool CheckForLoopThread() => _uiThread == Thread.CurrentThread;
+        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
         public event Action Signaled;
 

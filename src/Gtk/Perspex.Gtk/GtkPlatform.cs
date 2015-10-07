@@ -81,7 +81,7 @@ namespace Perspex.Gtk
             Gtk.Application.Invoke(delegate { Signaled?.Invoke(); });
         }
 
-        public bool CheckForLoopThread() => Thread.CurrentThread == _uiThread;
+        public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _uiThread;
 
         public event Action Signaled;
     }

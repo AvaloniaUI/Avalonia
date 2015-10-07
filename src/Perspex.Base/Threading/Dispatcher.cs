@@ -33,7 +33,7 @@ namespace Perspex.Threading
             _platform.Signaled += _jobRunner.RunJobs;
         }
 
-        public bool CheckAccess() => _platform?.CheckForLoopThread() ?? true;
+        public bool CheckAccess() => _platform?.CurrentThreadIsLoopThread() ?? true;
 
         public void VerifyAccess()
         {
