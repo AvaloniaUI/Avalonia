@@ -90,8 +90,8 @@ namespace Perspex.Win32
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
                     if (!res)
                         return null;
-
-                    userSelectedExt = dialog.Filters[ofn.nFilterIndex - 1].Extensions[0];
+                    if (dialog?.Filters.Count > 0)
+                        userSelectedExt = dialog.Filters[ofn.nFilterIndex - 1].Extensions.FirstOrDefault();
                 }
                 var cStart = 0;
                 string dir = null;
@@ -117,8 +117,8 @@ namespace Perspex.Win32
                     if (dialog is SaveFileDialog)
                     {
                         if (string.IsNullOrWhiteSpace(Path.GetExtension(dir)) &&
-                        !string.IsNullOrWhiteSpace(userSelectedExt) &&
-                        !userSelectedExt.Contains("*"))
+                            !string.IsNullOrWhiteSpace(userSelectedExt) &&
+                            !userSelectedExt.Contains("*"))
                             dir = Path.ChangeExtension(dir, userSelectedExt);
                     }
                     
