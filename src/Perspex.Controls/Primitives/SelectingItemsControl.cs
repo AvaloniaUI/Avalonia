@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
@@ -18,6 +17,22 @@ namespace Perspex.Controls.Primitives
     /// <summary>
     /// An <see cref="ItemsControl"/> that maintains a selection.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="SelectingItemsControl"/> provides a base class for <see cref="ItemsControl"/>s
+    /// that maintain a selection (single or multiple). By default only its 
+    /// <see cref="SelectedIndex"/> and <see cref="SelectedItem"/> properties are visible; the
+    /// multiple selection properties <see cref="SelectedIndexes"/> and <see cref="SelectedItems"/>
+    /// together with the <see cref="SelectionMode"/> properties are protected, however a derived 
+    /// class can expose these if it wishes to support multiple selection.
+    /// </para>
+    /// <para>
+    /// <see cref="SelectingItemsControl"/> maintains a selection respecting the current 
+    /// <see cref="SelectionMode"/> but it does not react to user input; this must be handled in a
+    /// derived class. It does, however, respond to <see cref="IsSelectedChangedEvent"/> events
+    /// from items and updates the selection accordingly.
+    /// </para>
+    /// </remarks>
     public class SelectingItemsControl : ItemsControl
     {
         /// <summary>
@@ -41,16 +56,16 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedIndexes"/> property.
         /// </summary>
-        protected static readonly PerspexProperty<IList<int>> SelectedIndexesProperty =
-            PerspexProperty.RegisterDirect<SelectingItemsControl, IList<int>>(
+        protected static readonly PerspexProperty<IPerspexList<int>> SelectedIndexesProperty =
+            PerspexProperty.RegisterDirect<SelectingItemsControl, IPerspexList<int>>(
                 nameof(SelectedIndexes),
                 o => o.SelectedIndexes);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        protected static readonly PerspexProperty<IList<object>> SelectedItemsProperty =
-            PerspexProperty.RegisterDirect<SelectingItemsControl, IList<object>>(
+        protected static readonly PerspexProperty<IPerspexList<object>> SelectedItemsProperty =
+            PerspexProperty.RegisterDirect<SelectingItemsControl, IPerspexList<object>>(
                 nameof(SelectedItems),
                 o => o.SelectedItems);
 
@@ -71,6 +86,7 @@ namespace Perspex.Controls.Primitives
 
         private PerspexList<int> _selectedIndexes = new PerspexList<int>();
         private PerspexList<object> _selectedItems = new PerspexList<object>();
+        private bool _ignoreContainerSelectionChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -78,8 +94,6 @@ namespace Perspex.Controls.Primitives
         static SelectingItemsControl()
         {
             IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
-            SelectedIndexProperty.Changed.AddClassHandler<SelectingItemsControl>(x => x.SelectedIndexChanged);
-            SelectedItemProperty.Changed.AddClassHandler<SelectingItemsControl>(x => x.SelectedItemChanged);
         }
 
         /// <summary>
@@ -88,6 +102,9 @@ namespace Perspex.Controls.Primitives
         public SelectingItemsControl()
         {
             ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
+            _selectedIndexes.Validate = ValidateIndex;
+            _selectedIndexes.ForEachItem(SelectedIndexAdded, SelectedIndexRemoved, SelectionReset);
+            _selectedItems.ForEachItem(SelectedItemAdded, SelectedItemRemoved, SelectionReset);
         }
 
         /// <summary>
@@ -151,7 +168,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the selected indexes.
         /// </summary>
-        protected IList<int> SelectedIndexes
+        protected IPerspexList<int> SelectedIndexes
         {
             get { return _selectedIndexes; }
         }
@@ -159,7 +176,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the selected items.
         /// </summary>
-        protected IList<object> SelectedItems
+        protected IPerspexList<object> SelectedItems
         {
             get { return _selectedItems; }
         }
@@ -177,6 +194,20 @@ namespace Perspex.Controls.Primitives
         /// Gets a value indicating whether <see cref="SelectionMode.AlwaysSelected"/> is set.
         /// </summary>
         protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
+
+        /// <summary>
+        /// Tries to get the container that was the source of an event.
+        /// </summary>
+        /// <param name="eventSource">The control that raised the event.</param>
+        /// <returns>The container or null if the event did not originate in a container.</returns>
+        protected IControl GetContainerFromEventSource(IInteractive eventSource)
+        {
+            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
+                .OfType<ILogical>()
+                .FirstOrDefault(x => x.LogicalParent == this);
+
+            return item as IControl;
+        }
 
         /// <inheritdoc/>
         protected override void ItemsChanged(PerspexPropertyChangedEventArgs e)
@@ -233,23 +264,80 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        /// <summary>
+        /// Updates the selection for an item.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <param name="select">Whether the item should be selected or unselected.</param>
+        protected void UpdateSelection(int index, bool select)
         {
-            base.OnGotFocus(e);
-
-            if (e.NavigationMethod == NavigationMethod.Pointer ||
-                e.NavigationMethod == NavigationMethod.Directional)
+            if (index != -1)
             {
-                TrySetSelectionFromContainerEvent(e.Source, true);
+                if (select)
+                {
+                    var toggle = (SelectionMode & SelectionMode.Toggle) != 0;
+
+                    if (!toggle)
+                    {
+                        SelectedIndex = index;
+                    }
+                    else
+                    {
+                        var i = SelectedIndexes.IndexOf(index);
+
+                        if (i != -1 && (!AlwaysSelected || SelectedItems.Count > 1))
+                        {
+                            SelectedIndexes.RemoveAt(i);
+                        }
+                        else
+                        {
+                            SelectedIndexes.Add(index);
+                        }
+                    }
+                }
+                else
+                {
+                    LostSelection();
+                }
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        /// <summary>
+        /// Updates the selection for a container.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="select">Whether the container should be selected or unselected.</param>
+        protected void UpdateSelection(IControl container, bool select)
         {
-            base.OnPointerPressed(e);
-            e.Handled = true;
+            var index = ItemContainerGenerator.IndexFromContainer(container);
+
+            if (index != -1)
+            {
+                UpdateSelection(index, select);
+            }
+        }
+
+        /// <summary>
+        /// Updates the selection based on an event source that may have originated in a container
+        /// that belongs to the control.
+        /// </summary>
+        /// <param name="eventSource">The control that raised the event.</param>
+        /// <param name="select">Whether the container should be selected or unselected.</param>
+        /// <returns>
+        /// True if the event originated from a container that belongs to the control; otherwise
+        /// false.
+        /// </returns>
+        protected bool UpdateSelectionFromEventSource(IInteractive eventSource, bool select)
+        {
+            var item = GetContainerFromEventSource(eventSource);
+
+            if (item != null)
+            {
+                UpdateSelection(item, select);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -292,25 +380,34 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private static void MarkContainerSelected(IControl container, bool selected)
+        private void MarkContainerSelected(IControl container, bool selected)
         {
-            var selectable = container as ISelectable;
-            var styleable = container as IStyleable;
+            try
+            {
+                var selectable = container as ISelectable;
+                var styleable = container as IStyleable;
 
-            if (selectable != null)
-            {
-                selectable.IsSelected = selected;
+                _ignoreContainerSelectionChanged = true;
+
+                if (selectable != null)
+                {
+                    selectable.IsSelected = selected;
+                }
+                else if (styleable != null)
+                {
+                    if (selected)
+                    {
+                        styleable.Classes.Add(":selected");
+                    }
+                    else
+                    {
+                        styleable.Classes.Remove(":selected");
+                    }
+                }
             }
-            else if (styleable != null)
+            finally
             {
-                if (selected)
-                {
-                    styleable.Classes.Add(":selected");
-                }
-                else
-                {
-                    styleable.Classes.Remove(":selected");
-                }
+                _ignoreContainerSelectionChanged = false;
             }
         }
 
@@ -341,71 +438,143 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event.</param>
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
-            var selectable = (ISelectable)e.Source;
-
-            if (selectable != null)
+            if (!_ignoreContainerSelectionChanged)
             {
-                TrySetSelectionFromContainerEvent(e.Source, selectable.IsSelected);
-            }
-        }
+                var selectable = (ISelectable)e.Source;
 
-        /// <summary>
-        /// Called when the <see cref="SelectedIndex"/> property changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
-        {
-            var index = (int)e.OldValue;
-
-            if (index != -1)
-            {
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
-                MarkContainerSelected(container, false);
-            }
-
-            index = (int)e.NewValue;
-
-            if (index == -1)
-            {
-                SelectedItem = null;
-            }
-            else
-            {
-                SelectedItem = Items.Cast<object>().ElementAt((int)e.NewValue);
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
-                MarkContainerSelected(container, true);
-
-                var inputElement = container as IInputElement;
-                if (inputElement != null && Presenter != null && Presenter.Panel != null)
+                if (selectable != null)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(
-                        (InputElement)Presenter.Panel,
-                        inputElement);
+                    UpdateSelectionFromEventSource(e.Source, selectable.IsSelected);
                 }
             }
         }
 
         /// <summary>
-        /// Called when the <see cref="SelectedItem"/> property changes.
+        /// Sets an item container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
+        /// <param name="index">The index of the item.</param>
+        /// <param name="selected">Whether the control is selected</param>
+        /// <returns>The container.</returns>
+        private IControl MarkIndexSelected(int index, bool selected)
         {
-            SelectedIndex = IndexOf(Items, e.NewValue);
+            var container = ItemContainerGenerator.ContainerFromIndex(index);
+
+            if (container != null)
+            {
+                MarkContainerSelected(container, selected);
+            }
+
+            return container;
         }
 
         /// <summary>
-        /// Tries to get the container that was the source of an event.
+        /// Called when an index is added to the <see cref="SelectedIndexes"/> collection.
         /// </summary>
-        /// <param name="eventSource">The control that raised the event.</param>
-        /// <returns>The container or null if the event did not originate in a container.</returns>
-        private IControl GetContainerFromEvent(IInteractive eventSource)
+        /// <param name="listIndex">The index in the SelectedIndexes collection.</param>
+        /// <param name="itemIndex">The item index.</param>
+        private void SelectedIndexAdded(int listIndex, int itemIndex)
         {
-            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<ILogical>()
-                .FirstOrDefault(x => x.LogicalParent == this);
+            if (SelectedIndexes.Count == 1)
+            {
+                RaisePropertyChanged(SelectedIndexProperty, -1, itemIndex, BindingPriority.LocalValue);
+            }
 
-            return item as IControl;
+            if (SelectedItems.Count != SelectedIndexes.Count)
+            {
+                var item = Items.Cast<object>().ElementAt(itemIndex);
+                SelectedItems.Insert(listIndex, item);
+            }
+
+            var container = MarkIndexSelected(itemIndex, true);
+
+            if (container != null && Presenter?.Panel != null)
+            {
+                KeyboardNavigation.SetTabOnceActiveElement((InputElement)Presenter.Panel, container);
+            }
+        }
+
+        /// <summary>
+        /// Called when an index is removed from the <see cref="SelectedIndexes"/> collection.
+        /// </summary>
+        /// <param name="listIndex">The index in the SelectedIndexes collection.</param>
+        /// <param name="itemIndex">The item index.</param>
+        private void SelectedIndexRemoved(int listIndex, int itemIndex)
+        {
+            if (SelectedIndexes.Count == 0)
+            {
+                RaisePropertyChanged(SelectedIndexProperty, itemIndex, -1, BindingPriority.LocalValue);
+            }
+
+            if (SelectedIndexes.Count != SelectedItems.Count)
+            {
+                SelectedItems.RemoveAt(listIndex);
+            }
+
+            MarkIndexSelected(itemIndex, false);
+        }
+
+        /// <summary>
+        /// Called when an item is added to the <see cref="SelectedItems"/> collection.
+        /// </summary>
+        /// <param name="index">The index in the SelectedItems collection.</param>
+        /// <param name="item">The item.</param>
+        private void SelectedItemAdded(int index, object item)
+        {
+            if (SelectedItems.Count == 1)
+            {
+                RaisePropertyChanged(SelectedItemProperty, null, item, BindingPriority.LocalValue);
+            }
+
+            if (SelectedIndexes.Count != SelectedItems.Count)
+            {
+                SelectedIndexes.Insert(index, IndexOf(Items, item));
+            }
+        }
+
+        /// <summary>
+        /// Called when an item is removed from the <see cref="SelectedItems"/> collection.
+        /// </summary>
+        /// <param name="index">The index in the SelectedItems collection.</param>
+        /// <param name="item">The item.</param>
+        private void SelectedItemRemoved(int index, object item)
+        {
+            if (SelectedIndexes.Count != SelectedItems.Count)
+            {
+                SelectedIndexes.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="SelectedItems"/> collection is reset.
+        /// </summary>
+        private void SelectionReset()
+        {
+            if (SelectedIndexes.Count > 0)
+            {
+                SelectedIndexes.Clear();
+            }
+
+            if (SelectedItems.Count > 0)
+            {
+                SelectedItems.Clear();
+            }
+
+            foreach (var container in ItemContainerGenerator.Containers)
+            {
+                MarkContainerSelected(container, false);
+            }
+        }
+
+        /// <summary>
+        /// Validates items added to the <see cref="SelectedIndexes"/> collection.
+        /// </summary>
+        /// <param name="index">The index to be added.</param>
+        private void ValidateIndex(int index)
+        {
+            if (index < 0 || index >= Items?.Cast<object>().Count())
+            {
+                throw new IndexOutOfRangeException();
+            }
         }
 
         /// <summary>
@@ -428,33 +597,6 @@ namespace Perspex.Controls.Primitives
             }
 
             SelectedIndex = -1;
-        }
-
-        /// <summary>
-        /// Tries to set the selection to a container that raised an event.
-        /// </summary>
-        /// <param name="eventSource">The control that raised the event.</param>
-        /// <param name="select">Whether the container should be selected or unselected.</param>
-        private void TrySetSelectionFromContainerEvent(IInteractive eventSource, bool select)
-        {
-            var item = GetContainerFromEvent(eventSource);
-
-            if (item != null)
-            {
-                var index = ItemContainerGenerator.IndexFromContainer(item);
-
-                if (index != -1)
-                {
-                    if (select)
-                    {
-                        SelectedIndex = index;
-                    }
-                    else
-                    {
-                        LostSelection();
-                    }
-                }
-            }
         }
     }
 }

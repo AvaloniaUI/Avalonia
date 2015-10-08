@@ -30,6 +30,11 @@ namespace Perspex.Controls.Generators
         }
 
         /// <summary>
+        /// Gets the currently realized containers.
+        /// </summary>
+        public IEnumerable<IControl> Containers => _containers.Values;
+
+        /// <summary>
         /// Signalled whenever new containers are initialized.
         /// </summary>
         public IObservable<ItemContainers> ContainersInitialized => _containersInitialized;

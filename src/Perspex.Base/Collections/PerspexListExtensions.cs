@@ -22,55 +22,110 @@ namespace Perspex.Collections
         /// <param name="collection">The collection.</param>
         /// <param name="added">
         /// An action called initially for each item in the collection and subsequently for each
-        /// item added to the collection.
+        /// item added to the collection. The parameters passed are the index in the collection and
+        /// the item.
         /// </param>
         /// <param name="removed">
-        /// An action called for each item removed from the collection.
+        /// An action called for each item removed from the collection. The parameters passed are
+        /// the index in the collection and the item.
+        /// </param>
+        /// <param name="reset">
+        /// An action called when the collection is reset.
         /// </param>
         /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable ForEachItem<T>(
             this IPerspexReadOnlyList<T> collection,
             Action<T> added,
-            Action<T> removed)
+            Action<T> removed,
+            Action reset)
         {
+            return collection.ForEachItem((_, i) => added(i), (_, i) => removed(i), reset);
+        }
+
+        /// <summary>
+        /// Invokes an action for each item in a collection and subsequently each item added or
+        /// removed from the collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the collection items.</typeparam>
+        /// <param name="collection">The collection.</param>
+        /// <param name="added">
+        /// An action called initially for each item in the collection and subsequently for each
+        /// item added to the collection. The parameters passed are the index in the collection and
+        /// the item.
+        /// </param>
+        /// <param name="removed">
+        /// An action called for each item removed from the collection. The parameters passed are
+        /// the index in the collection and the item.
+        /// </param>
+        /// <param name="reset">
+        /// An action called when the collection is reset.
+        /// </param>
+        /// <returns>A disposable used to terminate the subscription.</returns>
+        public static IDisposable ForEachItem<T>(
+            this IPerspexReadOnlyList<T> collection,
+            Action<int, T> added,
+            Action<int, T> removed,
+            Action reset)
+        {
+            int index;
+
             NotifyCollectionChangedEventHandler handler = (_, e) =>
             {
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        foreach (T i in e.NewItems)
+                        index = e.NewStartingIndex;
+
+                        foreach (T item in e.NewItems)
                         {
-                            added(i);
+                            added(index++, item);
                         }
 
                         break;
 
                     case NotifyCollectionChangedAction.Replace:
-                        foreach (T i in e.OldItems)
+                        index = e.OldStartingIndex;
+
+                        foreach (T item in e.OldItems)
                         {
-                            removed(i);
+                            removed(index++, item);
                         }
 
-                        foreach (T i in e.NewItems)
+                        index = e.NewStartingIndex;
+
+                        foreach (T item in e.NewItems)
                         {
-                            added(i);
+                            added(index++, item);
                         }
 
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        foreach (T i in e.OldItems)
+                        index = e.OldStartingIndex;
+
+                        foreach (T item in e.OldItems)
                         {
-                            removed(i);
+                            removed(index++, item);
                         }
 
+                        break;
+
+                    case NotifyCollectionChangedAction.Reset:
+                        if (reset == null)
+                        {
+                            throw new InvalidOperationException(
+                                "Reset called on collection without reset handler.");
+                        }
+
+                        reset();
                         break;
                 }
             };
 
+            index = 0;
             foreach (T i in collection)
             {
-                added(i);
+                added(index++, i);
             }
 
             collection.CollectionChanged += handler;
@@ -116,7 +171,8 @@ namespace Perspex.Collections
                         inpc.PropertyChanged -= handler;
                         tracked.Remove(inpc);
                     }
-                });
+                },
+                null);
 
             return Disposable.Create(() =>
             {
