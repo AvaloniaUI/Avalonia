@@ -265,7 +265,7 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Updates the selection for an item.
+        /// Updates the selection for an item based on user interaction.
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <param name="select">Whether the item should be selected or unselected.</param>
@@ -275,7 +275,9 @@ namespace Perspex.Controls.Primitives
             {
                 if (select)
                 {
-                    var toggle = (SelectionMode & SelectionMode.Toggle) != 0;
+                    var mode = SelectionMode;
+                    var toggle = (mode & SelectionMode.Toggle) != 0;
+                    var multi = (mode & SelectionMode.Multiple) != 0;
 
                     if (!toggle)
                     {
@@ -291,7 +293,14 @@ namespace Perspex.Controls.Primitives
                         }
                         else
                         {
-                            SelectedIndexes.Add(index);
+                            if (multi)
+                            {
+                                SelectedIndexes.Add(index);
+                            }
+                            else
+                            {
+                                SelectedIndex = index;
+                            }
                         }
                     }
                 }
@@ -303,7 +312,7 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Updates the selection for a container.
+        /// Updates the selection for a container based on user interaction.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="select">Whether the container should be selected or unselected.</param>

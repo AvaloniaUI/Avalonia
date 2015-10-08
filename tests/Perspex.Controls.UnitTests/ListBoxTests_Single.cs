@@ -122,7 +122,7 @@ namespace Perspex.Controls.UnitTests
             {
                 Template = new ControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
-                SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
+                SelectionMode = SelectionMode.Toggle,
             };
 
             target.ApplyTemplate();
@@ -135,6 +135,50 @@ namespace Perspex.Controls.UnitTests
             });
 
             Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Clicking_Selected_Item_Should_Not_Deselect_It_When_SelectionMode_ToggleAlwaysSelected()
+        {
+            var target = new ListBox
+            {
+                Template = new ControlTemplate(CreateListBoxTemplate),
+                Items = new[] { "Foo", "Bar", "Baz " },
+                SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = MouseButton.Left,
+            });
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Clicking_Another_Item_Should_Select_It_When_SelectionMode_Toggle()
+        {
+            var target = new ListBox
+            {
+                Template = new ControlTemplate(CreateListBoxTemplate),
+                Items = new[] { "Foo", "Bar", "Baz " },
+                SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = MouseButton.Left,
+            });
+
+            Assert.Equal(0, target.SelectedIndex);
         }
 
         [Fact]
