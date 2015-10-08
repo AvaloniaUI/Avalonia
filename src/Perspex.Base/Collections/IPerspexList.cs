@@ -12,6 +12,11 @@ namespace Perspex.Collections
     public interface IPerspexList<T> : IList<T>, IPerspexReadOnlyList<T>
     {
         /// <summary>
+        /// Gets the number of items in the list.
+        /// </summary>
+        new int Count { get; }
+
+        /// <summary>
         /// Adds multiple items to the collection.
         /// </summary>
         /// <param name="items">The items.</param>
