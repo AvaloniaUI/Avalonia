@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Disposables;
 
 namespace Perspex.Collections
@@ -128,6 +129,66 @@ namespace Perspex.Collections
                 added(index++, i);
             }
 
+            collection.CollectionChanged += handler;
+
+            return Disposable.Create(() => collection.CollectionChanged -= handler);
+        }
+
+        /// <summary>
+        /// Invokes an action for each item in a collection and subsequently each item added or
+        /// removed from the collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the collection items.</typeparam>
+        /// <param name="collection">The collection.</param>
+        /// <param name="added">
+        /// An action called initially with all items in the collection and subsequently with a
+        /// list of items added to the collection. The parameters passed are the index of the
+        /// first item added to the collection and the items added.
+        /// </param>
+        /// <param name="removed">
+        /// An action called with all items removed from the collection. The parameters passed 
+        /// are the index of the first item removed from the collection and the items removed.
+        /// </param>
+        /// <param name="reset">
+        /// An action called when the collection is reset.
+        /// </param>
+        /// <returns>A disposable used to terminate the subscription.</returns>
+        public static IDisposable ForEachItem<T>(
+            this IPerspexReadOnlyList<T> collection,
+            Action<int, IEnumerable<T>> added,
+            Action<int, IEnumerable<T>> removed,
+            Action reset)
+        {
+            NotifyCollectionChangedEventHandler handler = (_, e) =>
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        added(e.NewStartingIndex, e.NewItems.Cast<T>());
+                        break;
+
+                    case NotifyCollectionChangedAction.Replace:
+                        removed(e.OldStartingIndex, e.OldItems.Cast<T>());
+                        added(e.NewStartingIndex, e.NewItems.Cast<T>());
+                        break;
+
+                    case NotifyCollectionChangedAction.Remove:
+                        removed(e.OldStartingIndex, e.OldItems.Cast<T>());
+                        break;
+
+                    case NotifyCollectionChangedAction.Reset:
+                        if (reset == null)
+                        {
+                            throw new InvalidOperationException(
+                                "Reset called on collection without reset handler.");
+                        }
+
+                        reset();
+                        break;
+                }
+            };
+
+            added(0, collection);
             collection.CollectionChanged += handler;
 
             return Disposable.Create(() => collection.CollectionChanged -= handler);

@@ -49,7 +49,7 @@
             </TabItem>
             <TabItem Header="Lists">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                  <ListBox Items="{Binding Items}" SelectionMode="Toggle">
+                  <ListBox Items="{Binding Items}" SelectionMode="Multiple">
                     <ListBox.DataTemplates>
                       <DataTemplate DataType="vm:TestItem">
                         <StackPanel>

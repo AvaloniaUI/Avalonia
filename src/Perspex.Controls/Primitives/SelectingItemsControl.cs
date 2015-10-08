@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
@@ -103,8 +104,8 @@ namespace Perspex.Controls.Primitives
         {
             ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
             _selectedIndexes.Validate = ValidateIndex;
-            _selectedIndexes.ForEachItem(SelectedIndexAdded, SelectedIndexRemoved, SelectionReset);
-            _selectedItems.ForEachItem(SelectedItemAdded, SelectedItemRemoved, SelectionReset);
+            _selectedIndexes.ForEachItem(SelectedIndexesAdded, SelectedIndexesRemoved, SelectionReset);
+            _selectedItems.ForEachItem(SelectedItemsAdded, SelectedItemsRemoved, SelectionReset);
         }
 
         /// <summary>
@@ -269,19 +270,34 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <param name="select">Whether the item should be selected or unselected.</param>
-        protected void UpdateSelection(int index, bool select)
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
+        /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        protected void UpdateSelection(
+            int index,
+            bool select = true,
+            bool rangeModifier = false,
+            bool toggleModifier = false)
         {
             if (index != -1)
             {
                 if (select)
                 {
                     var mode = SelectionMode;
-                    var toggle = (mode & SelectionMode.Toggle) != 0;
+                    var toggle = toggleModifier || (mode & SelectionMode.Toggle) != 0;
                     var multi = (mode & SelectionMode.Multiple) != 0;
+                    var range = multi && SelectedIndexes.Count > 0 ? rangeModifier : false;
 
-                    if (!toggle)
+                    if (!toggle && !range)
                     {
                         SelectedIndex = index;
+                    }
+                    else if (multi && range)
+                    {
+                        var first = SelectedIndexes[0];
+
+                        // TODO: Don't deselect items in new selection.
+                        SelectedIndexes.Clear();
+                        SelectedIndexes.AddRange(Range(first, index));
                     }
                     else
                     {
@@ -311,18 +327,36 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        private IEnumerable<int> Range(int first, int last)
+        {
+            int step = first > last ? -1 : 1;
+
+            for (int i = first; i != last; i += step)
+            {
+                yield return i;
+            }
+
+            yield return last;
+        }
+
         /// <summary>
         /// Updates the selection for a container based on user interaction.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="select">Whether the container should be selected or unselected.</param>
-        protected void UpdateSelection(IControl container, bool select)
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
+        /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        protected void UpdateSelection(
+            IControl container,
+            bool select = true,
+            bool rangeModifier = false,
+            bool toggleModifier = false)
         {
             var index = ItemContainerGenerator.IndexFromContainer(container);
 
             if (index != -1)
             {
-                UpdateSelection(index, select);
+                UpdateSelection(index, select, rangeModifier, toggleModifier);
             }
         }
 
@@ -332,17 +366,23 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
         /// <param name="select">Whether the container should be selected or unselected.</param>
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
+        /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
         /// </returns>
-        protected bool UpdateSelectionFromEventSource(IInteractive eventSource, bool select)
+        protected bool UpdateSelectionFromEventSource(
+            IInteractive eventSource, 
+            bool select = true,
+            bool rangeModifier = false,
+            bool toggleModifier = false)
         {
             var item = GetContainerFromEventSource(eventSource);
 
             if (item != null)
             {
-                UpdateSelection(item, select);
+                UpdateSelection(item, select, rangeModifier, toggleModifier);
                 return true;
             }
 
@@ -480,21 +520,27 @@ namespace Perspex.Controls.Primitives
         /// Called when an index is added to the <see cref="SelectedIndexes"/> collection.
         /// </summary>
         /// <param name="listIndex">The index in the SelectedIndexes collection.</param>
-        /// <param name="itemIndex">The item index.</param>
-        private void SelectedIndexAdded(int listIndex, int itemIndex)
+        /// <param name="itemIndexes">The item indexes.</param>
+        private void SelectedIndexesAdded(int listIndex, IEnumerable<int> itemIndexes)
         {
-            if (SelectedIndexes.Count == 1)
-            {
-                RaisePropertyChanged(SelectedIndexProperty, -1, itemIndex, BindingPriority.LocalValue);
-            }
+            var indexes = (itemIndexes as IList<int>) ?? itemIndexes.ToList();
+            IControl container = null;
 
             if (SelectedItems.Count != SelectedIndexes.Count)
             {
-                var item = Items.Cast<object>().ElementAt(itemIndex);
-                SelectedItems.Insert(listIndex, item);
+                var items = indexes.Select(x => Items.Cast<object>().ElementAt(x));
+                SelectedItems.AddRange(items);
             }
 
-            var container = MarkIndexSelected(itemIndex, true);
+            foreach (var itemIndex in indexes)
+            {
+                container = MarkIndexSelected(itemIndex, true);
+            }
+
+            if (SelectedIndexes.Count == 1)
+            {
+                RaisePropertyChanged(SelectedIndexProperty, -1, SelectedIndexes[0], BindingPriority.LocalValue);
+            }
 
             if (container != null && Presenter?.Panel != null)
             {
@@ -506,20 +552,29 @@ namespace Perspex.Controls.Primitives
         /// Called when an index is removed from the <see cref="SelectedIndexes"/> collection.
         /// </summary>
         /// <param name="listIndex">The index in the SelectedIndexes collection.</param>
-        /// <param name="itemIndex">The item index.</param>
-        private void SelectedIndexRemoved(int listIndex, int itemIndex)
+        /// <param name="itemIndexes">The item indexes.</param>
+        private void SelectedIndexesRemoved(int listIndex, IEnumerable<int> itemIndexes)
         {
+            var sync = SelectedIndexes.Count != SelectedItems.Count;
+
+            foreach (var itemIndex in itemIndexes)
+            {
+                if (sync)
+                {
+                    SelectedItems.RemoveAt(listIndex++);
+                }
+
+                MarkIndexSelected(itemIndex, false);
+            }
+
             if (SelectedIndexes.Count == 0)
             {
-                RaisePropertyChanged(SelectedIndexProperty, itemIndex, -1, BindingPriority.LocalValue);
+                RaisePropertyChanged(
+                    SelectedIndexProperty, 
+                    itemIndexes.First(), 
+                    -1, 
+                    BindingPriority.LocalValue);
             }
-
-            if (SelectedIndexes.Count != SelectedItems.Count)
-            {
-                SelectedItems.RemoveAt(listIndex);
-            }
-
-            MarkIndexSelected(itemIndex, false);
         }
 
         /// <summary>
@@ -527,16 +582,16 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="index">The index in the SelectedItems collection.</param>
         /// <param name="item">The item.</param>
-        private void SelectedItemAdded(int index, object item)
+        private void SelectedItemsAdded(int index, object item)
         {
-            if (SelectedItems.Count == 1)
-            {
-                RaisePropertyChanged(SelectedItemProperty, null, item, BindingPriority.LocalValue);
-            }
-
             if (SelectedIndexes.Count != SelectedItems.Count)
             {
                 SelectedIndexes.Insert(index, IndexOf(Items, item));
+            }
+
+            if (SelectedItems.Count == 1)
+            {
+                RaisePropertyChanged(SelectedItemProperty, null, item, BindingPriority.LocalValue);
             }
         }
 
@@ -545,7 +600,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="index">The index in the SelectedItems collection.</param>
         /// <param name="item">The item.</param>
-        private void SelectedItemRemoved(int index, object item)
+        private void SelectedItemsRemoved(int index, object item)
         {
             if (SelectedIndexes.Count != SelectedItems.Count)
             {

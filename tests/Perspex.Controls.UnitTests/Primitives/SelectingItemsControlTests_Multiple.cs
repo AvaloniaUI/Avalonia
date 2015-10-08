@@ -219,6 +219,58 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.False(((ListBoxItem)target.Presenter.Panel.Children[1]).IsSelected);
         }
 
+        [Fact]
+        public void Range_Select_Should_Select_Range()
+        {
+            var target = new TestSelector
+            {
+                Items = new[]
+                {
+                    "foo",
+                    "bar",
+                    "baz",
+                    "qux",
+                    "qiz",
+                    "lol",
+                },
+                SelectionMode = SelectionMode.Multiple,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+            target.SelectRange(3);
+
+            Assert.Equal(new[] { 1, 2, 3 }, target.SelectedIndexes);
+            Assert.Equal(new[] { "bar", "baz", "qux" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Range_Select_Backwards_Should_Select_Range()
+        {
+            var target = new TestSelector
+            {
+                Items = new[]
+                {
+                    "foo",
+                    "bar",
+                    "baz",
+                    "qux",
+                    "qiz",
+                    "lol",
+                },
+                SelectionMode = SelectionMode.Multiple,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 3;
+            target.SelectRange(1);
+
+            Assert.Equal(new[] { 3, 2, 1 }, target.SelectedIndexes);
+            Assert.Equal(new[] { "qux", "baz", "bar" }, target.SelectedItems);
+        }
+
         private class TestSelector : SelectingItemsControl
         {
             public new IPerspexList<int> SelectedIndexes
@@ -229,6 +281,17 @@ namespace Perspex.Controls.UnitTests.Primitives
             public new IPerspexList<object> SelectedItems
             {
                 get { return base.SelectedItems; }
+            }
+
+            public new SelectionMode SelectionMode
+            {
+                get { return base.SelectionMode; }
+                set { base.SelectionMode = value; }
+            }
+
+            public void SelectRange(int index)
+            {
+                UpdateSelection(index, true, true);
             }
         }
 

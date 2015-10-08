@@ -187,17 +187,22 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            if (Validate != null)
-            {
-                foreach (var item in items)
-                {
-                    Validate(item);
-                }
-            }
+            var list = (items as IList) ?? items.ToList();
 
-            int index = _inner.Count;
-            _inner.AddRange(items);
-            NotifyAdd((items as IList) ?? items.ToList(), index);
+            if (list.Count > 0)
+            {
+                if (Validate != null)
+                {
+                    foreach (var item in list)
+                    {
+                        Validate((T)item);
+                    }
+                }
+
+                int index = _inner.Count;
+                _inner.AddRange(items);
+                NotifyAdd(list, index);
+            }
         }
 
         /// <summary>
@@ -205,9 +210,12 @@ namespace Perspex.Collections
         /// </summary>
         public void Clear()
         {
-            var old = _inner;
-            _inner = new List<T>();
-            NotifyReset(old);
+            if (this.Count > 0)
+            {
+                var old = _inner;
+                _inner = new List<T>();
+                NotifyReset(old);
+            }
         }
 
         /// <summary>
@@ -272,16 +280,21 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            if (Validate != null)
-            {
-                foreach (var item in items)
-                {
-                    Validate(item);
-                }
-            }
+            var list = (items as IList) ?? items.ToList();
 
-            _inner.InsertRange(index, items);
-            NotifyAdd((items as IList) ?? items.ToList(), index);
+            if (list.Count > 0)
+            {
+                if (Validate != null)
+                {
+                    foreach (var item in list)
+                    {
+                        Validate((T)item);
+                    }
+                }
+
+                _inner.InsertRange(index, items);
+                NotifyAdd((items as IList) ?? items.ToList(), index);
+            }
         }
 
         /// <summary>
@@ -311,7 +324,7 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            List<T> removed = new List<T>();
+            var list = (items as IList) ?? items.ToList();
 
             foreach (var i in items)
             {

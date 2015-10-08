@@ -16,6 +16,14 @@ namespace Perspex.Collections
         /// </summary>
         new int Count { get; }
 
+
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>The element at the requested index.</returns>
+        new T this[int index] { get; set; }
+
         /// <summary>
         /// Adds multiple items to the collection.
         /// </summary>

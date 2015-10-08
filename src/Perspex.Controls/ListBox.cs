@@ -38,7 +38,7 @@ namespace Perspex.Controls
 
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
-                UpdateSelectionFromEventSource(e.Source, true);
+                UpdateSelectionFromEventSource(e.Source);
             }
         }
 
@@ -49,7 +49,11 @@ namespace Perspex.Controls
 
             if (e.MouseButton == MouseButton.Left || e.MouseButton == MouseButton.Right)
             {
-                UpdateSelectionFromEventSource(e.Source, true);
+                UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0,
+                    (e.InputModifiers & InputModifiers.Control) != 0);
             }
         }
     }
