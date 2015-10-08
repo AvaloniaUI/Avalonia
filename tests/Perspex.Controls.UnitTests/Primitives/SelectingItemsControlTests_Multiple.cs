@@ -271,6 +271,33 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "qux", "baz", "bar" }, target.SelectedItems);
         }
 
+        [Fact]
+        public void Second_Range_Select_Backwards_Should_Select_From_Original_Selection()
+        {
+            var target = new TestSelector
+            {
+                Items = new[]
+                {
+                    "foo",
+                    "bar",
+                    "baz",
+                    "qux",
+                    "qiz",
+                    "lol",
+                },
+                SelectionMode = SelectionMode.Multiple,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+            target.SelectRange(5);
+            target.SelectRange(4);
+
+            Assert.Equal(new[] { 2, 3, 4 }, target.SelectedIndexes);
+            Assert.Equal(new[] { "baz", "qux", "qiz" }, target.SelectedItems);
+        }
+
         private class TestSelector : SelectingItemsControl
         {
             public new IPerspexList<int> SelectedIndexes
