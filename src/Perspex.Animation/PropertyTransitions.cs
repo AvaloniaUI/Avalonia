@@ -10,5 +10,12 @@ namespace Perspex.Animation
     /// </summary>
     public class PropertyTransitions : PerspexList<PropertyTransition>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyTransitions"/> class.
+        /// </summary>
+        public PropertyTransitions()
+        {
+            ResetBehavior = ResetBehavior.Remove;
+        }
     }
 }

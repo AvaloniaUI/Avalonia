@@ -124,6 +124,7 @@ namespace Perspex
             });
 
             _visualChildren = new PerspexList<IVisual>();
+            _visualChildren.ResetBehavior = ResetBehavior.Remove;
             _visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 

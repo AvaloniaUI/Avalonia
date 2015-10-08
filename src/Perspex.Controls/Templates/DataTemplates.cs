@@ -10,5 +10,12 @@ namespace Perspex.Controls.Templates
     /// </summary>
     public class DataTemplates : PerspexList<IDataTemplate>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataTemplates"/> class.
+        /// </summary>
+        public DataTemplates()
+        {
+            ResetBehavior = ResetBehavior.Remove;
+        }
     }
 }

@@ -11,14 +11,46 @@ using System.Linq;
 namespace Perspex.Collections
 {
     /// <summary>
+    /// Describes the action notified on a clear of a <see cref="PerspexList{T}"/>.
+    /// </summary>
+    public enum ResetBehavior
+    {
+        /// <summary>
+        /// Clearing the list notifies a with a 
+        /// <see cref="NotifyCollectionChangedAction.Reset"/>.
+        /// </summary>
+        Reset,
+
+        /// <summary>
+        /// Clearing the list notifies a with a
+        /// <see cref="NotifyCollectionChangedAction.Remove"/>.
+        /// </summary>
+        Remove,
+    }
+
+    /// <summary>
     /// A notifying list.
     /// </summary>
     /// <typeparam name="T">The type of the list items.</typeparam>
     /// <remarks>
+    /// <para>
     /// PerspexList is similar to <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>
-    /// except that when the <see cref="Clear"/> method is called, it notifies with a
-    /// <see cref="NotifyCollectionChangedAction.Remove"/> action, passing the items that were
-    /// removed.
+    /// with a few added features:
+    /// </para>
+    /// 
+    /// <list type="bullet">
+    /// <item>
+    /// It can be configured to notify the <see cref="CollectionChanged"/> event with a
+    /// <see cref="NotifyCollectionChangedAction.Remove"/> action instead of a
+    /// <see cref="NotifyCollectionChangedAction.Reset"/> when the list is cleared by
+    /// setting <see cref="ResetBehavior"/> to <see cref="ResetBehavior.Remove"/>.
+    /// removed
+    /// </item>
+    /// <item>
+    /// A <see cref="Validate"/> function can be used to validate each item before insertion.
+    /// removed
+    /// </item>
+    /// </list>
     /// </remarks>
     public class PerspexList<T> : IPerspexList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged
     {
@@ -65,6 +97,17 @@ namespace Perspex.Collections
         /// </summary>
         public int Count => _inner.Count;
 
+        /// <summary>
+        /// Gets or sets the reset behavior of the list.
+        /// </summary>
+        public ResetBehavior ResetBehavior { get; set; }
+
+        /// <summary>
+        /// Gets or sets a validation routine that can be used to validate items before they are
+        /// added.
+        /// </summary>
+        public Action<T> Validate { get; set; }
+
         /// <inheritdoc/>
         bool IList.IsFixedSize => false;
 
@@ -97,6 +140,8 @@ namespace Perspex.Collections
 
             set
             {
+                Validate?.Invoke(value);
+
                 T old = _inner[index];
                 _inner[index] = value;
 
@@ -128,6 +173,7 @@ namespace Perspex.Collections
         /// <param name="item">The item.</param>
         public void Add(T item)
         {
+            Validate?.Invoke(item);
             int index = _inner.Count;
             _inner.Add(item);
             NotifyAdd(new[] { item }, index);
@@ -141,6 +187,14 @@ namespace Perspex.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
+            if (Validate != null)
+            {
+                foreach (var item in items)
+                {
+                    Validate(item);
+                }
+            }
+
             int index = _inner.Count;
             _inner.AddRange(items);
             NotifyAdd((items as IList) ?? items.ToList(), index);
@@ -153,7 +207,7 @@ namespace Perspex.Collections
         {
             var old = _inner;
             _inner = new List<T>();
-            NotifyRemove(old, 0);
+            NotifyReset(old);
         }
 
         /// <summary>
@@ -204,6 +258,7 @@ namespace Perspex.Collections
         /// <param name="item">The item.</param>
         public void Insert(int index, T item)
         {
+            Validate?.Invoke(item);
             _inner.Insert(index, item);
             NotifyAdd(new[] { item }, index);
         }
@@ -216,6 +271,14 @@ namespace Perspex.Collections
         public void InsertRange(int index, IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
+
+            if (Validate != null)
+            {
+                foreach (var item in items)
+                {
+                    Validate(item);
+                }
+            }
 
             _inner.InsertRange(index, items);
             NotifyAdd((items as IList) ?? items.ToList(), index);
@@ -362,6 +425,31 @@ namespace Perspex.Collections
             if (CollectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, index);
+                CollectionChanged(this, e);
+            }
+
+            NotifyCountChanged();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="CollectionChanged"/> event with a reset action.
+        /// </summary>
+        /// <param name="t">The items that were removed.</param>
+        private void NotifyReset(IList t)
+        {
+            if (CollectionChanged != null)
+            {
+                NotifyCollectionChangedEventArgs e;
+
+                if (ResetBehavior == ResetBehavior.Reset)
+                {
+                    e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+                }
+                else
+                {
+                    e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, 0);
+                }
+
                 CollectionChanged(this, e);
             }
 

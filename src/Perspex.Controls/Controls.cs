@@ -16,6 +16,7 @@ namespace Perspex.Controls
         /// </summary>
         public Controls()
         {
+            ResetBehavior = ResetBehavior.Remove;
         }
 
         /// <summary>
@@ -25,6 +26,7 @@ namespace Perspex.Controls
         public Controls(IEnumerable<IControl> items)
             : base(items)
         {
+            ResetBehavior = ResetBehavior.Remove;
         }
     }
 }

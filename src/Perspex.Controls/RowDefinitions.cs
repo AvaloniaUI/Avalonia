@@ -17,6 +17,7 @@ namespace Perspex.Controls
         /// </summary>
         public RowDefinitions()
         {
+            ResetBehavior = ResetBehavior.Remove;
         }
 
         /// <summary>
@@ -24,6 +25,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="s">A string representation of the row definitions.</param>
         public RowDefinitions(string s)
+            : this()
         {
             AddRange(GridLength.ParseLengths(s, CultureInfo.InvariantCulture).Select(x => new RowDefinition(x)));
         }
