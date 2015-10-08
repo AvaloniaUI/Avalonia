@@ -30,6 +30,9 @@ namespace Perspex.Input
     {
         IInputElement FocusedElement { get; }
 
-        void SetFocusedElement(IInputElement element, NavigationMethod method);
+        void SetFocusedElement(
+            IInputElement element, 
+            NavigationMethod method,
+            InputModifiers modifiers);
     }
 }

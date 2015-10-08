@@ -22,6 +22,10 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="element">The current element.</param>
         /// <param name="direction">The direction to move.</param>
-        void Move(IInputElement element, FocusNavigationDirection direction);
+        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        void Move(
+            IInputElement element, 
+            FocusNavigationDirection direction,
+            InputModifiers modifiers = InputModifiers.None);
     }
 }

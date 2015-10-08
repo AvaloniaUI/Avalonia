@@ -38,7 +38,10 @@ namespace Perspex.Controls
 
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
-                UpdateSelectionFromEventSource(e.Source);
+                UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0);
             }
         }
 

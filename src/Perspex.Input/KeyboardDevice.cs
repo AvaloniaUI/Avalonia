@@ -45,7 +45,10 @@ namespace Perspex.Input
             }
         }
 
-        public void SetFocusedElement(IInputElement element, NavigationMethod method)
+        public void SetFocusedElement(
+            IInputElement element, 
+            NavigationMethod method,
+            InputModifiers modifiers)
         {
             if (element != FocusedElement)
             {
@@ -68,6 +71,7 @@ namespace Perspex.Input
                     {
                         RoutedEvent = InputElement.GotFocusEvent,
                         NavigationMethod = method,
+                        InputModifiers = modifiers,
                     });
                 }
             }
