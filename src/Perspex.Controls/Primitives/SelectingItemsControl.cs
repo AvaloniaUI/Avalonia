@@ -293,11 +293,7 @@ namespace Perspex.Controls.Primitives
                     }
                     else if (multi && range)
                     {
-                        var first = SelectedIndexes[0];
-
-                        // TODO: Don't deselect items in new selection.
-                        SelectedIndexes.Clear();
-                        SelectedIndexes.AddRange(Range(first, index));
+                        SynchronizeIndexes(SelectedIndexes, SelectedIndexes[0], index);
                     }
                     else
                     {
@@ -325,18 +321,6 @@ namespace Perspex.Controls.Primitives
                     LostSelection();
                 }
             }
-        }
-
-        private IEnumerable<int> Range(int first, int last)
-        {
-            int step = first > last ? -1 : 1;
-
-            for (int i = first; i != last; i += step)
-            {
-                yield return i;
-            }
-
-            yield return last;
         }
 
         /// <summary>
@@ -422,6 +406,53 @@ namespace Perspex.Controls.Primitives
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// Generates a range of integers between the first and last inclusive.
+        /// </summary>
+        /// <param name="first">The first integer.</param>
+        /// <param name="last">The last integer.</param>
+        /// <returns>The range.</returns>
+        private static IEnumerable<int> Range(int first, int last)
+        {
+            int step = first > last ? -1 : 1;
+
+            for (int i = first; i != last; i += step)
+            {
+                yield return i;
+            }
+
+            yield return last;
+        }
+
+        /// <summary>
+        /// Makes a list of integers equal the range first...last.
+        /// </summary>
+        /// <param name="indexes">The list of indexes.</param>
+        /// <param name="first">The first in the range.</param>
+        /// <param name="last">The last in the range.</param>
+        private static void SynchronizeIndexes(IPerspexList<int> indexes, int first, int last)
+        {
+            var i = 0;
+            var next = first;
+            int step = first > last ? -1 : 1;
+
+            while (i < indexes.Count && indexes[i] == next && next != last)
+            {
+                ++i;
+                next += step;
+            }
+
+            if (next != last || i != indexes.Count - 1)
+            {
+                if (i < indexes.Count - 1)
+                {
+                    indexes.RemoveRange(i, indexes.Count - i);
+                }
+
+                indexes.AddRange(Range(next, last));
+            }
         }
 
         /// <summary>
@@ -557,13 +588,10 @@ namespace Perspex.Controls.Primitives
         {
             var sync = SelectedIndexes.Count != SelectedItems.Count;
 
+            SelectedItems.RemoveRange(listIndex, itemIndexes.Count());
+
             foreach (var itemIndex in itemIndexes)
             {
-                if (sync)
-                {
-                    SelectedItems.RemoveAt(listIndex++);
-                }
-
                 MarkIndexSelected(itemIndex, false);
             }
 

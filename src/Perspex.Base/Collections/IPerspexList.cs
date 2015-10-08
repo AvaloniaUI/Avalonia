@@ -16,7 +16,6 @@ namespace Perspex.Collections
         /// </summary>
         new int Count { get; }
 
-
         /// <summary>
         /// Gets or sets the element at the specified index.
         /// </summary>
@@ -42,5 +41,12 @@ namespace Perspex.Collections
         /// </summary>
         /// <param name="items">The items.</param>
         void RemoveAll(IEnumerable<T> items);
+
+        /// <summary>
+        /// Removes a range of elements from the collection.
+        /// </summary>
+        /// <param name="index">The first index to remove.</param>
+        /// <param name="count">The number of items to remove.</param>
+        void RemoveRange(int index, int count);
     }
 }

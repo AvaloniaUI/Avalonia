@@ -344,6 +344,21 @@ namespace Perspex.Collections
             NotifyRemove(new[] { item }, index);
         }
 
+        /// <summary>
+        /// Removes a range of elements from the collection.
+        /// </summary>
+        /// <param name="index">The first index to remove.</param>
+        /// <param name="count">The number of items to remove.</param>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                var list = _inner.GetRange(index, count);
+                _inner.RemoveRange(index, count);
+                NotifyRemove(list, index);
+            }
+        }
+
         /// <inheritdoc/>
         int IList.Add(object value)
         {
