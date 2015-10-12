@@ -161,7 +161,7 @@ namespace Perspex.Gtk
                 _inputRoot,
                 evnt.Button == 1
                     ? RawMouseEventType.LeftButtonDown
-                    : evnt.Button == 2 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
+                    : evnt.Button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
@@ -192,7 +192,7 @@ namespace Perspex.Gtk
                 _inputRoot,
                 evnt.Button == 1
                     ? RawMouseEventType.LeftButtonUp
-                    : evnt.Button == 2 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
+                    : evnt.Button == 3 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
