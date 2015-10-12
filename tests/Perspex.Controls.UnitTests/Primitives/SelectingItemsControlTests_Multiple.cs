@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Perspex.Collections;
@@ -25,7 +26,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.SelectedIndex = 1;
 
-            Assert.Equal(new[] { "bar" }, target.SelectedItems.ToList());
+            Assert.Equal(new[] { "bar" }, target.SelectedItems.Cast<object>().ToList());
         }
 
         [Fact]
@@ -299,7 +300,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.SelectedIndex = 1;
             target.SelectRange(3);
 
-            Assert.Equal(new[] { "bar", "baz", "qux" }, target.SelectedItems.ToList());
+            Assert.Equal(new[] { "bar", "baz", "qux" }, target.SelectedItems.Cast<object>().ToList());
         }
 
         [Fact]
@@ -324,7 +325,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.SelectedIndex = 3;
             target.SelectRange(1);
 
-            Assert.Equal(new[] { "qux", "baz", "bar" }, target.SelectedItems.ToList());
+            Assert.Equal(new[] { "qux", "baz", "bar" }, target.SelectedItems.Cast<object>().ToList());
         }
 
         [Fact]
@@ -350,12 +351,12 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.SelectRange(5);
             target.SelectRange(4);
 
-            Assert.Equal(new[] { "baz", "qux", "qiz" }, target.SelectedItems.ToList());
+            Assert.Equal(new[] { "baz", "qux", "qiz" }, target.SelectedItems.Cast<object>().ToList());
         }
 
         private class TestSelector : SelectingItemsControl
         {
-            public new IList<object> SelectedItems
+            public new IList SelectedItems
             {
                 get { return base.SelectedItems; }
                 set { base.SelectedItems = value; }

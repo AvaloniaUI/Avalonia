@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using Perspex.Collections;
 using Perspex.Controls.Generators;
@@ -17,7 +18,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new PerspexProperty<IList<object>> SelectedItemsProperty =
+        public static readonly new PerspexProperty<IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
@@ -27,7 +28,7 @@ namespace Perspex.Controls
             SelectingItemsControl.SelectionModeProperty;
 
         /// <inheritdoc/>
-        public new IList<object> SelectedItems
+        public new IList SelectedItems
         {
             get { return base.SelectedItems; }
         }

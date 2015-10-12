@@ -57,8 +57,8 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        protected static readonly PerspexProperty<IList<object>> SelectedItemsProperty =
-            PerspexProperty.RegisterDirect<SelectingItemsControl, IList<object>>(
+        protected static readonly PerspexProperty<IList> SelectedItemsProperty =
+            PerspexProperty.RegisterDirect<SelectingItemsControl, IList>(
                 nameof(SelectedItems),
                 o => o.SelectedItems,
                 (o, v) => o.SelectedItems = v);
@@ -80,7 +80,7 @@ namespace Perspex.Controls.Primitives
 
         private int _selectedIndex = -1;
         private object _selectedItem;
-        private IList<object> _selectedItems;
+        private IList _selectedItems;
         private bool _ignoreContainerSelectionChanged;
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Perspex.Controls.Primitives
                             SelectedItems.Add(effective);
                         }
                     }
-                    else
+                    else if (SelectedItems.Count > 0)
                     {
                         SelectedItems.Clear();
                     }
@@ -164,7 +164,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets the selected items.
         /// </summary>
-        protected IList<object> SelectedItems
+        protected IList SelectedItems
         {
             get
             {
@@ -470,7 +470,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList<object> items, IEnumerable<object> desired)
+        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
             int index = 0;
 
@@ -692,7 +692,7 @@ namespace Perspex.Controls.Primitives
         /// Called when items are added to the <see cref="SelectedItems"/> collection.
         /// </summary>
         /// <param name="items">The added items.</param>
-        private void SelectedItemsAdded(IList<object> items)
+        private void SelectedItemsAdded(IList items)
         {
             if (items.Count > 0)
             {

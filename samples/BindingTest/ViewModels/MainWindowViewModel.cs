@@ -18,7 +18,7 @@ namespace BindingTest.ViewModels
                     StringValue = "Item " + x
                 }));
 
-            SelectedItems = new ObservableCollection<int> { 4, 6 };
+            SelectedItems = new ObservableCollection<TestItem>();
 
             ShuffleItems = ReactiveCommand.Create();
             ShuffleItems.Subscribe(_ =>
@@ -29,7 +29,7 @@ namespace BindingTest.ViewModels
         }
 
         public ObservableCollection<TestItem> Items { get; }
-        public ObservableCollection<int> SelectedItems { get; }
+        public ObservableCollection<TestItem> SelectedItems { get; }
         public ReactiveCommand<object> ShuffleItems { get; }
 
         public string BooleanString
