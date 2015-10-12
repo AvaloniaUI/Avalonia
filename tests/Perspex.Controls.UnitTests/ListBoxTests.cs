@@ -1,9 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Linq;
-using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
@@ -31,23 +29,6 @@ namespace Perspex.Controls.UnitTests
             {
                 Assert.IsType<ListBoxItem>(child);
             }
-        }
-
-        [Fact]
-        public void Setting_Item_IsSelected_Sets_ListBox_Selection()
-        {
-            var target = new ListBox
-            {
-                Template = new ControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            target.ApplyTemplate();
-
-            ((ListBoxItem)target.GetLogicalChildren().ElementAt(1)).IsSelected = true;
-
-            Assert.Equal("Bar", target.SelectedItem);
-            Assert.Equal(1, target.SelectedIndex);
         }
 
         [Fact]

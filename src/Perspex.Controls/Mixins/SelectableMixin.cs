@@ -52,7 +52,7 @@ namespace Perspex.Controls.Mixins
                 {
                     if ((bool)x.NewValue)
                     {
-                        sender.Classes.Add("selected");
+                        sender.Classes.Add(":selected");
 
                         if (((IVisual)sender).IsAttachedToVisualTree)
                         {
@@ -61,7 +61,7 @@ namespace Perspex.Controls.Mixins
                     }
                     else
                     {
-                        sender.Classes.Remove("selected");
+                        sender.Classes.Remove(":selected");
                     }
 
                     sender.RaiseEvent(new RoutedEventArgs

@@ -14,9 +14,8 @@ namespace Perspex.Controls.UnitTests.Primitives
         [Fact]
         public void First_Item_Should_Be_Selected()
         {
-            var target = new SelectingItemsControl
+            var target = new TestSelector
             {
-                AutoSelect = true,
                 Items = new[] { "foo", "bar" },
                 Template = Template(),
             };
@@ -31,9 +30,8 @@ namespace Perspex.Controls.UnitTests.Primitives
         public void First_Item_Should_Be_Selected_When_Added()
         {
             var items = new PerspexList<string>();
-            var target = new SelectingItemsControl
+            var target = new TestSelector
             {
-                AutoSelect = true,
                 Items = items,
                 Template = Template(),
             };
@@ -50,9 +48,8 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var items = new PerspexList<string>(new[] { "foo", "bar", "baz", "qux" });
 
-            var target = new SelectingItemsControl
+            var target = new TestSelector
             {
-                AutoSelect = true,
                 Items = items,
                 Template = Template(),
             };
@@ -70,9 +67,8 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var items = new PerspexList<string>(new[] { "foo", "bar" });
 
-            var target = new SelectingItemsControl
+            var target = new TestSelector
             {
-                AutoSelect = true,
                 Items = items,
                 Template = Template(),
             };
@@ -95,6 +91,14 @@ namespace Perspex.Controls.UnitTests.Primitives
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 });
+        }
+
+        private class TestSelector : SelectingItemsControl
+        {
+            static TestSelector()
+            {
+                SelectionModeProperty.OverrideDefaultValue<TestSelector>(SelectionMode.AlwaysSelected);
+            }
         }
 
         private class Item : Control, ISelectable

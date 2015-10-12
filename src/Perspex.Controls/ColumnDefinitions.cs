@@ -17,6 +17,7 @@ namespace Perspex.Controls
         /// </summary>
         public ColumnDefinitions()
         {
+            ResetBehavior = ResetBehavior.Remove;
         }
 
         /// <summary>
@@ -24,6 +25,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="s">A string representation of the column definitions.</param>
         public ColumnDefinitions(string s)
+            : this()
         {
             AddRange(GridLength.ParseLengths(s, CultureInfo.InvariantCulture).Select(x => new ColumnDefinition(x)));
         }

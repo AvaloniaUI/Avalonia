@@ -159,11 +159,31 @@ namespace Perspex.Base.UnitTests.Collections
         }
 
         [Fact]
+        public void Clearing_Items_Should_Raise_CollectionChanged_Reset()
+        {
+            var target = new PerspexList<int>(new[] { 1, 2, 3 });
+            var raised = false;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(target, s);
+                Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+
+                raised = true;
+            };
+
+            target.Clear();
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void Clearing_Items_Should_Raise_CollectionChanged_Remove()
         {
             var target = new PerspexList<int>(new[] { 1, 2, 3 });
             var raised = false;
 
+            target.ResetBehavior = ResetBehavior.Remove;
             target.CollectionChanged += (s, e) =>
             {
                 Assert.Equal(target, s);

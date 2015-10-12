@@ -67,7 +67,11 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="element">The current element.</param>
         /// <param name="direction">The direction to move.</param>
-        public void Move(IInputElement element, FocusNavigationDirection direction)
+        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        public void Move(
+            IInputElement element, 
+            FocusNavigationDirection direction,
+            InputModifiers modifiers = InputModifiers.None)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
@@ -78,7 +82,7 @@ namespace Perspex.Input
                 var method = direction == FocusNavigationDirection.Next ||
                              direction == FocusNavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance.Focus(next, method);
+                FocusManager.Instance.Focus(next, method, modifiers);
             }
         }
 
@@ -117,7 +121,7 @@ namespace Perspex.Input
 
                 if (direction.HasValue)
                 {
-                    Move(current, direction.Value);
+                    Move(current, direction.Value, e.Modifiers);
                     e.Handled = true;
                 }
             }

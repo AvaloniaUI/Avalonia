@@ -271,7 +271,9 @@ namespace Perspex.Controls
             {
                 if (_logicalChildren == null)
                 {
-                    _logicalChildren = new PerspexList<ILogical>();
+                    var list = new PerspexList<ILogical>();
+                    list.ResetBehavior = ResetBehavior.Remove;
+                    _logicalChildren = list;
                 }
 
                 return _logicalChildren;

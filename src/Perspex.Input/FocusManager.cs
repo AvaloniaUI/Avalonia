@@ -55,7 +55,11 @@ namespace Perspex.Input
         /// </summary>
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        public void Focus(IInputElement control, NavigationMethod method = NavigationMethod.Unspecified)
+        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        public void Focus(
+            IInputElement control, 
+            NavigationMethod method = NavigationMethod.Unspecified,
+            InputModifiers modifiers = InputModifiers.None)
         {
             if (control != null)
             {
@@ -65,7 +69,7 @@ namespace Perspex.Input
                 if (scope != null)
                 {
                     Scope = scope;
-                    SetFocusedElement(scope, control, method);
+                    SetFocusedElement(scope, control, method, modifiers);
                 }
             }
             else if (Current != null)
@@ -90,6 +94,7 @@ namespace Perspex.Input
         /// <param name="scope">The focus scope.</param>
         /// <param name="element">The element to focus. May be null.</param>
         /// <param name="method">The method by which focus was changed.</param>
+        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
         /// <remarks>
         /// If the specified scope is the current <see cref="Scope"/> then the keyboard focus
         /// will change.
@@ -97,7 +102,8 @@ namespace Perspex.Input
         public void SetFocusedElement(
             IFocusScope scope,
             IInputElement element,
-            NavigationMethod method = NavigationMethod.Unspecified)
+            NavigationMethod method = NavigationMethod.Unspecified,
+            InputModifiers modifiers = InputModifiers.None)
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
@@ -105,7 +111,7 @@ namespace Perspex.Input
 
             if (Scope == scope)
             {
-                KeyboardDevice.Instance.SetFocusedElement(element, method);
+                KeyboardDevice.Instance.SetFocusedElement(element, method, modifiers);
             }
         }
 
@@ -181,7 +187,7 @@ namespace Perspex.Input
 
                 if (element != null)
                 {
-                    Focus(element, NavigationMethod.Pointer);
+                    Focus(element, NavigationMethod.Pointer, ev.InputModifiers);
                 }
             }
         }

@@ -483,8 +483,6 @@ namespace TestApplication
 				}
 			};
 
-			imageDeck.AutoSelect = true;
-
 			var next = new Button 
 			{
 				VerticalAlignment = VerticalAlignment.Center,

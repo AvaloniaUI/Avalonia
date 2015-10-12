@@ -30,14 +30,14 @@ namespace Perspex.Themes.Default
                         new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ListBoxItem>(Template)),
                     },
                 },
-                new Style(x => x.OfType<ListBoxItem>().Class("selected").Template().Name("border"))
+                new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().Name("border"))
                 {
                     Setters = new[]
                     {
                         new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xfff0f0f0)),
                     },
                 },
-                new Style(x => x.OfType<ListBoxItem>().Class("selected").Class(":focus").Template().Name("border"))
+                new Style(x => x.OfType<ListBoxItem>().Class(":selected").Class(":focus").Template().Name("border"))
                 {
                     Setters = new[]
                     {

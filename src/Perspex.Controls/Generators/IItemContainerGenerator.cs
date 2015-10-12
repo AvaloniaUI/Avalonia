@@ -14,6 +14,11 @@ namespace Perspex.Controls.Generators
     public interface IItemContainerGenerator
     {
         /// <summary>
+        /// Gets the currently realized containers.
+        /// </summary>
+        IEnumerable<IControl> Containers { get; }
+
+        /// <summary>
         /// Signalled whenever new containers are initialized.
         /// </summary>
         IObservable<ItemContainers> ContainersInitialized { get; }

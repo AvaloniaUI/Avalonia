@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls.Generators;
+using Perspex.Input;
 
 namespace Perspex.Controls.Primitives
 {
@@ -15,7 +16,7 @@ namespace Perspex.Controls.Primitives
 
         static TabStrip()
         {
-            AutoSelectProperty.OverrideDefaultValue<TabStrip>(true);
+            SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
         }
 
@@ -46,6 +47,28 @@ namespace Perspex.Controls.Primitives
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (e.NavigationMethod == NavigationMethod.Directional)
+            {
+                UpdateSelectionFromEventSource(e.Source);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.MouseButton == MouseButton.Left)
+            {
+                UpdateSelectionFromEventSource(e.Source);
+            }
         }
     }
 }

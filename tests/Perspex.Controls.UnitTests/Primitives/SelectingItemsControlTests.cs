@@ -331,76 +331,6 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Focusing_Item_With_Pointer_Should_Select_It()
-        {
-            var target = new SelectingItemsControl
-            {
-                Template = Template(),
-                Items = new[] { "foo", "bar" },
-            };
-
-            target.ApplyTemplate();
-
-            var e = new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Pointer,
-            };
-
-            target.Presenter.Panel.Children[1].RaiseEvent(e);
-
-            Assert.Equal(1, target.SelectedIndex);
-
-            // GotFocus should be raised on parent control.
-            Assert.False(e.Handled);
-        }
-
-        [Fact]
-        public void Focusing_Item_With_Directional_Keys_Should_Select_It()
-        {
-            var target = new SelectingItemsControl
-            {
-                Template = Template(),
-                Items = new[] { "foo", "bar" },
-            };
-
-            target.ApplyTemplate();
-
-            var e = new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Directional,
-            };
-
-            target.Presenter.Panel.Children[1].RaiseEvent(e);
-
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.False(e.Handled);
-        }
-
-        [Fact]
-        public void Focusing_Item_With_Tab_Should_Not_Select_It()
-        {
-            var target = new SelectingItemsControl
-            {
-                Template = Template(),
-                Items = new[] { "foo", "bar" },
-            };
-
-            target.ApplyTemplate();
-
-            var e = new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Tab,
-            };
-
-            target.Presenter.Panel.Children[1].RaiseEvent(e);
-
-            Assert.Equal(-1, target.SelectedIndex);
-        }
-
-        [Fact]
         public void Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
         {
             var items = new[]
@@ -488,6 +418,31 @@ namespace Perspex.Controls.UnitTests.Primitives
             });
 
             Assert.Equal(target.SelectedItem, items[1]);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_Should_Set_Panel_Keyboard_Navigation()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[1];
+
+            var panel = target.Presenter.Panel;
+
+            Assert.Equal(
+                KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel), 
+                panel.Children[1]);
         }
 
         private ControlTemplate Template()

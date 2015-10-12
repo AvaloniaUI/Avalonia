@@ -31,7 +31,7 @@ namespace Perspex.Controls
         /// </summary>
         static Deck()
         {
-            AutoSelectProperty.OverrideDefaultValue<Deck>(true);
+            SelectionModeProperty.OverrideDefaultValue<Deck>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<Deck>(PanelTemplate);
         }
 
