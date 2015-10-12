@@ -35,7 +35,7 @@ namespace Perspex.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
-            SelectedIndexProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedIndexChanged);
+            SelectedItemProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedItemChanged);
         }
 
         /// <summary>
@@ -100,14 +100,11 @@ namespace Perspex.Controls
         /// Called when the <see cref="SelectingItemsControl.SelectedIndex"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
+        private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
         {
-            if ((int)e.NewValue != -1)
-            {
-                var item = SelectedItem as IContentControl;
-                var content = item?.Content ?? item;
-                SelectedTab = item as TabItem;
-            }
+            var item = e.NewValue as IContentControl;
+            var content = item?.Content ?? item;
+            SelectedTab = item as TabItem;
         }
     }
 }
