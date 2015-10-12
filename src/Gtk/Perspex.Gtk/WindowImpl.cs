@@ -159,9 +159,9 @@ namespace Perspex.Gtk
                 GtkMouseDevice.Instance,
                 evnt.Time,
                 _inputRoot,
-                evnt.Button == 0
+                evnt.Button == 1
                     ? RawMouseEventType.LeftButtonDown
-                    : evnt.Button == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
+                    : evnt.Button == 2 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt.X, evnt.Y), GetModifierKeys(evnt.State));
             Input(e);
             return true;
