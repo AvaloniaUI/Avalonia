@@ -93,14 +93,9 @@ namespace Perspex
 
         public static IDisposable EnterScope()
         {
-            return Disposable.Empty;
-            //Switch to that code when we are ready to fix tests
-            /*
             var d = new ResolverDisposable(Current, CurrentMutable);
             Current = CurrentMutable =  new PerspexLocator(Current);
             return d;
-            */
-
         }
     }
 
