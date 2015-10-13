@@ -147,7 +147,6 @@ namespace Perspex.Layout.UnitTests
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
                 .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowImpl>().ToConstant(windowImpl.Object);

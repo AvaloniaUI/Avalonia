@@ -326,7 +326,6 @@ namespace Perspex.Controls.UnitTests
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(layoutManager)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new Mock<IPlatformThreadingInterface>().Object)
                 .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler());
         }
