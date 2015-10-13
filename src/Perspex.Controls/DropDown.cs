@@ -110,6 +110,15 @@ namespace Perspex.Controls
                 if (((IVisual)e.Source).GetVisualAncestors().Last().GetType() != typeof(PopupRoot))
                 {
                     IsDropDownOpen = true;
+                    e.Handled = true;
+                }
+            }
+
+            if (!e.Handled)
+            {
+                if (UpdateSelectionFromEventSource(e.Source))
+                {
+                    e.Handled = true;
                 }
             }
 
