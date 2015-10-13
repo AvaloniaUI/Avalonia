@@ -596,6 +596,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
+
             if (property.IsDirect)
             {
                 property = GetRegistered(property);
@@ -611,7 +612,7 @@ namespace Perspex
                     GetDescription(source));
 
                 return source
-                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType, false))
+                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType))
                     .Subscribe(x => SetValue(property, x));
             }
             else

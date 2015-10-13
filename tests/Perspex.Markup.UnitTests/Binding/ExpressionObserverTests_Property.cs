@@ -22,6 +22,15 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public void Should_Get_Simple_Property_Value_Type()
+        {
+            var data = new { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+
+            Assert.Equal(typeof(string), target.ResultType);
+        }
+
+        [Fact]
         public async void Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };
@@ -42,6 +51,15 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public void Should_Get_Simple_Property_Chain_Type()
+        {
+            var data = new { Foo = new { Bar = new { Baz = "baz" } } };
+            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+
+            Assert.Equal(typeof(string), target.ResultType);
+        }
+
+        [Fact]
         public async void Should_Not_Have_Value_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
@@ -49,6 +67,15 @@ namespace Perspex.Markup.UnitTests.Binding
             var result = await target.Take(1);
 
             Assert.Equal(PerspexProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public void Should_Have_Null_ResultType_For_Broken_Chain()
+        {
+            var data = new { Foo = new { Bar = 1 } };
+            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+
+            Assert.Null(target.ResultType);
         }
 
         [Fact]

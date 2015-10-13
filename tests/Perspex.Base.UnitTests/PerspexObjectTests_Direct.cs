@@ -175,19 +175,6 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_Handles_UnsetValue()
-        {
-            var target = new Class1();
-            var source = new Subject<object>();
-
-            var sub = target.Bind(Class1.BazProperty, source);
-
-            source.OnNext(PerspexProperty.UnsetValue);
-
-            Assert.Equal(0, target.Baz);
-        }
-
-        [Fact]
         public void ReadOnly_Property_Cannot_Be_Set()
         {
             var target = new Class1();

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -11,7 +12,7 @@ namespace Perspex.Utilities
     /// <summary>
     /// Provides utilities for working with types at runtime.
     /// </summary>
-    internal static class TypeUtilities
+    public static class TypeUtilities
     {
         private static readonly Dictionary<Type, List<Type>> Conversions = new Dictionary<Type, List<Type>>()
         {
@@ -32,9 +33,8 @@ namespace Perspex.Utilities
         /// <param name="to">The type to cast to.</param>
         /// <param name="value">The value to cast.</param>
         /// <param name="result">If sucessful, contains the cast value.</param>
-        /// <param name="allowUnset">Allow <see cref="PerspexProperty.UnsetValue"/>.</param>
         /// <returns>True if the cast was sucessful, otherwise false.</returns>
-        public static bool TryCast(Type to, object value, out object result, bool allowUnset = true)
+        public static bool TryCast(Type to, object value, out object result)
         {
             Contract.Requires<ArgumentNullException>(to != null);
 
@@ -47,7 +47,7 @@ namespace Perspex.Utilities
 
             var from = value.GetType();
 
-            if (allowUnset && value == PerspexProperty.UnsetValue)
+            if (value == PerspexProperty.UnsetValue)
             {
                 result = value;
                 return true;
@@ -80,19 +80,41 @@ namespace Perspex.Utilities
         }
 
         /// <summary>
+        /// Try to convert a value to a type, using <see cref="System.Convert"/> if possible,
+        /// otherwise using <see cref="TryCast(Type, object, out object, bool)"/>.
+        /// </summary>
+        /// <param name="to">The type to cast to.</param>
+        /// <param name="value">The value to cast.</param>
+        /// <param name="culture">The culture to use.</param>
+        /// <param name="result">If sucessful, contains the cast value.</param>
+        /// <returns>True if the cast was sucessful, otherwise false.</returns>
+        public static bool TryConvert(Type to, object value, CultureInfo culture, out object result)
+        {
+            if ((value.GetType() == typeof(string) && Conversions.ContainsKey(to)) ||
+                (to == typeof(string) && Conversions.ContainsKey(value.GetType())))
+            {
+                result = Convert.ChangeType(value, to, culture);
+                return true;
+            }
+            else
+            {
+                return TryCast(to, value, out result);
+            }
+        }
+
+        /// <summary>
         /// Casts a value to a type, returning the default for that type if the value could not be
         /// cast.
         /// </summary>
         /// <param name="value">The value to cast.</param>
         /// <param name="type">The type to cast to..</param>
-        /// <param name="allowUnset">Allow <see cref="PerspexProperty.UnsetValue"/>.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
-        public static object CastOrDefault(object value, Type type, bool allowUnset = true)
+        public static object CastOrDefault(object value, Type type)
         {
             var typeInfo = type.GetTypeInfo();
             object result;
 
-            if (TypeUtilities.TryCast(type, value, out result, allowUnset))
+            if (TypeUtilities.TryCast(type, value, out result))
             {
                 return result;
             }

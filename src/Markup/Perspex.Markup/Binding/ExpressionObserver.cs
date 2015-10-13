@@ -79,8 +79,42 @@ namespace Perspex.Markup.Binding
             }
         }
 
+        /// <summary>
+        /// Gets the type of the expression result or null if the expression could not be 
+        /// evaluated.
+        /// </summary>
+        public Type ResultType
+        {
+            get
+            {
+                IncrementCount();
+
+                try
+                {
+                    return (Leaf as PropertyAccessorNode)?.PropertyType;
+                }
+                finally
+                {
+                    DecrementCount();
+                }
+            }
+        }
+
         /// <inheritdoc/>
         string IDescription.Description => Expression;
+
+        /// <summary>
+        /// Gets the leaf node.
+        /// </summary>
+        private ExpressionNode Leaf
+        {
+            get
+            {
+                var node = _node;
+                while (node.Next != null) node = node.Next;
+                return node;
+            }
+        }
 
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)

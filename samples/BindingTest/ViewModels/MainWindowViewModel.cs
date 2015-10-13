@@ -7,6 +7,7 @@ namespace BindingTest.ViewModels
     public class MainWindowViewModel : ReactiveObject
     {
         private string _booleanString = "True";
+        private double _doubleValue = 5.0;
         private string _stringValue = "Simple Binding";
 
         public MainWindowViewModel()
@@ -33,6 +34,12 @@ namespace BindingTest.ViewModels
         {
             get { return _booleanString; }
             set { this.RaiseAndSetIfChanged(ref _booleanString, value); }
+        }
+
+        public double DoubleValue
+        {
+            get { return _doubleValue; }
+            set { this.RaiseAndSetIfChanged(ref _doubleValue, value); }
         }
 
         public string StringValue

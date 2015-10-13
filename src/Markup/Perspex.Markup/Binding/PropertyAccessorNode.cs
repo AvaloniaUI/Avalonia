@@ -23,6 +23,8 @@ namespace Perspex.Markup.Binding
 
         public string PropertyName { get; }
 
+        public Type PropertyType => _propertyInfo?.PropertyType;
+
         public override bool SetValue(object value)
         {
             if (Next != null)

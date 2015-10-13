@@ -49,6 +49,8 @@
     <Compile Include="Binding\PropertyAccessorNode.cs" />
     <Compile Include="Binding\ExpressionNode.cs" />
     <Compile Include="Binding\ExpressionObserver.cs" />
+    <Compile Include="DefaultValueConverter.cs" />
+    <Compile Include="IValueConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
