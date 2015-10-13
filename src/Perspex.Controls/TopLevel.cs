@@ -286,6 +286,15 @@ namespace Perspex.Controls
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
 
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        {
+            base.OnAttachedToVisualTree(root);
+
+            throw new InvalidOperationException(
+                $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
+        }
+
         /// <summary>
         /// Tries to get a service from an <see cref="IPerspexDependencyResolver"/>, throwing an
         /// exception if not found.

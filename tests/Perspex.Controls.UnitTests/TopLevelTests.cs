@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Reactive;
 using System.Reactive.Subjects;
 using Moq;
@@ -98,11 +99,7 @@ namespace Perspex.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
-                    Template = new ControlTemplate<TestTopLevel>(x =>
-                        new ContentPresenter
-                        {
-                            [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
-                        }),
+                    Template = CreateTemplate(),
                     Content = new TextBlock
                     {
                         Width = 321,
@@ -128,11 +125,7 @@ namespace Perspex.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
-                    Template = new ControlTemplate<TestTopLevel>(x =>
-                        new ContentPresenter
-                        {
-                            [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
-                        }),
+                    Template = CreateTemplate(),
                     Content = new TextBlock
                     {
                         Width = 321,
@@ -304,6 +297,34 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Adding_Top_Level_As_Child_Should_Throw_Exception()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                RegisterServices();
+
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+                var target = new TestTopLevel(impl.Object);
+                var child = new TestTopLevel(impl.Object);
+
+                target.Template = CreateTemplate();
+                target.Content = child;
+
+                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
+            }
+        }
+
+        private ControlTemplate<TestTopLevel> CreateTemplate()
+        {
+            return new ControlTemplate<TestTopLevel>(x =>
+                new ContentPresenter
+                {
+                    [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                });
+        }
+
         private void RegisterServices()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
@@ -318,7 +339,6 @@ namespace Perspex.Controls.UnitTests
             var theme = new Styles();
 
             globalStyles.Setup(x => x.Styles).Returns(theme);
-
 
             PerspexLocator.CurrentMutable
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
