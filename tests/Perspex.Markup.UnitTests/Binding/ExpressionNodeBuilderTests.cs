@@ -27,6 +27,14 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public void Should_Build_Property_With_Digits()
+        {
+            var result = ToList(ExpressionNodeBuilder.Build("F0o"));
+
+            AssertIsProperty(result[0], "F0o");
+        }
+
+        [Fact]
         public void Should_Build_Property_Chain()
         {
             var result = ToList(ExpressionNodeBuilder.Build("Foo.Bar.Baz"));

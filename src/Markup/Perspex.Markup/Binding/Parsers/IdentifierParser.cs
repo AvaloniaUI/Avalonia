@@ -44,7 +44,8 @@ namespace Perspex.Markup.Binding.Parsers
                 return cat == UnicodeCategory.NonSpacingMark ||
                        cat == UnicodeCategory.SpacingCombiningMark ||
                        cat == UnicodeCategory.ConnectorPunctuation ||
-                       cat == UnicodeCategory.Format;
+                       cat == UnicodeCategory.Format ||
+                       cat == UnicodeCategory.DecimalDigitNumber;
             }
         }
     }
