@@ -56,7 +56,7 @@ namespace Perspex.Controls.Primitives
 
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
-                UpdateSelectionFromEventSource(e.Source);
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
         }
 
@@ -67,7 +67,7 @@ namespace Perspex.Controls.Primitives
 
             if (e.MouseButton == MouseButton.Left)
             {
-                UpdateSelectionFromEventSource(e.Source);
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
         }
     }
