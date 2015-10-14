@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -55,6 +56,17 @@ namespace Perspex.Base.UnitTests
             var target = new Class3();
             target.SetValue(Class1.QuxProperty, 50);
             Assert.Equal(50, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void Binding_To_UnsetValue_Doesnt_Throw()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, source);
+
+            source.OnNext(PerspexProperty.UnsetValue);
         }
 
         private class Class1 : PerspexObject

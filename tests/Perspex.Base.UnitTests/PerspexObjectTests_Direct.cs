@@ -55,6 +55,16 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_NonGeneric_Coerces_UnsetValue_To_Default_Value()
+        {
+            var target = new Class1();
+
+            target.SetValue((PerspexProperty)Class1.BazProperty, PerspexProperty.UnsetValue);
+
+            Assert.Equal(0, target.Baz);
+        }
+
+        [Fact]
         public void SetValue_Raises_PropertyChanged()
         {
             var target = new Class1();
@@ -146,6 +156,21 @@ namespace Perspex.Base.UnitTests
 
             source.OnNext("third");
             Assert.Equal("second", target.Foo);
+        }
+
+        [Fact]
+        public void Bind_NonGeneric_Coerces_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            var sub = target.Bind((PerspexProperty)Class1.BazProperty, source);
+
+            Assert.Equal(5, target.Baz);
+            source.OnNext(6);
+            Assert.Equal(6, target.Baz);
+            source.OnNext(PerspexProperty.UnsetValue);
+            Assert.Equal(0, target.Baz);
         }
 
         [Fact]

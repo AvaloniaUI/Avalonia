@@ -216,7 +216,7 @@ namespace Perspex
             {
                 var old = _value;
 
-                if (_validate != null)
+                if (_validate != null && value != PerspexProperty.UnsetValue)
                 {
                     value = _validate(value);
                 }

@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Utilities;
 
 namespace Perspex.Markup.Binding
 {
@@ -82,7 +83,14 @@ namespace Perspex.Markup.Binding
         {
             try
             {
-                return _converter.Convert(value, type, null, CultureInfo.CurrentUICulture);
+                if (value == null || value == PerspexProperty.UnsetValue)
+                {
+                    return TypeUtilities.Default(type);
+                }
+                else
+                {
+                    return _converter.Convert(value, type, null, CultureInfo.CurrentUICulture);
+                }
             }
             catch
             {
@@ -95,8 +103,16 @@ namespace Perspex.Markup.Binding
         {
             try
             {
-                result = _converter.ConvertBack(value, type, null, CultureInfo.CurrentUICulture);
-                return true;
+                if (value == null || value == PerspexProperty.UnsetValue)
+                {
+                    result = TypeUtilities.Default(type);
+                    return true;
+                }
+                else
+                {
+                    result = _converter.ConvertBack(value, type, null, CultureInfo.CurrentUICulture);
+                    return true;
+                }
             }
             catch
             {

@@ -5,9 +5,9 @@
         Title="Perspex Test Application" Height="350" Width="525" SizeToContent="WidthAndHeight" >
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
         <TabControl Grid.Row="1" Grid.ColumnSpan="2" Padding="5">
-            <TabControl.Transition>
+            <!--<TabControl.Transition>
                 <PageSlide Duration="0.25" />
-            </TabControl.Transition>
+            </TabControl.Transition>-->
             <TabItem Header="Buttons">
                 <StackPanel HorizontalAlignment="Center" Width="200" VerticalAlignment="Center">
                     <StackPanel.Styles>
