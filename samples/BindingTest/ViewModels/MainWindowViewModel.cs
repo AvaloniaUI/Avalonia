@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using ReactiveUI;
 
 namespace BindingTest.ViewModels
@@ -12,12 +13,13 @@ namespace BindingTest.ViewModels
 
         public MainWindowViewModel()
         {
-            Items = new ObservableCollection<TestItem>
-            {
-                new TestItem { StringValue = "Foo" },
-                new TestItem { StringValue = "Bar" },
-                new TestItem { StringValue = "Baz" },
-            };
+            Items = new ObservableCollection<TestItem>(
+                Enumerable.Range(0, 20).Select(x => new TestItem
+                {
+                    StringValue = "Item " + x
+                }));
+
+            SelectedItems = new ObservableCollection<TestItem>();
 
             ShuffleItems = ReactiveCommand.Create();
             ShuffleItems.Subscribe(_ =>
@@ -28,6 +30,7 @@ namespace BindingTest.ViewModels
         }
 
         public ObservableCollection<TestItem> Items { get; }
+        public ObservableCollection<TestItem> SelectedItems { get; }
         public ReactiveCommand<object> ShuffleItems { get; }
 
         public string BooleanString

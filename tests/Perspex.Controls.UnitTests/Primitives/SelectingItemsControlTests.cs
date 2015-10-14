@@ -420,31 +420,6 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(target.SelectedItem, items[1]);
         }
 
-        [Fact]
-        public void Setting_SelectedItem_Should_Set_Panel_Keyboard_Navigation()
-        {
-            var items = new[]
-            {
-                new Item(),
-                new Item(),
-            };
-
-            var target = new SelectingItemsControl
-            {
-                Items = items,
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.SelectedItem = items[1];
-
-            var panel = target.Presenter.Panel;
-
-            Assert.Equal(
-                KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel), 
-                panel.Children[1]);
-        }
-
         private ControlTemplate Template()
         {
             return new ControlTemplate<SelectingItemsControl>(control =>
