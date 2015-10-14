@@ -501,6 +501,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
+
             if (property.IsDirect)
             {
                 property = GetRegistered(property);
@@ -511,7 +512,7 @@ namespace Perspex
                 }
 
                 LogPropertySet(property, value, priority);
-                property.Setter(this, value);
+                property.Setter(this, UnsetToDefault(value, property));
             }
             else
             {
@@ -846,6 +847,19 @@ namespace Perspex
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Converts an unset value to the default value for a property type.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>The value.</returns>
+        private static object UnsetToDefault(object value, PerspexProperty property)
+        {
+            return value == PerspexProperty.UnsetValue ?
+                TypeUtilities.Default(property.PropertyType) :
+                value;
         }
 
         /// <summary>

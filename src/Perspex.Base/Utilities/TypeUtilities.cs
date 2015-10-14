@@ -127,5 +127,24 @@ namespace Perspex.Utilities
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets the default value for the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The default value.</returns>
+        public static object Default(Type type)
+        {
+            var typeInfo = type.GetTypeInfo();
+
+            if (typeInfo.IsValueType)
+            {
+                return Activator.CreateInstance(type);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
