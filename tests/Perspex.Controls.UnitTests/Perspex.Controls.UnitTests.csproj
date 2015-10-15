@@ -120,6 +120,10 @@
     <Compile Include="Utils\HotKeyManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
+      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
+      <Name>Perspex.Markup.Xaml</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>

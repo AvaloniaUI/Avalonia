@@ -32,7 +32,10 @@ namespace Perspex.Controls
         /// Defines the <see cref="DataContext"/> property.
         /// </summary>
         public static readonly PerspexProperty<object> DataContextProperty =
-            PerspexProperty.Register<Control, object>(nameof(DataContext), inherits: true);
+            PerspexProperty.Register<Control, object>(
+                nameof(DataContext), 
+                inherits: true,
+                notifying: DataContextNotifying);
 
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
@@ -263,6 +266,16 @@ namespace Perspex.Controls
         Type IStyleable.StyleKey => GetType();
 
         /// <summary>
+        /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
+        /// the process of being notified.
+        /// </summary>
+        protected bool IsDataContextChanging
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets the control's logical children.
         /// </summary>
         protected IPerspexList<ILogical> LogicalChildren
@@ -397,12 +410,35 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Called when the <see cref="DataContext"/> is changed and all subscribers to that change
+        /// have been notified.
+        /// </summary>
+        protected virtual void OnDataContextFinishedChanging()
+        {
+        }
+
+        /// <summary>
         /// Makes the control use a different control's logical children as its own.
         /// </summary>
         /// <param name="collection">The logical children to use.</param>
         protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
         {
             _logicalChildren = collection;
+        }
+
+        /// <summary>
+        /// Called when the <see cref="DataContext"/> property begins and ends being notified.
+        /// </summary>
+        /// <param name="o">The object on which the DataContext is changing.</param>
+        /// <param name="notifying">Whether the notifcation is beginning or ending.</param>
+        private static void DataContextNotifying(PerspexObject o, bool notifying)
+        {
+            var control = o as Control;
+
+            if (control != null)
+            {
+                control.IsDataContextChanging = notifying;
+            }
         }
     }
 }

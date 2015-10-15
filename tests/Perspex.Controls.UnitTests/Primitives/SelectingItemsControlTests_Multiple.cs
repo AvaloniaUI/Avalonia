@@ -8,6 +8,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Markup.Xaml.Binding;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
@@ -354,8 +355,74 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "baz", "qux", "qiz" }, target.SelectedItems.Cast<object>().ToList());
         }
 
+        /// <summary>
+        /// Tests a problem discovered with ListBox with selection.
+        /// </summary>
+        /// <remarks>
+        /// - Items is bound to DataContext first, followed by say SelectedIndex
+        /// - When the ListBox is removed from the visual tree, DataContext becomes null (as it's
+        ///   inherited)
+        /// - This changes Items to null, which changes SelectedIndex to null as there are no
+        ///   longer any items
+        /// - However, the news that DataContext is now null hasn't yet reached the SelectedItems
+        ///   binding and so the unselection is sent back to the ViewModel
+        /// 
+        /// This is a similar problem to that tested by XamlBindingTest.Should_Not_Write_To_Old_DataContext.
+        /// However, that tests a general property binding problem: here we are writing directly
+        /// to the SelectedItems collection - not via a binding - so it's something that the 
+        /// binding system cannot solve. Instead we solve it by not clearing SelectedItems when
+        /// DataContext is in the process of changing.
+        /// </remarks>
+        [Fact]
+        public void Should_Not_Write_To_Old_DataContext()
+        {
+            var vm = new OldDataContextViewModel();
+            var target = new TestSelector();
+
+            var itemsBinding = new XamlBinding
+            {
+                SourcePropertyPath = "Items",
+                BindingMode = BindingMode.OneWay,
+            };
+
+            var selectedItemsBinding = new XamlBinding
+            {
+                SourcePropertyPath = "SelectedItems",
+                BindingMode = BindingMode.OneWay,
+            };
+
+            // Bind Items and SelectedItems to the VM.
+            itemsBinding.Bind(target, TestSelector.ItemsProperty);
+            selectedItemsBinding.Bind(target, TestSelector.SelectedItemsProperty);
+
+            // Set DataContext and SelectedIndex
+            target.DataContext = vm;
+            target.SelectedIndex = 1;
+
+            // Make sure SelectedItems are written back to VM.
+            Assert.Equal(new[] { "bar" }, vm.SelectedItems);
+
+            // Clear DataContext and ensure that SelectedItems is still set in the VM.
+            target.DataContext = null;
+            Assert.Equal(new[] { "bar" }, vm.SelectedItems);
+        }
+
+        private ControlTemplate Template()
+        {
+            return new ControlTemplate<SelectingItemsControl>(control =>
+                new ItemsPresenter
+                {
+                    Name = "itemsPresenter",
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                });
+        }
+
         private class TestSelector : SelectingItemsControl
         {
+            public static readonly new PerspexProperty<IList> SelectedItemsProperty = 
+                SelectingItemsControl.SelectedItemsProperty;
+
             public new IList SelectedItems
             {
                 get { return base.SelectedItems; }
@@ -374,15 +441,16 @@ namespace Perspex.Controls.UnitTests.Primitives
             }
         }
 
-        private ControlTemplate Template()
+        private class OldDataContextViewModel
         {
-            return new ControlTemplate<SelectingItemsControl>(control =>
-                new ItemsPresenter
-                {
-                    Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                });
+            public OldDataContextViewModel()
+            {
+                Items = new List<string> { "foo", "bar" };
+                SelectedItems = new List<string>();
+            }
+
+            public List<string> Items { get; } 
+            public List<string> SelectedItems { get; }
         }
     }
 }

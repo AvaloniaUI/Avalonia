@@ -807,18 +807,33 @@ namespace Perspex
                 newValue,
                 priority);
 
-            OnPropertyChanged(e);
-            property.NotifyChanged(e);
-
-            if (PropertyChanged != null)
+            if (property.Notifying != null)
             {
-                PropertyChanged(this, e);
+                property.Notifying(this, true);
             }
 
-            if (_inpcChanged != null)
+            try
             {
-                PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
-                _inpcChanged(this, e2);
+                OnPropertyChanged(e);
+                property.NotifyChanged(e);
+
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, e);
+                }
+
+                if (_inpcChanged != null)
+                {
+                    PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
+                    _inpcChanged(this, e2);
+                }
+            }
+            finally
+            {
+                if (property.Notifying != null)
+                {
+                    property.Notifying(this, false);
+                }
             }
         }
 

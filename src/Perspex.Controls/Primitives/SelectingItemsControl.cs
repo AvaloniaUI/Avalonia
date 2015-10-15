@@ -82,6 +82,7 @@ namespace Perspex.Controls.Primitives
         private object _selectedItem;
         private IList _selectedItems;
         private bool _ignoreContainerSelectionChanged;
+        private IList _clearSelectedItemsAfterDataContextChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -155,7 +156,21 @@ namespace Perspex.Controls.Primitives
                     }
                     else if (SelectedItems.Count > 0)
                     {
-                        SelectedItems.Clear();
+                        if (!IsDataContextChanging)
+                        {
+                            SelectedItems.Clear();
+                        }
+                        else
+                        {
+                            // The DataContext is changing, and it's quite possible that our 
+                            // selection is being cleared because both Items and SelectedItems
+                            // are bound to something on the DataContext. However, if we clear
+                            // the collection now, we may be clearing a the SelectedItems from
+                            // the DataContext which is being unbound, so do it after DataContext
+                            // has notified all interested parties, in 
+                            // the OnDataContextFinishedChanging method.
+                            _clearSelectedItemsAfterDataContextChanged = SelectedItems;
+                        }
                     }
                 }
             }
@@ -179,12 +194,9 @@ namespace Perspex.Controls.Primitives
 
             set
             {
-                if (value != null)
-                {
-                    UnsubscribeFromSelectedItems();
-                    _selectedItems = value;
-                    SubscribeToSelectedItems();
-                }
+                UnsubscribeFromSelectedItems();
+                _selectedItems = value ?? new PerspexList<object>();
+                SubscribeToSelectedItems();
             }
         }
 
@@ -269,6 +281,16 @@ namespace Perspex.Controls.Primitives
                     SelectedIndex = IndexOf(e.NewItems, SelectedItem);
                     break;
             }
+        }
+
+        protected override void OnDataContextFinishedChanging()
+        {
+            if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
+            {
+                _clearSelectedItemsAfterDataContextChanged.Clear();
+            }
+
+            _clearSelectedItemsAfterDataContextChanged = null;
         }
 
         /// <summary>

@@ -20,6 +20,11 @@ namespace Perspex
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
+        /// <param name="notifying">
+        /// A method that gets called before and after the property starts being notified on an
+        /// object; the bool argument will be true before and false afterwards. This callback is
+        /// intended to support IsDataContextChanging.
+        /// </param>
         /// <param name="isAttached">Whether the property is an attached property.</param>
         public PerspexProperty(
             string name,
@@ -28,6 +33,7 @@ namespace Perspex
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.Default,
             Func<PerspexObject, TValue, TValue> validate = null,
+            Action<PerspexObject, bool> notifying = null,
             bool isAttached = false)
             : base(
                 name,
@@ -37,6 +43,7 @@ namespace Perspex
                 inherits,
                 defaultBindingMode,
                 Cast(validate),
+                notifying,
                 isAttached)
         {
         }

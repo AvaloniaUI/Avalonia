@@ -63,6 +63,11 @@ namespace Perspex
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
+        /// <param name="notifying">
+        /// A method that gets called before and after the property starts being notified on an
+        /// object; the bool argument will be true before and false afterwards. This callback is
+        /// intended to support IsDataContextChanging.
+        /// </param>
         /// <param name="isAttached">Whether the property is an attached property.</param>
         public PerspexProperty(
             string name,
@@ -72,6 +77,7 @@ namespace Perspex
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.Default,
             Func<PerspexObject, object, object> validate = null,
+            Action<PerspexObject, bool> notifying = null,
             bool isAttached = false)
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -90,6 +96,7 @@ namespace Perspex
             Inherits = inherits;
             DefaultBindingMode = defaultBindingMode;
             IsAttached = isAttached;
+            Notifying = notifying;
             _id = s_nextId++;
 
             if (validate != null)
@@ -241,6 +248,16 @@ namespace Perspex
         public IObservable<PerspexPropertyChangedEventArgs> Changed => _changed;
 
         /// <summary>
+        /// The notifying callback.
+        /// </summary>
+        /// <remarks>
+        /// This is a method that gets called before and after the property starts being notified
+        /// on an object; the bool argument will be true before and false afterwards. This 
+        /// callback is intended to support IsDataContextChanging.
+        /// </remarks>
+        public Action<PerspexObject, bool> Notifying { get; }
+
+        /// <summary>
         /// Provides access to a property's binding via the <see cref="PerspexObject"/>
         /// indexer.
         /// </summary>
@@ -323,13 +340,19 @@ namespace Perspex
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
+        /// <param name="notifying">
+        /// A method that gets called before and after the property starts being notified on an
+        /// object; the bool argument will be true before and false afterwards. This callback is
+        /// intended to support IsDataContextChanging.
+        /// </param>
         /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static PerspexProperty<TValue> Register<TOwner, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TOwner, TValue, TValue> validate = null)
+            Func<TOwner, TValue, TValue> validate = null,
+            Action<PerspexObject, bool> notifying = null)
             where TOwner : PerspexObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -341,6 +364,7 @@ namespace Perspex
                 inherits,
                 defaultBindingMode,
                 Cast(validate),
+                notifying,
                 false);
 
             PerspexObject.Register(typeof(TOwner), result);
@@ -404,6 +428,7 @@ namespace Perspex
                 inherits,
                 defaultBindingMode,
                 validate,
+                null,
                 true);
 
             PerspexObject.Register(typeof(THost), result);
@@ -440,6 +465,7 @@ namespace Perspex
                 inherits,
                 defaultBindingMode,
                 validate,
+                null,
                 true);
 
             PerspexObject.Register(typeof(THost), result);
