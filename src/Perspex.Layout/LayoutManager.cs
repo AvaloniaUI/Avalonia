@@ -276,12 +276,12 @@ namespace Perspex.Layout
                         {
                             var control = item.Control;
 
-                            while (control.PreviousArrange == null)
+                            while (control != null && control.PreviousArrange == null)
                             {
                                 control = control.GetVisualParent<ILayoutable>();
                             }
 
-                            if (control.GetVisualRoot() == Root)
+                            if (control != null && control.GetVisualRoot() == Root)
                             {
                                 control.Arrange(control.PreviousArrange.Value, true);
                             }
