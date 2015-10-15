@@ -54,7 +54,7 @@ namespace Perspex.Input
         /// <returns>The topmost <see cref="IInputElement"/> at the specified position.</returns>
         public static IInputElement InputHitTest(this IInputElement element, Point p)
         {
-            return element.GetInputElementsAt(p).First();
+            return element.GetInputElementsAt(p).FirstOrDefault();
         }
 
         private static IEnumerable<IInputElement> ZSort(IEnumerable<IInputElement> elements)
