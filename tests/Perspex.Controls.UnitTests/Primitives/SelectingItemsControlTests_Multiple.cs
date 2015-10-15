@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -353,6 +354,27 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.SelectRange(4);
 
             Assert.Equal(new[] { "baz", "qux", "qiz" }, target.SelectedItems.Cast<object>().ToList());
+        }
+
+        [Fact]
+        public void Suprious_SelectedIndex_Changes_Should_Not_Be_Triggered()
+        {
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+
+            var selectedIndexes = new List<int>();
+            target.GetObservable(TestSelector.SelectedIndexProperty).Subscribe(x => selectedIndexes.Add(x));
+
+            target.SelectedItems = new PerspexList<object> { "bar", "baz" };
+            target.SelectedItem = "foo";
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { -1, 1, 0 }, selectedIndexes);
         }
 
         /// <summary>

@@ -82,6 +82,7 @@ namespace Perspex.Controls.Primitives
         private object _selectedItem;
         private IList _selectedItems;
         private bool _ignoreContainerSelectionChanged;
+        private bool _syncingSelectedItems;
         private IList _clearSelectedItemsAfterDataContextChanged;
 
         /// <summary>
@@ -150,8 +151,10 @@ namespace Perspex.Controls.Primitives
                     {
                         if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
                         {
+                            _syncingSelectedItems = true;
                             SelectedItems.Clear();
                             SelectedItems.Add(effective);
+                            _syncingSelectedItems = false;
                         }
                     }
                     else if (SelectedItems.Count > 0)
@@ -283,6 +286,7 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnDataContextFinishedChanging()
         {
             if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
@@ -661,7 +665,10 @@ namespace Perspex.Controls.Primitives
                 case NotifyCollectionChangedAction.Remove:
                     if (SelectedItems.Count == 0)
                     {
-                        SelectedIndex = -1;
+                        if (!_syncingSelectedItems)
+                        {
+                            SelectedIndex = -1;
+                        }
                     }
                     else
                     {
@@ -679,7 +686,11 @@ namespace Perspex.Controls.Primitives
                         MarkContainerSelected(item, false);
                     }
 
-                    SelectedIndex = -1;
+                    if (!_syncingSelectedItems)
+                    {
+                        SelectedIndex = -1;
+                    }
+
                     SelectedItemsAdded(SelectedItems);
                     break;
 
@@ -694,7 +705,7 @@ namespace Perspex.Controls.Primitives
                         MarkItemSelected(item, true);
                     }
 
-                    if (SelectedItem != SelectedItems[0])
+                    if (SelectedItem != SelectedItems[0] && !_syncingSelectedItems)
                     {
                         var oldItem = SelectedItem;
                         var oldIndex = SelectedIndex;
@@ -723,7 +734,7 @@ namespace Perspex.Controls.Primitives
                     MarkItemSelected(item, true);
                 }
 
-                if (SelectedItem == null)
+                if (SelectedItem == null && !_syncingSelectedItems)
                 {
                     var index = IndexOf(Items, items[0]);
 
