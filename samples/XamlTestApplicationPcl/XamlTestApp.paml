@@ -1,0 +1,4 @@
+﻿<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
+        xmlns="https://github.com/perspex"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</Application>

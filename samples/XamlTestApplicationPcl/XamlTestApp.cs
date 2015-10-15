@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Perspex;
+﻿using Perspex;
+using Perspex.Markup.Xaml;
 using Perspex.Themes.Default;
 
 namespace XamlTestApplication
@@ -17,6 +13,13 @@ namespace XamlTestApplication
             RegisterServices();
             RegisterPlatform();
             Styles = new DefaultTheme();
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            var loader = new PerspexXamlLoader();
+            loader.Load(typeof(XamlTestApp), this);
         }
     }
 }
