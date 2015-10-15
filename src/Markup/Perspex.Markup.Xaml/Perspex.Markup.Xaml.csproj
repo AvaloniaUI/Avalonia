@@ -229,6 +229,7 @@
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\Template.cs" />
     <Compile Include="Templates\TemplateContent.cs" />

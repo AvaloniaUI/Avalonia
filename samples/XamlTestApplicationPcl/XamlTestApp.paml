@@ -1,4 +1,21 @@
 ﻿<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Styles>
+    <Style Selector="Button">
+      <Setter Property="Button.Background" Value="#ffaaaaaa"/>
+      <Setter Property="Button.BorderBrush" Value="#ffaaaaaa"/>
+      <Setter Property="Button.BorderThickness" Value="2"/>
+      <Setter Property="Button.Foreground" Value="Black"/>
+      <Setter Property="Button.HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Button.VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Button.Template">
+        <ControlTemplate TargetType="Button">
+          <Border Padding="3">
+            <ContentPresenter Content="Content Here"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Application.Styles>
 </Application>
