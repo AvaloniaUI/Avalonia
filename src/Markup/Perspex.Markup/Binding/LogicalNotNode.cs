@@ -23,14 +23,28 @@ namespace Perspex.Markup.Binding
         {
             if (v != PerspexProperty.UnsetValue)
             {
-                try
+                var s = v as string;
+
+                if (s != null)
                 {
-                    var boolean = Convert.ToBoolean(v, CultureInfo.InvariantCulture);
-                    return !boolean;
+                    bool result;
+
+                    if (bool.TryParse(s, out result))
+                    {
+                        return !result;
+                    }
                 }
-                catch
+                else
                 {
-                    // TODO: Maybe should log something here.
+                    try
+                    {
+                        var boolean = Convert.ToBoolean(v, CultureInfo.InvariantCulture);
+                        return !boolean;
+                    }
+                    catch
+                    {
+                        // TODO: Maybe should log something here.
+                    }
                 }
             }
 

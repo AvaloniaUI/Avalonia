@@ -61,7 +61,7 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
-        public async void Should_Return_Empty_For_String_Not_Convertible_To_Boolean()
+        public async void Should_Return_UnsetValue_For_String_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "!Foo");
