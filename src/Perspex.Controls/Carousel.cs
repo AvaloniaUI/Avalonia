@@ -12,27 +12,27 @@ namespace Perspex.Controls
     /// <summary>
     /// An items control that displays its items as pages that fill the control.
     /// </summary>
-    public class Deck : SelectingItemsControl
+    public class Carousel : SelectingItemsControl
     {
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
-            PerspexProperty.Register<Deck, IPageTransition>("Transition");
+            PerspexProperty.Register<Carousel, IPageTransition>("Transition");
 
         /// <summary>
-        /// The default value of <see cref="IReparentingControl"/> for <see cref="Deck"/>.
+        /// The default value of <see cref="IReparentingControl"/> for <see cref="Carousel"/>.
         /// </summary>
         private static readonly ITemplate<IPanel> PanelTemplate =
             new FuncTemplate<IPanel>(() => new Panel());
 
         /// <summary>
-        /// Initializes static members of the <see cref="Deck"/> class.
+        /// Initializes static members of the <see cref="Carousel"/> class.
         /// </summary>
-        static Deck()
+        static Carousel()
         {
-            SelectionModeProperty.OverrideDefaultValue<Deck>(SelectionMode.AlwaysSelected);
-            ItemsPanelProperty.OverrideDefaultValue<Deck>(PanelTemplate);
+            SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
+            ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
         }
 
         /// <summary>

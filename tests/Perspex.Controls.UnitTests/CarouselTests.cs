@@ -10,14 +10,14 @@ using Xunit;
 
 namespace Perspex.Controls.UnitTests
 {
-    public class DeckTests
+    public class CarouselTests
     {
         [Fact]
         public void First_Item_Should_Be_Selected_By_Default()
         {
-            var target = new Deck
+            var target = new Carousel
             {
-                Template = new ControlTemplate<Deck>(CreateTemplate),
+                Template = new ControlTemplate<Carousel>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -34,9 +34,9 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void LogicalChild_Should_Be_Selected_Item()
         {
-            var target = new Deck
+            var target = new Carousel
             {
-                Template = new ControlTemplate<Deck>(CreateTemplate),
+                Template = new ControlTemplate<Carousel>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -53,15 +53,15 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal("Foo", ((TextBlock)child).Text);
         }
 
-        private Control CreateTemplate(Deck control)
+        private Control CreateTemplate(Carousel control)
         {
-            return new DeckPresenter
+            return new CarouselPresenter
             {
                 Name = "itemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                [~DeckPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
-                [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
+                [~CarouselPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
+                [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
             };
         }
     }

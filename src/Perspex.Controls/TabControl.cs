@@ -23,7 +23,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
-            Deck.TransitionProperty.AddOwner<TabControl>();
+            Carousel.TransitionProperty.AddOwner<TabControl>();
 
         private static readonly IMemberSelector s_contentSelector =
             new FuncMemberSelector<object, object>(SelectContent);
@@ -74,7 +74,7 @@ namespace Perspex.Controls
         /// </returns>
         bool IReparentingHost.WillReparentChildrenOf(IControl control)
         {
-            return control is DeckPresenter;
+            return control is CarouselPresenter;
         }
 
         /// <summary>

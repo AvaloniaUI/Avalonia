@@ -11,42 +11,42 @@ using Perspex.Styling;
 namespace Perspex.Themes.Default
 {
     /// <summary>
-    /// The default style for the <see cref="Deck"/> control.
+    /// The default style for the <see cref="Carousel"/> control.
     /// </summary>
-    public class DeckStyle : Styles
+    public class CarouselStyle : Styles
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeckStyle"/> class.
+        /// Initializes a new instance of the <see cref="CarouselStyle"/> class.
         /// </summary>
-        public DeckStyle()
+        public CarouselStyle()
         {
             AddRange(new[]
             {
-                new Style(x => x.OfType<Deck>())
+                new Style(x => x.OfType<Carousel>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Deck>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Carousel>(Template)),
                     },
                 },
             });
         }
 
         /// <summary>
-        /// The default template for the <see cref="Deck"/> control.
+        /// The default template for the <see cref="Carousel"/> control.
         /// </summary>
         /// <param name="control">The control being styled.</param>
         /// <returns>The root of the instantiated template.</returns>
-        public static Control Template(Deck control)
+        public static Control Template(Carousel control)
         {
-            return new DeckPresenter
+            return new CarouselPresenter
             {
                 Name = "itemsPresenter",
                 MemberSelector = control.MemberSelector,
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                [~DeckPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
-                [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
+                [~CarouselPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
+                [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
             };
         }
     }

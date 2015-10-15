@@ -104,13 +104,13 @@ namespace TestApplication
                             }
                         }
                     },
-                    new Deck
+                    new Carousel
                     {
-                        Name = "deck",
+                        Name = "carousel",
                         MemberSelector = control.ContentSelector,
-                        [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
-                        [!Deck.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
+                        [~Carousel.TransitionProperty] = control[~TabControl.TransitionProperty],
+                        [!Carousel.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!Carousel.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
                         [Grid.ColumnProperty] = 1,
                     }
                 }

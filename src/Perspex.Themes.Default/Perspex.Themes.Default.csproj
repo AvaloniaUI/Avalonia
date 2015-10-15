@@ -82,7 +82,7 @@
     <Compile Include="ToolTipStyle.cs" />
     <Compile Include="FocusAdornerStyle.cs" />
     <Compile Include="DropDownStyle.cs" />
-    <Compile Include="DeckStyle.cs" />
+    <Compile Include="CarouselStyle.cs" />
     <Compile Include="RadioButtonStyle.cs" />
     <Compile Include="ToggleButtonStyle.cs" />
     <Compile Include="ListBoxStyle.cs" />

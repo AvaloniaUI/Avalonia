@@ -92,7 +92,7 @@
     <Compile Include="Primitives\TrackTests.cs" />
     <Compile Include="Primitives\PopupTests.cs" />
     <Compile Include="DropDownTests.cs" />
-    <Compile Include="Presenters\DeckPresenterTests.cs" />
+    <Compile Include="Presenters\CarouselPresenterTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests.cs" />
     <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
     <Compile Include="Primitives\TemplatedControlTests.cs" />
@@ -105,7 +105,7 @@
     <Compile Include="ItemsControlTests.cs" />
     <Compile Include="ContentControlTests.cs" />
     <Compile Include="DecoratorTests.cs" />
-    <Compile Include="DeckTests.cs" />
+    <Compile Include="CarouselTests.cs" />
     <Compile Include="TopLevelTests.cs" />
     <Compile Include="Primitives\TabStripTests.cs" />
     <Compile Include="TabControlTests.cs" />

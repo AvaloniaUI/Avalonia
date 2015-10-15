@@ -188,10 +188,10 @@ namespace Perspex.Controls.UnitTests
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!!TabStrip.SelectedTabProperty] = parent[!!TabControl.SelectedTabProperty]
                     },
-                    new Deck
+                    new Carousel
                     {
-                        Name = "deck",
-                        Template = new ControlTemplate<Deck>(CreateDeckTemplate),
+                        Name = "carousel",
+                        Template = new ControlTemplate<Carousel>(CreateCarouselTemplate),
                         MemberSelector = parent.ContentSelector,
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!SelectingItemsControl.SelectedItemProperty] = parent[!SelectingItemsControl.SelectedItemProperty],
@@ -209,16 +209,16 @@ namespace Perspex.Controls.UnitTests
             };
         }
 
-        private Control CreateDeckTemplate(Deck control)
+        private Control CreateCarouselTemplate(Carousel control)
         {
-            return new DeckPresenter
+            return new CarouselPresenter
             {
                 Name = "itemsPresenter",
-                [!DeckPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                [!DeckPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
-                [!DeckPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
-                [!DeckPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
-                [~DeckPresenter.TransitionProperty] = control[~Deck.TransitionProperty],
+                [!CarouselPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                [!CarouselPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
+                [!CarouselPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
+                [!CarouselPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
+                [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
             };
         }
 

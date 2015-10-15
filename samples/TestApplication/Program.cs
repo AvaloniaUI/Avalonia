@@ -471,7 +471,7 @@ namespace TestApplication
 
 		private static TabItem ImagesTab() 
 		{
-			var imageDeck = new Deck 
+			var imageCarousel = new Carousel 
 			{
 				Width = 400,
 				Height = 400,
@@ -507,18 +507,18 @@ namespace TestApplication
 
 			prev.Click += (s, e) => 
 			{
-				if (imageDeck.SelectedIndex == 0)
-					imageDeck.SelectedIndex = 1;
+				if (imageCarousel.SelectedIndex == 0)
+					imageCarousel.SelectedIndex = 1;
 				else
-					imageDeck.SelectedIndex--;
+					imageCarousel.SelectedIndex--;
 			};
 
 			next.Click += (s, e) => 
 			{
-				if (imageDeck.SelectedIndex == 1)
-					imageDeck.SelectedIndex = 0;
+				if (imageCarousel.SelectedIndex == 1)
+					imageCarousel.SelectedIndex = 0;
 				else
-					imageDeck.SelectedIndex++;
+					imageCarousel.SelectedIndex++;
 			};
 
 			return new TabItem
@@ -537,7 +537,7 @@ namespace TestApplication
 						{
 							new TextBlock
 							{
-								Text = "Deck",
+								Text = "Carousel",
 								FontWeight = FontWeight.Medium,
 								FontSize = 20,
 								Foreground = SolidColorBrush.Parse("#212121"),
@@ -551,13 +551,13 @@ namespace TestApplication
 							},
 							new StackPanel 
 							{
-								Name = "deckVisual",
+								Name = "carouselVisual",
 								Orientation = Orientation.Horizontal,
 								Gap = 4,
 								Children = new Controls
 								{								
 									prev,
-									imageDeck,
+									imageCarousel,
 									next
 								}
 							}

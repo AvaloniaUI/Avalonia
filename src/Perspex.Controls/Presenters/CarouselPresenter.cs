@@ -17,31 +17,31 @@ namespace Perspex.Controls.Presenters
     /// <summary>
     /// Displays pages inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class DeckPresenter : Control, IItemsPresenter
+    public class CarouselPresenter : Control, IItemsPresenter
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly PerspexProperty<IEnumerable> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<DeckPresenter>(o => o.Items, (o, v) => o.Items = v);
+            ItemsControl.ItemsProperty.AddOwner<CarouselPresenter>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
-            ItemsControl.ItemsPanelProperty.AddOwner<DeckPresenter>();
+            ItemsControl.ItemsPanelProperty.AddOwner<CarouselPresenter>();
         
         /// <summary>
         /// Defines the <see cref="MemberSelector"/> property.
         /// </summary>
         public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
-            ItemsControl.MemberSelectorProperty.AddOwner<DeckPresenter>();
+            ItemsControl.MemberSelectorProperty.AddOwner<CarouselPresenter>();
 
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly PerspexProperty<int> SelectedIndexProperty =
-            SelectingItemsControl.SelectedIndexProperty.AddOwner<DeckPresenter>(
+            SelectingItemsControl.SelectedIndexProperty.AddOwner<CarouselPresenter>(
                 o => o.SelectedIndex,
                 (o, v) => o.SelectedIndex = v);
 
@@ -49,7 +49,7 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
-            Deck.TransitionProperty.AddOwner<DeckPresenter>();
+            Carousel.TransitionProperty.AddOwner<CarouselPresenter>();
 
         private IEnumerable _items;
         private int _selectedIndex = -1;
@@ -57,11 +57,11 @@ namespace Perspex.Controls.Presenters
         private IItemContainerGenerator _generator;
 
         /// <summary>
-        /// Initializes static members of the <see cref="DeckPresenter"/> class.
+        /// Initializes static members of the <see cref="CarouselPresenter"/> class.
         /// </summary>
-        static DeckPresenter()
+        static CarouselPresenter()
         {
-            SelectedIndexProperty.Changed.AddClassHandler<DeckPresenter>(x => x.SelectedIndexChanged);
+            SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.SelectedIndexChanged);
         }
 
         /// <summary>

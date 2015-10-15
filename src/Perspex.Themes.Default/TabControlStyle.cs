@@ -56,13 +56,13 @@ namespace Perspex.Themes.Default
                         [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
                         [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
                     },
-                    new Deck
+                    new Carousel
                     {
-                        Name = "deck",
+                        Name = "carousel",
                         MemberSelector = new FuncMemberSelector<TabItem, object>(x => x.Content),
-                        [!Deck.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                        [!Deck.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
-                        [~Deck.TransitionProperty] = control[~TabControl.TransitionProperty],
+                        [!Carousel.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!Carousel.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],
+                        [~Carousel.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [Grid.RowProperty] = 1,
                     }
                 }

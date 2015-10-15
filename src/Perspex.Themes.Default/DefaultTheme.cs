@@ -20,7 +20,7 @@ namespace Perspex.Themes.Default
             Add(new ButtonStyle());
             Add(new CheckBoxStyle());
             Add(new ContentControlStyle());
-            Add(new DeckStyle());
+            Add(new CarouselStyle());
             Add(new DropDownStyle());
             Add(new GridSplitterStyle());
             Add(new ItemsControlStyle());

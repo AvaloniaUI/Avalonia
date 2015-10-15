@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Perspex.Controls.UnitTests.Presenters
 {
-    public class DeckPresenterTests
+    public class CarouselPresenterTests
     {
         [Fact]
         public void ApplyTemplate_Should_Create_Panel()
         {
-            var target = new DeckPresenter
+            var target = new CarouselPresenter
             {
                 ItemsPanel = new FuncTemplate<IPanel>(() => new Panel()),
             };
@@ -27,7 +27,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         public void ItemContainerGenerator_Should_Be_Picked_Up_From_TemplatedControl()
         {
             var parent = new TestItemsControl();
-            var target = new DeckPresenter
+            var target = new CarouselPresenter
             {
                 TemplatedParent = parent,
             };
@@ -38,7 +38,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         [Fact]
         public void Setting_SelectedIndex_Should_Show_Page()
         {
-            var target = new DeckPresenter
+            var target = new CarouselPresenter
             {
                 Items = new[] { "foo", "bar" },
                 SelectedIndex = 0,
@@ -53,7 +53,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         [Fact]
         public void Changing_SelectedIndex_Should_Show_Page()
         {
-            var target = new DeckPresenter
+            var target = new CarouselPresenter
             {
                 Items = new[] { "foo", "bar" },
                 SelectedIndex = 0,

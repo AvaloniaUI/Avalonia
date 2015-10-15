@@ -64,7 +64,7 @@
     <Compile Include="Button.cs" />
     <Compile Include="DropDown.cs" />
     <Compile Include="IReparentingControl.cs" />
-    <Compile Include="Deck.cs" />
+    <Compile Include="Carousel.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="PlacementMode.cs" />
@@ -81,7 +81,7 @@
     <Compile Include="Templates\IDataTemplate.cs" />
     <Compile Include="Presenters\IItemsPresenter.cs" />
     <Compile Include="Presenters\IPresenter.cs" />
-    <Compile Include="Presenters\DeckPresenter.cs" />
+    <Compile Include="Presenters\CarouselPresenter.cs" />
     <Compile Include="Primitives\AdornerDecorator.cs" />
     <Compile Include="Primitives\AdornerLayer.cs" />
     <Compile Include="Primitives\RangeBase.cs" />
