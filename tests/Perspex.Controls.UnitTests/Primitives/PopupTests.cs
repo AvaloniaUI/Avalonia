@@ -209,7 +209,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                     Child = target = new PopupContentControl
                     {
                         Content = new Border(),
-                        Template = new ControlTemplate<PopupContentControl>(PopupContentControlTemplate),
+                        Template = new FuncControlTemplate<PopupContentControl>(PopupContentControlTemplate),
                     }
                 };
 
@@ -255,7 +255,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<PopupRoot>(PopupRootTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<PopupRoot>(PopupRootTemplate)),
                     }
                 },
             };

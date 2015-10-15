@@ -18,7 +18,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -38,7 +38,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -58,7 +58,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -78,7 +78,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -99,7 +99,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
             };
@@ -120,7 +120,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Toggle,
             };
@@ -142,7 +142,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
             };
@@ -164,7 +164,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
             };
@@ -186,7 +186,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new ControlTemplate(CreateListBoxTemplate),
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -202,7 +202,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate(CreateScrollViewerTemplate),
+                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
                     Name = "itemsPresenter",

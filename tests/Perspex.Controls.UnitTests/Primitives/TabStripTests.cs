@@ -17,7 +17,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -43,7 +43,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -68,7 +68,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -109,7 +109,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var target = new TabStrip
             {
-                Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
                 Items = list
             };
 

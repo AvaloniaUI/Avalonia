@@ -16,7 +16,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void Template_Child_Of_Control_With_Two_Classes()
         {
-            var template = new ControlTemplate(parent =>
+            var template = new FuncControlTemplate(parent =>
             {
                 return new Border
                 {

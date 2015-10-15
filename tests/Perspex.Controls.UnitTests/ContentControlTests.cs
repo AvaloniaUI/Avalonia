@@ -286,9 +286,9 @@ namespace Perspex.Controls.UnitTests
             Assert.Null(target.Presenter.Child.DataContext);
         }
 
-        private ControlTemplate GetTemplate()
+        private FuncControlTemplate GetTemplate()
         {
-            return new ControlTemplate<ContentControl>(parent =>
+            return new FuncControlTemplate<ContentControl>(parent =>
             {
                 return new Border
                 {

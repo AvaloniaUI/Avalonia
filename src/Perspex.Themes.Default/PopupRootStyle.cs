@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<PopupRoot>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<PopupRoot>(Template)),
                         new Setter(TemplatedControl.FontFamilyProperty, "Segoe UI"),
                         new Setter(TemplatedControl.FontSizeProperty, 12.0),
                     },

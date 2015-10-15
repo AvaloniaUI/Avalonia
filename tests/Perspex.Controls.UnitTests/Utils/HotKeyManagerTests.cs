@@ -59,9 +59,9 @@ namespace Perspex.Controls.UnitTests.Utils
             }
         }
 
-        private ControlTemplate CreateWindowTemplate()
+        private FuncControlTemplate CreateWindowTemplate()
         {
-            return new ControlTemplate<Window>(parent =>
+            return new FuncControlTemplate<Window>(parent =>
             {
                 return new ContentPresenter
                 {

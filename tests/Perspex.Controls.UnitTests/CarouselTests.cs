@@ -17,7 +17,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Carousel
             {
-                Template = new ControlTemplate<Carousel>(CreateTemplate),
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",
@@ -36,7 +36,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new Carousel
             {
-                Template = new ControlTemplate<Carousel>(CreateTemplate),
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
                 Items = new[]
                 {
                     "Foo",

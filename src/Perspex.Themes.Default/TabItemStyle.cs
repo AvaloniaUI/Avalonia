@@ -29,7 +29,7 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(TemplatedControl.FontSizeProperty, 16.0),
                         new Setter(TemplatedControl.ForegroundProperty, Brushes.Gray),
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabItem>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TabItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<TabItem>().Class(":selected"))

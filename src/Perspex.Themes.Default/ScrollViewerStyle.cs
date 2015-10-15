@@ -28,7 +28,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ScrollViewer>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ScrollViewer>(Template)),
                     },
                 },
             });

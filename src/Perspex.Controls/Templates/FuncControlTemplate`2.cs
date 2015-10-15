@@ -11,13 +11,13 @@ namespace Perspex.Controls.Templates
     /// A template for a <see cref="TemplatedControl"/>.
     /// </summary>
     /// <typeparam name="T">The type of the lookless control.</typeparam>
-    public class ControlTemplate<T> : ControlTemplate where T : ITemplatedControl
+    public class FuncControlTemplate<T> : FuncControlTemplate where T : ITemplatedControl
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ControlTemplate{T}"/> class.
+        /// Initializes a new instance of the <see cref="FuncControlTemplate{T}"/> class.
         /// </summary>
         /// <param name="build">The build function.</param>
-        public ControlTemplate(Func<T, IControl> build)
+        public FuncControlTemplate(Func<T, IControl> build)
             : base(x => build((T)x))
         {
         }

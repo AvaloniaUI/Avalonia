@@ -32,7 +32,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ProgressBar>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ProgressBar>(Template)),
                         new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffdddddd)),
                         new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xffbee6fd)),
                     },

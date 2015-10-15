@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests
             TabItem selected;
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     (selected = new TabItem
@@ -46,7 +46,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -73,7 +73,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = new[]
                 {
                     new TabItem
@@ -117,7 +117,7 @@ namespace Perspex.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 Items = collection,
             };
 
@@ -144,7 +144,7 @@ namespace Perspex.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new ControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
@@ -184,14 +184,14 @@ namespace Perspex.Controls.UnitTests
                     new TabStrip
                     {
                         Name = "tabStrip",
-                        Template = new ControlTemplate<TabStrip>(CreateTabStripTemplate),
+                        Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!!TabStrip.SelectedTabProperty] = parent[!!TabControl.SelectedTabProperty]
                     },
                     new Carousel
                     {
                         Name = "carousel",
-                        Template = new ControlTemplate<Carousel>(CreateCarouselTemplate),
+                        Template = new FuncControlTemplate<Carousel>(CreateCarouselTemplate),
                         MemberSelector = parent.ContentSelector,
                         [!ItemsControl.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
                         [!SelectingItemsControl.SelectedItemProperty] = parent[!SelectingItemsControl.SelectedItemProperty],

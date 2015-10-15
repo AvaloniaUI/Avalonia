@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Carousel>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<Carousel>(Template)),
                     },
                 },
             });

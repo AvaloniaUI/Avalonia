@@ -82,9 +82,9 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Null(target.SelectedItem);
         }
 
-        private ControlTemplate Template()
+        private FuncControlTemplate Template()
         {
-            return new ControlTemplate<SelectingItemsControl>(control =>
+            return new FuncControlTemplate<SelectingItemsControl>(control =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",

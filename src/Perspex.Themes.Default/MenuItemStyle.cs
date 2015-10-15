@@ -37,14 +37,14 @@ namespace Perspex.Themes.Default
                     {
                         new Setter(TemplatedControl.BorderThicknessProperty, 1.0),
                         new Setter(TemplatedControl.PaddingProperty, new Thickness(6, 0)),
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<MenuItem>(PopupTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<MenuItem>(PopupTemplate)),
                     },
                 },
                 new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<MenuItem>(TopLevelTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<MenuItem>(TopLevelTemplate)),
                     },
                 },
                 new Style(x => x.OfType<MenuItem>().Class(":selected").Template().Name("root"))

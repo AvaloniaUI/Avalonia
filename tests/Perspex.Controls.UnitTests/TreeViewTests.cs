@@ -19,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TreeView
             {
-                Template = new ControlTemplate(CreateTreeViewTemplate),
+                Template = new FuncControlTemplate(CreateTreeViewTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -46,7 +46,7 @@ namespace Perspex.Controls.UnitTests
 
             var target = new TreeView
             {
-                Template = new ControlTemplate(CreateTreeViewTemplate),
+                Template = new FuncControlTemplate(CreateTreeViewTemplate),
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
@@ -71,7 +71,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new ScrollViewer
             {
-                Template = new ControlTemplate(CreateScrollViewerTemplate),
+                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
                     Name = "itemsPresenter",

@@ -352,9 +352,9 @@ namespace Perspex.Controls.UnitTests
             public string Value { get; }
         }
 
-        private ControlTemplate GetTemplate()
+        private FuncControlTemplate GetTemplate()
         {
-            return new ControlTemplate<ItemsControl>(parent =>
+            return new FuncControlTemplate<ItemsControl>(parent =>
             {
                 return new Border
                 {

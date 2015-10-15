@@ -28,7 +28,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ScrollBar>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ScrollBar>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ScrollBar>().PropertyEquals(ScrollBar.OrientationProperty, Orientation.Horizontal))
@@ -83,7 +83,7 @@ namespace Perspex.Themes.Default
                     Thumb = new Thumb
                     {
                         Name = "thumb",
-                        Template = new ControlTemplate<Thumb>(ThumbTemplate),
+                        Template = new FuncControlTemplate<Thumb>(ThumbTemplate),
                     },
                 },
             };

@@ -28,9 +28,9 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new[] { "contentControl", "toggle", "popup" }, childIds);
         }
 
-        private ControlTemplate GetTemplate()
+        private FuncControlTemplate GetTemplate()
         {
-            return new ControlTemplate<DropDown>(parent =>
+            return new FuncControlTemplate<DropDown>(parent =>
             {
                 return new Panel
                 {

@@ -28,7 +28,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TabControl>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TabControl>(Template)),
                     },
                 },
             });

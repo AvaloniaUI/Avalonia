@@ -69,8 +69,8 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="TemplateProperty"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ControlTemplate> TemplateProperty =
-            PerspexProperty.Register<TemplatedControl, ControlTemplate>("Template");
+        public static readonly PerspexProperty<FuncControlTemplate> TemplateProperty =
+            PerspexProperty.Register<TemplatedControl, FuncControlTemplate>("Template");
 
         private bool _templateApplied;
 
@@ -177,7 +177,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the template that defines the control's appearance.
         /// </summary>
-        public ControlTemplate Template
+        public FuncControlTemplate Template
         {
             get { return GetValue(TemplateProperty); }
             set { SetValue(TemplateProperty, value); }

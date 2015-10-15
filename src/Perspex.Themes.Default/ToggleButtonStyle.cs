@@ -28,7 +28,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ToggleButton>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ToggleButton>(Template)),
 						new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffaaaaaa)),
 						new Setter(TemplatedControl.BorderBrushProperty, new SolidColorBrush(0xffaaaaaa)),
                         new Setter(TemplatedControl.BorderThicknessProperty, 2.0),

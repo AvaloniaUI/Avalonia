@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<CheckBox>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<CheckBox>(Template)),
                     },
                 },
                 new Style(x => x.OfType<CheckBox>().Template().Name("checkMark"))

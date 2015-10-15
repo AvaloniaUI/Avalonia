@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<TreeViewItem>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TreeViewItem>(Template)),
                         new Setter(Control.FocusAdornerProperty, null),
                     },
                 },
@@ -61,7 +61,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ToggleButton>(ToggleButtonTemplate)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ToggleButton>(ToggleButtonTemplate)),
                     },
                 },
                 new Style(x => x.OfType<TreeViewItem>().Template().OfType<ToggleButton>().Class("expander").Class(":checked").Template().OfType<Path>())

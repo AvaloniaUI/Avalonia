@@ -35,7 +35,7 @@ namespace Perspex.Themes.Default
                         new Setter(TemplatedControl.BorderThicknessProperty, 2),
                         new Setter(TemplatedControl.ForegroundProperty, new SolidColorBrush(0xff000000)),
                         new Setter(Control.FocusAdornerProperty, new FuncTemplate<IControl>(FocusAdornerTemplate)),
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Button>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<Button>(Template)),
                         new Setter(ContentControl.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
                         new Setter(ContentControl.VerticalContentAlignmentProperty, VerticalAlignment.Center),
                     },

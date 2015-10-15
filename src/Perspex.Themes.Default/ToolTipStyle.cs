@@ -27,7 +27,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ToolTip>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ToolTip>(Template)),
                         new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(0xffffffe1)),
                         new Setter(TemplatedControl.BorderBrushProperty, Brushes.Gray),
                         new Setter(TemplatedControl.BorderThicknessProperty, 1.0),

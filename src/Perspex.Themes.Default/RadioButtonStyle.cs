@@ -31,7 +31,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty,  new ControlTemplate<RadioButton>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty,  new FuncControlTemplate<RadioButton>(Template)),
                     },
                 },
                 new Style(x => x.OfType<RadioButton>().Template().Name("checkMark"))

@@ -316,9 +316,9 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        private ControlTemplate<TestTopLevel> CreateTemplate()
+        private FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
-            return new ControlTemplate<TestTopLevel>(x =>
+            return new FuncControlTemplate<TestTopLevel>(x =>
                 new ContentPresenter
                 {
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],

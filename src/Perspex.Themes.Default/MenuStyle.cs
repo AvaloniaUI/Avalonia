@@ -27,7 +27,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<Menu>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<Menu>(Template)),
                     },
                 },
             });

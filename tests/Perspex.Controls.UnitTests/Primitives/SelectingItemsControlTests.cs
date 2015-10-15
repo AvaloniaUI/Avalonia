@@ -420,9 +420,9 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(target.SelectedItem, items[1]);
         }
 
-        private ControlTemplate Template()
+        private FuncControlTemplate Template()
         {
-            return new ControlTemplate<SelectingItemsControl>(control =>
+            return new FuncControlTemplate<SelectingItemsControl>(control =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",

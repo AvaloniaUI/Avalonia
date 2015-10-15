@@ -27,7 +27,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<ListBoxItem>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<ListBoxItem>(Template)),
                     },
                 },
                 new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().Name("border"))

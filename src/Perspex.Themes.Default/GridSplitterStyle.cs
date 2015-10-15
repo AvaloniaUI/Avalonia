@@ -26,7 +26,7 @@ namespace Perspex.Themes.Default
                 {
                     Setters = new[]
                     {
-                        new Setter(TemplatedControl.TemplateProperty, new ControlTemplate<GridSplitter>(Template)),
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<GridSplitter>(Template)),
                         new Setter(Layoutable.WidthProperty, 4.0),
                     },
                 },

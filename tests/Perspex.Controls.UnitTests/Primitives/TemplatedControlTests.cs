@@ -21,7 +21,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TemplatedControl
             {
-                Template = new ControlTemplate(_ => new Decorator
+                Template = new FuncControlTemplate(_ => new Decorator
                 {
                     Child = new Panel
                     {
@@ -55,7 +55,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TemplatedControl
             {
-                Template = new ControlTemplate(_ => new Decorator
+                Template = new FuncControlTemplate(_ => new Decorator
                 {
                     Child = new Panel
                     {
@@ -84,7 +84,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TemplatedControl
             {
-                Template = new ControlTemplate(_ => new Decorator())
+                Template = new FuncControlTemplate(_ => new Decorator())
             };
 
             target.ApplyTemplate();
@@ -100,7 +100,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new TemplatedControl
             {
-                Template = new ControlTemplate(_ => new ApplyTemplateTracker())
+                Template = new FuncControlTemplate(_ => new ApplyTemplateTracker())
             };
 
             target.ApplyTemplate();
@@ -121,7 +121,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var target = new ItemsControl
             {
-                Template = new ControlTemplate<ItemsControl>(ItemsControlTemplate),
+                Template = new FuncControlTemplate<ItemsControl>(ItemsControlTemplate),
                 Items = new[] { "Foo", }
             };
 
@@ -169,7 +169,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             {
                 Child = new ScrollViewer
                 {
-                    Template = new ControlTemplate<ScrollViewer>(ScrollViewerTemplate),
+                    Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTemplate),
                     Content = new ItemsPresenter
                     {
                         Name = "itemsPresenter",

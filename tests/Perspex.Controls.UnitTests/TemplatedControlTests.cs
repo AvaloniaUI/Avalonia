@@ -20,7 +20,7 @@ namespace Perspex.Controls.UnitTests
         {
             bool executed = false;
 
-            var template = new ControlTemplate(_ =>
+            var template = new FuncControlTemplate(_ =>
             {
                 executed = true;
                 return new Control();
@@ -39,7 +39,7 @@ namespace Perspex.Controls.UnitTests
         {
             bool executed = false;
 
-            var template = new ControlTemplate(_ =>
+            var template = new FuncControlTemplate(_ =>
             {
                 executed = true;
                 return new Control();
@@ -60,7 +60,7 @@ namespace Perspex.Controls.UnitTests
         {
             Control templateResult = new Control();
 
-            var template = new ControlTemplate(_ =>
+            var template = new FuncControlTemplate(_ =>
             {
                 return templateResult;
             });
@@ -81,7 +81,7 @@ namespace Perspex.Controls.UnitTests
         {
             Control templateResult = new Control();
 
-            var template = new ControlTemplate(_ =>
+            var template = new FuncControlTemplate(_ =>
             {
                 return templateResult;
             });
@@ -101,7 +101,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TestTemplatedControl
             {
-                Template = new ControlTemplate(_ =>
+                Template = new FuncControlTemplate(_ =>
                 {
                     return new Control();
                 })
@@ -117,7 +117,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TestTemplatedControl
             {
-                Template = new ControlTemplate(_ =>
+                Template = new FuncControlTemplate(_ =>
                 {
                     return new StackPanel
                     {
@@ -154,7 +154,7 @@ namespace Perspex.Controls.UnitTests
                 {
                     Child = target = new TestTemplatedControl
                     {
-                        Template = new ControlTemplate(_ =>
+                        Template = new FuncControlTemplate(_ =>
                         {
                             return new StackPanel
                             {
@@ -182,7 +182,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TestTemplatedControl
             {
-                Template = new ControlTemplate(_ =>
+                Template = new FuncControlTemplate(_ =>
                 {
                     return new StackPanel
                     {
@@ -210,7 +210,7 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TestTemplatedControl
             {
-                Template = new ControlTemplate(_ =>
+                Template = new FuncControlTemplate(_ =>
                 {
                     return new ContentPresenter
                     {
@@ -235,11 +235,11 @@ namespace Perspex.Controls.UnitTests
         {
             var target = new TestTemplatedControl
             {
-                Template = new ControlTemplate(_ =>
+                Template = new FuncControlTemplate(_ =>
                 {
                     return new ContentControl
                     {
-                        Template = new ControlTemplate(parent =>
+                        Template = new FuncControlTemplate(parent =>
                         {
                             return new Border
                             {
