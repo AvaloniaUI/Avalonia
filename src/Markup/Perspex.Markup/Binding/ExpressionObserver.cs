@@ -12,7 +12,7 @@ namespace Perspex.Markup.Binding
     /// </summary>
     public class ExpressionObserver : ObservableBase<object>, IDescription
     {
-        private object _root;
+        private Func<object> _root;
         private int _count;
         private ExpressionNode _node;
 
@@ -22,7 +22,20 @@ namespace Perspex.Markup.Binding
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
         public ExpressionObserver(object root, string expression)
+            : this(() => root, expression)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="root">A function which gets the root object.</param>
+        /// <param name="expression">The expression.</param>
+        public ExpressionObserver(Func<object> root, string expression)
+        {
+            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.Requires<ArgumentNullException>(expression != null);
+
             _root = root;
             _node = ExpressionNodeBuilder.Build(expression);
             Expression = expression;
@@ -39,6 +52,7 @@ namespace Perspex.Markup.Binding
         public bool SetValue(object value)
         {
             IncrementCount();
+            UpdateRoot();
 
             try
             {
@@ -54,30 +68,6 @@ namespace Perspex.Markup.Binding
         /// Gets the expression being observed.
         /// </summary>
         public string Expression { get; }
-
-        /// <summary>
-        /// Gets or sets the root object that the expression is being observed on.
-        /// </summary>
-        public object Root
-        {
-            get
-            {
-                return _root;
-            }
-
-            set
-            {
-                if (_root != value)
-                {
-                    _root = value;
-
-                    if (_count > 0)
-                    {
-                        _node.Target = _root;
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Gets the type of the expression result or null if the expression could not be 
@@ -116,6 +106,17 @@ namespace Perspex.Markup.Binding
             }
         }
 
+        /// <summary>
+        /// Causes the root object to be re-read.
+        /// </summary>
+        public void UpdateRoot()
+        {
+            if (_count > 0)
+            {
+                _node.Target = _root();
+            }
+        }
+
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
@@ -134,7 +135,7 @@ namespace Perspex.Markup.Binding
         {
             if (_count++ == 0)
             {
-                _node.Target = Root;
+                _node.Target = _root();
             }
         }
 

@@ -35,6 +35,20 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void Bind_To_ValueType_Accepts_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, source);
+            source.OnNext(6.7);
+            source.OnNext(PerspexProperty.UnsetValue);
+
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+            Assert.False(target.IsSet(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void Bind_Throws_Exception_For_Unregistered_Property()
         {
             Class1 target = new Class1();
@@ -277,6 +291,9 @@ namespace Perspex.Base.UnitTests
 
             public static readonly PerspexProperty<string> BazProperty =
                 PerspexProperty.Register<Class1, string>("Baz", "bazdefault", true);
+
+            public static readonly PerspexProperty<double> QuxProperty =
+                PerspexProperty.Register<Class1, double>("Qux", 5.6);
         }
 
         private class Class2 : Class1

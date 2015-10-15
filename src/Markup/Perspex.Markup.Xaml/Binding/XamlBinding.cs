@@ -43,26 +43,17 @@ namespace Perspex.Markup.Xaml.Binding
             IObservablePropertyBag instance, 
             PerspexProperty property)
         {
-            IObservable<object> dataContext = null;
+            var dataContextHost = property != Control.DataContextProperty ? 
+                instance : 
+                instance.InheritanceParent as IObservablePropertyBag;
 
-            if (property != Control.DataContextProperty)
+            if (dataContextHost != null)
             {
-                dataContext = instance.GetObservable(Control.DataContextProperty);
-            }
-            else
-            {
-                var parent = instance.InheritanceParent as IObservablePropertyBag;
-
-                if (parent != null)
-                {
-                    dataContext = parent.GetObservable(Control.DataContextProperty);
-                }
-            }
-
-            if (dataContext != null)
-            {
-                var result = new ExpressionObserver(null, SourcePropertyPath);
-                dataContext.Subscribe(x => result.Root = x);
+                var result = new ExpressionObserver(
+                    () => dataContextHost.GetValue(Control.DataContextProperty),
+                    SourcePropertyPath);
+                dataContextHost.GetObservable(Control.DataContextProperty).Subscribe(x =>
+                    result.UpdateRoot());
                 return result;
             }
 

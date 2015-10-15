@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Perspex.Markup.Binding;
 using Xunit;
 
@@ -227,7 +228,7 @@ namespace Perspex.Markup.UnitTests.Binding
         [Fact]
         public async void Should_Handle_Null_Root()
         {
-            var target = new ExpressionObserver(null, "Foo");
+            var target = new ExpressionObserver((object)null, "Foo");
             var result = await target.Take(1);
 
             Assert.Equal(PerspexProperty.UnsetValue, result);
@@ -238,12 +239,15 @@ namespace Perspex.Markup.UnitTests.Binding
         {
             var first = new Class1 { Foo = "foo" };
             var second = new Class1 { Foo = "bar" };
-            var target = new ExpressionObserver(first, "Foo");
+            var root = first;
+            var target = new ExpressionObserver(() => root, "Foo");
             var result = new List<object>();
-
             var sub = target.Subscribe(x => result.Add(x));
-            target.Root = second;
-            target.Root = null;
+
+            root = second;
+            target.UpdateRoot();
+            root = null;
+            target.UpdateRoot();
 
             Assert.Equal(new[] { "foo", "bar", PerspexProperty.UnsetValue }, result);
 
