@@ -93,8 +93,16 @@ namespace Perspex.Utilities
             if ((value.GetType() == typeof(string) && Conversions.ContainsKey(to)) ||
                 (to == typeof(string) && Conversions.ContainsKey(value.GetType())))
             {
-                result = Convert.ChangeType(value, to, culture);
-                return true;
+                try
+                {
+                    result = Convert.ChangeType(value, to, culture);
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
             else
             {

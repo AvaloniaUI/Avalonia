@@ -19,18 +19,31 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            UpdateIndicator(finalSize);
+            return base.ArrangeOverride(finalSize);
+        }
+
+        /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
             _indicator = this.GetTemplateChild<Border>("PART_Indicator");
+            UpdateIndicator(Bounds.Size);
+        }
+
+        private void UpdateIndicator(Size bounds)
+        {
+            if (_indicator != null)
+            {
+                double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
+                _indicator.Width = bounds.Width * percent;
+            }
         }
 
         private void ValueChanged(PerspexPropertyChangedEventArgs e)
         {
-            if (_indicator != null)
-            {
-                double percent = Maximum == Minimum ? 1.0 : ((double)e.NewValue - Minimum) / (Maximum - Minimum);
-                _indicator.Width = Bounds.Width * percent;
-            }
+            UpdateIndicator(Bounds.Size);
         }
     }
 }

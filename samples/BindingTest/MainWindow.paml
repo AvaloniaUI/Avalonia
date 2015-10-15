@@ -28,6 +28,7 @@
             <TextBlock FontSize="16" Text="Numeric Bindings"/>
             <TextBox Watermark="Double" UseFloatingWatermark="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
             <TextBlock Text="{Binding Path=DoubleValue}"/>
+            <ProgressBar Maximum="10" Value="{Binding DoubleValue}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
