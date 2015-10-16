@@ -80,7 +80,7 @@ namespace Perspex.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ListBoxItem>(this);
+            return new ItemContainerGenerator<ListBoxItem>(this, ListBoxItem.ContentProperty);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

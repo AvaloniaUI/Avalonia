@@ -74,7 +74,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new ItemContainerGenerator<TestItem>(this);
+                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty);
             }
         }
     }

@@ -388,8 +388,8 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Updates the selection based on an event source that may have originated in a container
-        /// that belongs to the control.
+        /// Updates the selection based on an event that may have originated in a container that 
+        /// belongs to the control.
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
         /// <param name="select">Whether the container should be selected or unselected.</param>
@@ -405,11 +405,11 @@ namespace Perspex.Controls.Primitives
             bool rangeModifier = false,
             bool toggleModifier = false)
         {
-            var item = GetContainerFromEventSource(eventSource);
+            var container = GetContainerFromEventSource(eventSource);
 
-            if (item != null)
+            if (container != null)
             {
-                UpdateSelection(item, select, rangeModifier, toggleModifier);
+                UpdateSelection(container, select, rangeModifier, toggleModifier);
                 return true;
             }
 

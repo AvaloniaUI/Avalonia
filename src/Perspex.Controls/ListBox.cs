@@ -7,6 +7,7 @@ using Perspex.Collections;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
+using Perspex.Interactivity;
 
 namespace Perspex.Controls
 {
@@ -43,7 +44,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ListBoxItem>(this);
+            return new ItemContainerGenerator<ListBoxItem>(this, ListBoxItem.ContentProperty);
         }
 
         /// <inheritdoc/>

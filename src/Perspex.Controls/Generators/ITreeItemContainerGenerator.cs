@@ -11,23 +11,9 @@ namespace Perspex.Controls.Generators
     public interface ITreeItemContainerGenerator : IItemContainerGenerator
     {
         /// <summary>
-        /// Gets all of the generated container controls.
+        /// Gets the item container for the root of the tree, or null if this generator is itself 
+        /// the root of the tree.
         /// </summary>
-        /// <returns>The containers.</returns>
-        IEnumerable<IControl> GetAllContainers();
-
-        /// <summary>
-        /// Gets the item that is contained by the specified container.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>The item.</returns>
-        object ItemFromContainer(IControl container);
-
-        /// <summary>
-        /// Gets the container for the specified item
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The container.</returns>
-        IControl ContainerFromItem(object item);
+        ITreeItemContainerGenerator RootGenerator { get; }
     }
 }

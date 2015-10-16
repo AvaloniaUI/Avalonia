@@ -39,7 +39,9 @@ namespace Perspex.Controls.UnitTests.Presenters
                 Items = new[] { "foo", "bar" },
             };
 
-            target.ItemContainerGenerator = new ItemContainerGenerator<ListBoxItem>(target);
+            target.ItemContainerGenerator = new ItemContainerGenerator<ListBoxItem>(
+                target, 
+                ListBoxItem.ContentProperty);
             target.ApplyTemplate();
 
             Assert.Equal(2, target.Panel.Children.Count);
@@ -231,7 +233,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new ItemContainerGenerator<TestItem>(this);
+                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty);
             }
         }
     }
