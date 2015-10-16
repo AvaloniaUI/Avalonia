@@ -1,13 +1,11 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
-using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
-using Perspex.Styling;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -15,11 +13,28 @@ namespace Perspex.Controls.UnitTests
     public class TreeViewTests
     {
         [Fact]
+        public void Items_Should_Be_Created()
+        {
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = CreateTestTreeData(),
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal(new[] { "Root" }, ExtractItemContent(target, 0));
+            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemContent(target, 1));
+            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemContent(target, 2));
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
             var target = new TreeView
             {
-                Template = new ControlTemplate(CreateTreeViewTemplate),
+                Template = CreateTreeViewTemplate(),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -39,18 +54,18 @@ namespace Perspex.Controls.UnitTests
             var items = new object[]
             {
                 "Foo",
-                new Item("Bar"),
+                new Node { Value = "Bar" },
                 new TextBlock { Text = "Baz" },
                 new TreeViewItem { Header = "Qux" },
             };
 
             var target = new TreeView
             {
-                Template = new ControlTemplate(CreateTreeViewTemplate),
+                Template = CreateTreeViewTemplate(),
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Node>(x => new Button { Content = x })
                 },
                 Items = items,
             };
@@ -67,35 +82,100 @@ namespace Perspex.Controls.UnitTests
                 dataContexts);
         }
 
-        private Control CreateTreeViewTemplate(ITemplatedControl parent)
+        private IList<Node> CreateTestTreeData()
         {
-            return new ScrollViewer
+            return new[]
             {
-                Template = new ControlTemplate(CreateScrollViewerTemplate),
-                Content = new ItemsPresenter
+                new Node
                 {
-                    Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
+                    Value = "Root",
+                    Children = new[]
+                    {
+                        new Node
+                        {
+                            Value = "Child1",
+                        },
+                        new Node
+                        {
+                            Value = "Child2",
+                            Children = new[]
+                            {
+                                new Node
+                                {
+                                    Value = "Grandchild2a",
+                                },
+                            },
+                        },
+                    }
                 }
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent)
+        private DataTemplates CreateNodeDataTemplate()
         {
-            return new ScrollContentPresenter
+            return new DataTemplates
             {
-                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
+                new FuncTreeDataTemplate<Node>(
+                    x => new TextBlock { Text = x.Value },
+                    x => x.Children),
             };
         }
 
-        private class Item
+        private ControlTemplate CreateTreeViewTemplate()
         {
-            public Item(string value)
+            return new ControlTemplate<TreeView>(parent => new ItemsPresenter
             {
-                Value = value;
-            }
+                Name = "itemsPresenter",
+                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+            });
+        }
 
-            public string Value { get; }
+        private ControlTemplate CreateTreeViewItemTemplate()
+        {
+            return new ControlTemplate<TreeViewItem>(parent => new ItemsPresenter
+            {
+                Name = "itemsPresenter",
+                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+            });
+        }
+
+        private List<string> ExtractItemContent(TreeView tree, int level)
+        {
+            return ExtractItemContent(tree.Presenter.Panel, 0, level)
+                .Select(x => x.Header)
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+        }
+
+        private IEnumerable<TreeViewItem> ExtractItemContent(IPanel panel, int currentLevel, int level)
+        {
+            foreach (TreeViewItem container in panel.Children)
+            {
+                if (container.Template == null)
+                {
+                    container.Template = CreateTreeViewItemTemplate();
+                    container.ApplyTemplate();
+                }
+
+                if (currentLevel == level)
+                {
+                    yield return container;
+                }
+                else
+                {
+                    foreach (var child in ExtractItemContent(container.Presenter.Panel, currentLevel + 1, level))
+                    {
+                        yield return child;
+                    }
+                }
+            }
+        }
+
+        private class Node
+        {
+            public string Value { get; set; }
+            public IList<Node> Children { get; set; }
         }
     }
 }
