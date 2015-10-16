@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
+using System.Collections.Generic;
 using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Generators
@@ -12,7 +14,8 @@ namespace Perspex.Controls.Generators
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator<T>, ITreeItemContainerGenerator
         where T : class, IControl, new()
     {
-        private ITreeItemContainerGenerator rootGenerator;
+        private Dictionary<object, T> _itemToContainer;
+        private Dictionary<IControl, object> _containerToItem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.
@@ -36,6 +39,12 @@ namespace Perspex.Controls.Generators
             ItemsProperty = itemsProperty;
             IsExpandedProperty = isExpandedProperty;
             RootGenerator = rootGenerator;
+
+            if (rootGenerator == null)
+            {
+                _itemToContainer = new Dictionary<object, T>();
+                _containerToItem = new Dictionary<IControl, object>();
+            }
         }
 
         /// <summary>
@@ -53,6 +62,30 @@ namespace Perspex.Controls.Generators
         /// Gets the item container's IsExpanded property.
         /// </summary>
         protected PerspexProperty IsExpandedProperty { get; }
+
+        /// <summary>
+        /// Gets the item container for the specified item, anywhere in the tree.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>The container, or null if not found.</returns>
+        public IControl TreeContainerFromItem(object item)
+        {
+            T result;
+            _itemToContainer.TryGetValue(item, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the item for the specified item container, anywhere in the tree.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>The item, or null if not found.</returns>
+        public object TreeItemFromContainer(IControl container)
+        {
+            object result;
+            _containerToItem.TryGetValue(container, out result);
+            return result;
+        }
 
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
@@ -81,7 +114,64 @@ namespace Perspex.Controls.Generators
                     result.DataContext = item;
                 }
 
+                AddToIndex(item, result);
+
                 return result;
+            }
+        }
+
+        public override IList<IControl> ClearContainers()
+        {
+            ClearIndex();
+            return base.ClearContainers();
+        }
+
+        public override IList<IControl> RemoveContainers(int startingIndex, int count)
+        {
+            RemoveFromIndex(GetContainerRange(startingIndex, count));
+            return base.RemoveContainers(startingIndex, count);
+        }
+
+        private void AddToIndex(object item, T container)
+        {
+            if (RootGenerator != null)
+            {
+                ((TreeItemContainerGenerator<T>)RootGenerator).AddToIndex(item, container);
+            }
+            else
+            {
+                _itemToContainer.Add(item, container);
+                _containerToItem.Add(container, item);
+            }
+        }
+
+        private void RemoveFromIndex(IEnumerable<IControl> containers)
+        {
+            if (RootGenerator != null)
+            {
+                ((TreeItemContainerGenerator<T>)RootGenerator).RemoveFromIndex(containers);
+            }
+            else
+            {
+                foreach (var container in containers)
+                {
+                    var item = _containerToItem[container];
+                    _containerToItem.Remove(container);
+                    _itemToContainer.Remove(item);
+                }
+            }
+        }
+
+        private void ClearIndex()
+        {
+            if (RootGenerator != null)
+            {
+                ((TreeItemContainerGenerator<T>)RootGenerator).ClearIndex();
+            }
+            else
+            {
+                _containerToItem.Clear();
+                _itemToContainer.Clear();
             }
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Input;
 using Perspex.LogicalTree;
 using Xunit;
 
@@ -24,9 +25,80 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            Assert.Equal(new[] { "Root" }, ExtractItemContent(target, 0));
-            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemContent(target, 1));
-            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemContent(target, 2));
+            Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
+            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
+        }
+
+        [Fact]
+        public void Root_ItemContainerGenerator_Containers_Should_Be_Root_Containers()
+        {
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = CreateTestTreeData(),
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            target.ApplyTemplate();
+
+            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single();
+            var header = (TextBlock)container.Header;
+            Assert.Equal("Root", header.Text);
+        }
+
+        [Fact]
+        public void Root_TreeContainerFromItem_Should_Return_Descendent_Item()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            // For TreeViewItem to find its parent TreeView, OnAttachedToVisualTree needs
+            // to be called, which requires an IRenderRoot.
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            ApplyTemplates(target);
+
+            var container = target.ItemContainerGenerator.TreeContainerFromItem(
+                tree[0].Children[1].Children[0]);
+            var header = ((TreeViewItem)container).Header;
+            var headerContent = ((TextBlock)header).Text;
+
+            Assert.Equal("Grandchild2a", headerContent);
+        }
+
+        [Fact]
+        public void Clicking_Item_Should_Select_It()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+            ApplyTemplates(target);
+
+            var item = tree[0].Children[1].Children[0];
+            var container = (TreeViewItem)target.ItemContainerGenerator.TreeContainerFromItem(item);
+
+            container.RaiseEvent(new PointerPressEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = MouseButton.Left,
+            });
+
+            Assert.Equal(item, target.SelectedItem);
+            Assert.True(container.IsSelected);
         }
 
         [Fact]
@@ -40,12 +112,14 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            Assert.Equal(3, target.GetLogicalChildren().Count());
+            var result = target.GetLogicalChildren()
+                .OfType<TreeViewItem>()
+                .Select(x => x.Header)
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
 
-            foreach (var child in target.GetLogicalChildren())
-            {
-                Assert.IsType<TreeViewItem>(child);
-            }
+            Assert.Equal(new[] { "Foo", "Bar", "Baz " }, result);
         }
 
         [Fact]
@@ -80,6 +154,22 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(
                 new object[] { items[0], items[1], "Base", "Base" },
                 dataContexts);
+        }
+
+        private void ApplyTemplates(TreeView tree)
+        {
+            tree.ApplyTemplate();
+            ApplyTemplates(tree.Presenter.Panel.Children);
+        }
+
+        private void ApplyTemplates(IEnumerable<IControl> controls)
+        {
+            foreach (TreeViewItem control in controls)
+            {
+                control.Template = CreateTreeViewItemTemplate();
+                control.ApplyTemplate();
+                ApplyTemplates(control.Presenter.Panel.Children);
+            }
         }
 
         private IList<Node> CreateTestTreeData()
@@ -139,7 +229,7 @@ namespace Perspex.Controls.UnitTests
             });
         }
 
-        private List<string> ExtractItemContent(TreeView tree, int level)
+        private List<string> ExtractItemHeader(TreeView tree, int level)
         {
             return ExtractItemContent(tree.Presenter.Panel, 0, level)
                 .Select(x => x.Header)

@@ -248,7 +248,7 @@ namespace Perspex.Controls.Presenters
 
                     case NotifyCollectionChangedAction.Remove:
                         Panel.Children.RemoveAll(
-                            generator.RemoveContainers(e.OldStartingIndex, e.OldItems));
+                            generator.RemoveContainers(e.OldStartingIndex, e.OldItems.Count));
                         break;
                 }
 

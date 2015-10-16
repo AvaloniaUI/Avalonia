@@ -7,6 +7,7 @@ using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.Styling;
 using Perspex.VisualTree;
 
 namespace Perspex.Controls
@@ -92,6 +93,23 @@ namespace Perspex.Controls
             bool rangeModifier = false,
             bool toggleModifier = false)
         {
+            var item = ItemContainerGenerator.TreeItemFromContainer(container);
+
+            if (item != null)
+            {
+                if (SelectedItem != null)
+                {
+                    var old = ItemContainerGenerator.TreeContainerFromItem(SelectedItem);
+                    MarkContainerSelected(old, false);
+                }
+
+                SelectedItem = item;
+
+                if (SelectedItem != null)
+                {
+                    MarkContainerSelected(container, true);
+                }
+            }
         }
 
         /// <summary>
@@ -131,41 +149,45 @@ namespace Perspex.Controls
         protected IControl GetContainerFromEventSource(IInteractive eventSource)
         {
             var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<ILogical>()
-                .FirstOrDefault(x => x.LogicalParent is TreeViewItem);
+                .OfType<TreeViewItem>()
+                .FirstOrDefault();
 
             if (item != null)
             {
-                var treeViewItem = (TreeViewItem)item.LogicalParent;
-
-                if (treeViewItem.ItemContainerGenerator.RootGenerator == this.ItemContainerGenerator)
+                if (item.ItemContainerGenerator.RootGenerator == this.ItemContainerGenerator)
                 {
-                    return treeViewItem;
+                    return item;
                 }
             }
 
             return null;
         }
 
-        /// <inheritdoc/>
-        private void SelectedItemChanged(object selected)
+        /// <summary>
+        /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="selected">Whether the control is selected</param>
+        private void MarkContainerSelected(IControl container, bool selected)
         {
-            //var containers = ItemContainerGenerator.GetAllContainers().OfType<ISelectable>();
-            //var selectedContainer = (selected != null) ?
-            //    ItemContainerGenerator.ContainerFromItem(selected) :
-            //    null;
+            var selectable = container as ISelectable;
+            var styleable = container as IStyleable;
 
-            //if (Presenter != null && Presenter.Panel != null)
-            //{
-            //    KeyboardNavigation.SetTabOnceActiveElement(
-            //        (InputElement)Presenter.Panel,
-            //        selectedContainer);
-            //}
-
-            //foreach (var item in containers)
-            //{
-            //    item.IsSelected = item == selectedContainer;
-            //}
+            if (selectable != null)
+            {
+                selectable.IsSelected = selected;
+            }
+            else if (styleable != null)
+            {
+                if (selected)
+                {
+                    styleable.Classes.Add(":selected");
+                }
+                else
+                {
+                    styleable.Classes.Remove(":selected");
+                }
+            }
         }
     }
 }
