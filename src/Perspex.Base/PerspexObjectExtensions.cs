@@ -77,8 +77,17 @@ namespace Perspex
 
             if (parts.Length == 1)
             {
-                return o.GetRegisteredProperties()
+                var result =  o.GetRegisteredProperties()
                     .FirstOrDefault(x => !x.IsAttached && x.Name == parts[0]);
+
+                if (result != null)
+                {
+                    return result;
+                }
+
+                // A type can .AddOwner an attached property.
+                return o.GetRegisteredProperties()
+                    .FirstOrDefault(x => x.Name == parts[0]);
             }
             else
             {

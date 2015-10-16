@@ -45,7 +45,7 @@ namespace Perspex.Markup.Xaml.Binding
             if (sourceProperty == null)
             {
                 throw new InvalidOperationException(
-                    $"The property {SourcePropertyPath} could not be found on {instance.GetType()}.");
+                    $"The property {SourcePropertyPath} could not be found on {templatedParent.GetType()}.");
             }
 
             instance.Bind(targetProperty, templatedParent.GetObservable(sourceProperty), BindingPriority.Style);
