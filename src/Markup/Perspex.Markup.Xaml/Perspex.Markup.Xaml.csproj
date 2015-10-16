@@ -40,6 +40,7 @@
     </Compile>
     <Compile Include="Binding\SourceBindingEndpoint.cs" />
     <Compile Include="Binding\TargetBindingEndpoint.cs" />
+    <Compile Include="Binding\XamlTemplateBinding.cs" />
     <Compile Include="Binding\XamlBinding.cs" />
     <Compile Include="Binding\XamlBindingDefinition.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Converters\SelectorTypeConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+    <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\BitmapTypeConverter.cs" />

@@ -9,13 +9,16 @@ namespace Perspex.Markup.Xaml.Binding
     {
         public XamlBindingDefinition(
             string sourcePropertyPath, 
-            BindingMode bindingMode)
+            BindingMode bindingMode,
+            bool isTemplateBinding = false)
         {
             SourcePropertyPath = sourcePropertyPath;
             BindingMode = bindingMode;
+            IsTemplateBinding = isTemplateBinding;
         }
 
         public string SourcePropertyPath { get; }
         public BindingMode BindingMode { get; }
+        public bool IsTemplateBinding { get; }
     }
 }

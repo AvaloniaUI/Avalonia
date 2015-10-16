@@ -109,13 +109,26 @@ namespace Perspex.Markup.Xaml.Context
                         $"Cannot find '{propertyName}' on '{instance.GetType()}");
                 }
 
-                var binding = new XamlBinding
+                if (!def.IsTemplateBinding)
                 {
-                    BindingMode = def.BindingMode,
-                    SourcePropertyPath = def.SourcePropertyPath,
-                };
+                    var binding = new XamlBinding
+                    {
+                        BindingMode = def.BindingMode,
+                        SourcePropertyPath = def.SourcePropertyPath,
+                    };
 
-                binding.Bind(perspexObject, property);
+                    binding.Bind(perspexObject, property);
+                }
+                else
+                {
+                    var binding = new XamlTemplateBinding
+                    {
+                        BindingMode = def.BindingMode,
+                        SourcePropertyPath = def.SourcePropertyPath,
+                    };
+
+                    binding.Bind(perspexObject, property);
+                }
             }
         }
 
