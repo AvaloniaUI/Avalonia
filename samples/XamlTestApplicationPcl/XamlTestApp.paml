@@ -23,5 +23,14 @@
         </ControlTemplate>
       </Setter>
     </Style>
+    <Style Selector="Button:pointerover">
+      <Setter Property="Button.BorderBrush" Value="#ff888888"/>
+    </Style>
+    <Style Selector="Button:pressed">
+      <Setter Property="Button.Background" Value="#ff888888"/>
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Button.Opacity" Value="0.5"/>
+    </Style>
   </Application.Styles>
 </Application>
