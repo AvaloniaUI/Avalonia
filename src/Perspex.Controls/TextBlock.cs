@@ -251,6 +251,16 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets the value of the attached <see cref="ForegroundProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The foreground.</returns>
+        public static Brush GetForeground(Control control)
+        {
+            return control.GetValue(ForegroundProperty);
+        }
+
+        /// <summary>
         /// Sets the value of the attached <see cref="FontFamilyProperty"/> on a control.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -292,6 +302,17 @@ namespace Perspex.Controls
         public static void SetFontWeight(Control control, FontWeight value)
         {
             control.SetValue(FontWeightProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="ForegroundProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        /// <returns>The font family.</returns>
+        public static void SetForeground(Control control, Brush value)
+        {
+            control.SetValue(ForegroundProperty, value);
         }
 
         /// <summary>
