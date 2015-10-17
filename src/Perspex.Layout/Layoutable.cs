@@ -505,6 +505,12 @@ namespace Perspex.Layout
                 height = Math.Max(height, child.DesiredSize.Height);
             }
 
+            if (UseLayoutRounding)
+            {
+                width = Math.Ceiling(width);
+                height = Math.Ceiling(height);
+            }
+
             return new Size(width, height);
         }
 
