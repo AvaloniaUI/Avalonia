@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Perspex</id>
+    <id>Perspex.Desktop</id>
     <version>#VERSION#</version>
     <authors>Perspex Team</authors>
     <owners>stevenk</owners>
@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/Perspex/Perspex/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>The Perspex UI framework</description>
-    <releaseNotes>Initial alpha release.</releaseNotes>
+    <releaseNotes></releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>Perspex</tags>
     <dependencies>
@@ -21,7 +21,9 @@
       <dependency id="Rx-Linq" version="2.2.5" />
       <dependency id="Rx-Main" version="2.2.5" />
       <dependency id="Rx-PlatformServices" version="2.2.5" />
-	  <dependency id="Perspex" version="#VERSION#" />
+      <dependency id="SharpDX" version="2.6.3"/>
+      <dependency id="SharpDX.Direct2D1" version="2.6.3"/>
+      <dependency id="SharpDX.DXGI" version="2.6.3"/>
     </dependencies>
   </metadata>
 </package>
