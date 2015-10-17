@@ -266,6 +266,8 @@ namespace Perspex.Controls.Presenters
 
                         break;
 
+                    case NotifyCollectionChangedAction.Move:
+                        // TODO: Implement Move in a more efficient manner.
                     case NotifyCollectionChangedAction.Reset:
                         Panel.Children.RemoveAll(generator.Clear());
                         Panel.Children.AddRange(generator.Materialize(0, Items, MemberSelector));
