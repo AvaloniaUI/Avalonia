@@ -13,6 +13,7 @@ using Perspex.Styling;
 
 namespace Perspex.Themes.Default
 {
+    using Collections;
     using Controls = Controls.Controls;
 
     /// <summary>
@@ -116,6 +117,15 @@ namespace Perspex.Themes.Default
                                 {
                                     [~ContentPresenter.ContentProperty] = control[~HeaderedItemsControl.HeaderProperty],
                                 },
+                            },
+                            new Rectangle
+                            {
+                                Name = "focus",
+                                Stroke = Brushes.Black,
+                                StrokeThickness = 1,
+                                StrokeDashArray = new PerspexList<double>(1, 2),
+                                [Grid.ColumnProperty] = 1,
+                                [!Rectangle.IsVisibleProperty] = control[!TreeViewItem.IsFocusedProperty],
                             }
                         }
                     },
