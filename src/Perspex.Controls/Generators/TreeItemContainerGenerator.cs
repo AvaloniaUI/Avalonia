@@ -120,16 +120,16 @@ namespace Perspex.Controls.Generators
             }
         }
 
-        public override IList<IControl> ClearContainers()
+        public override IEnumerable<IControl> Clear()
         {
             ClearIndex();
-            return base.ClearContainers();
+            return base.Clear();
         }
 
-        public override IList<IControl> RemoveContainers(int startingIndex, int count)
+        public override IEnumerable<IControl> Dematerialize(int startingIndex, int count)
         {
             RemoveFromIndex(GetContainerRange(startingIndex, count));
-            return base.RemoveContainers(startingIndex, count);
+            return base.Dematerialize(startingIndex, count);
         }
 
         private void AddToIndex(object item, T container)

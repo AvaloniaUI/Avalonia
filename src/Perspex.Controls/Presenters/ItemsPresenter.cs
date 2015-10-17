@@ -186,7 +186,7 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                Panel.Children.AddRange(ItemContainerGenerator.CreateContainers(0, Items, MemberSelector));
+                Panel.Children.AddRange(ItemContainerGenerator.Materialize(0, Items, MemberSelector));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -209,7 +209,7 @@ namespace Perspex.Controls.Presenters
 
                 if (e.OldValue != null)
                 {
-                    generator.ClearContainers();
+                    generator.Clear();
                     Panel.Children.Clear();
 
                     INotifyCollectionChanged incc = e.OldValue as INotifyCollectionChanged;
@@ -243,12 +243,12 @@ namespace Perspex.Controls.Presenters
                 {
                     case NotifyCollectionChangedAction.Add:
                         Panel.Children.AddRange(
-                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, MemberSelector));
+                            generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
                         Panel.Children.RemoveAll(
-                            generator.RemoveContainers(e.OldStartingIndex, e.OldItems.Count));
+                            generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
                         break;
                 }
 

@@ -81,6 +81,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
+    <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />

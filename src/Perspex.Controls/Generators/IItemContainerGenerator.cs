@@ -32,26 +32,37 @@ namespace Perspex.Controls.Generators
         /// <param name="items">The items.</param>
         /// <param name="selector">An optional member selector.</param>
         /// <returns>The created controls.</returns>
-        IList<IControl> CreateContainers(
+        IEnumerable<IControl> Materialize(
             int startingIndex,
             IEnumerable items,
             IMemberSelector selector);
 
         /// <summary>
-        /// Removes a set of created containers from the index and returns the removed controls.
+        /// Removes a set of created containers.
         /// </summary>
         /// <param name="startingIndex">
         /// The index of the first item of the data in the containing collection.
         /// </param>
         /// <param name="count">The the number of items to remove.</param>
         /// <returns>The removed containers.</returns>
-        IList<IControl> RemoveContainers(int startingIndex, int count);
+        IEnumerable<IControl> Dematerialize(int startingIndex, int count);
 
         /// <summary>
-        /// Clears the created containers from the index and returns the removed controls.
+        /// Removes a set of created containers and updates the index of later containers to fill
+        /// the gap.
+        /// </summary>
+        /// <param name="startingIndex">
+        /// The index of the first item of the data in the containing collection.
+        /// </param>
+        /// <param name="count">The the number of items to remove.</param>
+        /// <returns>The removed containers.</returns>
+        IEnumerable<IControl> RemoveRange(int startingIndex, int count);
+
+        /// <summary>
+        /// Clears all created containers and returns the removed controls.
         /// </summary>
         /// <returns>The removed controls.</returns>
-        IList<IControl> ClearContainers();
+        IEnumerable<IControl> Clear();
 
         /// <summary>
         /// Gets the container control representing the item with the specified index.

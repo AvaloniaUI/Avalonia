@@ -199,7 +199,7 @@ namespace Perspex.Controls.Presenters
             if (toIndex != -1)
             {
                 var item = Items.Cast<object>().ElementAt(toIndex);
-                to = generator.CreateContainers(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
+                to = generator.Materialize(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
 
                 if (to != null)
                 {
@@ -215,7 +215,7 @@ namespace Perspex.Controls.Presenters
             if (from != null)
             {
                 Panel.Children.Remove(from);
-                generator.RemoveContainers(fromIndex, 1);
+                generator.Dematerialize(fromIndex, 1);
             }
         }
 
