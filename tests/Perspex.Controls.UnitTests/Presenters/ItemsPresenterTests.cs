@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.ObjectModel;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Generators;
@@ -80,6 +81,42 @@ namespace Perspex.Controls.UnitTests.Presenters
 
         [Fact]
         public void Clearing_Items_Should_Remove_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.Clear();
+
+            Assert.Empty(target.Panel.Children);
+            Assert.Empty(target.ItemContainerGenerator.Containers);
+        }
+
+        [Fact]
+        public void Replacing_Items_Should_Update_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items[1] = "baz";
+
+            var text = target.Panel.Children
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "foo", "baz", "baz" }, text);
+        }
+
+        [Fact]
+        public void Setting_Items_To_Null_Should_Remove_Containers()
         {
             var target = new ItemsPresenter
             {

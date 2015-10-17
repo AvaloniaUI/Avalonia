@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Templates;
@@ -237,18 +238,37 @@ namespace Perspex.Controls.Presenters
             if (_createdPanel)
             {
                 var generator = ItemContainerGenerator;
+                IEnumerable<IControl> containers;
 
                 // TODO: Handle Move and Replace etc.
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Panel.Children.AddRange(
-                            generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector));
+                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+                        Panel.Children.AddRange(containers);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        Panel.Children.RemoveAll(
-                            generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
+                        containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                        Panel.Children.RemoveAll(containers);
+                        break;
+
+                    case NotifyCollectionChangedAction.Replace:
+                        generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count);
+                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+
+                        var i = e.NewStartingIndex;
+
+                        foreach (var container in containers)
+                        {
+                            Panel.Children[i++] = container;
+                        }
+
+                        break;
+
+                    case NotifyCollectionChangedAction.Reset:
+                        Panel.Children.RemoveAll(generator.Clear());
+                        Panel.Children.AddRange(generator.Materialize(0, Items, MemberSelector));
                         break;
                 }
 
