@@ -85,8 +85,17 @@ namespace Perspex.Controls.Generators
         /// <returns>The removed controls.</returns>
         public virtual IList<IControl> RemoveContainers(int startingIndex, int count)
         {
-            var result = _containers.GetRange(startingIndex, count);
-            _containers.RemoveRange(startingIndex, count);
+            var result = new List<IControl>();
+
+            for (int i = startingIndex; i < startingIndex + count; ++i)
+            {
+                if (i < _containers.Count)
+                {
+                    result.Add(_containers[i]);
+                    _containers[i] = null;
+                }
+            }
+
             return result;
         }
 
