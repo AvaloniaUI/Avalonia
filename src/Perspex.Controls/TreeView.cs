@@ -28,6 +28,14 @@ namespace Perspex.Controls
         private object _selectedItem;
 
         /// <summary>
+        /// Initializes static members of the <see cref="TreeView"/> class.
+        /// </summary>
+        static TreeView()
+        {
+            // HACK: Needed or SelectedItem property will not be found in Release build.
+        }
+
+        /// <summary>
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
         public new ITreeItemContainerGenerator ItemContainerGenerator => 
