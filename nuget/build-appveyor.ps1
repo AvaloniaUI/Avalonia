@@ -9,6 +9,7 @@ sv version $env:APPVEYOR_BUILD_NUMBER
 sv version 9999.0.$version-nightly
 sv key $env:myget_key
 
+.\build-version.ps1 $version
 
 sv reponame $env:APPVEYOR_REPO_NAME
 sv repobranch $env:APPVEYOR_REPO_BRANCH
