@@ -141,7 +141,7 @@ namespace Perspex.Controls.Primitives
                 var index = IndexOf(Items, value);
                 var effective = index != -1 ? value : null;
 
-                if (effective != old)
+                if (!object.Equals(effective, old))
                 {
                     _selectedItem = effective;
                     RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
