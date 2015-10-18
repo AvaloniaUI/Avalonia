@@ -104,6 +104,10 @@
       <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
       <Name>Perspex.Diagnostics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
+      <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
+      <Name>Perspex.HtmlRenderer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
       <Name>Perspex.Input</Name>

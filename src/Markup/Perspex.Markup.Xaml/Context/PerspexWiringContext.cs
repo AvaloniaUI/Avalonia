@@ -102,7 +102,8 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
-                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter())
+                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
+                new TypeConverterRegistration(typeof(Geometry), new GeometryTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
