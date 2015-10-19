@@ -40,7 +40,9 @@ namespace Perspex.Markup.Xaml.Binding
             PerspexProperty targetProperty,
             PerspexObject templatedParent)
         {
-            var sourceProperty = PerspexPropertyRegistry.Instance.FindRegistered(instance.GetType(), SourcePropertyPath);
+            var sourceProperty = PerspexPropertyRegistry.Instance.FindRegistered(
+                templatedParent, 
+                SourcePropertyPath);
 
             if (sourceProperty == null)
             {

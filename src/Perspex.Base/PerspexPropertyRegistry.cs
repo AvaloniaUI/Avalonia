@@ -179,6 +179,28 @@ namespace Perspex
             return results.FirstOrDefault(x => x.Name == propertyName);
         }
 
+
+        /// <summary>
+        /// Finds a registered property on an object by name.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="name">
+        /// The property name. If an attached property it should be in the form 
+        /// "OwnerType.PropertyName".
+        /// </param>
+        /// <returns>
+        /// The registered property or null if no matching property found.
+        /// </returns>
+        public PerspexProperty FindRegistered(PerspexObject o, string name)
+        {
+            return FindRegistered(o.GetType(), name);
+        }
+
+        /// <summary>
+        /// Returns a type and all its base types.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The type and all its base types.</returns>
         private IEnumerable<string> GetImplementedTypes(Type type)
         {
             while (type != null)
