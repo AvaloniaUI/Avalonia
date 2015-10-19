@@ -406,7 +406,11 @@ namespace Perspex.Controls
             base.OnAttachedToVisualTree(root);
 
             IStyler styler = PerspexLocator.Current.GetService<IStyler>();
-            styler.ApplyStyles(this);
+
+            if (styler != null)
+            {
+                styler.ApplyStyles(this);
+            }
         }
 
         /// <summary>

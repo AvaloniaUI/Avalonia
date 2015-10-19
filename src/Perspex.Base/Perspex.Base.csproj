@@ -50,6 +50,7 @@
     <Compile Include="PerspexLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
+    <Compile Include="PerspexPropertyRegistry.cs" />
     <Compile Include="PerspexProperty`1.cs" />
     <Compile Include="Platform\IPclPlatformWrapper.cs" />
     <Compile Include="BindingPriority.cs" />

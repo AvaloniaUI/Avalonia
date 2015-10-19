@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Templates;
@@ -186,7 +187,7 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                Panel.Children.AddRange(ItemContainerGenerator.CreateContainers(0, Items, MemberSelector));
+                Panel.Children.AddRange(ItemContainerGenerator.Materialize(0, Items, MemberSelector));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -209,7 +210,7 @@ namespace Perspex.Controls.Presenters
 
                 if (e.OldValue != null)
                 {
-                    generator.ClearContainers();
+                    generator.Clear();
                     Panel.Children.Clear();
 
                     INotifyCollectionChanged incc = e.OldValue as INotifyCollectionChanged;
@@ -237,18 +238,39 @@ namespace Perspex.Controls.Presenters
             if (_createdPanel)
             {
                 var generator = ItemContainerGenerator;
+                IEnumerable<IControl> containers;
 
                 // TODO: Handle Move and Replace etc.
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Panel.Children.AddRange(
-                            generator.CreateContainers(e.NewStartingIndex, e.NewItems, MemberSelector));
+                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+                        Panel.Children.AddRange(containers);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        Panel.Children.RemoveAll(
-                            generator.RemoveContainers(e.OldStartingIndex, e.OldItems));
+                        containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                        Panel.Children.RemoveAll(containers);
+                        break;
+
+                    case NotifyCollectionChangedAction.Replace:
+                        generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count);
+                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+
+                        var i = e.NewStartingIndex;
+
+                        foreach (var container in containers)
+                        {
+                            Panel.Children[i++] = container;
+                        }
+
+                        break;
+
+                    case NotifyCollectionChangedAction.Move:
+                        // TODO: Implement Move in a more efficient manner.
+                    case NotifyCollectionChangedAction.Reset:
+                        Panel.Children.RemoveAll(generator.Clear());
+                        Panel.Children.AddRange(generator.Materialize(0, Items, MemberSelector));
                         break;
                 }
 

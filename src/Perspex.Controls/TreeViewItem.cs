@@ -1,10 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Linq;
-using Perspex.Controls.Mixins;
 using Perspex.Controls.Generators;
+using Perspex.Controls.Mixins;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -66,39 +65,31 @@ namespace Perspex.Controls
             set { SetValue(IsSelectedProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
+        /// </summary>
+        public new ITreeItemContainerGenerator ItemContainerGenerator =>
+            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            if (_treeView == null)
-            {
-                throw new InvalidOperationException(
-                    "Cannot get the ItemContainerGenerator for a TreeViewItem " +
-                    "before it is added to a TreeView.");
-            }
-
-            return _treeView.ItemContainerGenerator;
+            return new TreeItemContainerGenerator<TreeViewItem>(
+                this,
+                TreeViewItem.HeaderProperty,
+                TreeViewItem.ItemsProperty,
+                TreeViewItem.IsExpandedProperty,
+                _treeView?.ItemContainerGenerator);
         }
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(IRenderRoot root)
         {
             base.OnAttachedToVisualTree(root);
-
-            if (this.GetVisualParent() != null)
-            {
-                _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
-
-                if (_treeView == null)
-                {
-                    throw new InvalidOperationException("TreeViewItems must be added to a TreeView.");
-                }
-            }
-            else
-            {
-                _treeView = null;
-            }
+            _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (!e.Handled)

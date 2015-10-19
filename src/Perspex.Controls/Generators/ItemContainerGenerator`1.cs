@@ -1,6 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Linq.Expressions;
+using System.Reflection;
 using Perspex.Controls.Templates;
 
 namespace Perspex.Controls.Generators
@@ -9,16 +12,25 @@ namespace Perspex.Controls.Generators
     /// Creates containers for items and maintains a list of created containers.
     /// </summary>
     /// <typeparam name="T">The type of the container.</typeparam>
-    public class ItemContainerGenerator<T> : ItemContainerGenerator where T : class, IContentControl, new()
+    public class ItemContainerGenerator<T> : ItemContainerGenerator where T : class, IControl, new()
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator{T}"/> class.
         /// </summary>
         /// <param name="owner">The owner control.</param>
-        public ItemContainerGenerator(Control owner)
+        /// <param name="contentProperty">The container's Content property.</param>
+        public ItemContainerGenerator(
+            IControl owner, 
+            PerspexProperty contentProperty)
             : base(owner)
         {
+            ContentProperty = contentProperty;
         }
+
+        /// <summary>
+        /// Gets the container's Content property.
+        /// </summary>
+        protected PerspexProperty ContentProperty { get; }
 
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
@@ -36,7 +48,7 @@ namespace Perspex.Controls.Generators
             else
             {
                 var result = new T();
-                result.Content = Owner.MaterializeDataTemplate(item);
+                result.SetValue(ContentProperty, Owner.MaterializeDataTemplate(item));
 
                 if (!(item is IControl))
                 {

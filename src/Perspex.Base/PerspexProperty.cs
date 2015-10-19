@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Utilities;
@@ -28,7 +29,12 @@ namespace Perspex
         private static int s_nextId = 1;
 
         /// <summary>
-        /// The default values for the property, by type.
+        /// The default value provided when the property was first registered.
+        /// </summary>
+        private readonly object _defaultValue;
+
+        /// <summary>
+        /// The overridden default values for the property, by type.
         /// </summary>
         private readonly Dictionary<Type, object> _defaultValues = new Dictionary<Type, object>();
 
@@ -92,7 +98,7 @@ namespace Perspex
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
-            _defaultValues.Add(ownerType, defaultValue);
+            _defaultValue = defaultValue;
             Inherits = inherits;
             DefaultBindingMode = defaultBindingMode;
             IsAttached = isAttached;
@@ -143,14 +149,57 @@ namespace Perspex
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
         /// </summary>
         /// <param name="source">The direct property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
+        protected PerspexProperty(PerspexProperty source, Type ownerType)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(ownerType != null);
+
+            if (source.IsDirect)
+            {
+                throw new InvalidOperationException(
+                    "This method cannot be called on direct PerspexProperties.");
+            }
+
+            //Name = name;
+            //PropertyType = valueType;
+            //OwnerType = ownerType;
+            //_defaultValues.Add(ownerType, defaultValue);
+            //Inherits = inherits;
+            //DefaultBindingMode = defaultBindingMode;
+            //IsAttached = isAttached;
+            //Notifying = notifying;
+            //_id = s_nextId++;
+
+
+            Name = source.Name;
+            PropertyType = source.PropertyType;
+            OwnerType = ownerType;
+            _defaultValue = source._defaultValue;
+            _defaultValues = source._defaultValues;
+            Inherits = source.Inherits;
+            DefaultBindingMode = source.DefaultBindingMode;
+            IsAttached = false;
+            Notifying = Notifying;
+            _validation = source._validation;
+            _id = source._id;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
+        /// </summary>
+        /// <param name="source">The direct property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
         /// <param name="getter">A new getter.</param>
         /// <param name="setter">A new setter.</param>
         protected PerspexProperty(
             PerspexProperty source,
+            Type ownerType,
             Func<PerspexObject, object> getter,
             Action<PerspexObject, object> setter)
         {
             Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(ownerType != null);
             Contract.Requires<ArgumentNullException>(getter != null);
 
             if (!source.IsDirect)
@@ -161,7 +210,7 @@ namespace Perspex
 
             Name = source.Name;
             PropertyType = source.PropertyType;
-            OwnerType = source.OwnerType;
+            OwnerType = ownerType;
             Getter = getter;
             Setter = setter;
             IsDirect = true;
@@ -367,7 +416,7 @@ namespace Perspex
                 notifying,
                 false);
 
-            PerspexObject.Register(typeof(TOwner), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
 
             return result;
         }
@@ -395,7 +444,7 @@ namespace Perspex
                 Cast(getter),
                 Cast(setter));
 
-            PerspexObject.Register(typeof(TOwner), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
 
             return result;
         }
@@ -431,7 +480,7 @@ namespace Perspex
                 null,
                 true);
 
-            PerspexObject.Register(typeof(THost), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
 
             return result;
         }
@@ -468,7 +517,7 @@ namespace Perspex
                 null,
                 true);
 
-            PerspexObject.Register(typeof(THost), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
 
             return result;
         }
@@ -529,7 +578,7 @@ namespace Perspex
                 type = type.GetTypeInfo().BaseType;
             }
 
-            return _defaultValues[OwnerType];
+            return _defaultValue;
         }
 
         /// <summary>

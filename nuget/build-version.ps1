@@ -2,7 +2,8 @@ rm -Force -Recurse .\Perspex -ErrorAction SilentlyContinue
 rm -Force -Recurse *.nupkg -ErrorAction SilentlyContinue
 Copy-Item template Perspex -Recurse
 sv lib "Perspex\lib\portable-windows8+net45"
-sv build "Perspex\build\net45"
+sv build "Perspex.Desktop\lib\net45"
+
 mkdir $lib -ErrorAction SilentlyContinue
 mkdir $build -ErrorAction SilentlyContinue
 
@@ -36,14 +37,14 @@ Copy-Item ..\src\Perspex.HtmlRenderer\bin\Release\Perspex.HtmlRenderer.dll $lib
 Copy-Item ..\src\Perspex.ReactiveUI\bin\Release\Perspex.ReactiveUI.dll $lib
 
 Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\Perspex.Direct2D1.dll $build
-Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\SharpDX.dll $build
-Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\SharpDX.Direct2D1.dll $build
-Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\SharpDX.DXGI.dll $build
 Copy-Item ..\src\Windows\Perspex.Win32\bin\Release\Perspex.Win32.dll $build
 Copy-Item ..\src\Gtk\Perspex.Gtk\bin\Release\Perspex.Gtk.dll $build
 Copy-Item ..\src\Gtk\Perspex.Cairo\bin\Release\Perspex.Cairo.dll $build
 
 (gc Perspex\Perspex.nuspec).replace('#VERSION#', $args[0]) | sc Perspex\Perspex.nuspec
+(gc Perspex\Perspex.Desktop.nuspec).replace('#VERSION#', $args[0]) | sc Perspex.Desktop\Perspex.Desktop.nuspec
 
 nuget.exe pack Perspex\Perspex.nuspec
+nuget.exe pack Perspex.Desktop\Perspex.Desktop.nuspec
 rm -Force -Recurse .\Perspex
+rm -Force -Recurse .\Perspex.Desktop

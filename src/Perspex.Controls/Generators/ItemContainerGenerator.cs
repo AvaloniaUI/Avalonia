@@ -15,7 +15,7 @@ namespace Perspex.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private Dictionary<int, IControl> _containers = new Dictionary<int, IControl>();
+        private List<IControl> _containers = new List<IControl>();
 
         private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
 
@@ -25,17 +25,15 @@ namespace Perspex.Controls.Generators
         /// <param name="owner">The owner control.</param>
         public ItemContainerGenerator(IControl owner)
         {
+            Contract.Requires<ArgumentNullException>(owner != null);
+
             Owner = owner;
         }
 
-        /// <summary>
-        /// Gets the currently realized containers.
-        /// </summary>
-        public IEnumerable<IControl> Containers => _containers.Values;
+        /// <inheritdoc/>
+        public IEnumerable<IControl> Containers => _containers;
 
-        /// <summary>
-        /// Signalled whenever new containers are initialized.
-        /// </summary>
+        /// <inheritdoc/>
         public IObservable<ItemContainers> ContainersInitialized => _containersInitialized;
 
         /// <summary>
@@ -43,16 +41,8 @@ namespace Perspex.Controls.Generators
         /// </summary>
         public IControl Owner { get; }
 
-        /// <summary>
-        /// Creates container controls for a collection of items.
-        /// </summary>
-        /// <param name="startingIndex">
-        /// The index of the first item of the data in the containing collection.
-        /// </param>
-        /// <param name="items">The items.</param>
-        /// <param name="selector">An optional member selector.</param>
-        /// <returns>The created container controls.</returns>
-        public IList<IControl> CreateContainers(
+        /// <inheritdoc/>
+        public IEnumerable<IControl> Materialize(
             int startingIndex,
             IEnumerable items,
             IMemberSelector selector)
@@ -75,72 +65,54 @@ namespace Perspex.Controls.Generators
             return result.Where(x => x != null).ToList();
         }
 
-        /// <summary>
-        /// Removes a set of created containers from the index and returns the removed controls.
-        /// </summary>
-        /// <param name="startingIndex">
-        /// The index of the first item of the data in the containing collection.
-        /// </param>
-        /// <param name="items">The items.</param>
-        /// <returns>The removed controls.</returns>
-        public IList<IControl> RemoveContainers(int startingIndex, IEnumerable items)
+        /// <inheritdoc/>
+        public virtual IEnumerable<IControl> Dematerialize(int startingIndex, int count)
         {
             var result = new List<IControl>();
-            var count = items.Cast<object>().Count();
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                var container = _containers[i];
-
-                if (container != null)
+                if (i < _containers.Count)
                 {
-                    result.Add(container);
-                    _containers.Remove(i);
+                    result.Add(_containers[i]);
+                    _containers[i] = null;
                 }
             }
 
             return result;
         }
 
-        /// <summary>
-        /// Clears the created containers from the index and returns the removed controls.
-        /// </summary>
-        /// <returns>The removed controls.</returns>
-        public IList<IControl> ClearContainers()
+        /// <inheritdoc/>
+        public virtual IEnumerable<IControl> RemoveRange(int startingIndex, int count)
+        {
+            var result = _containers.GetRange(startingIndex, count);
+            _containers.RemoveRange(startingIndex, count);
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public virtual IEnumerable<IControl> Clear()
         {
             var result = _containers;
-            _containers = new Dictionary<int, IControl>();
-            return result.Values.ToList();
-        }
-
-        /// <summary>
-        /// Gets the container control representing the item with the specified index.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns>The container or null if no container created.</returns>
-        public IControl ContainerFromIndex(int index)
-        {
-            IControl result;
-            _containers.TryGetValue(index, out result);
+            _containers = new List<IControl>();
             return result;
         }
 
-        /// <summary>
-        /// Gets the index of the specified container control.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>The index of the container or -1 if not found.</returns>
-        public int IndexFromContainer(IControl container)
+        /// <inheritdoc/>
+        public IControl ContainerFromIndex(int index)
         {
-            foreach (var i in _containers)
+            if (index < _containers.Count)
             {
-                if (i.Value == container)
-                {
-                    return i.Key;
-                }
+                return _containers[index];
             }
 
-            return -1;
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public int IndexFromContainer(IControl container)
+        {
+            return _containers.IndexOf(container);
         }
 
         /// <summary>
@@ -171,7 +143,16 @@ namespace Perspex.Controls.Generators
 
             foreach (var c in container)
             {
-                if (!_containers.ContainsKey(index))
+                while (_containers.Count < index)
+                {
+                    _containers.Add(null);
+                }
+
+                if (_containers.Count == index)
+                {
+                    _containers.Add(c);
+                }
+                else if (_containers[index] == null)
                 {
                     _containers[index] = c;
                 }
@@ -182,6 +163,17 @@ namespace Perspex.Controls.Generators
 
                 ++index;
             }
+        }
+
+        /// <summary>
+        /// Gets all containers with an index that fall within a range.
+        /// </summary>
+        /// <param name="index">The first index.</param>
+        /// <param name="count">The number of elements in the range.</param>
+        /// <returns>The containers.</returns>
+        protected IEnumerable<IControl> GetContainerRange(int index, int count)
+        {
+            return _containers.GetRange(index, count);
         }
     }
 }

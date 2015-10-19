@@ -43,7 +43,7 @@ namespace Perspex.Controls.Primitives
             }
             else
             {
-                result = new ItemContainerGenerator<TabItem>(this);
+                result = new ItemContainerGenerator<TabItem>(this, TabItem.ContentProperty);
             }
 
             return result;

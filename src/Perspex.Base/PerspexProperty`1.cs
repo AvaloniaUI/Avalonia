@@ -69,14 +69,26 @@ namespace Perspex
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
         /// </summary>
+        /// <param name="source">The property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
+        private PerspexProperty(PerspexProperty source, Type ownerType)
+            : base(source, ownerType)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
+        /// </summary>
         /// <param name="source">The direct property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
         /// <param name="getter">A new getter.</param>
         /// <param name="setter">A new setter.</param>
         private PerspexProperty(
             PerspexProperty source,
+            Type ownerType,
             Func<PerspexObject, TValue> getter,
             Action<PerspexObject, TValue> setter)
-            : base(source, CastParamReturn(getter), CastParams(setter))
+            : base(source, ownerType, CastParamReturn(getter), CastParams(setter))
         {
             Getter = getter;
             Setter = setter;
@@ -105,8 +117,9 @@ namespace Perspex
                     "You must provide a new getter and setter when calling AddOwner on a direct PerspexProperty.");
             }
 
-            PerspexObject.Register(typeof(TOwner), this);
-            return this;
+            var result = new PerspexProperty<TValue>(this, typeof(TOwner));
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
+            return result;
         }
 
         /// <summary>
@@ -119,8 +132,19 @@ namespace Perspex
             Action<TOwner, TValue> setter = null)
                 where TOwner : PerspexObject
         {
-            var result = new PerspexProperty<TValue>(this, CastReturn(getter), CastParam1(setter));
-            PerspexObject.Register(typeof(TOwner), result);
+            if (!IsDirect)
+            {
+                throw new InvalidOperationException(
+                    "This overload of AddOwner is for direct PerspexProperties.");
+            }
+
+            var result = new PerspexProperty<TValue>(
+                this,
+                typeof(TOwner),
+                CastReturn(getter), 
+                CastParam1(setter));
+
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
 

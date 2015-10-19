@@ -19,30 +19,6 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void GetRegisteredProperties_Returns_Registered_Properties()
-        {
-            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class1)).Select(x => x.Name).ToArray();
-
-            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached" }, names);
-        }
-
-        [Fact]
-        public void GetRegisteredProperties_Returns_Registered_Properties_For_Base_Types()
-        {
-            string[] names = PerspexObject.GetRegisteredProperties(typeof(Class2)).Select(x => x.Name).ToArray();
-
-            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
-        }
-
-        [Fact]
-        public void GetAttachedProperties_Returns_Registered_Properties_For_Base_Types()
-        {
-            string[] names = PerspexObject.GetAttachedProperties(typeof(AttachedOwner)).Select(x => x.Name).ToArray();
-
-            Assert.Equal(new[] { "Attached" }, names);
-        }
-
-        [Fact]
         public void IsSet_Returns_False_For_Unset_Property()
         {
             var target = new Class1();

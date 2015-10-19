@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.ObjectModel;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Generators;
@@ -39,7 +40,9 @@ namespace Perspex.Controls.UnitTests.Presenters
                 Items = new[] { "foo", "bar" },
             };
 
-            target.ItemContainerGenerator = new ItemContainerGenerator<ListBoxItem>(target);
+            target.ItemContainerGenerator = new ItemContainerGenerator<ListBoxItem>(
+                target, 
+                ListBoxItem.ContentProperty);
             target.ApplyTemplate();
 
             Assert.Equal(2, target.Panel.Children.Count);
@@ -73,10 +76,67 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             Assert.Equal(1, target.Panel.Children.Count);
             Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.Equal("bar", ((TextBlock)target.ItemContainerGenerator.ContainerFromIndex(0)).Text);
         }
 
         [Fact]
         public void Clearing_Items_Should_Remove_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.Clear();
+
+            Assert.Empty(target.Panel.Children);
+            Assert.Empty(target.ItemContainerGenerator.Containers);
+        }
+
+        [Fact]
+        public void Replacing_Items_Should_Update_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items[1] = "baz";
+
+            var text = target.Panel.Children
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "foo", "baz", "baz" }, text);
+        }
+
+        [Fact]
+        public void Moving_Items_Should_Update_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.Move(2, 1);
+
+            var text = target.Panel.Children
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "foo", "baz", "bar" }, text);
+        }
+
+        [Fact]
+        public void Setting_Items_To_Null_Should_Remove_Containers()
         {
             var target = new ItemsPresenter
             {
@@ -87,6 +147,7 @@ namespace Perspex.Controls.UnitTests.Presenters
             target.Items = null;
 
             Assert.Empty(target.Panel.Children);
+            Assert.Empty(target.ItemContainerGenerator.Containers);
         }
 
         [Fact]
@@ -102,12 +163,19 @@ namespace Perspex.Controls.UnitTests.Presenters
             target.ApplyTemplate();
 
             var text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
+
             Assert.Equal(new[] { "foo", "bar" }, text);
+            Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(0));
+            Assert.Null(target.ItemContainerGenerator.ContainerFromIndex(1));
+            Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(2));
 
             items.RemoveAt(1);
 
             text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
+
             Assert.Equal(new[] { "foo", "bar" }, text);
+            Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(0));
+            Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(1));
         }
 
         [Fact]
@@ -231,7 +299,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new ItemContainerGenerator<TestItem>(this);
+                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty);
             }
         }
     }

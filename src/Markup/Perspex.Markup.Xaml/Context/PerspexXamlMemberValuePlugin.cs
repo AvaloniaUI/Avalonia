@@ -88,7 +88,7 @@ namespace Perspex.Markup.Xaml.Context
                 if (attached == null)
                 {
                     propertyName = _xamlMember.Name;
-                    property = perspexObject.GetRegisteredProperties()
+                    property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
                         .FirstOrDefault(x => x.Name == propertyName);
                 }
                 else
@@ -98,7 +98,7 @@ namespace Perspex.Markup.Xaml.Context
 
                     propertyName = attached.DeclaringType.UnderlyingType.Name + '.' + _xamlMember.Name;
 
-                    property = perspexObject.GetRegisteredProperties()
+                    property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
                         .Where(x => x.IsAttached && x.OwnerType == attached.DeclaringType.UnderlyingType)
                         .FirstOrDefault(x => x.Name == _xamlMember.Name);
                 }
