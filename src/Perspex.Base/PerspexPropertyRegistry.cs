@@ -157,26 +157,37 @@ namespace Perspex
                 throw new ArgumentException("Invalid property name.");
             }
 
+            string propertyName;
+            var results = GetRegistered(type);
+
             if (parts.Length == 1)
             {
-                var result = GetRegistered(type)
-                    .FirstOrDefault(x => !x.IsAttached && x.Name == parts[0]);
-
-                if (result != null)
-                {
-                    return result;
-                }
-
-                // A type can .AddOwner an attached property.
-                return GetRegistered(type)
-                    .FirstOrDefault(x => x.Name == parts[0]);
+                propertyName = parts[0];
             }
             else
             {
-                return GetRegistered(type)
-                    .FirstOrDefault(x => x.IsAttached && x.OwnerType.Name == parts[0] && x.Name == parts[1]);
+                var types = GetImplementedTypes(type);
+
+                if (!types.Contains(parts[0]))
+                {
+                    results = results.Where(x => x.OwnerType.Name == parts[0]);
+                }
+
+                propertyName = parts[1];
+            }
+
+            return results.FirstOrDefault(x => x.Name == propertyName);
+        }
+
+        private IEnumerable<string> GetImplementedTypes(Type type)
+        {
+            while (type != null)
+            {
+                yield return type.Name;
+                type = type.GetTypeInfo().BaseType;
             }
         }
+
         /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is registered on a type.
         /// </summary>

@@ -46,6 +46,94 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(new[] { "Attached" }, names);
         }
 
+        [Fact]
+        public void FindRegistered_Finds_Untyped_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class1), "Foo");
+
+            Assert.Equal(Class1.FooProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_Typed_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class1), "Class1.Foo");
+
+            Assert.Equal(Class1.FooProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_Typed_Inherited_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class2), "Class1.Foo");
+
+            Assert.Equal(Class2.FooProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_Inherited_Property_With_Derived_Type_Name()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class2), "Class2.Foo");
+
+            Assert.Equal(Class2.FooProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class2), "AttachedOwner.Attached");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_AddOwnered_Untyped_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Attached");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_AddOwnered_Typed_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Class3.Attached");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_AddOwnered_AttachedTyped_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "AttachedOwner.Attached");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_AddOwnered_BaseTyped_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Class1.Attached");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void FindRegistered_Doesnt_Find_Nonregistered_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class1), "Bar");
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void FindRegistered_Doesnt_Find_Nonregistered_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class4), "AttachedOwner.Attached");
+
+            Assert.Null(result);
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly PerspexProperty<string> FooProperty =
@@ -68,6 +156,16 @@ namespace Perspex.Base.UnitTests
 
             public static readonly PerspexProperty<double?> FredProperty =
                 PerspexProperty.Register<Class2, double?>("Fred");
+        }
+
+        private class Class3 : Class1
+        {
+            public static readonly PerspexProperty<string> AttachedProperty =
+                AttachedOwner.AttachedProperty.AddOwner<Class3>();
+        }
+
+        public class Class4 : PerspexObject
+        {
         }
 
         private class AttachedOwner
