@@ -37,22 +37,33 @@ namespace Perspex.Styling
     public class Selector
     {
         private readonly Func<IStyleable, SelectorMatch> _evaluate;
-
+        private readonly Type _targetType;
         private readonly bool _inTemplate;
-
         private readonly bool _stopTraversal;
-
         private string _description;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Selector"/> class.
+        /// </summary>
         public Selector()
         {
             _evaluate = _ => SelectorMatch.True;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Selector"/> class.
+        /// </summary>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="evaluate">The evaluator function.</param>
+        /// <param name="selectorString">The string representation of the selector.</param>
+        /// <param name="targetType">The target type, if available.</param>
+        /// <param name="inTemplate">Whether to match in a control template.</param>
+        /// <param name="stopTraversal">Whether to stop traversal at this point.</param>
         public Selector(
             Selector previous,
             Func<IStyleable, SelectorMatch> evaluate,
             string selectorString,
+            Type targetType = null,
             bool inTemplate = false,
             bool stopTraversal = false)
             : this()
@@ -62,25 +73,49 @@ namespace Perspex.Styling
             Previous = previous;
             _evaluate = evaluate;
             SelectorString = selectorString;
+            _targetType = targetType;
             _inTemplate = inTemplate || previous._inTemplate;
             _stopTraversal = stopTraversal;
         }
 
+        /// <summary>
+        /// Gets the previous selector.
+        /// </summary>
         public Selector Previous
         {
-            get; }
+            get;
+        }
 
+        /// <summary>
+        /// Gets a string representation of the selector.
+        /// </summary>
         public string SelectorString
         {
             get;
-            set;
         }
 
+        /// <summary>
+        /// Gets the target type of the selector, if available.
+        /// </summary>
+        public Type TargetType
+        {
+            get { return _targetType ?? MovePrevious()?.TargetType; }
+        }
+
+        /// <summary>
+        /// Returns the previous selector if traversal is not stopped.
+        /// </summary>
+        /// <returns>The previous selector.</returns>
         public Selector MovePrevious()
         {
             return _stopTraversal ? null : Previous;
         }
 
+        /// <summary>
+        /// Tries to match the selector with a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control)
         {
             List<IObservable<bool>> inputs = new List<IObservable<bool>>();
@@ -117,6 +152,10 @@ namespace Perspex.Styling
             }
         }
 
+        /// <summary>
+        /// Gets a string representation of the selector.
+        /// </summary>
+        /// <returns>The string representation of the selector.</returns>
         public override string ToString()
         {
             if (_description == null)

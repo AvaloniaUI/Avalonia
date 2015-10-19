@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
-using Perspex.Styling;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests
@@ -49,6 +48,67 @@ namespace Perspex.Styling.UnitTests
             Assert.Equal(new[] { false, true }, values);
             control.Classes.Remove("foo");
             Assert.Equal(new[] { false, true, false }, values);
+        }
+
+        [Fact]
+        public void TargetType_OfType()
+        {
+            var selector = new Selector().OfType<Button>();
+
+            Assert.Equal(typeof(Button), selector.TargetType);
+        }
+
+        [Fact]
+        public void TargetType_OfType_Class()
+        {
+            var selector = new Selector()
+                .OfType<Button>()
+                .Class("foo");
+
+            Assert.Equal(typeof(Button), selector.TargetType);
+        }
+
+        [Fact]
+        public void TargetType_Is_Class()
+        {
+            var selector = new Selector()
+                .Is<Button>()
+                .Class("foo");
+
+            Assert.Equal(typeof(Button), selector.TargetType);
+        }
+
+        [Fact]
+        public void TargetType_Child()
+        {
+            var selector = new Selector()
+                .OfType<Button>()
+                .Child()
+                .OfType<TextBlock>();
+
+            Assert.Equal(typeof(TextBlock), selector.TargetType);
+        }
+
+        [Fact]
+        public void TargetType_Descendent()
+        {
+            var selector = new Selector()
+                .OfType<Button>()
+                .Descendent()
+                .OfType<TextBlock>();
+
+            Assert.Equal(typeof(TextBlock), selector.TargetType);
+        }
+
+        [Fact]
+        public void TargetType_Template()
+        {
+            var selector = new Selector()
+                .OfType<Button>()
+                .Template()
+                .OfType<TextBlock>();
+
+            Assert.Equal(typeof(TextBlock), selector.TargetType);
         }
     }
 }
