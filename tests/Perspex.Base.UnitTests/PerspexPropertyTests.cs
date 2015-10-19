@@ -162,6 +162,15 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void AddOwnered_Property_Should_Have_OwnerType_Set()
+        {
+            var p1 = new PerspexProperty<string>("p1", typeof(Class1));
+            var p2 = p1.AddOwner<Class3>();
+
+            Assert.Equal(typeof(Class3), p2.OwnerType);
+        }
+
+        [Fact]
         public void AddOwnered_Direct_Property_Should_Equal_Original()
         {
             var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o,v) => { });
@@ -170,6 +179,15 @@ namespace Perspex.Base.UnitTests
             Assert.Equal(p1, p2);
             Assert.Equal(p1.GetHashCode(), p2.GetHashCode());
             Assert.True(p1 == p2);
+        }
+
+        [Fact]
+        public void AddOwnered_Direct_Property_Should_Have_OwnerType_Set()
+        {
+            var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o, v) => { });
+            var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
+
+            Assert.Equal(typeof(Class3), p2.OwnerType);
         }
 
         [Fact]
