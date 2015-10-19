@@ -3,13 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Styles>
     <Style Selector="Button">
-      <Setter Property="Button.Background" Value="#ffaaaaaa"/>
-      <Setter Property="Button.BorderBrush" Value="#ffaaaaaa"/>
-      <Setter Property="Button.BorderThickness" Value="2"/>
-      <Setter Property="Button.Foreground" Value="Black"/>
-      <Setter Property="Button.HorizontalContentAlignment" Value="Center"/>
-      <Setter Property="Button.VerticalContentAlignment" Value="Center"/>
-      <Setter Property="Button.Template">
+      <Setter Property="Background" Value="#ffaaaaaa"/>
+      <Setter Property="BorderBrush" Value="#ffaaaaaa"/>
+      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="Foreground" Value="Black"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
         <ControlTemplate TargetType="Button">
           <Border Padding="3"
                   Background="{TemplateBinding Background}"
@@ -24,13 +24,13 @@
       </Setter>
     </Style>
     <Style Selector="Button:pointerover">
-      <Setter Property="Button.BorderBrush" Value="#ff888888"/>
+      <Setter Property="BorderBrush" Value="#ff888888"/>
     </Style>
     <Style Selector="Button:pressed">
-      <Setter Property="Button.Background" Value="#ff888888"/>
+      <Setter Property="Background" Value="#ff888888"/>
     </Style>
     <Style Selector="Button:disabled">
-      <Setter Property="Button.Opacity" Value="0.5"/>
+      <Setter Property="Opacity" Value="0.5"/>
     </Style>
   </Application.Styles>
 </Application>
