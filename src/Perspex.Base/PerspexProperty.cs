@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Utilities;
@@ -367,7 +368,7 @@ namespace Perspex
                 notifying,
                 false);
 
-            PerspexObject.Register(typeof(TOwner), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
 
             return result;
         }
@@ -395,7 +396,7 @@ namespace Perspex
                 Cast(getter),
                 Cast(setter));
 
-            PerspexObject.Register(typeof(TOwner), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
 
             return result;
         }
@@ -431,7 +432,7 @@ namespace Perspex
                 null,
                 true);
 
-            PerspexObject.Register(typeof(THost), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
 
             return result;
         }
@@ -468,7 +469,7 @@ namespace Perspex
                 null,
                 true);
 
-            PerspexObject.Register(typeof(THost), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
 
             return result;
         }

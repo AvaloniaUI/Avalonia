@@ -105,7 +105,7 @@ namespace Perspex
                     "You must provide a new getter and setter when calling AddOwner on a direct PerspexProperty.");
             }
 
-            PerspexObject.Register(typeof(TOwner), this);
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), this);
             return this;
         }
 
@@ -119,8 +119,12 @@ namespace Perspex
             Action<TOwner, TValue> setter = null)
                 where TOwner : PerspexObject
         {
-            var result = new PerspexProperty<TValue>(this, CastReturn(getter), CastParam1(setter));
-            PerspexObject.Register(typeof(TOwner), result);
+            var result = new PerspexProperty<TValue>(
+                this, 
+                CastReturn(getter), 
+                CastParam1(setter));
+
+            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
 

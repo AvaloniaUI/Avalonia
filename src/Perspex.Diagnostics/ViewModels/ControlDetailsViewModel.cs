@@ -14,7 +14,7 @@ namespace Perspex.Diagnostics.ViewModels
         {
             if (control != null)
             {
-                Properties = control.GetRegisteredProperties()
+                Properties = PerspexPropertyRegistry.Instance.GetRegistered(control)
                     .Select(x => new PropertyDetails(control, x))
                     .OrderBy(x => x.IsAttached)
                     .ThenBy(x => x.Name);

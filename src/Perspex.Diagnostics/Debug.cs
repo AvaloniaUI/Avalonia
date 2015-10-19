@@ -37,7 +37,7 @@ namespace Perspex.Diagnostics
                 builder.Append(" ");
                 builder.AppendLine(control.Classes.ToString());
 
-                foreach (var property in control.GetRegisteredProperties())
+                foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(control))
                 {
                     var value = control.GetDiagnostic(property);
 

@@ -7,9 +7,9 @@ using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
-    public class PerspexObjectTests_Metadata
+    public class PerspexPropertyRegistryTests
     {
-        public PerspexObjectTests_Metadata()
+        public PerspexPropertyRegistryTests()
         {
             // Ensure properties are registered.
             PerspexProperty p;
@@ -19,32 +19,31 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void IsSet_Returns_False_For_Unset_Property()
+        public void GetRegistered_Returns_Registered_Properties()
         {
-            var target = new Class1();
+            string[] names = PerspexPropertyRegistry.Instance.GetRegistered(typeof(Class1))
+                .Select(x => x.Name)
+                .ToArray();
 
-            Assert.False(target.IsSet(Class1.FooProperty));
+            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
         [Fact]
-        public void IsSet_Returns_False_For_Set_Property()
+        public void GetRegistered_Returns_Registered_Properties_For_Base_Types()
         {
-            var target = new Class1();
+            string[] names = PerspexPropertyRegistry.Instance.GetRegistered(typeof(Class2))
+                .Select(x => x.Name)
+                .ToArray();
 
-            target.SetValue(Class1.FooProperty, "foo");
-
-            Assert.True(target.IsSet(Class1.FooProperty));
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
         }
 
         [Fact]
-        public void IsSet_Returns_False_For_Cleared_Property()
+        public void GetAttached_Returns_Registered_Properties_For_Base_Types()
         {
-            var target = new Class1();
+            string[] names = PerspexPropertyRegistry.Instance.GetAttached(typeof(AttachedOwner)).Select(x => x.Name).ToArray();
 
-            target.SetValue(Class1.FooProperty, "foo");
-            target.SetValue(Class1.FooProperty, PerspexProperty.UnsetValue);
-
-            Assert.False(target.IsSet(Class1.FooProperty));
+            Assert.Equal(new[] { "Attached" }, names);
         }
 
         private class Class1 : PerspexObject

@@ -26,18 +26,6 @@ namespace Perspex
     public class PerspexObject : IObservablePropertyBag, INotifyPropertyChanged
     {
         /// <summary>
-        /// The registered properties by type.
-        /// </summary>
-        private static readonly Dictionary<Type, List<PerspexProperty>> s_registered =
-            new Dictionary<Type, List<PerspexProperty>>();
-
-        /// <summary>
-        /// The registered attached properties by owner type.
-        /// </summary>
-        private static readonly Dictionary<Type, List<PerspexProperty>> s_attached =
-            new Dictionary<Type, List<PerspexProperty>>();
-
-        /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
         private PerspexObject _inheritanceParent;
@@ -70,7 +58,7 @@ namespace Perspex
                 new PropertyEnricher("Id", GetHashCode()),
             });
 
-            foreach (var property in GetRegisteredProperties())
+            foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
             {
                 object value = property.IsDirect ? 
                     property.Getter(this) : 
@@ -129,7 +117,7 @@ namespace Perspex
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var inherited = (from property in GetRegisteredProperties(GetType())
+                    var inherited = (from property in PerspexPropertyRegistry.Instance.GetRegistered(this)
                                      where property.Inherits
                                      select new
                                      {
@@ -211,92 +199,6 @@ namespace Perspex
                     case BindingMode.TwoWay:
                         BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
                         break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets all <see cref="PerspexProperty"/>s registered on a type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
-        public static IEnumerable<PerspexProperty> GetRegisteredProperties(Type type)
-        {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            TypeInfo i = type.GetTypeInfo();
-
-            while (type != null)
-            {
-                List<PerspexProperty> list;
-
-                if (s_registered.TryGetValue(type, out list))
-                {
-                    foreach (PerspexProperty p in list)
-                    {
-                        yield return p;
-                    }
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-        }
-
-        /// <summary>
-        /// Gets all attached <see cref="PerspexProperty"/>s registered by an owner.
-        /// </summary>
-        /// <param name="ownerType">The owner type.</param>
-        /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
-        public static IEnumerable<PerspexProperty> GetAttachedProperties(Type ownerType)
-        {
-            List<PerspexProperty> list;
-
-            if (s_attached.TryGetValue(ownerType, out list))
-            {
-                return list;
-            }
-
-            return Enumerable.Empty<PerspexProperty>();
-        }
-
-        /// <summary>
-        /// Registers a <see cref="PerspexProperty"/> on a type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="property">The property.</param>
-        /// <remarks>
-        /// You won't usually want to call this method directly, instead use the
-        /// <see cref="PerspexProperty.Register"/> method.
-        /// </remarks>
-        public static void Register(Type type, PerspexProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            List<PerspexProperty> list;
-
-            if (!s_registered.TryGetValue(type, out list))
-            {
-                list = new List<PerspexProperty>();
-                s_registered.Add(type, list);
-            }
-
-            if (!list.Contains(property))
-            {
-                list.Add(property);
-            }
-
-            if (property.IsAttached)
-            {
-                if (!s_attached.TryGetValue(property.OwnerType, out list))
-                {
-                    list = new List<PerspexProperty>();
-                    s_attached.Add(property.OwnerType, list);
-                }
-
-                if (!list.Contains(property))
-                {
-                    list.Add(property);
                 }
             }
         }
@@ -409,7 +311,7 @@ namespace Perspex
                 object result = PerspexProperty.UnsetValue;
                 PriorityValue value;
 
-                if (!IsRegistered(property))
+                if (!PerspexPropertyRegistry.Instance.IsRegistered(this, property))
                 {
                     ThrowNotRegistered(property);
                 }
@@ -449,17 +351,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets all properties that are registered on this object.
-        /// </summary>
-        /// <returns>
-        /// A collection of <see cref="PerspexProperty"/> objects.
-        /// </returns>
-        public IEnumerable<PerspexProperty> GetRegisteredProperties()
-        {
-            return GetRegisteredProperties(GetType());
-        }
-
-        /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -476,16 +367,6 @@ namespace Perspex
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Checks whether a <see cref="PerspexProperty"/> is registered on this class.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>True if the property is registered, otherwise false.</returns>
-        public bool IsRegistered(PerspexProperty property)
-        {
-            return FindRegistered(property) != null;
         }
 
         /// <summary>
@@ -519,7 +400,7 @@ namespace Perspex
                 PriorityValue v;
                 var originalValue = value;
 
-                if (!IsRegistered(property))
+                if (!PerspexPropertyRegistry.Instance.IsRegistered(this, property))
                 {
                     ThrowNotRegistered(property);
                 }
@@ -620,7 +501,7 @@ namespace Perspex
             {
                 PriorityValue v;
 
-                if (!IsRegistered(property))
+                if (!PerspexPropertyRegistry.Instance.IsRegistered(this, property))
                 {
                     ThrowNotRegistered(property);
                 }
@@ -749,6 +630,12 @@ namespace Perspex
             {
                 value.Revalidate();
             }
+        }
+
+        /// <inheritdoc/>
+        bool IPropertyBag.IsRegistered(PerspexProperty property)
+        {
+            return PerspexPropertyRegistry.Instance.IsRegistered(this, property);
         }
 
         /// <summary>
@@ -938,48 +825,13 @@ namespace Perspex
 
         /// <summary>
         /// Given a <see cref="PerspexProperty"/> returns a registered perspex property that is
-        /// equal.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>The registered property or null if not found.</returns>
-        /// <remarks>
-        /// Calling AddOwner on a direct PerspexProperty creates new new PerspexProperty with
-        /// an overridden getter and setter. This property is a different object but is equal
-        /// according to <see cref="object.Equals(object)"/>.
-        /// </remarks>
-        public PerspexProperty FindRegistered(PerspexProperty property)
-        {
-            Type type = GetType();
-
-            while (type != null)
-            {
-                List<PerspexProperty> list;
-
-                if (s_registered.TryGetValue(type, out list))
-                {
-                    var index = list.IndexOf(property);
-
-                    if (index != -1)
-                    {
-                        return list[index];
-                    }
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Given a <see cref="PerspexProperty"/> returns a registered perspex property that is
         /// equal or throws if not found.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The registered property.</returns>
         public PerspexProperty GetRegistered(PerspexProperty property)
         {
-            var result = FindRegistered(property);
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(this, property);
 
             if (result == null)
             {
