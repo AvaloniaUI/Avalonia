@@ -11,7 +11,8 @@
       <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="Template">
         <ControlTemplate TargetType="Button">
-          <Border Padding="3"
+          <Border Name="border"
+                  Padding="3"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}">
@@ -23,10 +24,10 @@
         </ControlTemplate>
       </Setter>
     </Style>
-    <Style Selector="Button:pointerover">
+    <Style Selector="Button:pointerover /template/ Border#border">
       <Setter Property="BorderBrush" Value="#ff888888"/>
     </Style>
-    <Style Selector="Button:pressed">
+    <Style Selector="Button:pressed  /template/ Border#border">
       <Setter Property="Background" Value="#ff888888"/>
     </Style>
     <Style Selector="Button:disabled">
