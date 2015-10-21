@@ -4,6 +4,7 @@
 using System;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Metadata;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Templates
@@ -11,6 +12,8 @@ namespace Perspex.Markup.Xaml.Templates
     public class ControlTemplate : IControlTemplate
     {
         public Type TargetType { get; set; }
+
+        [Content]
         public TemplateContent Content { get; set; }
 
         public IControl Build(ITemplatedControl control)

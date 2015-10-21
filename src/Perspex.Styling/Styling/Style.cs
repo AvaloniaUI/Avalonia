@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using Perspex.Metadata;
 
 namespace Perspex.Styling
 {
@@ -36,6 +37,7 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets or sets style's setters.
         /// </summary>
+        [Content]
         public IEnumerable<ISetter> Setters { get; set; } = new List<ISetter>();
 
         /// <summary>

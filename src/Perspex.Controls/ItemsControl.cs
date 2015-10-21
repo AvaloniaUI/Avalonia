@@ -13,6 +13,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Controls.Utils;
+using Perspex.Metadata;
 using Perspex.Styling;
 
 namespace Perspex.Controls
@@ -86,6 +87,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the items to display.
         /// </summary>
+        [Content]
         public IEnumerable Items
         {
             get { return _items; }

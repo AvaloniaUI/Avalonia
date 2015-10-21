@@ -8,13 +8,17 @@ using Perspex.Controls;
 using Perspex.Controls.Templates;
 using Perspex.Markup.Binding;
 using Perspex.Markup.Xaml.Binding;
+using Perspex.Metadata;
 
 namespace Perspex.Markup.Xaml.Templates
 {
     public class TreeDataTemplate : ITreeDataTemplate
     {
         public Type DataType { get; set; }
+
+        [Content]
         public TemplateContent Content { get; set; }
+
         public XamlBindingDefinition ItemsSource { get; set; }
 
         public bool Match(object data)

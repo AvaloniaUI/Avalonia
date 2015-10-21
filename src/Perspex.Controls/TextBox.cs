@@ -13,6 +13,7 @@ using Perspex.Controls.Utils;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Media;
+using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
@@ -101,6 +102,7 @@ namespace Perspex.Controls
             set { SetValue(SelectionEndProperty, value); }
         }
 
+        [Content]
         public string Text
         {
             get { return GetValue(TextProperty); }

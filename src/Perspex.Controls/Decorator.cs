@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Collections;
+using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
@@ -33,6 +34,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the decorated control.
         /// </summary>
+        [Content]
         public Control Child
         {
             get { return GetValue(ChildProperty); }

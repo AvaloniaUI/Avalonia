@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Media;
+using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
@@ -55,6 +56,7 @@ namespace Perspex.Controls
         /// it simply clears the existing collection and adds the contents of the assigned
         /// collection.
         /// </remarks>
+        [Content]
         public Controls Children
         {
             get

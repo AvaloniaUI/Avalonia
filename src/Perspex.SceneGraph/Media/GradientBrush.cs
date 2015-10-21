@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
+using Perspex.Metadata;
 
 namespace Perspex.Media
 {
@@ -24,6 +25,7 @@ namespace Perspex.Media
             set { SetValue(SpreadMethodProperty, value); }
         }
 
+        [Content]
         public List<GradientStop> GradientStops
         {
             get { return GetValue(GradientStopsProperty); }

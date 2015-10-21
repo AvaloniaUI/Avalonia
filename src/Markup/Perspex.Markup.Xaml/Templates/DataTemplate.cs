@@ -3,15 +3,17 @@
 
 using System;
 using System.Reflection;
-using OmniXaml.Attributes;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Metadata;
 
 namespace Perspex.Markup.Xaml.Templates
 {
     public class DataTemplate : IDataTemplate
     {
         public Type DataType { get; set; }
+
+        [Content]
         public TemplateContent Content { get; set; }
 
         public bool Match(object data)

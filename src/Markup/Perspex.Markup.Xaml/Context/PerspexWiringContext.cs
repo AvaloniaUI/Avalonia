@@ -110,28 +110,9 @@ namespace Perspex.Markup.Xaml.Context
             return typeConverterProvider;
         }
 
-        private static ContentPropertyProvider GetContentPropertyProvider()
+        private static IContentPropertyProvider GetContentPropertyProvider()
         {
-            var contentPropertyProvider = new ContentPropertyProvider();
-            var contentProperties = new Collection<ContentPropertyDefinition>
-            {
-                new ContentPropertyDefinition(typeof(ContentControl), "Content"),
-                new ContentPropertyDefinition(typeof(ControlTemplate), "Content"),
-                new ContentPropertyDefinition(typeof(DataTemplate), "Content"),
-                new ContentPropertyDefinition(typeof(Decorator), "Child"),
-                new ContentPropertyDefinition(typeof(ItemsControl), "Items"),
-                new ContentPropertyDefinition(typeof(GradientBrush), "GradientStops"),
-                new ContentPropertyDefinition(typeof(Panel), "Children"),
-                new ContentPropertyDefinition(typeof(Setter), "Value"),
-                new ContentPropertyDefinition(typeof(Style), "Setters"),
-                new ContentPropertyDefinition(typeof(TextBlock), "Text"),
-                new ContentPropertyDefinition(typeof(TextBox), "Text"),
-                new ContentPropertyDefinition(typeof(TreeDataTemplate), "Content"),
-            };
-
-            contentPropertyProvider.AddAll(contentProperties);
-
-            return contentPropertyProvider;
+            return new PerspexContentPropertyProvider();
         }
     }
 }

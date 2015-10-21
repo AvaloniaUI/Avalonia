@@ -5,6 +5,7 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using Perspex.Media;
+using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
@@ -125,6 +126,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
+        [Content]
         public string Text
         {
             get { return GetValue(TextProperty); }

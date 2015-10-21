@@ -7,6 +7,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Layout;
+using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
@@ -43,6 +44,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the content to display.
         /// </summary>
+        [Content]
         public object Content
         {
             get { return GetValue(ContentProperty); }
