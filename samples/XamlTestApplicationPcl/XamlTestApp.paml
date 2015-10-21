@@ -2,6 +2,6 @@
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Styles>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>
+    <!--<StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>-->
   </Application.Styles>
 </Application>
