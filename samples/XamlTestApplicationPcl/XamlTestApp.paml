@@ -2,36 +2,6 @@
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Styles>
-    <Style Selector="Button">
-      <Setter Property="Background" Value="#ffaaaaaa"/>
-      <Setter Property="BorderBrush" Value="#ffaaaaaa"/>
-      <Setter Property="BorderThickness" Value="2"/>
-      <Setter Property="Foreground" Value="Black"/>
-      <Setter Property="HorizontalContentAlignment" Value="Center"/>
-      <Setter Property="VerticalContentAlignment" Value="Center"/>
-      <Setter Property="Template">
-        <ControlTemplate TargetType="Button">
-          <Border Name="border"
-                  Padding="3"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}">
-            <ContentPresenter Content="{TemplateBinding Content}"
-                              TextBlock.Foreground="{TemplateBinding Foreground}"
-                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button:pointerover /template/ Border#border">
-      <Setter Property="BorderBrush" Value="#ff888888"/>
-    </Style>
-    <Style Selector="Button:pressed  /template/ Border#border">
-      <Setter Property="Background" Value="#ff888888"/>
-    </Style>
-    <Style Selector="Button:disabled">
-      <Setter Property="Opacity" Value="0.5"/>
-    </Style>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>
   </Application.Styles>
 </Application>

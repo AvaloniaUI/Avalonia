@@ -51,6 +51,7 @@
     <Compile Include="Converters\ClassesTypeConverter.cs" />
     <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
+    <Compile Include="Converters\UriTypeConverter.cs" />
     <Compile Include="Converters\ThicknessTypeConverter.cs" />
     <Compile Include="Converters\PerspexPropertyTypeConverter.cs" />
     <Compile Include="Converters\SelectorTypeConverter.cs" />
@@ -231,6 +232,7 @@
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Styling\StyleInclude.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\Template.cs" />

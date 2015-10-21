@@ -95,14 +95,15 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
+                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
                 new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
-                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
+                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
-                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter())
+                new TypeConverterRegistration(typeof(Uri), new UriTypeConverter()),
             };
 
             typeConverterProvider.AddAll(converters);
