@@ -277,7 +277,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             return new ContentPresenter
             {
-                Name = "contentPresenter",
+                Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
         }

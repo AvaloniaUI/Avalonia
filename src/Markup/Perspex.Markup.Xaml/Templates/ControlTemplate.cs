@@ -11,8 +11,6 @@ namespace Perspex.Markup.Xaml.Templates
 {
     public class ControlTemplate : IControlTemplate
     {
-        public Type TargetType { get; set; }
-
         [Content]
         public TemplateContent Content { get; set; }
 

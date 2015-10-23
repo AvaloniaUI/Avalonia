@@ -7,13 +7,14 @@
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
-      <ControlTemplate TargetType="Button">
+      <ControlTemplate>
         <Border Name="border"
                 Padding="3"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <ContentPresenter Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
                             TextBlock.Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>

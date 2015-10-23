@@ -65,7 +65,7 @@ namespace Perspex.Controls.UnitTests.Utils
             {
                 return new ContentPresenter
                 {
-                    Name = "contentPresenter",
+                    Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                 };
             });

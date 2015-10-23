@@ -217,8 +217,7 @@ namespace Perspex.Controls.UnitTests
             target.Content = null;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = target.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
-            presenter.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.True(called);
         }
@@ -240,8 +239,7 @@ namespace Perspex.Controls.UnitTests
             contentControl.Content = child2;
 
             // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            var presenter = contentControl.GetTemplateChildren().Single(x => x.Name == "contentPresenter");
-            presenter.ApplyTemplate();
+            contentControl.Presenter.ApplyTemplate();
 
             Assert.True(called);
         }
@@ -295,7 +293,7 @@ namespace Perspex.Controls.UnitTests
                     Background = new Media.SolidColorBrush(0xffffffff),
                     Child = new ContentPresenter
                     {
-                        Name = "contentPresenter",
+                        Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     }
                 };
