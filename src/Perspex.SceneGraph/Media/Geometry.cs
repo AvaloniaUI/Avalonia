@@ -8,7 +8,7 @@ namespace Perspex.Media
 {
     /// <summary>
     /// Defines a geometric shape.
-    /// </summary>
+    /// </summary>    
     public abstract class Geometry : PerspexObject
     {
         /// <summary>
