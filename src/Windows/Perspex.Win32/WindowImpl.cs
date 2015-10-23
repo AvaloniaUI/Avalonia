@@ -337,7 +337,7 @@ namespace Perspex.Win32
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
                                 ? RawMouseEventType.RightButtonDown
                                 : RawMouseEventType.MiddleButtonDown,
-                        new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
+                        PointFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
                     
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
@@ -352,7 +352,7 @@ namespace Perspex.Win32
                             : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
                                 ? RawMouseEventType.RightButtonUp
                                 : RawMouseEventType.MiddleButtonUp,
-                        new Point((uint) lParam & 0xffff, (uint) lParam >> 16), GetMouseModifiers(wParam));
+                        PointFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
@@ -374,7 +374,8 @@ namespace Perspex.Win32
                         timestamp,
                         _owner,
                         RawMouseEventType.Move,
-                        new Point((uint)lParam & 0xffff, (uint)lParam >> 16), GetMouseModifiers(wParam));
+                        PointFromLParam(lParam), GetMouseModifiers(wParam));
+
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
@@ -382,7 +383,7 @@ namespace Perspex.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient((uint)lParam & 0xffff, (uint)lParam >> 16),
+                        ScreenToClient(PointFromLParam(lParam)),
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
@@ -483,9 +484,14 @@ namespace Perspex.Win32
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
         }
 
-        private Point ScreenToClient(uint x, uint y)
+        private Point PointFromLParam(IntPtr lParam)
         {
-            var p = new UnmanagedMethods.POINT { X = (int)x, Y = (int)y };
+            return new Point((short)((int)lParam & 0xffff), (short)((int)lParam >> 16));
+        }
+
+        private Point ScreenToClient(Point point)
+        {
+            var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y);
         }

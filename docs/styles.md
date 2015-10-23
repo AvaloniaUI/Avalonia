@@ -31,9 +31,9 @@ Make all `Button`s in a `StackPanel` have a blue `Background`:
 
 This is very similar to WPF, except `TargetType` is replaced by `Selector`.
 
-*Note that currently (as of Alpha 2) you **always** need to specify the fully
+_Note that currently (as of Alpha 2) you **always** need to specify the fully
 qualified property name (i.e. `Button.Background` instead of simply
-`Background`). This restriction will be lifted in future.*
+`Background`). This restriction will be lifted in future._
 
 ## Style Classes
 

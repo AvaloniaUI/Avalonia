@@ -94,6 +94,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
                 new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
                 new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
+                new TypeConverterRegistration(typeof(Geometry), new GeometryTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),

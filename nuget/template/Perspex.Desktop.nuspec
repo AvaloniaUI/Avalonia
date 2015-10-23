@@ -24,6 +24,7 @@
       <dependency id="SharpDX" version="2.6.3"/>
       <dependency id="SharpDX.Direct2D1" version="2.6.3"/>
       <dependency id="SharpDX.DXGI" version="2.6.3"/>
+	  <dependency id="Perspex" version="#VERSION#" />
     </dependencies>
   </metadata>
 </package>

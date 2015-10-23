@@ -27,8 +27,9 @@ namespace Perspex.Controls
 
             if (_grid != null && col > 0)
             {
+                var size = _grid.ColumnDefinitions[col - 1].ActualWidth + e.Vector.X;               
                 _grid.ColumnDefinitions[col - 1].Width = new GridLength(
-                    _grid.ColumnDefinitions[col - 1].ActualWidth + e.Vector.X,
+                    Math.Max(0, size),
                     GridUnitType.Pixel);
             }
         }

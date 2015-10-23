@@ -1,106 +1,198 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
-        Title="Perspex Test Application" Height="350" Width="525" SizeToContent="WidthAndHeight" >
+        Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
         <TabControl Grid.Row="1" Grid.ColumnSpan="2" Padding="5">
             <TabControl.Transition>
                 <PageSlide Duration="0.25" />
             </TabControl.Transition>
             <TabItem Header="Buttons">
-                <StackPanel HorizontalAlignment="Center" Width="200" VerticalAlignment="Center">
-                    <StackPanel.Styles>
-                        <Style Selector="Button.italic">
-                            <Setter Property="TextBlock.FontStyle" Value="Italic"/>
-                        </Style>
-                    </StackPanel.Styles>
-                    <Button Content="Button" />
-                    <Button Content="Button" Background="#119EDA" ToolTip.Tip="Goodbye Cruel World!" />
-                    <Button Content="Default" IsDefault="True" />
-                    <Button Content="Disabled" IsEnabled="False" Classes="italic"/>
-                    <Button Content="Disabled" IsEnabled="False" Background="#119eda" />
-                    <ToggleButton Content="Toggle" />
-                    <ToggleButton Content="Toggle" IsEnabled="False" />
-                    <CheckBox Content="Checkbox" />
-                    <RadioButton Content="RadioButton 1" IsChecked="True" />
-                    <RadioButton Content="RadioButton 2" />
-                </StackPanel>
+                <ScrollViewer CanScrollHorizontally="False">
+                    <StackPanel Margin="10" Gap="4">
+                        <TextBlock Text="Button" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="A button control" FontSize="13" Foreground="#727272" Margin="0,0,0,10" />
+                        <Button Content="Button" Width="150" />
+                        <Button Content="Button" Width="150" IsEnabled="False" />
+                        <TextBlock Text="ToggleButton" Margin="0, 40, 0, 0" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="A toggle button control" FontSize="13" Foreground="#727272" Margin="0,0,0,10" />
+                        <ToggleButton Width="150" IsChecked="True" Content="On" />
+                        <ToggleButton Width="150" IsChecked="False" Content="Off" />
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="Text">
-                <StackPanel HorizontalAlignment="Center" Width="200" VerticalAlignment="Center">
-                    <TextBlock TextWrapping="Wrap" TextAlignment="Center">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt.
-                    </TextBlock>
-                    <TextBlock Text="Italic text." TextWrapping="Wrap" TextAlignment="Left" FontStyle="Italic" />
-                    <TextBlock TextWrapping="Wrap" TextAlignment="Right" FontWeight="Bold">Bold text.</TextBlock>
-                    <TextBox Text="A non-wrapping text box. Lorem ipsum dolor sit amet." TextWrapping="NoWrap" />
-                    <TextBox
-                        Text="A wrapping text box. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis dui quis libero suscipit tincidunt."
-                        TextWrapping="Wrap" MaxHeight="100" AcceptsReturn="True" />
+                <StackPanel Margin="10" Gap="4">
+                    <TextBlock Text="TextBlock" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                    <TextBlock Text="A control for displaying text."
+                               FontSize="13"
+                               Foreground="#727272"
+                               Margin="0, 0, 0, 10" />
+                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." FontSize="11" />
+                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." FontSize="11"
+                               FontWeight="Medium" />
+                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." FontSize="11"
+                               FontWeight="Bold" />
+                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." FontSize="11"
+                               FontStyle="Italic" />
+                    <TextBlock Margin="0,40,0,0" Text="HtmlLabel" FontWeight="Medium" FontSize="20"
+                               Foreground="#212121" />
+                    <TextBlock Text="A label capable of displaying HTML content" FontSize="13" Foreground="#727272"
+                               Margin="0, 0, 0, 10" />
+                    <!--PLEASE, FIX <HtmlLabel /> -->
                 </StackPanel>
             </TabItem>
+            <TabItem Header="Input">
+                <ScrollViewer CanScrollHorizontally="False">
+                    <StackPanel Margin="10" Gap="4">
+                        <TextBlock Text="TextBlock" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="A text box control"
+                                   FontSize="13"
+                                   Foreground="#727272"
+                                   Margin="0, 0, 0, 10" />
+                        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+                        <TextBox Width="200" Watermark="Watermark" />
+                        <TextBox Width="200" Watermark="Floating Watermark" UseFloatingWatermark="True" />
+                        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="150"
+                                 Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+                        <TextBlock Margin="0, 40, 0, 0" Text="CheckBox" FontWeight="Medium" FontSize="20"
+                                   Foreground="#212121" />
+                        <TextBlock Text="A check box control" FontSize="13" Foreground="#727272" Margin="0, 0, 0, 10" />
+
+                        <CheckBox IsChecked="True" Margin="0, 0, 0, 5" Content="Checked" />
+                        <CheckBox IsChecked="False" Content="Unchecked" />
+                        <TextBlock Margin="0, 40, 0, 0" Text="RadioButton" FontWeight="Medium" FontSize="20"
+                                   Foreground="#212121" />
+                        <TextBlock Text="A radio button control" FontSize="13" Foreground="#727272"
+                                   Margin="0, 0, 0, 10" />
+                        <RadioButton IsChecked="True" Content="Option 1" />
+                        <RadioButton IsChecked="False" Content="Option 2" />
+                        <RadioButton IsChecked="False" Content="Option 3" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
             <TabItem Header="Images">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ScrollViewer Height="200" Width="200" HorizontalScrollBarVisibility="Visible">
-                        <Image Source="github_icon.png" Height="500" Width="400" />
-                    </ScrollViewer>
+
+                <StackPanel Margin="10" Gap="4" HorizontalAlignment="Center">
+
+                    <TextBlock Text="Carousel" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                    <TextBlock Text="An items control that displays its items as pages that fill the controls."
+                               FontSize="13"
+                               Foreground="#727272" Margin="0, 0, 0, 10" />
+                    <StackPanel Name="carouselVisual" Orientation="Horizontal">
+
+                        <Button VerticalAlignment="Center" Margin="5">
+                            <Button.Content>
+                                <Path Fill="Black"
+                                      Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+                            </Button.Content>
+                        </Button>
+
+                        <Carousel Width="400" Height="400">
+                            <Carousel.Transition>
+                                <PageSlide Duration="0.25" />
+                            </Carousel.Transition>
+                            <Image Source="github_icon.png" Width="400" Height="400" />
+                            <Image Source="pattern.jpg" Width="400" Height="400" />
+                        </Carousel>
+
+                        <Button VerticalAlignment="Center" Margin="5">
+                            <Button.Content>
+                                <Path Fill="Black"
+                                      Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+                            </Button.Content>
+                        </Button>
+
+                    </StackPanel>
                 </StackPanel>
+
             </TabItem>
             <TabItem Header="Lists">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                  <ListBox Items="{Binding Items}" SelectionMode="Multiple">
-                    <ListBox.DataTemplates>
-                      <DataTemplate DataType="vm:TestItem">
+                    <ListBox Items="{Binding Items}" SelectionMode="Multiple">
+                        <ListBox.DataTemplates>
+                            <DataTemplate DataType="vm:TestItem">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Header}" FontSize="24" />
+                                    <TextBlock Text="{Binding SubHeader}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
+                    <DropDown VerticalAlignment="Center" SelectedIndex="0">
                         <StackPanel>
-                          <TextBlock Text="{Binding Header}" FontSize="24"/>
-                          <TextBlock Text="{Binding SubHeader}"/>
+                            <TextBlock Text="Item 1" FontSize="24" />
+                            <TextBlock Text="Item 1 Value" />
                         </StackPanel>
-                      </DataTemplate>
-                    </ListBox.DataTemplates>
-                  </ListBox>
-                  <DropDown VerticalAlignment="Center" SelectedIndex="0">
-                      <StackPanel>
-                          <TextBlock Text="Item 1" FontSize="24" />
-                          <TextBlock Text="Item 1 Value" />
-                      </StackPanel>
-                      <StackPanel>
-                          <TextBlock Text="Item 2" FontSize="24" />
-                          <TextBlock Text="Item 2 Value" />
-                      </StackPanel>
-                  </DropDown>
-                  <TreeView Items="{Binding Nodes}">
-                    <TreeView.DataTemplates>
-                      <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                         <StackPanel>
-                          <TextBlock Text="{Binding Header}" FontSize="24"/>
-                          <TextBlock Text="{Binding SubHeader}"/>
+                            <TextBlock Text="Item 2" FontSize="24" />
+                            <TextBlock Text="Item 2 Value" />
                         </StackPanel>
-                      </TreeDataTemplate>
-                    </TreeView.DataTemplates>  
-                  </TreeView>
+                    </DropDown>
+                    <TreeView Items="{Binding Nodes}">
+                        <TreeView.DataTemplates>
+                            <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Header}" FontSize="24" />
+                                    <TextBlock Text="{Binding SubHeader}" />
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.DataTemplates>
+                    </TreeView>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Layout">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <Button HorizontalAlignment="Left" Content="Left Aligned" />
-                        <Button HorizontalAlignment="Center" Content="Center Aligned" />
-                        <Button HorizontalAlignment="Right" Content="Right Aligned" />
-                        <Button HorizontalAlignment="Stretch" Content="Stretch" />
+                <ScrollViewer CanScrollHorizontally="False">
+                    <StackPanel Margin="10" Gap="4">
+                        <TextBlock Text="Grid" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="Lays out child controls according to a grid."
+                                   FontSize="13"
+                                   Foreground="#727272"
+                                   Margin="0, 0, 0, 10" />
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Width="300">
+                            <Rectangle Grid.ColumnSpan="2" Fill="#FF5722" Height="200" Margin="2.5" />
+                            <Rectangle Grid.Row="1" Fill="#FF5722" Height="100" Margin="2.5" />
+                            <Rectangle Grid.Row="1" Grid.Column="1" Fill="#FF5722" Height="100" Margin="2.5" />
+                        </Grid>
+
+                        <TextBlock Text="StackPanel" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="A panel which lays out its children horizontally or vertically."
+                                   FontSize="13"
+                                   Foreground="#727272"
+                                   Margin="0, 0, 0, 10" />
+                        <StackPanel Gap="4" Width="300">
+                            <Rectangle Fill="#FFC107" Height="50" />
+                            <Rectangle Fill="#FFC107" Height="50" />
+                            <Rectangle Fill="#FFC107" Height="50" />
+                        </StackPanel>
+
+                        <TextBlock Text="Canvas" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock Text="A panel which lays out its children by explicit coordinates."
+                                   FontSize="13"
+                                   Foreground="#727272"
+                                   Margin="0, 0, 0, 10" />
+                        <Canvas Width="300" Height="200" Background="Yellow">
+                            <Rectangle Fill="Blue" Width="63" Height="41" Canvas.Left="40" Canvas.Top="31" />
+                            <Rectangle Fill="Green" Width="58" Height="58" Canvas.Left="130" Canvas.Top="79" />
+                        </Canvas>
+
+                        <TextBlock Text="DockPanel" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                        <TextBlock
+                            Text="A panel which lays docks its children on the sides and optionally fills the remaining space with the last child"
+                            FontSize="13"
+                            Foreground="#727272"
+                            Margin="0, 0, 0, 10" />
+                        <DockPanel Width="300" Height="300">
+                            <Rectangle Fill="Red" Width="25" DockPanel.Dock="Left" />
+                            <Rectangle Fill="Green" Height="25" DockPanel.Dock="Top" />
+                            <Rectangle Fill="Blue" Width="25" DockPanel.Dock="Right" />
+                            <Rectangle Fill="Yellow" Height="25" DockPanel.Dock="Bottom" />
+                            <Rectangle Fill="Pink" />
+                        </DockPanel>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button VerticalAlignment="Top" Content="Top Aligned" />
-                        <Button VerticalAlignment="Center" Content="Center Aligned" />
-                        <Button VerticalAlignment="Bottom" Content="Bottom Aligned" />
-                        <Button VerticalAlignment="Stretch" Content="Stretch" />
-                    </StackPanel>
-                </Grid>
-            </TabItem>
+                </ScrollViewer>
+            </TabItem>            
             <TabItem Header="Animations">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -114,8 +206,8 @@
                     <Border Width="100" Height="100">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                <GradientStop Color="Red" Offset="0"/>
-                                <GradientStop Color="Green" Offset="1"/>
+                                <GradientStop Color="Red" Offset="0" />
+                                <GradientStop Color="Green" Offset="1" />
                             </LinearGradientBrush>
                         </Border.Background>
                         <TextBox HorizontalAlignment="Center" VerticalAlignment="Center" Text="hello!"></TextBox>

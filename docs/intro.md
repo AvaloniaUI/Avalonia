@@ -35,7 +35,7 @@ I'm not a big fan of DependencyProperty. My first thought was that I'd rather no
 like this at all and just use basic INPC but DPs give you two important features: Inheritance and 
 Attached Properties. So the challenge became to improve it.
 
-Delaring a DP in WPF looks something like this:
+Declaring a DependencyProperty in WPF looks something like this:
 
 ```csharp
 public static readonly DependencyProperty PropertyDeclaration =
@@ -198,7 +198,7 @@ all controls in the the visual tree of type CheckBox*". A more complex selector:
 new Style(x => x.OfType<CheckBox>().Class(":checked").Template().Id("checkMark"))
 ```
 
-This selector matches "*all controls with Id == "checkMark" in the template of a CheckBox with the
+This selector matches *"all controls with Id == "checkMark" in the template of a CheckBox with the
 class `:checked`"*. Each control has an Id property, and Ids in templates are considered to be in a
 separate namespace.
 
@@ -215,7 +215,7 @@ different look-and-feel.
 ## XAML
 
 As you can see, all of the examples here are defined in code - but a XAML implementation is being
-worked on. The current progress can be reviewed at https://github.com/SuperJMN/Perspex.
+worked on. The current progress can be reviewed at [https://github.com/SuperJMN/Perspex](https://github.com/SuperJMN/Perspex).
 
 ## That's all for now
 
