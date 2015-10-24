@@ -240,7 +240,7 @@ namespace Perspex.Controls.Primitives
             {
                 SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
             }
-            else if (AlwaysSelected && Items != null & Items.Cast<object>().Any())
+            else if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
             {
                 SelectedIndex = 0;
             }

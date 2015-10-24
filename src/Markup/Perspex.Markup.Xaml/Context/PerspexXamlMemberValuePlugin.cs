@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
-using Perspex.Controls;
 using Perspex.Markup.Xaml.Binding;
 using Perspex.Styling;
 

@@ -88,6 +88,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Binding\XamlBindingTests_TemplatedParent.cs" />
     <Compile Include="Binding\XamlBindingTests.cs" />
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
@@ -103,7 +104,6 @@
     <Compile Include="SamplePerspexObject.cs" />
     <Compile Include="Templates\DataTemplateTests.cs" />
     <Compile Include="TypeProviderMock.cs" />
-    <Compile Include="XamlBindingTest.cs" />
     <Compile Include="ViewModelMock.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -36,18 +36,7 @@ namespace Perspex.Markup.Xaml.Binding
 
             if (subject != null)
             {
-                if (RelativeSource?.Mode != RelativeSourceMode.TemplatedParent)
-                {
-                    Bind(instance, property, subject);
-                }
-                else
-                {
-                    instance.GetObservable(Control.TemplatedParentProperty)
-                        .Where(x => x != null)
-                        .OfType<PerspexObject>()
-                        .Take(1)
-                        .Subscribe(x => BindToTemplatedParent((PerspexObject)instance, property, x));
-                }
+                Bind(instance, property, subject);
             }
         }
 
@@ -55,8 +44,52 @@ namespace Perspex.Markup.Xaml.Binding
             IObservablePropertyBag instance, 
             PerspexProperty property)
         {
-            var dataContextHost = property != Control.DataContextProperty ? 
-                instance : 
+            if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
+            {
+                return CreateDataContextExpressionObserver(instance, property);
+            }
+            else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
+            {
+                return CreateTemplatedParentExpressionObserver(instance, property);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
+        {
+            var mode = Mode == BindingMode.Default ?
+                property.DefaultBindingMode : Mode;
+
+            switch (mode)
+            {
+                case BindingMode.Default:
+                case BindingMode.OneWay:
+                    target.Bind(property, subject, Priority);
+                    break;
+                case BindingMode.TwoWay:
+                    target.BindTwoWay(property, subject, Priority);
+                    break;
+                case BindingMode.OneTime:
+                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
+                    {
+                        subject.Take(1).Subscribe(x => target.SetValue(property, x, Priority));
+                    });                    
+                    break;
+                case BindingMode.OneWayToSource:
+                    target.GetObservable(property).Subscribe(subject);
+                    break;
+            }
+        }
+
+        public ExpressionObserver CreateDataContextExpressionObserver(
+            IObservablePropertyBag instance,
+            PerspexProperty property)
+        {
+            var dataContextHost = property != Control.DataContextProperty ?
+                instance :
                 instance.InheritanceParent as IObservablePropertyBag;
 
             if (dataContextHost != null)
@@ -72,50 +105,25 @@ namespace Perspex.Markup.Xaml.Binding
             return null;
         }
 
-        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
+        public ExpressionObserver CreateTemplatedParentExpressionObserver(
+            IObservablePropertyBag instance,
+            PerspexProperty property)
         {
-            var mode = Mode == BindingMode.Default ?
-                property.DefaultBindingMode : Mode;
-
-            switch (mode)
-            {
-                case BindingMode.Default:
-                case BindingMode.OneWay:
-                    target.Bind(property, subject);
-                    break;
-                case BindingMode.TwoWay:
-                    target.BindTwoWay(property, subject);
-                    break;
-                case BindingMode.OneTime:
-                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
-                    {
-                        subject.Take(1).Subscribe(x => target.SetValue(property, x));
-                    });                    
-                    break;
-                case BindingMode.OneWayToSource:
-                    target.GetObservable(property).Subscribe(subject);
-                    break;
-            }
-        }
-
-        private void BindToTemplatedParent(
-            PerspexObject instance,
-            PerspexProperty targetProperty,
-            PerspexObject templatedParent)
-        {
-            var sourceProperty = PerspexPropertyRegistry.Instance.FindRegistered(
-                templatedParent,
+            var result = new ExpressionObserver(
+                () => instance.GetValue(Control.TemplatedParentProperty),
                 SourcePropertyPath);
 
-            if (sourceProperty == null)
+            if (instance.GetValue(Control.TemplatedParentProperty) == null)
             {
-                throw new InvalidOperationException(
-                    $"The property {SourcePropertyPath} could not be found on {templatedParent.GetType()}.");
+                // TemplatedParent should only be set once, so only listen for the first non-null
+                // value.
+                instance.GetObservable(Control.TemplatedParentProperty)
+                    .Where(x => x != null)
+                    .Take(1)
+                    .Subscribe(x => result.UpdateRoot());
             }
 
-            instance.Bind(targetProperty, templatedParent.GetObservable(sourceProperty), BindingPriority.Style);
-            templatedParent.Bind(sourceProperty, instance.GetObservable(targetProperty), BindingPriority.Style);
+            return result;
         }
-
     }
 }

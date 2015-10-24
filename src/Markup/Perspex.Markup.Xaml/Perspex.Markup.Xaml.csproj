@@ -41,7 +41,6 @@
     <Compile Include="Binding\RelativeSource.cs" />
     <Compile Include="Binding\SourceBindingEndpoint.cs" />
     <Compile Include="Binding\TargetBindingEndpoint.cs" />
-    <Compile Include="Binding\XamlTemplateBinding.cs" />
     <Compile Include="Binding\XamlBinding.cs" />
     <Compile Include="Binding\XamlBindingDefinition.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
