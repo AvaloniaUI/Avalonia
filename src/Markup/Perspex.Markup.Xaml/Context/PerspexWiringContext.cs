@@ -23,6 +23,7 @@ using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
 using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -97,6 +98,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Geometry), new GeometryTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
+                new TypeConverterRegistration(typeof(IMemberSelector), new MemberSelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
                 new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),

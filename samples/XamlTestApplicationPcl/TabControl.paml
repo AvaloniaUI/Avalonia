@@ -1,0 +1,15 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="TabControl">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Grid RowDefinitions="Auto,*">
+        <TabStrip Items="{TemplateBinding Items}"
+                  SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+        <Carousel Items="{TemplateBinding Items}"
+                  MemberSelector="Content"
+                  SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                  Transition="{TemplateBinding Transition}"
+                  Grid.Row="1"/>
+      </Grid>
+    </ControlTemplate>
+  </Setter>
+</Style>

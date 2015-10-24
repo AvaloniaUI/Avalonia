@@ -301,12 +301,15 @@ namespace Perspex.Controls
         {
             var old = Parent;
 
-            if (old != null && parent != null)
+            if (parent != old)
             {
-                throw new InvalidOperationException("The Control already has a parent.");
-            }
+                if (old != null && parent != null)
+                {
+                    throw new InvalidOperationException("The Control already has a parent.");
+                }
 
-            SetAndRaise(ParentProperty, ref _parent, (IControl)parent);
+                SetAndRaise(ParentProperty, ref _parent, (IControl)parent);
+            }
         }
 
         /// <summary>

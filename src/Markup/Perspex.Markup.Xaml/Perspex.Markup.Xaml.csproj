@@ -45,6 +45,7 @@
     <Compile Include="Binding\XamlBindingDefinition.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
     <Compile Include="Context\PerspexContentPropertyProvider.cs" />
+    <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\GeometryTypeConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\StyleInclude.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
+    <Compile Include="Templates\MemberSelector.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\Template.cs" />
     <Compile Include="Templates\TemplateContent.cs" />

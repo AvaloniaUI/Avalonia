@@ -1,0 +1,13 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="Window">
+  <Setter Property="FontFamily" Value="Segoe UI"/>
+  <Setter Property="FontSize" Value="12"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}">
+        <AdornerDecorator>
+          <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}"/>
+        </AdornerDecorator>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

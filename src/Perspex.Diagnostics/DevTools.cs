@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using Perspex.Controls;
 using Perspex.Diagnostics.ViewModels;
 using Perspex.Input;
+using Perspex.Themes.Default;
 using ReactiveUI;
 
 namespace Perspex.Diagnostics
@@ -60,6 +61,7 @@ namespace Perspex.Diagnostics
         private void InitializeComponent()
         {
             DataTemplates.Add(new ViewLocator<ReactiveObject>());
+            Styles.Add(new DefaultTheme());
 
             Child = new Grid
             {

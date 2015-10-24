@@ -51,6 +51,7 @@ namespace Perspex.Markup.Xaml.Binding
             }
 
             instance.Bind(targetProperty, templatedParent.GetObservable(sourceProperty), BindingPriority.Style);
+            templatedParent.Bind(sourceProperty, instance.GetObservable(targetProperty), BindingPriority.Style);
         }
     }
 }
