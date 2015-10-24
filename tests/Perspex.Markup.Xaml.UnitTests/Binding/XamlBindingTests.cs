@@ -20,7 +20,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var binding = new XamlBinding
             {
                 SourcePropertyPath = "Foo",
-                BindingMode = BindingMode.OneWay,
+                Mode = BindingMode.OneWay,
             };
 
             binding.Bind(target.Object, TextBox.TextProperty);
@@ -38,7 +38,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var binding = new XamlBinding
             {
                 SourcePropertyPath = "Foo",
-                BindingMode = BindingMode.TwoWay,
+                Mode = BindingMode.TwoWay,
             };
 
             binding.Bind(target.Object, TextBox.TextProperty);
@@ -58,7 +58,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var binding = new XamlBinding
             {
                 SourcePropertyPath = "Foo",
-                BindingMode = BindingMode.OneTime,
+                Mode = BindingMode.OneTime,
             };
 
             binding.Bind(target.Object, TextBox.TextProperty, expression);
@@ -87,7 +87,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var binding = new XamlBinding
             {
                 SourcePropertyPath = "Foo",
-                BindingMode = BindingMode.OneWayToSource,
+                Mode = BindingMode.OneWayToSource,
             };
 
             binding.Bind(target.Object, TextBox.TextProperty, expression.Object);

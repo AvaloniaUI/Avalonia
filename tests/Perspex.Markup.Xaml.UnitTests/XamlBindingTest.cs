@@ -31,13 +31,13 @@ namespace Perspex.Xaml.Base.UnitTest
             var fooBinding = new XamlBinding
             {
                 SourcePropertyPath = "Foo",
-                BindingMode = BindingMode.TwoWay,
+                Mode = BindingMode.TwoWay,
             };
 
             var barBinding = new XamlBinding
             {
                 SourcePropertyPath = "Bar",
-                BindingMode = BindingMode.TwoWay,
+                Mode = BindingMode.TwoWay,
             };
 
             // Bind Foo and Bar to the VM.

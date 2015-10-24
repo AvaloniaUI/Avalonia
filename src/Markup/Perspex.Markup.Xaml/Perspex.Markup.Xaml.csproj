@@ -38,6 +38,7 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Binding\RelativeSource.cs" />
     <Compile Include="Binding\SourceBindingEndpoint.cs" />
     <Compile Include="Binding\TargetBindingEndpoint.cs" />
     <Compile Include="Binding\XamlTemplateBinding.cs" />

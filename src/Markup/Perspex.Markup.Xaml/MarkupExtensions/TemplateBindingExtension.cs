@@ -19,7 +19,13 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            return new XamlBindingDefinition(Path, Mode, true);
+            return new XamlBindingDefinition
+            {
+                Mode = Mode,
+                Priority = BindingPriority.TemplatedParent,
+                RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                SourcePropertyPath = Path,
+            };
         }
 
         public string Path { get; set; }

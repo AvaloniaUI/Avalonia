@@ -23,9 +23,10 @@ namespace Perspex.Markup.Xaml.Binding
             _typeConverterProvider = typeConverterProvider;
         }
 
+        public BindingMode Mode { get; set; }
+        public BindingPriority Priority { get; set; }
+        public RelativeSource RelativeSource { get; set; }
         public string SourcePropertyPath { get; set; }
-
-        public BindingMode BindingMode { get; set; }
 
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
@@ -35,7 +36,18 @@ namespace Perspex.Markup.Xaml.Binding
 
             if (subject != null)
             {
-                Bind(instance, property, subject);
+                if (RelativeSource?.Mode != RelativeSourceMode.TemplatedParent)
+                {
+                    Bind(instance, property, subject);
+                }
+                else
+                {
+                    instance.GetObservable(Control.TemplatedParentProperty)
+                        .Where(x => x != null)
+                        .OfType<PerspexObject>()
+                        .Take(1)
+                        .Subscribe(x => BindToTemplatedParent((PerspexObject)instance, property, x));
+                }
             }
         }
 
@@ -62,8 +74,8 @@ namespace Perspex.Markup.Xaml.Binding
 
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
         {
-            var mode = BindingMode == BindingMode.Default ?
-                property.DefaultBindingMode : BindingMode;
+            var mode = Mode == BindingMode.Default ?
+                property.DefaultBindingMode : Mode;
 
             switch (mode)
             {
@@ -85,5 +97,25 @@ namespace Perspex.Markup.Xaml.Binding
                     break;
             }
         }
+
+        private void BindToTemplatedParent(
+            PerspexObject instance,
+            PerspexProperty targetProperty,
+            PerspexObject templatedParent)
+        {
+            var sourceProperty = PerspexPropertyRegistry.Instance.FindRegistered(
+                templatedParent,
+                SourcePropertyPath);
+
+            if (sourceProperty == null)
+            {
+                throw new InvalidOperationException(
+                    $"The property {SourcePropertyPath} could not be found on {templatedParent.GetType()}.");
+            }
+
+            instance.Bind(targetProperty, templatedParent.GetObservable(sourceProperty), BindingPriority.Style);
+            templatedParent.Bind(sourceProperty, instance.GetObservable(targetProperty), BindingPriority.Style);
+        }
+
     }
 }

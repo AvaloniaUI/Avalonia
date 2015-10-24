@@ -404,13 +404,13 @@ namespace Perspex.Controls.UnitTests.Primitives
             var itemsBinding = new XamlBinding
             {
                 SourcePropertyPath = "Items",
-                BindingMode = BindingMode.OneWay,
+                Mode = BindingMode.OneWay,
             };
 
             var selectedItemsBinding = new XamlBinding
             {
                 SourcePropertyPath = "SelectedItems",
-                BindingMode = BindingMode.OneWay,
+                Mode = BindingMode.OneWay,
             };
 
             // Bind Items and SelectedItems to the VM.
