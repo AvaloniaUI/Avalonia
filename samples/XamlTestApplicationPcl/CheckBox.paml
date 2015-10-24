@@ -27,4 +27,10 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="CheckBox /template/ Path#checkMark">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+  <Style Selector="CheckBox:checked /template/ Path#checkMark">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
 </Styles>
