@@ -333,7 +333,7 @@ namespace Perspex.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (e.Device.Captured == _presenter)
+            if (_presenter != null && e.Device.Captured == _presenter)
             {
                 var point = e.GetPosition(_presenter);
                 CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
@@ -342,7 +342,7 @@ namespace Perspex.Controls
 
         protected override void OnPointerReleased(PointerEventArgs e)
         {
-            if (e.Device.Captured == _presenter)
+            if (_presenter != null && e.Device.Captured == _presenter)
             {
                 e.Device.Capture(null);
             }
