@@ -1,0 +1,23 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="ScrollBar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Silver">
+          <Track Minimum="{TemplateBinding Minimum}"
+                 Maximum="{TemplateBinding Maximum}"
+                 Value="{TemplateBinding Path=Value, Mode=TwoWay}"
+                 ViewportSize="{TemplateBinding ViewportSize}"
+                 Orientation="{TemplateBinding Orientation}">
+            <Thumb Width="10" Height="10">
+              <Thumb.Template>
+                <ControlTemplate>
+                  <Border Background="Gray"/>
+                </ControlTemplate>
+              </Thumb.Template>
+            </Thumb>
+          </Track>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

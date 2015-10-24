@@ -4,6 +4,7 @@
 using System;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.Metadata;
 
 namespace Perspex.Controls.Primitives
 {
@@ -84,6 +85,7 @@ namespace Perspex.Controls.Primitives
             set { SetValue(OrientationProperty, value); }
         }
 
+        [Content]
         public Thumb Thumb
         {
             get { return GetValue(ThumbProperty); }
