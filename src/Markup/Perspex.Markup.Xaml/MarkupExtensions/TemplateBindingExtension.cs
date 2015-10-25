@@ -19,6 +19,11 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
+            if (Converter != null)
+            {
+
+            }
+
             return new XamlBindingDefinition
             {
                 Mode = Mode,
@@ -28,7 +33,8 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             };
         }
 
-        public string Path { get; set; }
+        public object Converter { get; set; }
         public BindingMode Mode { get; set; }
+        public string Path { get; set; }
     }
 }

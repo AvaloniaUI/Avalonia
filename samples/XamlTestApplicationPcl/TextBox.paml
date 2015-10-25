@@ -19,7 +19,7 @@
                          Foreground="#ff007ACC"
                          FontSize="10"
                          Text="{TemplateBinding Watermark}"
-                         IsVisible="{TemplateBinding IsFloatingWatermarkVisible}"/>
+                         IsVisible="{TemplateBinding Path=IsFloatingWatermarkVisible, Converter={x:Type FooBar}}"/>
               <Panel>
                 <TextBlock Name="watermark"
                            Opacity="0.5"
