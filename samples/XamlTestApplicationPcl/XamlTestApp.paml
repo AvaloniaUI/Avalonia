@@ -10,6 +10,7 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabControl.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabItem.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabStrip.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TextBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Window.paml"/>
   </Application.Styles>
 </Application>

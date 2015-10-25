@@ -129,7 +129,7 @@ namespace Perspex.Controls
 
         protected override void OnTemplateApplied()
         {
-            _presenter = this.GetTemplateChild<TextPresenter>("textPresenter");
+            _presenter = this.GetTemplateChild<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
         }
 

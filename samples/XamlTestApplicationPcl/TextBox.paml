@@ -1,0 +1,44 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="White"/>
+    <Setter Property="BorderBrush" Value="#ff707070"/>
+    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="Padding" Value="2"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="2">
+          <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
+                        HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}">
+            <StackPanel Margin="{TemplateBinding Padding}">
+              <TextBlock Name="floatingWatermark"
+                         Foreground="#ff007ACC"
+                         FontSize="10"
+                         Text="{TemplateBinding Watermark}"
+                         IsVisible="{TemplateBinding IsFloatingWatermarkVisible}"/>
+              <Panel>
+                <TextBlock Name="watermark"
+                           Opacity="0.5"
+                           Text="{TemplateBinding Watermark}"
+                           IsVisible="{TemplateBinding IsWatermarkVisible}"/>
+                <TextPresenter Name="PART_TextPresenter"
+                               CaretIndex="{TemplateBinding CaretIndex}"
+                               SelectionStart="{TemplateBinding SelectionStart}"
+                               SelectionEnd="{TemplateBinding SelectionEnd}"
+                               Text="{TemplateBinding Text}"
+                               TextWrapping="{TemplateBinding TextWrapping}"/>
+              </Panel>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TextBox:focus /template/ Border#border">
+    <Setter Property="BorderBrush" Value="Black"/>
+  </Style>
+</Styles>
