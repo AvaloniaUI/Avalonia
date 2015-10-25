@@ -19,7 +19,7 @@ namespace Perspex.Markup.Xaml.Templates
         [Content]
         public TemplateContent Content { get; set; }
 
-        public XamlBindingDefinition ItemsSource { get; set; }
+        public XamlBinding ItemsSource { get; set; }
 
         public bool Match(object data)
         {

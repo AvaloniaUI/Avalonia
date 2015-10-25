@@ -19,12 +19,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            if (Converter != null)
-            {
-
-            }
-
-            return new XamlBindingDefinition
+            return new XamlBinding
             {
                 Mode = Mode,
                 Priority = BindingPriority.TemplatedParent,

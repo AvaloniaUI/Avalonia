@@ -24,11 +24,24 @@ namespace Perspex.Markup.Xaml.Context
             _xamlMember = xamlMember;
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
+        public PerspexProperty PerspexProperty
+        {
+            get
+            {
+                var underlyingType = _xamlMember.DeclaringType.UnderlyingType;
+                var name = _xamlMember.Name + "Property";
+
+                var value = ReflectionExtensions.GetValueOfStaticField(underlyingType, name);
+                return value as PerspexProperty;
+            }
+        }
+
         public override void SetValue(object instance, object value)
         {
-            if (value is XamlBindingDefinition)
+            if (value is XamlBinding)
             {
-                HandleXamlBindingDefinition(instance, (XamlBindingDefinition)value);
+                HandleXamlBindingDefinition(instance, (XamlBinding)value);
             }
             else if (IsPerspexProperty)
             {
@@ -55,12 +68,11 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleXamlBindingDefinition(object instance, XamlBindingDefinition def)
+        private void HandleXamlBindingDefinition(object instance, XamlBinding binding)
         {
-            if (_xamlMember.XamlType.UnderlyingType == typeof(XamlBindingDefinition))
+            if (_xamlMember.XamlType.UnderlyingType == typeof(XamlBinding))
             {
-                // TODO: This should search base classes.
-                var property = instance.GetType().GetTypeInfo().GetDeclaredProperty(_xamlMember.Name);
+                var property = instance.GetType().GetRuntimeProperty(_xamlMember.Name);
 
                 if (property == null || !property.CanWrite)
                 {
@@ -68,74 +80,58 @@ namespace Perspex.Markup.Xaml.Context
                         $"Cannot assign to '{_xamlMember.Name}' on '{instance.GetType()}");
                 }
 
-                property.SetValue(instance, def);
+                property.SetValue(instance, binding);
             }
             else
             {
-                var perspexObject = instance as PerspexObject;
-                var attached = _xamlMember as PerspexAttachableXamlMember;
-
-                if (perspexObject == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot bind to an object of type '{instance.GetType()}");
-                }
-
-                PerspexProperty property;
-                string propertyName;
-
-                if (attached == null)
-                {
-                    propertyName = _xamlMember.Name;
-                    property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
-                        .FirstOrDefault(x => x.Name == propertyName);
-                }
-                else
-                {
-                    // Ensure the OwnerType's static ctor has been run.
-                    RuntimeHelpers.RunClassConstructor(attached.DeclaringType.UnderlyingType.TypeHandle);
-
-                    propertyName = attached.DeclaringType.UnderlyingType.Name + '.' + _xamlMember.Name;
-
-                    property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
-                        .Where(x => x.IsAttached && x.OwnerType == attached.DeclaringType.UnderlyingType)
-                        .FirstOrDefault(x => x.Name == _xamlMember.Name);
-                }
-
-                if (property == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot find '{propertyName}' on '{instance.GetType()}");
-                }
-
-                var binding = new XamlBinding
-                {
-                    Mode = def.Mode,
-                    Priority = def.Priority,
-                    RelativeSource = def.RelativeSource,
-                    SourcePropertyPath = def.SourcePropertyPath,
-                };
-
-                binding.Bind(perspexObject, property);
-            }
+                ApplyBinding(instance, binding);
+            }                
         }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        public PerspexProperty PerspexProperty
+        private void ApplyBinding(object instance, XamlBinding binding)
         {
-            get
-            {
-                var underlyingType = _xamlMember.DeclaringType.UnderlyingType;
-                var name = _xamlMember.Name + "Property";
+            var perspexObject = instance as PerspexObject;
+            var attached = _xamlMember as PerspexAttachableXamlMember;
 
-                var value = ReflectionExtensions.GetValueOfStaticField(underlyingType, name);
-                return value as PerspexProperty;
+            if (perspexObject == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot bind to an object of type '{instance.GetType()}");
             }
+
+            PerspexProperty property;
+            string propertyName;
+
+            if (attached == null)
+            {
+                propertyName = _xamlMember.Name;
+                property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
+                    .FirstOrDefault(x => x.Name == propertyName);
+            }
+            else
+            {
+                // Ensure the OwnerType's static ctor has been run.
+                RuntimeHelpers.RunClassConstructor(attached.DeclaringType.UnderlyingType.TypeHandle);
+
+                propertyName = attached.DeclaringType.UnderlyingType.Name + '.' + _xamlMember.Name;
+
+                property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
+                    .Where(x => x.IsAttached && x.OwnerType == attached.DeclaringType.UnderlyingType)
+                    .FirstOrDefault(x => x.Name == _xamlMember.Name);
+            }
+
+            if (property == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot find '{propertyName}' on '{instance.GetType()}");
+            }
+
+            binding.Bind(perspexObject, property);
         }
 
         private bool ValueRequiresSpecialHandling(object value)
         {
-            return value is XamlBindingDefinition || IsPerspexProperty;
+            return value is XamlBinding || IsPerspexProperty;
         }
 
         private bool IsPerspexProperty => PerspexProperty != null;
