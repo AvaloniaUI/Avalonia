@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
@@ -39,9 +39,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (value is XamlBinding)
+            if (value is Data.Binding)
             {
-                HandleXamlBindingDefinition(instance, (XamlBinding)value);
+                HandleXamlBindingDefinition(instance, (Data.Binding)value);
             }
             else if (IsPerspexProperty)
             {
@@ -68,9 +68,9 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleXamlBindingDefinition(object instance, XamlBinding binding)
+        private void HandleXamlBindingDefinition(object instance, Data.Binding binding)
         {
-            if (_xamlMember.XamlType.UnderlyingType == typeof(XamlBinding))
+            if (_xamlMember.XamlType.UnderlyingType == typeof(Data.Binding))
             {
                 var property = instance.GetType().GetRuntimeProperty(_xamlMember.Name);
 
@@ -88,7 +88,7 @@ namespace Perspex.Markup.Xaml.Context
             }                
         }
 
-        private void ApplyBinding(object instance, XamlBinding binding)
+        private void ApplyBinding(object instance, Data.Binding binding)
         {
             var perspexObject = instance as PerspexObject;
             var attached = _xamlMember as PerspexAttachableXamlMember;
@@ -131,7 +131,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private bool ValueRequiresSpecialHandling(object value)
         {
-            return value is XamlBinding || IsPerspexProperty;
+            return value is Data.Binding || IsPerspexProperty;
         }
 
         private bool IsPerspexProperty => PerspexProperty != null;

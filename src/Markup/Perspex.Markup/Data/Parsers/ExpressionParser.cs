@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Perspex.Markup.Binding.Parsers
+namespace Perspex.Markup.Data.Parsers
 {
     internal static class ExpressionParser
     {

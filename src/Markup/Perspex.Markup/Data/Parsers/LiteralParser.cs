@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Perspex.Markup.Binding.Parsers
+namespace Perspex.Markup.Data.Parsers
 {
     internal static class LiteralParser
     {

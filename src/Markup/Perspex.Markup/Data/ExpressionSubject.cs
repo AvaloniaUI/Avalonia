@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Utilities;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     /// <summary>
     /// Turns an <see cref="ExpressionObserver"/> into a subject that can be bound two-way with

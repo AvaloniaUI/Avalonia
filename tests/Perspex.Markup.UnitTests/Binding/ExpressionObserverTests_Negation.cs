@@ -3,7 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
-using Perspex.Markup.Binding;
+using Perspex.Markup.Data;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Binding

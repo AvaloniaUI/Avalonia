@@ -4,7 +4,7 @@
 using System;
 using System.Reactive.Subjects;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     internal abstract class ExpressionNode : IObservable<object>
     {

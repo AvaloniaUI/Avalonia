@@ -1,7 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Perspex.Markup.Binding;
+using Perspex.Markup.Data;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Binding

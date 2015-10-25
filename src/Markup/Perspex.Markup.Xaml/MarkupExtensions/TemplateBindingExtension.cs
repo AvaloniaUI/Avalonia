@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using OmniXaml;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -19,7 +19,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            return new XamlBinding
+            return new Data.Binding
             {
                 Mode = Mode,
                 Priority = BindingPriority.TemplatedParent,

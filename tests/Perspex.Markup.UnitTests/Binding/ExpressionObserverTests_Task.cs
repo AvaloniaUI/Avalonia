@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Perspex.Markup.Binding;
+using Perspex.Markup.Data;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Binding

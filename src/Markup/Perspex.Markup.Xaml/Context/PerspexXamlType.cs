@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using OmniXaml;
 using OmniXaml.Typing;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.Context
 {

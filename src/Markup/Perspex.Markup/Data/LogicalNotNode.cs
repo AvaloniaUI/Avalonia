@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Reactive.Linq;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     internal class LogicalNotNode : ExpressionNode
     {

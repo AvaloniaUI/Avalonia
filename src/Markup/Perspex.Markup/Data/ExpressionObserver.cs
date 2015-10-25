@@ -5,7 +5,7 @@ using System;
 using System.Reactive;
 using System.Reactive.Disposables;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     /// <summary>
     /// Observes and sets the value of an expression on an object.

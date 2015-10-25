@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using Perspex.Markup.Binding;
+using Perspex.Markup.Data;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Binding

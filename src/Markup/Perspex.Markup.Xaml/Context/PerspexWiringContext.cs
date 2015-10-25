@@ -15,7 +15,7 @@ using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Markup.Xaml.Templates;
 using Perspex.Markup.Xaml.Converters;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Markup.Xaml.MarkupExtensions;
 using Perspex.Media;
 using Perspex.Media.Imaging;

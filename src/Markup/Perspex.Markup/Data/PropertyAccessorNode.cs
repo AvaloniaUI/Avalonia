@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     internal class PropertyAccessorNode : ExpressionNode
     {

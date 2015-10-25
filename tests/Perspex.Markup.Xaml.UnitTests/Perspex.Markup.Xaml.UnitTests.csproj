@@ -88,8 +88,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Binding\XamlBindingTests_TemplatedParent.cs" />
-    <Compile Include="Binding\XamlBindingTests.cs" />
+    <Compile Include="Data\BindingTests_TemplatedParent.cs" />
+    <Compile Include="Data\BindingTests.cs" />
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

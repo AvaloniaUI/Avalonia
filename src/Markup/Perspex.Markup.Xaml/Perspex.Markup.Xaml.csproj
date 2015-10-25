@@ -38,10 +38,10 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Binding\RelativeSource.cs" />
-    <Compile Include="Binding\SourceBindingEndpoint.cs" />
-    <Compile Include="Binding\TargetBindingEndpoint.cs" />
-    <Compile Include="Binding\XamlBinding.cs" />
+    <Compile Include="Data\RelativeSource.cs" />
+    <Compile Include="Data\SourceBindingEndpoint.cs" />
+    <Compile Include="Data\TargetBindingEndpoint.cs" />
+    <Compile Include="Data\Binding.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
     <Compile Include="Context\PerspexContentPropertyProvider.cs" />
     <Compile Include="Converters\MemberSelectorTypeConverter.cs" />

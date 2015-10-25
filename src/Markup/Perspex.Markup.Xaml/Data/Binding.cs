@@ -6,19 +6,19 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using OmniXaml.TypeConversion;
 using Perspex.Controls;
-using Perspex.Markup.Binding;
+using Perspex.Markup.Data;
 
-namespace Perspex.Markup.Xaml.Binding
+namespace Perspex.Markup.Xaml.Data
 {
-    public class XamlBinding
+    public class Binding
     {
         private readonly ITypeConverterProvider _typeConverterProvider;
 
-        public XamlBinding()
+        public Binding()
         {
         }
 
-        public XamlBinding(ITypeConverterProvider typeConverterProvider)
+        public Binding(ITypeConverterProvider typeConverterProvider)
         {
             _typeConverterProvider = typeConverterProvider;
         }

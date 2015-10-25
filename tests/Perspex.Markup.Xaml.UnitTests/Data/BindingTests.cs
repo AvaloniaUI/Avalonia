@@ -6,18 +6,18 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Moq;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 using Xunit;
 
-namespace Perspex.Markup.Xaml.UnitTests.Binding
+namespace Perspex.Markup.Xaml.UnitTests.Data
 {
-    public class XamlBindingTests
+    public class BindingTests
     {
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()
         {
             var target = CreateTarget();
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Foo",
                 Mode = BindingMode.OneWay,
@@ -35,7 +35,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
         public void TwoWay_Binding_Should_Be_Set_Up()
         {
             var target = CreateTarget();
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Foo",
                 Mode = BindingMode.TwoWay,
@@ -55,7 +55,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var dataContext = new BehaviorSubject<object>(null);
             var expression = new BehaviorSubject<object>(null);
             var target = CreateTarget(dataContext: dataContext);
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Foo",
                 Mode = BindingMode.OneTime,
@@ -84,7 +84,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var textObservable = new Mock<IObservable<string>>();
             var expression = new Mock<ISubject<object>>();
             var target = CreateTarget(text: textObservable.Object);
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Foo",
                 Mode = BindingMode.OneWayToSource,
@@ -99,7 +99,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
         public void Default_BindingMode_Should_Be_Used()
         {
             var target = CreateTarget(null);
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Foo",
             };
@@ -124,7 +124,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
                 DataContext = parentDataContext,
             };
 
-            var binding = new XamlBinding
+            var binding = new Binding
             {
                 SourcePropertyPath = "Header",
             };
@@ -156,13 +156,13 @@ namespace Perspex.Markup.Xaml.UnitTests.Binding
             var vm = new OldDataContextViewModel();
             var target = new OldDataContextTest();
 
-            var fooBinding = new XamlBinding
+            var fooBinding = new Binding
             {
                 SourcePropertyPath = "Foo",
                 Mode = BindingMode.TwoWay,
             };
 
-            var barBinding = new XamlBinding
+            var barBinding = new Binding
             {
                 SourcePropertyPath = "Bar",
                 Mode = BindingMode.TwoWay,

@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Perspex.Markup.Binding.Parsers;
+using Perspex.Markup.Data.Parsers;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     public class ExpressionParseException : Exception
     {

@@ -8,7 +8,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 
-namespace Perspex.Markup.Binding
+namespace Perspex.Markup.Data
 {
     internal class IndexerNode : ExpressionNode
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Perspex.Markup.Binding.Parsers
+namespace Perspex.Markup.Data.Parsers
 {
     internal static class ArgumentListParser
     {

@@ -36,19 +36,19 @@
     <DocumentationFile>bin\Release\Perspex.Markup.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Binding\ExpressionNodeBuilder.cs" />
-    <Compile Include="Binding\ExpressionParseException.cs" />
-    <Compile Include="Binding\ExpressionSubject.cs" />
-    <Compile Include="Binding\LogicalNotNode.cs" />
-    <Compile Include="Binding\IndexerNode.cs" />
-    <Compile Include="Binding\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Binding\Parsers\LiteralParser.cs" />
-    <Compile Include="Binding\Parsers\IdentifierParser.cs" />
-    <Compile Include="Binding\Parsers\ExpressionParser.cs" />
-    <Compile Include="Binding\Parsers\Reader.cs" />
-    <Compile Include="Binding\PropertyAccessorNode.cs" />
-    <Compile Include="Binding\ExpressionNode.cs" />
-    <Compile Include="Binding\ExpressionObserver.cs" />
+    <Compile Include="Data\ExpressionNodeBuilder.cs" />
+    <Compile Include="Data\ExpressionParseException.cs" />
+    <Compile Include="Data\ExpressionSubject.cs" />
+    <Compile Include="Data\LogicalNotNode.cs" />
+    <Compile Include="Data\IndexerNode.cs" />
+    <Compile Include="Data\Parsers\ArgumentListParser.cs" />
+    <Compile Include="Data\Parsers\LiteralParser.cs" />
+    <Compile Include="Data\Parsers\IdentifierParser.cs" />
+    <Compile Include="Data\Parsers\ExpressionParser.cs" />
+    <Compile Include="Data\Parsers\Reader.cs" />
+    <Compile Include="Data\PropertyAccessorNode.cs" />
+    <Compile Include="Data\ExpressionNode.cs" />
+    <Compile Include="Data\ExpressionObserver.cs" />
     <Compile Include="DefaultValueConverter.cs" />
     <Compile Include="IValueConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

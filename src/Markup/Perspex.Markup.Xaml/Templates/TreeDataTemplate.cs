@@ -6,8 +6,8 @@ using System.Collections;
 using System.Reactive.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
-using Perspex.Markup.Binding;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Data;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Metadata;
 
 namespace Perspex.Markup.Xaml.Templates
@@ -19,7 +19,7 @@ namespace Perspex.Markup.Xaml.Templates
         [Content]
         public TemplateContent Content { get; set; }
 
-        public XamlBinding ItemsSource { get; set; }
+        public Binding ItemsSource { get; set; }
 
         public bool Match(object data)
         {

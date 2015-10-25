@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Perspex.Markup.Binding.Parsers
+namespace Perspex.Markup.Data.Parsers
 {
     internal class Reader
     {

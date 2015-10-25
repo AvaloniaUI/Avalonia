@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Perspex.Markup.Xaml.Binding
+namespace Perspex.Markup.Xaml.Data
 {
     public class SourceBindingEndpoint
     {

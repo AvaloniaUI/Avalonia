@@ -9,7 +9,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
-using Perspex.Markup.Xaml.Binding;
+using Perspex.Markup.Xaml.Data;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
@@ -401,13 +401,13 @@ namespace Perspex.Controls.UnitTests.Primitives
             var vm = new OldDataContextViewModel();
             var target = new TestSelector();
 
-            var itemsBinding = new XamlBinding
+            var itemsBinding = new Binding
             {
                 SourcePropertyPath = "Items",
                 Mode = BindingMode.OneWay,
             };
 
-            var selectedItemsBinding = new XamlBinding
+            var selectedItemsBinding = new Binding
             {
                 SourcePropertyPath = "SelectedItems",
                 Mode = BindingMode.OneWay,
