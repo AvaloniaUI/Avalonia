@@ -26,8 +26,7 @@
               <Panel>
                 <TextBlock Name="watermark"
                            Opacity="0.5"
-                           Text="{TemplateBinding Watermark}"
-                           IsVisible="{TemplateBinding IsWatermarkVisible}">
+                           Text="{TemplateBinding Watermark}">
                   <TextBlock.IsVisible>
                     <Binding RelativeSource="{RelativeSource TemplatedParent}"
                              SourcePropertyPath="Text"
