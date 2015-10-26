@@ -28,6 +28,17 @@ namespace Perspex.Utilities
         };
 
         /// <summary>
+        /// Returns a value indicating whether null can be assigned to the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>True if the type accepts null values; otherwise false.</returns>
+        public static bool AcceptsNull(Type type)
+        {
+            var t = type.GetTypeInfo();
+            return !t.IsValueType || (t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Nullable<>)));
+        }
+
+        /// <summary>
         /// Try to cast a value to a type, using implicit conversions if possible.
         /// </summary>
         /// <param name="to">The type to cast to.</param>
@@ -40,9 +51,8 @@ namespace Perspex.Utilities
 
             if (value == null)
             {
-                var t = to.GetTypeInfo();
                 result = null;
-                return !t.IsValueType || (t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Nullable<>)));
+                return AcceptsNull(to);
             }
 
             var from = value.GetType();

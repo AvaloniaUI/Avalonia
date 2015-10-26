@@ -36,6 +36,9 @@
     <DocumentationFile>bin\Release\Perspex.Markup.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
@@ -49,6 +52,8 @@
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />
+    <Compile Include="FuncValueConverter.cs" />
+    <Compile Include="StringConverters.cs" />
     <Compile Include="DefaultValueConverter.cs" />
     <Compile Include="IValueConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

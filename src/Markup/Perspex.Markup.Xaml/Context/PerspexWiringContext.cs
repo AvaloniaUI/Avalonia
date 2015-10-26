@@ -61,8 +61,9 @@ namespace Perspex.Markup.Xaml.Context
 
             var forcedAssemblies = new[]
             {
-                typeof (Control),
-                typeof(Style)
+                typeof(Control),
+                typeof(Style),
+                typeof(IValueConverter),
             }.Select(t => t.GetTypeInfo().Assembly);
 
             foreach (var nsa in 
