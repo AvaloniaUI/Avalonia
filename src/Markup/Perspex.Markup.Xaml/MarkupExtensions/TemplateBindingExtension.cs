@@ -21,6 +21,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
         {
             return new Data.Binding
             {
+                Converter = Converter,
                 Mode = Mode,
                 Priority = BindingPriority.TemplatedParent,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
@@ -28,7 +29,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             };
         }
 
-        public object Converter { get; set; }
+        public IValueConverter Converter { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
     }
