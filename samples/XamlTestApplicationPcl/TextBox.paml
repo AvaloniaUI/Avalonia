@@ -21,7 +21,7 @@
                          Foreground="#ff007ACC"
                          FontSize="10"
                          Text="{TemplateBinding Watermark}"
-                         IsVisible="{TemplateBinding FloatingWatermark}">
+                         IsVisible="{TemplateBinding UseFloatingWatermark}">
               </TextBlock>
               <Panel>
                 <TextBlock Name="watermark"
