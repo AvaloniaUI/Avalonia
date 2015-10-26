@@ -20,8 +20,16 @@
               <TextBlock Name="floatingWatermark"
                          Foreground="#ff007ACC"
                          FontSize="10"
-                         Text="{TemplateBinding Watermark}"
-                         IsVisible="{TemplateBinding UseFloatingWatermark}">
+                         Text="{TemplateBinding Watermark}">
+                <TextBlock.IsVisible>
+                  <MultiBinding Converter="{Static BoolConverters.And}">
+                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                             SourcePropertyPath="UseFloatingWatermark"/>
+                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                             SourcePropertyPath="Text" 
+                             Converter="{Static StringConverters.NotNullOrEmpty}"/>
+                  </MultiBinding>
+                </TextBlock.IsVisible>
               </TextBlock>
               <Panel>
                 <TextBlock Name="watermark"

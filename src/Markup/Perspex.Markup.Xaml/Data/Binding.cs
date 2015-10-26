@@ -10,7 +10,7 @@ using Perspex.Markup.Data;
 
 namespace Perspex.Markup.Xaml.Data
 {
-    public class Binding
+    public class Binding : IBinding
     {
         private readonly ITypeConverterProvider _typeConverterProvider;
 

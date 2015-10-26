@@ -52,7 +52,10 @@
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />
+    <Compile Include="FuncMultiValueConverter.cs" />
     <Compile Include="FuncValueConverter.cs" />
+    <Compile Include="IMultiValueConverter.cs" />
+    <Compile Include="BoolConverters.cs" />
     <Compile Include="StringConverters.cs" />
     <Compile Include="DefaultValueConverter.cs" />
     <Compile Include="IValueConverter.cs" />

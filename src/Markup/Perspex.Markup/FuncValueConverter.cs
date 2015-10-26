@@ -11,8 +11,8 @@ namespace Perspex.Markup
     /// A general purpose <see cref="IValueConverter"/> that uses a <see cref="Func{T1, TResult}"/>
     /// to provide the converter logic.
     /// </summary>
-    /// <typeparam name="TIn"></typeparam>
-    /// <typeparam name="TOut"></typeparam>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <typeparam name="TOut">The output type.</typeparam>
     public class FuncValueConverter<TIn, TOut> : IValueConverter
     {
         private Func<TIn, TOut> _convert;
