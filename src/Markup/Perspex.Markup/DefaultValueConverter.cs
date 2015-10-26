@@ -30,13 +30,13 @@ namespace Perspex.Markup
         {
             object result;
 
-            if (TypeUtilities.TryConvert(targetType, value, culture, out result))
+            if (value != null && TypeUtilities.TryConvert(targetType, value, culture, out result))
             {
                 return result;
             }
             else
             {
-                throw new InvalidCastException($"Cannot convert value from {value.GetType()} to {targetType}");
+                return PerspexProperty.UnsetValue;
             }
         }
 

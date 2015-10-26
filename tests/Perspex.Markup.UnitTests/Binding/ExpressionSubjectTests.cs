@@ -51,13 +51,13 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
-        public async void Should_Coerce_Get_Null_String_To_Double_Deafult_Value()
+        public async void Should_Coerce_Get_Null_Double_String_To_UnsetValue()
         {
             var data = new Class1 { StringValue = null };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
-            Assert.Equal(0.0, result);
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         [Fact]
@@ -93,18 +93,18 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
-        public void Should_Ignore_Set_Invalid_Double_String()
+        public void Should_Coerce_Set_Invalid_Double_String_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext("foo");
 
-            Assert.Equal(5.6, data.DoubleValue);
+            Assert.Equal(0, data.DoubleValue);
         }
 
         [Fact]
-        public void Should_Coerce_Set_Null_To_Default_Value()
+        public void Should_Coerce_Setting_Null_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
@@ -115,7 +115,7 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
-        public void Should_Coerce_Set_UnsetValue_To_Default_Value()
+        public void Should_Coerce_Setting_UnsetValue_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));

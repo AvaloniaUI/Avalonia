@@ -32,6 +32,16 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public async void Should_Get_Simple_Property_Value_Null()
+        {
+            var data = new { Foo = (string)null };
+            var target = new ExpressionObserver(data, "Foo");
+            var result = await target.Take(1);
+
+            Assert.Null(result);
+        }
+
+        [Fact]
         public async void Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };

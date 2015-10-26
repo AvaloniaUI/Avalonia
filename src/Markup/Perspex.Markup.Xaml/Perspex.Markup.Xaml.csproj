@@ -59,12 +59,14 @@
     <Compile Include="Converters\SelectorTypeConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+    <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
     <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\BitmapTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
     <Compile Include="Context\PerspexParserFactory.cs" />
+    <Compile Include="MarkupExtensions\StaticExtension.cs" />
     <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservableProperty.cs" />
     <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservablePropertyChain.cs" />

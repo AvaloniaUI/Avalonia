@@ -6,25 +6,28 @@ using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
-    public class RelativeSourceExtension : MarkupExtension
+    public class BindingExtension : MarkupExtension
     {
-        public RelativeSourceExtension()
+        public BindingExtension()
         {
         }
 
-        public RelativeSourceExtension(RelativeSourceMode mode)
+        public BindingExtension(string path)
         {
-            Mode = mode;
+            Path = path;
         }
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            return new RelativeSource
+            return new Data.Binding
             {
                 Mode = Mode,
+                SourcePropertyPath = Path,
             };
         }
 
-        public RelativeSourceMode Mode { get; set; }
+        public object Converter { get; set; }
+        public BindingMode Mode { get; set; }
+        public string Path { get; set; }
     }
 }

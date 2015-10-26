@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringNullOrEmpty.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
     <Compile Include="ViewModels\TestNode.cs" />
@@ -59,6 +60,10 @@
     <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Perspex.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup\Perspex.Markup.csproj">
+      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
+      <Name>Perspex.Markup</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>

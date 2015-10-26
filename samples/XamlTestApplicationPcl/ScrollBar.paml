@@ -8,7 +8,7 @@
                  Value="{TemplateBinding Path=Value, Mode=TwoWay}"
                  ViewportSize="{TemplateBinding ViewportSize}"
                  Orientation="{TemplateBinding Orientation}">
-            <Thumb Width="10" Height="10">
+            <Thumb>
               <Thumb.Template>
                 <ControlTemplate>
                   <Border Background="Gray"/>

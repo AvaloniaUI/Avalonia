@@ -111,6 +111,10 @@
       <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
       <Name>Perspex.Markup.Xaml</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup\Perspex.Markup.csproj">
+      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
+      <Name>Perspex.Markup</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>

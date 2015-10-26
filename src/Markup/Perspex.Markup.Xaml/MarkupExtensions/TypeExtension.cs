@@ -25,13 +25,14 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public string TypeName { get; set; }
 
-        private Type ResolveFromString(string typeLocator, IXamlTypeRepository typeRepository)
+        private Type ResolveFromString(string type, IXamlTypeRepository typeRepository)
         {
-            Guard.ThrowIfNull(typeLocator, nameof(typeLocator));
+            Guard.ThrowIfNull(type, nameof(type));
 
-            var prefixAndType = typeLocator.Dicotomize(':');
-
-            var xamlType = typeRepository.GetByPrefix(prefixAndType.Item1, prefixAndType.Item2);
+            var split = type.Split(':');
+            var prefix = split.Length == 1 ? split[0] : null;
+            var typeName = split.Length == 1 ? split[1] : split[0];
+            var xamlType = typeRepository.GetByPrefix(prefix, typeName);
             return xamlType.UnderlyingType;
         }
 

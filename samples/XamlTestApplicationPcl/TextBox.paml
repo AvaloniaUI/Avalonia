@@ -1,4 +1,6 @@
-﻿<Styles xmlns="https://github.com/perspex">
+﻿<Styles xmlns="https://github.com/perspex"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:XamlTestApplication;assembly=XamlTestApplicationPcl">
   <Style Selector="TextBox">
     <Setter Property="Background" Value="White"/>
     <Setter Property="BorderBrush" Value="#ff707070"/>
@@ -19,12 +21,19 @@
                          Foreground="#ff007ACC"
                          FontSize="10"
                          Text="{TemplateBinding Watermark}"
-                         IsVisible="{TemplateBinding Path=IsFloatingWatermarkVisible, Converter={x:Type FooBar}}"/>
+                         IsVisible="{TemplateBinding FloatingWatermark}">
+              </TextBlock>
               <Panel>
                 <TextBlock Name="watermark"
                            Opacity="0.5"
                            Text="{TemplateBinding Watermark}"
-                           IsVisible="{TemplateBinding IsWatermarkVisible}"/>
+                           IsVisible="{TemplateBinding IsWatermarkVisible}">
+                  <TextBlock.IsVisible>
+                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                             SourcePropertyPath="Text"
+                             Converter="{Static local:StringNullOrEmpty.Instance}"/>
+                  </TextBlock.IsVisible>
+                </TextBlock>
                 <TextPresenter Name="PART_TextPresenter"
                                CaretIndex="{TemplateBinding CaretIndex}"
                                SelectionStart="{TemplateBinding SelectionStart}"

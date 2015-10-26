@@ -6,6 +6,7 @@ using Perspex.Metadata;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Perspex.Markup.Xaml")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.Data")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.MarkupExtensions")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.Styling")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.Templates")]

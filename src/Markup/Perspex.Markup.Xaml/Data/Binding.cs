@@ -23,6 +23,7 @@ namespace Perspex.Markup.Xaml.Data
             _typeConverterProvider = typeConverterProvider;
         }
 
+        public IValueConverter Converter { get; set; }
         public BindingMode Mode { get; set; }
         public BindingPriority Priority { get; set; }
         public RelativeSource RelativeSource { get; set; }
@@ -30,9 +31,7 @@ namespace Perspex.Markup.Xaml.Data
 
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
-            var subject = new ExpressionSubject(
-                CreateExpressionObserver(instance, property),
-                property.PropertyType);
+            var subject = CreateExpressionSubject(instance, property);
 
             if (subject != null)
             {
@@ -40,22 +39,29 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        public ExpressionObserver CreateExpressionObserver(
+        public ISubject<object> CreateExpressionSubject(
             IObservablePropertyBag instance, 
             PerspexProperty property)
         {
+            ExpressionObserver observer;
+
             if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                return CreateDataContextExpressionObserver(instance, property);
+                observer = CreateDataContextExpressionSubject(instance, property);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                return CreateTemplatedParentExpressionObserver(instance, property);
+                observer = CreateTemplatedParentExpressionSubject(instance, property);
             }
             else
             {
                 throw new NotSupportedException();
             }
+
+            return new ExpressionSubject(
+                observer, 
+                property.PropertyType, 
+                Converter ?? DefaultValueConverter.Instance);
         }
 
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
@@ -84,7 +90,7 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        public ExpressionObserver CreateDataContextExpressionObserver(
+        public ExpressionObserver CreateDataContextExpressionSubject(
             IObservablePropertyBag instance,
             PerspexProperty property)
         {
@@ -105,7 +111,7 @@ namespace Perspex.Markup.Xaml.Data
             return null;
         }
 
-        public ExpressionObserver CreateTemplatedParentExpressionObserver(
+        public ExpressionObserver CreateTemplatedParentExpressionSubject(
             IObservablePropertyBag instance,
             PerspexProperty property)
         {

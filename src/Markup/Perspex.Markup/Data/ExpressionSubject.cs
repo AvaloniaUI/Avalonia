@@ -15,7 +15,6 @@ namespace Perspex.Markup.Data
     /// </summary>
     public class ExpressionSubject : ISubject<object>, IDescription
     {
-        private IValueConverter _converter;
         private ExpressionObserver _inner;
         private Type _targetType;
 
@@ -37,10 +36,19 @@ namespace Perspex.Markup.Data
         /// <param name="converter">The value converter to use.</param>
         public ExpressionSubject(ExpressionObserver inner, Type targetType, IValueConverter converter)
         {
-            _converter = converter;
+            Contract.Requires<ArgumentNullException>(inner != null);
+            Contract.Requires<ArgumentNullException>(targetType != null);
+            Contract.Requires<ArgumentNullException>(converter != null);
+
             _inner = inner;
             _targetType = targetType;
+            Converter = converter;
         }
+
+        /// <summary>
+        /// Gets the converter to use on the expression.
+        /// </summary>
+        public IValueConverter Converter { get; }
 
         /// <inheritdoc/>
         string IDescription.Description => _inner.Expression;
@@ -62,12 +70,14 @@ namespace Perspex.Markup.Data
 
             if (type != null)
             {
-                object converted;
+                var converted = Converter.ConvertBack(value, type, null, CultureInfo.CurrentUICulture);
 
-                if (ConvertBack(value, type, out converted))
+                if (converted == PerspexProperty.UnsetValue)
                 {
-                    _inner.SetValue(converted);
+                    converted = TypeUtilities.Default(_targetType);
                 }
+
+                _inner.SetValue(converted);
             }
         }
 
@@ -75,51 +85,8 @@ namespace Perspex.Markup.Data
         public IDisposable Subscribe(IObserver<object> observer)
         {
             return _inner
-                .Select(x => Convert(x, _targetType))
+                .Select(x => Converter.Convert(x, _targetType, null, CultureInfo.CurrentUICulture))
                 .Subscribe(observer);
-        }
-
-        private object Convert(object value, Type type)
-        {
-            try
-            {
-                if (value == null || value == PerspexProperty.UnsetValue)
-                {
-                    return TypeUtilities.Default(type);
-                }
-                else
-                {
-                    return _converter.Convert(value, type, null, CultureInfo.CurrentUICulture);
-                }
-            }
-            catch
-            {
-                // TODO: Log something.
-                return PerspexProperty.UnsetValue;
-            }
-        }
-
-        private bool ConvertBack(object value, Type type, out object result)
-        {
-            try
-            {
-                if (value == null || value == PerspexProperty.UnsetValue)
-                {
-                    result = TypeUtilities.Default(type);
-                    return true;
-                }
-                else
-                {
-                    result = _converter.ConvertBack(value, type, null, CultureInfo.CurrentUICulture);
-                    return true;
-                }
-            }
-            catch
-            {
-                // TODO: Log something.
-                result = null;
-                return false;
-            }
         }
     }
 }

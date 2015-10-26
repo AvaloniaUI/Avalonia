@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Moq;
 using Perspex.Controls;
+using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 using Xunit;
 
@@ -136,6 +137,36 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             parentDataContext = Mock.Of<IHeadered>(x => x.Header == (object)"Bar");
             parent.DataContext = parentDataContext;
             Assert.Equal("Bar", parent.Child.DataContext);
+        }
+
+        [Fact]
+        public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
+        {
+            var target = CreateTarget(null);
+            var binding = new Binding
+            {
+                SourcePropertyPath = "Foo",
+            };
+
+            var result = binding.CreateExpressionSubject(target.Object, TextBox.TextProperty);
+
+            Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
+        }
+
+        [Fact]
+        public void Should_Use_Supplied_Converter()
+        {
+            var target = CreateTarget(null);
+            var converter = new Mock<IValueConverter>();
+            var binding = new Binding
+            {
+                Converter = converter.Object,
+                SourcePropertyPath = "Foo",
+            };
+
+            var result = binding.CreateExpressionSubject(target.Object, TextBox.TextProperty);
+
+            Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
         }
 
         /// <summary>
