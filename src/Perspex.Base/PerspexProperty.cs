@@ -271,6 +271,11 @@ namespace Perspex
         public bool IsDirect { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this is a readonly property.
+        /// </summary>
+        public bool IsReadOnly => IsDirect && Setter == null;
+
+        /// <summary>
         /// Gets an observable that is fired when this property is initialized on a
         /// new <see cref="PerspexObject"/> instance.
         /// </summary>

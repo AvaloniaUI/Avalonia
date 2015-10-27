@@ -21,7 +21,8 @@ namespace Perspex.Markup.Data
         public static readonly IList<IPropertyAccessorPlugin> PropertyAccessors =
             new List<IPropertyAccessorPlugin>
             {
-                new InpcPropertyAccessorPlugin()
+                new PerspexPropertyAccessorPlugin(),
+                new InpcPropertyAccessorPlugin(),
             };
 
         private Func<object> _root;

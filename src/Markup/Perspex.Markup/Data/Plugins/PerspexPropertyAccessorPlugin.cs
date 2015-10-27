@@ -9,10 +9,9 @@ using System.Reflection;
 namespace Perspex.Markup.Data.Plugins
 {
     /// <summary>
-    /// Reads a property from a standard C# object that optionally supports the
-    /// <see cref="INotifyPropertyChanged"/> interface.
+    /// Reads a property from a <see cref="PerspexObject"/>.
     /// </summary>
-    public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
+    public class PerspexPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <summary>
         /// Checks whether this plugin can handle accessing the properties of the specified object.
@@ -23,7 +22,7 @@ namespace Perspex.Markup.Data.Plugins
         {
             Contract.Requires<ArgumentNullException>(instance != null);
 
-            return true;
+            return instance is PerspexObject;
         }
 
         /// <summary>
@@ -42,11 +41,12 @@ namespace Perspex.Markup.Data.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
             Contract.Requires<ArgumentNullException>(changed != null);
 
-            var p = instance.GetType().GetRuntimeProperty(propertyName);
+            var o = (PerspexObject)instance;
+            var p = PerspexPropertyRegistry.Instance.FindRegistered(o, propertyName);
 
             if (p != null)
             {
-                return new Accessor(instance, p, changed);
+                return new Accessor(o, p, changed);
             }
             else
             {
@@ -56,25 +56,18 @@ namespace Perspex.Markup.Data.Plugins
 
         private class Accessor : IPropertyAccessor
         {
-            private object _instance;
-            private PropertyInfo _property;
-            private Action<object> _changed;
+            private PerspexObject _instance;
+            private PerspexProperty _property;
+            private IDisposable _subscription;
 
-            public Accessor(object instance, PropertyInfo property, Action<object> changed)
+            public Accessor(PerspexObject instance, PerspexProperty property, Action<object> changed)
             {
                 Contract.Requires<ArgumentNullException>(instance != null);
                 Contract.Requires<ArgumentNullException>(property != null);
 
                 _instance = instance;
                 _property = property;
-                _changed = changed;
-
-                var inpc = instance as INotifyPropertyChanged;
-
-                if (inpc != null)
-                {
-                    inpc.PropertyChanged += PropertyChanged;
-                }
+                _subscription = instance.GetObservable(property).Skip(1).Subscribe(changed);
             }
 
             public Type PropertyType
@@ -84,36 +77,24 @@ namespace Perspex.Markup.Data.Plugins
 
             public object Value
             {
-                get { return _property.GetValue(_instance); }
+                get { return _instance.GetValue(_property); }
             }
 
             public void Dispose()
             {
-                var inpc = _instance as INotifyPropertyChanged;
-
-                if (inpc != null)
-                {
-                    inpc.PropertyChanged -= PropertyChanged;
-                }
+                _subscription?.Dispose();
+                _subscription = null;
             }
 
             public bool SetValue(object value)
             {
-                if (_property.CanWrite)
+                if (!_property.IsReadOnly)
                 {
-                    _property.SetValue(_instance, value);
+                    _instance.SetValue(_property, value);
                     return true;
                 }
 
                 return false;
-            }
-
-            private void PropertyChanged(object sender, PropertyChangedEventArgs e)
-            {
-                if (e.PropertyName == _property.Name)
-                {
-                    _changed(Value);
-                }
             }
         }
     }
