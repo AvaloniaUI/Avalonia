@@ -16,12 +16,12 @@
                                 Content="{TemplateBinding Header}"
                                 Margin="{TemplateBinding Padding}"/>
             </Border>
-            <!--<Rectangle Name="focus"
+            <Rectangle Name="focus"
                        IsVisible="{TemplateBinding IsFocused}"
                        Stroke="Black"
                        StrokeThickness="1"
                        StrokeDashArray="1,2"
-                       Grid.Column="1"/>-->
+                       Grid.Column="1"/>
           </Grid>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"

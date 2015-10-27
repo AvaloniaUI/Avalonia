@@ -24,6 +24,8 @@ using Perspex.Platform;
 using Perspex.Styling;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using System.Collections;
+using Perspex.Collections;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -99,6 +101,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Geometry), new GeometryTypeConverter()),
                 new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
                 new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
+                new TypeConverterRegistration(typeof(PerspexList<double>), new PerspexListTypeConverter<double>()),
                 new TypeConverterRegistration(typeof(IMemberSelector), new MemberSelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
