@@ -8,7 +8,7 @@
                  Value="{TemplateBinding Path=Value, Mode=TwoWay}"
                  ViewportSize="{TemplateBinding ViewportSize}"
                  Orientation="{TemplateBinding Orientation}">
-            <Thumb>
+            <Thumb Name="thumb">
               <Thumb.Template>
                 <ControlTemplate>
                   <Border Background="Gray"/>
@@ -19,5 +19,17 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="ScrollBar[Orientation=Horizontal]">
+    <Setter Property="Height" Value="10"/>
+  </Style>
+  <Style Selector="ScrollBar[Orientation=Horizontal] /template/ Thumb#thumb">
+    <Setter Property="MinWidth" Value="10"/>
+  </Style>
+  <Style Selector="ScrollBar[Orientation=Vertical]">
+    <Setter Property="Width" Value="10"/>
+  </Style>
+  <Style Selector="ScrollBar[Orientation=Vertical] /template/ Thumb#thumb">
+    <Setter Property="MinHeight" Value="10"/>
   </Style>
 </Styles>

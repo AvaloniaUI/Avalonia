@@ -1,0 +1,9 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="ContentControl">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}">
+        <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

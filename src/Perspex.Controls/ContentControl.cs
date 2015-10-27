@@ -35,6 +35,13 @@ namespace Perspex.Controls
             PerspexProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
         /// <summary>
+        /// Initializes static members of the <see cref="Button"/> class.
+        /// </summary>
+        static ContentControl()
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ContentControl"/> class.
         /// </summary>
         public ContentControl()

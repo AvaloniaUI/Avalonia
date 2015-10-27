@@ -129,6 +129,22 @@ namespace Perspex.Styling
         }
 
         /// <summary>
+        /// Returns a selector which matches a control with the specified property value.
+        /// </summary>
+        /// <typeparam name="T">The property type.</typeparam>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The property value.</param>
+        /// <returns>The selector.</returns>
+        public static Selector PropertyEquals(this Selector previous, PerspexProperty property, object value)
+        {
+            Contract.Requires<ArgumentNullException>(previous != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            return new Selector(previous, x => MatchPropertyEquals(x, property, value), $"[{property.Name}={value}]");
+        }
+
+        /// <summary>
         /// Returns a selector which enters a lookless control's template.
         /// </summary>
         /// <param name="previous">The previous selector.</param>
@@ -216,7 +232,7 @@ namespace Perspex.Styling
             return new SelectorMatch(controlType == type);
         }
 
-        private static SelectorMatch MatchPropertyEquals<T>(IStyleable x, PerspexProperty<T> property, object value)
+        private static SelectorMatch MatchPropertyEquals(IStyleable x, PerspexProperty property, object value)
         {
             if (!x.IsRegistered(property))
             {

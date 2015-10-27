@@ -91,7 +91,7 @@ namespace Perspex.Utilities
 
         /// <summary>
         /// Try to convert a value to a type, using <see cref="System.Convert"/> if possible,
-        /// otherwise using <see cref="TryCast(Type, object, out object, bool)"/>.
+        /// otherwise using <see cref="TryCast(Type, object, out object)"/>.
         /// </summary>
         /// <param name="to">The type to cast to.</param>
         /// <param name="value">The value to cast.</param>
@@ -100,7 +100,18 @@ namespace Perspex.Utilities
         /// <returns>True if the cast was sucessful, otherwise false.</returns>
         public static bool TryConvert(Type to, object value, CultureInfo culture, out object result)
         {
-            if ((value.GetType() == typeof(string) && Conversions.ContainsKey(to)) ||
+            var valueType = value.GetType();
+
+            if (to.GetTypeInfo().IsEnum && valueType == typeof(string))
+            {
+                if (Enum.IsDefined(to, (string)value))
+                {
+                    result = Enum.Parse(to, (string)value);
+                    return true;
+                }
+            }
+
+            if ((valueType == typeof(string) && Conversions.ContainsKey(to)) ||
                 (to == typeof(string) && Conversions.ContainsKey(value.GetType())))
             {
                 try

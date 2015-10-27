@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using Perspex.Styling;
+using Perspex.Utilities;
 using Sprache;
 
 namespace Perspex.Markup.Xaml.Parsers
@@ -61,7 +63,35 @@ namespace Perspex.Markup.Xaml.Parsers
                 }
                 else if (property != null)
                 {
-                    throw new NotImplementedException();
+                    var type = result.TargetType;
+
+                    if (type == null)
+                    {
+                        throw new InvalidOperationException("Property selectors must be applied to a type.");
+                    }
+
+                    var targetProperty = PerspexPropertyRegistry.Instance.FindRegistered(type, property.Property);
+
+                    if (targetProperty == null)
+                    {
+                        throw new InvalidOperationException($"Cannot find '{property.Property}' on '{type}");
+                    }
+
+                    object typedValue;
+
+                    if (TypeUtilities.TryConvert(
+                            targetProperty.PropertyType, 
+                            property.Value, 
+                            CultureInfo.InvariantCulture,
+                            out typedValue))
+                    {
+                        result = result.PropertyEquals(targetProperty, typedValue);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"Could not convert '{property.Value}' to '{targetProperty.PropertyType}");
+                    }
                 }
                 else if (child != null)
                 {

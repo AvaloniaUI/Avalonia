@@ -127,6 +127,27 @@ namespace Perspex.Controls
             set { SetValue(TextWrappingProperty, value); }
         }
 
+        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
+        public bool CanScrollHorizontally
+        {
+            get { return GetValue(ScrollViewer.CanScrollHorizontallyProperty); }
+            set { SetValue(ScrollViewer.CanScrollHorizontallyProperty, value); }
+        }
+
+        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
+        public ScrollBarVisibility HorizontalScrollBarVisibility
+        {
+            get { return GetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty); }
+            set { SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, value); }
+        }
+
+        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
+        public ScrollBarVisibility VerticalScrollBarVisibility
+        {
+            get { return GetValue(ScrollViewer.VerticalScrollBarVisibilityProperty); }
+            set { SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, value); }
+        }
+
         protected override void OnTemplateApplied()
         {
             _presenter = this.GetTemplateChild<TextPresenter>("PART_TextPresenter");
