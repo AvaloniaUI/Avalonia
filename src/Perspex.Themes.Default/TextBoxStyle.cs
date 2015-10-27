@@ -90,7 +90,7 @@ namespace Perspex.Themes.Default
                                     },
                                     new TextPresenter
                                     {
-                                        Name = "textPresenter",
+                                        Name = "PART_TextPresenter",
                                         [~TextPresenter.CaretIndexProperty] = control[~TextBox.CaretIndexProperty],
                                         [~TextPresenter.SelectionStartProperty] = control[~TextBox.SelectionStartProperty],
                                         [~TextPresenter.SelectionEndProperty] = control[~TextBox.SelectionEndProperty],

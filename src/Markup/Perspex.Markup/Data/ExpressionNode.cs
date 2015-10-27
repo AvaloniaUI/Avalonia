@@ -21,25 +21,28 @@ namespace Perspex.Markup.Data
             get { return _target; }
             set
             {
-                if (_target != null)
+                if (!object.Equals(value, _target))
                 {
-                    Unsubscribe(_target);
-                }
+                    if (_target != null)
+                    {
+                        Unsubscribe(_target);
+                    }
 
-                _target = value;
+                    _target = value;
 
-                if (_target != null)
-                {
-                    SubscribeAndUpdate(_target);
-                }
-                else
-                {
-                    CurrentValue = PerspexProperty.UnsetValue;
-                }
+                    if (_target != null)
+                    {
+                        SubscribeAndUpdate(_target);
+                    }
+                    else
+                    {
+                        CurrentValue = PerspexProperty.UnsetValue;
+                    }
 
-                if (Next != null)
-                {
-                    Next.Target = CurrentValue;
+                    if (Next != null)
+                    {
+                        Next.Target = CurrentValue;
+                    }
                 }
             }
         }

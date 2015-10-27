@@ -74,7 +74,7 @@ namespace Perspex.Markup.Data
 
                 if (converted == PerspexProperty.UnsetValue)
                 {
-                    converted = TypeUtilities.Default(_targetType);
+                    converted = TypeUtilities.Default(type);
                 }
 
                 _inner.SetValue(converted);
