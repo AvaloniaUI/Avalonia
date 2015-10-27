@@ -42,6 +42,9 @@
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
+    <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
+    <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
+    <Compile Include="Data\Plugins\IPropertyAccessorPlugin.cs" />
     <Compile Include="Data\LogicalNotNode.cs" />
     <Compile Include="Data\IndexerNode.cs" />
     <Compile Include="Data\Parsers\ArgumentListParser.cs" />

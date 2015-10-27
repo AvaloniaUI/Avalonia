@@ -2,18 +2,19 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Perspex.Markup.Data.Plugins;
 
 namespace Perspex.Markup.Data
 {
     internal class PropertyAccessorNode : ExpressionNode
     {
-        private PropertyInfo _propertyInfo;
+        private IPropertyAccessor _accessor;
         private IDisposable _subscription;
 
         public PropertyAccessorNode(string propertyName)
@@ -23,7 +24,7 @@ namespace Perspex.Markup.Data
 
         public string PropertyName { get; }
 
-        public Type PropertyType => _propertyInfo?.PropertyType;
+        public Type PropertyType => _accessor?.PropertyType;
 
         public override bool SetValue(object value)
         {
@@ -33,10 +34,9 @@ namespace Perspex.Markup.Data
             }
             else
             {
-                if (_propertyInfo != null && _propertyInfo.CanWrite)
+                if (_accessor != null)
                 {
-                    _propertyInfo.SetValue(Target, value);
-                    return true;
+                    return _accessor.SetValue(value);
                 }
 
                 return false;
@@ -45,57 +45,40 @@ namespace Perspex.Markup.Data
 
         protected override void SubscribeAndUpdate(object target)
         {
-            bool set = false;
-
             if (target != null)
             {
-                _propertyInfo = target.GetType().GetRuntimeProperty(PropertyName);
+                var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target));
 
-                if (_propertyInfo != null)
+                if (plugin != null)
                 {
-                    ReadValue(target);
-                    set = true;
+                    _accessor = plugin.Start(target, PropertyName, SetCurrentValue);
 
-                    var inpc = target as INotifyPropertyChanged;
-
-                    if (inpc != null)
+                    if (_accessor != null)
                     {
-                        inpc.PropertyChanged += PropertyChanged;
+                        SetCurrentValue(_accessor.Value);
+                        return;
                     }
                 }
             }
-            else
-            {
-                _propertyInfo = null;
-            }
 
-            if (!set)
-            {
-                CurrentValue = PerspexProperty.UnsetValue;
-            }
+            CurrentValue = PerspexProperty.UnsetValue;
         }
 
         protected override void Unsubscribe(object target)
         {
-            var inpc = target as INotifyPropertyChanged;
-
-            if (inpc != null)
-            {
-                inpc.PropertyChanged -= PropertyChanged;
-            }
-
-            _propertyInfo = null;
+            _accessor?.Dispose();
+            _accessor = null;
         }
 
-        private void ReadValue(object target)
+        private void SetCurrentValue(object value)
         {
-            var value = _propertyInfo.GetValue(target);
             var observable = value as IObservable<object>;
             var command = value as ICommand;
             var task = value as Task;
             bool set = false;
 
-            // ReactiveCommand is an IObservable but we want to bind to it, not its value.
+            // HACK: ReactiveCommand is an IObservable but we want to bind to it, not its value.
+            // We may need to make this a more general solution.
             if (observable != null && command == null)
             {
                 CurrentValue = PerspexProperty.UnsetValue;
@@ -133,14 +116,6 @@ namespace Perspex.Markup.Data
             if (!set)
             {
                 CurrentValue = PerspexProperty.UnsetValue;
-            }
-        }
-
-        private void PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == PropertyName)
-            {
-                ReadValue(sender);
             }
         }
     }

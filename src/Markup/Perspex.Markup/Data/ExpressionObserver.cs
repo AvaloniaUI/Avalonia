@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
+using Perspex.Markup.Data.Plugins;
 
 namespace Perspex.Markup.Data
 {
@@ -12,6 +14,16 @@ namespace Perspex.Markup.Data
     /// </summary>
     public class ExpressionObserver : ObservableBase<object>, IDescription
     {
+        /// <summary>
+        /// An ordered collection of property accessor plugins that can be used to customize
+        /// the reading and subscription of property values on a type.
+        /// </summary>
+        public static readonly IList<IPropertyAccessorPlugin> PropertyAccessors =
+            new List<IPropertyAccessorPlugin>
+            {
+                new InpcPropertyAccessorPlugin()
+            };
+
         private Func<object> _root;
         private int _count;
         private ExpressionNode _node;
