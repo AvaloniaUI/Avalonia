@@ -189,6 +189,21 @@ namespace Perspex.Markup.UnitTests.Binding
         }
 
         [Fact]
+        public void Empty_Expression_Should_Track_Root()
+        {
+            var data = new Class1 { Foo = "foo" };
+            var target = new ExpressionObserver(() => data.Foo, "");
+            var result = new List<object>();
+
+            target.Subscribe(x => result.Add(x));
+
+            data.Foo = "bar";
+            target.UpdateRoot();
+
+            Assert.Equal(new[] { "foo", "bar" }, result);
+        }
+
+        [Fact]
         public void SetValue_Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "foo" };

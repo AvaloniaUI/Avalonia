@@ -10,6 +10,7 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ItemsControl.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBoxItem.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.PopupRoot.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.RadioButton.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollBar.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollViewer.paml"/>

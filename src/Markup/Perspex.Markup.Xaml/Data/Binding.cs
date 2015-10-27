@@ -102,7 +102,7 @@ namespace Perspex.Markup.Xaml.Data
             {
                 var result = new ExpressionObserver(
                     () => dataContextHost.GetValue(Control.DataContextProperty),
-                    SourcePropertyPath);
+                    GetExpression());
                 dataContextHost.GetObservable(Control.DataContextProperty).Subscribe(x =>
                     result.UpdateRoot());
                 return result;
@@ -117,7 +117,7 @@ namespace Perspex.Markup.Xaml.Data
         {
             var result = new ExpressionObserver(
                 () => instance.GetValue(Control.TemplatedParentProperty),
-                SourcePropertyPath);
+                GetExpression());
 
             if (instance.GetValue(Control.TemplatedParentProperty) == null)
             {
@@ -130,6 +130,12 @@ namespace Perspex.Markup.Xaml.Data
             }
 
             return result;
+        }
+
+        private string GetExpression()
+        {
+            return SourcePropertyPath == null || SourcePropertyPath == "." ?
+                string.Empty : SourcePropertyPath;
         }
     }
 }

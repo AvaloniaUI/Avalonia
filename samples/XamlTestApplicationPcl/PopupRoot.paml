@@ -1,0 +1,11 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="PopupRoot">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}">
+        <ContentPresenter Name="PART_ContentPresenter" 
+                          Content="{TemplateBinding Content}" 
+                          Margin="{TemplateBinding Padding}"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

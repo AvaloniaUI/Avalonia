@@ -132,7 +132,7 @@ namespace Perspex.Controls
                 _popup.Opened -= PopupOpened;
             }
 
-            _popup = this.GetTemplateChild<Popup>("popup");
+            _popup = this.GetTemplateChild<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
         }
 
@@ -143,7 +143,7 @@ namespace Perspex.Controls
             if (selectedIndex != -1)
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
-                container.Focus();
+                container?.Focus();
             }
         }
 

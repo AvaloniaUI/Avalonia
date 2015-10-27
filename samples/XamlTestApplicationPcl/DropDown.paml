@@ -1,7 +1,7 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="DropDown">
-    <Setter Property="BorderBrush" Value="Black"/>
-    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="BorderBrush" Value="#ff707070"/>
+    <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
@@ -18,15 +18,15 @@
                           BorderThickness="0"
                           Background="Transparent"
                           ClickMode="Press"
-                          Focusable="False">
+                          Focusable="False"
+                          Grid.Column="1">
               <Path Fill="Black"
                     Width="8"
                     Height="4"
                     Stretch="Uniform"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"
-                    Grid.Column="1"/>
+                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"/>
             </ToggleButton>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding Path=IsDropDownOpen, Mode=TwoWay}"
@@ -36,7 +36,8 @@
               <Border BorderBrush="Black"
                       BorderThickness="1"
                       Padding="4">
-                <ItemsPresenter Items="{TemplateBinding Items}" 
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                Items="{TemplateBinding Items}" 
                                 MemberSelector="{TemplateBinding MemberSelector}"/>
               </Border>
             </Popup>

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Subjects;
 using Perspex.Markup.Data.Plugins;
 
 namespace Perspex.Markup.Data
@@ -28,6 +29,7 @@ namespace Perspex.Markup.Data
         private Func<object> _root;
         private int _count;
         private ExpressionNode _node;
+        private ISubject<object> _empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -50,7 +52,12 @@ namespace Perspex.Markup.Data
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _root = root;
-            _node = ExpressionNodeBuilder.Build(expression);
+
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                _node = ExpressionNodeBuilder.Build(expression);
+            }
+
             Expression = expression;
         }
 
@@ -126,7 +133,14 @@ namespace Perspex.Markup.Data
         {
             if (_count > 0)
             {
-                _node.Target = _root();
+                if (_node != null)
+                {
+                    _node.Target = _root();
+                }
+                else if (_empty != null)
+                {
+                    _empty.OnNext(_root());
+                }
             }
         }
 
@@ -135,18 +149,30 @@ namespace Perspex.Markup.Data
         {
             IncrementCount();
 
-            var subscription = _node.Subscribe(observer);
-
-            return Disposable.Create(() =>
+            if (_node != null)
             {
-                DecrementCount();
-                subscription.Dispose();
-            });
+                var subscription = _node.Subscribe(observer);
+
+                return Disposable.Create(() =>
+                {
+                    DecrementCount();
+                    subscription.Dispose();
+                });
+            }
+            else
+            {
+                if (_empty == null)
+                {
+                    _empty = new BehaviorSubject<object>(_root());
+                }
+
+                return _empty.Subscribe(observer);
+            }
         }
 
         private void IncrementCount()
         {
-            if (_count++ == 0)
+            if (_count++ == 0 && _node != null)
             {
                 _node.Target = _root();
             }
@@ -154,7 +180,7 @@ namespace Perspex.Markup.Data
 
         private void DecrementCount()
         {
-            if (--_count == 0)
+            if (--_count == 0 && _node != null)
             {
                 _node.Target = null;
             }
