@@ -361,7 +361,7 @@ namespace Perspex.Controls.UnitTests
                     Background = new Media.SolidColorBrush(0xffffffff),
                     Child = new ItemsPresenter
                     {
-                        Name = "itemsPresenter",
+                        Name = "PART_ItemsPresenter",
                         MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }

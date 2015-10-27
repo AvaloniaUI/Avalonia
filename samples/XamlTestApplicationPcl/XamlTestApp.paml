@@ -5,6 +5,9 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Carousel.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.CheckBox.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ItemsControl.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBox.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBoxItem.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.RadioButton.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollBar.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollViewer.paml"/>
@@ -13,6 +16,8 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabStrip.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TextBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ToggleButton.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TreeView.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TreeViewItem.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Window.paml"/>
   </Application.Styles>
 </Application>

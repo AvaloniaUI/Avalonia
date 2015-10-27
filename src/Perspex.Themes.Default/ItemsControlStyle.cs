@@ -41,7 +41,7 @@ namespace Perspex.Themes.Default
         {
             return new ItemsPresenter
             {
-                Name = "itemsPresenter",
+                Name = "PART_ItemsPresenter",
                 MemberSelector = control.MemberSelector,
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],

@@ -149,7 +149,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied()
         {
-            Presenter = this.FindTemplateChild<IItemsPresenter>("itemsPresenter");
+            Presenter = this.FindTemplateChild<IItemsPresenter>("PART_ItemsPresenter");
         }
 
         /// <summary>

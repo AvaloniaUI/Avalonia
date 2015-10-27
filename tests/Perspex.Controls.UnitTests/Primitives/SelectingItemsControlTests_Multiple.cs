@@ -434,7 +434,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             return new FuncControlTemplate<SelectingItemsControl>(control =>
                 new ItemsPresenter
                 {
-                    Name = "itemsPresenter",
+                    Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 });

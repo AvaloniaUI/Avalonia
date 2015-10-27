@@ -210,7 +210,7 @@ namespace Perspex.Controls
         /// <returns>The <see cref="GridLength"/>.</returns>
         public static IEnumerable<GridLength> ParseLengths(string s, CultureInfo culture)
         {
-            return s.Split(new[] { ',', ' ' }).Select(x => Parse(x, culture));
+            return s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(x => Parse(x, culture));
         }
     }
 }

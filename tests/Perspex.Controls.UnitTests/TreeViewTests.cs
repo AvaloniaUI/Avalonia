@@ -215,7 +215,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new FuncControlTemplate<TreeView>(parent => new ItemsPresenter
             {
-                Name = "itemsPresenter",
+                Name = "PART_ItemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             });
         }
@@ -224,7 +224,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new FuncControlTemplate<TreeViewItem>(parent => new ItemsPresenter
             {
-                Name = "itemsPresenter",
+                Name = "PART_ItemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             });
         }

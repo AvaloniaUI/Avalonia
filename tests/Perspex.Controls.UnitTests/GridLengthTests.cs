@@ -87,5 +87,21 @@ namespace Perspex.Controls.UnitTests
                 },
                 result);
         }
+
+        [Fact]
+        public void ParseLengths_Accepts_Comma_Separators_With_Spaces()
+        {
+            var result = GridLength.ParseLengths("*, Auto, 2* ,4", CultureInfo.InvariantCulture).ToList();
+
+            Assert.Equal(
+                new[]
+                {
+                    new GridLength(1, GridUnitType.Star),
+                    GridLength.Auto,
+                    new GridLength(2, GridUnitType.Star),
+                    new GridLength(4, GridUnitType.Pixel),
+                },
+                result);
+        }
     }
 }

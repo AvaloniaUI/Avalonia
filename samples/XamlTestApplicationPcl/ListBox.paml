@@ -1,0 +1,18 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="ListBox">
+  <Setter Property="BorderBrush" Value="Black"/>
+  <Setter Property="BorderThickness" Value="1"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+        <ScrollViewer>
+          <ItemsPresenter Name="PART_ItemsPresenter"
+                          Items="{TemplateBinding Items}"
+                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                          MemberSelector="{TemplateBinding MemberSelector}"/>
+        </ScrollViewer>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

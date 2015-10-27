@@ -1,0 +1,22 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="ListBoxItem">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ Border#border">
+    <Setter Property="Background" Value="#fff0f0f0"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected:focus /template/ Border#border">
+    <Setter Property="Background" Value="#ffd0d0d0"/>
+  </Style>
+</Styles>

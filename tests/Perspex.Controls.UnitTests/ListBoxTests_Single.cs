@@ -205,7 +205,7 @@ namespace Perspex.Controls.UnitTests
                 Template = new FuncControlTemplate(CreateScrollViewerTemplate),
                 Content = new ItemsPresenter
                 {
-                    Name = "itemsPresenter",
+                    Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
                 }
             };
