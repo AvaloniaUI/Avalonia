@@ -112,52 +112,10 @@ namespace Perspex.Controls
             set { SetValue(CanScrollHorizontallyProperty, value); }
         }
 
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double HorizontalScrollBarMaximum
-        {
-            get { return GetValue(HorizontalScrollBarMaximumProperty); }
-            private set { SetValue(HorizontalScrollBarMaximumProperty, value); }
-        }
-
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double HorizontalScrollBarValue
-        {
-            get { return GetValue(HorizontalScrollBarValueProperty); }
-            private set { SetValue(HorizontalScrollBarValueProperty, value); }
-        }
-
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double HorizontalScrollBarViewportSize
-        {
-            get { return GetValue(HorizontalScrollBarViewportSizeProperty); }
-            set { SetValue(HorizontalScrollBarViewportSizeProperty, value); }
-        }
-
         public ScrollBarVisibility HorizontalScrollBarVisibility
         {
             get { return GetValue(HorizontalScrollBarVisibilityProperty); }
             set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
-        }
-
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double VerticalScrollBarMaximum
-        {
-            get { return GetValue(VerticalScrollBarMaximumProperty); }
-            private set { SetValue(VerticalScrollBarMaximumProperty, value); }
-        }
-
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double VerticalScrollBarValue
-        {
-            get { return GetValue(VerticalScrollBarValueProperty); }
-            private set { SetValue(VerticalScrollBarValueProperty, value); }
-        }
-
-        // HACK: Currently exposed because XAML bindings don't work with attached perspex properties.
-        public double VerticalScrollBarViewportSize
-        {
-            get { return GetValue(VerticalScrollBarViewportSizeProperty); }
-            private set { SetValue(VerticalScrollBarViewportSizeProperty, value); }
         }
 
         public ScrollBarVisibility VerticalScrollBarVisibility
