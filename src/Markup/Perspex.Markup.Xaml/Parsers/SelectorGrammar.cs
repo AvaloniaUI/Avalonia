@@ -99,8 +99,15 @@ namespace Perspex.Markup.Xaml.Parsers
             from template in Parse.String("/template/").Token()
             select new TemplateSyntax();
 
+        public static readonly Parser<IsSyntax> Is =
+            from function in Parse.String(":is(")
+            from type in OfType
+            from close in Parse.Char(')')
+            select new IsSyntax { TypeName = type.TypeName, Xmlns = type.Xmlns };
+
         public static readonly Parser<ISyntax> SingleSelector =
             OfType
+            .Or<ISyntax>(Is)
             .Or<ISyntax>(Name)
             .Or<ISyntax>(Class)
             .Or<ISyntax>(Property)
@@ -123,6 +130,18 @@ namespace Perspex.Markup.Xaml.Parsers
             public override bool Equals(object obj)
             {
                 return obj is OfTypeSyntax && ((OfTypeSyntax)obj).TypeName == TypeName;
+            }
+        }
+
+        public class IsSyntax : ISyntax
+        {
+            public string TypeName { get; set; }
+
+            public string Xmlns { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return obj is IsSyntax && ((IsSyntax)obj).TypeName == TypeName;
             }
         }
 

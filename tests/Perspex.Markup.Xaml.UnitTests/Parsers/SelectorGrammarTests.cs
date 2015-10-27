@@ -55,6 +55,44 @@ namespace Perspex.Xaml.Base.UnitTest.Parsers
         }
 
         [Fact]
+        public void Is()
+        {
+            var result = SelectorGrammar.Selector.Parse(":is(Button)").ToList();
+
+            Assert.Equal(
+                new[] { new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = null } },
+                result);
+        }
+
+        [Fact]
+        public void Is_Name()
+        {
+            var result = SelectorGrammar.Selector.Parse(":is(Button)#foo").ToList();
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.IsSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NameSyntax { Name = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void NamespacedIs_Name()
+        {
+            var result = SelectorGrammar.Selector.Parse(":is(x|Button)#foo").ToList();
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = "x" },
+                    new SelectorGrammar.NameSyntax { Name = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Class()
         {
             var result = SelectorGrammar.Selector.Parse(".foo").ToList();

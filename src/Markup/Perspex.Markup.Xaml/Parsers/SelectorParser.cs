@@ -42,6 +42,7 @@ namespace Perspex.Markup.Xaml.Parsers
             foreach (var i in syntax)
             {
                 var ofType = i as SelectorGrammar.OfTypeSyntax;
+                var @is = i as SelectorGrammar.IsSyntax;
                 var @class = i as SelectorGrammar.ClassSyntax;
                 var name = i as SelectorGrammar.NameSyntax;
                 var property = i as SelectorGrammar.PropertySyntax;
@@ -52,6 +53,10 @@ namespace Perspex.Markup.Xaml.Parsers
                 if (ofType != null)
                 {
                     result = result.OfType(_typeResolver(ofType.TypeName, ofType.Xmlns));
+                }
+                if (@is != null)
+                {
+                    result = result.Is(_typeResolver(@is.TypeName, @is.Xmlns));
                 }
                 else if (@class != null)
                 {
