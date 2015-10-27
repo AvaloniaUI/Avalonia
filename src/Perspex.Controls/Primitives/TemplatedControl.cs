@@ -25,49 +25,49 @@ namespace Perspex.Controls.Primitives
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="BorderBrushProperty"/> property.
+        /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
         public static readonly PerspexProperty<Brush> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="BorderThicknessProperty"/> property.
+        /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="FontFamilyProperty"/> property.
+        /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly PerspexProperty<string> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="FontSizeProperty"/> property.
+        /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="FontStyleProperty"/> property.
+        /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly PerspexProperty<FontStyle> FontStyleProperty =
             TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="ForegroundProperty"/> property.
+        /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly PerspexProperty<Brush> ForegroundProperty =
             TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="PaddingProperty"/> property.
+        /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly PerspexProperty<Thickness> PaddingProperty =
             Decorator.PaddingProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
-        /// Defines the <see cref="TemplateProperty"/> property.
+        /// Defines the <see cref="Template"/> property.
         /// </summary>
         public static readonly PerspexProperty<IControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");

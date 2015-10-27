@@ -240,6 +240,7 @@
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\StyleInclude.cs" />
+    <Compile Include="Templates\FocusAdornerTemplate.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\MemberSelector.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />

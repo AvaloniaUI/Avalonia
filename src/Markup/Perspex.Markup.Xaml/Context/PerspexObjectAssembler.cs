@@ -4,6 +4,7 @@
 using System;
 using OmniXaml;
 using OmniXaml.ObjectAssembler;
+using Perspex.Controls;
 using Perspex.Markup.Xaml.Templates;
 
 namespace Perspex.Markup.Xaml.Context
@@ -15,9 +16,10 @@ namespace Perspex.Markup.Xaml.Context
         public PerspexObjectAssembler(IWiringContext wiringContext, ObjectAssemblerSettings objectAssemblerSettings = null)
         {
             var mapping = new DeferredLoaderMapping();
-            mapping.Map<ControlTemplate>(template => template.Content, new TemplateLoader());
-            mapping.Map<DataTemplate>(template => template.Content, new TemplateLoader());
-            mapping.Map<TreeDataTemplate>(template => template.Content, new TemplateLoader());
+            mapping.Map<ControlTemplate>(x => x.Content, new TemplateLoader());
+            mapping.Map<DataTemplate>(x => x.Content, new TemplateLoader());
+            mapping.Map<FocusAdornerTemplate>(x => x.Content, new TemplateLoader());
+            mapping.Map<TreeDataTemplate>(x => x.Content, new TemplateLoader());
 
             var assembler = new ObjectAssembler(wiringContext, new TopDownValueContext(), objectAssemblerSettings);
             _objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
