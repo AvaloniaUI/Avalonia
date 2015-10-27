@@ -91,6 +91,10 @@
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

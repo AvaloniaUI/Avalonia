@@ -6,6 +6,7 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Carousel.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.CheckBox.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.DropDown.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ItemsControl.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBoxItem.paml"/>

@@ -120,7 +120,7 @@ namespace Perspex.Themes.Default
                         },
                         new Popup
                         {
-                            Name = "popup",
+                            Name = "PART_Popup",
                             Child = new Border
                             {
                                 BorderBrush = Brushes.Black,

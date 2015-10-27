@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Interactivity;
+using Perspex.Metadata;
 using Perspex.Rendering;
 using Perspex.VisualTree;
 
@@ -80,6 +81,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the control to display in the popup.
         /// </summary>
+        [Content]
         public Control Child
         {
             get { return GetValue(ChildProperty); }

@@ -169,6 +169,9 @@
     <EmbeddedResource Include="FocusAdorner.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="DropDown.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <EmbeddedResource Include="Button.paml">
       <SubType>Designer</SubType>

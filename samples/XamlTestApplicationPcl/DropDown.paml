@@ -1,0 +1,55 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="DropDown">
+    <Setter Property="BorderBrush" Value="Black"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Grid ColumnDefinitions="*,Auto">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+            <ToggleButton Name="toggle"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          ClickMode="Press"
+                          Focusable="False">
+              <Path Fill="Black"
+                    Width="8"
+                    Height="4"
+                    Stretch="Uniform"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"
+                    Grid.Column="1"/>
+            </ToggleButton>
+            <Popup Name="PART_Popup"
+                   IsOpen="{TemplateBinding Path=IsDropDownOpen, Mode=TwoWay}"
+                   MinWidth="{TemplateBinding Path=Bounds.Width}"
+                   PlacementTarget="{TemplateBinding}"
+                   StaysOpen="False">
+              <Border BorderBrush="Black"
+                      BorderThickness="1"
+                      Padding="4">
+                <ItemsPresenter Items="{TemplateBinding Items}" 
+                                MemberSelector="{TemplateBinding MemberSelector}"/>
+              </Border>
+            </Popup>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+  </Style>
+  <Style Selector="CheckBox /template/ Path#checkMark">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+  <Style Selector="CheckBox:checked /template/ Path#checkMark">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
+</Styles>
