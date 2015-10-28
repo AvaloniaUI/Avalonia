@@ -11,6 +11,11 @@ namespace Perspex.Markup.UnitTests.Binding
 {
     public class ExpressionObserverTests_PerspexProperty
     {
+        public ExpressionObserverTests_PerspexProperty()
+        {
+            var foo = Class1.FooProperty;
+        }
+
         [Fact]
         public async void Should_Get_Simple_Property_Value()
         {
