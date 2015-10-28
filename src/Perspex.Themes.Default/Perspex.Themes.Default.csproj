@@ -137,6 +137,9 @@
     <EmbeddedResource Include="MenuItem.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="ProgressBar.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <EmbeddedResource Include="PopupRoot.paml">
       <SubType>Designer</SubType>

@@ -1,0 +1,23 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="ProgressBar">
+  <Setter Property="Background" Value="#ffdddddd"/>
+  <Setter Property="Foreground" Value="#ffbee6fd"/>
+  <Setter Property="MinHeight" Value="14"/>
+  <Setter Property="MinWidth" Value="200"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+        <Grid>
+          <Border Name="PART_Track"
+                  BorderThickness="1"
+                  BorderBrush="{TemplateBinding Background}"/>
+          <Border Name="PART_Indicator"
+                  BorderThickness="1"
+                  Background="{TemplateBinding Foreground}"
+                  HorizontalAlignment="Left"/>
+        </Grid>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>
