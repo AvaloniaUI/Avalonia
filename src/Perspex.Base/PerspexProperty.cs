@@ -36,23 +36,22 @@ namespace Perspex
         /// <summary>
         /// The overridden default values for the property, by type.
         /// </summary>
-        private readonly Dictionary<Type, object> _defaultValues = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _defaultValues;
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private readonly Subject<PerspexPropertyChangedEventArgs> _initialized = new Subject<PerspexPropertyChangedEventArgs>();
+        private readonly Subject<PerspexPropertyChangedEventArgs> _initialized;
 
         /// <summary>
         /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
         /// </summary>
-        private readonly Subject<PerspexPropertyChangedEventArgs> _changed = new Subject<PerspexPropertyChangedEventArgs>();
+        private readonly Subject<PerspexPropertyChangedEventArgs> _changed;
 
         /// <summary>
         /// The validation functions for the property, by type.
         /// </summary>
-        private readonly Dictionary<Type, Func<PerspexObject, object, object>> _validation =
-            new Dictionary<Type, Func<PerspexObject, object, object>>();
+        private readonly Dictionary<Type, Func<PerspexObject, object, object>> _validation;
 
         /// <summary>
         /// Gets the ID of the property.
@@ -95,6 +94,11 @@ namespace Perspex
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
+            _defaultValues = new Dictionary<Type, object>();
+            _initialized = new Subject<PerspexPropertyChangedEventArgs>();
+            _changed = new Subject<PerspexPropertyChangedEventArgs>();
+            _validation = new Dictionary<Type, Func<PerspexObject, object, object>>();
+
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
@@ -136,6 +140,11 @@ namespace Perspex
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
+            _defaultValues = new Dictionary<Type, object>();
+            _initialized = new Subject<PerspexPropertyChangedEventArgs>();
+            _changed = new Subject<PerspexPropertyChangedEventArgs>();
+            _validation = new Dictionary<Type, Func<PerspexObject, object, object>>();
+
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
@@ -161,22 +170,15 @@ namespace Perspex
                     "This method cannot be called on direct PerspexProperties.");
             }
 
-            //Name = name;
-            //PropertyType = valueType;
-            //OwnerType = ownerType;
-            //_defaultValues.Add(ownerType, defaultValue);
-            //Inherits = inherits;
-            //DefaultBindingMode = defaultBindingMode;
-            //IsAttached = isAttached;
-            //Notifying = notifying;
-            //_id = s_nextId++;
-
+            _defaultValues = source._defaultValues;
+            _initialized = source._initialized;
+            _changed = source._changed;
+            _validation = source._validation;
 
             Name = source.Name;
             PropertyType = source.PropertyType;
             OwnerType = ownerType;
             _defaultValue = source._defaultValue;
-            _defaultValues = source._defaultValues;
             Inherits = source.Inherits;
             DefaultBindingMode = source.DefaultBindingMode;
             IsAttached = false;
@@ -207,6 +209,11 @@ namespace Perspex
                 throw new InvalidOperationException(
                     "This method can only be called on direct PerspexProperties.");
             }
+
+            _defaultValues = source._defaultValues;
+            _initialized = source._initialized;
+            _changed = source._changed;
+            _validation = source._validation;
 
             Name = source.Name;
             PropertyType = source.PropertyType;

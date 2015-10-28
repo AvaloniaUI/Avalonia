@@ -171,6 +171,16 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void AddOwnered_Properties_Should_Share_Observables()
+        {
+            var p1 = new PerspexProperty<string>("p1", typeof(Class1));
+            var p2 = p1.AddOwner<Class3>();
+
+            Assert.Same(p1.Changed, p2.Changed);
+            Assert.Same(p1.Initialized, p2.Initialized);
+        }
+
+        [Fact]
         public void AddOwnered_Direct_Property_Should_Equal_Original()
         {
             var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o,v) => { });
@@ -188,6 +198,16 @@ namespace Perspex.Base.UnitTests
             var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
 
             Assert.Equal(typeof(Class3), p2.OwnerType);
+        }
+
+        [Fact]
+        public void AddOwnered_Direct_Properties_Should_Share_Observables()
+        {
+            var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o, v) => { });
+            var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
+
+            Assert.Same(p1.Changed, p2.Changed);
+            Assert.Same(p1.Initialized, p2.Initialized);
         }
 
         [Fact]
