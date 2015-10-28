@@ -4,6 +4,7 @@
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Button.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Carousel.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.CheckBox.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ContentControl.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.DropDown.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.GridSplitter.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ItemsControl.paml"/>
@@ -23,5 +24,6 @@
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToggleButton.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeView.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeViewItem.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.UserControl.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Window.paml"/>
 </Styles>
