@@ -1,29 +1,4 @@
 ﻿<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Application.Styles>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.FocusAdorner.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Button.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Carousel.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.CheckBox.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.DropDown.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.GridSplitter.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ItemsControl.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBox.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBoxItem.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Menu.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.MenuItem.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.PopupRoot.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.RadioButton.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollBar.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollViewer.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabControl.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabItem.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TabStrip.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TextBox.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ToggleButton.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TreeView.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.TreeViewItem.paml"/>
-    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Window.paml"/>
-  </Application.Styles>
 </Application>

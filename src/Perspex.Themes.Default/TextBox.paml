@@ -1,6 +1,4 @@
-﻿<Styles xmlns="https://github.com/perspex"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:XamlTestApplication;assembly=XamlTestApplicationPcl">
+﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="TextBox">
     <Setter Property="Background" Value="White"/>
     <Setter Property="BorderBrush" Value="#ff707070"/>

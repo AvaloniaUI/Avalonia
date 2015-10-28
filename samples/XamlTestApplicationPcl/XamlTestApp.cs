@@ -12,7 +12,7 @@ namespace XamlTestApplication
         {
             RegisterServices();
             RegisterPlatform();
-            Styles = new Perspex.Styling.Styles();
+            Styles = new DefaultTheme();
             InitializeComponent();
         }
 

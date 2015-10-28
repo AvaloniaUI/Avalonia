@@ -1,0 +1,26 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.FocusAdorner.paml"/>
+  
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Button.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Carousel.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.CheckBox.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.DropDown.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.GridSplitter.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ItemsControl.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ListBox.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ListBoxItem.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Menu.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.MenuItem.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.PopupRoot.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.RadioButton.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ScrollBar.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ScrollViewer.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabControl.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabItem.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabStrip.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TextBox.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToggleButton.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeView.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeViewItem.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Window.paml"/>
+</Styles>
