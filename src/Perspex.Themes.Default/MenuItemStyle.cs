@@ -104,7 +104,7 @@ namespace Perspex.Themes.Default
                         },
                         (popup = new Popup
                         {
-                            Name = "popup",
+                            Name = "PART_Popup",
                             StaysOpen = true,
                             [!!Popup.IsOpenProperty] = control[!!MenuItem.IsSubMenuOpenProperty],
                             Child = new Border

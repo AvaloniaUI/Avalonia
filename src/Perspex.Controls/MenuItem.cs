@@ -380,7 +380,7 @@ namespace Perspex.Controls
         {
             base.OnTemplateApplied();
 
-            _popup = this.GetTemplateChild<Popup>("popup");
+            _popup = this.GetTemplateChild<Popup>("PART_Popup");
             _popup.DependencyResolver = DependencyResolver.Instance;
             _popup.PopupRootCreated += PopupRootCreated;
             _popup.Opened += PopupOpened;

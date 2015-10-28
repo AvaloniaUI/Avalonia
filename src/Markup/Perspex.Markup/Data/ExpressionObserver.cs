@@ -76,7 +76,7 @@ namespace Perspex.Markup.Data
 
             try
             {
-                return _node.SetValue(value);
+                return _node?.SetValue(value) ?? false;
             }
             finally
             {
@@ -101,7 +101,14 @@ namespace Perspex.Markup.Data
 
                 try
                 {
-                    return (Leaf as PropertyAccessorNode)?.PropertyType;
+                    if (_node != null)
+                    {
+                        return (Leaf as PropertyAccessorNode)?.PropertyType;
+                    }
+                    else
+                    {
+                        return _root()?.GetType();
+                    }
                 }
                 finally
                 {

@@ -7,9 +7,12 @@
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Carousel.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.CheckBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.DropDown.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.GridSplitter.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ItemsControl.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBox.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ListBoxItem.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.Menu.paml"/>
+    <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.MenuItem.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.PopupRoot.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.RadioButton.paml"/>
     <StyleInclude Source="resource://application/XamlTestApplicationPcl/XamlTestApplication.ScrollBar.paml"/>
