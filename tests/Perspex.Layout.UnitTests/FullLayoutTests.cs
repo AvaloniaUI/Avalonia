@@ -13,6 +13,7 @@ using Perspex.Diagnostics;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Rendering;
+using Perspex.Shared.PlatformSupport;
 using Perspex.Styling;
 using Perspex.Themes.Default;
 using Ploeh.AutoFixture;
@@ -130,26 +131,28 @@ namespace Perspex.Layout.UnitTests
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
 
-
             var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
             var renderManager = fixture.Create<IRenderQueueManager>();
-            var theme = new DefaultTheme();
             var windowImpl = new Mock<IWindowImpl>();
 
             windowImpl.SetupProperty(x => x.ClientSize);
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1024, 1024));
-            globalStyles.Setup(x => x.Styles).Returns(theme);
 
             PerspexLocator.CurrentMutable
+                .Bind<IAssetLoader>().ToConstant(new AssetLoader())
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
+                .Bind<IPclPlatformWrapper>().ToConstant(new PclPlatformWrapper())
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowImpl>().ToConstant(windowImpl.Object);
+
+            var theme = new DefaultTheme();
+            globalStyles.Setup(x => x.Styles).Returns(theme);
         }
     }
 }
