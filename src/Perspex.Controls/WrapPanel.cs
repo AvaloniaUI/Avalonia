@@ -119,7 +119,7 @@ namespace Perspex.Controls
                 }
             }
             // last element
-            desiredSize.U = Max(lineSize.U, uvAvailableSize.U);
+            desiredSize.U = Max(lineSize.U, desiredSize.U);
             desiredSize.V += lineSize.V;
 
             return desiredSize.ToSize();
