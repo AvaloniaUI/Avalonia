@@ -8,7 +8,7 @@ namespace Perspex.Controls.UnitTests
     public class WrapPanelTests
     {
         [Fact]
-        public void Lays_Out_Horizontally_On_Sepatate_Lines()
+        public void Lays_Out_Horizontally_On_Separate_Lines()
         {
             var target = new WrapPanel()
                          {
@@ -72,7 +72,7 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
-        public void Lays_Out_Vertically_On_Sepatate_Lines()
+        public void Lays_Out_Vertically_On_Separate_Lines()
         {
             var target = new WrapPanel()
                          {
