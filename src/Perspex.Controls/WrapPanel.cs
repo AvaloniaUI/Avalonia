@@ -36,7 +36,11 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the orientation in which child controls will be layed out.
         /// </summary>
-        public Orientation Orientation { get { return GetValue(OrientationProperty); } set { SetValue(OrientationProperty, value); } }
+        public Orientation Orientation
+        {
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
 
         /// <summary>
         /// Gets the next control in the specified direction.
