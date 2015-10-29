@@ -10,7 +10,7 @@ namespace Perspex.Styling
     /// A selector in a <see cref="Style"/>.
     /// </summary>
     /// <remarks>
-    /// Selectors represented in markup using a CSS-like syntax, e.g. "Button &lt; .dark" which 
+    /// Selectors represented in markup using a CSS-like syntax, e.g. "Button &gt; .dark" which 
     /// means "A child of a Button with the 'dark' class applied. The preceeding example would be
     /// stored in 3 <see cref="Selector"/> objects, linked by the <see cref="Previous"/> property:
     /// <list type="number">
@@ -21,7 +21,7 @@ namespace Perspex.Styling
     ///   </description>
     /// </item>
     /// <item>
-    ///   <term>&lt;</term>
+    ///   <term>&gt;</term>
     ///   <description>
     ///     A selector that selects a child of the previous selector.
     ///   </description>

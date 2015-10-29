@@ -6,9 +6,13 @@
                         ItemsPanel="{TemplateBinding ItemsPanel}"/>
       </ControlTemplate>
     </Setter>
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <WrapPanel />
+      </ItemsPanelTemplate>
+    </Setter>
   </Style>
-  <Style Selector="TabStrip /template/ StackPanel">
-    <Setter Property="Gap" Value="16"/>
-    <Setter Property="Orientation" Value="Horizontal"/>
+  <Style Selector="TabStrip > TabItem">
+    <Setter Property="Margin" Value="16"/>
   </Style>
 </Styles>

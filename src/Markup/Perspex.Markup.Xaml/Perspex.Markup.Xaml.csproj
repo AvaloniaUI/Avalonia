@@ -242,6 +242,7 @@
     <Compile Include="Styling\StyleInclude.cs" />
     <Compile Include="Templates\FocusAdornerTemplate.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
+    <Compile Include="Templates\ItemsPanelTemplate.cs" />
     <Compile Include="Templates\MemberSelector.cs" />
     <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\Template.cs" />
