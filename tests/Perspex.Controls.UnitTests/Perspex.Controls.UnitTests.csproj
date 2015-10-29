@@ -120,6 +120,7 @@
     <Compile Include="TestRoot.cs" />
     <Compile Include="Utils\AncestorFinderTests.cs" />
     <Compile Include="Utils\HotKeyManagerTests.cs" />
+    <Compile Include="WrapPanelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
