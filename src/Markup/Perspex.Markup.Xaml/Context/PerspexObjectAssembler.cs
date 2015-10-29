@@ -20,6 +20,7 @@ namespace Perspex.Markup.Xaml.Context
             mapping.Map<DataTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<FocusAdornerTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<TreeDataTemplate>(x => x.Content, new TemplateLoader());
+            mapping.Map<ItemsPanelTemplate>(x => x.Content, new TemplateLoader());
 
             var assembler = new ObjectAssembler(wiringContext, new TopDownValueContext(), objectAssemblerSettings);
             _objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
