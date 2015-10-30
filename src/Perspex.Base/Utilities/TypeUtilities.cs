@@ -74,9 +74,8 @@ namespace Perspex.Utilities
             }
             else
             {
-                var cast = from.GetTypeInfo()
-                    .GetDeclaredMethods("op_Implicit")
-                    .FirstOrDefault(m => m.ReturnType == to);
+                var cast = from.GetRuntimeMethods()
+                    .FirstOrDefault(m => m.Name == "op_Implicit" && m.ReturnType == to);
 
                 if (cast != null)
                 {
@@ -100,9 +99,27 @@ namespace Perspex.Utilities
         /// <returns>True if the cast was sucessful, otherwise false.</returns>
         public static bool TryConvert(Type to, object value, CultureInfo culture, out object result)
         {
-            var valueType = value.GetType();
+            if (value == null)
+            {
+                result = null;
+                return AcceptsNull(to);
+            }
 
-            if (to.GetTypeInfo().IsEnum && valueType == typeof(string))
+            var from = value.GetType();
+
+            if (value == PerspexProperty.UnsetValue)
+            {
+                result = value;
+                return true;
+            }
+
+            if (to.GetTypeInfo().IsAssignableFrom(from.GetTypeInfo()))
+            {
+                result = value;
+                return true;
+            }
+
+            if (to.GetTypeInfo().IsEnum && from == typeof(string))
             {
                 if (Enum.IsDefined(to, (string)value))
                 {
@@ -111,8 +128,12 @@ namespace Perspex.Utilities
                 }
             }
 
-            if ((valueType == typeof(string) && Conversions.ContainsKey(to)) ||
-                (to == typeof(string) && Conversions.ContainsKey(value.GetType())))
+            bool containsFrom = Conversions.ContainsKey(from);
+            bool containsTo = Conversions.ContainsKey(to);
+
+            if ((containsFrom && containsTo) ||
+                (from == typeof(string) && containsTo) ||
+                (to == typeof(string) && containsFrom))
             {
                 try
                 {
@@ -125,10 +146,18 @@ namespace Perspex.Utilities
                     return false;
                 }
             }
-            else
+
+            var cast = from.GetRuntimeMethods()
+                .FirstOrDefault(m => (m.Name == "op_Implicit" || m.Name == "op_Explicit") && m.ReturnType == to);
+
+            if (cast != null)
             {
-                return TryCast(to, value, out result);
+                result = cast.Invoke(null, new[] { value });
+                return true;
             }
+
+            result = null;
+            return false;
         }
 
         /// <summary>
