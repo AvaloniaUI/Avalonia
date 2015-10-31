@@ -14,7 +14,7 @@ namespace Perspex.Markup.Xaml
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
-    public class PerspexXamlLoader : XamlLoader
+    public class PerspexXamlLoader : XamlXmlLoader
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.

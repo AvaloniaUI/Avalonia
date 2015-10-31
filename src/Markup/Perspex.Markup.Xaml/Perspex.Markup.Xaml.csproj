@@ -116,9 +116,10 @@
     <Compile Include="OmniXAML\Source\OmniXaml\ITypeProvider.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IValueConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IWiringContext.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\IXamlLoader.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IXamlParser.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IXamlParserFactory.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\IXamlXmlLoader.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\LoadMixin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\LookaheadBuffer.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\MarkupExtension.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\MarkupExtensionContext.cs" />
@@ -170,7 +171,6 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\IXmlReader.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\NodeType.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\NsPrefix.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\ProtoXamlInstructionExtensions.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\UnprocessedAttributeBase.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\XamlProtoInstructionParser.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Parsers\ProtoParser\XmlCompatibilityReader.cs" />
@@ -232,9 +232,9 @@
     <Compile Include="OmniXAML\Source\OmniXaml\WiringContext.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\XamlInstruction.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\XamlInstructionType.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\XamlLoader.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\XamlLoaderExtensions.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\XamlLoadException.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\XamlParseException.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\XamlXmlLoader.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\XamlXmlParser.cs" />
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
