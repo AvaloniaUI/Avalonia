@@ -39,9 +39,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (value is IBinding)
+            if (value is IXamlBinding)
             {
-                HandleBinding(instance, (IBinding)value);
+                HandleBinding(instance, (IXamlBinding)value);
             }
             else if (IsPerspexProperty)
             {
@@ -68,9 +68,9 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleBinding(object instance, IBinding binding)
+        private void HandleBinding(object instance, IXamlBinding binding)
         {
-            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(_xamlMember.XamlType.UnderlyingType.GetTypeInfo()))
+            if (typeof(IXamlBinding).GetTypeInfo().IsAssignableFrom(_xamlMember.XamlType.UnderlyingType.GetTypeInfo()))
             {
                 var property = instance.GetType().GetRuntimeProperty(_xamlMember.Name);
 
@@ -88,7 +88,7 @@ namespace Perspex.Markup.Xaml.Context
             }                
         }
 
-        private void ApplyBinding(object instance, IBinding binding)
+        private void ApplyBinding(object instance, IXamlBinding binding)
         {
             var perspexObject = instance as PerspexObject;
             var attached = _xamlMember as PerspexAttachableXamlMember;
