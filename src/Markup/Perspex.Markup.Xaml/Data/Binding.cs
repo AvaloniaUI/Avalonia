@@ -10,28 +10,47 @@ using Perspex.Markup.Data;
 
 namespace Perspex.Markup.Xaml.Data
 {
-    public class Binding : IBinding
+    /// <summary>
+    /// A XAML binding.
+    /// </summary>
+    public class Binding : IXamlBinding
     {
-        private readonly ITypeConverterProvider _typeConverterProvider;
-
-        public Binding()
-        {
-        }
-
-        public Binding(ITypeConverterProvider typeConverterProvider)
-        {
-            _typeConverterProvider = typeConverterProvider;
-        }
-
+        /// <summary>
+        /// Gets or sets the <see cref="IValueConverter"/> to use.
+        /// </summary>
         public IValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binding mode.
+        /// </summary>
         public BindingMode Mode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binding priority.
+        /// </summary>
         public BindingPriority Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relative source for the binding.
+        /// </summary>
         public RelativeSource RelativeSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binding path.
+        /// </summary>
         public string SourcePropertyPath { get; set; }
 
+        /// <summary>
+        /// Applies the binding to a property on an instance.
+        /// </summary>
+        /// <param name="instance">The target instance.</param>
+        /// <param name="property">The target property.</param>
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
-            var subject = CreateExpressionSubject(instance, property);
+            var subject = CreateSubject(
+                instance, 
+                property.PropertyType,
+                property == Control.DataContextProperty);
 
             if (subject != null)
             {
@@ -39,19 +58,29 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        public ISubject<object> CreateExpressionSubject(
-            IObservablePropertyBag instance, 
-            PerspexProperty property)
+        /// <summary>
+        /// Creates a subject that can be used to get and set the value of the binding.
+        /// </summary>
+        /// <param name="target">The target instance.</param>
+        /// <param name="targetType">The type of the target property.</param>
+        /// <param name="targetIsDataContext">
+        /// Whether the target property is the DataContext property.
+        /// </param>
+        /// <returns>An <see cref="ISubject{object}"/>.</returns>
+        public ISubject<object> CreateSubject(
+            IObservablePropertyBag target,
+            Type targetType,
+            bool targetIsDataContext = false)
         {
             ExpressionObserver observer;
 
             if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                observer = CreateDataContextExpressionSubject(instance, property);
+                observer = CreateDataContextExpressionSubject(target, targetIsDataContext);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentExpressionSubject(instance, property);
+                observer = CreateTemplatedParentExpressionSubject(target);
             }
             else
             {
@@ -60,10 +89,16 @@ namespace Perspex.Markup.Xaml.Data
 
             return new ExpressionSubject(
                 observer, 
-                property.PropertyType, 
+                targetType, 
                 Converter ?? DefaultValueConverter.Instance);
         }
 
+        /// <summary>
+        /// Applies a binding subject to a property on an instance.
+        /// </summary>
+        /// <param name="target">The target instance.</param>
+        /// <param name="property">The target property.</param>
+        /// <param name="subject">The binding subject.</param>
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = Mode == BindingMode.Default ?
@@ -90,13 +125,12 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        public ExpressionObserver CreateDataContextExpressionSubject(
-            IObservablePropertyBag instance,
-            PerspexProperty property)
+        private ExpressionObserver CreateDataContextExpressionSubject(
+            IObservablePropertyBag target,
+            bool targetIsDataContext)
         {
-            var dataContextHost = property != Control.DataContextProperty ?
-                instance :
-                instance.InheritanceParent as IObservablePropertyBag;
+            var dataContextHost = targetIsDataContext ?
+                target.InheritanceParent as IObservablePropertyBag : target;
 
             if (dataContextHost != null)
             {
@@ -107,23 +141,24 @@ namespace Perspex.Markup.Xaml.Data
                     result.UpdateRoot());
                 return result;
             }
-
-            return null;
+            else
+            {
+                throw new InvalidOperationException(
+                    "Cannot bind to DataContext of object with no parent.");
+            }
         }
 
-        public ExpressionObserver CreateTemplatedParentExpressionSubject(
-            IObservablePropertyBag instance,
-            PerspexProperty property)
+        private ExpressionObserver CreateTemplatedParentExpressionSubject(IObservablePropertyBag target)
         {
             var result = new ExpressionObserver(
-                () => instance.GetValue(Control.TemplatedParentProperty),
+                () => target.GetValue(Control.TemplatedParentProperty),
                 GetExpression());
 
-            if (instance.GetValue(Control.TemplatedParentProperty) == null)
+            if (target.GetValue(Control.TemplatedParentProperty) == null)
             {
                 // TemplatedParent should only be set once, so only listen for the first non-null
                 // value.
-                instance.GetObservable(Control.TemplatedParentProperty)
+                target.GetObservable(Control.TemplatedParentProperty)
                     .Where(x => x != null)
                     .Take(1)
                     .Subscribe(x => result.UpdateRoot());

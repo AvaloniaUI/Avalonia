@@ -148,7 +148,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 SourcePropertyPath = "Foo",
             };
 
-            var result = binding.CreateExpressionSubject(target.Object, TextBox.TextProperty);
+            var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
 
             Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
         }
@@ -164,7 +164,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 SourcePropertyPath = "Foo",
             };
 
-            var result = binding.CreateExpressionSubject(target.Object, TextBox.TextProperty);
+            var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
 
             Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
         }

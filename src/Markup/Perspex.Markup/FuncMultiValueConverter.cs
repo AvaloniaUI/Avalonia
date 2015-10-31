@@ -30,7 +30,16 @@ namespace Perspex.Markup
         /// <inheritdoc/>
         public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
         {
-            return _convert(values.OfType<TIn>());
+            var converted = values.OfType<TIn>().ToList();
+
+            if (converted.Count == values.Count)
+            {
+                return _convert(converted);
+            }
+            else
+            {
+                return PerspexProperty.UnsetValue;
+            }
         }
     }
 }

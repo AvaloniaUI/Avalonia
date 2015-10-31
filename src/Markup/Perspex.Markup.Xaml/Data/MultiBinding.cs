@@ -7,37 +7,50 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using OmniXaml.TypeConversion;
 using Perspex.Controls;
-using Perspex.Markup.Data;
 using Perspex.Metadata;
 
 namespace Perspex.Markup.Xaml.Data
 {
-    public class MultiBinding : IBinding
+    /// <summary>
+    /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
+    /// </summary>
+    public class MultiBinding : IXamlBinding
     {
-        private readonly ITypeConverterProvider _typeConverterProvider;
-
-        public MultiBinding()
-        {
-        }
-
-        public MultiBinding(ITypeConverterProvider typeConverterProvider)
-        {
-            _typeConverterProvider = typeConverterProvider;
-        }
-
+        /// <summary>
+        /// Gets the collection of child bindings.
+        /// </summary>
         [Content]
-        public IList<Binding> Bindings { get; } = new List<Binding>();
-        public IMultiValueConverter Converter { get; set; }
-        public BindingMode Mode { get; set; }
-        public BindingPriority Priority { get; set; }
-        public RelativeSource RelativeSource { get; set; }
-        public string SourcePropertyPath { get; set; }
+        public IList<IXamlBinding> Bindings { get; set; } = new List<IXamlBinding>();
 
+        /// <summary>
+        /// Gets or sets the <see cref="IValueConverter"/> to use.
+        /// </summary>
+        public IMultiValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binding mode.
+        /// </summary>
+        public BindingMode Mode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binding priority.
+        /// </summary>
+        public BindingPriority Priority { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the relative source for the binding.
+        /// </summary>
+        public RelativeSource RelativeSource { get; set; }
+
+        /// <summary>
+        /// Applies the binding to a property on an instance.
+        /// </summary>
+        /// <param name="instance">The target instance.</param>
+        /// <param name="property">The target property.</param>
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
-            var subject = CreateSubject(instance, property);
+            var subject = CreateSubject(instance, property.PropertyType);
 
             if (subject != null)
             {
@@ -45,23 +58,39 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
+        /// <summary>
+        /// Creates a subject that can be used to get and set the value of the binding.
+        /// </summary>
+        /// <param name="target">The target instance.</param>
+        /// <param name="targetType">The type of the target property.</param>
+        /// <param name="targetIsDataContext">
+        /// Whether the target property is the DataContext property.
+        /// </param>
+        /// <returns>An <see cref="ISubject{object}"/>.</returns>
         public ISubject<object> CreateSubject(
-            IObservablePropertyBag instance, 
-            PerspexProperty property)
+            IObservablePropertyBag target, 
+            Type targetType,
+            bool targetIsDataContext = false)
         {
             if (Converter == null)
             {
                 throw new NotSupportedException("MultiBinding without Converter not currently supported.");
             }
 
-            var result = new Subject<object>();
-            var children = Bindings.Select(x => x.CreateExpressionSubject(instance, property));
+            var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
+            var children = Bindings.Select(x => x.CreateSubject(target, typeof(object)));
             var input = Observable.CombineLatest(children).Select(x =>
-                Converter.Convert(x, property.PropertyType, null, CultureInfo.CurrentUICulture));
+                Converter.Convert(x, targetType, null, CultureInfo.CurrentUICulture));
             input.Subscribe(result);
             return result;
         }
 
+        /// <summary>
+        /// Applies a binding subject to a property on an instance.
+        /// </summary>
+        /// <param name="target">The target instance.</param>
+        /// <param name="property">The target property.</param>
+        /// <param name="subject">The binding subject.</param>
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = Mode == BindingMode.Default ?
