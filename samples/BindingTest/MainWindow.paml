@@ -4,7 +4,7 @@
     <TabItem Header="Basic">
       <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
-          <StackPanel Margin="18" Gap="4" Width="200">x
+          <StackPanel Margin="18" Gap="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
