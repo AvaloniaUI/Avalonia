@@ -63,6 +63,9 @@
                       <TextBox Width="200" Watermark="Floating Watermark" UseFloatingWatermark="True" />
                       <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="150"
                                 Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+                      <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
+                      <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
+                      <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
                       <TextBlock Margin="0, 40, 0, 0" Text="CheckBox" FontWeight="Medium" FontSize="20"
                                   Foreground="#212121" />
                       <TextBlock Text="A check box control" FontSize="13" Foreground="#727272" Margin="0, 0, 0, 10" />
