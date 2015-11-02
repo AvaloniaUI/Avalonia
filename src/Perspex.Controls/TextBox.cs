@@ -37,6 +37,9 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
 
+        public static readonly PerspexProperty<TextAlignment> TextAlignmentProperty =
+            TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
+
         public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
@@ -107,6 +110,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
+        }
+
+        public TextAlignment TextAlignment
+        {
+            get { return GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
         }
 
         public string Watermark

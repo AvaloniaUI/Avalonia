@@ -180,7 +180,7 @@ namespace Perspex.Controls.Presenters
                     FontFamily,
                     FontSize,
                     FontStyle,
-                    TextAlignment.Left,
+                    TextAlignment,
                     FontWeight))
                 {
                     return formattedText.Measure();

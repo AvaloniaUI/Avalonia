@@ -39,6 +39,7 @@
                                SelectionStart="{TemplateBinding SelectionStart}"
                                SelectionEnd="{TemplateBinding SelectionEnd}"
                                Text="{TemplateBinding Text}"
+                               TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"/>
               </Panel>
             </StackPanel>
