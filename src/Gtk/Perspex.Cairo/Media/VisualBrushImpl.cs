@@ -7,7 +7,7 @@ namespace Perspex.Cairo.Media
 	{
 		public VisualBrushImpl(Perspex.Media.VisualBrush brush, Size destinationSize)
 		{
-			this.PlatformBrush = TileBrushes.CreateVisualBrush(brush, destinationSize);
+			this.PlatformBrush = TileBrushes.CreateTileBrush(brush, destinationSize);
 		}
 	}
 }
