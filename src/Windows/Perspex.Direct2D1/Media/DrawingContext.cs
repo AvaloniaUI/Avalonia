@@ -312,11 +312,11 @@ namespace Perspex.Direct2D1.Media
             }
             else if (imageBrush != null)
             {
-                return new ImageBrushImpl(imageBrush, _renderTarget, destinationSize);
+                return new TileBrushImpl(imageBrush, _renderTarget, destinationSize);
             }
             else if (visualBrush != null)
             {
-                return new VisualBrushImpl(visualBrush, _renderTarget, destinationSize);
+                return new TileBrushImpl(visualBrush, _renderTarget, destinationSize);
             }
             else
             {

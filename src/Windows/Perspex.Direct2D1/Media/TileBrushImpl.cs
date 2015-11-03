@@ -6,94 +6,38 @@ using Perspex.Layout;
 using Perspex.Media;
 using SharpDX;
 using SharpDX.Direct2D1;
+using Perspex.RenderHelpers;
+
 
 namespace Perspex.Direct2D1.Media
 {
-    public class TileBrushImpl : BrushImpl
+    public sealed class TileBrushImpl : BrushImpl
     {
-        /// <summary>
-        /// Calculates a translate based on a <see cref="TileBrush"/>, a source and destination
-        /// rectangle and a scale.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="sourceRect">The source rectangle.</param>
-        /// <param name="destinationRect">The destination rectangle.</param>
-        /// <param name="scale">The scale factor.</param>
-        /// <returns>A vector with the X and Y translate.</returns>
-        protected static Vector CalculateTranslate(
+        public TileBrushImpl(
             TileBrush brush,
-            Rect sourceRect,
-            Rect destinationRect,
-            Vector scale)
+            SharpDX.Direct2D1.RenderTarget target,
+            Size targetSize)
         {
-            var x = 0.0;
-            var y = 0.0;
-            var size = sourceRect.Size * scale;
+            var helper = new TileBrushImplHelper(brush, targetSize);
+            if (!helper.IsValid)
+                return;
 
-            switch (brush.AlignmentX)
+            using (var intermediate = new BitmapRenderTarget(target, CompatibleRenderTargetOptions.None, helper.IntermediateSize.ToSharpDX()))
             {
-                case AlignmentX.Center:
-                    x += (destinationRect.Width - size.Width) / 2;
-                    break;
-                case AlignmentX.Right:
-                    x += destinationRect.Width - size.Width;
-                    break;
-            }
+                using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
+                    helper.DrawIntermediate(ctx);
 
-            switch (brush.AlignmentY)
-            {
-                case AlignmentY.Center:
-                    y += (destinationRect.Height - size.Height) / 2;
-                    break;
-                case AlignmentY.Bottom:
-                    y += destinationRect.Height - size.Height;
-                    break;
+                PlatformBrush = new BitmapBrush(
+                    target,
+                    intermediate.Bitmap,
+                    GetBitmapBrushProperties(brush),
+                    GetBrushProperties(brush, helper.DestinationRect));
             }
-
-            return new Vector(x, y);
         }
 
-        protected static Size2F CalculateIntermediateSize(
-            TileMode tileMode,
-            Size targetSize,
-            Size destinationSize)
-        {
-            var result = tileMode == TileMode.None ? targetSize : destinationSize;
-            return result.ToSharpDX();
-        }
-
-        protected static Matrix CalculateIntermediateTransform(
-            TileMode tileMode,
-            Rect sourceRect,
-            Rect destinationRect,
-            Vector scale,
-            Vector translate,
-            out Rect drawRect)
-        {
-            var transform = Matrix.CreateTranslation(-sourceRect.Position) *
-                Matrix.CreateScale(scale) *
-                Matrix.CreateTranslation(translate);
-            Rect dr;
-
-            if (tileMode == TileMode.None)
-            {
-                dr = destinationRect;
-                transform *= Matrix.CreateTranslation(destinationRect.Position);
-            }
-            else
-            {
-                dr = new Rect(destinationRect.Size);
-            }
-
-            drawRect = dr;
-
-            return transform;
-        }
 
         protected static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
         {
-            var tileMode = brush.TileMode;
-
             return new BrushProperties
             {
                 Opacity = (float)brush.Opacity,
