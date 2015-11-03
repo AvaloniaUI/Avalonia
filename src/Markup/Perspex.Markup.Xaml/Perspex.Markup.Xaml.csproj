@@ -39,6 +39,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Converters\PerspexListTypeConverter.cs" />
+    <Compile Include="Converters\RelativeRectTypeConverter.cs" />
     <Compile Include="Data\IXamlBinding.cs" />
     <Compile Include="Data\MultiBinding.cs" />
     <Compile Include="Data\RelativeSource.cs" />
