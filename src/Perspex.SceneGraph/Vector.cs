@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Xml.Linq;
 
 namespace Perspex
 {
@@ -50,6 +51,24 @@ namespace Perspex
         {
             return new Point(a._x, a._y);
         }
+
+        
+
+        /// <summary>
+        /// Calculates the dot product of two vectors
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <returns>The dot product</returns>
+        public static double operator *(Vector a, Vector b)
+        {
+            return a.X*b.X + a.Y*b.Y;
+        }
+
+        /// <summary>
+        /// Length of the vector
+        /// </summary>
+        public double Length => Math.Sqrt(X*X + Y*Y);
 
         /// <summary>
         /// Negates a vector.

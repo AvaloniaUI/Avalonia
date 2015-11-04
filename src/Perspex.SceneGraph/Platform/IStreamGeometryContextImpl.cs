@@ -39,6 +39,13 @@ namespace Perspex.Platform
         void BezierTo(Point point1, Point point2, Point point3);
 
         /// <summary>
+        /// Draws a quadratic Bezier curve to the specified point
+        /// </summary>
+        /// <param name="control">Control point</param>
+        /// <param name="endPoint">DestinationPoint</param>
+        void QuadTo(Point control, Point endPoint);
+
+        /// <summary>
         /// Draws a line to the specified point.
         /// </summary>
         /// <param name="point">The destination point.</param>

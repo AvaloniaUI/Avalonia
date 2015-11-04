@@ -47,6 +47,15 @@ namespace Perspex.Direct2D1.Media
             });
         }
 
+        public void QuadTo(Point control, Point dest)
+        {
+            _sink.AddQuadraticBezier(new QuadraticBezierSegment
+            {
+                Point1 = control.ToSharpDX(),
+                Point2 = dest.ToSharpDX()
+            });
+        }
+
         public void LineTo(Point point)
         {
             _sink.AddLine(point.ToSharpDX());

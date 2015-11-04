@@ -9,6 +9,8 @@
     <Import_RootNamespace>Perspex.RenderHelpers</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ArcToHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QuadBezierHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TileBrushImplHelper.cs" />
   </ItemGroup>
 </Project>

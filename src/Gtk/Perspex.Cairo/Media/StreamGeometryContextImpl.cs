@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.RenderHelpers;
 
 namespace Perspex.Cairo.Media
 {
@@ -12,6 +13,7 @@ namespace Perspex.Cairo.Media
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
+        private Point _currentPoint;
 		public StreamGeometryContextImpl(Cairo.Path path = null)
         {
 
@@ -27,24 +29,44 @@ namespace Perspex.Cairo.Media
 
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
+            ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
+            _currentPoint = point;
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-			if (this.Path == null)
-            	_context.MoveTo(startPoint.ToCairo());
+            if (this.Path == null)
+            {
+                _context.MoveTo(startPoint.ToCairo());
+                _currentPoint = startPoint;
+            }
         }
 
         public void BezierTo(Point point1, Point point2, Point point3)
         {
-			if (this.Path == null)
-            	_context.CurveTo(point1.ToCairo(), point2.ToCairo(), point3.ToCairo());
+            if (this.Path == null)
+            {
+                _context.CurveTo(point1.ToCairo(), point2.ToCairo(), point3.ToCairo());
+                _currentPoint = point3;
+            }
+        }
+
+        public void QuadTo(Point control, Point endPoint)
+        {
+            if (this.Path == null)
+            {
+                QuadBezierHelper.QuadTo(this, _currentPoint, control, endPoint);
+                _currentPoint = endPoint;
+            }
         }
 
         public void LineTo(Point point)
         {
-			if (this.Path == null)
-            	_context.LineTo(point.ToCairo());
+            if (this.Path == null)
+            {
+                _context.LineTo(point.ToCairo());
+                _currentPoint = point;
+            }
         }
 
         private readonly Cairo.Context _context;

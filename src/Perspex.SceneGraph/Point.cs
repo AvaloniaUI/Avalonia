@@ -129,6 +129,30 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Multiplies a point by a factor coordinate-wise
+        /// </summary>
+        /// <param name="p">Point to multiply</param>
+        /// <param name="k">Factor</param>
+        /// <returns>Points having its coordinates multiplied</returns>
+        public static Point operator *(Point p, double k) => new Point(p.X*k, p.Y*k);
+
+        /// <summary>
+        /// Multiplies a point by a factor coordinate-wise
+        /// </summary>
+        /// <param name="p">Point to multiply</param>
+        /// <param name="k">Factor</param>
+        /// <returns>Points having its coordinates multiplied</returns>
+        public static Point operator *(double k, Point p) => new Point(p.X*k, p.Y*k);
+
+        /// <summary>
+        /// Divides a point by a factor coordinate-wise
+        /// </summary>
+        /// <param name="p">Point to divide by</param>
+        /// <param name="k">Factor</param>
+        /// <returns>Points having its coordinates divided</returns>
+        public static Point operator /(Point p, double k) => new Point(p.X/k, p.Y/k);
+         
+        /// <summary>
         /// Applies a matrix to a point.
         /// </summary>
         /// <param name="point">The point.</param>
