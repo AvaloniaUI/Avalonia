@@ -34,9 +34,9 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
+            base.OnAttachedToVisualTree(e);
             _grid = this.GetVisualParent<Grid>();
         }
     }

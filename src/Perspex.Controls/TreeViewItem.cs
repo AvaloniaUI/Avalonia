@@ -83,9 +83,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
+            base.OnAttachedToVisualTree(e);
             _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
         }
 

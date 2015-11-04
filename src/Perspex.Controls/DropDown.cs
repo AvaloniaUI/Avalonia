@@ -125,14 +125,14 @@ namespace Perspex.Controls
             base.OnPointerPressed(e);
         }
 
-        protected override void OnTemplateApplied()
+        protected override void OnTemplateApplied(INameScope nameScope)
         {
             if (_popup != null)
             {
                 _popup.Opened -= PopupOpened;
             }
 
-            _popup = this.GetTemplateChild<Popup>("PART_Popup");
+            _popup = nameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
         }
 

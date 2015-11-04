@@ -214,7 +214,7 @@ namespace Perspex.Controls.UnitTests.Primitives
                 };
 
                 target.ApplyTemplate();
-                var popup = target.GetTemplateChild<Popup>("popup");
+                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
                 popup.Open();
                 var popupRoot = popup.PopupRoot;
 

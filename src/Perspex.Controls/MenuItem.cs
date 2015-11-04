@@ -376,11 +376,11 @@ namespace Perspex.Controls
         /// <summary>
         /// Called when the MenuItem's template has been applied.
         /// </summary>
-        protected override void OnTemplateApplied()
+        protected override void OnTemplateApplied(INameScope nameScope)
         {
-            base.OnTemplateApplied();
+            base.OnTemplateApplied(nameScope);
 
-            _popup = this.GetTemplateChild<Popup>("PART_Popup");
+            _popup = nameScope.Get<Popup>("PART_Popup");
             _popup.DependencyResolver = DependencyResolver.Instance;
             _popup.PopupRootCreated += PopupRootCreated;
             _popup.Opened += PopupOpened;

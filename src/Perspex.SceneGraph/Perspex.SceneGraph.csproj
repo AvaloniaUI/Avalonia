@@ -55,6 +55,8 @@
     <Compile Include="Animation\PageSlide.cs" />
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
+    <Compile Include="INamed.cs" />
+    <Compile Include="INameScope.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Media\AlignmentY.cs" />
     <Compile Include="Media\AlignmentX.cs" />
@@ -101,6 +103,8 @@
     <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\ImageBush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
+    <Compile Include="NameScopeExtensions.cs" />
+    <Compile Include="NameScope.cs" />
     <Compile Include="RelativePoint.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
@@ -122,6 +126,7 @@
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Visual.cs" />
+    <Compile Include="VisualTreeAttachmentEventArgs.cs" />
     <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />
     <Compile Include="VisualTree\IVisualTreeHost.cs" />
     <Compile Include="VisualTree\TransformedBounds.cs" />

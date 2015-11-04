@@ -24,9 +24,7 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateChild<ScrollContentPresenter>("contentPresenter");
-
-            Assert.IsType<TextBlock>(presenter.Child);
+            Assert.IsType<TextBlock>(target.Presenter.Child);
         }
 
         [Fact]

@@ -287,9 +287,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
+            base.OnAttachedToVisualTree(e);
 
             throw new InvalidOperationException(
                 $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");

@@ -195,6 +195,8 @@ namespace Perspex.Controls.Primitives
                     _templateLog.Verbose("Creating control template");
 
                     var child = Template.Build(this);
+                    var nameScope = new NameScope();
+                    NameScope.SetNameScope((Visual)child, nameScope);
 
                     // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
                     // before the controls are added to the visual tree so that the logical
@@ -207,7 +209,7 @@ namespace Perspex.Controls.Primitives
                     AddVisualChild((Visual)child);
                     SetTemplatedParentAndApplyChildTemplates(child);
 
-                    OnTemplateApplied();
+                    OnTemplateApplied(nameScope);
                 }
 
                 _templateApplied = true;
@@ -217,7 +219,8 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Called when the control's template is applied.
         /// </summary>
-        protected virtual void OnTemplateApplied()
+        /// <param name="nameScope">The template name scope.</param>
+        protected virtual void OnTemplateApplied(INameScope nameScope)
         {
         }
 
