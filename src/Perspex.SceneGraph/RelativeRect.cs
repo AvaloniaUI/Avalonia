@@ -175,7 +175,7 @@ namespace Perspex
             if (parts.Count == 4)
             {
                 var unit = RelativeUnit.Absolute;
-                var scale = 1.0;
+                var scale = 1.0m;
 
                 if (parts[0].EndsWith("%"))
                 {
@@ -191,14 +191,14 @@ namespace Perspex
                     parts[2] = parts[2].TrimEnd('%');
                     parts[3] = parts[3].TrimEnd('%');
                     unit = RelativeUnit.Relative;
-                    scale = 0.01;
+                    scale = 0.01m;
                 }
 
                 return new RelativeRect(
-                    double.Parse(parts[0], culture) * scale,
-                    double.Parse(parts[1], culture) * scale,
-                    double.Parse(parts[2], culture) * scale,
-                    double.Parse(parts[3], culture) * scale,
+                    (double)(decimal.Parse(parts[0], culture) * scale),
+                    (double)(decimal.Parse(parts[1], culture) * scale),
+                    (double)(decimal.Parse(parts[2], culture) * scale),
+                    (double)(decimal.Parse(parts[3], culture) * scale),
                     unit);
             }
             else
