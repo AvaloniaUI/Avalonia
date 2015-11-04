@@ -47,6 +47,7 @@
 // as these may be helpful for debugging.
 
 using System;
+using System.Media;
 using Perspex.Media;
 using Perspex.Platform;
 
@@ -1030,7 +1031,34 @@ namespace Perspex.RenderHelpers
                 double y1S2 = p1S.Y * p1S.Y;
                 double x1S2 = p1S.X * p1S.X;
 
-                double multiplier = Math.Sqrt((rx2 * ry2 - rx2 * y1S2 - ry2 * x1S2) / (rx2 * y1S2 + ry2 * x1S2));
+                double nominator = rx2*ry2 - rx2*y1S2 - ry2*x1S2;
+                double denominator = rx2*y1S2 + ry2*x1S2;
+
+                if (Math.Abs(denominator) < 1e-8)
+                {
+                    path.LineTo(p2);
+                    return;
+                }
+                if ((nominator / denominator) < 0)
+                {
+                    double lambda = x1S2/rx2 + y1S2/ry2;
+                    double lambdaSqrt = Math.Sqrt(lambda);
+                    if (lambda > 1)
+                    {
+                        rx *= lambdaSqrt;
+                        ry *= lambdaSqrt;
+                        rx2 = rx*rx;
+                        ry2 = ry*ry;
+                        nominator = rx2 * ry2 - rx2 * y1S2 - ry2 * x1S2;
+                        if (nominator < 0)
+                            nominator = 0;
+
+                        denominator = rx2 * y1S2 + ry2 * x1S2;
+                    }
+
+                }
+
+                double multiplier = Math.Sqrt(nominator / denominator);
                 Point mulVec = new Point(rx * p1S.Y / ry, -ry * p1S.X / rx);
 
                 int sign = (clockwise != isLargeArc) ? 1 : -1;
@@ -1077,7 +1105,7 @@ namespace Perspex.RenderHelpers
                 // path.LineTo(clockwise ? p1 : p2, true,true);
 
                 path.LineTo(clockwise ? p1 : p2);
-                var arc = new EllipticalArc(c.X, c.Y, size.Width, size.Height, theta, thetaStart, thetaEnd, false);
+                var arc = new EllipticalArc(c.X, c.Y, rx, ry, theta, thetaStart, thetaEnd, false);
                 arc.BuildArc(path, arc._maxDegree, arc._defaultFlatness, false);
 
                 //uncomment this to draw a pie
