@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Linq;
 using Perspex.LogicalTree;
 using Perspex.Styling;
@@ -42,14 +43,22 @@ namespace Perspex.Controls
         /// Finds the named control in the specified control.
         /// </summary>
         /// <typeparam name="T">The type of the control to find.</typeparam>
-        /// <param name="control">The control.</param>
+        /// <param name="control">The control to look in.</param>
         /// <param name="name">The name of the control to find.</param>
         /// <returns>The control or null if not found.</returns>
-        public static T FindControl<T>(this IControl control, string name) where T : IControl
+        public static T FindControl<T>(this IControl control, string name) where T : class, IControl
         {
-            return control.GetLogicalDescendents()
-                .OfType<T>()
-                .FirstOrDefault(x => x.Name == name);
+            var nameScope = control.GetSelfAndLogicalAncestors()
+                .OfType<Visual>()
+                .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
+                .FirstOrDefault(x => x != null);
+
+            if (nameScope == null)
+            {
+                throw new InvalidOperationException("Could not find parent name scope.");
+            }
+
+            return nameScope.Find<T>(name);
         }
     }
 }
