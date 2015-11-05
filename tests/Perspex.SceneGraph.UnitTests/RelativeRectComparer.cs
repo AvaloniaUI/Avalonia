@@ -17,7 +17,7 @@ namespace Perspex.SceneGraph.UnitTests
                    Math.Round(a.Rect.Height, 3) == Math.Round(b.Rect.Height, 3);
         }
 
-        public int GetHashCode(Rect obj)
+        public int GetHashCode(RelativeRect obj)
         {
             throw new NotImplementedException();
         }
