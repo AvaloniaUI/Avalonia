@@ -65,6 +65,16 @@ namespace Perspex.Media
         }
 
         /// <summary>
+        /// Draws a quadratic Bezier curve to the specified point
+        /// </summary>
+        /// <param name="control">The control point used to specify the shape of the curve.</param>
+        /// <param name="endPoint">The destination point for the end of the curve.</param>
+        public void QuadTo(Point control, Point endPoint)
+        {
+            _impl.QuadTo(control, endPoint);
+        }
+
+        /// <summary>
         /// Draws a line to the specified point.
         /// </summary>
         /// <param name="point">The destination point.</param>
