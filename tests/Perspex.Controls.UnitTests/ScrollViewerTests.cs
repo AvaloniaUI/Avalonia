@@ -63,7 +63,7 @@ namespace Perspex.Controls.UnitTests
                 {
                     new ScrollContentPresenter
                     {
-                        Name = "contentPresenter",
+                        Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                         [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],

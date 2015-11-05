@@ -49,7 +49,19 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(element != null);
 
-            _inner.Add(name, element);
+            object existing;
+
+            if (_inner.TryGetValue(name, out existing))
+            {
+                if (existing != element)
+                {
+                    throw new ArgumentException($"Control with the name '{name}' already registered.");
+                }
+            }
+            else
+            {
+                _inner.Add(name, element);
+            }
         }
 
         /// <summary>

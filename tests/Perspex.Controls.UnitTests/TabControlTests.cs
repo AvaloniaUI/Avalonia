@@ -97,23 +97,23 @@ namespace Perspex.Controls.UnitTests
         public void Removal_Should_Set_Next_Tab()
         {
             var collection = new ObservableCollection<TabItem>()
+            {
+                new TabItem
                 {
-                    new TabItem
-                    {
-                        Name = "first",
-                        Content = "foo",
-                    },
-                    new TabItem
-                    {
-                        Name = "second",
-                        Content = "bar",
-                    },
-                    new TabItem
-                    {
-                        Name = "3rd",
-                        Content = "barf",
-                    },
-                };
+                    Name = "first",
+                    Content = "foo",
+                },
+                new TabItem
+                {
+                    Name = "second",
+                    Content = "bar",
+                },
+                new TabItem
+                {
+                    Name = "3rd",
+                    Content = "barf",
+                },
+            };
 
             var target = new TabControl
             {

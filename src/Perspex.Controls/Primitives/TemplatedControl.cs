@@ -202,12 +202,12 @@ namespace Perspex.Controls.Primitives
                     // before the controls are added to the visual tree so that the logical
                     // tree can be set up before styling is applied.
                     ((ISetLogicalParent)child).SetParent(this);
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    SetupTemplateControls(child, nameScope);
 
                     // And again after the controls are added to the visual tree, and have their
                     // styling and thus Template property set.
                     AddVisualChild((Visual)child);
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    SetupTemplateControls(child, nameScope);
 
                     OnTemplateApplied(nameScope);
                 }
@@ -226,14 +226,23 @@ namespace Perspex.Controls.Primitives
 
         /// <summary>
         /// Sets the TemplatedParent property for a control created from the control template and
-        /// applies the templates of nested templated controls.
+        /// applies the templates of nested templated controls. Also adds each control to its name
+        /// scope if it has a name.
         /// </summary>
         /// <param name="control">The control.</param>
-        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
+        /// <param name="nameScope">The name scope.</param>
+        private void SetupTemplateControls(IControl control, INameScope nameScope)
         {
+            // If control.TemplatedParent is null at this point, then the control is our templated
+            // child so set its TemplatedParent and register it with its name scope.
             if (control.TemplatedParent == null)
             {
                 control.SetValue(TemplatedParentProperty, this);
+
+                if (control.Name != null)
+                {
+                    nameScope.Register(control.Name, control);
+                }
             }
 
             control.ApplyTemplate();
@@ -242,7 +251,7 @@ namespace Perspex.Controls.Primitives
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    SetupTemplateControls(child, nameScope);
                 }
             }
         }
