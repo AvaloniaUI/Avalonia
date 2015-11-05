@@ -39,10 +39,10 @@ namespace Perspex.Media
                 var y4 = center.Y + radius.Y;
 
                 ctx.BeginFigure(new Point(x2, y0), true);
-                ctx.BezierTo(new Point(x3, y0), new Point(x4, y1), new Point(x4, y2));
-                ctx.BezierTo(new Point(x4, y3), new Point(x3, y4), new Point(x2, y4));
-                ctx.BezierTo(new Point(x1, y4), new Point(x0, y3), new Point(x0, y2));
-                ctx.BezierTo(new Point(x0, y1), new Point(x1, y0), new Point(x2, y0));
+                ctx.CubicBezierTo(new Point(x3, y0), new Point(x4, y1), new Point(x4, y2));
+                ctx.CubicBezierTo(new Point(x4, y3), new Point(x3, y4), new Point(x2, y4));
+                ctx.CubicBezierTo(new Point(x1, y4), new Point(x0, y3), new Point(x0, y2));
+                ctx.CubicBezierTo(new Point(x0, y1), new Point(x1, y0), new Point(x2, y0));
                 ctx.EndFigure(true);
             }
 

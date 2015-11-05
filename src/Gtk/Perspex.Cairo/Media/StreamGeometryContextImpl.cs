@@ -42,7 +42,7 @@ namespace Perspex.Cairo.Media
             }
         }
 
-        public void BezierTo(Point point1, Point point2, Point point3)
+        public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
             if (this.Path == null)
             {
@@ -51,11 +51,11 @@ namespace Perspex.Cairo.Media
             }
         }
 
-        public void QuadTo(Point control, Point endPoint)
+        public void QuadraticBezierTo(Point control, Point endPoint)
         {
             if (this.Path == null)
             {
-                QuadBezierHelper.QuadTo(this, _currentPoint, control, endPoint);
+                QuadBezierHelper.QuadraticBezierTo(this, _currentPoint, control, endPoint);
                 _currentPoint = endPoint;
             }
         }

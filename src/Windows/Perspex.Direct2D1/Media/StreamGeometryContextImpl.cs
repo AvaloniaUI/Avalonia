@@ -37,7 +37,7 @@ namespace Perspex.Direct2D1.Media
             _sink.BeginFigure(startPoint.ToSharpDX(), isFilled ? FigureBegin.Filled : FigureBegin.Hollow);
         }
 
-        public void BezierTo(Point point1, Point point2, Point point3)
+        public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
             _sink.AddBezier(new BezierSegment
             {
@@ -47,7 +47,7 @@ namespace Perspex.Direct2D1.Media
             });
         }
 
-        public void QuadTo(Point control, Point dest)
+        public void QuadraticBezierTo(Point control, Point dest)
         {
             _sink.AddQuadraticBezier(new QuadraticBezierSegment
             {

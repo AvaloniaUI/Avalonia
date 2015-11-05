@@ -949,11 +949,11 @@ namespace Perspex.RenderHelpers
                     else if (degree == 2)
                     {
                         double k = (yBDot * (xB - xA) - xBDot * (yB - yA)) / (xADot * yBDot - yADot * xBDot);
-                        path.QuadTo(new Point(xA + k * xADot, yA + k * yADot), new Point(xB, yB));
+                        path.QuadraticBezierTo(new Point(xA + k * xADot, yA + k * yADot), new Point(xB, yB));
                     }
                     else
                     {
-                        path.BezierTo(
+                        path.CubicBezierTo(
                             new Point(xA + alpha * xADot, yA + alpha * yADot),
                             new Point(xB - alpha * xBDot, yB - alpha * yBDot),
                             new Point(xB, yB)
