@@ -297,7 +297,8 @@ namespace Perspex
         {
             if (obj is Rect)
             {
-                return this == (Rect)obj;
+                var other = (Rect)obj;
+                return Position == other.Position && Size == other.Size;
             }
 
             return false;
