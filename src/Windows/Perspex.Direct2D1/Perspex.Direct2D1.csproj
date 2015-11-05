@@ -79,9 +79,7 @@
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\PerspexTextRenderer.cs" />
-    <Compile Include="Media\ImageBrushImpl.cs" />
     <Compile Include="Media\TileBrushImpl.cs" />
-    <Compile Include="Media\VisualBrushImpl.cs" />
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
     <Compile Include="Media\GeometryImpl.cs" />
@@ -113,6 +111,7 @@
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

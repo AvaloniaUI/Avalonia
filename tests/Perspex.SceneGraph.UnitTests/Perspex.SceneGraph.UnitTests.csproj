@@ -73,6 +73,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="NameScopeTests.cs" />
+    <Compile Include="RelativeRectComparer.cs" />
+    <Compile Include="RelativeRectTests.cs" />
     <Compile Include="ThicknessTests.cs" />
     <Compile Include="Media\BrushTests.cs" />
     <Compile Include="Media\ColorTests.cs" />

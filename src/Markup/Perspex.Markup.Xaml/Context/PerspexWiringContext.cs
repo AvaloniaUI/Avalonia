@@ -106,6 +106,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
                 new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
+                new TypeConverterRegistration(typeof(RelativeRect), new RelativeRectTypeConverter()),
                 new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
                 new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
