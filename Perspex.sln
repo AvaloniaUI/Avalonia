@@ -112,6 +112,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Perspex.Skia", "src\Skia\Pe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Skia.Desktop", "src\Skia\Perspex.Skia.Desktop\Perspex.Skia.Desktop.csproj", "{925DD807-B651-475F-9F7C-CBEB974CE43D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Skia.RenderTests", "tests\Perspex.RenderTests\Perspex.Skia.RenderTests.csproj", "{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
@@ -278,6 +280,10 @@ Global
 		{925DD807-B651-475F-9F7C-CBEB974CE43D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{925DD807-B651-475F-9F7C-CBEB974CE43D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{925DD807-B651-475F-9F7C-CBEB974CE43D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -310,5 +316,6 @@ Global
 		{3C4C0CB4-0C0F-4450-A37B-148C84FF905F} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
 		{2F59F3D0-748D-4652-B01E-E0D954756308} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{925DD807-B651-475F-9F7C-CBEB974CE43D} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 EndGlobal

@@ -10,6 +10,8 @@ using Xunit;
 
 #if PERSPEX_CAIRO
 namespace Perspex.Cairo.RenderTests.Media
+#elif PERSPEX_SKIA
+namespace Perspex.Skia.RenderTests
 #else
 namespace Perspex.Direct2D1.RenderTests.Media
 #endif
@@ -85,6 +87,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -139,6 +143,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -166,6 +172,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -193,6 +201,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -244,6 +254,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -270,7 +282,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
+#else
         [Fact]
+#endif
         public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
@@ -295,7 +311,11 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
+#else
         [Fact]
+#endif
         public void VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
@@ -322,6 +342,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -350,6 +372,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
@@ -378,6 +402,8 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
