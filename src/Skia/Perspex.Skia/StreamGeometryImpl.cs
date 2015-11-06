@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.RenderHelpers;
 
 namespace Perspex.Skia
 {
     enum SkiaGeometryElementType
     {
         LineTo,
-        ArcTo,
+        QuadTo,
         BezierTo,
         BeginFigure,
         EndFigure
@@ -66,7 +67,7 @@ namespace Perspex.Skia
         {
             private readonly StreamGeometryImpl _geometryImpl;
             readonly List<SkiaGeometryElement> _elements = new List<SkiaGeometryElement>();
-
+            Point _currentPoint;
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
                 _geometryImpl = geometryImpl;
@@ -83,8 +84,8 @@ namespace Perspex.Skia
 
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
-                //TODO: Implement me
-
+                ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
+                _currentPoint = point;
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)
@@ -95,6 +96,7 @@ namespace Perspex.Skia
                     Point1 = new SkiaPoint(startPoint),
                     Flag = isFilled
                 });
+                _currentPoint = startPoint;
             }
 
             public void BezierTo(Point point1, Point point2, Point point3)
@@ -106,11 +108,18 @@ namespace Perspex.Skia
                     Point2 = new SkiaPoint(point2),
                     Point3 = new SkiaPoint(point3)
                 });
+                _currentPoint = point3;
             }
 
             public void QuadTo(Point control, Point endPoint)
             {
-                //throw new NotImplementedException();
+                _elements.Add(new SkiaGeometryElement
+                {
+                    Type = SkiaGeometryElementType.QuadTo,
+                    Point1 = control,
+                    Point2 = endPoint
+                });
+                _currentPoint = endPoint;
             }
 
             public void LineTo(Point point)
@@ -120,6 +129,7 @@ namespace Perspex.Skia
                     Type = SkiaGeometryElementType.LineTo,
                     Point1 = new SkiaPoint(point)
                 });
+                _currentPoint = point;
             }
 
             public void EndFigure(bool isClosed)
