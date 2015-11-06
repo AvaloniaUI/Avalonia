@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Perspex.Collections;
 using Perspex.Media;
 using Perspex.VisualTree;
@@ -20,6 +21,16 @@ namespace Perspex
     /// </remarks>
     public interface IVisual
     {
+        /// <summary>
+        /// Raised when the control is attached to a rooted visual tree.
+        /// </summary>
+        event EventHandler<VisualTreeAttachmentEventArgs> AttachedToVisualTree;
+
+        /// <summary>
+        /// Raised when the control is detached from a rooted visual tree.
+        /// </summary>
+        event EventHandler<VisualTreeAttachmentEventArgs> DetachedFromVisualTree;
+
         /// <summary>
         /// Gets the bounds of the scene graph node relative to its parent.
         /// </summary>
