@@ -6,6 +6,8 @@ using Perspex;
 using Perspex.Media;
 using Perspex.Rendering;
 using Perspex.Layout;
+using Perspex.Media.Imaging;
+using Perspex.Platform;
 
 
 namespace Perspex.RenderHelpers
@@ -21,6 +23,8 @@ namespace Perspex.RenderHelpers
         private readonly Size _imageSize;
         private readonly VisualBrush _visualBrush;
         private readonly ImageBrush _imageBrush;
+        private Matrix _transform;
+        private Rect _drawRect;
 
         public bool IsValid { get; }
 
@@ -61,20 +65,38 @@ namespace Perspex.RenderHelpers
             _scale = brush.Stretch.CalculateScaling(DestinationRect.Size, _sourceRect.Size);
             _translate = CalculateTranslate(brush, _sourceRect, DestinationRect, _scale);
             IntermediateSize = CalculateIntermediateSize(_tileMode, targetSize, DestinationRect.Size);
-        }
-
-        public void DrawIntermediate(DrawingContext ctx)
-        {
-            Rect drawRect;
-            var transform = CalculateIntermediateTransform(
+            _transform = CalculateIntermediateTransform(
                 _tileMode,
                 _sourceRect,
                 DestinationRect,
                 _scale,
                 _translate,
-                out drawRect);
-            using (ctx.PushClip(drawRect))
-            using (ctx.PushPostTransform(transform))
+                out _drawRect);
+        }
+
+        public bool NeedsIntermediateSurface
+        {
+            get
+            {
+                if (_imageBrush == null)
+                    return true;
+                if (_transform != Matrix.Identity)
+                    return true;
+                if (_sourceRect.Position != default(Point))
+                    return true;
+                if ((int) _sourceRect.Width != _imageBrush.Source.PixelWidth ||
+                    (int) _sourceRect.Height != _imageBrush.Source.PixelHeight)
+                    return true;
+                return false;
+            }
+        }
+
+        public T GetDirect<T>() => (T) _imageBrush?.Source.PlatformImpl;
+
+        public void DrawIntermediate(DrawingContext ctx)
+        {
+            using (ctx.PushClip(_drawRect))
+            using (ctx.PushPostTransform(_transform))
             {
                 if (_imageBrush != null)
                 {
