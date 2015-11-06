@@ -4,7 +4,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace Perspex.Markup.UnitTests.Binding
+namespace Perspex.Markup.UnitTests.Data
 {
     public class NotifyingBase : INotifyPropertyChanged
     {

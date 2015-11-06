@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 using Perspex.Markup.Data;
 using Xunit;
 
-namespace Perspex.Markup.UnitTests.Binding
+namespace Perspex.Markup.UnitTests.Data
 {
     public class ExpressionObserverTests_Negation
     {
