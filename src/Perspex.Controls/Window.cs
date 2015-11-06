@@ -76,6 +76,20 @@ namespace Perspex.Controls
             _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
         }
 
+        /// <inheritdoc/>
+        event EventHandler<NameScopeEventArgs> INameScope.Registered
+        {
+            add { _nameScope.Registered += value; }
+            remove { _nameScope.Registered -= value; }
+        }
+
+        /// <inheritdoc/>
+        event EventHandler<NameScopeEventArgs> INameScope.Unregistered
+        {
+            add { _nameScope.Unregistered += value; }
+            remove { _nameScope.Unregistered -= value; }
+        }
+
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>

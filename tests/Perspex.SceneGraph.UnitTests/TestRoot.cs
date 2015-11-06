@@ -9,7 +9,19 @@ namespace Perspex.SceneGraph.UnitTests
 {
     public class TestRoot : TestVisual, IRenderRoot, INameScope
     {
-        private NameScope nameScope = new NameScope();
+        private NameScope _nameScope = new NameScope();
+
+        event EventHandler<NameScopeEventArgs> INameScope.Registered
+        {
+            add { _nameScope.Registered += value; }
+            remove { _nameScope.Registered -= value; }
+        }
+
+        public event EventHandler<NameScopeEventArgs> Unregistered
+        {
+            add { _nameScope.Unregistered += value; }
+            remove { _nameScope.Unregistered -= value; }
+        }
 
         public IRenderTarget RenderTarget
         {
@@ -28,17 +40,17 @@ namespace Perspex.SceneGraph.UnitTests
 
         public void Register(string name, object element)
         {
-            nameScope.Register(name, element);
+            _nameScope.Register(name, element);
         }
 
         public object Find(string name)
         {
-            return nameScope.Find(name);
+            return _nameScope.Find(name);
         }
 
         public void Unregister(string name)
         {
-            nameScope.Unregister(name);
+            _nameScope.Unregister(name);
         }
     }
 }

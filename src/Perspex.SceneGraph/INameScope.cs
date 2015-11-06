@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Perspex
 {
     /// <summary>
@@ -8,6 +10,16 @@ namespace Perspex
     /// </summary>
     public interface INameScope
     {
+        /// <summary>
+        /// Raised when an element is registered with the name scope.
+        /// </summary>
+        event EventHandler<NameScopeEventArgs> Registered;
+
+        /// <summary>
+        /// Raised when an element is unregistered with the name scope.
+        /// </summary>
+        event EventHandler<NameScopeEventArgs> Unregistered;
+
         /// <summary>
         /// Registers an element eith the name scope.
         /// </summary>

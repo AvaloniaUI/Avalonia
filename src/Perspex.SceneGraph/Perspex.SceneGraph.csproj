@@ -103,6 +103,7 @@
     <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\ImageBush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
+    <Compile Include="NameScopeEventArgs.cs" />
     <Compile Include="NameScopeExtensions.cs" />
     <Compile Include="NameScope.cs" />
     <Compile Include="RelativePoint.cs" />

@@ -20,6 +20,16 @@ namespace Perspex
         private Dictionary<string, object> _inner = new Dictionary<string, object>();
 
         /// <summary>
+        /// Raised when an element is registered with the name scope.
+        /// </summary>
+        public event EventHandler<NameScopeEventArgs> Registered;
+
+        /// <summary>
+        /// Raised when an element is unregistered with the name scope.
+        /// </summary>
+        public event EventHandler<NameScopeEventArgs> Unregistered;
+
+        /// <summary>
         /// Gets the value of the attached <see cref="NameScopeProperty"/> on a visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
@@ -61,6 +71,7 @@ namespace Perspex
             else
             {
                 _inner.Add(name, element);
+                Registered?.Invoke(this, new NameScopeEventArgs(name, element));
             }
         }
 
@@ -86,7 +97,13 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            _inner.Remove(name);
+            object element;
+
+            if (_inner.TryGetValue(name, out element))
+            {
+                _inner.Remove(name);
+                Registered?.Invoke(this, new NameScopeEventArgs(name, element));
+            }
         }
     }
 }
