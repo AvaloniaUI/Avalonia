@@ -56,6 +56,8 @@ namespace Perspex.Skia
 
         public Rect HitTestTextPosition(int index)
         {
+            if (index < 0 || index >= _rects.Count)
+                return new Rect();
             return _rects[index];
         }
 
@@ -89,8 +91,13 @@ namespace Perspex.Skia
             }
             for (var c = 0; c < _text.Length; c++)
                 _rects.Add(_shared->Bounds[c].ToRect());
-            var lastLine = _shared->Lines[_shared->LineCount - 1];
-            _size = new Size(maxX, lastLine.Top + lastLine.Height);
+            if (_shared->LineCount == 0)
+                _size = new Size();
+            else
+            {
+                var lastLine = _shared->Lines[_shared->LineCount - 1];
+                _size = new Size(maxX, lastLine.Top + lastLine.Height);
+            }
         }
 
         void Rebuild()

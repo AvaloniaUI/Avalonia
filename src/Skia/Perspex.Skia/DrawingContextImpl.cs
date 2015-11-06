@@ -123,7 +123,7 @@ namespace Perspex.Skia
             brush.Brush->StrokeLineCap = pen.StartLineCap;
             brush.Brush->StrokeMiterLimit = (float)pen.MiterLimit;
 
-            if (pen.DashStyle != null)
+            if (pen.DashStyle?.Dashes != null)
             {
                 var dashes = pen.DashStyle.Dashes;
                 if (dashes.Count > NativeBrush.MaxDashCount)
@@ -168,12 +168,12 @@ namespace Perspex.Skia
         public void PushClip(Rect clip)
         {
             var rc = SkRect.FromRect(clip);
-            //MethodTable.Instance.PushClip(Handle, ref rc);
+            MethodTable.Instance.PushClip(Handle, ref rc);
         }
 
         public void PopClip()
         {
-            //MethodTable.Instance.PopClip(Handle);
+            MethodTable.Instance.PopClip(Handle);
         }
 
         private readonly Stack<double> _opacityStack = new Stack<double>();
