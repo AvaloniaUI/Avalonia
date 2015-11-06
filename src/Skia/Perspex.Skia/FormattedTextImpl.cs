@@ -51,7 +51,8 @@ namespace Perspex.Skia
 
                 }
             }
-            return new TextHitTestResult();
+            bool end = point.X > _size.Width || point.Y > _size.Height;
+            return new TextHitTestResult() {IsTrailing = end, TextPosition = end ? _text.Length - 1 : 0};
         }
 
         public Rect HitTestTextPosition(int index)
