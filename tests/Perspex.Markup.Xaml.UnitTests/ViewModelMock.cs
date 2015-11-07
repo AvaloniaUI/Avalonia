@@ -4,7 +4,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Perspex.Xaml.Base.UnitTest
+namespace Perspex.Markup.Xaml.UnitTests
 {
     internal class ViewModelMock : INotifyPropertyChanged
     {

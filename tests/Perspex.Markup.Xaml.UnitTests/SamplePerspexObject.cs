@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Perspex.Xaml.Base.UnitTest
+namespace Perspex.Markup.Xaml.UnitTests
 {
     internal class SamplePerspexObject : PerspexObject
     {

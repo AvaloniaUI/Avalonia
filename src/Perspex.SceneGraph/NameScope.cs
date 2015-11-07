@@ -17,7 +17,7 @@ namespace Perspex
         public static readonly PerspexProperty<INameScope> NameScopeProperty =
             PerspexProperty.RegisterAttached<NameScope, Visual, INameScope>("NameScope");
 
-        private Dictionary<string, object> _inner = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _inner = new Dictionary<string, object>();
 
         /// <summary>
         /// Raised when an element is registered with the name scope.

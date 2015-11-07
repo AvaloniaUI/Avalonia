@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using OmniXaml.TypeConversion;
 using Perspex.Controls;
 using Perspex.Markup.Data;
 
@@ -19,6 +18,11 @@ namespace Perspex.Markup.Xaml.Data
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the element to use as the binding source.
+        /// </summary>
+        public string ElementName { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -47,8 +51,11 @@ namespace Perspex.Markup.Xaml.Data
         /// <param name="property">The target property.</param>
         public void Bind(IObservablePropertyBag instance, PerspexProperty property)
         {
+            Contract.Requires<ArgumentNullException>(instance != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
             var subject = CreateSubject(
-                instance, 
+                instance,
                 property.PropertyType,
                 property == Control.DataContextProperty);
 
@@ -72,15 +79,22 @@ namespace Perspex.Markup.Xaml.Data
             Type targetType,
             bool targetIsDataContext = false)
         {
+            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.Requires<ArgumentNullException>(targetType != null);
+
             ExpressionObserver observer;
 
-            if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
+            if (ElementName != null)
             {
-                observer = CreateDataContextExpressionSubject(target, targetIsDataContext);
+                observer = CreateElementSubject((IControl)target);
+            }
+            else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
+            {
+                observer = CreateDataContextSubject(target, targetIsDataContext);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentExpressionSubject(target);
+                observer = CreateTemplatedParentSubject(target);
             }
             else
             {
@@ -88,8 +102,8 @@ namespace Perspex.Markup.Xaml.Data
             }
 
             return new ExpressionSubject(
-                observer, 
-                targetType, 
+                observer,
+                targetType,
                 Converter ?? DefaultValueConverter.Instance);
         }
 
@@ -101,6 +115,10 @@ namespace Perspex.Markup.Xaml.Data
         /// <param name="subject">The binding subject.</param>
         internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
         {
+            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(subject != null);
+
             var mode = Mode == BindingMode.Default ?
                 property.DefaultBindingMode : Mode;
 
@@ -117,7 +135,7 @@ namespace Perspex.Markup.Xaml.Data
                     target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
                     {
                         subject.Take(1).Subscribe(x => target.SetValue(property, x, Priority));
-                    });                    
+                    });
                     break;
                 case BindingMode.OneWayToSource:
                     target.GetObservable(property).Subscribe(subject);
@@ -125,10 +143,12 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateDataContextExpressionSubject(
+        private ExpressionObserver CreateDataContextSubject(
             IObservablePropertyBag target,
             bool targetIsDataContext)
         {
+            Contract.Requires<ArgumentNullException>(target != null);
+
             var dataContextHost = targetIsDataContext ?
                 target.InheritanceParent as IObservablePropertyBag : target;
 
@@ -148,8 +168,10 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateTemplatedParentExpressionSubject(IObservablePropertyBag target)
+        private ExpressionObserver CreateTemplatedParentSubject(IObservablePropertyBag target)
         {
+            Contract.Requires<ArgumentNullException>(target != null);
+
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
                 GetExpression());
@@ -165,6 +187,31 @@ namespace Perspex.Markup.Xaml.Data
             }
 
             return result;
+        }
+
+        private ExpressionObserver CreateElementSubject(IControl target)
+        {
+            Contract.Requires<ArgumentNullException>(target != null);
+
+            var result = new ExpressionObserver(
+                ControlLocator.Track(target, ElementName), 
+                GetExpression());
+            return result;
+        }
+
+        private IControl LookupNamedControl(IControl target)
+        {
+            Contract.Requires<ArgumentNullException>(target != null);
+
+            var nameScope = target.FindNameScope();
+
+            if (nameScope == null)
+            {
+                throw new InvalidOperationException(
+                    "Could not find name scope for ElementName binding.");
+            }
+
+            return nameScope.Find<IControl>(ElementName);
         }
 
         private string GetExpression()

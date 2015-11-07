@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using Microsoft.Reactive.Testing;
 using Perspex.Markup.Data;
 using Xunit;
 
@@ -204,6 +205,26 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Track_Property_Value_From_Observable_Root()
+        {
+            var scheduler = new TestScheduler();
+            var source = scheduler.CreateColdObservable(
+                OnNext(1, new Class1 { Foo = "foo" }),
+                OnNext(2, new Class1 { Foo = "bar" }));
+            var target = new ExpressionObserver(source, "Foo");
+            var result = new List<object>();
+
+            using (target.Subscribe(x => result.Add(x)))
+            {
+                scheduler.Start();
+            }
+
+            Assert.Equal(new[] { PerspexProperty.UnsetValue, "foo", "bar" }, result);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.NotEqual(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+        }
+
+        [Fact]
         public void SetValue_Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "foo" };
@@ -332,6 +353,11 @@ namespace Perspex.Markup.UnitTests.Data
 
         private class WithoutBar : NotifyingBase, INext
         {
+        }
+
+        public Recorded<Notification<object>> OnNext(long time, object value)
+        {
+            return new Recorded<Notification<object>>(time, Notification.CreateOnNext<object>(value));
         }
     }
 }

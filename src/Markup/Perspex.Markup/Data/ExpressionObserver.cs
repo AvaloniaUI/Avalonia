@@ -26,9 +26,12 @@ namespace Perspex.Markup.Data
                 new InpcPropertyAccessorPlugin(),
             };
 
-        private Func<object> _root;
+        private readonly object _root;
+        private readonly Func<object> _rootGetter;
+        private readonly IObservable<object> _rootObservable;
+        private IDisposable _rootObserverSubscription;
         private int _count;
-        private ExpressionNode _node;
+        private readonly ExpressionNode _node;
         private ISubject<object> _empty;
 
         /// <summary>
@@ -37,21 +40,50 @@ namespace Perspex.Markup.Data
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
         public ExpressionObserver(object root, string expression)
-            : this(() => root, expression)
         {
+            Contract.Requires<ArgumentNullException>(expression != null);
+
+            _root = root;
+
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                _node = ExpressionNodeBuilder.Build(expression);
+            }
+
+            Expression = expression;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
-        /// <param name="root">A function which gets the root object.</param>
+        /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
-        public ExpressionObserver(Func<object> root, string expression)
+        public ExpressionObserver(IObservable<object> rootObservable, string expression)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _root = root;
+            _rootObservable = rootObservable;
+
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                _node = ExpressionNodeBuilder.Build(expression);
+            }
+
+            Expression = expression;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootGetter">A function which gets the root object.</param>
+        /// <param name="expression">The expression.</param>
+        public ExpressionObserver(Func<object> rootGetter, string expression)
+        {
+            Contract.Requires<ArgumentNullException>(rootGetter != null);
+            Contract.Requires<ArgumentNullException>(expression != null);
+
+            _rootGetter = rootGetter;
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
@@ -105,9 +137,13 @@ namespace Perspex.Markup.Data
                     {
                         return (Leaf as PropertyAccessorNode)?.PropertyType;
                     }
+                    else if(_rootGetter != null)
+                    {
+                        return _rootGetter()?.GetType();
+                    }
                     else
                     {
-                        return _root()?.GetType();
+                        return _root?.GetType();
                     }
                 }
                 finally
@@ -134,19 +170,19 @@ namespace Perspex.Markup.Data
         }
 
         /// <summary>
-        /// Causes the root object to be re-read.
+        /// Causes the root object to be re-read from the root getter.
         /// </summary>
         public void UpdateRoot()
         {
-            if (_count > 0)
+            if (_count > 0 && _rootGetter != null)
             {
                 if (_node != null)
                 {
-                    _node.Target = _root();
+                    _node.Target = _rootGetter();
                 }
                 else if (_empty != null)
                 {
-                    _empty.OnNext(_root());
+                    _empty.OnNext(_rootGetter());
                 }
             }
         }
@@ -170,7 +206,7 @@ namespace Perspex.Markup.Data
             {
                 if (_empty == null)
                 {
-                    _empty = new BehaviorSubject<object>(_root());
+                    _empty = new BehaviorSubject<object>(_rootGetter());
                 }
 
                 return _empty.Subscribe(observer);
@@ -181,7 +217,18 @@ namespace Perspex.Markup.Data
         {
             if (_count++ == 0 && _node != null)
             {
-                _node.Target = _root();
+                if (_rootGetter != null)
+                {
+                    _node.Target = _rootGetter();
+                }
+                else if (_rootObservable != null)
+                {
+                    _rootObserverSubscription = _rootObservable.Subscribe(x => _node.Target = x);
+                }
+                else
+                {
+                    _node.Target = _root;
+                }
             }
         }
 
@@ -189,6 +236,12 @@ namespace Perspex.Markup.Data
         {
             if (--_count == 0 && _node != null)
             {
+                if (_rootObserverSubscription != null)
+                {
+                    _rootObserverSubscription.Dispose();
+                    _rootObserverSubscription = null;
+                }
+
                 _node.Target = null;
             }
         }

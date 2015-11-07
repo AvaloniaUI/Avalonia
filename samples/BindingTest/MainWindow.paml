@@ -6,7 +6,7 @@
         <StackPanel Orientation="Horizontal">
           <StackPanel Margin="18" Gap="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
-            <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}"/>
+            <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
             <TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWayToSource}"/>
@@ -29,6 +29,11 @@
             <TextBox Watermark="Double" UseFloatingWatermark="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
             <TextBlock Text="{Binding Path=DoubleValue}"/>
             <ProgressBar Maximum="10" Value="{Binding DoubleValue}"/>
+          </StackPanel>
+          <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
+            <TextBlock FontSize="16" Text="Binding Sources"/>
+            <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
+                     Text="{Binding Path=Text, ElementName=first, Mode=TwoWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
