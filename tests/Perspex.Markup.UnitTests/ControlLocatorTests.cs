@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Perspex.Controls;
-using Perspex.Markup.Data;
 using Xunit;
 
-namespace Perspex.Markup.UnitTests.Data
+namespace Perspex.Markup.UnitTests
 {
     public class ControlLocatorTests
     {

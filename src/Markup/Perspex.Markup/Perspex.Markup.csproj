@@ -42,7 +42,7 @@
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
-    <Compile Include="Data\ControlLocator.cs" />
+    <Compile Include="ControlLocator.cs" />
     <Compile Include="Data\Plugins\PerspexPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />

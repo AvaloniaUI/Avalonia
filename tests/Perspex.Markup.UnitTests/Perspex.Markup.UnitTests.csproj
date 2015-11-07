@@ -77,7 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\ControlLocatorTests.cs" />
+    <Compile Include="ControlLocatorTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests_Errors.cs" />
     <Compile Include="Data\ExpressionObserverTests_Indexer.cs" />

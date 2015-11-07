@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls;
 
-namespace Perspex.Markup.Data
+namespace Perspex.Markup
 {
     /// <summary>
     /// Locates controls relative to other controls.
