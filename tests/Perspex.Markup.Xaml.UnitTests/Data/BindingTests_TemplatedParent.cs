@@ -23,7 +23,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.OneWay,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                 Priority = BindingPriority.TemplatedParent,
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
             };
 
             binding.Bind(target.Object, TextBox.TextProperty);
@@ -43,7 +43,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.TwoWay,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                 Priority = BindingPriority.TemplatedParent,
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
             };
 
             binding.Bind(target.Object, TextBox.TextProperty);
@@ -62,7 +62,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget(text: textObservable.Object);
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
             };
 

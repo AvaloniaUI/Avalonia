@@ -35,7 +35,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
-                SourcePropertyPath = "Text",
+                Path = "Text",
             };
 
             binding.Bind(target, TextBlock.TextProperty);
@@ -66,7 +66,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
-                SourcePropertyPath = "Text",
+                Path = "Text",
             };
 
             binding.Bind(target, TextBlock.TextProperty);

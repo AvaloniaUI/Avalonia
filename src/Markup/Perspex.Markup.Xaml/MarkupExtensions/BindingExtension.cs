@@ -24,7 +24,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 Converter = Converter,
                 ElementName = ElementName,
                 Mode = Mode,
-                SourcePropertyPath = Path,
+                Path = Path,
             };
         }
 

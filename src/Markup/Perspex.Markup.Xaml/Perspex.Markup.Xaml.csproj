@@ -185,7 +185,6 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Sequence.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TemplateHostingObjectAssembler.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeContext.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\TypeContextBuilder.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\BooleanConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\DoubleTypeConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\IntTypeConverter.cs" />

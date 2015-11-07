@@ -20,7 +20,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget();
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.OneWay,
             };
 
@@ -38,7 +38,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget();
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.TwoWay,
             };
 
@@ -58,7 +58,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget(dataContext: dataContext);
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.OneTime,
             };
 
@@ -87,7 +87,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget(text: textObservable.Object);
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
             };
 
@@ -102,7 +102,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget(null);
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
             };
 
             binding.Bind(target.Object, TextBox.TextProperty);
@@ -127,7 +127,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
             var binding = new Binding
             {
-                SourcePropertyPath = "Header",
+                Path = "Header",
             };
 
             binding.Bind(parent.Child, Control.DataContextProperty);
@@ -145,7 +145,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = CreateTarget(null);
             var binding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
             };
 
             var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
@@ -161,7 +161,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var binding = new Binding
             {
                 Converter = converter.Object,
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
             };
 
             var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
@@ -189,13 +189,13 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
             var fooBinding = new Binding
             {
-                SourcePropertyPath = "Foo",
+                Path = "Foo",
                 Mode = BindingMode.TwoWay,
             };
 
             var barBinding = new Binding
             {
-                SourcePropertyPath = "Bar",
+                Path = "Bar",
                 Mode = BindingMode.TwoWay,
             };
 

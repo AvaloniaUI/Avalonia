@@ -25,9 +25,9 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Converter = new ConcatConverter(),
                 Bindings = new[]
                 {
-                    new Binding { SourcePropertyPath = "A" },
-                    new Binding { SourcePropertyPath = "B" },
-                    new Binding { SourcePropertyPath = "C" },
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "C" },
                 }
             };
 

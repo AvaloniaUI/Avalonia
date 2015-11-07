@@ -26,7 +26,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Priority = BindingPriority.TemplatedParent,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
-                SourcePropertyPath = Path,
+                Path = Path,
             };
         }
 

@@ -42,7 +42,7 @@ namespace Perspex.Markup.Xaml.Data
         /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
-        public string SourcePropertyPath { get; set; }
+        public string Path { get; set; }
 
         /// <summary>
         /// Applies the binding to a property on an instance.
@@ -82,19 +82,30 @@ namespace Perspex.Markup.Xaml.Data
             Contract.Requires<ArgumentNullException>(target != null);
             Contract.Requires<ArgumentNullException>(targetType != null);
 
+            var pathInfo = ParsePath(Path);
+            ValidateState(pathInfo);
+
             ExpressionObserver observer;
 
-            if (ElementName != null)
+            if (pathInfo.ElementName != null || ElementName != null)
             {
-                observer = CreateElementSubject((IControl)target);
+                observer = CreateElementSubject(
+                    (IControl)target, 
+                    pathInfo.ElementName ?? ElementName, 
+                    pathInfo.Path);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                observer = CreateDataContextSubject(target, targetIsDataContext);
+                observer = CreateDataContextSubject(
+                    target, 
+                    pathInfo.Path,
+                    targetIsDataContext);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentSubject(target);
+                observer = CreateTemplatedParentSubject(
+                    target,
+                    pathInfo.Path);
             }
             else
             {
@@ -143,8 +154,56 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
+        private static PathInfo ParsePath(string path)
+        {
+            var result = new PathInfo();
+
+            if (string.IsNullOrWhiteSpace(path) || path == ".")
+            {
+                result.Path = path;
+            }
+            else if (path.StartsWith("#"))
+            {
+                var dot = path.IndexOf('.');
+
+                if (dot != -1)
+                {
+                    result.Path = path.Substring(dot + 1);
+                    result.ElementName = path.Substring(1, dot - 1);
+                }
+                else
+                {
+                    result.Path = string.Empty;
+                    result.ElementName = path.Substring(1);
+                }
+            }
+            else
+            {
+                result.Path = path;
+            }
+
+            return result;
+        }
+
+        private void ValidateState(PathInfo pathInfo)
+        {
+            if (pathInfo.ElementName != null && ElementName != null)
+            {
+                throw new InvalidOperationException(
+                    "ElementName property cannot be set when an #elementName path is provided.");
+            }
+
+            if ((pathInfo.ElementName != null || ElementName != null) &&
+                RelativeSource != null)
+            {
+                throw new InvalidOperationException(
+                    "ElementName property cannot be set with a RelativeSource.");
+            }
+        }
+
         private ExpressionObserver CreateDataContextSubject(
             IObservablePropertyBag target,
+            string path,
             bool targetIsDataContext)
         {
             Contract.Requires<ArgumentNullException>(target != null);
@@ -156,7 +215,7 @@ namespace Perspex.Markup.Xaml.Data
             {
                 var result = new ExpressionObserver(
                     () => dataContextHost.GetValue(Control.DataContextProperty),
-                    GetExpression());
+                    path);
                 dataContextHost.GetObservable(Control.DataContextProperty).Subscribe(x =>
                     result.UpdateRoot());
                 return result;
@@ -168,13 +227,15 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateTemplatedParentSubject(IObservablePropertyBag target)
+        private ExpressionObserver CreateTemplatedParentSubject(
+            IObservablePropertyBag target,
+            string path)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
-                GetExpression());
+                path);
 
             if (target.GetValue(Control.TemplatedParentProperty) == null)
             {
@@ -189,13 +250,16 @@ namespace Perspex.Markup.Xaml.Data
             return result;
         }
 
-        private ExpressionObserver CreateElementSubject(IControl target)
+        private ExpressionObserver CreateElementSubject(
+            IControl target,
+            string elementName,
+            string path)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             var result = new ExpressionObserver(
-                ControlLocator.Track(target, ElementName), 
-                GetExpression());
+                ControlLocator.Track(target, elementName), 
+                path);
             return result;
         }
 
@@ -214,10 +278,10 @@ namespace Perspex.Markup.Xaml.Data
             return nameScope.Find<IControl>(ElementName);
         }
 
-        private string GetExpression()
+        private class PathInfo
         {
-            return SourcePropertyPath == null || SourcePropertyPath == "." ?
-                string.Empty : SourcePropertyPath;
+            public string Path { get; set; }
+            public string ElementName { get; set; }
         }
     }
 }
