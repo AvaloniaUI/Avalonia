@@ -3,11 +3,13 @@
 
 using System;
 using System.Reactive.Disposables;
+using System.Runtime.InteropServices;
 using Gdk;
 using Perspex.Controls;
 using Perspex.Input.Raw;
 using Perspex.Platform;
 using Perspex.Input;
+using Perspex.Threading;
 using Action = System.Action;
 
 namespace Perspex.Gtk
@@ -46,6 +48,8 @@ namespace Perspex.Gtk
               EventMask.ButtonReleaseMask;
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
+            DoubleBuffered = false;
+            Realize();
         }
 
 		protected override void OnRealized ()
@@ -71,7 +75,44 @@ namespace Perspex.Gtk
         }
 
         IPlatformHandle ITopLevelImpl.Handle => this;
-        public string HandleDescriptor => "GtkWindow";
+
+        [DllImport("libgdk-win32-2.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
+        extern static IntPtr gdk_win32_drawable_get_handle(IntPtr gdkWindow);
+
+        [DllImport("libgtk-x11-2.0.so.0", CallingConvention = CallingConvention.Cdecl)]
+        extern static IntPtr gdk_x11_drawable_get_xid(IntPtr gdkWindow);
+
+        [DllImport("libgdk-quartz-2.0-0.dylib", CallingConvention = CallingConvention.Cdecl)]
+        extern static IntPtr gdk_quartz_window_get_nswindow(IntPtr gdkWindow);
+
+        IntPtr _nativeWindow;
+
+        IntPtr GetNativeWindow()
+        {
+            IntPtr h = GdkWindow.Handle;
+            if (_nativeWindow != IntPtr.Zero)
+                return _nativeWindow;
+            //Try whatever backend that works
+            try
+            {
+                return _nativeWindow = gdk_quartz_window_get_nswindow(h);
+            }
+            catch
+            {
+            }
+            try
+            {
+                return _nativeWindow = gdk_x11_drawable_get_xid(h);
+            }
+            catch
+            {
+            }
+            return _nativeWindow = gdk_win32_drawable_get_handle(h);
+        }
+
+
+        IntPtr IPlatformHandle.Handle => GetNativeWindow();
+        public string HandleDescriptor => "HWND";
 
         public Action Activated { get; set; }
 

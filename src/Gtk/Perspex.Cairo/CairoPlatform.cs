@@ -38,11 +38,14 @@ namespace Perspex.Cairo
 
         public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
         {
-            if (handle.HandleDescriptor != "GtkWindow")
+            var window = handle as Gtk.Window;
+            if (window == null)
                 throw new NotSupportedException(string.Format(
-                    "Don't know how to create a Cairo renderer from a '{0}' handle",
+                    "Don't know how to create a Cairo renderer from a '{0}' handle which isn't Gtk.Window",
                     handle.HandleDescriptor));
-            return new RenderTarget((Gtk.Window)handle, width, height);
+
+            window.DoubleBuffered = true;
+            return new RenderTarget(window, width, height);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
