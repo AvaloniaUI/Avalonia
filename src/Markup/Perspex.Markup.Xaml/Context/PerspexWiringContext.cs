@@ -48,6 +48,7 @@ namespace Perspex.Markup.Xaml.Context
             var xamlNamespaceRegistry = CreateXamlNamespaceRegistry();
             var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider);
 
+            typeRepository.RegisterMetadata(new Metadata<Visual>().WithRuntimeNameProperty(d => d.Name));
             typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
             typeRepository.RegisterMetadata(
                 new Metadata<SelectingItemsControl>()
