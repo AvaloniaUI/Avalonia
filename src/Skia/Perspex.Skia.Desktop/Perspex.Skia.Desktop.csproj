@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MethodTableImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -80,15 +81,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="libEGL.dll">
+    <Content Include="..\native\Windows\i686\libEGL.dll">
+      <Link>native\Windows\i686\libEGL.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="libGLESv2.dll">
+    <Content Include="..\native\Windows\i686\libGLESv2.dll">
+      <Link>native\Windows\i686\libGLESv2.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="libperspesk.dll">
+    <Content Include="..\native\Windows\i686\libperspesk.dll">
+      <Link>native\Windows\i686\libperspesk.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\native\Linux\x86_64\libperspesk.so">
+      <Link>native\Linux\x86_64\libperspesk.so</Link>
+    </None>
   </ItemGroup>
   <Import Project="..\Perspex.Skia\Perspex.Skia.projitems" Label="Shared" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
