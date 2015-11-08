@@ -79,9 +79,11 @@ namespace Perspex.Skia
             foreach (
                 var basePath in
                     new[] {Assembly.GetEntryAssembly(), typeof (MethodTable).Assembly}.Select(
-                        a => Path.GetDirectoryName(a.GetModules()[0].FullyQualifiedName))
+                        a => Path.GetDirectoryName(a?.GetModules()?[0]?.FullyQualifiedName))
                         .Concat(new[] { Directory.GetCurrentDirectory()}))
             {
+                if(basePath == null)
+                    continue;
                 yield return Path.Combine(basePath);
                 yield return Path.Combine(basePath, "native");
                 yield return Path.Combine(basePath, "lib");
