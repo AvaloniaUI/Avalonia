@@ -2,6 +2,7 @@ version: 1.0.{build}
 os: Visual Studio 2015
 before_build:
 - git submodule update --init
+- ps: src\Skia\getnatives.ps1
 - nuget restore Perspex.sln
 
 environment:
@@ -12,7 +13,6 @@ install:
   - if not exist gtk-sharp-2.12.26.msi appveyor DownloadFile http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.26.msi
   - msiexec /i gtk-sharp-2.12.26.msi /qn /norestart
   - cmd: set PATH=%programfiles(x86)%\GtkSharp\2.12\bin\;%PATH%
-  - ps: src\Skia\getnatives.ps1
 
 cache:
   - gtk-sharp-2.12.26.msi
