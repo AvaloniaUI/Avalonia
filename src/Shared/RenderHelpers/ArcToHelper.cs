@@ -47,7 +47,6 @@
 // as these may be helpful for debugging.
 
 using System;
-using System.Media;
 using Perspex.Media;
 using Perspex.Platform;
 
