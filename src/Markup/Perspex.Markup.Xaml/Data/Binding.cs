@@ -160,7 +160,7 @@ namespace Perspex.Markup.Xaml.Data
 
             if (string.IsNullOrWhiteSpace(path) || path == ".")
             {
-                result.Path = path;
+                result.Path = string.Empty;
             }
             else if (path.StartsWith("#"))
             {
