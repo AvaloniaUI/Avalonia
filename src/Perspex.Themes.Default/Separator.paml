@@ -1,0 +1,7 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="Separator">
+    <Setter Property="Template">
+        <ControlTemplate>
+            <Rectangle Fill="#ffd7d7d7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Height="1" Margin="29,1,0,1"/>
+        </ControlTemplate>
+    </Setter>
+</Style>
