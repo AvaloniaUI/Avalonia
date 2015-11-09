@@ -33,7 +33,7 @@
           <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Binding Sources"/>
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
-                     Text="{Binding Path=Text, ElementName=first, Mode=TwoWay}"/>
+                     Text="{Binding #first.Text, Mode=TwoWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
