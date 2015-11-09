@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using OmniXaml;
 using OmniXaml.TypeConversion;
 using Perspex.Styling;
@@ -54,9 +53,6 @@ namespace Perspex.Markup.Xaml.Converters
                     throw new XamlParseException($"Could not find type '{typeName}'.");
                 }
             }
-
-            // Ensure the type's static ctor has been run.
-            RuntimeHelpers.RunClassConstructor(type.TypeHandle);
 
             // First look for non-attached property on the type and then look for an attached property.
             var property = PerspexPropertyRegistry.Instance.FindRegistered(type, s);

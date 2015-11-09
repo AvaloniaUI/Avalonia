@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Perspex
 {
@@ -61,6 +62,9 @@ namespace Perspex
 
             while (type != null)
             {
+                // Ensure the type's static ctor has been run.
+                RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+
                 List<PerspexProperty> list;
 
                 if (_registered.TryGetValue(type, out list))
