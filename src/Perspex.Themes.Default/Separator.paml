@@ -1,7 +1,17 @@
-﻿<Style xmlns="https://github.com/perspex" Selector="Separator">
+﻿<Styles xmlns="https://github.com/perspex">
+
+  <Style Selector="Separator">
     <Setter Property="Template">
-        <ControlTemplate>
-            <Rectangle Fill="#ffd7d7d7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Height="1" Margin="29,1,0,1"/>
-        </ControlTemplate>
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
     </Setter>
-</Style>
+  </Style>
+
+  <Style Selector="MenuItem > Separator">
+    <Setter Property="Background" Value="#ffd7d7d7"/>
+    <Setter Property="Margin" Value="29,1,0,1"/>
+    <Setter Property="Height" Value="1"/>
+  </Style>
+
+</Styles>
