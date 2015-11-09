@@ -8,7 +8,12 @@
         <MenuItem Header="_File">
           <MenuItem Header="_Hello">
             <MenuItem Header="_Goodbye"/>
+            <Separator/>
+            <MenuItem Header="_World"/>
           </MenuItem>
+          <Separator/>
+          <MenuItem Header="_Test"/>
+          <Separator/>
           <MenuItem Header="_World"/>
         </MenuItem>
       </Menu>
