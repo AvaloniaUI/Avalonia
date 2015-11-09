@@ -38,6 +38,7 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Converters\PerspexListTypeConverter.cs" />
     <Compile Include="Converters\RelativeRectTypeConverter.cs" />
     <Compile Include="Data\IXamlBinding.cs" />
