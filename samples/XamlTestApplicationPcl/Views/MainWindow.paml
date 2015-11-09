@@ -11,7 +11,7 @@
             <Separator/>
             <MenuItem Header="_World"/>
           </MenuItem>
-          <Separator/>
+          <Separator Background="Red"/>
           <MenuItem Header="_Test"/>
           <Separator/>
           <MenuItem Header="_World"/>
