@@ -204,11 +204,15 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\AttachableXamlMember.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\ClrNamespace.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\CoreTypes.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\DependencyRegistration.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\DependencyRegistrations.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\GenericMetadata.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlMemberValuePlugin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlNamespaceRegistry.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlTypeRepository.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MemberValuePlugin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\Metadata.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\MetadataProvider.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MutableXamlMember.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\Namespace.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\PrefixRegistration.cs" />
