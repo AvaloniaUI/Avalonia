@@ -15,11 +15,6 @@ namespace Perspex.Platform
         void SetPosition(Point p);
 
         /// <summary>
-        /// Shows the popup.
-        /// </summary>
-        void Show();
-
-        /// <summary>
         /// Hides the popup.
         /// </summary>
         void Hide();

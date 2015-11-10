@@ -22,11 +22,6 @@ namespace Perspex.Platform
         void SetTitle(string title);
 
         /// <summary>
-        /// Shows the window.
-        /// </summary>
-        void Show();
-
-        /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
         /// <returns>

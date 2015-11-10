@@ -83,5 +83,10 @@ namespace Perspex.Platform
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
         void SetCursor(IPlatformHandle cursor);
+
+        /// <summary>
+        /// Shows the toplevel.
+        /// </summary>
+        void Show();
     }
 }
