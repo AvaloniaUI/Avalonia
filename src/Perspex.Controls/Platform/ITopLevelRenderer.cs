@@ -34,14 +34,8 @@ namespace Perspex.Controls.Platform
                 return;
 
             var viewport = platformRender
-                .CreateRenderer(topLevel.PlatformImpl.Handle, initialClientSize.Width, initialClientSize.Height);
+                .CreateRenderer(topLevel.PlatformImpl.Handle);
             resources.Add(viewport);
-
-
-            resources.Add(topLevel.GetObservable(TopLevel.ClientSizeProperty).Subscribe(clientSize =>
-            {
-                viewport.Resize((int) clientSize.Width, (int) clientSize.Height);
-            }));
             resources.Add(queueManager.RenderNeeded.Subscribe(_
                 =>
                 Dispatcher.UIThread.InvokeAsync(() => topLevel.PlatformImpl.Invalidate(new Rect(topLevel.ClientSize)))));

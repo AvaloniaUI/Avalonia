@@ -43,10 +43,5 @@ namespace Perspex.Cairo.Media.Imaging
         {
             return _renderTarget.CreateDrawingContext();
         }
-
-        void IRenderTarget.Resize(int width, int height)
-        {
-            throw new NotSupportedException();
-        }
     }
 }

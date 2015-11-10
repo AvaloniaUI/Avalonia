@@ -21,10 +21,5 @@ namespace Perspex.Skia
                 new DrawingContext(
                     new DrawingContextImpl(MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
         }
-
-        public void Resize(int width, int height)
-        {
-            MethodTable.Instance.RenderTargetResize(Handle,Math.Max(width, 1), Math.Max(height, 1));
-        }
     }
 }

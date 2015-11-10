@@ -48,10 +48,5 @@ namespace Perspex.Media.Imaging
         }
 
         public DrawingContext CreateDrawingContext() => PlatformImpl.CreateDrawingContext();
-
-        void IRenderTarget.Resize(int width, int height)
-        {
-            throw new NotSupportedException();
-        }
     }
 }

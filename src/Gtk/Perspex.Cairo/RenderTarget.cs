@@ -27,7 +27,7 @@ namespace Perspex.Cairo
         /// <param name="window">The window.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public RenderTarget(Gtk.Window window, double width, double height)
+        public RenderTarget(Gtk.Window window)
         {
             _window = window;
         }
@@ -35,16 +35,6 @@ namespace Perspex.Cairo
         public RenderTarget(ImageSurface surface)
         {
             _surface = surface;
-        }
-
-        /// <summary>
-        /// Resizes the renderer.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        public  void Resize(int width, int height)
-        {
-            // Don't need to do anything here.
         }
 
 

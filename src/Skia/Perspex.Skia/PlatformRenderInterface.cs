@@ -59,11 +59,7 @@ namespace Perspex.Skia
             return new BitmapImpl(width, height);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
-        {
-            width = Math.Min(1, width);
-            height = Math.Min(1, height);
-            return new RenderTarget(MethodTable.Instance.CreateRenderTarget(handle.Handle, (int) width, (int) height));
-        }
+        public IRenderTarget CreateRenderer(IPlatformHandle handle) 
+            => new RenderTarget(MethodTable.Instance.CreateWindowWindowRenderTarget(handle.Handle));
     }
 }

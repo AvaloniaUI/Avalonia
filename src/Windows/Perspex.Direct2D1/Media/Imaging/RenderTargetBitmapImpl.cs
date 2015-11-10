@@ -39,10 +39,6 @@ namespace Perspex.Direct2D1.Media
         }
 
         public Perspex.Media.DrawingContext CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
-
-        void IRenderTarget.Resize(int width, int height)
-        {
-            throw new NotSupportedException();
-        }
+        
     }
 }

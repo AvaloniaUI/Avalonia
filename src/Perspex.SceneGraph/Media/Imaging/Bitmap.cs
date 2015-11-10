@@ -34,17 +34,6 @@ namespace Perspex.Media.Imaging
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
-        /// <param name="width">The width of the bitmap, in pixels.</param>
-        /// <param name="height">The height of the bitmap, in pixels.</param>
-        public Bitmap(int width, int height)
-        {
-            IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.CreateBitmap(width, height);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Bitmap"/> class.
-        /// </summary>
         /// <param name="impl">A platform-specific bitmap implementation.</param>
         protected Bitmap(IBitmapImpl impl)
         {

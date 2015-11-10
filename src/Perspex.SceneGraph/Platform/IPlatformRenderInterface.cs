@@ -12,14 +12,6 @@ namespace Perspex.Platform
     public interface IPlatformRenderInterface
     {
         /// <summary>
-        /// Creates a bitmap implementation.
-        /// </summary>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
-        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl CreateBitmap(int width, int height);
-
-        /// <summary>
         /// Creates a formatted text implementation.
         /// </summary>
         /// <param name="text">The text.</param>
@@ -50,7 +42,7 @@ namespace Perspex.Platform
         /// <param name="width">The initial width of the render.</param>
         /// <param name="height">The initial height of the render.</param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height);
+        IRenderTarget CreateRenderer(IPlatformHandle handle);
 
         /// <summary>
         /// Creates a render target bitmap implementation.

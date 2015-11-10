@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
-using Perspex.Input;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169

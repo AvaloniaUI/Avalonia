@@ -36,7 +36,7 @@ namespace Perspex.Cairo
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle, double width, double height)
+        public IRenderTarget CreateRenderer(IPlatformHandle handle)
         {
             var window = handle as Gtk.Window;
             if (window == null)
@@ -45,7 +45,7 @@ namespace Perspex.Cairo
                     handle.HandleDescriptor));
 
             window.DoubleBuffered = true;
-            return new RenderTarget(window, width, height);
+            return new RenderTarget(window);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

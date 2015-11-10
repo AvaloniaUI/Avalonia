@@ -59,7 +59,6 @@ namespace Perspex.Skia.Android
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
             Log.Info("PERSPEX", "Surface Changed");
-            _renderTarget.Resize(width, height);
             Draw();
         }
 
@@ -68,7 +67,7 @@ namespace Perspex.Skia.Android
             Log.Info("PERSPEX", "Surface Created");
             _renderTarget =
                 PerspexLocator.Current.GetService<IPlatformRenderInterface>()
-                    .CreateRenderer(new PlatformHandle(holder.Surface.Handle, "Surface"), Width, Height);
+                    .CreateRenderer(new PlatformHandle(holder.Surface.Handle, "Surface"));
             Draw();
         }
 

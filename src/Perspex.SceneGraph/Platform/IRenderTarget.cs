@@ -18,12 +18,5 @@ namespace Perspex.Platform
         /// Creates an <see cref="DrawingContext"/> for a rendering session.
         /// </summary>
         DrawingContext CreateDrawingContext();
-
-        /// <summary>
-        /// Resizes the rendered viewport.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        void Resize(int width, int height);
     }
 }

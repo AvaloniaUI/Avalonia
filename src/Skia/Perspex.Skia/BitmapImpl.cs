@@ -43,11 +43,6 @@ namespace Perspex.Skia
                     new DrawingContextImpl(MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
         }
 
-        public void Resize(int width, int height)
-        {
-            MethodTable.Instance.ResizeBitmap(Handle, PixelWidth = Math.Max(1, width), PixelHeight = Math.Max(1, height));
-        }
-
         public BitmapImpl(IntPtr handle, int width, int height) : base(handle)
         {
             PixelHeight = height;

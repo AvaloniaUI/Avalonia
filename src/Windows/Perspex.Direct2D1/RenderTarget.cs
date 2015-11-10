@@ -6,6 +6,7 @@ using Perspex.Direct2D1.Media;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
+using Perspex.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
 using DrawingContext = Perspex.Media.DrawingContext;
@@ -15,10 +16,15 @@ namespace Perspex.Direct2D1
 {
     public class RenderTarget : IRenderTarget
     {
+        private readonly IntPtr _hwnd;
+        private Size2 _savedSize;
+
         /// <summary>
         /// The render target.
         /// </summary>
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
+
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTarget"/> class.
@@ -26,8 +32,9 @@ namespace Perspex.Direct2D1
         /// <param name="hwnd">The window handle.</param>
         /// <param name="width">The width of the window.</param>
         /// <param name="height">The height of the window.</param>
-        public RenderTarget(IntPtr hwnd, double width, double height)
+        public RenderTarget(IntPtr hwnd)
         {
+            _hwnd = hwnd;
             Direct2DFactory = PerspexLocator.Current.GetService<Factory>();
             DirectWriteFactory = PerspexLocator.Current.GetService<DwFactory>();
 
@@ -38,7 +45,7 @@ namespace Perspex.Direct2D1
             HwndRenderTargetProperties hwndProperties = new HwndRenderTargetProperties
             {
                 Hwnd = hwnd,
-                PixelSize = new Size2((int)width, (int)height),
+                PixelSize = _savedSize = GetWindowSize(),
                 PresentOptions = PresentOptions.Immediately,
             };
 
@@ -46,6 +53,13 @@ namespace Perspex.Direct2D1
                 Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
+        }
+
+        Size2 GetWindowSize()
+        {
+            UnmanagedMethods.RECT rc;
+            UnmanagedMethods.GetClientRect(_hwnd, out rc);
+            return new Size2(rc.right - rc.left, rc.bottom - rc.top);
         }
 
         /// <summary>
@@ -74,30 +88,21 @@ namespace Perspex.Direct2D1
             get; }
 
         /// <summary>
-        /// Resizes the renderer.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        public void Resize(int width, int height)
-        {
-            WindowRenderTarget window = _renderTarget as WindowRenderTarget;
-
-            if (window == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "A renderer with a target of type '{0}' cannot be resized.",
-                    _renderTarget.GetType().Name));
-            }
-
-            window.Resize(new Size2(width, height));
-        }
-
-        /// <summary>
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Perspex.Media.DrawingContext"/>.</returns>
-        public DrawingContext CreateDrawingContext() 
-            => new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
+        public DrawingContext CreateDrawingContext()
+        {
+            var window = _renderTarget as WindowRenderTarget;
+            if (window != null)
+            {
+                var size = GetWindowSize();
+                if (size != _savedSize)
+                    window.Resize(_savedSize = size);
+            }
+
+            return new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
+        }
 
         public void Dispose()
         {

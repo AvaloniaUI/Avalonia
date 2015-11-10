@@ -10,19 +10,14 @@ namespace Perspex.Skia
     internal unsafe abstract class MethodTable
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr _CreateRenderTarget(IntPtr nativeHandle, int width, int height);
+        public delegate IntPtr _CreateWindowRenderTarget(IntPtr nativeHandle);
 
-        public _CreateRenderTarget CreateRenderTarget;
+        public _CreateWindowRenderTarget CreateWindowWindowRenderTarget;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr _RenderTargetCreateRenderingContext(IntPtr target);
 
         public _RenderTargetCreateRenderingContext RenderTargetCreateRenderingContext;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void _RenderTargetResize(IntPtr target, int width, int height);
-
-        public _RenderTargetResize RenderTargetResize;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void _DisposeRenderTarget(IntPtr target);
@@ -107,11 +102,6 @@ namespace Perspex.Skia
         public _CreateRenderTargetBitmap CreateRenderTargetBitmap;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void _ResizeBitmap(IntPtr image, int width, int height);
-
-        public _ResizeBitmap ResizeBitmap;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void _DisposeImage(IntPtr image);
 
         public _DisposeImage DisposeImage;
@@ -169,9 +159,8 @@ namespace Perspex.Skia
 
         private static readonly Type[] TableOrder = new Type[]
         {
-            typeof (_CreateRenderTarget),
+            typeof (_CreateWindowRenderTarget),
             typeof (_DisposeRenderTarget),
-            typeof (_RenderTargetResize),
             typeof (_RenderTargetCreateRenderingContext),
             typeof (_DisposeRenderingContext),
             typeof (_DrawRectangle),
@@ -189,7 +178,6 @@ namespace Perspex.Skia
             typeof (_SaveImage),
             typeof (_DrawImage),
             typeof (_CreateRenderTargetBitmap),
-            typeof (_ResizeBitmap),
             typeof (_DisposeImage),
             typeof (_GetDrawingContextSettingsPtr),
             typeof (_CreateTypeface),

@@ -69,6 +69,9 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Perspex.Win32\Interop\UnmanagedMethods.cs">
+      <Link>UnmanagedMethods.cs</Link>
+    </Compile>
     <Compile Include="Direct2D1Platform.cs" />
     <Compile Include="Disposable.cs" />
     <Compile Include="Media\BrushImpl.cs" />
