@@ -25,6 +25,7 @@ if ($reponame -eq "Perspex/Perspex")
         echo Repo branch matched
         nuget.exe push Perspex.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
 		nuget.exe push Perspex.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
+		nuget.exe push Perspex.Skia.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
     }
 }
 
