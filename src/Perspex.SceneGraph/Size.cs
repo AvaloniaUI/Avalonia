@@ -96,6 +96,28 @@ namespace Perspex
             return new Size(size._width / scale.X, size._height / scale.Y);
         }
 
+        /// <summary>
+        /// Scales a size.
+        /// </summary>
+        /// <param name="size">The size</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled size.</returns>
+        public static Size operator *(Size size, double scale)
+        {
+            return new Size(size._width * scale, size._height * scale);
+        }
+
+        /// <summary>
+        /// Scales a size.
+        /// </summary>
+        /// <param name="size">The size</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled size.</returns>
+        public static Size operator /(Size size, double scale)
+        {
+            return new Size(size._width / scale, size._height / scale);
+        }
+
         public static Size operator +(Size size, Size toAdd)
         {
             return new Size(size._width + toAdd._width, size._height + toAdd._height);
