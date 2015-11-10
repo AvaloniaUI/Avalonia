@@ -14,7 +14,7 @@ namespace Perspex.Media
         private int _currentLevel;
 
         private Stack<TransformContainer> _transformContainers = new Stack<TransformContainer>();
-
+        private Stack<PushedState> _states = new Stack<PushedState>();
         struct TransformContainer
         {
             public Matrix LocalTransform;
@@ -121,11 +121,11 @@ namespace Perspex.Media
 
             public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
             {
-                _level = context._currentLevel += 1;
                 _context = context;
                 _type = type;
                 _matrix = matrix;
-
+                _level = context._currentLevel += 1;
+                context._states.Push(this);
             }
 
             public void Dispose()
@@ -135,6 +135,7 @@ namespace Perspex.Media
                 if (_context._currentLevel != _level)
                     throw new InvalidOperationException("Wrong Push/Pop state order");
                 _context._currentLevel--;
+                _context._states.Pop();
                 if (_type == PushedStateType.Matrix)
                     _context.CurrentTransform = _matrix;
                 else if(_type == PushedStateType.Clip)
@@ -201,6 +202,11 @@ namespace Perspex.Media
             return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }
 
-        public void Dispose() => _impl.Dispose();
+        public void Dispose()
+        {
+            while (_states.Count != 0)
+                _states.Peek().Dispose();
+            _impl.Dispose();
+        }
     }
 }
