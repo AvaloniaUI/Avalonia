@@ -157,6 +157,16 @@ namespace Perspex.Skia
 
         public _DrawFormattedText DrawFormattedText;
 
+        public enum Option
+        {
+            ForceSoftware = 0
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void _SetOption(Option option, IntPtr value);
+
+        public _SetOption SetOption;
+
         private static readonly Type[] TableOrder = new Type[]
         {
             typeof (_CreateRenderTarget),
