@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Collections;
+using Perspex.Controls.Platform;
 using Perspex.Controls.Presenters;
 using Perspex.Interactivity;
 using Perspex.Media;
@@ -41,7 +42,7 @@ namespace Perspex.Controls.Primitives
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
         public PopupRoot(IPerspexDependencyResolver dependencyResolver)
-            : base(PerspexLocator.Current.GetService<IPopupImpl>(), dependencyResolver)
+            : base(PlatformManager.CreatePopup(), dependencyResolver)
         {
             GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }

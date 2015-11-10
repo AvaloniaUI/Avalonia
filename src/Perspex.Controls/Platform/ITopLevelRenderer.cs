@@ -29,12 +29,8 @@ namespace Perspex.Controls.Platform
             if (queueManager == null)
                 return;
 
-            var platformRender = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
-            if(platformRender == null)
-                return;
 
-            var viewport = platformRender
-                .CreateRenderer(topLevel.PlatformImpl.Handle);
+            var viewport = PlatformManager.CreateRenderTarget(topLevel.PlatformImpl);
             resources.Add(viewport);
             resources.Add(queueManager.RenderNeeded.Subscribe(_
                 =>

@@ -44,6 +44,7 @@
     <Compile Include="DockPanel.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="Platform\ITopLevelRenderer.cs" />
+    <Compile Include="Platform\PlatformManager.cs" />
     <Compile Include="SelectionMode.cs" />
     <Compile Include="Separator.cs" />
     <Compile Include="SystemDialog.cs" />

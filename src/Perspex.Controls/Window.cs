@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Perspex.Controls.Platform;
 using Perspex.Input;
 using Perspex.Media;
 using Perspex.Platform;
@@ -71,7 +72,7 @@ namespace Perspex.Controls
         /// Initializes a new instance of the <see cref="Window"/> class.
         /// </summary>
         public Window()
-            : base(PerspexLocator.Current.GetService<IWindowImpl>())
+            : base(PlatformManager.CreateWindow())
         {
             _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
         }
