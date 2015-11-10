@@ -3,6 +3,8 @@ os: Visual Studio 2015
 before_build:
 - git submodule update --init
 - ps: src\Skia\getnatives.ps1
+- appveyor RegisterXamarinLicense -Email %xamarin_email% -Password %xamarin_password% -Product Android
+- appveyor RegisterXamarinLicense -Email %xamarin_email% -Password %xamarin_password% -Product iOS
 - nuget restore Perspex.sln
 
 environment:
@@ -17,6 +19,9 @@ install:
 cache:
   - gtk-sharp-2.12.26.msi
 
+on_finish:
+  - appveyor UnregisterXamarinLicense -Email %xamarin_email% -Password %xamarin_password%
+  
 configuration:
   - Release
 

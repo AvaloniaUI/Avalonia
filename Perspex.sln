@@ -124,13 +124,13 @@ Global
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{2f59f3d0-748d-4652-b01e-e0d954756308}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{db070a10-bf39-4752-8456-86e9d5928478}*SharedItemsImports = 4
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
+		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -293,10 +293,13 @@ Global
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,6 +320,7 @@ Global
 		{E106CF37-4066-4615-B684-172A6D30B058} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{99135EAB-653D-47E4-A378-C96E1278CA44} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{3E53A01A-B331-47F3-B828-4A5717E77A24} = {8B6A8209-894F-4BA1-B880-965FD453982C}
+		{9B9E3891-2366-4253-A952-D08BCEB71098} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
 		{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{78CAFE33-DBEB-4132-8A28-81CFE8A4933C} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{54F237D5-A70A-4752-9656-0C70B1A7B047} = {B9894058-278A-46B5-B6ED-AD613FCC03B3}
