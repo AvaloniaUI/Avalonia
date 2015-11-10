@@ -184,7 +184,8 @@ namespace Perspex.Skia
             typeof (_CreateFormattedText),
             typeof (_RebuildFormattedText),
             typeof (_DestroyFormattedText),
-            typeof (_DrawFormattedText)
+            typeof (_DrawFormattedText),
+            typeof (_SetOption)
         };
 
 
