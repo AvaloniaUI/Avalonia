@@ -35,7 +35,7 @@ namespace Perspex.Utilities
             readonly SubscriptionDic<T> _sdic;
             private readonly object _target;
             private readonly string _eventName;
-            private readonly EventHandler<T> _delegate;
+            private readonly Delegate _delegate;
             public Subscription(SubscriptionDic<T> sdic, object target, string eventName)
             {
                 _sdic = sdic;
@@ -47,7 +47,10 @@ namespace Perspex.Utilities
                     Accessors[t] = evDic = new Dictionary<string, EventInfo>();
                 if (!evDic.TryGetValue(eventName, out _info))
                     evDic[eventName] = _info = t.GetRuntimeEvent(eventName);
-                _info.AddEventHandler(target, _delegate = OnEvent);
+
+                var del = new Action<object, T>(OnEvent);
+                _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType, del.Target);
+                _info.AddEventHandler(target, _delegate);
             }
 
             void Destroy()
