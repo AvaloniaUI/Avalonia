@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using System.Threading;
 using Perspex.Controls;
+using Perspex.Controls.Platform;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Input.Platform;
@@ -168,7 +169,8 @@ namespace Perspex
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
-                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>();
+                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>()
+                .Bind<PlatformSettings>().ToConstant(new PlatformSettings());
         }
 
         /// <summary>

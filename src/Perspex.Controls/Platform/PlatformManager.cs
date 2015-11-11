@@ -52,7 +52,6 @@ namespace Perspex.Controls.Platform
                     ctx.PushPostTransform(Matrix.CreateScale(factor, factor));
                     ctx.PushTransformContainer();
                 }
-                ctx.FillRectangle(Brushes.Green, new Rect(cs/2));
                 return ctx;
             }
         }
@@ -89,6 +88,11 @@ namespace Perspex.Controls.Platform
 
             private void OnInput(RawInputEventArgs obj)
             {
+                var mouseEvent = obj as RawMouseEventArgs;
+                if (mouseEvent != null)
+                {
+                    mouseEvent.Position /= GetSettings().LayoutScalingFactor;
+                }
                 //TODO: Transform event coordinates
                 Input?.Invoke(obj);
             }
@@ -175,7 +179,7 @@ namespace Perspex.Controls.Platform
 
     public class PlatformSettings
     {
-        public double RenderScalingFactor { get; set; } = 2;
-        public double LayoutScalingFactor { get; set; } = 2;
+        public double RenderScalingFactor { get; set; } = 1;
+        public double LayoutScalingFactor { get; set; } = 1;
     }
 }
