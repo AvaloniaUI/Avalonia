@@ -20,7 +20,7 @@ namespace Perspex.Designer.Comm
         public string State
         {
             get { return _state; }
-            private set
+            set
             {
                 if (_state == value)
                     return;

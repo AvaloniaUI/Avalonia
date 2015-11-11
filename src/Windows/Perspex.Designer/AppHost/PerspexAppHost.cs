@@ -55,16 +55,19 @@ namespace Perspex.Designer.AppHost
             _comm.SendMessage(new StateMessage(state));
         }
 
-        Type LookupType(string name)
+        Type LookupType(params string[] names)
         {
             var asms = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var asm in asms)
             {
-                var found = asm.GetType(name, false, true);
-                if (found != null)
-                    return found;
+                foreach (var name in names)
+                {
+                    var found = asm.GetType(name, false, true);
+                    if (found != null)
+                        return found;
+                }
             }
-            throw new TypeLoadException("Unable to find type " + name);
+            throw new TypeLoadException("Unable to find any of types: " + string.Join(",", names));
         }
 
         private MethodInfo LookupStaticMethod(string typeName, string method)
@@ -204,12 +207,13 @@ namespace Perspex.Designer.AppHost
             app.GetType()
                 .GetMethod("RegisterServices", BindingFlags.NonPublic | BindingFlags.Instance)
                 .Invoke(app, null);
-            app.GetType().GetProperty("Styles").GetSetMethod(true)
-                .Invoke(app, new[] {Activator.CreateInstance(LookupType("Perspex.Themes.Default.DefaultTheme"))});
-
 
             LookupStaticMethod("Perspex.Direct2D1.Direct2D1Platform", "Initialize").Invoke(null, null);
             LookupStaticMethod("Perspex.Win32.Win32Platform", "InitializeEmbedded").Invoke(null, null);
+
+            app.GetType().GetProperty("Styles").GetSetMethod(true)
+                .Invoke(app, new[] {Activator.CreateInstance(LookupType("Perspex.Themes.Default.DefaultTheme"))});
+            
 
             dynamic dispatcher =
                 LookupType("Perspex.Threading.Dispatcher")
@@ -221,7 +225,7 @@ namespace Perspex.Designer.AppHost
             var xamlFactory = Activator.CreateInstance(LookupType("Perspex.Markup.Xaml.Context.PerspexParserFactory"));
             
             dynamic xamlLoader =
-                LookupType("OmniXaml.XamlLoader").GetConstructors().First().Invoke(new object[] {xamlFactory});
+                LookupType("OmniXaml.XamlLoader", "OmniXaml.XamlXmlLoader").GetConstructors().First().Invoke(new object[] {xamlFactory});
 
             _xamlReader = (stream) => xamlLoader.Load(stream);
 
@@ -292,8 +296,11 @@ namespace Perspex.Designer.AppHost
                     window.Content = root;
                 }
 
+                var w = ((object) (window.PlatformImpl)).Prop("Handle");
+                if (!(w is IntPtr))
+                    w = w.Prop("Handle");
 
-                var hWnd = (IntPtr)window.PlatformImpl.Handle;
+                var hWnd = (IntPtr) w;
                 _appModel.NativeWindowHandle = hWnd;
                 window.Show();
                 _appModel.SetError(null);
@@ -303,7 +310,7 @@ namespace Perspex.Designer.AppHost
                 _appModel.SetError("XAML load error", e.ToString());
             }
         }
-
+        
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             string assemblyPath = Path.Combine(_appDir, new AssemblyName(args.Name).Name + ".dll");
@@ -311,5 +318,11 @@ namespace Perspex.Designer.AppHost
             Assembly assembly = Assembly.LoadFrom(assemblyPath);
             return assembly;
         }
+    }
+
+    static class Helper
+    {
+        public static object Prop(this object obj, string name) => obj.GetType().GetProperty(name).GetValue(obj);
+
     }
 }

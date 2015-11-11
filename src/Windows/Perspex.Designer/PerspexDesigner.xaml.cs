@@ -117,13 +117,13 @@ namespace Perspex.Designer
         {
             if (string.IsNullOrEmpty(TargetExe))
             {
-                State.Text = "No target exe found";
+                _host.State = "No target exe found";
                 return false;
             }
 
             if (File.Exists(TargetExe ?? ""))
                 return true;
-            State.Text = "No target binary found, build your project";
+            _host.State = "No target binary found, build your project";
             return false;
         }
 
