@@ -25,7 +25,7 @@ using Direct2D and other operating systems using Gtk & Cairo.
 
 ## Current Status
 
-Perspex is now in alpha. What does "alpha mean? Well, it means that it's now at a stage where you
+Perspex is now in alpha. What does "alpha" mean? Well, it means that it's now at a stage where you
 can have a play and hopefully create simple applications. There's now a [Visual
 Studio Extension](https://visualstudiogallery.msdn.microsoft.com/a4542e8a-b56c-4295-8df1-7e220178b873)
 containing project and item templates that will help you get started, and
