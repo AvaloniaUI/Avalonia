@@ -36,7 +36,7 @@ namespace Perspex.Controls
         {
             if (_indicator != null)
             {
-                double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
+                double percent = Math.Abs(Maximum - Minimum) < Single.Epsilon ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
                 _indicator.Width = bounds.Width * percent;
             }
         }
