@@ -60,6 +60,6 @@ namespace Perspex.Skia
         }
 
         public IRenderTarget CreateRenderer(IPlatformHandle handle) 
-            => new RenderTarget(MethodTable.Instance.CreateWindowWindowRenderTarget(handle.Handle));
+            => new RenderTarget(handle);
     }
 }

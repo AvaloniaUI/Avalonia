@@ -7,9 +7,10 @@ using Perspex.Platform;
 
 namespace Perspex.Skia
 {
+#if !__ANDROID__
     class RenderTarget : PerspexHandleHolder, IRenderTarget
     {
-        public RenderTarget(IntPtr handle) : base(handle)
+        public RenderTarget(IPlatformHandle handle) : base(MethodTable.Instance.CreateWindowRenderTarget(handle.Handle))
         {
         }
 
@@ -22,4 +23,5 @@ namespace Perspex.Skia
                     new DrawingContextImpl(MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
         }
     }
+#endif
 }

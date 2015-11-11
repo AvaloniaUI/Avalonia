@@ -12,7 +12,7 @@ namespace Perspex.Skia
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr _CreateWindowRenderTarget(IntPtr nativeHandle);
 
-        public _CreateWindowRenderTarget CreateWindowWindowRenderTarget;
+        public _CreateWindowRenderTarget CreateWindowRenderTarget;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr _RenderTargetCreateRenderingContext(IntPtr target);

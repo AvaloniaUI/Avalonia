@@ -16,7 +16,7 @@ using Perspex.Platform;
 
 namespace Perspex.Skia.Android
 {
-    public abstract class SkiaView : SurfaceView, ISurfaceHolderCallback
+    public abstract class SkiaView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
         private readonly Activity _context;
         bool _invalidateQueued;
@@ -27,7 +27,6 @@ namespace Perspex.Skia.Android
             SkiaPlatform.Initialize();
             Holder.AddCallback(this);
         }
-        private IRenderTarget _renderTarget;
 
         public override void Invalidate()
         {
@@ -65,27 +64,15 @@ namespace Perspex.Skia.Android
         public void SurfaceCreated(ISurfaceHolder holder)
         {
             Log.Info("PERSPEX", "Surface Created");
-            _renderTarget =
-                PerspexLocator.Current.GetService<IPlatformRenderInterface>()
-                    .CreateRenderer(new PlatformHandle(holder.Surface.Handle, "Surface"));
             Draw();
         }
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
             Log.Info("PERSPEX", "Surface Destroyed");
-            _renderTarget.Dispose();
-            _renderTarget = null;
         }
 
-        void Draw()
-        {
-            if(_renderTarget == null)
-                return;
-            using (var ctx = _renderTarget.CreateDrawingContext())
-                OnRender(ctx);
-        }
-
-        protected abstract void OnRender(DrawingContext ctx);
+        protected abstract void Draw();
+        public string HandleDescriptor => "SurfaceView";
     }
 }

@@ -82,7 +82,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidRenderTarget.cs" />
     <Compile Include="MethodTable.cs" />
+    <Compile Include="SkiaRenderView.cs" />
     <Compile Include="SkiaView.cs" />
   </ItemGroup>
   <ItemGroup>

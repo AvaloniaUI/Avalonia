@@ -23,7 +23,7 @@ namespace Perspex.Skia.Android.TestApp
             SetContentView(new MainView(this));
         }
 
-        class MainView : SkiaView
+        class MainView : SkiaRenderView
         {
             float _radians = 0;
             public MainView(Activity context) : base(context)
