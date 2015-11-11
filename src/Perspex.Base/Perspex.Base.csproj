@@ -82,6 +82,7 @@
     <Compile Include="Threading\SingleThreadDispatcher.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
+    <Compile Include="Utilities\WeakSubscriptionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Core">

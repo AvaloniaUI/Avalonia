@@ -85,6 +85,7 @@
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PriorityValueTests.cs" />
+    <Compile Include="WeakSubscriptionManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
