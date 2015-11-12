@@ -43,7 +43,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private IObjectAssembler GetObjectAssemblerForUndefinedRoot()
         {
-            return new ObjectAssembler(_wiringContext, new TopDownValueContext());
+            return new PerspexObjectAssembler(_wiringContext);
         }
 
         public IXamlParser CreateForReadingSpecificInstance(object rootInstance)
