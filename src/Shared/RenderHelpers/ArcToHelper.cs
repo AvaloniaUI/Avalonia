@@ -974,8 +974,7 @@ namespace Perspex.RenderHelpers
             static double GetAngle(Vector v1, Vector v2)
             {
                 var scalar = v1 * v2;
-                var angleSign = Math.Sign(v1.X * v2.Y - v1.Y * v2.X);
-                return angleSign * Math.Acos(scalar / (v1.Length * v2.Length));
+                return Math.Atan2(v1.X * v2.Y - v2.X * v1.Y, scalar);
             }
 
             /// <summary>
@@ -1030,7 +1029,7 @@ namespace Perspex.RenderHelpers
                 double y1S2 = p1S.Y * p1S.Y;
                 double x1S2 = p1S.X * p1S.X;
 
-                double nominator = rx2*ry2 - rx2*y1S2 - ry2*x1S2;
+                double numerator = rx2*ry2 - rx2*y1S2 - ry2*x1S2;
                 double denominator = rx2*y1S2 + ry2*x1S2;
 
                 if (Math.Abs(denominator) < 1e-8)
@@ -1038,7 +1037,7 @@ namespace Perspex.RenderHelpers
                     path.LineTo(p2);
                     return;
                 }
-                if ((nominator / denominator) < 0)
+                if ((numerator / denominator) < 0)
                 {
                     double lambda = x1S2/rx2 + y1S2/ry2;
                     double lambdaSqrt = Math.Sqrt(lambda);
@@ -1048,16 +1047,16 @@ namespace Perspex.RenderHelpers
                         ry *= lambdaSqrt;
                         rx2 = rx*rx;
                         ry2 = ry*ry;
-                        nominator = rx2 * ry2 - rx2 * y1S2 - ry2 * x1S2;
-                        if (nominator < 0)
-                            nominator = 0;
+                        numerator = rx2 * ry2 - rx2 * y1S2 - ry2 * x1S2;
+                        if (numerator < 0)
+                            numerator = 0;
 
                         denominator = rx2 * y1S2 + ry2 * x1S2;
                     }
 
                 }
 
-                double multiplier = Math.Sqrt(nominator / denominator);
+                double multiplier = Math.Sqrt(numerator / denominator);
                 Point mulVec = new Point(rx * p1S.Y / ry, -ry * p1S.X / rx);
 
                 int sign = (clockwise != isLargeArc) ? 1 : -1;
