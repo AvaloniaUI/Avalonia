@@ -1,7 +1,7 @@
 # Perspex
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/appveyor/Perspex?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/grokys/Perspex?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/grokys/Perspex/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/Perspex/Perspex/branch/master)
 
 A multi-platform .NET UI framework.
 
