@@ -1,7 +1,6 @@
 using Android.OS;
 using Perspex.Android.CanvasRendering;
 using Perspex.Android.Platform;
-using Perspex.Android.Platform.CanvasPlatform;
 using Perspex.Android.Platform.Input;
 using Perspex.Android.Platform.Specific;
 using Perspex.Android.Platform.Specific.Helpers;
@@ -12,6 +11,7 @@ using Perspex.Input;
 using Perspex.Input.Platform;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
+using Perspex.Skia;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
@@ -77,15 +77,24 @@ namespace Perspex.Android
             ////regular timer is working perfect
             //return new System.Threading.Timer(_ => tick(), null, ms, ms);
 
-            //System.Timers.Timer
+            //when interval is 0 normal System.Timers.Timer is not working
+            //so we ween other strategy for that
             if (interval.TotalMilliseconds == 0)
             {
-                //android ui thread
-                PerspexLocator.Current.GetService<IAndroidActivity>().Activity.RunOnUiThread(tick);
-                return Disposable.Empty;
+                if(DefaultViewDrawType == ViewDrawType.Skia)
+                {
+                    //or start timer with low enough interval 10ms ???
+                    //with skia when animation active  if we use RunOnUiThread UI is not handling the events!!! issue or not?
+                    interval = TimeSpan.FromMilliseconds(10);
+                }
+                else
+                {
+                    //android ui thread
+                    PerspexLocator.Current.GetService<IAndroidActivity>().Activity.RunOnUiThread(tick);
+                    return Disposable.Empty;
+                }
             }
-
-            if (OverrideAnimateFramesPerSecond > 0)
+            else if (OverrideAnimateFramesPerSecond > 0)
             {
                 if (_animationTick >= interval)
                 {
@@ -150,8 +159,8 @@ namespace Perspex.Android
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IAssetLoader>().ToSingleton<AndroidAssetLoader>()
                 .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
-                ;
-            AndroidPlatformRender.Initialize();
+                .Bind<PlatformSettings>().ToConstant(new PlatformSettings());
+            ;
 
             Instance.RegisterViewDrawType();
             //set defaults for simple resources
@@ -167,21 +176,32 @@ namespace Perspex.Android
 
         public void RegisterViewDrawType()
         {
-            if (Instance.DefaultViewDrawType == ViewDrawType.SurfaceViewCanvasOnDraw)
+            if (Instance.DefaultViewDrawType == ViewDrawType.Skia)
             {
-                PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.CanvasPlatform.SurfaceMainWindowImpl>();
+                //do the default initialization for skia rendering
+                SkiaPlatform.Initialize();
+                PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.SkiaPlatform.MainWindowImpl>();
             }
             else
             {
-                PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.CanvasPlatform.MainWindowImpl>();
-            }
+                AndroidPlatformRender.Initialize();
 
-            PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<Platform.CanvasPlatform.PopupImpl>();
+                if (Instance.DefaultViewDrawType == ViewDrawType.SurfaceViewCanvasOnDraw)
+                {
+                    PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.CanvasPlatform.SurfaceMainWindowImpl>();
+                }
+                else
+                {
+                    PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.CanvasPlatform.MainWindowImpl>();
+                }
+
+                PerspexLocator.CurrentMutable.Bind<IPopupImpl>().ToTransient<Platform.CanvasPlatform.PopupImpl>();
+            }
         }
 
         public void RegisterViewPointUnits()
         {
-            PerspexLocator.CurrentMutable.Bind<IPointUnitService>().ToSingleton<PointUnitService>();
+            PerspexLocator.CurrentMutable.Bind<Platform.CanvasPlatform.IPointUnitService>().ToSingleton<Platform.CanvasPlatform.PointUnitService>();
         }
 
         public void InitializeAssetsLoader(Assembly assembly, string defaultResourcePrefix)
@@ -212,9 +232,9 @@ namespace Perspex.Android
         /// SurfaceWindowImpl supports:
         ///     SurfaceViewCanvasOnDraw
         /// </summary>
-        public ViewDrawType DefaultViewDrawType { get; set; } = ViewDrawType.SurfaceViewCanvasOnDraw;
+        public ViewDrawType DefaultViewDrawType { get; set; } = ViewDrawType.Skia;
 
-        public PointUnit DefaultPointUnit { get; set; } = PointUnit.DP;
+        public Platform.CanvasPlatform.PointUnit DefaultPointUnit { get; set; } = Platform.CanvasPlatform.PointUnit.DP;
 
         public int OverrideAnimateFramesPerSecond { get; set; } = -1;
     }

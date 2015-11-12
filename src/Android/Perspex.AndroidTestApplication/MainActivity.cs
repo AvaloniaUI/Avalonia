@@ -4,17 +4,8 @@ using Android.OS;
 using Perspex.Android;
 using Perspex.Android.Platform.Specific;
 using Perspex.Android.Platform.Specific.Helpers;
-using Perspex.Controls;
-using Perspex.Controls.Presenters;
-using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
-using Perspex.Markup.Xaml.Data;
+using Perspex.Controls.Platform;
 using Perspex.Platform;
-using Perspex.Styling;
-using ReactiveUI;
-using System;
-using System.Reactive.Linq;
-using System.Windows.Input;
 
 namespace Perspex.AndroidTestApplication
 {
@@ -31,12 +22,16 @@ namespace Perspex.AndroidTestApplication
 
             //set some parameters to android platform
             AndroidPlatform.Instance.DrawDebugInfo = true;
+            //skia is the default rendering method on android so no need to set it
+            AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.Skia;
             //AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.BitmapOnPreDraw;
-            AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.CanvasOnDraw;
+            //AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.CanvasOnDraw;
             //AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.BitmapBackgroundRender;
             //AndroidPlatform.Instance.DefaultViewDrawType = ViewDrawType.SurfaceViewCanvasOnDraw;
-            AndroidPlatform.Instance.DefaultPointUnit = Android.Platform.CanvasPlatform.PointUnit.DP;
+            //AndroidPlatform.Instance.DefaultPointUnit = Android.Platform.CanvasPlatform.PointUnit.DP;
             //AndroidPlatform.Instance.DefaultPointUnit = Android.Platform.CanvasPlatform.PointUnit.Pixel;
+
+            //60 fps animation are causing user interface in animations to stop responding
             AndroidPlatform.Instance.OverrideAnimateFramesPerSecond = 16;
 
             App app;
@@ -44,13 +39,23 @@ namespace Perspex.AndroidTestApplication
                 app = (App)Perspex.Application.Current;
             else
                 app = new App();
-            
+
+            if (AndroidPlatform.Instance.DefaultPointUnit == Android.Platform.CanvasPlatform.PointUnit.DP &&
+                AndroidPlatform.Instance.DefaultViewDrawType == ViewDrawType.Skia)
+            {
+                double scale = Resources.DisplayMetrics.ScaledDensity;
+                //make it DiP in skia
+                PerspexLocator.Current.GetService<PlatformSettings>().LayoutScalingFactor = scale;
+                PerspexLocator.Current.GetService<PlatformSettings>().RenderScalingFactor = scale;
+            }
+
             var window = TestUI.TestUIBuilder.BuildTestUI();
             //var window = BuildPlatforSetup();
 
             window.Show();
             app.Run(window);
         }
+
         public static void StartAppFromSetup()
         {
             PerspexLocator.Current.GetService<IWindowImpl>().Dispose();

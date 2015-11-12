@@ -73,6 +73,8 @@
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Platform\Input\AndroidKeyboardDevice.cs" />
     <Compile Include="Platform\Input\AndroidMouseDevice.cs" />
+    <Compile Include="Platform\SkiaPlatform\MainWindowImpl.cs" />
+    <Compile Include="Platform\SkiaPlatform\WindowImpl.cs" />
     <Compile Include="Platform\Specific\CommonUITimer.cs" />
     <Compile Include="Platform\CanvasPlatform\SurfaceMainWindowImpl.cs" />
     <Compile Include="Platform\CanvasPlatform\Specific\Helpers\AndroidViewRenderHelpers.cs" />
@@ -88,7 +90,7 @@
     <Compile Include="CanvasRendering\BrushImpl.cs" />
     <Compile Include="CanvasRendering\DrawingContext.cs" />
     <Compile Include="CanvasRendering\FormattedTextImpl.cs" />
-    <Compile Include="CanvasRendering\AndroidTopLevelRenderer.cs" />
+    <Compile Include="Platform\AndroidTopLevelRenderer.cs" />
     <Compile Include="Platform\CanvasPlatform\MainWindowImpl.cs" />
     <Compile Include="Platform\CanvasPlatform\SurfaceWindowImpl.cs" />
     <Compile Include="Platform\CanvasPlatform\WindowImpl.cs" />
@@ -156,6 +158,10 @@
     <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Skia\Perspex.Skia.Android\Perspex.Skia.Android.csproj">
+      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
+      <Name>Perspex.Skia.Android</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -79,6 +79,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO" />
     <Reference Include="System.Linq.Expressions" />
@@ -192,6 +193,10 @@
     <ProjectReference Include="..\..\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Perspex.HtmlRenderer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Skia\Perspex.Skia.Android\Perspex.Skia.Android.csproj">
+      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
+      <Name>Perspex.Skia.Android</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
