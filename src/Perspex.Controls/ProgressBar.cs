@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 
@@ -37,7 +36,7 @@ namespace Perspex.Controls
         {
             if (_indicator != null)
             {
-                double percent = (Maximum - Minimum) < Single.Epsilon ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
+                double percent = (Maximum - Minimum) < double.Epsilon ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
                 _indicator.Width = bounds.Width * percent;
             }
         }
