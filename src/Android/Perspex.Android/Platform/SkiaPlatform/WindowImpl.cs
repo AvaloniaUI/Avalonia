@@ -1,6 +1,6 @@
 using Android.App;
 using Android.Content;
-using Android.Util;
+using Android.Graphics;
 using Android.Views;
 using Perspex.Android.Platform.Specific;
 using Perspex.Android.Platform.Specific.Helpers;
@@ -10,11 +10,10 @@ using Perspex.Platform;
 using Perspex.Skia.Android;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Perspex.Android.Platform.SkiaPlatform
 {
-    public class WindowImpl : SkiaView, IAndroidView, IWindowImpl
+    public class WindowImpl : SkiaView, IAndroidView, IWindowImpl, ISurfaceHolderCallback
     {
         protected AndroidKeyboardEventsHelper<WindowImpl> _keyboardHelper;
 
@@ -25,13 +24,26 @@ namespace Perspex.Android.Platform.SkiaPlatform
             _keyboardHelper = new AndroidKeyboardEventsHelper<WindowImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<WindowImpl>(this, () => InputRoot, p => GetPerspexPointFromEvent(p));
 
+            MaxClientSize = new Size(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
             ClientSize = MaxClientSize;
-            Resized = size => Invalidate(new Rect(size));
             Init();
         }
 
         public WindowImpl() : this(PerspexLocator.Current.GetService<IAndroidActivity>().Activity)
         {
+        }
+
+        void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
+        {
+            var newSize = new Size(width, height);
+            if (newSize != ClientSize)
+            {
+                MaxClientSize = newSize;
+                ClientSize = newSize;
+                Resized?.Invoke(ClientSize);
+            }
+
+            base.SurfaceChanged(holder, format, width, height);
         }
 
         protected virtual void Init()
@@ -62,7 +74,7 @@ namespace Perspex.Android.Platform.SkiaPlatform
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        public Size MaxClientSize => new Size(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
+        public Size MaxClientSize { get; private set; }
 
         public Action<Rect> Paint { get; set; }
 
@@ -85,11 +97,7 @@ namespace Perspex.Android.Platform.SkiaPlatform
 
         public void Invalidate(Rect rect)
         {
-            //not working if invalidate is called before Draw app is crashing !!!????
-            //TODO: investigate and make better workaround also this solution is ok so far
-            //if (this.Holder?.Surface != null)
-            if(Holder?.Surface?.IsValid == true) base.Invalidate();
-           // if (_drawInitialized) base.Invalidate();
+            if (Holder?.Surface?.IsValid == true) base.Invalidate();
         }
 
         public Point PointToScreen(Point point)
@@ -143,8 +151,6 @@ namespace Perspex.Android.Platform.SkiaPlatform
 
         protected override void Draw()
         {
-            _drawInitialized = true;
-
             DateTime begin = DateTime.Now;
 
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
@@ -165,7 +171,5 @@ namespace Perspex.Android.Platform.SkiaPlatform
                 //Log.Debug("render", text);
             }
         }
-
-        private bool _drawInitialized = false;
     }
 }
