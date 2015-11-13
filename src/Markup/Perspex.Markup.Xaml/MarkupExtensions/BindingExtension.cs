@@ -22,12 +22,14 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             return new Binding
             {
                 Converter = Converter,
+                ElementName = ElementName,
                 Mode = Mode,
-                SourcePropertyPath = Path,
+                Path = Path,
             };
         }
 
         public IValueConverter Converter { get; set; }
+        public string ElementName { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
     }

@@ -14,7 +14,7 @@ namespace Perspex.Controls.UnitTests
             base.AddVisualChild(visual);
         }
 
-        protected override void OnTemplateApplied()
+        protected override void OnTemplateApplied(INameScope nameScope)
         {
             OnTemplateAppliedCalled = true;
         }

@@ -19,17 +19,19 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext extensionContext)
         {
-            return new Data.Binding
+            return new Binding
             {
                 Converter = Converter,
+                ElementName = ElementName,
                 Mode = Mode,
                 Priority = BindingPriority.TemplatedParent,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
-                SourcePropertyPath = Path,
+                Path = Path,
             };
         }
 
         public IValueConverter Converter { get; set; }
+        public string ElementName { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
     }

@@ -212,23 +212,17 @@ namespace Perspex.Controls.Primitives
             return new Size();
         }
 
-        /// <summary>
-        /// Called when the control is added to the visual tree.
-        /// </summary>
-        /// <param name="root">THe root of the visual tree.</param>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
-            _topLevel = root as TopLevel;
+            base.OnAttachedToVisualTree(e);
+            _topLevel = e.Root as TopLevel;
         }
 
-        /// <summary>
-        /// Called when the control is removed to the visual tree.
-        /// </summary>
-        /// <param name="root">THe root of the visual tree.</param>
-        protected override void OnDetachedFromVisualTree(IRenderRoot root)
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTree(root);
+            base.OnDetachedFromVisualTree(e);
             _topLevel = null;
         }
 

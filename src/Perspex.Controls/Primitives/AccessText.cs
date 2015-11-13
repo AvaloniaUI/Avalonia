@@ -108,14 +108,11 @@ namespace Perspex.Controls.Primitives
             return result.WithHeight(result.Height + 1);
         }
 
-        /// <summary>
-        /// Called when the control is attached to a visual tree.
-        /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
-            _accessKeys = (root as IInputRoot)?.AccessKeyHandler;
+            base.OnAttachedToVisualTree(e);
+            _accessKeys = (e.Root as IInputRoot)?.AccessKeyHandler;
 
             if (_accessKeys != null && AccessKey != 0)
             {
@@ -123,13 +120,10 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Called when the control is detached from a visual tree.
-        /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected override void OnDetachedFromVisualTree(IRenderRoot root)
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTree(root);
+            base.OnDetachedFromVisualTree(e);
 
             if (_accessKeys != null && AccessKey != 0)
             {

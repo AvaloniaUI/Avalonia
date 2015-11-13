@@ -2,26 +2,31 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Controls;
 using Perspex.Platform;
 using Perspex.Rendering;
 
-namespace Perspex.SceneGraph.UnitTests
+namespace Perspex.Markup.UnitTests
 {
-    public class TestRoot : TestVisual, IRenderRoot, INameScope
+    public class TestRoot : Decorator, IRenderRoot, INameScope
     {
         private NameScope _nameScope = new NameScope();
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
-            add { _nameScope.Registered += value; }
-            remove { _nameScope.Registered -= value; }
+            add { _nameScope.Registered += value; ++NameScopeRegisteredSubscribers; }
+            remove { _nameScope.Registered -= value; --NameScopeRegisteredSubscribers; }
         }
 
         public event EventHandler<NameScopeEventArgs> Unregistered
         {
-            add { _nameScope.Unregistered += value; }
-            remove { _nameScope.Unregistered -= value; }
+            add { _nameScope.Unregistered += value; ++NameScopeUnregisteredSubscribers; }
+            remove { _nameScope.Unregistered -= value; --NameScopeUnregisteredSubscribers; }
         }
+
+        public int NameScopeRegisteredSubscribers { get; private set; }
+
+        public int NameScopeUnregisteredSubscribers { get; private set; }
 
         public IRenderTarget RenderTarget
         {

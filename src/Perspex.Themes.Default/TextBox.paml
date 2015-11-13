@@ -22,9 +22,9 @@
                 <TextBlock.IsVisible>
                   <MultiBinding Converter="{Static BoolConverters.And}">
                     <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                             SourcePropertyPath="UseFloatingWatermark"/>
+                             Path="UseFloatingWatermark"/>
                     <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                             SourcePropertyPath="Text" 
+                             Path="Text" 
                              Converter="{Static StringConverters.NotNullOrEmpty}"/>
                   </MultiBinding>
                 </TextBlock.IsVisible>

@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Glass;
@@ -11,21 +9,17 @@ using OmniXaml;
 using OmniXaml.Builder;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
+using Perspex.Collections;
 using Perspex.Controls;
+using Perspex.Controls.Primitives;
+using Perspex.Controls.Templates;
 using Perspex.Input;
-using Perspex.Markup.Xaml.Templates;
 using Perspex.Markup.Xaml.Converters;
-using Perspex.Markup.Xaml.Data;
-using Perspex.Markup.Xaml.MarkupExtensions;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
-using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
-using System.Collections;
-using Perspex.Collections;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -48,9 +42,10 @@ namespace Perspex.Markup.Xaml.Context
             var xamlNamespaceRegistry = CreateXamlNamespaceRegistry();
             var typeRepository = new PerspexTypeRepository(xamlNamespaceRegistry, typeFactory, featureProvider);
 
-            typeRepository.RegisterMetadata(new Metadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
+            typeRepository.RegisterMetadata(new GenericMetadata<Visual>().WithRuntimeNameProperty(d => d.Name));
+            typeRepository.RegisterMetadata(new GenericMetadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
             typeRepository.RegisterMetadata(
-                new Metadata<SelectingItemsControl>()
+                new GenericMetadata<SelectingItemsControl>()
                 .WithMemberDependency(x => x.SelectedIndex, x => x.Items)
                 .WithMemberDependency(x => x.SelectedItem, x => x.Items));
 

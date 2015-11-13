@@ -403,13 +403,13 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var itemsBinding = new Binding
             {
-                SourcePropertyPath = "Items",
+                Path = "Items",
                 Mode = BindingMode.OneWay,
             };
 
             var selectedItemsBinding = new Binding
             {
-                SourcePropertyPath = "SelectedItems",
+                Path = "SelectedItems",
                 Mode = BindingMode.OneWay,
             };
 

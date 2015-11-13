@@ -55,11 +55,5 @@ namespace Perspex.Controls
         {
             // Ignore pointer presses.
         }
-
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied()
-        {
-            base.OnTemplateApplied();
-        }
     }
 }

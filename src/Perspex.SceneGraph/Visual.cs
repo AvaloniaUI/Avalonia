@@ -26,7 +26,7 @@ namespace Perspex
     /// To traverse the scene graph (aka Visual Tree), use the extension methods defined
     /// in <see cref="VisualExtensions"/>.
     /// </remarks>
-    public class Visual : Animatable, IVisual
+    public class Visual : Animatable, IVisual, INamed
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -75,6 +75,11 @@ namespace Perspex
         /// </summary>
         public static readonly PerspexProperty<int> ZIndexProperty =
             PerspexProperty.Register<Visual, int>(nameof(ZIndex));
+
+        /// <summary>
+        /// The name of the visual, if any.
+        /// </summary>
+        private string _name;
 
         /// <summary>
         /// Holds the children of the visual.
@@ -129,6 +134,16 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Raised when the control is attached to a rooted visual tree.
+        /// </summary>
+        public event EventHandler<VisualTreeAttachmentEventArgs> AttachedToVisualTree;
+
+        /// <summary>
+        /// Raised when the control is detached from a rooted visual tree.
+        /// </summary>
+        public event EventHandler<VisualTreeAttachmentEventArgs> DetachedFromVisualTree;
+
+        /// <summary>
         /// Gets the bounds of the scene graph node relative to its parent.
         /// </summary>
         public Rect Bounds
@@ -161,6 +176,36 @@ namespace Perspex
         {
             get { return GetValue(IsVisibleProperty); }
             set { SetValue(IsVisibleProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the visual.
+        /// </summary>
+        /// <remarks>
+        /// An element's name is used to uniquely identify a control within the control's name
+        /// scope. Once the element is added to a visual tree, its name cannot be changed.
+        /// </remarks>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (value.Trim() == string.Empty)
+                {
+                    throw new InvalidOperationException("Cannot set Name to empty string.");
+                }
+
+                if (_isAttachedToVisualTree)
+                {
+                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
+                }
+
+                _name = value;
+            }
         }
 
         /// <summary>
@@ -340,17 +385,19 @@ namespace Perspex
         /// <summary>
         /// Called when the control is added to a visual tree.
         /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected virtual void OnAttachedToVisualTree(IRenderRoot root)
+        /// <param name="e">The event args.</param>
+        protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            AttachedToVisualTree?.Invoke(this, e);
         }
 
         /// <summary>
         /// Called when the control is removed from a visual tree.
         /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected virtual void OnDetachedFromVisualTree(IRenderRoot root)
+        /// <param name="e">The event args.</param>
+        protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            DetachedFromVisualTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -364,6 +411,60 @@ namespace Perspex
             if (visual != null)
             {
                 visual.InvalidateVisual();
+            }
+        }
+
+        /// <summary>
+        /// Gets the event args for an <see cref="AttachedToVisualTree"/> or
+        /// <see cref="DetachedFromVisualTree"/> event.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="VisualTreeAttachmentEventArgs"/> if the visual currently has a root;
+        /// otherwise null.
+        /// </returns>
+        private VisualTreeAttachmentEventArgs GetAttachmentEventArgs()
+        {
+            var e = (IVisual)this;
+            IRenderRoot root = null;
+            INameScope nameScope = null;
+
+            while (e != null)
+            {
+                if (nameScope == null)
+                {
+                    nameScope = e as INameScope ?? NameScope.GetNameScope((Visual)e);
+                }
+
+                root = e as IRenderRoot;
+
+                if (root != null)
+                {
+                    return new VisualTreeAttachmentEventArgs(root, nameScope);
+                }
+
+                e = e.VisualParent;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="VisualTreeAttachmentEventArgs"/> for this element based on the 
+        /// parent's args.
+        /// </summary>
+        /// <param name="e">The parent args.</param>
+        /// <returns>The args for this element.</returns>
+        private VisualTreeAttachmentEventArgs GetAttachmentEventArgs(VisualTreeAttachmentEventArgs e)
+        {
+            var childNameScope = (this as INameScope) ?? NameScope.GetNameScope(this);
+
+            if (childNameScope != null)
+            {
+                return new VisualTreeAttachmentEventArgs(e.Root, childNameScope);
+            }
+            else
+            {
+                return e;
             }
         }
 
@@ -436,28 +537,23 @@ namespace Perspex
         {
             if (_visualParent != value)
             {
-                var old = _visualParent;
-                var oldRoot = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-                var newRoot = default(IRenderRoot);
-
-                if (value != null)
-                {
-                    newRoot = value.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-                }
+                var oldArgs = GetAttachmentEventArgs();
 
                 _visualParent = value;
 
-                if (oldRoot != null)
+                if (oldArgs != null)
                 {
-                    NotifyDetachedFromVisualTree(oldRoot);
+                    NotifyDetachedFromVisualTree(oldArgs);
                 }
 
-                if (newRoot != null)
+                var newArgs = GetAttachmentEventArgs();
+
+                if (newArgs != null)
                 {
-                    NotifyAttachedToVisualTree(newRoot);
+                    NotifyAttachedToVisualTree(newArgs);
                 }
 
-                RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
+                RaisePropertyChanged(VisualParentProperty, oldArgs, value, BindingPriority.LocalValue);
             }
         }
 
@@ -491,43 +587,56 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Calls the <see cref="OnAttachedToVisualTree(IRenderRoot)"/> method for this control
-        /// and all of its visual descendents.
+        /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// for this control and all of its visual descendents.
         /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        private void NotifyAttachedToVisualTree(IRenderRoot root)
+        /// <param name="e">The event args.</param>
+        private void NotifyAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _visualLogger.Verbose("Attached to visual tree");
 
             _isAttachedToVisualTree = true;
-            OnAttachedToVisualTree(root);
+
+            if (Name != null && e.NameScope != null)
+            {
+                e.NameScope.Register(Name, this);
+            }
+
+            OnAttachedToVisualTree(e);
 
             if (_visualChildren != null)
             {
                 foreach (Visual child in _visualChildren.OfType<Visual>())
                 {
-                    child.NotifyAttachedToVisualTree(root);
+                    var ce = child.GetAttachmentEventArgs(e);
+                    child.NotifyAttachedToVisualTree(ce);
                 }
             }
         }
 
         /// <summary>
-        /// Calls the <see cref="OnDetachedFromVisualTree(IRenderRoot)"/> method for this control
-        /// and all of its visual descendents.
+        /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// for this control and all of its visual descendents.
         /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        private void NotifyDetachedFromVisualTree(IRenderRoot root)
+        /// <param name="e">The event args.</param>
+        private void NotifyDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _visualLogger.Verbose("Detached from visual tree");
 
+            if (Name != null && e.NameScope != null)
+            {
+                e.NameScope.Unregister(Name);
+            }
+
             _isAttachedToVisualTree = false;
-            OnDetachedFromVisualTree(root);
+            OnDetachedFromVisualTree(e);
 
             if (_visualChildren != null)
             {
                 foreach (Visual child in _visualChildren.OfType<Visual>())
                 {
-                    child.NotifyDetachedFromVisualTree(root);
+                    var ce = child.GetAttachmentEventArgs(e);
+                    child.NotifyDetachedFromVisualTree(ce);
                 }
             }
         }

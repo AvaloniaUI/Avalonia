@@ -2,7 +2,8 @@
   <Setter Property="Template">
     <ControlTemplate>
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
-        <ScrollContentPresenter Content="{TemplateBinding Content}"
+        <ScrollContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
                                 Offset="{TemplateBinding Path=Offset, Mode=TwoWay}"
                                 Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"

@@ -41,7 +41,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : TopLevel, IStyleable, IFocusScope
+    public class Window : TopLevel, IStyleable, IFocusScope, INameScope
     {
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -55,8 +55,8 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>(nameof(Title), "Window");
 
+        private NameScope _nameScope = new NameScope();
         private object _dialogResult;
-
         private Size _maxPlatformClientSize;
 
         /// <summary>
@@ -75,6 +75,20 @@ namespace Perspex.Controls
             : base(PlatformManager.CreateWindow())
         {
             _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
+        }
+
+        /// <inheritdoc/>
+        event EventHandler<NameScopeEventArgs> INameScope.Registered
+        {
+            add { _nameScope.Registered += value; }
+            remove { _nameScope.Registered -= value; }
+        }
+
+        /// <inheritdoc/>
+        event EventHandler<NameScopeEventArgs> INameScope.Unregistered
+        {
+            add { _nameScope.Unregistered += value; }
+            remove { _nameScope.Unregistered -= value; }
         }
 
         /// <summary>
@@ -189,6 +203,24 @@ namespace Perspex.Controls
 
                 return result.Task;
             }
+        }
+
+        /// <inheritdoc/>
+        void INameScope.Register(string name, object element)
+        {
+            _nameScope.Register(name, element);
+        }
+
+        /// <inheritdoc/>
+        object INameScope.Find(string name)
+        {
+            return _nameScope.Find(name);
+        }
+
+        /// <inheritdoc/>
+        void INameScope.Unregister(string name)
+        {
+            _nameScope.Unregister(name);
         }
 
         /// <inheritdoc/>

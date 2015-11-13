@@ -94,9 +94,9 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied()
+        protected override void OnTemplateApplied(INameScope nameScope)
         {
-            base.OnTemplateApplied();
+            base.OnTemplateApplied(nameScope);
 
             if (Parent.TemplatedParent != null)
             {

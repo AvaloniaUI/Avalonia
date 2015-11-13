@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Media;
@@ -20,7 +21,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            var track = target.GetTemplateChild<Track>("track");
+            var track = (Track)target.GetTemplateChildren().First(x => x.Name == "track");
             target.Value = 50;
 
             Assert.Equal(track.Value, 50);
@@ -35,7 +36,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            var track = target.GetTemplateChild<Track>("track");
+            var track = (Track)target.GetTemplateChildren().First(x => x.Name == "track");
             track.Value = 50;
 
             Assert.Equal(target.Value, 50);
@@ -51,7 +52,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            var track = target.GetTemplateChild<Track>("track");
+            var track = (Track)target.GetTemplateChildren().First(x => x.Name == "track");
             target.Value = 25;
             track.Value = 50;
 

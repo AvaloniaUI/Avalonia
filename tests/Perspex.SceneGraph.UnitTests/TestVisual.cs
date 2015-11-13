@@ -20,11 +20,28 @@ namespace Perspex.SceneGraph.UnitTests
 
     public class TestVisual : Visual
     {
-        public event EventHandler<ParamEventArgs<IRenderRoot>> AttachedToVisualTreeCalled;
-
-        public event EventHandler<ParamEventArgs<IRenderRoot>> DetachedFromVisualTreeCalled;
-
         public new PerspexObject InheritanceParent => base.InheritanceParent;
+
+        public IVisual Child
+        {
+            get
+            {
+                return ((IVisual)this).VisualChildren.FirstOrDefault();
+            }
+
+            set
+            {
+                if (Child != null)
+                {
+                    RemoveVisualChild(Child);
+                }
+
+                if (value != null)
+                {
+                    AddVisualChild(value);
+                }
+            }
+        }
 
         public void AddChild(Visual v)
         {
@@ -44,22 +61,6 @@ namespace Perspex.SceneGraph.UnitTests
         public void ClearChildren()
         {
             ClearVisualChildren();
-        }
-
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
-        {
-            if (AttachedToVisualTreeCalled != null)
-            {
-                AttachedToVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(root));
-            }
-        }
-
-        protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
-        {
-            if (DetachedFromVisualTreeCalled != null)
-            {
-                DetachedFromVisualTreeCalled(this, new ParamEventArgs<IRenderRoot>(oldRoot));
-            }
         }
     }
 }

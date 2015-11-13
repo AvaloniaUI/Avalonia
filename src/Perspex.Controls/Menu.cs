@@ -96,15 +96,12 @@ namespace Perspex.Controls
             IsOpen = true;
         }
 
-        /// <summary>
-        /// Called when the <see cref="MenuItem"/> is attached to the visual tree.
-        /// </summary>
-        /// <param name="root">The root of the visual tree.</param>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
+            base.OnAttachedToVisualTree(e);
 
-            var topLevel = root as TopLevel;
+            var topLevel = e.Root as TopLevel;
 
             topLevel.Deactivated += Deactivated;
 
@@ -117,7 +114,7 @@ namespace Perspex.Controls
                 pointerPress,
                 Disposable.Create(() => topLevel.Deactivated -= Deactivated));
 
-            var inputRoot = root as IInputRoot;
+            var inputRoot = e.Root as IInputRoot;
 
             if (inputRoot != null && inputRoot.AccessKeyHandler != null)
             {
@@ -125,13 +122,10 @@ namespace Perspex.Controls
             }
         }
 
-        /// <summary>
-        /// Called when the <see cref="Menu"/> is detached from the visual tree.
-        /// </summary>
-        /// <param name="oldRoot">The root of the visual tree being detached from.</param>
-        protected override void OnDetachedFromVisualTree(IRenderRoot oldRoot)
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTree(oldRoot);
+            base.OnDetachedFromVisualTree(e);
             _subscription.Dispose();
         }
 

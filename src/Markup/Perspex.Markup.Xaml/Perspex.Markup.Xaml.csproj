@@ -38,6 +38,7 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Converters\PerspexListTypeConverter.cs" />
     <Compile Include="Converters\RelativeRectTypeConverter.cs" />
     <Compile Include="Data\IXamlBinding.cs" />
@@ -185,7 +186,6 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Sequence.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TemplateHostingObjectAssembler.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeContext.cs" />
-    <Compile Include="OmniXAML\Source\OmniXaml\TypeContextBuilder.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\BooleanConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\DoubleTypeConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\TypeConversion\BuiltInConverters\IntTypeConverter.cs" />
@@ -205,11 +205,15 @@
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\AttachableXamlMember.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\ClrNamespace.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\CoreTypes.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\DependencyRegistration.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\DependencyRegistrations.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\GenericMetadata.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlMemberValuePlugin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlNamespaceRegistry.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\IXamlTypeRepository.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MemberValuePlugin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\Metadata.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\Typing\MetadataProvider.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\MutableXamlMember.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\Namespace.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Typing\PrefixRegistration.cs" />

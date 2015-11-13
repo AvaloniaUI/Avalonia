@@ -19,7 +19,6 @@ namespace Perspex.Controls
     /// <remarks>
     /// The control class extends <see cref="InputElement"/> and adds the following features:
     ///
-    /// - A <see cref="Name"/>.
     /// - An inherited <see cref="DataContext"/>.
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// - A collection of class strings for custom styling.
@@ -71,7 +70,6 @@ namespace Perspex.Controls
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
-        private string _name;
         private IPerspexList<ILogical> _logicalChildren;
         private Styles _styles;
 
@@ -162,36 +160,6 @@ namespace Perspex.Controls
             set
             {
                 _dataTemplates = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the control.
-        /// </summary>
-        /// <remarks>
-        /// A control's name is used to uniquely identify a control within the control's name
-        /// scope. Once a control is added to a visual tree, its name cannot be changed.
-        /// </remarks>
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                if (_name != null)
-                {
-                    throw new InvalidOperationException("Name already set.");
-                }
-
-                if (((IVisual)this).VisualParent != null)
-                {
-                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
-                }
-
-                _name = value;
             }
         }
 
@@ -404,9 +372,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(IRenderRoot root)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(root);
+            base.OnAttachedToVisualTree(e);
 
             IStyler styler = PerspexLocator.Current.GetService<IStyler>();
 

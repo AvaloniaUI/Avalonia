@@ -51,6 +51,29 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Templated_Child_Should_Be_NameScope()
+        {
+            var target = new TemplatedControl
+            {
+                Template = new FuncControlTemplate(_ => new Decorator
+                {
+                    Child = new Panel
+                    {
+                        Children = new Controls
+                        {
+                            new TextBlock(),
+                            new Border(),
+                        }
+                    }
+                }),
+            };
+
+            target.ApplyTemplate();
+
+            Assert.NotNull(NameScope.GetNameScope((Visual)target.GetVisualChildren().Single()));
+        }
+
+        [Fact]
         public void Templated_Children_Should_Have_TemplatedParent_Set()
         {
             var target = new TemplatedControl

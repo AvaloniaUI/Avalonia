@@ -18,6 +18,28 @@ namespace Perspex.Markup.Xaml.Context
         {
         }
 
+        public override OmniXaml.INameScope GetNamescope(object instance)
+        {
+            var result = this.UnderlyingType as OmniXaml.INameScope;
+
+            if (result == null)
+            {
+                var visual = instance as Visual;
+
+                if (visual != null)
+                {
+                    var perspexNs = (instance as Perspex.INameScope) ?? NameScope.GetNameScope(visual);
+
+                    if (perspexNs != null)
+                    {
+                        result = new NameScopeWrapper(perspexNs);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         protected override XamlMember LookupMember(string name)
         {
             return new PerspexXamlMember(name, this, TypeRepository, FeatureProvider);
