@@ -29,6 +29,12 @@ namespace Perspex.Controls
             new FuncMemberSelector<object, object>(SelectContent);
 
         /// <summary>
+        /// Defines the <see cref="TabStripPlacement"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Dock> TabStripPlacementProperty =
+            PerspexProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
+
+        /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
         static TabControl()
@@ -36,6 +42,7 @@ namespace Perspex.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedItemChanged);
+            AffectsMeasure(TabStripPlacementProperty);
         }
 
         /// <summary>
@@ -62,6 +69,15 @@ namespace Perspex.Controls
         {
             get { return GetValue(TransitionProperty); }
             set { SetValue(TransitionProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the tabstrip placement of the tabcontrol.
+        /// </summary>
+        public Dock TabStripPlacement
+        {
+            get { return GetValue(TabStripPlacementProperty); }
+            set { SetValue(TabStripPlacementProperty, value); }
         }
 
         /// <summary>
