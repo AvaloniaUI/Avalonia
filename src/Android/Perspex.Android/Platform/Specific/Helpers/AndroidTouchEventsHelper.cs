@@ -1,6 +1,5 @@
 using Android.Graphics;
 using Android.Views;
-using Perspex.Android.Platform.CanvasPlatform;
 using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Media;
@@ -127,33 +126,6 @@ namespace Perspex.Android.Platform.Specific.Helpers
         }
 
         private Paint _paint;
-
-        public void DrawLastMousePoint(DrawingContext context)
-        {
-            if (!AndroidPlatform.Instance.DrawDebugInfo) return;
-
-            double w = AndroidPlatform.Instance.DoubleClickSize.Width;
-            context.FillRectangle(Brushes.Red, new Rect(_point.X - w / 2, _point.Y - w / 2, w, w));
-        }
-
-        public void DrawLastMousePoint(Canvas canvas)
-        {
-            if (!AndroidPlatform.Instance.DrawDebugInfo) return;
-
-            if (_paint == null)
-            {
-                _paint = new Paint() { Color = global::Android.Graphics.Color.Red, };
-                _paint.SetStyle(Paint.Style.Fill);
-            }
-
-            if (AndroidPlatform.Instance.DefaultViewDrawType != ViewDrawType.Skia)
-            {
-                canvas.DrawCircle(PointUnitService.Instance.PerspexToNativeXF(_point.X),
-                                    PointUnitService.Instance.PerspexToNativeYF(_point.Y),
-                                    (float)AndroidPlatform.Instance.DoubleClickSize.Width,
-                                    _paint);
-            }
-        }
 
         public void Dispose()
         {

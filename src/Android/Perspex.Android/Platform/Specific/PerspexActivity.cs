@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.OS;
 using Android.Views;
@@ -8,6 +9,11 @@ namespace Perspex.Android.Platform.Specific
     public class PerspexActivity : Activity, IAndroidActivity
     {
         private IAndroidView _contentView;
+
+        public PerspexActivity(Type applicationType)
+        {
+            AndroidPlatform.Instance.Init(applicationType);
+        }
 
         public Activity Activity => this;
 

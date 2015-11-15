@@ -5,17 +5,19 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}</ProjectGuid>
+    <ProjectGuid>{F92E55A5-ED73-4CCB-AB4B-0541B6757F31}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.Skia.Android</RootNamespace>
-    <AssemblyName>Perspex.Skia.Android</AssemblyName>
+    <RootNamespace>Perspex.Skia.Android.TestApp</RootNamespace>
+    <AssemblyName>Perspex.Skia.Android.TestApp</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
+    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,7 +27,18 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <AndroidLinkSkip />
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <BundleAssemblies>False</BundleAssemblies>
+    <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+    <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
+    <AndroidStoreUncompressedFileExtensions />
+    <MandroidI18n />
+    <Debugger>Xamarin</Debugger>
+    <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
+    <DevInstrumentationEnabled>True</DevInstrumentationEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,18 +47,27 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Collections" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Compile Include="MainActivity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\Resource.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\AndroidManifest.xml" />
+    <AndroidResource Include="Resources\layout\Main.axml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
@@ -80,26 +102,18 @@
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Perspex.Skia.Android\Perspex.Skia.Android.csproj">
+      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
+      <Name>Perspex.Skia.Android</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AndroidRenderTarget.cs" />
-    <Compile Include="MethodTable.cs" />
-    <Compile Include="SkiaRenderView.cs" />
-    <Compile Include="SkiaView.cs" />
+    <AndroidResource Include="Resources\drawable\Icon.png" />
+    <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedNativeLibrary Include="..\native\Android\arm_v7\libperspesk.so">
-      <Link>native\armeabi-v7a\libperspesk.so</Link>
-    </EmbeddedNativeLibrary>
-    <EmbeddedNativeLibrary Include="..\native\Android\x86\libperspesk.so">
-      <Link>native\x86\libperspesk.so</Link>
-    </EmbeddedNativeLibrary>
-  </ItemGroup>
-  <Import Project="..\Perspex.Skia\Perspex.Skia.projitems" Label="Shared" />
-  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+     Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">

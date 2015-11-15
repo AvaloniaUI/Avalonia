@@ -77,45 +77,30 @@ namespace TestApplication
 
             TabControl container;
 
+
             Window window = new Window
             {
                 Title = "Perspex Test Application",
-                Width = 900,
-                Height = 480,
-                Content = new Grid
+                //Width = 900,
+                //Height = 480,
+                Content = (container = new TabControl
                 {
-                    ColumnDefinitions = new ColumnDefinitions
+                    Padding = new Thickness(5),
+                    Items = new[]
                     {
-                        new ColumnDefinition(1, GridUnitType.Star),
-                        new ColumnDefinition(1, GridUnitType.Star),
+                        ButtonsTab(),
+                        TextTab(),
+                        HtmlTab(),
+                        ImagesTab(),
+                        ListsTab(),
+                        LayoutTab(),
+                        AnimationsTab(),
                     },
-                    RowDefinitions = new RowDefinitions
-                    {
-                        new RowDefinition(GridLength.Auto),
-                        new RowDefinition(1, GridUnitType.Star),
-                        new RowDefinition(GridLength.Auto),
-                    },
-                    Children = new Controls
-                    {
-                        (container = new TabControl
-                        {
-                            Padding = new Thickness(5),
-                            Items = new[]
-                            {
-                                ButtonsTab(),
-                                TextTab(),
-                                HtmlTab(),
-                                ImagesTab(),
-                                ListsTab(),
-                                LayoutTab(),
-                                AnimationsTab(),
-                            },
-                            Transition = new CrossFade(TimeSpan.FromSeconds(0.25)),
-                            [Grid.RowProperty] = 1,
-                            [Grid.ColumnSpanProperty] = 2,
-                        })
-                    }
-                },
+                    Transition = new CrossFade(TimeSpan.FromSeconds(0.25)),
+                    [Grid.RowProperty] = 1,
+                    [Grid.ColumnSpanProperty] = 2,
+                })
+
             };
 
             container.Classes.Add(":container");
