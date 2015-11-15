@@ -7,7 +7,7 @@ using Perspex.Media;
 
 namespace Perspex.Skia
 {
-    internal unsafe abstract class MethodTable
+    unsafe abstract class MethodTable
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr _CreateWindowRenderTarget(IntPtr nativeHandle);

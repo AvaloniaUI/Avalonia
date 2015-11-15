@@ -177,6 +177,7 @@ namespace Perspex.Designer.AppHost
 
         private void DoInit(string targetExe, StringBuilder logger)
         {
+            MessageBox.Show("WAT");
             _appDir = Path.GetFullPath(Path.GetDirectoryName(targetExe));
             Directory.SetCurrentDirectory(_appDir);
             Action<string> log = s =>

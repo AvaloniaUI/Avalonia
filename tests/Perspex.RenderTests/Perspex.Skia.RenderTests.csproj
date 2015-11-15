@@ -44,7 +44,6 @@
     <Reference Include="Magick.NET.Core">
       <HintPath>..\..\packages\Magick.NET-Q16-AnyCPU.7.0.0.0018\lib\net40-client\Magick.NET.Core.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
