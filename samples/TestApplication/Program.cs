@@ -32,6 +32,7 @@ namespace TestApplication
             // dispatcher. This makes sure it's initialized.
             System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
             new App();
+            MainWindow.RootNamespace = "TestApplication";
             var wnd = MainWindow.Create();
             DevTools.Attach(wnd);
             Application.Current.Run(wnd);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 using Perspex;
@@ -14,6 +15,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Platform;
 using TestApplication;
 
 namespace TestApplication
@@ -367,6 +369,12 @@ namespace TestApplication
             };
         }
 
+        public static string RootNamespace;
+
+        static Stream GetImage(string path)
+        {
+            return PerspexLocator.Current.GetService<IAssetLoader>().Open(new Uri("res:///" + RootNamespace + "." + path));
+        }
 
         private static TabItem ListsTab()
         {
@@ -392,7 +400,7 @@ namespace TestApplication
                                     Orientation = Orientation.Horizontal,
                                     Children = new Controls
                                     {
-                                        new Image { Width = 50, Height = 50, Source = new Bitmap("github_icon.png") },
+                                        new Image { Width = 50, Height = 50, Source = new Bitmap(GetImage("github_icon.png")) },
                                         new TextBlock { Text = x.Name, FontSize = 18 }
                                     }
                                 })
@@ -458,8 +466,8 @@ namespace TestApplication
                 Transition = new PageSlide(TimeSpan.FromSeconds(0.25)),
                 Items = new[]
                 {
-                    new Image { Source = new Bitmap("github_icon.png"),  Width = 400, Height = 400 },
-                    new Image { Source = new Bitmap("pattern.jpg"), Width = 400, Height = 400 },
+                    new Image { Source = new Bitmap(GetImage("github_icon.png")),  Width = 400, Height = 400 },
+                    new Image { Source = new Bitmap(GetImage("pattern.jpg")), Width = 400, Height = 400 },
                 }
             };
 
@@ -773,7 +781,7 @@ namespace TestApplication
                                     Background = Brushes.Coral,
                                     Child = new Image
                                     {
-                                        Source = new Bitmap("github_icon.png"),
+                                        Source = new Bitmap(GetImage("github_icon.png")),
                                         HorizontalAlignment = HorizontalAlignment.Center,
                                         VerticalAlignment = VerticalAlignment.Center,
                                     },
