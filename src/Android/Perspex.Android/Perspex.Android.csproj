@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7B92AF71-6287-4693-9DCB-BD5B6E927E23}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Perspex.Android</RootNamespace>
+    <AssemblyName>Perspex.Android</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
+    <TargetFrameworkVersion>v4.4</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Android" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO" />
+    <Reference Include="System.Reflection" />
+    <Reference Include="System.ObjectModel" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Rx-Linq.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AndroidPlatform.cs" />
+    <Compile Include="AndroidAssetLoader.cs" />
+    <Compile Include="Platform\CanvasPlatform\IAndroidCanvasView.cs" />
+    <Compile Include="Platform\CanvasPlatform\IAndroidViewSupportRender.cs" />
+    <Compile Include="Platform\ClipboardImpl.cs" />
+    <Compile Include="CursorFactory.cs" />
+    <Compile Include="Platform\Input\AndroidKeyboardDevice.cs" />
+    <Compile Include="Platform\Input\AndroidMouseDevice.cs" />
+    <Compile Include="Platform\SkiaPlatform\MainWindowImpl.cs" />
+    <Compile Include="Platform\SkiaPlatform\WindowImpl.cs" />
+    <Compile Include="Platform\Specific\CommonUITimer.cs" />
+    <Compile Include="Platform\CanvasPlatform\SurfaceMainWindowImpl.cs" />
+    <Compile Include="Platform\CanvasPlatform\Specific\Helpers\AndroidViewRenderHelpers.cs" />
+    <Compile Include="Platform\Specific\Helpers\ViewDrawType.cs" />
+    <Compile Include="Platform\Specific\IAndroidView.cs" />
+    <Compile Include="Platform\Specific\IAndroidActivity.cs" />
+    <Compile Include="Platform\CanvasPlatform\PointUnitService.cs" />
+    <Compile Include="Platform\Specific\PerspexActivity.cs" />
+    <Compile Include="CanvasRendering\AndroidPlatformRender.cs" />
+    <Compile Include="Platform\Specific\Helpers\AndroidTouchEventsHelper.cs" />
+    <Compile Include="Platform\Specific\Helpers\AndroidKeyboardEventsHelper.cs" />
+    <Compile Include="CanvasRendering\BitmapImpl.cs" />
+    <Compile Include="CanvasRendering\BrushImpl.cs" />
+    <Compile Include="CanvasRendering\DrawingContext.cs" />
+    <Compile Include="CanvasRendering\FormattedTextImpl.cs" />
+    <Compile Include="Platform\AndroidTopLevelRenderer.cs" />
+    <Compile Include="Platform\CanvasPlatform\MainWindowImpl.cs" />
+    <Compile Include="Platform\CanvasPlatform\SurfaceWindowImpl.cs" />
+    <Compile Include="Platform\CanvasPlatform\WindowImpl.cs" />
+    <Compile Include="CanvasRendering\AndroidGraphicsExtensions.cs" />
+    <Compile Include="Platform\CanvasPlatform\PopupImpl.cs" />
+    <Compile Include="CanvasRendering\RenderTarget.cs" />
+    <Compile Include="CanvasRendering\RenderTargetBitmapImpl.cs" />
+    <Compile Include="CanvasRendering\StreamGeometryImpl.cs" />
+    <Compile Include="Resources\Resource.Designer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemDialogImpl.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Resources\AboutResources.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Values\Strings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
+      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
+      <Name>Perspex.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
+      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Name>Perspex.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Application\Perspex.Application.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
+      <Name>Perspex.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Perspex.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
+      <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
+      <Name>Perspex.ReactiveUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Skia\Perspex.Skia.Android\Perspex.Skia.Android.csproj">
+      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
+      <Name>Perspex.Skia.Android</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
