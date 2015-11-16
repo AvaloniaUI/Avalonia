@@ -176,8 +176,7 @@ namespace Perspex
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
-                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>()
-                .Bind<PlatformSettings>().ToConstant(new PlatformSettings());
+                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>();
         }
 
         /// <summary>

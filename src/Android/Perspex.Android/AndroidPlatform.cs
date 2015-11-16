@@ -18,10 +18,13 @@ namespace Perspex.Android
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public Size DoubleClickSize => new Size(4, 4);
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
-        
+        public double RenderScalingFactor => _scalingFactor;
+        public double LayoutScalingFactor => _scalingFactor;
+
+        private readonly double _scalingFactor = 1;
+
         AndroidPlatform()
         {
-            var settings = new PlatformSettings();
             PerspexLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
@@ -30,16 +33,14 @@ namespace Perspex.Android
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
-                .Bind<PlatformSettings>().ToConstant(settings);
+                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>();
 
             SkiaPlatform.Initialize();
             Application.SuppressPlatformInitialization();
             PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.SkiaPlatform.MainWindowImpl>();
 
-            var scale = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
-            PerspexLocator.Current.GetService<PlatformSettings>().LayoutScalingFactor = scale;
-            PerspexLocator.Current.GetService<PlatformSettings>().RenderScalingFactor = scale;
+            _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
+
             
             //we have custom Assetloader so no need to overwrite it
             

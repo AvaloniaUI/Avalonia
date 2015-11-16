@@ -27,6 +27,8 @@ namespace Perspex.Gtk
         public Size DoubleClickSize => new Size(4, 4);
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(Gtk.Settings.Default.DoubleClickTime);
+        public double RenderScalingFactor { get; } = 1;
+        public double LayoutScalingFactor { get; } = 1;
 
         public static void Initialize()
         {
