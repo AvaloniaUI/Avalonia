@@ -98,12 +98,13 @@ namespace Perspex.Android.Platform.Specific.Helpers
                             double vectorY = _point.Y - _lastTouchMovePoint.Value.Y;
                             //based on test correction of 0.02 is working perfect
                             double correction = 0.02;
+                            var ps = AndroidPlatform.Instance.LayoutScalingFactor;
                             var mouseWheelEvent = new RawMouseWheelEventArgs(
                                         mouseDevice,
                                         (uint)eventTime.Ticks,
                                         inputRoot,
                                         _point,
-                                        new Vector(vectorX * correction, vectorY * correction), InputModifiers.LeftMouseButton);
+                                        new Vector(vectorX * correction / ps, vectorY * correction / ps), InputModifiers.LeftMouseButton);
                             _view.Input(mouseWheelEvent);
                         }
                         _lastTouchMovePoint = _point;
