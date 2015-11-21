@@ -39,6 +39,8 @@ namespace Perspex.Win32
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
+        public double RenderScalingFactor { get; } = 1;
+        public double LayoutScalingFactor { get; } = 1;
 
         private static void InitializeInternal()
         {

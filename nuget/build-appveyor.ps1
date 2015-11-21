@@ -26,6 +26,7 @@ if ([string]::IsNullOrWhiteSpace($pullreq))
         nuget.exe push Perspex.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
 		nuget.exe push Perspex.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
 		nuget.exe push Perspex.Skia.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
+		nuget.exe push Perspex.Android.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
     }
 }
 

@@ -20,12 +20,15 @@ namespace Perspex.Skia.Android
     {
         private readonly Activity _context;
         bool _invalidateQueued;
-        object _lock = new object();
+        readonly object _lock = new object();
+        private readonly Handler _handler;
+
         public SkiaView(Activity context) : base(context)
         {
             _context = context;
             SkiaPlatform.Initialize();
             Holder.AddCallback(this);
+            _handler = new Handler(context.MainLooper);
         }
 
         public override void Invalidate()
@@ -34,13 +37,20 @@ namespace Perspex.Skia.Android
             {
                 if(_invalidateQueued)
                     return;
-                _context.RunOnUiThread(() =>
+                _handler.Post(() =>
                 {
                     lock (_lock)
                     {
                         _invalidateQueued = false;
                     }
-                    Draw();
+                    try
+                    {
+                        Draw();
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine(LogPriority.Error, "Perspex", e.ToString());
+                    }
                 });
             }
         }

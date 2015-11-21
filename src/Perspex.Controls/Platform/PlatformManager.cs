@@ -13,10 +13,9 @@ namespace Perspex.Controls.Platform
 {
     public static partial class PlatformManager
     {
-        static PlatformSettings DefaultSettings = new PlatformSettings();
 
-        static PlatformSettings GetSettings()
-            => PerspexLocator.Current.GetService<PlatformSettings>() ?? DefaultSettings;
+        static IPlatformSettings GetSettings()
+            => PerspexLocator.Current.GetService<IPlatformSettings>();
 
         public static IRenderTarget CreateRenderTarget(ITopLevelImpl window)
         {
@@ -46,7 +45,7 @@ namespace Perspex.Controls.Platform
             {
                 var cs = _window.ClientSize;
                 var ctx = _target.CreateDrawingContext();
-                var factor = GetSettings().RenderScalingFactor;
+                var factor = GetSettings()?.RenderScalingFactor ?? 1;
                 if (factor != 1)
                 {
                     ctx.PushPostTransform(Matrix.CreateScale(factor, factor));
@@ -63,7 +62,7 @@ namespace Perspex.Controls.Platform
             private readonly IPopupImpl _popup;
 
             public ITopLevelImpl TopLevel => _tl;
-            double ScalingFactor => GetSettings().LayoutScalingFactor;
+            double ScalingFactor => GetSettings()?.LayoutScalingFactor ?? 1;
 
             public WindowDecorator(ITopLevelImpl tl)
             {
@@ -90,9 +89,7 @@ namespace Perspex.Controls.Platform
             {
                 var mouseEvent = obj as RawMouseEventArgs;
                 if (mouseEvent != null)
-                {
-                    mouseEvent.Position /= GetSettings().LayoutScalingFactor;
-                }
+                    mouseEvent.Position /= ScalingFactor;
                 //TODO: Transform event coordinates
                 Input?.Invoke(obj);
             }
@@ -175,11 +172,5 @@ namespace Perspex.Controls.Platform
         {
             return new WindowDecorator(PerspexLocator.Current.GetService<IPopupImpl>());
         }
-    }
-
-    public class PlatformSettings
-    {
-        public double RenderScalingFactor { get; set; } = 1;
-        public double LayoutScalingFactor { get; set; } = 1;
     }
 }

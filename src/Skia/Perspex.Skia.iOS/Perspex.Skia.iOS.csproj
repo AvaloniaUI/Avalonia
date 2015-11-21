@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{47BE08A7-5985-410B-9FFC-2264B8EA595F}</ProjectGuid>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Perspex.Skia.iOS</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>Perspex.Skia.iOS</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchDebug>true</MtouchDebug>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="iOSMethodTable.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\native\iOS\libperspesk_standalone.a">
+      <Link>libperspesk_standalone.a</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
+      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Name>Perspex.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Application\Perspex.Application.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
+      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
+      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
+      <Name>Perspex.Themes.Default</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\Perspex.Skia\Perspex.Skia.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+</Project>

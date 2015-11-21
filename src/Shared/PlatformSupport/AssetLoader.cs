@@ -18,6 +18,13 @@ namespace Perspex.Shared.PlatformSupport
         private static readonly Dictionary<string, Assembly> AssemblyNameCache
             = new Dictionary<string, Assembly>();
 
+        private Assembly _defaultAssembly;
+
+        public AssetLoader(Assembly assembly = null)
+        {
+            _defaultAssembly = assembly;
+        }
+
         static Assembly GetAssembly(string name)
         {
             Assembly rv;
@@ -36,7 +43,7 @@ namespace Perspex.Shared.PlatformSupport
         public bool Exists(Uri uri)
         {
             var parts = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            var asm = parts.Length == 1 ? Assembly.GetEntryAssembly() : GetAssembly(parts[0]);
+            var asm = parts.Length == 1 ? (_defaultAssembly ?? Assembly.GetEntryAssembly()) : GetAssembly(parts[0]);
             var typeName = parts[parts.Length == 1 ? 0 : 1];
             var rv = asm.GetManifestResourceStream(typeName);
             return rv != null;
@@ -53,11 +60,16 @@ namespace Perspex.Shared.PlatformSupport
         public Stream Open(Uri uri)
         {
             var parts = uri.AbsolutePath.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
-            var asm = parts.Length == 1 ? Assembly.GetEntryAssembly() : GetAssembly(parts[0]);
+            var asm = parts.Length == 1 ? (_defaultAssembly ?? Assembly.GetEntryAssembly()) : GetAssembly(parts[0]);
             var typeName = parts[parts.Length == 1 ? 0 : 1];
             var rv = asm.GetManifestResourceStream(typeName);
             if (rv == null)
+            {
+#if DEBUG
+                var names = asm.GetManifestResourceNames().ToList();
+#endif
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
+            }
             return rv;
         }
     }

@@ -68,10 +68,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
-    <Compile Include="GalleryStyle.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -149,15 +145,7 @@
       <Name>Perspex.Win32</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="github_icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <EmbeddedResource Include="html.htm" />
-    <Content Include="pattern.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <Import Project="..\TestApplicationShared\TestApplicationShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\src\Shared\perspex.platform.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
