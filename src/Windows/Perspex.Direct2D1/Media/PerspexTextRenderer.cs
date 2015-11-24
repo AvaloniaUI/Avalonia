@@ -34,6 +34,7 @@ namespace Perspex.Direct2D1.Media
 
         public void Dispose()
         {
+            Shadow?.Dispose();
         }
 
         public Result DrawGlyphRun(
