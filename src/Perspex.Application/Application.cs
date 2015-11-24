@@ -34,7 +34,7 @@ namespace Perspex
     /// </remarks>
     public class Application : IGlobalDataTemplates, IGlobalStyles
     {
-        static bool _suppressPlatformInitialization;
+        static Action _platformInitializationCallback;
 
         /// <summary>
         /// The application-global data templates.
@@ -62,9 +62,9 @@ namespace Perspex
             Current = this;
         }
 
-        public static void SuppressPlatformInitialization()
+        public static void RegisterPlatformCallback(Action cb)
         {
-            _suppressPlatformInitialization = true;
+            _platformInitializationCallback = cb;
         }
 
         /// <summary>
@@ -185,9 +185,11 @@ namespace Perspex
         /// <param name="platformID">The value of Environment.OSVersion.Platform.</param>
         protected void InitializeSubsystems(int platformID)
         {
-            if(_suppressPlatformInitialization)
-                return;
-            if (platformID == 4 || platformID == 6)
+            if (_platformInitializationCallback != null)
+            {
+                _platformInitializationCallback();
+            }
+            else if (platformID == 4 || platformID == 6)
             {
                 InitializeSubsystem("Perspex.Cairo");
                 InitializeSubsystem("Perspex.Gtk");

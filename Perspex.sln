@@ -130,25 +130,32 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Android", "src\Andr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.AndroidTestApplication", "src\Android\Perspex.AndroidTestApplication\Perspex.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iOS", "iOS", "{0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.iOS", "src\iOS\Perspex.iOS\Perspex.iOS.csproj", "{4488AD85-1495-4809-9AA4-DDFE0A48527E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.iOSTestApplication", "src\iOS\Perspex.iOSTestApplication\Perspex.iOSTestApplication.csproj", "{8C923867-8A8F-4F6B-8B80-47D9E8436166}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
+		src\Shared\PlatformSupport\PlatformSupport.projitems*{4488ad85-1495-4809-9aa4-ddfe0a48527e}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{2f59f3d0-748d-4652-b01e-e0d954756308}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{db070a10-bf39-4752-8456-86e9d5928478}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{78345174-5b52-4a14-b9fd-d5f2428137f0}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
-		samples\TestApplicationShared\TestApplicationShared.projitems*{ff69b927-c545-49ae-8e16-3d14d621aa12}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
+		samples\TestApplicationShared\TestApplicationShared.projitems*{8c923867-8a8f-4f6b-8b80-47d9e8436166}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1189,6 +1196,50 @@ Global
 		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|iPhone.ActiveCfg = Release|Any CPU
 		{FF69B927-C545-49AE-8E16-3D14D621AA12}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|iPhone.Build.0 = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Ad-Hoc|Any CPU.ActiveCfg = Ad-Hoc|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Ad-Hoc|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Ad-Hoc|iPhoneSimulator.Build.0 = Ad-Hoc|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.AppStore|Any CPU.ActiveCfg = AppStore|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.AppStore|iPhone.ActiveCfg = AppStore|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.AppStore|iPhone.Build.0 = AppStore|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.AppStore|iPhoneSimulator.ActiveCfg = AppStore|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.AppStore|iPhoneSimulator.Build.0 = AppStore|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Debug|Any CPU.ActiveCfg = Debug|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Debug|iPhone.Build.0 = Debug|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|Any CPU.ActiveCfg = Release|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhone.ActiveCfg = Release|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhone.Build.0 = Release|iPhone
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1229,5 +1280,7 @@ Global
 		{78345174-5B52-4A14-B9FD-D5F2428137F0} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{7B92AF71-6287-4693-9DCB-BD5B6E927E23} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
 		{FF69B927-C545-49AE-8E16-3D14D621AA12} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
+		{4488AD85-1495-4809-9AA4-DDFE0A48527E} = {0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}
+		{8C923867-8A8F-4F6B-8B80-47D9E8436166} = {0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}
 	EndGlobalSection
 EndGlobal

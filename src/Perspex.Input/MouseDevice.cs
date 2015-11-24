@@ -12,7 +12,7 @@ using Perspex.VisualTree;
 
 namespace Perspex.Input
 {
-    public abstract class MouseDevice : IMouseDevice
+    public class MouseDevice : IMouseDevice
     {
         private int _clickCount;
 

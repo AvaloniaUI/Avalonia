@@ -36,7 +36,7 @@ namespace Perspex.Android
                 .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>();
 
             SkiaPlatform.Initialize();
-            Application.SuppressPlatformInitialization();
+            Application.RegisterPlatformCallback(() => { });
             PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.SkiaPlatform.MainWindowImpl>();
 
             _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;

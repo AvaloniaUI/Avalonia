@@ -11,7 +11,7 @@ using Perspex.Interactivity;
 
 namespace Perspex.Input
 {
-    public abstract class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
+    public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
         private IInputElement _focusedElement;
 
