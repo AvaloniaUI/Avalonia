@@ -1,15 +1,81 @@
-﻿<Style xmlns="https://github.com/perspex" Selector="TabControl">
-  <Setter Property="Template">
-    <ControlTemplate>
-      <Grid RowDefinitions="Auto,*">
-        <TabStrip Items="{TemplateBinding Items}"
-                  SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
-        <Carousel Items="{TemplateBinding Items}"
-                  MemberSelector="Content"
-                  SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                  Transition="{TemplateBinding Transition}"
-                  Grid.Row="1"/>
-      </Grid>
-    </ControlTemplate>
-  </Setter>
-</Style>
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="TabControl[TabStripPlacement=Top]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="Auto,*">
+          <TabStrip Items="{TemplateBinding Items}"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+          <Carousel Items="{TemplateBinding Items}"
+                    MemberSelector="Content"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                    Transition="{TemplateBinding Transition}"
+                    Grid.Row="1"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Bottom]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="*,Auto">
+          <Carousel Items="{TemplateBinding Items}"
+                    MemberSelector="Content"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                    Transition="{TemplateBinding Transition}"/>
+          <TabStrip Items="{TemplateBinding Items}"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"
+                    Grid.Row="1"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Left]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="Auto,*">
+          <Border>
+            <ScrollViewer>
+              <TabStrip Items="{TemplateBinding Items}"
+                        SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
+                <TabStrip.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                  </ItemsPanelTemplate>
+                </TabStrip.ItemsPanel>
+              </TabStrip>
+            </ScrollViewer>
+          </Border>
+          <Carousel Items="{TemplateBinding Items}"
+                    MemberSelector="Content"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                    Transition="{TemplateBinding Transition}"
+                    Grid.Column="1"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Right]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="*,Auto">
+          <Carousel Items="{TemplateBinding Items}"
+                    MemberSelector="Content"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                    Transition="{TemplateBinding Transition}"/>
+          <Border Grid.Column="1">
+            <ScrollViewer>
+              <TabStrip Items="{TemplateBinding Items}"
+                        SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
+                <TabStrip.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                  </ItemsPanelTemplate>
+                </TabStrip.ItemsPanel>
+              </TabStrip>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>
