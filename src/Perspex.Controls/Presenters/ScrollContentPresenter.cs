@@ -28,6 +28,7 @@ namespace Perspex.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            OffsetProperty.OverrideValidation<ScrollContentPresenter>(ValidateOffset);
             AffectsArrange(OffsetProperty);
         }
 
@@ -142,6 +143,14 @@ namespace Perspex.Controls.Presenters
             }
 
             Offset = offset;
+        }
+
+        private static Vector ValidateOffset(ScrollContentPresenter o, Vector value)
+        {
+            return ScrollViewer.CoerceOffset(
+                o.GetValue(ExtentProperty),
+                o.GetValue(ViewportProperty),
+                value);
         }
     }
 }

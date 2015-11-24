@@ -167,7 +167,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             var target = new ScrollContentPresenter
             {
-                Content = new Border { Width = 40, Height = 50 }
+                Content = new Border { Width = 140, Height = 150 }
             };
 
             target.Measure(new Size(100, 100));
@@ -176,6 +176,17 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             Assert.True(target.IsMeasureValid);
             Assert.False(target.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Offset_Should_Be_Coerced_To_Viewport()
+        {
+            var target = new ScrollContentPresenter();
+            target.SetValue(ScrollContentPresenter.ExtentProperty, new Size(20, 20));
+            target.SetValue(ScrollContentPresenter.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(12, 12);
+
+            Assert.Equal(new Vector(10, 10), target.Offset);
         }
 
         private class TestControl : Control

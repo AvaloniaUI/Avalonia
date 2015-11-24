@@ -124,6 +124,13 @@ namespace Perspex.Controls
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
+        internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
+        {
+            var maxX = Math.Max(extent.Width - viewport.Width, 0);
+            var maxY = Math.Max(extent.Height - viewport.Height, 0);
+            return new Vector(Clamp(offset.X, 0, maxX), Clamp(offset.Y, 0, maxY));
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(availableSize);
@@ -148,9 +155,7 @@ namespace Perspex.Controls
             {
                 var extent = scrollViewer.Extent;
                 var viewport = scrollViewer.Viewport;
-                var maxX = Math.Max(extent.Width - viewport.Width, 0);
-                var maxY = Math.Max(extent.Height - viewport.Height, 0);
-                return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
+                return CoerceOffset(extent, viewport, value);
             }
             else
             {
