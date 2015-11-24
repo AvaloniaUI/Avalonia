@@ -23,7 +23,7 @@ namespace Perspex.iOS
         private readonly UIViewController _controller;
         private IInputRoot _inputRoot;
 
-        public PerspexView(UIWindow window, UIViewController controller)
+        public PerspexView(UIWindow window, UIViewController controller) : base(onFrame => PlatformThreadingInterface.Instance.Render = onFrame)
         {
             if (controller == null) throw new ArgumentNullException(nameof(controller));
             _window = window;

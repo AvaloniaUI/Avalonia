@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using CoreAnimation;
@@ -31,11 +33,16 @@ namespace Perspex.Skia.iOS
         }
 
 
+        protected SkiaView(Action<Action> registerFrame) : base(UIScreen.MainScreen.ApplicationFrame, GetContext())
+        {
+            registerFrame(OnFrame);
+        }
+
         protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame, GetContext())
         {
             (_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
         }
-        
+
         protected void OnFrame()
         {
             if (_drawQueued)

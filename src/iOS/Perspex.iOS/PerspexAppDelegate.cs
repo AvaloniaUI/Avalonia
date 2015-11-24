@@ -41,7 +41,7 @@ namespace Perspex.iOS
                     .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                     .Bind<IMouseDevice>().ToConstant(MouseDevice)
                     .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                    .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface())
+                    .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
                     .Bind<IWindowImpl>().ToConstant(controller.PerspexView);
                 SkiaPlatform.Initialize();
             });
