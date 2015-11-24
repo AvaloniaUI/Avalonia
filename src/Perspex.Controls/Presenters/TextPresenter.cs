@@ -91,9 +91,7 @@ namespace Perspex.Controls.Presenters
             base.Render(context);
 
             if (selectionStart == selectionEnd)
-            {
-                var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-                
+            {                
                 var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
                 var caretBrush = Brushes.Black;
 
@@ -108,6 +106,7 @@ namespace Perspex.Controls.Presenters
                 
                 if (_caretBlink)
                 {
+                    var charPos = FormattedText.HitTestTextPosition(CaretIndex);
                     var x = Math.Floor(charPos.X) + 0.5;
                     var y = Math.Floor(charPos.Y) + 0.5;
                     var b = Math.Ceiling(charPos.Bottom) - 0.5;
