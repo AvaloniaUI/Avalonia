@@ -53,9 +53,7 @@ namespace Perspex.Direct2D1.Media
             }
         }
 
-        public DWrite.TextLayout TextLayout
-        {
-            get; }
+        public DWrite.TextLayout TextLayout { get; }
 
         public void Dispose()
         {
