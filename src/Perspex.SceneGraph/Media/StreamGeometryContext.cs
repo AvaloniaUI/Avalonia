@@ -59,9 +59,9 @@ namespace Perspex.Media
         /// <param name="point1">The first control point used to specify the shape of the curve.</param>
         /// <param name="point2">The second control point used to specify the shape of the curve.</param>
         /// <param name="point3">The destination point for the end of the curve.</param>
-        public void BezierTo(Point point1, Point point2, Point point3)
+        public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
-            _impl.BezierTo(point1, point2, point3);
+            _impl.CubicBezierTo(point1, point2, point3);
         }
 
         /// <summary>
@@ -69,9 +69,9 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="control">The control point used to specify the shape of the curve.</param>
         /// <param name="endPoint">The destination point for the end of the curve.</param>
-        public void QuadTo(Point control, Point endPoint)
+        public void QuadraticBezierTo(Point control, Point endPoint)
         {
-            _impl.QuadTo(control, endPoint);
+            _impl.QuadraticBezierTo(control, endPoint);
         }
 
         /// <summary>

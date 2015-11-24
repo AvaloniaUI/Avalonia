@@ -146,7 +146,7 @@ namespace Perspex.Media
                                 Point point1 = ReadPoint(reader);
                                 Point point2 = ReadPoint(reader);
                                 point = ReadPoint(reader);
-                                _context.BezierTo(point1, point2, point);
+                                _context.CubicBezierTo(point1, point2, point);
                                 break;
                             }
 
