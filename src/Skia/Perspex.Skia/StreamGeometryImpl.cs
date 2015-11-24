@@ -99,7 +99,7 @@ namespace Perspex.Skia
                 _currentPoint = startPoint;
             }
 
-            public void BezierTo(Point point1, Point point2, Point point3)
+            public void CubicBezierTo(Point point1, Point point2, Point point3)
             {
                 _elements.Add(new SkiaGeometryElement
                 {
@@ -111,7 +111,7 @@ namespace Perspex.Skia
                 _currentPoint = point3;
             }
 
-            public void QuadTo(Point control, Point endPoint)
+            public void QuadraticBezierTo(Point control, Point endPoint)
             {
                 _elements.Add(new SkiaGeometryElement
                 {
