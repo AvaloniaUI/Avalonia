@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Perspex.Media;
@@ -20,6 +21,11 @@ namespace Perspex.Rendering
     [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
     public static class RendererMixin
     {
+        static int s_frameNum;
+        static int s_fps;
+        static int s_currentFrames;
+        static TimeSpan s_lastMeasure;
+        static Stopwatch s_stopwatch = Stopwatch.StartNew();
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
@@ -28,10 +34,35 @@ namespace Perspex.Rendering
         public static void Render(this IRenderTarget renderTarget, IVisual visual)
         {
             using (var ctx = renderTarget.CreateDrawingContext())
+            {
                 ctx.Render(visual);
+                s_frameNum++;
+                if (DrawFpsCounter)
+                {
+                    s_currentFrames++;
+                    var now = s_stopwatch.Elapsed;
+                    var elapsed = now - s_lastMeasure;
+                    if (elapsed.TotalSeconds > 0)
+                    {
+                        s_fps = (int) (s_currentFrames/elapsed.TotalSeconds);
+                        s_currentFrames = 0;
+                        s_lastMeasure = now;
+                    }
+                    var pt = new Point(40, 40);
+                    using (
+                        var txt = new FormattedText("Frame #" + s_frameNum + " FPS: " + s_fps, "Arial", 18,
+                            FontStyle.Normal,
+                            TextAlignment.Left,
+                            FontWeight.Normal))
+                    {
+                        ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
+                        ctx.DrawText(Brushes.Black, pt, txt);
+                    }
+                }
+            }
         }
 
-
+        public static bool DrawFpsCounter { get; set; }
 
         /// <summary>
         /// Renders the specified visual.
