@@ -13,8 +13,17 @@ namespace Perspex.Media
         private readonly IDrawingContextImpl _impl;
         private int _currentLevel;
 
-        private Stack<TransformContainer> _transformContainers = new Stack<TransformContainer>();
-        private Stack<PushedState> _states = new Stack<PushedState>();
+        
+
+        static readonly Stack<Stack<PushedState>> StateStackPool = new Stack<Stack<PushedState>>();
+        static readonly Stack<Stack<TransformContainer>> TransformStackPool = new Stack<Stack<TransformContainer>>();
+
+        private Stack<PushedState> _states = StateStackPool.Count == 0 ? new Stack<PushedState>() : StateStackPool.Pop();
+
+        private Stack<TransformContainer> _transformContainers = TransformStackPool.Count == 0
+            ? new Stack<TransformContainer>()
+            : TransformStackPool.Pop();
+
         struct TransformContainer
         {
             public Matrix LocalTransform;
@@ -206,6 +215,10 @@ namespace Perspex.Media
         {
             while (_states.Count != 0)
                 _states.Peek().Dispose();
+            StateStackPool.Push(_states);
+            _states = null;
+            TransformStackPool.Push(_transformContainers);
+            _transformContainers = null;
             _impl.Dispose();
         }
     }

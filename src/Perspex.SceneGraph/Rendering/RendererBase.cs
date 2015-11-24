@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Perspex.Media;
 using Perspex.Platform;
@@ -14,6 +16,8 @@ namespace Perspex.Rendering
     /// <remarks>
     /// This class provides implements the platform-independent parts of <see cref="IRenderTarget"/>.
     /// </remarks>
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
     public static class RendererMixin
     {
         /// <summary>
@@ -58,12 +62,39 @@ namespace Perspex.Rendering
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
-                    foreach (var child in visual.VisualChildren.OrderBy(x => x.ZIndex))
+                    var lst = GetSortedVisualList(visual.VisualChildren);
+                    foreach (var child in lst)
                     {
                         context.Render(child);
                     }
+                    ReturnListToPool(lst);
                 }
             }
         }
+
+        static readonly Stack<List<IVisual>> ListPool = new Stack<List<IVisual>>();
+        static readonly ZIndexComparer VisualComparer = new ZIndexComparer();
+        class ZIndexComparer : IComparer<IVisual>
+        {
+            public int Compare(IVisual x, IVisual y) => x.ZIndex.CompareTo(y.ZIndex);
+        }
+
+        static void ReturnListToPool(List<IVisual> lst)
+        {
+            lst.Clear();
+            ListPool.Push(lst);
+        }
+
+        static List<IVisual> GetSortedVisualList(IReadOnlyList<IVisual> source)
+        {
+            var lst = ListPool.Count == 0 ? new List<IVisual>() : ListPool.Pop();
+            for (var c = 0; c < source.Count; c++)
+                lst.Add(source[c]);
+            lst.Sort(VisualComparer);
+            return lst;
+        }
+
+
+
     }
 }

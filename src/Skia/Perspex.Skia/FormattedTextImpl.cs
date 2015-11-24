@@ -114,6 +114,8 @@ namespace Perspex.Skia
             get { return _constraint; }
             set
             {
+                if(_constraint == value)
+                    return;
                 _constraint = value;
 
                 _shared->WidthConstraint = (_constraint.Width != double.PositiveInfinity)

@@ -18,12 +18,13 @@ namespace Perspex.Threading
 
         private TimeSpan _interval;
 
+        private readonly Action _raiseTickAction;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
         /// </summary>
-        public DispatcherTimer()
+        public DispatcherTimer() : this(DispatcherPriority.Normal)
         {
-            _priority = DispatcherPriority.Normal;
         }
 
         /// <summary>
@@ -34,6 +35,7 @@ namespace Perspex.Threading
         public DispatcherTimer(DispatcherPriority priority)
         {
             _priority = priority;
+            _raiseTickAction = RaiseTick;
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace Perspex.Threading
         /// <param name="priority">The priority to use.</param>
         /// <param name="dispatcher">The dispatcher to use.</param>
         /// <param name="callback">The event to call when the timer ticks.</param>
-        public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback)
+        public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback) : this(priority)
         {
             _priority = priority;
             Interval = interval;
@@ -172,12 +174,14 @@ namespace Perspex.Threading
             }
         }
 
+        
+
         /// <summary>
         /// Raises the <see cref="Tick"/> event on the dispatcher thread.
         /// </summary>
         private void InternalTick()
         {
-            Dispatcher.UIThread.InvokeAsync(RaiseTick, _priority);
+            Dispatcher.UIThread.InvokeAsync(_raiseTickAction, _priority);
         }
 
         /// <summary>
