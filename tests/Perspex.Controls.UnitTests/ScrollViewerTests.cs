@@ -45,6 +45,17 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(target, presenter.TemplatedParent);
         }
 
+        [Fact]
+        public void Offset_Should_Be_Coerced_To_Viewport()
+        {
+            var target = new ScrollViewer();
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(20, 20));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(12, 12);
+
+            Assert.Equal(new Vector(10, 10), target.Offset);
+        }
+
         private Control CreateTemplate(ScrollViewer control)
         {
             return new Grid
