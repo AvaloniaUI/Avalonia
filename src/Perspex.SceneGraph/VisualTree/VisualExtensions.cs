@@ -8,10 +8,22 @@ using System.Linq;
 namespace Perspex.VisualTree
 {
     /// <summary>
-    /// Provides extension methods for working with visual tree.
+    /// Provides extension methods for working with the visual tree.
     /// </summary>
     public static class VisualExtensions
     {
+        /// <summary>
+        /// Tries to get the first common ancestor of two visuals.
+        /// </summary>
+        /// <param name="visual">The first visual.</param>
+        /// <param name="target">The second visual.</param>
+        /// <returns>The common ancestor, or null if not found.</returns>
+        public static IVisual FindCommonVisualAncestor(this IVisual visual, IVisual target)
+        {
+            return visual.GetSelfAndVisualAncestors().Intersect(target.GetSelfAndVisualAncestors())
+                .FirstOrDefault();
+        }
+
         /// <summary>
         /// Enumerates the ancestors of an <see cref="IVisual"/> in the visual tree.
         /// </summary>
