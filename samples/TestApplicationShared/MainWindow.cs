@@ -16,6 +16,7 @@ using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.Platform;
+using Perspex.Threading;
 using TestApplication;
 
 namespace TestApplication
@@ -747,12 +748,44 @@ namespace TestApplication
                                     VerticalAlignment = VerticalAlignment.Center,
                                     Background = Brushes.Crimson,
                                     RenderTransform = new RotateTransform(),
-                                    Child = new TextBox
+                                    Child = new Grid
                                     {
-                                        Background = Brushes.White,
-                                        Text = "Hello!",
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
+                                        Children = new Controls
+                                        {
+                                            new Ellipse()
+                                            {
+                                                Width = 100,
+                                                Height = 100,
+                                                Fill =
+                                                    new RadialGradientBrush()
+                                                    {
+                                                        GradientStops =
+                                                        {
+                                                            new GradientStop(Colors.Blue, 0),
+                                                            new GradientStop(Colors.Green, 1)
+                                                        },
+                                                        Radius = 75
+                                                    }
+                                            },
+                                            new Perspex.Controls.Shapes.Path
+                                            {
+                                                Data =
+                                                    StreamGeometry.Parse(
+                                                        "F1 M 16.6309,18.6563C 17.1309,8.15625 29.8809,14.1563 29.8809,14.1563C 30.8809,11.1563 34.1308,11.4063 34.1308,11.4063C 33.5,12 34.6309,13.1563 34.6309,13.1563C 32.1309,13.1562 31.1309,14.9062 31.1309,14.9062C 41.1309,23.9062 32.6309,27.9063 32.6309,27.9062C 24.6309,24.9063 21.1309,22.1562 16.6309,18.6563 Z M 16.6309,19.9063C 21.6309,24.1563 25.1309,26.1562 31.6309,28.6562C 31.6309,28.6562 26.3809,39.1562 18.3809,36.1563C 18.3809,36.1563 18,38 16.3809,36.9063C 15,36 16.3809,34.9063 16.3809,34.9063C 16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z"),
+                                                Fill =
+                                                    new LinearGradientBrush()
+                                                    {
+                                                        GradientStops =
+                                                        {
+                                                            new GradientStop(Colors.Green, 0),
+                                                            new GradientStop(Colors.LightSeaGreen, 1)
+                                                        }
+                                                    },
+                                                HorizontalAlignment = HorizontalAlignment.Center,
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                                RenderTransform = new MatrixTransform(Matrix.CreateScale(2, 2))
+                                            }
+                                        }
                                     },
                                     [Canvas.LeftProperty] = 100,
                                     [Canvas.TopProperty] = 100,
