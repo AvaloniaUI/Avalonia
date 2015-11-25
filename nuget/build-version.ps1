@@ -16,11 +16,13 @@ sv skia_root "Perspex.Skia.Desktop"
 sv skia_lib "Perspex.Skia.Desktop\lib\net45"
 sv skia_native "Perspex.Skia.Desktop\build\net45\native"
 sv android "Perspex.Android\lib\MonoAndroid10"
+sv ios "Perspex.iOS\lib\Xamarin.iOS10"
 
 mkdir $lib -ErrorAction SilentlyContinue
 mkdir $build -ErrorAction SilentlyContinue
 mkdir $skia_lib
 mkdir $android
+mkdir $ios
 
 
 Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.dll $lib
@@ -67,6 +69,8 @@ Copy-Item ..\src\Skia\Perspex.Skia.Desktop\bin\Release\Perspex.Skia.Desktop.dll 
 Copy-Item ..\src\Android\Perspex.Android\bin\Release\Perspex.Android.dll $android
 Copy-Item ..\src\Skia\Perspex.Skia.Android\bin\Release\Perspex.Skia.Android.dll $android
 
+Copy-Item ..\src\iOS\Perspex.iOS\bin\iPhone\Release\Perspex.iOS.dll $ios
+Copy-Item ..\src\Skia\Perspex.Skia.iOS\bin\iPhone\Release\Perspex.Skia.iOS.dll $ios
 
 foreach($pkg in $Packages)
 {
