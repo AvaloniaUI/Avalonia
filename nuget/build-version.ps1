@@ -1,9 +1,11 @@
 $ErrorActionPreference = "Stop"
 
-rm -Force -Recurse .\Perspex -ErrorAction SilentlyContinue
-rm -Force -Recurse .\Perspex.Desktop -ErrorAction SilentlyContinue
-rm -Force -Recurse .\Perspex.Skia.Desktop -ErrorAction SilentlyContinue
-rm -Force -Recurse .\Perspex.Android -ErrorAction SilentlyContinue
+. ".\include.ps1"
+
+foreach($pkg in $Packages) 
+{
+    rm -Force -Recurse .\$pkg -ErrorAction SilentlyContinue
+}
 
 rm -Force -Recurse *.nupkg -ErrorAction SilentlyContinue
 Copy-Item template Perspex -Recurse
@@ -65,17 +67,18 @@ Copy-Item ..\src\Skia\Perspex.Skia.Desktop\bin\Release\Perspex.Skia.Desktop.dll 
 Copy-Item ..\src\Android\Perspex.Android\bin\Release\Perspex.Android.dll $android
 Copy-Item ..\src\Skia\Perspex.Skia.Android\bin\Release\Perspex.Skia.Android.dll $android
 
-(gc Perspex\Perspex.nuspec).replace('#VERSION#', $args[0]) | sc Perspex\Perspex.nuspec
-(gc Perspex\Perspex.Desktop.nuspec).replace('#VERSION#', $args[0]) | sc Perspex.Desktop\Perspex.Desktop.nuspec
-(gc Perspex\Perspex.Skia.Desktop.nuspec).replace('#VERSION#', $args[0]) | sc Perspex.Skia.Desktop\Perspex.Skia.Desktop.nuspec
-(gc Perspex\Perspex.Android.nuspec).replace('#VERSION#', $args[0]) | sc Perspex.Android\Perspex.Android.nuspec
 
-nuget.exe pack Perspex\Perspex.nuspec
-nuget.exe pack Perspex.Desktop\Perspex.Desktop.nuspec
-nuget.exe pack Perspex.Skia.Desktop\Perspex.Skia.Desktop.nuspec
-nuget.exe pack Perspex.Android\Perspex.Android.nuspec
+foreach($pkg in $Packages)
+{
+    (gc Perspex\$pkg.nuspec).replace('#VERSION#', $args[0]) | sc $pkg\$pkg.nuspec
+}
 
-rm -Force -Recurse .\Perspex
-rm -Force -Recurse .\Perspex.Desktop
-rm -Force -Recurse .\Perspex.Skia.Desktop
-rm -Force -Recurse .\Perspex.Android
+foreach($pkg in $Packages)
+{
+    nuget.exe pack $pkg\$pkg.nuspec
+}
+
+foreach($pkg in $Packages)
+{
+    rm -Force -Recurse .\$pkg
+}
