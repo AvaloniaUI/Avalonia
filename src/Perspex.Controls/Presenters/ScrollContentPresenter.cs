@@ -9,22 +9,40 @@ using Perspex.VisualTree;
 
 namespace Perspex.Controls.Presenters
 {
+    /// <summary>
+    /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
+    /// </summary>
     public class ScrollContentPresenter : ContentPresenter, IPresenter
     {
+        /// <summary>
+        /// Defines the <see cref="Extent"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Size> ExtentProperty =
             ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="Offset"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Vector> OffsetProperty =
             ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="Viewport"/> property.
+        /// </summary>
         public static readonly PerspexProperty<Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="CanScrollHorizontally"/> property.
+        /// </summary>
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
         private Size _measuredExtent;
 
+        /// <summary>
+        /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
+        /// </summary>
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
@@ -32,31 +50,88 @@ namespace Perspex.Controls.Presenters
             AffectsArrange(OffsetProperty);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScrollContentPresenter"/> class.
+        /// </summary>
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
         }
 
+        /// <summary>
+        /// Gets the extent of the scrollable content.
+        /// </summary>
         public Size Extent
         {
             get { return GetValue(ExtentProperty); }
             private set { SetValue(ExtentProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the current scroll offset.
+        /// </summary>
         public Vector Offset
         {
             get { return GetValue(OffsetProperty); }
             set { SetValue(OffsetProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the size of the viewport on the scrollable content.
+        /// </summary>
         public Size Viewport
         {
             get { return GetValue(ViewportProperty); }
             private set { SetValue(ViewportProperty, value); }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
         public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
 
+        /// <summary>
+        /// Attempts to bring a portion of the target visual into view by scrolling the content.
+        /// </summary>
+        /// <param name="target">The target visual.</param>
+        /// <param name="targetRect">The portion of the target visual to bring into view.</param>
+        /// <returns>True if the scroll offset was changed; otherwise false.</returns>
+        public bool BringDescendentIntoView(IVisual target, Rect targetRect)
+        {
+            var transform = target.TransformToVisual(this.GetVisualChildren().Single());
+            var rect = targetRect * transform;
+            var offset = Offset;
+            var result = false;
+
+            if (rect.Bottom > offset.Y + Viewport.Height)
+            {
+                offset = offset.WithY(rect.Bottom - Viewport.Height);
+                result = true;
+            }
+
+            if (rect.Y < offset.Y)
+            {
+                offset = offset.WithY(rect.Y);
+                result = true;
+            }
+
+            if (rect.Right > offset.X + Viewport.Width)
+            {
+                offset = offset.WithX(rect.Right - Viewport.Width);
+                result = true;
+            }
+
+            if (rect.X < offset.X)
+            {
+                offset = offset.WithX(rect.X);
+                result = true;
+            }
+
+            Offset = offset;
+            return result;
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             var content = Content as ILayoutable;
@@ -81,6 +156,7 @@ namespace Perspex.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
@@ -100,6 +176,7 @@ namespace Perspex.Controls.Presenters
             return new Size();
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             if (Extent.Height > Viewport.Height)
@@ -114,35 +191,7 @@ namespace Perspex.Controls.Presenters
 
         private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
         {
-            var transform = e.TargetObject.TransformToVisual(this.GetVisualChildren().Single());
-            var rect = e.TargetRect * transform;
-            var offset = Offset;
-
-            if (rect.Bottom > offset.Y + Viewport.Height)
-            {
-                offset = offset.WithY(rect.Bottom - Viewport.Height);
-                e.Handled = true;
-            }
-
-            if (rect.Y < offset.Y)
-            {
-                offset = offset.WithY(rect.Y);
-                e.Handled = true;
-            }
-
-            if (rect.Right > offset.X + Viewport.Width)
-            {
-                offset = offset.WithX(rect.Right - Viewport.Width);
-                e.Handled = true;
-            }
-
-            if (rect.X < offset.X)
-            {
-                offset = offset.WithX(rect.X);
-                e.Handled = true;
-            }
-
-            Offset = offset;
+            e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
         }
 
         private static Vector ValidateOffset(ScrollContentPresenter o, Vector value)
