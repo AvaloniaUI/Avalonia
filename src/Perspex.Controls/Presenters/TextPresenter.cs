@@ -142,8 +142,24 @@ namespace Perspex.Controls.Presenters
                 _caretTimer.Start();
                 InvalidateVisual();
 
-                var rect = FormattedText.HitTestTextPosition(caretIndex);
-                this.BringIntoView(rect);
+                if (IsMeasureValid)
+                {
+                    var rect = FormattedText.HitTestTextPosition(caretIndex);
+                    this.BringIntoView(rect);
+                }
+                else
+                {
+                    // The measure is currently invalid so there's no point trying to bring the 
+                    // current char into view until a measure has been carried out as the scroll
+                    // viewer extents may not be up-to-date.
+                    Dispatcher.UIThread.InvokeAsync(
+                        () =>
+                        {
+                            var rect = FormattedText.HitTestTextPosition(caretIndex);
+                            this.BringIntoView(rect);
+                        },
+                        DispatcherPriority.Normal);
+                }
             }
         }
 
