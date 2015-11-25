@@ -307,8 +307,9 @@ namespace Perspex
         /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
         public Matrix TransformToVisual(IVisual visual)
         {
-            var thisOffset = GetOffsetFromRoot(this).Item2;
-            var thatOffset = GetOffsetFromRoot(visual).Item2;
+            var common = this.FindCommonVisualAncestor(visual);
+            var thisOffset = GetOffsetFrom(common, this);
+            var thatOffset = GetOffsetFrom(common, visual);
             return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
         }
 
@@ -466,6 +467,30 @@ namespace Perspex
             {
                 return e;
             }
+        }
+
+        /// <summary>
+        /// Gets the visual offset from the specified ancestor.
+        /// </summary>
+        /// <param name="ancestor">The ancestor visual.</param>
+        /// <param name="visual">The visual.</param>
+        /// <returns>The visual offset.</returns>
+        private static Vector GetOffsetFrom(IVisual ancestor, IVisual visual)
+        {
+            var result = new Vector();
+
+            while (visual != ancestor)
+            {
+                result = new Vector(result.X + visual.Bounds.X, result.Y + visual.Bounds.Y);
+                visual = visual.VisualParent;
+
+                if (visual == null)
+                {
+                    throw new ArgumentException("'visual' is not a descendent of 'ancestor'.");
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
