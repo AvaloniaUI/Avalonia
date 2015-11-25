@@ -190,7 +190,7 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void BringDescendentIntoView_Should_Work()
+        public void BringDescendentIntoView_Should_Update_Offset()
         {
             var target = new ScrollContentPresenter
             {
@@ -209,6 +209,33 @@ namespace Perspex.Controls.UnitTests.Presenters
             target.BringDescendentIntoView(target.Child, new Rect(200, 200, 0, 0));
 
             Assert.Equal(new Vector(100, 100), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendentIntoView_Should_Handle_Child_Margin()
+        {
+            Border border;
+            var target = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Margin = new Thickness(50),
+                    Child = border = new Border
+                    {
+                        Width = 200,
+                        Height = 200,
+                    }
+                }
+            };
+
+            target.ApplyTemplate();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendentIntoView(border, new Rect(200, 200, 0, 0));
+
+            Assert.Equal(new Vector(150, 150), target.Offset);
         }
 
         private class TestControl : Control
