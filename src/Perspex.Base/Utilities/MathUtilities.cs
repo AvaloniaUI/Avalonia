@@ -14,6 +14,11 @@ namespace Perspex.Utilities
     public static class MathUtilities
     {
         /// <summary>
+        /// An approximated value of a machine epsilon for Double.
+        /// </summary>
+        public const double DoubleEpsilon = 2.2204460492503131e-16;
+
+        /// <summary>
         /// Clamps a value between a minimum and maximum value.
         /// </summary>
         /// <param name="val">The value.</param>
@@ -34,6 +39,17 @@ namespace Perspex.Utilities
             {
                 return val;
             }
+        }
+
+        /// <summary>
+        /// Check equality between double numbers with epsilon.
+        /// </summary>
+        /// <param name="a">The first number.</param>
+        /// <param name="b">The second number.</param>
+        /// <returns>Whether numbers are equal.</returns>
+        public static bool Equal(double a, double b)
+        {
+            return Math.Abs(b - a) <= DoubleEpsilon;
         }
     }
 }
