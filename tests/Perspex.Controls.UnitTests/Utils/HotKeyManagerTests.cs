@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Controls.UnitTests.Primitives;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Styling;
@@ -20,11 +21,10 @@ namespace Perspex.Controls.UnitTests.Utils
         {
             using (PerspexLocator.EnterScope())
             {
-                var windowImpl = new Mock<IWindowImpl>();
                 var styler = new Mock<Styler>();
 
                 PerspexLocator.CurrentMutable
-                    .Bind<IWindowImpl>().ToConstant(windowImpl.Object)
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                     .Bind<IStyler>().ToConstant(styler.Object);
 
                 var gesture1 = new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control};
