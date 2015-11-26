@@ -14,7 +14,7 @@ namespace Perspex.Gtk
 {
     using Gtk = global::Gtk;
 
-    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings
+    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
     {
         private static readonly GtkPlatform s_instance = new GtkPlatform();
         private static Thread _uiThread;
@@ -33,8 +33,7 @@ namespace Perspex.Gtk
         public static void Initialize()
         {
             PerspexLocator.CurrentMutable
-                .Bind<IWindowImpl>().ToTransient<WindowImpl>()
-                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
+                .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(GtkKeyboardDevice.Instance)
@@ -86,5 +85,19 @@ namespace Perspex.Gtk
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _uiThread;
 
         public event Action Signaled;
+        public IWindowImpl CreateWindow()
+        {
+            return new WindowImpl();
+        }
+
+        public IWindowImpl CreateDesignerFriendlyWindow()
+        {
+            throw new NotSupportedException();
+        }
+
+        public IPopupImpl CreatePopup()
+        {
+            return new PopupImpl();
+        }
     }
 }

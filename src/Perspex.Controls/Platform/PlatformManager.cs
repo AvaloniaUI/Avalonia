@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Input;
@@ -17,6 +18,8 @@ namespace Perspex.Controls.Platform
         static IPlatformSettings GetSettings()
             => PerspexLocator.Current.GetService<IPlatformSettings>();
 
+        static bool s_designerMode;
+
         public static IRenderTarget CreateRenderTarget(ITopLevelImpl window)
         {
             return
@@ -24,6 +27,11 @@ namespace Perspex.Controls.Platform
                     PerspexLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderer(window.Handle), window);
         }
 
+        public static IDisposable DesignerMode()
+        {
+            s_designerMode = true;
+            return Disposable.Create(() => s_designerMode = false);
+        }
 
         class RenderTargetDecorator : IRenderTarget
         {
@@ -165,12 +173,14 @@ namespace Perspex.Controls.Platform
 
         public static IWindowImpl CreateWindow()
         {
-            return new WindowDecorator(PerspexLocator.Current.GetService<IWindowImpl>());
+            var platform = PerspexLocator.Current.GetService<IWindowingPlatform>();
+            return
+                new WindowDecorator(s_designerMode ? platform.CreateDesignerFriendlyWindow() : platform.CreateWindow());
         }
 
         public static IPopupImpl CreatePopup()
         {
-            return new WindowDecorator(PerspexLocator.Current.GetService<IPopupImpl>());
+            return new WindowDecorator(PerspexLocator.Current.GetService<IWindowingPlatform>().CreatePopup());
         }
     }
 }

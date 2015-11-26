@@ -18,12 +18,11 @@ namespace Perspex.Designer.AppHost
     class PerspexAppHost
     {
         private string _appDir;
-        private CommChannel _comm;
+        private readonly CommChannel _comm;
         private string _lastXaml;
         private string _currentXaml;
-        private Func<Stream, object> _xamlReader;
         private bool _initSuccess;
-        private HostedAppModel _appModel = new HostedAppModel();
+        private readonly HostedAppModel _appModel = new HostedAppModel();
         private Control _window;
 
         public PerspexAppHost(CommChannel channel)
@@ -92,8 +91,6 @@ namespace Perspex.Designer.AppHost
 
         PerspexDesignerMetadata BuildMetadata(List<Assembly> asms, Type xmlNsAttr)
         {
-            
-
             var rv = new PerspexDesignerMetadata()
             {
                 
@@ -200,34 +197,10 @@ namespace Perspex.Designer.AppHost
             log("Looking up Perspex types");
             BuildMetadataAndSendMessageAsync(asms);
 
-            var syncContext = LookupType("Perspex.Threading.PerspexSynchronizationContext");
-            syncContext.GetProperty("AutoInstall", BindingFlags.Public | BindingFlags.Static).SetValue(null, false);
-
-            var app = Activator.CreateInstance(LookupType("Perspex.Application"));
-            app.GetType()
-                .GetMethod("RegisterServices", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(app, null);
-
-            LookupStaticMethod("Perspex.Direct2D1.Direct2D1Platform", "Initialize").Invoke(null, null);
-            LookupStaticMethod("Perspex.Win32.Win32Platform", "InitializeEmbedded").Invoke(null, null);
-
-            app.GetType().GetProperty("Styles").GetSetMethod(true)
-                .Invoke(app, new[] {Activator.CreateInstance(LookupType("Perspex.Themes.Default.DefaultTheme"))});
-            
-
-            dynamic dispatcher =
-                LookupType("Perspex.Threading.Dispatcher")
-                    .GetProperty("UIThread", BindingFlags.Static | BindingFlags.Public)
-                    .GetValue(null);
-            
-
-
-            var xamlFactory = Activator.CreateInstance(LookupType("Perspex.Markup.Xaml.Context.PerspexParserFactory"));
-            
-            dynamic xamlLoader =
-                LookupType("OmniXaml.XamlLoader", "OmniXaml.XamlXmlLoader").GetConstructors().First().Invoke(new object[] {xamlFactory});
-
-            _xamlReader = (stream) => xamlLoader.Load(stream);
+            log("Initializing built-in designer");
+            var dic = new Dictionary<string, object>();
+            Api = new DesignerApi(dic) {OnResize = OnResize, OnWindowCreated = OnWindowCreated};
+            LookupStaticMethod("Perspex.Designer.Designer", "Init").Invoke(null, new object[] {dic});
 
             _window = new Control
             {
@@ -242,14 +215,18 @@ namespace Perspex.Designer.AppHost
             };
             _window.CreateControl();
             
-            new Timer {Interval = 10, Enabled = true}.Tick += delegate
-            {
-                dispatcher.RunJobs();
-            };
             new Timer {Interval = 200, Enabled = true}.Tick += delegate { XamlUpdater(); };
             _comm.SendMessage(new WindowCreatedMessage(_window.Handle));
             _initSuccess = true;
         }
+
+        private void OnWindowCreated(IntPtr hWnd)
+        {
+            _appModel.NativeWindowHandle = hWnd;
+        }
+
+
+        public DesignerApi Api { get; set; }
 
 
         bool ValidateXml(string xml)
@@ -269,6 +246,11 @@ namespace Perspex.Designer.AppHost
             return true;
         }
 
+        private void OnResize()
+        {
+            
+        }
+
         void XamlUpdater()
         {
             if (!_initSuccess)
@@ -282,27 +264,10 @@ namespace Perspex.Designer.AppHost
                 _appModel.SetError("Invalid markup");
                 return;
             }
-
-
             try
             {
-                const string windowType = "Perspex.Controls.Window";
-                
-                var root = _xamlReader(new MemoryStream(Encoding.UTF8.GetBytes(_currentXaml)));
-                dynamic window = root;
-                if (root.GetType().FullName != windowType)
-                {
-                    window = Activator.CreateInstance(LookupType(windowType));
-                    window.Content = root;
-                }
+                Api.UpdateXaml(_currentXaml);
 
-                var w = ((object) (window.PlatformImpl)).Prop("Handle");
-                if (!(w is IntPtr))
-                    w = w.Prop("Handle");
-
-                var hWnd = (IntPtr) w;
-                _appModel.NativeWindowHandle = hWnd;
-                window.Show();
                 _appModel.SetError(null);
             }
             catch (Exception e)
@@ -310,6 +275,8 @@ namespace Perspex.Designer.AppHost
                 _appModel.SetError("XAML load error", e.ToString());
             }
         }
+
+        
         
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {

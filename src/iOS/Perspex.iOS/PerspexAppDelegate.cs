@@ -42,9 +42,34 @@ namespace Perspex.iOS
                     .Bind<IMouseDevice>().ToConstant(MouseDevice)
                     .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                     .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
-                    .Bind<IWindowImpl>().ToConstant(controller.PerspexView);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatform(controller.PerspexView));
                 SkiaPlatform.Initialize();
             });
+        }
+
+        class WindowingPlatform : IWindowingPlatform
+        {
+            private readonly IWindowImpl _window;
+
+            public WindowingPlatform(IWindowImpl window)
+            {
+                _window = window;
+            }
+
+            public IWindowImpl CreateWindow()
+            {
+                return _window;
+            }
+
+            public IWindowImpl CreateDesignerFriendlyWindow()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IPopupImpl CreatePopup()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
