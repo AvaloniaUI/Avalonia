@@ -46,6 +46,11 @@ namespace Perspex.Designer
             get { return (Action<IntPtr>) Get(); }
         }
 
+        public Action<double> SetScalingFactor
+        {
+            set { Set(value);}
+            get { return (Action<double>) Get(); }
+        }
 
     }
 }

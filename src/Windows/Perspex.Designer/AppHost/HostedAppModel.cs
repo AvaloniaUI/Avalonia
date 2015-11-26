@@ -11,9 +11,15 @@ namespace Perspex.Designer.AppHost
 {
     public class HostedAppModel : INotifyPropertyChanged
     {
+        private readonly PerspexAppHost _host;
         private IntPtr _nativeWindowHandle;
         private string _error;
         private string _errorDetails;
+
+        internal HostedAppModel(PerspexAppHost host)
+        {
+            _host = host;
+        }
 
         public IntPtr NativeWindowHandle
         {
@@ -48,11 +54,25 @@ namespace Perspex.Designer.AppHost
             }
         }
 
+        public IReadOnlyList<double> AvailableScalingFactors => new List<double>() {1, 2, 4, 8};
+
+        public double CurrentScalingFactor
+        {
+            get { return _currentScalingFactor; }
+            set
+            {
+                _currentScalingFactor = value;
+                _host.Api.SetScalingFactor(value);
+            }
+        }
+
         public void SetError(string error, string details = null)
         {
             Error = error;
             ErrorDetails = details;
         }
+
+        double _currentScalingFactor = 1;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

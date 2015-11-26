@@ -13,7 +13,7 @@ using System.Windows.Threading;
 
 namespace Perspex.Designer.Comm
 {
-    internal class CommChannel : IDisposable
+    class CommChannel : IDisposable
     {
         private readonly BinaryReader _input;
         private readonly BinaryWriter _output;

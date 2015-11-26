@@ -29,8 +29,15 @@ namespace Perspex.Designer
         
         public static void Init(Dictionary<string, object> shared)
         {
-            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml};
+            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, SetScalingFactor = SetScalingFactor};
             new DesignerApp();
+        }
+
+        private static void SetScalingFactor(double factor)
+        {
+            PlatformManager.SetDesignerScalingFactor(factor);
+            if (s_currentWindow != null)
+                s_currentWindow.PlatformImpl.ClientSize = s_currentWindow.ClientSize;
         }
 
         static Window s_currentWindow;
