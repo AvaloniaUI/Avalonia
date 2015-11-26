@@ -137,6 +137,10 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Perspex.Controls.UnitTests\Perspex.Controls.UnitTests.csproj">
+      <Project>{5ccb5571-7c30-4e7d-967d-0e2158ebd91f}</Project>
+      <Name>Perspex.Controls.UnitTests</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
