@@ -20,6 +20,11 @@ namespace Perspex.Markup.Xaml.Data
         public IValueConverter Converter { get; set; }
 
         /// <summary>
+        /// Gets or sets a parameter to pass to <see cref="Converter"/>.
+        /// </summary>
+        public object ConverterParameter { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the element to use as the binding source.
         /// </summary>
         public string ElementName { get; set; }
@@ -115,7 +120,8 @@ namespace Perspex.Markup.Xaml.Data
             return new ExpressionSubject(
                 observer,
                 targetType,
-                Converter ?? DefaultValueConverter.Instance);
+                Converter ?? DefaultValueConverter.Instance,
+                ConverterParameter);
         }
 
         /// <summary>

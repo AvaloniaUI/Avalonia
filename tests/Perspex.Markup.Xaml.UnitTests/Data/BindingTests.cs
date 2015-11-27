@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Moq;
@@ -167,6 +168,23 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
 
             Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
+        }
+
+        [Fact]
+        public void Should_Pass_ConverterParameter_To_Supplied_Converter()
+        {
+            var target = CreateTarget();
+            var converter = new Mock<IValueConverter>();
+            var binding = new Binding
+            {
+                Converter = converter.Object,
+                ConverterParameter = "foo",
+                Path = "Bar",
+            };
+
+            var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
+
+            Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
         }
 
         /// <summary>

@@ -34,7 +34,12 @@ namespace Perspex.Markup.Data
         /// <param name="inner">The <see cref="ExpressionObserver"/>.</param>
         /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="converter">The value converter to use.</param>
-        public ExpressionSubject(ExpressionObserver inner, Type targetType, IValueConverter converter)
+        /// <param name="converterParameter">A parameter to pass to <paramref name="converter"/>.</param>
+        public ExpressionSubject(
+            ExpressionObserver inner, 
+            Type targetType, 
+            IValueConverter converter,
+            object converterParameter = null)
         {
             Contract.Requires<ArgumentNullException>(inner != null);
             Contract.Requires<ArgumentNullException>(targetType != null);
@@ -43,12 +48,18 @@ namespace Perspex.Markup.Data
             _inner = inner;
             _targetType = targetType;
             Converter = converter;
+            ConverterParameter = converterParameter;
         }
 
         /// <summary>
         /// Gets the converter to use on the expression.
         /// </summary>
         public IValueConverter Converter { get; }
+
+        /// <summary>
+        /// Gets a parameter to pass to <see cref="Converter"/>.
+        /// </summary>
+        public object ConverterParameter { get; }
 
         /// <inheritdoc/>
         string IDescription.Description => _inner.Expression;
@@ -70,7 +81,11 @@ namespace Perspex.Markup.Data
 
             if (type != null)
             {
-                var converted = Converter.ConvertBack(value, type, null, CultureInfo.CurrentUICulture);
+                var converted = Converter.ConvertBack(
+                    value, 
+                    type, 
+                    ConverterParameter, 
+                    CultureInfo.CurrentUICulture);
 
                 if (converted == PerspexProperty.UnsetValue)
                 {
@@ -85,7 +100,11 @@ namespace Perspex.Markup.Data
         public IDisposable Subscribe(IObserver<object> observer)
         {
             return _inner
-                .Select(x => Converter.Convert(x, _targetType, null, CultureInfo.CurrentUICulture))
+                .Select(x => Converter.Convert(
+                    x, 
+                    _targetType, 
+                    ConverterParameter, 
+                    CultureInfo.CurrentUICulture))
                 .Subscribe(observer);
         }
     }
