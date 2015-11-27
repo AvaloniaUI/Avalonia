@@ -2,7 +2,7 @@ using System;
 using Moq;
 using Perspex.Platform;
 
-namespace Perspex.Controls.UnitTests.Primitives
+namespace Perspex.Controls.UnitTests
 {
     public class WindowingPlatformMock : IWindowingPlatform
     {

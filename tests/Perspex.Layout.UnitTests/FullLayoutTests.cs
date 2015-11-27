@@ -9,6 +9,7 @@ using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Controls.UnitTests;
 using Perspex.Controls.UnitTests.Primitives;
 using Perspex.Diagnostics;
 using Perspex.Input;
