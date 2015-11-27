@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using JetBrains.Annotations;
 
 namespace Perspex.Designer.AppHost
@@ -19,6 +20,7 @@ namespace Perspex.Designer.AppHost
         internal HostedAppModel(PerspexAppHost host)
         {
             _host = host;
+            Background = Settings.Background;
         }
 
         public IntPtr NativeWindowHandle
@@ -54,6 +56,17 @@ namespace Perspex.Designer.AppHost
             }
         }
 
+        public string Background
+        {
+            get { return _background; }
+            set
+            {
+                if (value == _background) return;
+                _background = value;
+                OnPropertyChanged();
+            }
+        }
+
         public IReadOnlyList<double> AvailableScalingFactors => new List<double>() {1, 2, 4, 8};
 
         public double CurrentScalingFactor
@@ -73,6 +86,8 @@ namespace Perspex.Designer.AppHost
         }
 
         double _currentScalingFactor = 1;
+        private string _color;
+        private string _background;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

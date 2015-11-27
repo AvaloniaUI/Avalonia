@@ -16,6 +16,10 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+
+            <Rectangle Cursor="Hand" Stroke="Black" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Fill="{Binding Background}" 
+                       Margin="3" MouseDown="ColorPicker_OnClick"/>
+
             <Border x:Name="ErrorPanel" BorderBrush="Red" BorderThickness="3" Padding="3">
                 <StackPanel   Orientation="Horizontal">
                     <TextBlock Text="{Binding Error}" FontSize="16"/>

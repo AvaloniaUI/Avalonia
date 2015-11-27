@@ -20,7 +20,19 @@ namespace Perspex.Designer.AppHost
             Text = "ScrollableArea";
             Controls.Add(_windowHost);
             _windowHost.Anchor = AnchorStyles.None;
-            _timer.Tick += delegate { FixWindow(); };
+            _timer.Tick += delegate
+            {
+                ReloadSettings();
+                FixWindow();
+            };
+        }
+
+        private void ReloadSettings()
+        {
+            var bkg = Settings.Background;
+            var color = System.Drawing.ColorTranslator.FromHtml(bkg);
+            if (BackColor != color)
+                BackColor = color;
         }
 
         private Control _windowHost = new Control() {Text = "WindowWrapper"};
@@ -41,6 +53,12 @@ namespace Perspex.Designer.AppHost
                 m.WParam = (IntPtr) (((int) m.WParam & ~0xFFFF) | 4);
             }
             base.WndProc(ref m);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            using (var b = new SolidBrush(BackColor))
+                e.Graphics.FillRectangle(b, e.ClipRectangle);
         }
 
         void FixPosition()
