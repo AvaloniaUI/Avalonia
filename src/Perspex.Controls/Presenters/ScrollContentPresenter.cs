@@ -134,8 +134,6 @@ namespace Perspex.Controls.Presenters
                     Offset = offset;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"{targetRect} {offset}");
-
                 return result;
             }
             else
