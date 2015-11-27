@@ -12,7 +12,7 @@ Perspex.Gtk project in Visual Studio.
 
 ### Clone the Perspex repository
 
-    git clone https://github.com/grokys/Perspex.git
+    git clone https://github.com/Perspex/Perspex.git
 
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
