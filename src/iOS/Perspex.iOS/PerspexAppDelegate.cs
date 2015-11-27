@@ -61,7 +61,7 @@ namespace Perspex.iOS
                 return _window;
             }
 
-            public IWindowImpl CreateDesignerFriendlyWindow()
+            public IWindowImpl CreateEmbeddableWindow()
             {
                 throw new NotImplementedException();
             }

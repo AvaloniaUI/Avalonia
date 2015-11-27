@@ -184,7 +184,7 @@ namespace Perspex.Controls.Platform
         {
             var platform = PerspexLocator.Current.GetService<IWindowingPlatform>();
             return
-                new WindowDecorator(s_designerMode ? platform.CreateDesignerFriendlyWindow() : platform.CreateWindow());
+                new WindowDecorator(s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow());
         }
 
         public static IPopupImpl CreatePopup()

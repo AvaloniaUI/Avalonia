@@ -90,7 +90,7 @@ namespace Perspex.Gtk
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateDesignerFriendlyWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
         }

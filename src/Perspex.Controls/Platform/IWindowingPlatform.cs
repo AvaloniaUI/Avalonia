@@ -9,7 +9,7 @@ namespace Perspex.Platform
     public interface IWindowingPlatform
     {
         IWindowImpl CreateWindow();
-        IWindowImpl CreateDesignerFriendlyWindow();
+        IWindowImpl CreateEmbeddableWindow();
         IPopupImpl CreatePopup();
     }
 }

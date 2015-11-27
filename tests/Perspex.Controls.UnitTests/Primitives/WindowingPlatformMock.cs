@@ -20,7 +20,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             return _windowImpl?.Invoke() ?? new Mock<IWindowImpl>().Object;
         }
 
-        public IWindowImpl CreateDesignerFriendlyWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

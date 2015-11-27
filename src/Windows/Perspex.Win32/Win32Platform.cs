@@ -163,7 +163,7 @@ namespace Perspex.Win32
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateDesignerFriendlyWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             return new EmbeddedWindowImpl();
         }
