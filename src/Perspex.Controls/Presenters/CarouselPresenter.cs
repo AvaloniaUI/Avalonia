@@ -55,6 +55,8 @@ namespace Perspex.Controls.Presenters
         private int _selectedIndex = -1;
         private bool _createdPanel;
         private IItemContainerGenerator _generator;
+        private Task _currentTransition;
+        private int _queuedTransitionIndex = -1;
 
         /// <summary>
         /// Initializes static members of the <see cref="CarouselPresenter"/> class.
@@ -187,35 +189,39 @@ namespace Perspex.Controls.Presenters
         /// <returns>A task tracking the animation.</returns>
         private async Task MoveToPage(int fromIndex, int toIndex)
         {
-            var generator = ItemContainerGenerator;
-            IControl from = null;
-            IControl to = null;
-
-            if (fromIndex != -1)
+            if (fromIndex != toIndex)
             {
-                from = generator.ContainerFromIndex(fromIndex);
-            }
+                var generator = ItemContainerGenerator;
+                IControl from = null;
+                IControl to = null;
 
-            if (toIndex != -1)
-            {
-                var item = Items.Cast<object>().ElementAt(toIndex);
-                to = generator.Materialize(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
-
-                if (to != null)
+                if (fromIndex != -1)
                 {
-                    Panel.Children.Add(to);
+                    from = generator.ContainerFromIndex(fromIndex);
                 }
-            }
 
-            if (Transition != null && (from != null || to != null))
-            {
-                await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
-            }
+                if (toIndex != -1)
+                {
+                    var item = Items.Cast<object>().ElementAt(toIndex);
+                    to = generator.ContainerFromIndex(toIndex) ??
+                        generator.Materialize(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
 
-            if (from != null)
-            {
-                Panel.Children.Remove(from);
-                generator.Dematerialize(fromIndex, 1);
+                    if (to != null)
+                    {
+                        Panel.Children.Add(to);
+                    }
+                }
+
+                if (Transition != null && (from != null || to != null))
+                {
+                    await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
+                }
+
+                if (from != null)
+                {
+                    Panel.Children.Remove(from);
+                    generator.Dematerialize(fromIndex, 1);
+                }
             }
         }
 
@@ -223,11 +229,37 @@ namespace Perspex.Controls.Presenters
         /// Called when the <see cref="SelectedIndex"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
+        private async void SelectedIndexChanged(PerspexPropertyChangedEventArgs e)
         {
             if (Panel != null)
             {
-                var task = MoveToPage((int)e.OldValue, (int)e.NewValue);
+                if (_currentTransition == null)
+                {
+                    int fromIndex = (int)e.OldValue;
+                    int toIndex = (int)e.NewValue;
+
+                    for (;;)
+                    {
+                        _currentTransition = MoveToPage(fromIndex, toIndex);
+                        await _currentTransition;
+
+                        if (_queuedTransitionIndex != -1)
+                        {
+                            fromIndex = toIndex;
+                            toIndex = _queuedTransitionIndex;
+                            _queuedTransitionIndex = -1;
+                        }
+                        else
+                        {
+                            _currentTransition = null;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    _queuedTransitionIndex = (int)e.NewValue;
+                }
             }
         }
     }
