@@ -18,7 +18,7 @@ using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -42,32 +42,20 @@ namespace Perspex.Win32
         public double RenderScalingFactor { get; } = 1;
         public double LayoutScalingFactor { get; } = 1;
 
-        private static void InitializeInternal()
+        public static void Initialize()
         {
             PerspexLocator.CurrentMutable
-                .Bind<IPopupImpl>().ToTransient<PopupImpl>()
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
+                .Bind<IWindowingPlatform>().ToConstant(s_instance);
 
             SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
-        }
-
-        public static void Initialize()
-        {
-            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<WindowImpl>();
-            InitializeInternal();
-        }
-
-        public static void InitializeEmbedded()
-        {
-            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToTransient<EmbeddedWindowImpl>();
-            InitializeInternal();
         }
 
         public bool HasMessages()
@@ -168,6 +156,21 @@ namespace Perspex.Win32
             {
                 throw new Win32Exception();
             }
+        }
+
+        public IWindowImpl CreateWindow()
+        {
+            return new WindowImpl();
+        }
+
+        public IWindowImpl CreateEmbeddableWindow()
+        {
+            return new EmbeddedWindowImpl();
+        }
+
+        public IPopupImpl CreatePopup()
+        {
+            return new PopupImpl();
         }
     }
 }

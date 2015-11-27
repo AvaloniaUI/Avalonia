@@ -5,15 +5,23 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using JetBrains.Annotations;
 
 namespace Perspex.Designer.AppHost
 {
     public class HostedAppModel : INotifyPropertyChanged
     {
+        private readonly PerspexAppHost _host;
         private IntPtr _nativeWindowHandle;
         private string _error;
         private string _errorDetails;
+
+        internal HostedAppModel(PerspexAppHost host)
+        {
+            _host = host;
+            Background = Settings.Background;
+        }
 
         public IntPtr NativeWindowHandle
         {
@@ -48,11 +56,38 @@ namespace Perspex.Designer.AppHost
             }
         }
 
+        public string Background
+        {
+            get { return _background; }
+            set
+            {
+                if (value == _background) return;
+                _background = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public IReadOnlyList<double> AvailableScalingFactors => new List<double>() {1, 2, 4, 8};
+
+        public double CurrentScalingFactor
+        {
+            get { return _currentScalingFactor; }
+            set
+            {
+                _currentScalingFactor = value;
+                _host.Api.SetScalingFactor(value);
+            }
+        }
+
         public void SetError(string error, string details = null)
         {
             Error = error;
             ErrorDetails = details;
         }
+
+        double _currentScalingFactor = 1;
+        private string _color;
+        private string _background;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

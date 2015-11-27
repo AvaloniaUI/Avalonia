@@ -9,6 +9,8 @@ using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Controls.UnitTests;
+using Perspex.Controls.UnitTests.Primitives;
 using Perspex.Diagnostics;
 using Perspex.Input;
 using Perspex.Platform;
@@ -149,7 +151,7 @@ namespace Perspex.Layout.UnitTests
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())
-                .Bind<IWindowImpl>().ToConstant(windowImpl.Object);
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock(() => windowImpl.Object));
 
             var theme = new DefaultTheme();
             globalStyles.Setup(x => x.Styles).Returns(theme);

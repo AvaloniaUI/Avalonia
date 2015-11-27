@@ -267,7 +267,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             PerspexLocator.CurrentMutable
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
-                .Bind<IPopupImpl>().ToConstant(new Mock<IPopupImpl>().Object)
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                 .Bind<IStyler>().ToTransient<Styler>();
 
             return result;
