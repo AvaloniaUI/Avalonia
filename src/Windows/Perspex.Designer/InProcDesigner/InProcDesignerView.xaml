@@ -4,17 +4,27 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:appHost="clr-namespace:Perspex.Designer.AppHost"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignInstance appHost:HostedAppModel}">
     <DockPanel>
-        <Border x:Name="ErrorPanel" DockPanel.Dock="Bottom" BorderBrush="Red" BorderThickness="3" Padding="3">
-            <StackPanel   Orientation="Horizontal">
-                <TextBlock Text="{Binding Error}" FontSize="16"/>
-                <TextBlock x:Name="DetailsBlock" FontSize="16">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom">
+            <ComboBox ItemsSource="{Binding AvailableScalingFactors}" SelectedItem="{Binding CurrentScalingFactor, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type system:Double}">
+                        <TextBlock><Run Text="{Binding .}"/>00%</TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Border x:Name="ErrorPanel" BorderBrush="Red" BorderThickness="3" Padding="3">
+                <StackPanel   Orientation="Horizontal">
+                    <TextBlock Text="{Binding Error}" FontSize="16"/>
+                    <TextBlock x:Name="DetailsBlock" FontSize="16">
                 <Run> (</Run><Hyperlink Click="Hyperlink_OnClick">View details</Hyperlink><Run>)</Run>
-                </TextBlock>
-            </StackPanel>
-        </Border>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
         <WindowsFormsHost x:Name="WindowHostControl"/>
     </DockPanel>
 </UserControl>

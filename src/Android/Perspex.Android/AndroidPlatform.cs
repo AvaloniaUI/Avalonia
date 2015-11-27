@@ -10,10 +10,11 @@ using Perspex.Shared.PlatformSupport;
 using Perspex.Skia;
 using System;
 using System.Collections.Generic;
+using Perspex.Android.Platform.SkiaPlatform;
 
 namespace Perspex.Android
 {
-    public class AndroidPlatform : IPlatformSettings
+    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public Size DoubleClickSize => new Size(4, 4);
@@ -33,11 +34,11 @@ namespace Perspex.Android
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>();
+                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
+                .Bind<IWindowingPlatform>().ToConstant(this);
 
             SkiaPlatform.Initialize();
             Application.RegisterPlatformCallback(() => { });
-            PerspexLocator.CurrentMutable.Bind<IWindowImpl>().ToSingleton<Platform.SkiaPlatform.MainWindowImpl>();
 
             _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
 
@@ -49,6 +50,21 @@ namespace Perspex.Android
         public void Init(Type applicationType)
         {
             SharedPlatform.Register(applicationType.Assembly);
+        }
+
+        public IWindowImpl CreateWindow()
+        {
+            return new WindowImpl();
+        }
+
+        public IWindowImpl CreateEmbeddableWindow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPopupImpl CreatePopup()
+        {
+            throw new NotImplementedException();
         }
     }
 }
