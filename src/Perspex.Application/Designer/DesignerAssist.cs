@@ -10,7 +10,7 @@ using Perspex.Controls.Platform;
 using Perspex.Markup.Xaml;
 using Perspex.Themes.Default;
 
-namespace Perspex.Designer
+namespace Perspex.DesignerSupport
 {
     class DesignerAssist
     {

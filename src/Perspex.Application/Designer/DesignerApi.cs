@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Perspex.Designer
+namespace Perspex.DesignerSupport
 {
     class DesignerApi
     {
