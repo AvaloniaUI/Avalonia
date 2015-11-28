@@ -29,6 +29,7 @@ namespace Perspex.DesignerSupport
         
         public static void Init(Dictionary<string, object> shared)
         {
+            Design.IsDesignMode = true;
             Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, SetScalingFactor = SetScalingFactor};
             new DesignerApp();
         }
