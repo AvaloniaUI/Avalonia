@@ -1,3 +1,4 @@
+$ErrorActionPreference = "Stop"
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
 Push-Location $dir
@@ -26,7 +27,7 @@ if ([string]::IsNullOrWhiteSpace($pullreq))
         echo "Repo branch matched"
         foreach($pkg in $Packages)
         {
-            nuget.exe push $pkg.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
+            nuget.exe push "$($pkg).$($version).nupkg" $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
         }
     }
 }
