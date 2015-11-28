@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 // ReSharper disable InconsistentNaming
-#pragma warning disable 169
+#pragma warning disable 169, 649
 
 namespace Perspex.Win32.Interop
 {

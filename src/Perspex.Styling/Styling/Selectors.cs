@@ -131,7 +131,6 @@ namespace Perspex.Styling
         /// <summary>
         /// Returns a selector which matches a control with the specified property value.
         /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
         /// <param name="previous">The previous selector.</param>
         /// <param name="property">The property.</param>
         /// <param name="value">The property value.</param>
