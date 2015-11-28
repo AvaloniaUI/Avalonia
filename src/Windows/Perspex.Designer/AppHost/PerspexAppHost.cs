@@ -201,7 +201,7 @@ namespace Perspex.Designer.AppHost
             log("Initializing built-in designer");
             var dic = new Dictionary<string, object>();
             Api = new DesignerApi(dic) {OnResize = OnResize, OnWindowCreated = OnWindowCreated};
-            LookupStaticMethod("Perspex.Designer.Designer", "Init").Invoke(null, new object[] {dic});
+            LookupStaticMethod("Perspex.Designer.DesignerAssist", "Init").Invoke(null, new object[] {dic});
 
             _window = new Control
             {

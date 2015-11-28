@@ -12,7 +12,7 @@ using Perspex.Themes.Default;
 
 namespace Perspex.Designer
 {
-    class Designer
+    class DesignerAssist
     {
         class DesignerApp : Application
         {

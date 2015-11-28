@@ -89,7 +89,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Application.cs" />
-    <Compile Include="Designer\Designer.cs" />
+    <Compile Include="Designer\DesignerAssist.cs" />
     <Compile Include="Designer\DesignerApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
