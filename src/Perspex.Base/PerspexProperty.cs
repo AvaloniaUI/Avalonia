@@ -538,7 +538,7 @@ namespace Perspex
         public override bool Equals(object obj)
         {
             var p = obj as PerspexProperty;
-            return p != null ? Equals(p) : false;
+            return p != null && Equals(p);
         }
 
         /// <inheritdoc/>

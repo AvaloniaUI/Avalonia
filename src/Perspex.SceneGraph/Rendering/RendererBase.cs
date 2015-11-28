@@ -25,7 +25,7 @@ namespace Perspex.Rendering
         static int s_fps;
         static int s_currentFrames;
         static TimeSpan s_lastMeasure;
-        static Stopwatch s_stopwatch = Stopwatch.StartNew();
+        static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
         /// <summary>
         /// Renders the specified visual.
         /// </summary>

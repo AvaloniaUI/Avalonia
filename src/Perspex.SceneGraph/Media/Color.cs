@@ -134,7 +134,7 @@ namespace Perspex.Media
         public override string ToString()
         {
             uint rgb = ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
-            return string.Format("#{0:x8}", rgb);
+            return $"#{rgb:x8}";
         }
 
         /// <summary>

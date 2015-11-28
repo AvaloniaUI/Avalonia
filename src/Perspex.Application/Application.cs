@@ -87,20 +87,8 @@ namespace Perspex
         /// </value>
         public DataTemplates DataTemplates
         {
-            get
-            {
-                if (_dataTemplates == null)
-                {
-                    _dataTemplates = new DataTemplates();
-                }
-
-                return _dataTemplates;
-            }
-
-            set
-            {
-                _dataTemplates = value;
-            }
+            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
+            set { _dataTemplates = value; }
         }
 
         /// <summary>

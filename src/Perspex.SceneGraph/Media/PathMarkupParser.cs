@@ -98,14 +98,9 @@ namespace Perspex.Media
                                 _context.EndFigure(false);
                             }
 
-                            if (command == Command.Move)
-                            {
-                                point = ReadPoint(reader);
-                            }
-                            else
-                            {
-                                point = ReadRelativePoint(reader, point);
-                            }
+                            point = command == Command.Move ? 
+                                ReadPoint(reader) : 
+                                ReadRelativePoint(reader, point);
 
                             _context.BeginFigure(point, true);
                             openFigure = true;

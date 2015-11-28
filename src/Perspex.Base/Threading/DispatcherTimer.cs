@@ -131,9 +131,8 @@ namespace Perspex.Threading
         /// <returns>An <see cref="IDisposable"/> used to cancel the timer.</returns>
         public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            var timer = new DispatcherTimer(priority);
+            var timer = new DispatcherTimer(priority) { Interval = interval };
 
-            timer.Interval = interval;
             timer.Tick += (s, e) =>
             {
                 if (!action())
@@ -187,10 +186,7 @@ namespace Perspex.Threading
         /// </summary>
         private void RaiseTick()
         {
-            if (Tick != null)
-            {
-                Tick(this, EventArgs.Empty);
-            }
+            Tick?.Invoke(this, EventArgs.Empty);
         }
     }
 }

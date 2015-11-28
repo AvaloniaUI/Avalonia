@@ -156,20 +156,8 @@ namespace Perspex.Controls
         /// </remarks>
         public DataTemplates DataTemplates
         {
-            get
-            {
-                if (_dataTemplates == null)
-                {
-                    _dataTemplates = new DataTemplates();
-                }
-
-                return _dataTemplates;
-            }
-
-            set
-            {
-                _dataTemplates = value;
-            }
+            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
+            set { _dataTemplates = value; }
         }
 
         /// <summary>
@@ -182,20 +170,8 @@ namespace Perspex.Controls
         /// </remarks>
         public Styles Styles
         {
-            get
-            {
-                if (_styles == null)
-                {
-                    _styles = new Styles();
-                }
-
-                return _styles;
-            }
-
-            set
-            {
-                _styles = value;
-            }
+            get { return _styles ?? (_styles = new Styles()); }
+            set { _styles = value; }
         }
 
         /// <summary>
@@ -321,7 +297,7 @@ namespace Perspex.Controls
                 throw new ArgumentException("Cannot supply an empty className.");
             }
 
-            Observable.Merge(property.Changed, property.Initialized)
+            property.Changed.Merge(property.Initialized)
                 .Subscribe(e =>
                 {
                     if (selector((T)e.NewValue))

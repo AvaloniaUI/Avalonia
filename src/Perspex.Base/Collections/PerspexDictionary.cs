@@ -71,10 +71,7 @@ namespace Perspex.Collections
 
                 if (replace)
                 {
-                    if (PropertyChanged != null)
-                    {
-                        PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
-                    }
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
 
                     if (CollectionChanged != null)
                     {

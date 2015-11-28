@@ -97,8 +97,8 @@ namespace Perspex.Styling
             }
             else
             {
-                return Observable
-                    .CombineLatest(_activator, Source, (x, y) => new { Active = x, Value = y })
+                return _activator
+                    .CombineLatest(Source, (x, y) => new { Active = x, Value = y })
                     .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
             }
         }

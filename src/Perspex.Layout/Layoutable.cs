@@ -386,11 +386,7 @@ namespace Perspex.Layout
             else
             {
                 var root = GetLayoutRoot();
-
-                if (root != null && root.Item1.LayoutManager != null)
-                {
-                    root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
-                }
+                root?.Item1.LayoutManager?.InvalidateMeasure(this, root.Item2);
             }
         }
 
@@ -408,11 +404,7 @@ namespace Perspex.Layout
 
             IsArrangeValid = false;
             _previousArrange = null;
-
-            if (root != null && root.Item1.LayoutManager != null)
-            {
-                root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
-            }
+            root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
         }
 
         /// <summary>
@@ -606,11 +598,7 @@ namespace Perspex.Layout
         private static void AffectsMeasureInvalidate(PerspexPropertyChangedEventArgs e)
         {
             ILayoutable control = e.Sender as ILayoutable;
-
-            if (control != null)
-            {
-                control.InvalidateMeasure();
-            }
+            control?.InvalidateMeasure();
         }
 
         /// <summary>
@@ -620,11 +608,7 @@ namespace Perspex.Layout
         private static void AffectsArrangeInvalidate(PerspexPropertyChangedEventArgs e)
         {
             ILayoutable control = e.Sender as ILayoutable;
-
-            if (control != null)
-            {
-                control.InvalidateArrange();
-            }
+            control?.InvalidateArrange();
         }
 
         /// <summary>

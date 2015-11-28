@@ -4,7 +4,7 @@ namespace Perspex.Skia
 {
     abstract class PerspexHandleHolder : IDisposable
     {
-        private IntPtr _handle;
+        private readonly IntPtr _handle;
 
         public IntPtr Handle
         {

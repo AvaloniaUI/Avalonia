@@ -23,8 +23,8 @@ namespace Perspex.RenderHelpers
         private readonly Size _imageSize;
         private readonly VisualBrush _visualBrush;
         private readonly ImageBrush _imageBrush;
-        private Matrix _transform;
-        private Rect _drawRect;
+        private readonly Matrix _transform;
+        private readonly Rect _drawRect;
 
         public bool IsValid { get; }
 

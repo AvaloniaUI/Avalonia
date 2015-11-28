@@ -350,7 +350,7 @@ namespace Perspex.Base.UnitTests
                 PerspexProperty.RegisterDirect<Class1, int>("Bar", o => o.Baz, (o,v) => o.Baz = v);
 
             private string _foo = "initial";
-            private string _bar = "bar";
+            private readonly string _bar = "bar";
             private int _baz = 5;
 
             public string Foo

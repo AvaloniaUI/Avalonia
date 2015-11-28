@@ -317,7 +317,7 @@ namespace Perspex.Controls.Primitives
                     var mode = SelectionMode;
                     var toggle = toggleModifier || (mode & SelectionMode.Toggle) != 0;
                     var multi = (mode & SelectionMode.Multiple) != 0;
-                    var range = multi && SelectedIndex != -1 ? rangeModifier : false;
+                    var range = multi && SelectedIndex != -1 && rangeModifier;
 
                     if (!toggle && !range)
                     {

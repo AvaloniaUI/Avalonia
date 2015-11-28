@@ -24,9 +24,9 @@ namespace Perspex.Skia
                 return new FormattedTextImpl(handle, pShared, text);
             }
         }
-        
-        List<FormattedTextLine> _lines = new List<FormattedTextLine>();
-        List<Rect> _rects = new List<Rect>();
+
+        readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
+        readonly List<Rect> _rects = new List<Rect>();
         Size _size;
 
         public IEnumerable<FormattedTextLine> GetLines()

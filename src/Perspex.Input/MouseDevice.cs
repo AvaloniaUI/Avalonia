@@ -178,17 +178,14 @@ namespace Perspex.Input
             {
                 IInteractive source = GetSource(hit);
 
-                if (source != null)
+                source?.RaiseEvent(new PointerReleasedEventArgs
                 {
-                    source.RaiseEvent(new PointerReleasedEventArgs
-                    {
-                        Device = this,
-                        RoutedEvent = InputElement.PointerReleasedEvent,
-                        Source = source,
-                        MouseButton = button,
-                        InputModifiers = inputModifiers
-                    });
-                }
+                    Device = this,
+                    RoutedEvent = InputElement.PointerReleasedEvent,
+                    Source = source,
+                    MouseButton = button,
+                    InputModifiers = inputModifiers
+                });
             }
         }
 
@@ -200,17 +197,14 @@ namespace Perspex.Input
             {
                 IInteractive source = GetSource(hit);
 
-                if (source != null)
+                source?.RaiseEvent(new PointerWheelEventArgs
                 {
-                    source.RaiseEvent(new PointerWheelEventArgs
-                    {
-                        Device = this,
-                        RoutedEvent = InputElement.PointerWheelChangedEvent,
-                        Source = source,
-                        Delta = delta,
-                        InputModifiers = inputModifiers
-                    });
-                }
+                    Device = this,
+                    RoutedEvent = InputElement.PointerWheelChangedEvent,
+                    Source = source,
+                    Delta = delta,
+                    InputModifiers = inputModifiers
+                });
             }
         }
 

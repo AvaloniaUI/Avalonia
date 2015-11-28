@@ -48,10 +48,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
         /// </summary>
-        public IMemberSelector ContentSelector
-        {
-            get { return s_contentSelector; }
-        }
+        public IMemberSelector ContentSelector => s_contentSelector;
 
         /// <summary>
         /// Gets the <see cref="SelectingItemsControl.SelectedItem"/> as a <see cref="TabItem"/>.

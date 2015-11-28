@@ -17,7 +17,7 @@ namespace Perspex.Diagnostics.ViewModels
         public PropertyDetails(PerspexObject o, PerspexProperty property)
         {
             Name = property.IsAttached ?
-                string.Format("[{0}.{1}]", property.OwnerType.Name, property.Name) :
+                $"[{property.OwnerType.Name}.{property.Name}]" :
                 property.Name;
             IsAttached = property.IsAttached;
 

@@ -79,7 +79,7 @@ namespace Perspex.Markup.Xaml.Data
 
             var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
             var children = Bindings.Select(x => x.CreateSubject(target, typeof(object)));
-            var input = Observable.CombineLatest(children).Select(x =>
+            var input = children.CombineLatest().Select(x =>
                 Converter.Convert(x, targetType, null, CultureInfo.CurrentUICulture));
             input.Subscribe(result);
             return result;

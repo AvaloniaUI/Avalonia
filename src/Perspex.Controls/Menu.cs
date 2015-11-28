@@ -116,7 +116,7 @@ namespace Perspex.Controls
 
             var inputRoot = e.Root as IInputRoot;
 
-            if (inputRoot != null && inputRoot.AccessKeyHandler != null)
+            if (inputRoot?.AccessKeyHandler != null)
             {
                 inputRoot.AccessKeyHandler.MainMenu = this;
             }

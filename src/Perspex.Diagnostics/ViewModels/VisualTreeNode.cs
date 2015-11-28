@@ -14,7 +14,7 @@ namespace Perspex.Diagnostics.ViewModels
         {
             var host = visual as IVisualTreeHost;
 
-            if (host == null || host.Root == null)
+            if (host?.Root == null)
             {
                 Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
             }

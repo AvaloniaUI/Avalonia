@@ -44,10 +44,10 @@ namespace Perspex.VisualTree
                 boundsSubscriptions.Add(v.GetObservable(Visual.BoundsProperty));
             }
 
-            var bounds = Observable.CombineLatest(boundsSubscriptions).Select(ExtractBounds);
+            var bounds = boundsSubscriptions.CombineLatest().Select(ExtractBounds);
 
             // TODO: Track transform and clip rectangle.
-            return Observable.Select(bounds, x => new TransformedBounds((Rect)x, (Rect)new Rect(), (Matrix)Matrix.Identity));
+            return bounds.Select(x => new TransformedBounds((Rect)x, (Rect)new Rect(), (Matrix)Matrix.Identity));
         }
 
         /// <summary>

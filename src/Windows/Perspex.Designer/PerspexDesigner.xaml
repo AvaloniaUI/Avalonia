@@ -11,7 +11,7 @@
             <TextBox IsReadOnly="True" TextWrapping="WrapWithOverflow" x:Name="State"/>
         </ScrollViewer>
         <StackPanel x:Name="ErrorContainer">
-            <TextBlock ></TextBlock>
+            <TextBlock />
         </StackPanel>
     </Grid>
 </UserControl>

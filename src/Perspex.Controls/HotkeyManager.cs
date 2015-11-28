@@ -12,7 +12,7 @@ namespace Perspex.Controls
 {
     public class HotKeyManager
     {
-        public static PerspexProperty<KeyGesture> HotKeyProperty
+        public static readonly PerspexProperty<KeyGesture> HotKeyProperty
             = PerspexProperty.RegisterAttached<Control, KeyGesture>("HotKey", typeof (HotKeyManager));
 
         class HotkeyCommandWrapper : ICommand
@@ -22,7 +22,7 @@ namespace Perspex.Controls
                 Control = control;
             }
 
-            public IControl Control;
+            public readonly IControl Control;
 
             private ICommand GetCommand() => Control.GetValue(Button.CommandProperty);
 
@@ -42,7 +42,7 @@ namespace Perspex.Controls
             private IDisposable _parentSub;
             private IDisposable _hotkeySub;
             private KeyGesture _hotkey;
-            private HotkeyCommandWrapper _wrapper;
+            private readonly HotkeyCommandWrapper _wrapper;
             private KeyBinding _binding;
 
             public Manager(IControl control)

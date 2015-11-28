@@ -360,7 +360,7 @@ namespace Perspex.Controls
         private static int ValidateCaretIndex(PerspexObject o, int value)
         {
             var text = o.GetValue(TextProperty);
-            var length = (text != null) ? text.Length : 0;
+            var length = text?.Length ?? 0;
             return Math.Max(0, Math.Min(length, value));
         }
 

@@ -23,7 +23,7 @@ namespace Perspex.Designer.AppHost
         private string _lastXaml;
         private string _currentXaml;
         private bool _initSuccess;
-        private HostedAppModel _appModel;
+        private readonly HostedAppModel _appModel;
         private Control _window;
 
         public PerspexAppHost(CommChannel channel)

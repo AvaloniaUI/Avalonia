@@ -35,8 +35,8 @@ namespace Perspex.Designer.AppHost
                 BackColor = color;
         }
 
-        private Control _windowHost = new Control() {Text = "WindowWrapper"};
-        private Timer _timer = new Timer {Enabled = true, Interval = 50};
+        private readonly Control _windowHost = new Control() {Text = "WindowWrapper"};
+        private readonly Timer _timer = new Timer {Enabled = true, Interval = 50};
         private IntPtr _hWnd;
         private int _desiredWidth;
         private int _desiredHeight;

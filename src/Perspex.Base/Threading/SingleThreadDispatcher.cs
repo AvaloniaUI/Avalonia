@@ -12,8 +12,8 @@ namespace Perspex.Threading
     {
         class ThreadingInterface : IPlatformThreadingInterface
         {
-            private AutoResetEvent _evnt = new AutoResetEvent(false);
-            private JobRunner _timerJobRunner;
+            private readonly AutoResetEvent _evnt = new AutoResetEvent(false);
+            private readonly JobRunner _timerJobRunner;
 
             public ThreadingInterface()
             {

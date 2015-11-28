@@ -18,7 +18,7 @@ namespace Perspex.Shared.PlatformSupport
         private static readonly Dictionary<string, Assembly> AssemblyNameCache
             = new Dictionary<string, Assembly>();
 
-        private Assembly _defaultAssembly;
+        private readonly Assembly _defaultAssembly;
 
         public AssetLoader(Assembly assembly = null)
         {

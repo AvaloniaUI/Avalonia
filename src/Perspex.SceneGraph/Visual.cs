@@ -272,11 +272,7 @@ namespace Perspex
             IRenderRoot root = this.GetSelfAndVisualAncestors()
                 .OfType<IRenderRoot>()
                 .FirstOrDefault();
-
-            if (root != null && root.RenderQueueManager != null)
-            {
-                root.RenderQueueManager.InvalidateRender(this);
-            }
+            root?.RenderQueueManager?.InvalidateRender(this);
         }
 
         /// <summary>

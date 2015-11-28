@@ -209,10 +209,7 @@ namespace Perspex.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (Command != null)
-            {
-                Command.Execute(CommandParameter);
-            }
+            Command?.Execute(CommandParameter);
         }
 
         /// <summary>
@@ -483,11 +480,7 @@ namespace Perspex.Controls
             if (selected != -1)
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selected);
-
-                if (container != null)
-                {
-                    container.Focus();
-                }
+                container?.Focus();
             }
         }
 

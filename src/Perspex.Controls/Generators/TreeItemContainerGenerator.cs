@@ -14,8 +14,8 @@ namespace Perspex.Controls.Generators
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator<T>, ITreeItemContainerGenerator
         where T : class, IControl, new()
     {
-        private Dictionary<object, T> _itemToContainer;
-        private Dictionary<IControl, object> _containerToItem;
+        private readonly Dictionary<object, T> _itemToContainer;
+        private readonly Dictionary<IControl, object> _containerToItem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.
@@ -182,20 +182,9 @@ namespace Perspex.Controls.Generators
         /// <returns>The template.</returns>
         private ITreeDataTemplate GetTreeDataTemplate(object item)
         {
-            IDataTemplate template = Owner.FindDataTemplate(item);
-
-            if (template == null)
-            {
-                template = FuncDataTemplate.Default;
-            }
-
-            var treeTemplate = template as ITreeDataTemplate;
-
-            if (treeTemplate == null)
-            {
-                treeTemplate = new FuncTreeDataTemplate(typeof(object), template.Build, x => null);
-            }
-
+            var template = Owner.FindDataTemplate(item) ?? FuncDataTemplate.Default;
+            var treeTemplate = template as ITreeDataTemplate ??
+                new FuncTreeDataTemplate(typeof(object), template.Build, x => null);
             return treeTemplate;
         }
     }

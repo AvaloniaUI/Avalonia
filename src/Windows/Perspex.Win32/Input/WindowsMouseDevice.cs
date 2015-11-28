@@ -10,9 +10,7 @@ namespace Perspex.Win32.Input
 {
     public class WindowsMouseDevice : MouseDevice
     {
-        private static readonly WindowsMouseDevice s_instance = new WindowsMouseDevice();
-
-        public static new WindowsMouseDevice Instance => s_instance;
+        public new static WindowsMouseDevice Instance { get; } = new WindowsMouseDevice();
 
         public WindowImpl CurrentWindow
         {

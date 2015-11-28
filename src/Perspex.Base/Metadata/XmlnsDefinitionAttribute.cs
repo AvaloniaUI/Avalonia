@@ -25,11 +25,11 @@ namespace Perspex.Metadata
         /// <summary>
         /// Gets or sets the URL of the XML namespace.
         /// </summary>
-        public string XmlNamespace { get; set; }
+        public string XmlNamespace { get; }
 
         /// <summary>
         /// Gets or sets the CLR namespace.
         /// </summary>
-        public string ClrNamespace { get; set; }
+        public string ClrNamespace { get; }
     }
 }

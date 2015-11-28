@@ -16,7 +16,7 @@ namespace Perspex.Markup
         /// A value converter that returns true if the input string is null or an empty string.
         /// </summary>
         public static readonly IValueConverter NullOrEmpty =
-            new FuncValueConverter<string, bool>(x => string.IsNullOrEmpty(x));
+            new FuncValueConverter<string, bool>(string.IsNullOrEmpty);
 
         /// <summary>
         /// A value converter that returns true if the input string is not null or empty.

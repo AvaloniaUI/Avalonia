@@ -26,8 +26,8 @@ namespace Perspex.Media
 
         struct TransformContainer
         {
-            public Matrix LocalTransform;
-            public Matrix ContainerTransform;
+            public readonly Matrix LocalTransform;
+            public readonly Matrix ContainerTransform;
 
             public TransformContainer(Matrix localTransform, Matrix containerTransform)
             {

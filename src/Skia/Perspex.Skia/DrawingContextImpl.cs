@@ -187,7 +187,7 @@ namespace Perspex.Skia
         public void PopOpacity() => _settings->Opacity = _opacityStack.Pop();
 
         private Matrix _currentTransform = Matrix.Identity;
-        private float[] _fmatrix = new float[6];
+        private readonly float[] _fmatrix = new float[6];
         public Matrix Transform
         {
             get { return _currentTransform; }

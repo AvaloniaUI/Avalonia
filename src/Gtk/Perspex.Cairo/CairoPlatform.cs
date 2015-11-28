@@ -16,7 +16,7 @@ namespace Perspex.Cairo
     {
         private static readonly CairoPlatform s_instance = new CairoPlatform();
 
-        private static Pango.Context s_pangoContext = CreatePangoContext();
+        private static readonly Pango.Context s_pangoContext = CreatePangoContext();
 
         public static void Initialize() => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
 

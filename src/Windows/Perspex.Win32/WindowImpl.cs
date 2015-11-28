@@ -204,10 +204,7 @@ namespace Perspex.Win32
                     window.IsEnabled = true;
                 }
 
-                if (activated != null)
-                {
-                    activated.Activate();
-                }
+                activated?.Activate();
             });
         }
 
@@ -256,20 +253,12 @@ namespace Perspex.Win32
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
                             _isActive = true;
-                            if (Activated != null)
-                            {
-                                Activated();
-                            }
-
+                            Activated?.Invoke();
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
                             _isActive = false;
-                            if (Deactivated != null)
-                            {
-                                Deactivated();
-                            }
-
+                            Deactivated?.Invoke();
                             break;
                     }
 

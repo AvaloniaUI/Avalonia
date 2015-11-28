@@ -109,7 +109,7 @@ namespace Perspex
         /// <returns>True if the objects are equal, otherwise false.</returns>
         public override bool Equals(object obj)
         {
-            return (obj is RelativePoint) ? Equals((RelativePoint)obj) : false;
+            return (obj is RelativePoint) && Equals((RelativePoint)obj);
         }
 
         /// <summary>

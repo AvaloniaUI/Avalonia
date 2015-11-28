@@ -71,12 +71,7 @@ namespace Perspex.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             Control content = Child;
-
-            if (content != null)
-            {
-                content.Arrange(new Rect(finalSize).Deflate(Padding));
-            }
-
+            content?.Arrange(new Rect(finalSize).Deflate(Padding));
             return finalSize;
         }
 

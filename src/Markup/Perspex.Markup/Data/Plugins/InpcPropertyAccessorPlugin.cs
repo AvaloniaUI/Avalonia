@@ -56,9 +56,9 @@ namespace Perspex.Markup.Data.Plugins
 
         private class Accessor : IPropertyAccessor
         {
-            private object _instance;
-            private PropertyInfo _property;
-            private Action<object> _changed;
+            private readonly object _instance;
+            private readonly PropertyInfo _property;
+            private readonly Action<object> _changed;
 
             public Accessor(object instance, PropertyInfo property, Action<object> changed)
             {
@@ -77,15 +77,9 @@ namespace Perspex.Markup.Data.Plugins
                 }
             }
 
-            public Type PropertyType
-            {
-                get { return _property.PropertyType; }
-            }
+            public Type PropertyType => _property.PropertyType;
 
-            public object Value
-            {
-                get { return _property.GetValue(_instance); }
-            }
+            public object Value => _property.GetValue(_instance);
 
             public void Dispose()
             {

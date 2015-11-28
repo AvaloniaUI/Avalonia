@@ -180,9 +180,9 @@ namespace Perspex.Markup.Data
                 {
                     _node.Target = _rootGetter();
                 }
-                else if (_empty != null)
+                else
                 {
-                    _empty.OnNext(_rootGetter());
+                    _empty?.OnNext(_rootGetter());
                 }
             }
         }

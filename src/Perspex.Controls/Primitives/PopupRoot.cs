@@ -106,13 +106,8 @@ namespace Perspex.Controls.Primitives
                     _presenterSubscription = null;
                 }
 
-                var presenter = Presenter;
-
-                if (presenter != null)
-                {
-                    presenter.GetObservable(ContentPresenter.ChildProperty)
-                        .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-                }
+                Presenter?.GetObservable(ContentPresenter.ChildProperty)
+                    .Subscribe(SetTemplatedParentAndApplyChildTemplates);
             }
         }
 

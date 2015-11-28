@@ -207,10 +207,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (Command != null)
-            {
-                Command.Execute(CommandParameter);
-            }
+            Command?.Execute(CommandParameter);
         }
 
         /// <inheritdoc/>
