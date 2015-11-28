@@ -12,42 +12,42 @@ namespace Perspex
         public static bool IsDesignMode { get; internal set; }
 
         public static readonly PerspexProperty<double> HeightProperty = PerspexProperty
-            .RegisterAttached<TopLevel, double>("Height", typeof (Design));
+            .RegisterAttached<Control, double>("Height", typeof (Design));
 
-        public static void SetHeight(TopLevel topLevel, double value)
+        public static void SetHeight(Control control, double value)
         {
-            topLevel.SetValue(HeightProperty, value);
+            control.SetValue(HeightProperty, value);
         }
 
-        public static double GetHeight(TopLevel topLevel)
+        public static double GetHeight(Control control)
         {
-            return (double) topLevel.GetValue(HeightProperty);
+            return control.GetValue(HeightProperty);
         }
 
         public static readonly PerspexProperty<double> WidthProperty = PerspexProperty
-    .RegisterAttached<TopLevel, double>("Width", typeof(Design));
+    .RegisterAttached<Control, double>("Width", typeof(Design));
 
-        public static void SetWidth(TopLevel topLevel, double value)
+        public static void SetWidth(Control control, double value)
         {
-            topLevel.SetValue(WidthProperty, value);
+            control.SetValue(WidthProperty, value);
         }
 
-        public static double GetWidth(TopLevel topLevel)
+        public static double GetWidth(Control control)
         {
-            return (double)topLevel.GetValue(WidthProperty);
+            return control.GetValue(WidthProperty);
         }
 
         public static readonly PerspexProperty<object> DataContextProperty = PerspexProperty
-            .RegisterAttached<TopLevel, object>("DataContext", typeof (Design));
+            .RegisterAttached<Control, object>("DataContext", typeof (Design));
 
-        public static void SetDataContext(TopLevel topLevel, object value)
+        public static void SetDataContext(Control control, object value)
         {
-            topLevel.SetValue(DataContextProperty, value);
+            control.SetValue(DataContextProperty, value);
         }
 
-        public static object GetDataContext(TopLevel topLevel)
+        public static object GetDataContext(Control control)
         {
-            return topLevel.GetValue(DataContextProperty);
+            return control.GetValue(DataContextProperty);
         }
 
         static Design()
@@ -62,11 +62,11 @@ namespace Perspex
             if(!IsDesignMode)
                 return;
             if (args.Property == WidthProperty)
-                ((TopLevel) args.Sender).Width = (double) args.NewValue;
+                ((Control) args.Sender).Width = (double) args.NewValue;
             if (args.Property == HeightProperty)
-                ((TopLevel)args.Sender).Height = (double)args.NewValue;
+                ((Control)args.Sender).Height = (double)args.NewValue;
             if (args.Property == DataContextProperty)
-                ((TopLevel) args.Sender).DataContext = args.NewValue;
+                ((Control) args.Sender).DataContext = args.NewValue;
         }
     }
 }
