@@ -71,6 +71,7 @@ namespace Perspex.Controls
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
         private IPerspexList<ILogical> _logicalChildren;
+        private INameScope _nameScope;
         private Styles _styles;
 
         /// <summary>
@@ -82,6 +83,14 @@ namespace Perspex.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Control"/> class.
+        /// </summary>
+        public Control()
+        {
+            _nameScope = this as INameScope;
         }
 
         /// <summary>
@@ -376,11 +385,27 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            IStyler styler = PerspexLocator.Current.GetService<IStyler>();
-
-            if (styler != null)
+            if (_nameScope == null)
             {
-                styler.ApplyStyles(this);
+                _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
+            }
+
+            if (Name != null)
+            {
+                _nameScope?.Register(Name, this);
+            }
+
+            PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (Name != null)
+            {
+                _nameScope?.Unregister(Name);
             }
         }
 

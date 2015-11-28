@@ -121,55 +121,5 @@ namespace Perspex.SceneGraph.UnitTests
             Assert.True(called1);
             Assert.True(called2);
         }
-
-        [Fact]
-        public void Controls_Should_Add_Themselves_To_Root_NameScope()
-        {
-            var child2 = new TestVisual { Name = "bar" };
-            var child1 = new TestVisual { Name = "foo", Child = child2 };
-            var root = new TestRoot { Child = child1 };
-
-            Assert.Same(child1, root.Find("foo"));
-            Assert.Same(child2, root.Find("bar"));
-        }
-
-        [Fact]
-        public void Controls_Should_Add_Themselves_To_NameScopes_In_Attached_Property()
-        {
-            var child2 = new TestVisual { Name = "bar", [NameScope.NameScopeProperty] = new NameScope() };
-            var child1 = new TestVisual { Name = "foo", Child = child2};
-            var root = new TestRoot { Child = child1 };
-
-            Assert.Same(child1, root.Find("foo"));
-            Assert.Null(root.Find("bar"));
-            Assert.Same(child2, NameScope.GetNameScope(child2).Find("bar"));
-        }
-
-        [Fact]
-        public void Controls_Should_Remove_Themselves_From_Root_NameScope()
-        {
-            var child2 = new TestVisual { Name = "bar" };
-            var child1 = new TestVisual { Name = "foo", Child = child2 };
-            var root = new TestRoot { Child = child1 };
-
-            root.Child = null;
-
-            Assert.Null(root.Find("foo"));
-            Assert.Null(root.Find("bar"));
-        }
-
-        [Fact]
-        public void Controls_Should_Remove_Themselves_From_NameScopes_In_Attached_Property()
-        {
-            var child2 = new TestVisual { Name = "bar" };
-            var child1 = new TestVisual { Name = "foo", Child = child2,[NameScope.NameScopeProperty] = new NameScope() };
-            var root = new TestRoot { Child = child1 };
-
-            root.Child = null;
-
-            Assert.Null(root.Find("foo"));
-            Assert.Null(root.Find("bar"));
-            Assert.Null(NameScope.GetNameScope(child1).Find("bar"));
-        }
     }
 }

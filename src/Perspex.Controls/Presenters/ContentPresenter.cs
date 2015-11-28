@@ -106,8 +106,8 @@ namespace Perspex.Controls.Presenters
 
             if (old != null)
             {
-                logicalChildren.Remove(old);
                 ((ISetLogicalParent)old).SetParent(null);
+                logicalChildren.Remove(old);
                 ClearVisualChildren();
             }
 
@@ -120,13 +120,12 @@ namespace Perspex.Controls.Presenters
                     result.DataContext = content;
                 }
 
-                AddVisualChild(result);
-
                 if (result.Parent == null)
                 {
                     ((ISetLogicalParent)result).SetParent((ILogical)logicalHost ?? this);
                 }
 
+                AddVisualChild(result);
                 logicalChildren.Remove(old);
                 logicalChildren.Add(result);
             }

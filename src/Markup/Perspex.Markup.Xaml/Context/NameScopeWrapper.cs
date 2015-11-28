@@ -5,9 +5,9 @@ namespace Perspex.Markup.Xaml.Context
 {
     internal class NameScopeWrapper : OmniXaml.INameScope
     {
-        private Perspex.INameScope _inner;
+        private readonly Perspex.Controls.INameScope _inner;
 
-        public NameScopeWrapper(Perspex.INameScope inner)
+        public NameScopeWrapper(Perspex.Controls.INameScope inner)
         {
             _inner = inner;
         }

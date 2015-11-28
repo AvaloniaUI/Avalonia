@@ -196,7 +196,7 @@ namespace Perspex.Controls.Primitives
 
                     var child = Template.Build(this);
                     var nameScope = new NameScope();
-                    NameScope.SetNameScope((Visual)child, nameScope);
+                    NameScope.SetNameScope((Control)child, nameScope);
 
                     // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
                     // before the controls are added to the visual tree so that the logical

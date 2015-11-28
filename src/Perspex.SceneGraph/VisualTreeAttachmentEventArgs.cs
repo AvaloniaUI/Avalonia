@@ -16,21 +16,14 @@ namespace Perspex
         /// Initializes a new instance of the <see cref="VisualTreeAttachmentEventArgs"/> class.
         /// </summary>
         /// <param name="root">The root visual.</param>
-        /// <param name="nameScope">The name scope.</param>
-        public VisualTreeAttachmentEventArgs(IRenderRoot root, INameScope nameScope)
+        public VisualTreeAttachmentEventArgs(IRenderRoot root)
         {
             Root = root;
-            NameScope = nameScope;
         }
 
         /// <summary>
         /// Gets the root of the visual tree that the visual is being attached to or detached from.
         /// </summary>
         public IRenderRoot Root { get; }
-
-        /// <summary>
-        /// Gets the element's name scope.
-        /// </summary>
-        public INameScope NameScope { get; }
     }
 }

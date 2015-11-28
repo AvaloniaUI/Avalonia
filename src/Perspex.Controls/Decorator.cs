@@ -98,9 +98,9 @@ namespace Perspex.Controls
 
             if (newChild != null)
             {
+                ((ISetLogicalParent)newChild).SetParent(this);
                 AddVisualChild(newChild);
                 LogicalChildren.Add(newChild);
-                ((ISetLogicalParent)newChild).SetParent(this);
             }
         }
     }

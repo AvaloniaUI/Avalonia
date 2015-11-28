@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Perspex
+namespace Perspex.Controls
 {
     /// <summary>
     /// Extension methods for <see cref="INameScope"/>.

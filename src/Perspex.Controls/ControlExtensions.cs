@@ -59,14 +59,14 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Finds the name scope for a control.
+        /// Finds the name scope for a control by searching up the logical tree.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The control's name scope, or null if not found.</returns>
         public static INameScope FindNameScope(this IControl control)
         {
             return control.GetSelfAndLogicalAncestors()
-                .OfType<Visual>()
+                .OfType<Control>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
                 .FirstOrDefault(x => x != null);
         }

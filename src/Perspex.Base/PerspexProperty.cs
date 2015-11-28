@@ -56,7 +56,7 @@ namespace Perspex
         /// <summary>
         /// Gets the ID of the property.
         /// </summary>
-        private int _id;
+        private readonly int _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.

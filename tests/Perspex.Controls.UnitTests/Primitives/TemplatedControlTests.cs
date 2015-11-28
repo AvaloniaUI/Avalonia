@@ -70,7 +70,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            Assert.NotNull(NameScope.GetNameScope((Visual)target.GetVisualChildren().Single()));
+            Assert.NotNull(NameScope.GetNameScope((Control)target.GetVisualChildren().Single()));
         }
 
         [Fact]

@@ -25,7 +25,7 @@ namespace Perspex.Markup
             var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
                 x => relativeTo.AttachedToVisualTree += x,
                 x => relativeTo.DetachedFromVisualTree += x)
-                .Select(x => x.EventArgs.NameScope)
+                .Select(x => ((IControl)x.Sender).FindNameScope())
                 .StartWith(relativeTo.FindNameScope());
 
             var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
