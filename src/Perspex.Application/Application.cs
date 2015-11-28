@@ -205,7 +205,7 @@ namespace Perspex
         /// Initializes the rendering or windowing subsystem defined by the specified assemblt.
         /// </summary>
         /// <param name="assemblyName">The name of the assembly.</param>
-        protected void InitializeSubsystem(string assemblyName)
+        protected static void InitializeSubsystem(string assemblyName)
         {
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             var platformClassName = assemblyName.Replace("Perspex.", string.Empty) + "Platform";
@@ -213,6 +213,12 @@ namespace Perspex
             var platformClass = assembly.GetType(platformClassFullName);
             var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
             init.Invoke(null, null);
+        }
+
+        internal static void InitializeWin32Subsystem()
+        {
+            InitializeSubsystem("Perspex.Direct2D1");
+            InitializeSubsystem("Perspex.Win32");
         }
     }
 }
