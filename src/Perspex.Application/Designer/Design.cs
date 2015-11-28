@@ -49,24 +49,15 @@ namespace Perspex
         {
             return control.GetValue(DataContextProperty);
         }
-
-        static Design()
+        
+        internal static void ApplyDesignerProperties(Control target, Control source)
         {
-            WidthProperty.Changed.Subscribe(OnChanged);
-            HeightProperty.Changed.Subscribe(OnChanged);
-            DataContextProperty.Changed.Subscribe(OnChanged);
-        }
-
-        static void OnChanged(PerspexPropertyChangedEventArgs args)
-        {
-            if(!IsDesignMode)
-                return;
-            if (args.Property == WidthProperty)
-                ((Control) args.Sender).Width = (double) args.NewValue;
-            if (args.Property == HeightProperty)
-                ((Control)args.Sender).Height = (double)args.NewValue;
-            if (args.Property == DataContextProperty)
-                ((Control) args.Sender).DataContext = args.NewValue;
+            if (source.IsSet(WidthProperty))
+                target.Width = source.GetValue(WidthProperty);
+            if (source.IsSet(HeightProperty))
+                target.Height = source.GetValue(HeightProperty);
+            if (source.IsSet(DataContextProperty))
+                target.DataContext = source.GetValue(DataContextProperty);
         }
     }
 }

@@ -60,18 +60,20 @@ namespace Perspex.DesignerSupport
         {
 
             Window window;
+            Control original;
             using (PlatformManager.DesignerMode())
             {
-                var obj = ((XamlXmlLoader)new PerspexXamlLoader()).Load(new MemoryStream(Encoding.UTF8.GetBytes(xaml)));
-                window = obj as Window;
+                original =(Control)((XamlXmlLoader)new PerspexXamlLoader()).Load(new MemoryStream(Encoding.UTF8.GetBytes(xaml)));
+                window = original as Window;
                 if (window == null)
                 {
-                    window = new Window() {Content = obj};
+                    window = new Window() {Content = original};
                 }
             }
             s_currentWindow?.Close();
             s_currentWindow = window;
             window.Show();
+            Design.ApplyDesignerProperties(window, original);
             Api.OnWindowCreated?.Invoke(window.PlatformImpl.Handle.Handle);
             Api.OnResize?.Invoke();
         }
