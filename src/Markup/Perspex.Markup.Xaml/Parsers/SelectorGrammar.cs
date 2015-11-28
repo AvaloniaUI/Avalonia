@@ -3,9 +3,11 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Perspex.Styling;
 using Sprache;
+
+// Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
+// only reason they have overridden Equals methods is for unit testing.
+#pragma warning disable 659
 
 namespace Perspex.Markup.Xaml.Parsers
 {
@@ -129,7 +131,8 @@ namespace Perspex.Markup.Xaml.Parsers
 
             public override bool Equals(object obj)
             {
-                return obj is OfTypeSyntax && ((OfTypeSyntax)obj).TypeName == TypeName;
+                var other = obj as OfTypeSyntax;
+                return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
             }
         }
 
@@ -141,7 +144,8 @@ namespace Perspex.Markup.Xaml.Parsers
 
             public override bool Equals(object obj)
             {
-                return obj is IsSyntax && ((IsSyntax)obj).TypeName == TypeName;
+                var other = obj as IsSyntax;
+                return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
             }
         }
 
