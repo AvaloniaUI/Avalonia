@@ -37,6 +37,8 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public async void Should_Convert_Get_String_To_Double()
         {
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
             var data = new Class1 { StringValue = "5.6" };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
@@ -67,6 +69,8 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public void Should_Convert_Set_String_To_Double()
         {
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
             var data = new Class1 { StringValue = "5.6" };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
 
@@ -78,6 +82,8 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public async void Should_Convert_Get_Double_To_String()
         {
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
             var result = await target.Take(1);
@@ -88,6 +94,8 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public void Should_Convert_Set_Double_To_String()
         {
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
