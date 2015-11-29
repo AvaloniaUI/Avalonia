@@ -45,10 +45,12 @@ namespace Perspex.Markup
                         .OfType<IControl>();
                     var unregistered = Observable.FromEventPattern<NameScopeEventArgs>(
                         x => nameScope.Unregistered += x,
-                        x => nameScope.Unregistered -= x);
+                        x => nameScope.Unregistered -= x)
+                        .Where(x => x.EventArgs.Name == name)
+                        .Select(_ => (IControl)null);
                     return registered
                         .StartWith(nameScope.Find<IControl>(name))
-                        .TakeUntil(unregistered);
+                        .Merge(unregistered);
                 }
                 else
                 {

@@ -102,7 +102,7 @@ namespace Perspex.Controls
             if (_inner.TryGetValue(name, out element))
             {
                 _inner.Remove(name);
-                Registered?.Invoke(this, new NameScopeEventArgs(name, element));
+                Unregistered?.Invoke(this, new NameScopeEventArgs(name, element));
             }
         }
     }
