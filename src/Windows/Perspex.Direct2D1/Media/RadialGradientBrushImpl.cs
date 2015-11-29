@@ -30,28 +30,27 @@ namespace Perspex.Direct2D1.Media
             var radiusX = brush.Radius;
             var radiusY = brush.Radius;
 
-            PlatformBrush = new SharpDX.Direct2D1.RadialGradientBrush(
+            using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,
-                new SharpDX.Direct2D1.RadialGradientBrushProperties
-                {
-                    Center = centerPoint.ToSharpDX(),
-                    GradientOriginOffset = GradientOriginOffset.ToSharpDX(),
-                    RadiusX = (float)radiusX,
-                    RadiusY = (float)radiusY
-                },
-                new SharpDX.Direct2D1.BrushProperties
-                {
-                    Opacity = (float)brush.Opacity,
-                    Transform = SharpDX.Matrix3x2.Identity,
-                },
-                new SharpDX.Direct2D1.GradientStopCollection(target, gradientStops, brush.SpreadMethod.ToDirect2D())
-            );
-        }
-
-        public override void Dispose()
-        {
-            ((SharpDX.Direct2D1.RadialGradientBrush)PlatformBrush)?.GradientStopCollection.Dispose();
-            base.Dispose();
+                gradientStops,
+                brush.SpreadMethod.ToDirect2D()))
+            {
+                PlatformBrush = new SharpDX.Direct2D1.RadialGradientBrush(
+                    target,
+                    new SharpDX.Direct2D1.RadialGradientBrushProperties
+                    {
+                        Center = centerPoint.ToSharpDX(),
+                        GradientOriginOffset = GradientOriginOffset.ToSharpDX(),
+                        RadiusX = (float)radiusX,
+                        RadiusY = (float)radiusY
+                    },
+                    new SharpDX.Direct2D1.BrushProperties
+                    {
+                        Opacity = (float)brush.Opacity,
+                        Transform = SharpDX.Matrix3x2.Identity,
+                    },
+                    stops);
+            }
         }
     }
 }

@@ -26,26 +26,25 @@ namespace Perspex.Direct2D1.Media
             var startPoint = brush.StartPoint.ToPixels(destinationSize);
             var endPoint = brush.EndPoint.ToPixels(destinationSize);
 
-            PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+            using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,
-                new SharpDX.Direct2D1.LinearGradientBrushProperties
-                {
-                    StartPoint = startPoint.ToSharpDX(),
-                    EndPoint = endPoint.ToSharpDX()
-                },
-                new SharpDX.Direct2D1.BrushProperties
-                {
-                    Opacity = (float)brush.Opacity,
-                    Transform = SharpDX.Matrix3x2.Identity,
-                },
-                new SharpDX.Direct2D1.GradientStopCollection(target, gradientStops, brush.SpreadMethod.ToDirect2D())
-            );
-        }
-
-        public override void Dispose()
-        {
-            ((SharpDX.Direct2D1.LinearGradientBrush)PlatformBrush)?.GradientStopCollection.Dispose();
-            base.Dispose();
+                gradientStops,
+                brush.SpreadMethod.ToDirect2D()))
+            {
+                PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+                    target,
+                    new SharpDX.Direct2D1.LinearGradientBrushProperties
+                    {
+                        StartPoint = startPoint.ToSharpDX(),
+                        EndPoint = endPoint.ToSharpDX()
+                    },
+                    new SharpDX.Direct2D1.BrushProperties
+                    {
+                        Opacity = (float)brush.Opacity,
+                        Transform = SharpDX.Matrix3x2.Identity,
+                    },
+                    stops);
+            }
         }
     }
 }
