@@ -31,7 +31,7 @@ namespace Perspex.Markup.Xaml.Data
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
-        public BindingMode Mode { get; set; }
+        public BindingMode Mode { get; set; } = BindingMode.OneWay;
 
         /// <summary>
         /// Gets or sets the binding priority.
