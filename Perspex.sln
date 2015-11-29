@@ -136,6 +136,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.iOS", "src\iOS\Pers
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.iOSTestApplication", "src\iOS\Perspex.iOSTestApplication\Perspex.iOSTestApplication.csproj", "{8C923867-8A8F-4F6B-8B80-47D9E8436166}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.LeakTests", "tests\Perspex.LeakTests\Perspex.LeakTests.csproj", "{E1AA3DBF-9056-4530-9376-18119A7A3FFE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
@@ -157,6 +159,7 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
+		src\Shared\PlatformSupport\PlatformSupport.projitems*{e1aa3dbf-9056-4530-9376-18119a7a3ffe}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU
@@ -1240,6 +1243,30 @@ Global
 		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhone.Build.0 = Release|iPhone
 		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
 		{8C923867-8A8F-4F6B-8B80-47D9E8436166}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|iPhone.Build.0 = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1282,5 +1309,6 @@ Global
 		{FF69B927-C545-49AE-8E16-3D14D621AA12} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
 		{4488AD85-1495-4809-9AA4-DDFE0A48527E} = {0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}
 		{8C923867-8A8F-4F6B-8B80-47D9E8436166} = {0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}
+		{E1AA3DBF-9056-4530-9376-18119A7A3FFE} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 EndGlobal
