@@ -50,6 +50,38 @@ namespace Perspex.LeakTests
         }
 
         [Fact]
+        public void Named_Canvas_Is_Freed()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new Canvas
+                    {
+                        Name = "foo"
+                    }
+                };
+
+                // Do a layout and make sure that Canvas gets added to visual tree.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<Canvas>(window.Find<Canvas>("foo"));
+                Assert.IsType<Canvas>(window.Presenter.Child);
+
+                // Clear the content and ensure the Canvas is removed.
+                window.Content = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Null(window.Presenter.Child);
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+        }
+
+        [Fact]
         public void TreeView_Is_Freed()
         {
             Func<Window> run = () =>
