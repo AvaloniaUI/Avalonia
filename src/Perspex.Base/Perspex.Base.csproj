@@ -85,6 +85,7 @@
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
     <Compile Include="Utilities\WeakSubscriptionManager.cs" />
+    <Compile Include="Utilities\WeakTimer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="JetBrains.Annotations.PCL328, Version=9.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
