@@ -1,12 +1,12 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace Perspex
 {
-    using System;
-
     /// <summary>
     /// A stub of Code Contract's Contract class.
     /// </summary>
@@ -25,6 +25,7 @@ namespace Perspex
         /// </typeparam>
         /// <param name="condition">The precondition.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ContractAnnotation("condition:false=>stop")]
         public static void Requires<TException>(bool condition) where TException : Exception, new()
         {
             if (!condition)
