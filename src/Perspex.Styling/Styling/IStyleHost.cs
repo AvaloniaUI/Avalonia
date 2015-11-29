@@ -3,8 +3,20 @@
 
 namespace Perspex.Styling
 {
+    /// <summary>
+    /// Defines an element that has a <see cref="Styles"/> collection.
+    /// </summary>
     public interface IStyleHost : IVisual
     {
+        /// <summary>
+        /// Gets the styles for the element.
+        /// </summary>
         Styles Styles { get; }
+
+        /// <summary>
+        /// Gets the parent style host element.
+        /// </summary>
+        IStyleHost StylingParent { get; }
+
     }
 }

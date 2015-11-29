@@ -219,6 +219,11 @@ namespace Perspex.Controls
         Type IStyleable.StyleKey => GetType();
 
         /// <summary>
+        /// Gets the parent style host element.
+        /// </summary>
+        IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+
+        /// <summary>
         /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
         /// the process of being notified.
         /// </summary>

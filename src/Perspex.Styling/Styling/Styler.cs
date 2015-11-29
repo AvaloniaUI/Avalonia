@@ -31,11 +31,7 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(control != null);
             Contract.Requires<ArgumentNullException>(container != null);
 
-            IVisual visual = container as IVisual;
-
-            IStyleHost parentContainer = visual?.GetVisualAncestors()
-                .OfType<IStyleHost>()
-                .FirstOrDefault();
+            var parentContainer = container.StylingParent;
 
             if (parentContainer != null)
             {
