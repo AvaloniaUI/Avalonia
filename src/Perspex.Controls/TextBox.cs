@@ -17,7 +17,7 @@ using Perspex.Metadata;
 
 namespace Perspex.Controls
 {
-    public class TextBox : TemplatedControl
+    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsReturn");
@@ -49,7 +49,22 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> UseFloatingWatermarkProperty =
             PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
 
+        struct UndoRedoState : IEquatable<UndoRedoState>
+        {
+            public string Text { get; }
+            public int CaretPosition { get; }
+
+            public UndoRedoState(string text, int caretPosition)
+            {
+                Text = text;
+                CaretPosition = caretPosition;
+            }
+
+            public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
+        }
+
         private TextPresenter _presenter;
+        private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
 
         static TextBox()
         {
@@ -73,6 +88,7 @@ namespace Perspex.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
         }
 
         public bool AcceptsReturn
@@ -90,7 +106,12 @@ namespace Perspex.Controls
         public int CaretIndex
         {
             get { return GetValue(CaretIndexProperty); }
-            set { SetValue(CaretIndexProperty, value); }
+            set
+            {
+                SetValue(CaretIndexProperty, value);
+                if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState.Text == Text)
+                    _undoRedoHelper.UpdateLastState();
+            }
         }
 
         public int SelectionStart
@@ -173,6 +194,7 @@ namespace Perspex.Controls
                 Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
                 CaretIndex += input.Length;
                 SelectionStart = SelectionEnd = CaretIndex;
+                _undoRedoHelper.DiscardRedo();
             }
         }
 
@@ -189,7 +211,7 @@ namespace Perspex.Controls
             {
                 return;
             }
-
+            _undoRedoHelper.Snapshot();
             HandleTextInput(text);
         }
 
@@ -222,6 +244,16 @@ namespace Perspex.Controls
                     {
                         Paste();
                     }
+
+                    break;
+                case Key.Z:
+                    if (modifiers == InputModifiers.Control)
+                        _undoRedoHelper.Undo();
+
+                    break;
+                case Key.Y:
+                    if (modifiers == InputModifiers.Control)
+                        _undoRedoHelper.Redo();
 
                     break;
                 case Key.Left:
@@ -523,6 +555,16 @@ namespace Perspex.Controls
             }
 
             return i;
+        }
+
+        UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
+        {
+            get { return new UndoRedoState(Text, CaretIndex); }
+            set
+            {
+                Text = value.Text;
+                SelectionStart = SelectionEnd = CaretIndex = value.CaretPosition;
+            }
         }
     }
 }
