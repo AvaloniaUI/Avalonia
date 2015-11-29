@@ -42,7 +42,7 @@ namespace Perspex.Direct2D1.Media
                 new SharpDX.Direct2D1.BrushProperties
                 {
                     Opacity = (float)brush.Opacity,
-                    Transform = target.Transform
+                    Transform = SharpDX.Matrix3x2.Identity,
                 },
                 new SharpDX.Direct2D1.GradientStopCollection(target, gradientStops, brush.SpreadMethod.ToDirect2D())
             );
