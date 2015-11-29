@@ -383,8 +383,17 @@ namespace Perspex
         /// Called when the control is added to a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
         protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (RenderTransform != null)
+            {
+                RenderTransform.Changed += RenderTransformChanged;
+            }
+
             AttachedToVisualTree?.Invoke(this, e);
         }
 
@@ -392,8 +401,17 @@ namespace Perspex
         /// Called when the control is removed from a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (RenderTransform != null)
+            {
+                RenderTransform.Changed -= RenderTransformChanged;
+            }
+
             DetachedFromVisualTree?.Invoke(this, e);
         }
 
@@ -475,7 +493,7 @@ namespace Perspex
         {
             var sender = e.Sender as Visual;
 
-            if (sender != null)
+            if (sender?._isAttachedToVisualTree == true)
             {
                 var oldValue = e.OldValue as Transform;
                 var newValue = e.NewValue as Transform;
