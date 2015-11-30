@@ -156,7 +156,11 @@ namespace Perspex.Controls
         protected override void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
         {
             base.OnTemplateChanged(e);
-            ItemContainerGenerator.Clear();
+
+            if (e.NewValue == null)
+            {
+                ItemContainerGenerator.Clear();
+            }
         }
 
         /// <summary>

@@ -67,6 +67,9 @@ namespace Perspex.Controls.UnitTests
 
             var container = target.ItemContainerGenerator.TreeContainerFromItem(
                 tree[0].Children[1].Children[0]);
+
+            Assert.NotNull(container);
+
             var header = ((TreeViewItem)container).Header;
             var headerContent = ((TextBlock)header).Text;
 
@@ -90,6 +93,8 @@ namespace Perspex.Controls.UnitTests
 
             var item = tree[0].Children[1].Children[0];
             var container = (TreeViewItem)target.ItemContainerGenerator.TreeContainerFromItem(item);
+
+            Assert.NotNull(container);
 
             container.RaiseEvent(new PointerPressEventArgs
             {
