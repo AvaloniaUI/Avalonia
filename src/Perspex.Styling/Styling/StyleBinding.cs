@@ -61,7 +61,8 @@ namespace Perspex.Styling
         /// </summary>
         public object ActivatedValue
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets a description of the binding.
@@ -90,16 +91,16 @@ namespace Perspex.Styling
 
             if (Source == null)
             {
-                return _activator.Subscribe(
-                    active => observer.OnNext(active ? ActivatedValue : PerspexProperty.UnsetValue),
-                    observer.OnError,
-                    observer.OnCompleted);
+                return _activator
+                    .Select(active => active ? ActivatedValue : PerspexProperty.UnsetValue)
+                    .Subscribe(observer);
             }
             else
             {
                 return _activator
                     .CombineLatest(Source, (x, y) => new { Active = x, Value = y })
-                    .Subscribe(x => observer.OnNext(x.Active ? x.Value : PerspexProperty.UnsetValue));
+                    .Select(x => x.Active ? x.Value : PerspexProperty.UnsetValue)
+                    .Subscribe(observer);
             }
         }
     }

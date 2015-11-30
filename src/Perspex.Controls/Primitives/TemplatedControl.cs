@@ -81,12 +81,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static TemplatedControl()
         {
-            TemplateProperty.Changed.Subscribe(e =>
-            {
-                var templatedControl = (TemplatedControl)e.Sender;
-                templatedControl._templateApplied = false;
-                templatedControl.InvalidateMeasure();
-            });
+            TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
         }
 
         /// <summary>
@@ -222,6 +217,16 @@ namespace Perspex.Controls.Primitives
         /// <param name="nameScope">The template name scope.</param>
         protected virtual void OnTemplateApplied(INameScope nameScope)
         {
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Template"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
+        {
+            _templateApplied = false;
+            InvalidateMeasure();
         }
 
         /// <summary>

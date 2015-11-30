@@ -56,9 +56,21 @@ namespace Perspex.Styling
 
                 if (match.ImmediateResult != false)
                 {
+                    var visual = control as IVisual;
+                    var activator = match.ObservableResult ?? 
+                        Observable.Never<bool>().StartWith(true);
+
+                    if (visual != null)
+                    {
+                        var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                            x => visual.DetachedFromVisualTree += x,
+                            x => visual.DetachedFromVisualTree -= x);
+                        activator = activator.TakeUntil(detached);
+                    }
+
                     foreach (var setter in Setters)
                     {
-                        setter.Apply(this, control, match.ObservableResult);
+                        setter.Apply(this, control, activator);
                     }
                 }
             }

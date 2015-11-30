@@ -152,6 +152,13 @@ namespace Perspex.Controls
             Presenter = nameScope.Find<IItemsPresenter>("PART_ItemsPresenter");
         }
 
+        /// <inheritdoc/>
+        protected override void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
+        {
+            base.OnTemplateChanged(e);
+            ItemContainerGenerator.Clear();
+        }
+
         /// <summary>
         /// Caled when the <see cref="Items"/> property changes.
         /// </summary>
