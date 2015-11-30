@@ -189,6 +189,36 @@ namespace Perspex.LeakTests
         }
 
         [Fact]
+        public void TextBox_ScrollViewer_Is_Freed_When_Template_Cleared()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new TextBox()
+                };
+
+                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TextBox>(window.Presenter.Child);
+                Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                // Clear the template and ensure the TextBox template gets removed
+                ((TextBox)window.Content).Template = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ScrollViewer>()).ObjectsCount));
+        }
+
+        [Fact]
         public void TreeView_Is_Freed()
         {
             Func<Window> run = () =>
