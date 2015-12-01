@@ -73,14 +73,16 @@ namespace Perspex.Designer
         {
             if (e.PropertyName == nameof(ProcessHost.WindowHandle))
             {
-                if (NativeContainer.Child == null)
+                if (NativeContainer.Child != null)
                 {
-                    NativeContainer.Child = new WindowHost(false);
+                    var child = NativeContainer.Child;
+                    NativeContainer.Child = null;
+                    child.Dispose();
                 }
-                {
-                    var wndHost = ((WindowHost) NativeContainer.Child);
-                    wndHost.SetWindow(_host.WindowHandle);
-                }
+                NativeContainer.Child = new WindowHost(false);
+                var wndHost = ((WindowHost) NativeContainer.Child);
+                wndHost.SetWindow(_host.WindowHandle);
+
 
             }
         }

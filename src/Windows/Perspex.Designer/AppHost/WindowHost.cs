@@ -25,6 +25,8 @@ namespace Perspex.Designer.AppHost
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             Controls.Add(_windowHost);
             _windowHost.Anchor = AnchorStyles.None;
+            if (!supportScroll)
+                _windowHost.Visible = false;
             _timer.Tick += delegate
             {
                 ReloadSettings();
@@ -98,7 +100,7 @@ namespace Perspex.Designer.AppHost
             _hWnd = hWnd;
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.SetParent(hWnd, _windowHost.Handle);
+                WinApi.SetParent(hWnd, _supportScroll ? _windowHost.Handle : Handle);
                 FixWindow();
             }
         }
@@ -127,8 +129,6 @@ namespace Perspex.Designer.AppHost
                 }
                 else
                 {
-                    _windowHost.Width = Width;
-                    _windowHost.Height = Height;
                     WinApi.MoveWindow(_hWnd, 0, 0, Width, Height, true);
                 }
             }
