@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
         xmlns:Interactivity="using:Perspex.Xaml.Interactivity;assembly=Perspex.Markup.Xaml"
+        xmlns:Interactions="using:Perspex.Xaml.Interactions.Core;assembly=Perspex.Markup.Xaml"
         xmlns:behaviors="clr-namespace:XamlTestApplication.Behaviors;assembly=XamlTestApplicationPcl"
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
@@ -274,19 +275,61 @@
                   </Border>
               </Grid>
           </TabItem>
-          <TabControl Height="Interactivity">
-              <Grid Grid.Column="0" Margin="0,0,10,10" Background="PaleYellow">
-                  <Ellipse Fill="DarkGrey" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
-                      <Interactivity:Interaction.Behaviors>
-                          <behaviors:DragPositionBehavior/>
-                      </Interactivity:Interaction.Behaviors>
-                  </Ellipse>
-                  <Rectangle Fill="Pink" HorizontalAlignment="Right" Height="125" Stroke="Black" VerticalAlignment="Bottom" Width="200" StrokeThickness="0" Margin="15">
-                      <Interactivity:Interaction.Behaviors>
-                          <behaviors:DragPositionBehavior />
-                      </Interactivity:Interaction.Behaviors>
-                  </Rectangle>
-              </Grid>
+          <TabItem Header="Interactivity">
+              <TabControl>
+                  <TabItem Header="Behaviors">
+                      <TabControl>
+                          <TabItem Header="Data Trigger">
+                              <!-- TODO -->
+                          </TabItem>
+                          <TabItem Header="Event Trigger">
+                              <Grid Grid.Column="0" Margin="0,0,10,0" >
+                                  <Grid.RowDefinitions>
+                                      <RowDefinition Height="5*"/>
+                                      <RowDefinition Height="*"/>
+                                  </Grid.RowDefinitions>
+                                  <TextBox Name="DataTriggerText" Text="RoyalBlue" Grid.Row="0">
+                                  </TextBox>
+                                  <Button Name="button" Content="Click Me" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Margin="0,10,0,10" FontSize="20" Foreground="PaleGrey" Background="DarkGrey">
+                                      <Interactivity:Interaction.Behaviors>
+                                          <Interactions:EventTriggerBehavior EventName="Click" SourceObject="{Binding ElementName=button}">
+                                              <Interactions:ChangePropertyAction TargetObject="{Binding ElementName=DataTriggerText}" PropertyName="Text" Value="PaleYellow"/>
+                                          </Interactions:EventTriggerBehavior>
+                                      </Interactivity:Interaction.Behaviors>
+                                  </Button>
+                              </Grid>
+                          </TabItem>
+                          <TabItem Header="Incremental Update">
+                              <!-- TODO -->
+                          </TabItem>
+                      </TabControl>
+                  </TabItem>
+                  <TabItem Header="Actions">
+                      <!-- TODO -->
+                  </TabItem>
+                  <TabItem Header="Custom">
+                      <TabControl>
+                          <TabItem Header="Custom Behavior">
+                              <Grid Grid.Column="0" Margin="0,0,10,10" Background="PaleYellow">
+                                  <Ellipse Fill="DarkGrey" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
+                                      <Interactivity:Interaction.Behaviors>
+                                          <behaviors:DragPositionBehavior/>
+                                      </Interactivity:Interaction.Behaviors>
+                                  </Ellipse>
+                                  <Rectangle Fill="Pink" HorizontalAlignment="Right" Height="125" Stroke="Black" VerticalAlignment="Bottom" Width="200" StrokeThickness="0" Margin="15">
+                                      <Interactivity:Interaction.Behaviors>
+                                          <behaviors:DragPositionBehavior />
+                                      </Interactivity:Interaction.Behaviors>
+                                  </Rectangle>
+                              </Grid>
+                          </TabItem>
+                          <TabItem Header="Custom Action">
+                              <!-- TODO -->
+                          </TabItem>
+                      </TabControl>
+                  </TabItem>
+              </TabControl>
+          </TabItem>
       </TabControl>
     </Grid>
 </Window>
