@@ -2,6 +2,8 @@
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
+        xmlns:Interactivity="using:Perspex.Xaml.Interactivity;assembly=Perspex.Markup.Xaml"
+        xmlns:behaviors="clr-namespace:XamlTestApplication.Behaviors;assembly=XamlTestApplicationPcl"
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
       <Menu Grid.ColumnSpan="2">
@@ -272,6 +274,19 @@
                   </Border>
               </Grid>
           </TabItem>
+          <TabControl Height="Interactivity">
+              <Grid Grid.Column="0" Margin="0,0,10,10" Background="PaleYellow">
+                  <Ellipse Fill="DarkGrey" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
+                      <Interactivity:Interaction.Behaviors>
+                          <behaviors:DragPositionBehavior/>
+                      </Interactivity:Interaction.Behaviors>
+                  </Ellipse>
+                  <Rectangle Fill="Pink" HorizontalAlignment="Right" Height="125" Stroke="Black" VerticalAlignment="Bottom" Width="200" StrokeThickness="0" Margin="15">
+                      <Interactivity:Interaction.Behaviors>
+                          <behaviors:DragPositionBehavior />
+                      </Interactivity:Interaction.Behaviors>
+                  </Rectangle>
+              </Grid>
       </TabControl>
     </Grid>
 </Window>
