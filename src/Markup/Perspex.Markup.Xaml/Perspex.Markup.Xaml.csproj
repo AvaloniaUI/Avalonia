@@ -64,6 +64,13 @@
     <Compile Include="Converters\SelectorTypeConverter.cs" />
     <Compile Include="Context\PerspexWiringContext.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+    <Compile Include="Interactions\Core\CallMethodAction.cs" />
+    <Compile Include="Interactions\Core\ChangePropertyAction.cs" />
+    <Compile Include="Interactions\Core\EventTriggerBehavior.cs" />
+    <Compile Include="Interactions\Core\InvokeCommandAction.cs" />
+    <Compile Include="Interactions\Core\ResourceHelper.cs" />
+    <Compile Include="Interactions\Core\TypeConverterHelper.cs" />
+    <Compile Include="Interactions\GlobalSuppressions.cs" />
     <Compile Include="Interactivity\ActionCollection.cs" />
     <Compile Include="Interactivity\Behavior.cs" />
     <Compile Include="Interactivity\BehaviorCollection.cs" />
