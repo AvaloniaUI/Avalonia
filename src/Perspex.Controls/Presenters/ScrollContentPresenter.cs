@@ -98,48 +98,52 @@ namespace Perspex.Controls.Presenters
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
         public bool BringDescendentIntoView(IVisual target, Rect targetRect)
         {
-            if (Child != null)
-            {
-                var transform = target.TransformToVisual(Child);
-                var rect = targetRect * transform;
-                var offset = Offset;
-                var result = false;
-
-                if (rect.Bottom > offset.Y + Viewport.Height)
-                {
-                    offset = offset.WithY((rect.Bottom - Viewport.Height) + Child.Margin.Top);
-                    result = true;
-                }
-
-                if (rect.Y < offset.Y)
-                {
-                    offset = offset.WithY(rect.Y);
-                    result = true;
-                }
-
-                if (rect.Right > offset.X + Viewport.Width)
-                {
-                    offset = offset.WithX((rect.Right - Viewport.Width) + Child.Margin.Left);
-                    result = true;
-                }
-
-                if (rect.X < offset.X)
-                {
-                    offset = offset.WithX(rect.X);
-                    result = true;
-                }
-
-                if (result)
-                {
-                    Offset = offset;
-                }
-
-                return result;
-            }
-            else
+            if (Child == null)
             {
                 return false;
             }
+
+            var transform = target.TransformToVisual(Child);
+
+            if (transform == null)
+            {
+                return false;
+            }
+
+            var rect = targetRect * transform.Value;
+            var offset = Offset;
+            var result = false;
+
+            if (rect.Bottom > offset.Y + Viewport.Height)
+            {
+                offset = offset.WithY((rect.Bottom - Viewport.Height) + Child.Margin.Top);
+                result = true;
+            }
+
+            if (rect.Y < offset.Y)
+            {
+                offset = offset.WithY(rect.Y);
+                result = true;
+            }
+
+            if (rect.Right > offset.X + Viewport.Width)
+            {
+                offset = offset.WithX((rect.Right - Viewport.Width) + Child.Margin.Left);
+                result = true;
+            }
+
+            if (rect.X < offset.X)
+            {
+                offset = offset.WithX(rect.X);
+                result = true;
+            }
+
+            if (result)
+            {
+                Offset = offset;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

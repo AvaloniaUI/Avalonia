@@ -300,13 +300,22 @@ namespace Perspex
         /// of the specified <paramref name="visual"/>.
         /// </summary>
         /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
-        public Matrix TransformToVisual(IVisual visual)
+        /// <returns>
+        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
+        /// common ancestor.
+        /// </returns>
+        public Matrix? TransformToVisual(IVisual visual)
         {
             var common = this.FindCommonVisualAncestor(visual);
-            var thisOffset = GetOffsetFrom(common, this);
-            var thatOffset = GetOffsetFrom(common, visual);
-            return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+
+            if (common != null)
+            {
+                var thisOffset = GetOffsetFrom(common, this);
+                var thatOffset = GetOffsetFrom(common, visual);
+                return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+            }
+
+            return null;
         }
 
         /// <summary>
