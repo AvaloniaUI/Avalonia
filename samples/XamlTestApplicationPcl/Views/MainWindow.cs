@@ -15,6 +15,16 @@ namespace XamlTestApplication.Views
             InitializeComponent();
             DataContext = new MainWindowViewModel();
             DevTools.Attach(this);
+
+            // TODO: Remove, only temporary for test of DragPositionBehavior
+            var dragEllipse = this.FindControl<Perspex.Controls.Shapes.Ellipse>("dragEllipse");
+            if (dragEllipse != null)
+            {
+                Perspex.Xaml.Interactivity.Interaction.SetBehaviors(dragEllipse, new Perspex.Xaml.Interactivity.BehaviorCollection()
+                {
+                    new Behaviors.DragPositionBehavior()
+                });
+            }
         }
 
         private void InitializeComponent()
