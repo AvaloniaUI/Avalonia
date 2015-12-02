@@ -81,7 +81,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceHelper.cs" />
     <Compile Include="TypeConstraintAttribute.cs" />
-    <Compile Include="VisualStateUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
