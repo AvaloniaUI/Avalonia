@@ -33,7 +33,7 @@ namespace Perspex.Designer.InProcDesigner
             InitializeComponent();
             DataContext = _appModel;
             _appModel.PropertyChanged += ModelPropertyChanged;
-            WindowHostControl.Child = _host = new WindowHost();
+            WindowHostControl.Child = _host = new WindowHost(true);
             HandleVisibility();
             HandleWindow();
 

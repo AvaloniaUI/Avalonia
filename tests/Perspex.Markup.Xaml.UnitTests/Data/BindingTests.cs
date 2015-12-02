@@ -141,6 +141,27 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
+        public void DataContext_Binding_Should_Track_Parent()
+        {
+            var parent = new Decorator
+            {
+                DataContext = new { Foo = "foo" },
+            };
+
+            var child = new Control();
+
+            var binding = new Binding
+            {
+                Path = "Foo",
+            };
+
+            binding.Bind(child, Control.DataContextProperty);
+            Assert.Null(child.DataContext);
+            parent.Child = child;
+            Assert.Equal("foo", child.DataContext);
+        }
+
+        [Fact]
         public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
         {
             var target = CreateTarget(null);

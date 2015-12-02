@@ -11,15 +11,22 @@ namespace Perspex.Designer.AppHost
 {
     class WindowHost : UserControl
     {
-        public WindowHost()
+        private readonly bool _supportScroll;
+
+        public WindowHost(bool supportScroll)
         {
-            AutoScroll = true;
-            VerticalScroll.Enabled = true;
-            HorizontalScroll.Enabled = true;
+            _supportScroll = supportScroll;
+            if (_supportScroll)
+            {
+                AutoScroll = true;
+                VerticalScroll.Enabled = true;
+                HorizontalScroll.Enabled = true;
+            }
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            Text = "ScrollableArea";
             Controls.Add(_windowHost);
             _windowHost.Anchor = AnchorStyles.None;
+            if (!supportScroll)
+                _windowHost.Visible = false;
             _timer.Tick += delegate
             {
                 ReloadSettings();
@@ -93,7 +100,7 @@ namespace Perspex.Designer.AppHost
             _hWnd = hWnd;
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.SetParent(hWnd, _windowHost.Handle);
+                WinApi.SetParent(hWnd, _supportScroll ? _windowHost.Handle : Handle);
                 FixWindow();
             }
         }
@@ -102,25 +109,34 @@ namespace Perspex.Designer.AppHost
         {
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.RECT rc;
-                WinApi.GetWindowRect(_hWnd, out rc);
-                _desiredWidth = rc.Right - rc.Left;
-                _desiredHeight = rc.Bottom - rc.Top;
-                var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
-
-                if (!(pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width && _desiredHeight == _windowHost.Height))
+                if (_supportScroll)
                 {
-                    _windowHost.Width = _desiredWidth;
-                    _windowHost.Height = _desiredHeight;
-                    WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                    WinApi.RECT rc;
+                    WinApi.GetWindowRect(_hWnd, out rc);
+                    _desiredWidth = rc.Right - rc.Left;
+                    _desiredHeight = rc.Bottom - rc.Top;
+                    var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
+
+                    if (
+                        !(pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width &&
+                          _desiredHeight == _windowHost.Height))
+                    {
+                        _windowHost.Width = _desiredWidth;
+                        _windowHost.Height = _desiredHeight;
+                        WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                    }
+                    FixPosition();
                 }
-                FixPosition();
+                else
+                {
+                    WinApi.MoveWindow(_hWnd, 0, 0, Width, Height, true);
+                }
             }
         }
 
         protected override void OnResize(EventArgs e)
         {
-            FixPosition();
+            FixWindow();
             base.OnResize(e);
         }
     }
