@@ -32,7 +32,7 @@ namespace Perspex.Xaml.Interactivity
             }
             else if (collectionChange == NotifyCollectionChangedAction.Add || collectionChange == NotifyCollectionChangedAction.Replace)
             {
-                PerspexObject changedItem = this[eventArgs.NewStartingIndex];
+                PerspexObject changedItem = (PerspexObject)eventArgs.NewItems[0];
                 VerifyType(changedItem);
             }
         }
