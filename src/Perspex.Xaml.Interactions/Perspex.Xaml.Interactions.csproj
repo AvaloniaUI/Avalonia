@@ -84,6 +84,7 @@
     <Compile Include="Core\ChangePropertyAction.cs" />
     <Compile Include="Core\ComparisonConditionType.cs" />
     <Compile Include="Core\DataBindingHelper.cs" />
+    <Compile Include="Core\DataTriggerBehavior.cs" />
     <Compile Include="Core\EventTriggerBehavior.cs" />
     <Compile Include="Core\InvokeCommandAction.cs" />
     <Compile Include="Core\ResourceHelper.cs" />
