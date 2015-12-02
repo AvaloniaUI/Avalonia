@@ -23,6 +23,7 @@
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabStrip.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TextBox.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToggleButton.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToolTip.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeView.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TreeViewItem.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Window.paml"/>

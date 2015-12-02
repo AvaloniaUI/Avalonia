@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <ContentControl x:Name="NativeContainer" Panel.ZIndex="1"/> 
+        <WindowsFormsHost Background="White" x:Name="NativeContainer" Panel.ZIndex="1"/> 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Panel.ZIndex="0">
             <TextBox IsReadOnly="True" TextWrapping="WrapWithOverflow" x:Name="State"/>
         </ScrollViewer>

@@ -32,6 +32,7 @@ namespace BindingTest.ViewModels
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
         public ReactiveCommand<object> ShuffleItems { get; }
+        public TestUserControlViewModel UserControl { get; } = new TestUserControlViewModel();
 
         public string BooleanString
         {

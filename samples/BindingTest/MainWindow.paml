@@ -1,5 +1,6 @@
 ﻿<Window xmlns="https://github.com/perspex"
-        xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest">
+        xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest"
+        xmlns:local="clr-namespace:BindingTest;assembly=BindingTest">
   <TabControl>
     <TabItem Header="Basic">
       <StackPanel Orientation="Vertical">
@@ -54,6 +55,11 @@
           <ListBox Items="{Binding Items}" SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}"/>
         </StackPanel>
       </StackPanel>
+    </TabItem>
+    <TabItem Header="UserControl">
+      <local:TestUserControl DataContext="{Binding UserControl}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"/>
     </TabItem>
   </TabControl>
 </Window>

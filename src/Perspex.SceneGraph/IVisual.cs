@@ -97,7 +97,10 @@ namespace Perspex
         /// of the specified <paramref name="visual"/>.
         /// </summary>
         /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
-        Matrix TransformToVisual(IVisual visual);
+        /// <returns>
+        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
+        /// common ancestor.
+        /// </returns>
+        Matrix? TransformToVisual(IVisual visual);
     }
 }
