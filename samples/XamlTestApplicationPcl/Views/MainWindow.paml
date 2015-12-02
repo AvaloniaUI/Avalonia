@@ -2,8 +2,8 @@
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
-        xmlns:Interactivity="using:Perspex.Xaml.Interactivity;assembly=Perspex.Markup.Xaml"
-        xmlns:Interactions="using:Perspex.Xaml.Interactions.Core;assembly=Perspex.Markup.Xaml"
+        xmlns:Interactivity="using:Perspex.Xaml.Interactivity;assembly=Perspex.Xaml.Interactivity"
+        xmlns:Interactions="using:Perspex.Xaml.Interactions.Core;assembly=Perspex.Xaml.Interactions"
         xmlns:behaviors="clr-namespace:XamlTestApplication.Behaviors;assembly=XamlTestApplicationPcl"
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
