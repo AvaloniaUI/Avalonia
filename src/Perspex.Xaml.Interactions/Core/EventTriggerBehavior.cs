@@ -7,8 +7,8 @@ namespace Perspex.Xaml.Interactions.Core
     using System.Globalization;
     using System.Reflection;
     using System.Runtime.InteropServices.WindowsRuntime;
-    using Controls;    
     using Interactivity;
+    using Controls;
 
     /// <summary>
     /// A behavior that listens for a specified event on its source and executes its actions when that event is fired.

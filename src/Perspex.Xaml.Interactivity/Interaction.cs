@@ -5,7 +5,7 @@ namespace Perspex.Xaml.Interactivity
     using System;
     using System.Collections.Generic;
     using Perspex.Controls;
-    using Perspex.Interactivity;
+    //using Perspex.Interactivity;
 
     /// <summary>
     /// Defines a <see cref="BehaviorCollection"/> attached property and provides a method for executing an <seealso cref="ActionCollection"/>.

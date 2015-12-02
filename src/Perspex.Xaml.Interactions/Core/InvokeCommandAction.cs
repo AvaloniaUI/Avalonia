@@ -5,6 +5,7 @@ namespace Perspex.Xaml.Interactions.Core
     using System.Windows.Input;
     using Interactivity;
     using Markup;
+
     /// <summary>
     /// Executes a specified <see cref="System.Windows.Input.ICommand"/> when invoked. 
     /// </summary>
