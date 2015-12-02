@@ -18,7 +18,6 @@ namespace Perspex.Xaml.Interactivity
 
         static Interaction()
         {
-            // private static void OnBehaviorsChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
             BehaviorsProperty.Changed.Subscribe(e =>
             {
                 BehaviorCollection oldCollection = (BehaviorCollection)e.OldValue;
@@ -48,7 +47,6 @@ namespace Perspex.Xaml.Interactivity
         public static readonly PerspexProperty<BehaviorCollection> BehaviorsProperty = 
             PerspexProperty.RegisterAttached<Interaction, PerspexObject, BehaviorCollection>(
                 "Behaviors");
-                //TODO: new PropertyMetadata(null, new PropertyChangedCallback(Interaction.OnBehaviorsChanged)));
 
         /// <summary>
         /// Gets the <see cref="BehaviorCollection"/> associated with a specified object.
@@ -120,29 +118,6 @@ namespace Perspex.Xaml.Interactivity
 
             return results;
         }
-
-        /* TODO: 
-        private static void OnBehaviorsChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
-        {
-            BehaviorCollection oldCollection = (BehaviorCollection)args.OldValue;
-            BehaviorCollection newCollection = (BehaviorCollection)args.NewValue;
-
-            if (oldCollection == newCollection)
-            {
-                return;
-            }
-
-            if (oldCollection != null && oldCollection.AssociatedObject != null)
-            {
-                oldCollection.Detach();
-            }
-
-            if (newCollection != null && sender != null)
-            {
-                newCollection.Attach(sender);
-            }
-        }
-        */
 
         private static void FrameworkElement_Loaded(object sender, VisualTreeAttachmentEventArgs e)
         {
