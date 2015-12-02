@@ -35,6 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
+      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
+      <Name>Perspex.Markup.Xaml</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Markup\Perspex.Markup\Perspex.Markup.csproj">
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Perspex.Markup</Name>
