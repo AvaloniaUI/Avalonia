@@ -13,53 +13,39 @@ namespace XamlTestApplication.Behaviors
 {
     public class DragPositionBehavior : PerspexObject, IBehavior
     {
-        public PerspexObject AssociatedObject
-        {
-            get;
-            set;
-        }
+        public PerspexObject AssociatedObject { get; set; }
 
         public void Attach(PerspexObject associatedObject)
         {
-            // TODO: Check for design mode
-            if ((associatedObject != AssociatedObject) /*&& !Windows.ApplicationModel.DesignMode.DesignModeEnabled*/)
+            if ((associatedObject != AssociatedObject) && !Design.IsDesignMode)
             {
                 AssociatedObject = associatedObject;
                 var fe = AssociatedObject as Control;
                 if (fe != null)
                 {
-                    fe.PointerPressed += fe_PointerPressed;
-                    //fe.PointerReleased += fe_PointerReleased;
+                    fe.PointerPressed += AssociatedObject_PointerPressed;
                 }
             }
         }
 
-        Control parent = null;
-        Point prevPoint;
-        //int pointerId = -1;
-        void fe_PointerPressed(object sender, PointerPressEventArgs e)
+        private Control parent = null;
+        private Point prevPoint;
+
+        private void AssociatedObject_PointerPressed(object sender, PointerPressEventArgs e)
         {
             var fe = AssociatedObject as Control;
             parent = (Control)fe.Parent;
 
             if (!(fe.RenderTransform is TranslateTransform))
                 fe.RenderTransform = new TranslateTransform();
+
             prevPoint = e.GetPosition(parent);
-            parent.PointerMoved += move;
-            parent.PointerReleased += release;
-            //pointerId = (int)e.Pointer.PointerId;
+            parent.PointerMoved += Parent_PointerMoved;
+            parent.PointerReleased += Parent_PointerReleased;
         }
 
-        private void Parent_PointerMoved(object sender, PointerEventArgs e)
+        private void Parent_PointerMoved(object o, PointerEventArgs args)
         {
-            throw new NotImplementedException();
-        }
-
-        private void move(object o, PointerEventArgs args)
-        {
-            //if (args.Pointer.PointerId != pointerId)
-            //    return;
-
             var fe = AssociatedObject as Control;
             var pos = args.GetPosition(parent);
             var tr = (TranslateTransform)fe.RenderTransform;
@@ -68,31 +54,21 @@ namespace XamlTestApplication.Behaviors
             prevPoint = pos;
         }
 
-        void release(object sender, PointerReleasedEventArgs e)
+        private void Parent_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            parent.PointerMoved -= move;
-            parent.PointerReleased -= release;
+            parent.PointerMoved -= Parent_PointerMoved;
+            parent.PointerReleased -= Parent_PointerReleased;
             parent = null;
         }
-        /*
-        void fe_PointerReleased(object sender, PointerReleasedEventArgs e)
-        {
-            var fe = AssociatedObject as Control;
-            //if (e.Pointer.PointerId != pointerId)
-            //    return;
-            parent.PointerMoved -= move;
-            parent.PointerReleased -= release;
-            //pointerId = -1;
-        }
-        */
+
         public void Detach()
         {
             var fe = AssociatedObject as Control;
             if (fe != null)
             {
-                fe.PointerPressed -= fe_PointerPressed;
-                //fe.PointerReleased -= fe_PointerReleased;
+                fe.PointerPressed -= AssociatedObject_PointerPressed;
             }
+
             parent = null;
             AssociatedObject = null;
         }
