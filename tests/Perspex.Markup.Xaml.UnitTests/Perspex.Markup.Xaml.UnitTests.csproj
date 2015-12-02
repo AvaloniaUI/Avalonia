@@ -93,6 +93,10 @@
     <Compile Include="Data\BindingTests_TemplatedParent.cs" />
     <Compile Include="Data\BindingTests.cs" />
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
+    <Compile Include="Interactivity\BehaviorCollectionTest.cs" />
+    <Compile Include="Interactivity\InteractionTest.cs" />
+    <Compile Include="Interactivity\Stubs.cs" />
+    <Compile Include="Interactivity\TestUitilties.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleModel\Level1.cs" />
@@ -165,6 +169,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
