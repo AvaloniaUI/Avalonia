@@ -44,10 +44,10 @@ namespace Perspex.Xaml.Interactivity
         /// Gets or sets the <see cref="BehaviorCollection"/> associated with a specified object.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty BehaviorsProperty = PerspexProperty.RegisterAttached<PerspexObject, BehaviorCollection>(
-            "Behaviors",
-            typeof(Interaction));
-            //TODO: new PropertyMetadata(null, new PropertyChangedCallback(Interaction.OnBehaviorsChanged)));
+        public static readonly PerspexProperty<BehaviorCollection> BehaviorsProperty = 
+            PerspexProperty.RegisterAttached<Interaction, PerspexObject, BehaviorCollection>(
+                "Behaviors");
+                //TODO: new PropertyMetadata(null, new PropertyChangedCallback(Interaction.OnBehaviorsChanged)));
 
         /// <summary>
         /// Gets the <see cref="BehaviorCollection"/> associated with a specified object.
