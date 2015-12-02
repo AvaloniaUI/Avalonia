@@ -29,7 +29,7 @@ namespace XamlTestApplication.Behaviors
                 if (fe != null)
                 {
                     fe.PointerPressed += fe_PointerPressed;
-                    fe.PointerReleased += fe_PointerReleased;
+                    //fe.PointerReleased += fe_PointerReleased;
                 }
             }
         }
@@ -46,6 +46,7 @@ namespace XamlTestApplication.Behaviors
                 fe.RenderTransform = new TranslateTransform();
             prevPoint = e.GetPosition(parent);
             parent.PointerMoved += move;
+            parent.PointerReleased += release;
             //pointerId = (int)e.Pointer.PointerId;
         }
 
@@ -66,21 +67,31 @@ namespace XamlTestApplication.Behaviors
             tr.Y += pos.Y - prevPoint.Y;
             prevPoint = pos;
         }
+
+        void release(object sender, PointerReleasedEventArgs e)
+        {
+            parent.PointerMoved -= move;
+            parent.PointerReleased -= release;
+            parent = null;
+        }
+        /*
         void fe_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
             var fe = AssociatedObject as Control;
             //if (e.Pointer.PointerId != pointerId)
             //    return;
             parent.PointerMoved -= move;
+            parent.PointerReleased -= release;
             //pointerId = -1;
         }
+        */
         public void Detach()
         {
             var fe = AssociatedObject as Control;
             if (fe != null)
             {
                 fe.PointerPressed -= fe_PointerPressed;
-                fe.PointerReleased -= fe_PointerReleased;
+                //fe.PointerReleased -= fe_PointerReleased;
             }
             parent = null;
             AssociatedObject = null;
