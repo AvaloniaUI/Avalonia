@@ -14,12 +14,13 @@ namespace Perspex.Xaml.Interactivity
         /// <remarks>
         /// CA1053: Static holder types should not have public constructors
         /// </remarks>
-        private Interaction()
+        private Interaction() { }
+
+        static Interaction()
         {
             // private static void OnBehaviorsChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
             BehaviorsProperty.Changed.Subscribe(e =>
             {
-                
                 BehaviorCollection oldCollection = (BehaviorCollection)e.OldValue;
                 BehaviorCollection newCollection = (BehaviorCollection)e.NewValue;
 
