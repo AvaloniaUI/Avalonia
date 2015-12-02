@@ -24,8 +24,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Interactivity
             foreach (StubBehavior behavior in behaviorCollection)
             {
                 Assert.Equal(1, behavior.AttachCount); // "Should only have called Attach once."
-                Assert.Equal(0, behavior.DetachCount); // Should not have called Detach."
-                Assert.Equal(button, behavior.AssociatedObject); // Should be attached to the host of the BehaviorCollection."
+                Assert.Equal(0, behavior.DetachCount); // "Should not have called Detach."
+                Assert.Equal(button, behavior.AssociatedObject); // "Should be attached to the host of the BehaviorCollection."
             }
         }
 
@@ -40,7 +40,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Interactivity
 
             foreach (StubBehavior behavior in behaviorCollection)
             {
-                Assert.Equal(1, behavior.AttachCount); // Should only have called Attach once."
+                Assert.Equal(1, behavior.AttachCount); // "Should only have called Attach once."
             }
         }
 
