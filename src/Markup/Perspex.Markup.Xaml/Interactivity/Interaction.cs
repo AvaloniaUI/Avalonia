@@ -17,6 +17,28 @@ namespace Perspex.Xaml.Interactivity
         /// </remarks>
         private Interaction()
         {
+            // private static void OnBehaviorsChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
+            BehaviorsProperty.Changed.Subscribe(e =>
+            {
+                
+                BehaviorCollection oldCollection = (BehaviorCollection)e.OldValue;
+                BehaviorCollection newCollection = (BehaviorCollection)e.NewValue;
+
+                if (oldCollection == newCollection)
+                {
+                    return;
+                }
+
+                if (oldCollection != null && oldCollection.AssociatedObject != null)
+                {
+                    oldCollection.Detach();
+                }
+
+                if (newCollection != null && e.Sender != null)
+                {
+                    newCollection.Attach(e.Sender);
+                }
+            });
         }
 
         /// <summary>
