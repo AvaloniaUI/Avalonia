@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Controls;
+using Perspex.Controls.Shapes;
 using Perspex.Diagnostics;
 using Perspex.Markup.Xaml;
+using Perspex.Xaml.Interactivity;
+using XamlTestApplication.Behaviors;
 using XamlTestApplication.ViewModels;
 
 namespace XamlTestApplication.Views
@@ -17,14 +20,9 @@ namespace XamlTestApplication.Views
             DevTools.Attach(this);
 
             // TODO: Remove, only temporary for test of DragPositionBehavior
-            var dragEllipse = this.FindControl<Perspex.Controls.Shapes.Ellipse>("dragEllipse");
-            if (dragEllipse != null)
-            {
-                Perspex.Xaml.Interactivity.Interaction.SetBehaviors(dragEllipse, new Perspex.Xaml.Interactivity.BehaviorCollection()
-                {
-                    new Behaviors.DragPositionBehavior()
-                });
-            }
+            Interaction.SetBehaviors(
+                this.FindControl<Ellipse>("dragEllipse"), 
+                new BehaviorCollection { new DragPositionBehavior() });
         }
 
         private void InitializeComponent()
