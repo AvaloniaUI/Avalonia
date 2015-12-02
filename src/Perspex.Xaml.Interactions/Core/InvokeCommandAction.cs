@@ -95,7 +95,7 @@ namespace Perspex.Xaml.Interactions.Core
         }
 
         /// <summary>
-        /// Gets or sets the parameter that is passed to the <see cref="Windows.UI.Xaml.Data.IValueConverter.Convert"/>
+        /// Gets or sets the parameter that is passed to the <see cref="IValueConverter.Convert"/>
         /// method of <see cref="InputConverter"/>.
         /// This is an optional dependency property.
         /// </summary>
@@ -112,7 +112,7 @@ namespace Perspex.Xaml.Interactions.Core
         }
 
         /// <summary>
-        /// Gets or sets the language that is passed to the <see cref="Windows.UI.Xaml.Data.IValueConverter.Convert"/>
+        /// Gets or sets the language that is passed to the <see cref="IValueConverter.Convert"/>
         /// method of <see cref="InputConverter"/>.
         /// This is an optional dependency property.
         /// </summary>

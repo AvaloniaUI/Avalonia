@@ -35,10 +35,10 @@ namespace Perspex.Xaml.Interactivity
         }
 
         /// <summary>
-        /// Attaches the collection of behaviors to the specified <see cref="Windows.UI.Xaml.DependencyObject"/>.
+        /// Attaches the collection of behaviors to the specified <see cref="PerspexObject"/>.
         /// </summary>
-        /// <param name="associatedObject">The <see cref="Windows.UI.Xaml.DependencyObject"/> to which to attach.</param>
-        /// <exception cref="InvalidOperationException">The <see cref="BehaviorCollection"/> is already attached to a different <see cref="Windows.UI.Xaml.DependencyObject"/>.</exception>
+        /// <param name="associatedObject">The <see cref="PerspexObject"/> to which to attach.</param>
+        /// <exception cref="InvalidOperationException">The <see cref="BehaviorCollection"/> is already attached to a different <see cref="PerspexObject"/>.</exception>
         public void Attach(PerspexObject associatedObject)
         {
             if (associatedObject == this.AssociatedObject)
