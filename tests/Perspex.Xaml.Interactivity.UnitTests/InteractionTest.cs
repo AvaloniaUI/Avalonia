@@ -10,9 +10,6 @@ namespace Perspex.Xaml.Interactivity.UnitTests
 {
     public class InteractionTest
     {
-        // TODO:
-
-        /*
         [AppContainerUITestMethod]
         public void SetBehaviors_MultipleBehaviors_AllAttached()
         {
@@ -62,7 +59,6 @@ namespace Perspex.Xaml.Interactivity.UnitTests
                 Assert.Null(behavior.AssociatedObject); // "AssociatedObject should be null after Detach."
             }
         }
-        */
 
         [AppContainerUITestMethod]
         public void SetBehaviors_NullThenNull_NoOp()
