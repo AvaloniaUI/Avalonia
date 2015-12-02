@@ -290,16 +290,20 @@
                                   </Grid.RowDefinitions>
                                   <TextBox Name="DataTriggerText" Text="RoyalBlue" Grid.Row="0">
                                   </TextBox>
-                                  <!--<Rectangle Width="100" Height="100" Fill="Red">
+                                  <!--
+                                  <Rectangle Width="100" Height="100" Fill="Red">
                                       <Grid.Row>1</Grid.Row>
-                                  </Rectangle>-->
-                                  <!--<Button Name="button" Content="Click Me" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Margin="0,10,0,10" FontSize="20" Foreground="PaleGrey" Background="DarkGrey">
+                                  </Rectangle>
+                                  -->
+                                  <!--
+                                  <Button Name="button" Content="Click Me" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Margin="0,10,0,10" FontSize="20" Foreground="PaleGrey" Background="DarkGrey">
                                       <Interactivity:Interaction.Behaviors>
                                           <Interactions:EventTriggerBehavior EventName="Click" SourceObject="{Binding ElementName=button}">
                                               <Interactions:ChangePropertyAction TargetObject="{Binding ElementName=DataTriggerText}" PropertyName="Text" Value="PaleYellow"/>
                                           </Interactions:EventTriggerBehavior>
                                       </Interactivity:Interaction.Behaviors>
-                                  </Button>-->
+                                  </Button>
+                                  -->
                               </Grid>
                           </TabItem>
                           <TabItem Header="Incremental Update">
@@ -316,7 +320,8 @@
                               <Grid Grid.Column="0" Margin="0,0,10,10" Background="Yellow">
                                   <Ellipse Name="dragEllipse" Fill="DarkGray" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
                                   </Ellipse>
-                                  <!--<Ellipse Fill="DarkGrey" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
+                                  <!--
+                                  <Ellipse Fill="DarkGrey" HorizontalAlignment="Left" Height="125" Stroke="Black" VerticalAlignment="Top" Width="125" StrokeThickness="0" Margin="15">
                                       <Interactivity:Interaction.Behaviors>
                                           <behaviors:DragPositionBehavior/>
                                       </Interactivity:Interaction.Behaviors>
@@ -325,7 +330,8 @@
                                       <Interactivity:Interaction.Behaviors>
                                           <behaviors:DragPositionBehavior />
                                       </Interactivity:Interaction.Behaviors>
-                                  </Rectangle>-->
+                                  </Rectangle>
+                                  -->
                               </Grid>
                           </TabItem>
                           <TabItem Header="Custom Action">
