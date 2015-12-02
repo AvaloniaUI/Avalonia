@@ -14,15 +14,30 @@ namespace Perspex.Xaml.Interactions.Core
     /// </summary>
     public sealed class CallMethodAction : PerspexObject, IAction
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty MethodNameProperty = PerspexProperty.Register<CallMethodAction, string>(
-            "MethodName");
-            // TODO: new PropertyMetadata(null, new PropertyChangedCallback(CallMethodAction.OnMethodNameChanged)));
+        static CallMethodAction()
+        {
+            MethodNameProperty.Changed.Subscribe(e =>
+            {
+                CallMethodAction callMethodAction = (CallMethodAction)e.Sender;
+                callMethodAction.UpdateMethodDescriptors();
+            });
+
+            TargetObjectProperty.Changed.Subscribe(e =>
+            {
+                CallMethodAction callMethodAction = (CallMethodAction)e.Sender;
+
+                Type newType = e.NewValue != null ? e.NewValue.GetType() : null;
+                callMethodAction.UpdateTargetType(newType);
+            });
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty TargetObjectProperty = PerspexProperty.Register<CallMethodAction, object>(
-            "TargetObject");
-            // TODO:new PropertyMetadata(null, new PropertyChangedCallback(CallMethodAction.OnTargetObjectChanged)));
+        public static readonly PerspexProperty MethodNameProperty = 
+            PerspexProperty.Register<CallMethodAction, string>("MethodName");
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
+        public static readonly PerspexProperty TargetObjectProperty = 
+            PerspexProperty.Register<CallMethodAction, object>("TargetObject");
 
         private Type targetObjectType;
         private List<MethodDescriptor> methodDescriptors = new List<MethodDescriptor>();
@@ -211,23 +226,6 @@ namespace Perspex.Xaml.Interactions.Core
                 }
             }
         }
-
-        // TODO:
-        /*
-        private static void OnMethodNameChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
-        {
-            CallMethodAction callMethodAction = (CallMethodAction)sender;
-            callMethodAction.UpdateMethodDescriptors();
-        }
-
-        private static void OnTargetObjectChanged(PerspexObject sender, PerspexPropertyChangedEventArgs args)
-        {
-            CallMethodAction callMethodAction = (CallMethodAction)sender;
-
-            Type newType = args.NewValue != null ? args.NewValue.GetType() : null;
-            callMethodAction.UpdateTargetType(newType);
-        }
-        */
 
         [DebuggerDisplay("{MethodInfo}")]
         private class MethodDescriptor

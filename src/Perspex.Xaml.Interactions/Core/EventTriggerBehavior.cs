@@ -17,29 +17,50 @@ namespace Perspex.Xaml.Interactions.Core
     ///[ContentPropertyAttribute(Name = "Actions")]
     public sealed class EventTriggerBehavior : PerspexObject, IBehavior
     {
+        static EventTriggerBehavior()
+        {
+            EventNameProperty.Changed.Subscribe(e =>
+            {
+                EventTriggerBehavior behavior = (EventTriggerBehavior)e.Sender;
+                if (behavior.AssociatedObject == null || behavior.resolvedSource == null)
+                {
+                    return;
+                }
+
+                string oldEventName = (string)e.OldValue;
+                string newEventName = (string)e.NewValue;
+
+                behavior.UnregisterEvent(oldEventName);
+                behavior.RegisterEvent(newEventName);
+            });
+
+            SourceObjectProperty.Changed.Subscribe(e =>
+            {
+                EventTriggerBehavior behavior = (EventTriggerBehavior)e.Sender;
+                behavior.SetResolvedSource(behavior.ComputeResolvedSource());
+            });
+        }
+
         /// <summary>
         /// Identifies the <seealso cref="Actions"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty ActionsProperty = PerspexProperty.Register<EventTriggerBehavior, ActionCollection>(
-            "Actions");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty ActionsProperty = 
+            PerspexProperty.Register<EventTriggerBehavior, ActionCollection>("Actions");
 
         /// <summary>
         /// Identifies the <seealso cref="EventName"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty EventNameProperty = PerspexProperty.Register<EventTriggerBehavior, string>(
-            "EventName");
-            // TODO: new PropertyMetadata("Loaded", new PropertyChangedCallback(EventTriggerBehavior.OnEventNameChanged)));
+        public static readonly PerspexProperty EventNameProperty = 
+            PerspexProperty.Register<EventTriggerBehavior, string>("EventName", "Loaded");
 
         /// <summary>
         /// Identifies the <seealso cref="SourceObject"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty SourceObjectProperty = PerspexProperty.Register<EventTriggerBehavior, object>(
-            "SourceObject");
-        // TODO: new PropertyMetadata(null, new PropertyChangedCallback(EventTriggerBehavior.OnSourceObjectChanged)));
+        public static readonly PerspexProperty SourceObjectProperty = 
+            PerspexProperty.Register<EventTriggerBehavior, object>("SourceObject");
 
         private PerspexObject associatedObject;
         private object resolvedSource;
@@ -284,17 +305,7 @@ namespace Perspex.Xaml.Interactions.Core
 
         private static void OnEventNameChanged(PerspexObject dependencyObject, PerspexPropertyChangedEventArgs args)
         {
-            EventTriggerBehavior behavior = (EventTriggerBehavior)dependencyObject;
-            if (behavior.AssociatedObject == null || behavior.resolvedSource == null)
-            {
-                return;
-            }
 
-            string oldEventName = (string)args.OldValue;
-            string newEventName = (string)args.NewValue;
-
-            behavior.UnregisterEvent(oldEventName);
-            behavior.RegisterEvent(newEventName);
         }
 
         internal static bool IsElementLoaded(Control element)

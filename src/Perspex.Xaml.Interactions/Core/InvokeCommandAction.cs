@@ -15,41 +15,36 @@ namespace Perspex.Xaml.Interactions.Core
         /// Identifies the <seealso cref="Command"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty CommandProperty = PerspexProperty.Register<InvokeCommandAction, ICommand>(
-            "Command");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty CommandProperty = 
+            PerspexProperty.Register<InvokeCommandAction, ICommand>("Command");
 
         /// <summary>
         /// Identifies the <seealso cref="CommandParameter"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty CommandParameterProperty = PerspexProperty.Register<InvokeCommandAction, object>(
-            "CommandParameter");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty CommandParameterProperty = 
+            PerspexProperty.Register<InvokeCommandAction, object>("CommandParameter");
 
         /// <summary>
         /// Identifies the <seealso cref="InputConverter"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty InputConverterProperty = PerspexProperty.Register<InvokeCommandAction, IValueConverter>(
-            "InputConverter");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty InputConverterProperty = 
+            PerspexProperty.Register<InvokeCommandAction, IValueConverter>("InputConverter");
 
         /// <summary>
         /// Identifies the <seealso cref="InputConverterParameter"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty InputConverterParameterProperty = PerspexProperty.Register<InvokeCommandAction, object>(
-            "InputConverterParameter");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty InputConverterParameterProperty = 
+            PerspexProperty.Register<InvokeCommandAction, object>("InputConverterParameter");
 
         /// <summary>
         /// Identifies the <seealso cref="InputConverterLanguage"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty InputConverterLanguageProperty = PerspexProperty.Register<InvokeCommandAction, string>(
-            "InputConverterLanguage");
-            // TODO: new PropertyMetadata(string.Empty)); // Empty string means the invariant culture.
+        public static readonly PerspexProperty InputConverterLanguageProperty = 
+            PerspexProperty.Register<InvokeCommandAction, string>("InputConverterLanguage", string.Empty); // Empty string means the invariant culture.
 
         /// <summary>
         /// Gets or sets the command this action should invoke. This is a dependency property.

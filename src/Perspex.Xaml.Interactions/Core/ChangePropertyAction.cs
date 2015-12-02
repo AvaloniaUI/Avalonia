@@ -16,25 +16,22 @@ namespace Perspex.Xaml.Interactions.Core
         /// Identifies the <seealso cref="PropertyName"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty PropertyNameProperty = PerspexProperty.Register<ChangePropertyAction, string>(
-            "PropertyName");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty PropertyNameProperty = 
+            PerspexProperty.Register<ChangePropertyAction, string>("PropertyName");
 
         /// <summary>
         /// Identifies the <seealso cref="TargetObject"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty TargetObjectProperty = PerspexProperty.Register<ChangePropertyAction, object>(
-            "TargetObject");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty TargetObjectProperty = 
+            PerspexProperty.Register<ChangePropertyAction, object>("TargetObject");
 
         /// <summary>
         /// Identifies the <seealso cref="Value"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty ValueProperty = PerspexProperty.Register<ChangePropertyAction, object>(
-            "Value");
-            // TODO: new PropertyMetadata(null));
+        public static readonly PerspexProperty ValueProperty = 
+            PerspexProperty.Register<ChangePropertyAction, object>("Value");
 
         /// <summary>
         /// Gets or sets the name of the property to change. This is a dependency property.
