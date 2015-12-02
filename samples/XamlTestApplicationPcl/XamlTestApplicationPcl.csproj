@@ -117,6 +117,14 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Xaml.Interactions\Perspex.Xaml.Interactions.csproj">
+      <Project>{ed03eead-938f-447b-bf0b-30857ae78bff}</Project>
+      <Name>Perspex.Xaml.Interactions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Xaml.Interactivity\Perspex.Xaml.Interactivity.csproj">
+      <Project>{14006eb4-66e9-4b58-bf5f-5a1983bf4621}</Project>
+      <Name>Perspex.Xaml.Interactivity</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
