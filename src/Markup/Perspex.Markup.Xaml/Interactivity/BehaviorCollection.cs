@@ -111,35 +111,46 @@ namespace Perspex.Xaml.Interactivity
                 return;
             }
 
-            int eventIndex = (int)eventArgs.OldStartingIndex;
-            PerspexObject changedItem = this[eventIndex];
-
             switch (eventArgs.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    this.oldCollection.Insert(eventIndex, this.VerifiedAttach(changedItem));
-
+                    {
+                        int eventIndex = eventArgs.NewStartingIndex;
+                        PerspexObject changedItem = (PerspexObject)eventArgs.NewItems[0];
+                        this.oldCollection.Insert(eventIndex, this.VerifiedAttach(changedItem));
+                    }
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    IBehavior oldItem = this.oldCollection[eventIndex];
-                    if (oldItem.AssociatedObject != null)
                     {
-                        oldItem.Detach();
+                        int eventIndex = eventArgs.OldStartingIndex;
+                        eventIndex = eventIndex == -1 ? 0 : eventIndex;
+
+                        PerspexObject changedItem = (PerspexObject)eventArgs.NewItems[0];
+
+                        IBehavior oldItem = this.oldCollection[eventIndex];
+                        if (oldItem.AssociatedObject != null)
+                        {
+                            oldItem.Detach();
+                        }
+
+                        this.oldCollection[eventIndex] = this.VerifiedAttach(changedItem);
                     }
-
-                    this.oldCollection[eventIndex] = this.VerifiedAttach(changedItem);
-
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    oldItem = this.oldCollection[eventIndex];
-                    if (oldItem.AssociatedObject != null)
                     {
-                        oldItem.Detach();
-                    }
+                        int eventIndex = eventArgs.OldStartingIndex;
+                        PerspexObject changedItem = (PerspexObject)eventArgs.OldItems[0];
 
-                    this.oldCollection.RemoveAt(eventIndex);
+                        IBehavior oldItem = this.oldCollection[eventIndex];
+                        if (oldItem.AssociatedObject != null)
+                        {
+                            oldItem.Detach();
+                        }
+
+                        this.oldCollection.RemoveAt(eventIndex);
+                    }
                     break;
 
                 default:
