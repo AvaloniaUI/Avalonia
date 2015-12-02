@@ -6,7 +6,7 @@ using Perspex.Xaml.Interactivity;
 using AppContainerUITestMethod = Xunit.FactAttribute;
 using Xunit;
 
-namespace Perspex.Markup.Xaml.UnitTests.Interactivity
+namespace Perspex.Xaml.Interactivity.UnitTests
 {
     public class InteractionTest
     {

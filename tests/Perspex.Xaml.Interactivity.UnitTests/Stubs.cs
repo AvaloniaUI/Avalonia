@@ -7,7 +7,7 @@ using Perspex.Controls;
 using Perspex.Markup;
 using Perspex.Xaml.Interactivity;
 
-namespace Perspex.Markup.Xaml.UnitTests.Interactivity
+namespace Perspex.Xaml.Interactivity.UnitTests
 {
     public class StubBehavior : PerspexObject, IBehavior
     {

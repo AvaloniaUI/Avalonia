@@ -5,7 +5,8 @@ using System.Reflection;
 using Perspex.Metadata;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Perspex.Xaml.Interactivity")]
-[assembly: InternalsVisibleTo("Perspex.Xaml.Interactivity.UnitTests")]
+[assembly: AssemblyTitle("Perspex.Xaml.Interactions")]
+[assembly: InternalsVisibleTo("Perspex.Xaml.Interactions.UnitTests")]
 
-[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Xaml.Interactivity")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Xaml.Interactions")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Xaml.Interactions.Core")]
