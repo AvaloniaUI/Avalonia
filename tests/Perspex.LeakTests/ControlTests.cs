@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.dotMemoryUnit;
 using Perspex.Controls;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.VisualTree;
 using Xunit;
@@ -72,6 +73,36 @@ namespace Perspex.LeakTests
                 window.Content = null;
                 window.LayoutManager.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void Templated_Child_Is_Freed_When_Template_Cleared()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new TestTemplatedControl()
+                };
+
+                // Do a layout and make sure that the control gets added to visual tree and its
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TestTemplatedControl>(window.Presenter.Child);
+                Assert.IsType<Canvas>(window.Presenter.Child.GetVisualChildren().SingleOrDefault());
+
+                // Clear the template and ensure the control template gets removed
+                ((TestTemplatedControl)window.Content).Template = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
 
                 return window;
             };
@@ -264,6 +295,14 @@ namespace Perspex.LeakTests
 
             dotMemory.Check(memory =>
                 Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
+        }
+
+        private class TestTemplatedControl : TemplatedControl
+        {
+            public TestTemplatedControl()
+            {
+                Template = new FuncControlTemplate<TestTemplatedControl>(_ => new Canvas());
+            }
         }
 
         private class Node
