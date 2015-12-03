@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Media;
@@ -209,6 +210,22 @@ namespace Perspex.Controls.Primitives
 
                 _templateApplied = true;
             }
+        }
+
+        protected sealed override BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        {
+            var result = base.CreateBindingDescriptor(source);
+
+            // If the binding is a template binding, then complete when the Template changes.
+            if (source.Priority == BindingPriority.TemplatedParent)
+            {
+                var templateChanged = GetObservable(TemplateProperty).Skip(1);
+
+                result.SourceObservable = result.Source.GetObservable(result.Property)
+                    .TakeUntil(templateChanged);
+            }
+
+            return result;
         }
 
         /// <summary>
