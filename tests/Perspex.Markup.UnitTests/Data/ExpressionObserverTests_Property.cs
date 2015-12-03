@@ -355,7 +355,7 @@ namespace Perspex.Markup.UnitTests.Data
         {
         }
 
-        public Recorded<Notification<object>> OnNext(long time, object value)
+        private Recorded<Notification<object>> OnNext(long time, object value)
         {
             return new Recorded<Notification<object>>(time, Notification.CreateOnNext<object>(value));
         }

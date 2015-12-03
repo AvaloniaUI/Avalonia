@@ -157,6 +157,11 @@ namespace Perspex.Markup.Data
         string IDescription.Description => Expression;
 
         /// <summary>
+        /// Gets the root expression node. Used for testing.
+        /// </summary>
+        internal ExpressionNode Node => _node;
+
+        /// <summary>
         /// Gets the leaf node.
         /// </summary>
         private ExpressionNode Leaf
