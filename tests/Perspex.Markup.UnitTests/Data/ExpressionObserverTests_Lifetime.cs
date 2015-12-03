@@ -47,6 +47,25 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Unsubscribe_From_Update_Observable()
+        {
+            var scheduler = new TestScheduler();
+            var update = scheduler.CreateColdObservable<Unit>();
+            var target = new ExpressionObserver(() => new { Foo = "foo" }, "Foo", update);
+            var result = new List<object>();
+
+            using (target.Subscribe(x => result.Add(x)))
+            using (target.Subscribe(_ => { }))
+            {
+                scheduler.Start();
+            }
+
+            Assert.Equal(new[] { "foo" }, result);
+            Assert.Equal(1, update.Subscriptions.Count);
+            Assert.NotEqual(Subscription.Infinite, update.Subscriptions[0].Unsubscribe);
+        }
+
+        [Fact]
         public void Should_Set_Node_Target_To_Null_On_Unsubscribe()
         {
             var target = new ExpressionObserver(new { Foo = "foo" }, "Foo");

@@ -84,7 +84,7 @@
     <Compile Include="ControlLocatorTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests_Errors.cs" />
-    <Compile Include="Data\ExpressionObserverTests.cs" />
+    <Compile Include="Data\ExpressionObserverTests_Lifetime.cs" />
     <Compile Include="Data\ExpressionObserverTests_Indexer.cs" />
     <Compile Include="Data\ExpressionObserverTests_Negation.cs" />
     <Compile Include="Data\ExpressionObserverTests_Observable.cs" />
