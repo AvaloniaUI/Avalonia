@@ -3,11 +3,17 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/Perspex/Perspex/branch/master)
 
-A multi-platform .NET UI framework.
+A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
 ![](docs/screen.png)
 
+Desktop platforms:
+
 <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)<a/>
+
+Mobile platforms:
+
+<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0 target='_blank'>![](https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg)<a/>
 
 ## NuGet
 
