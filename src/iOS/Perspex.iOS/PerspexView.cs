@@ -14,26 +14,41 @@ using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Skia.iOS;
 using UIKit;
+using Perspex.iOS.Specific;
+using ObjCRuntime;
 
 namespace Perspex.iOS
 {
+    [Adopts("UIKeyInput")]
     class PerspexView : SkiaView, IWindowImpl
     {
         private readonly UIWindow _window;
         private readonly UIViewController _controller;
         private IInputRoot _inputRoot;
+        private readonly KeyboardEventsHelper<PerspexView> _keyboardHelper;
 
         public PerspexView(UIWindow window, UIViewController controller) : base(onFrame => PlatformThreadingInterface.Instance.Render = onFrame)
         {
             if (controller == null) throw new ArgumentNullException(nameof(controller));
             _window = window;
             _controller = controller;
+            _keyboardHelper = new KeyboardEventsHelper<PerspexView>(this);
             AutoresizingMask = UIViewAutoresizing.All;
             AutoFit();
             UIApplication.Notifications.ObserveDidChangeStatusBarOrientation(delegate { AutoFit(); });
             UIApplication.Notifications.ObserveDidChangeStatusBarFrame(delegate { AutoFit(); });
         }
 
+        [Export("hasText")]
+        bool HasText => _keyboardHelper.HasText();
+
+        [Export("insertText:")]
+        void InsertText(string text) => _keyboardHelper.InsertText(text);
+
+        [Export("deleteBackward")]
+        void DeleteBackward() => _keyboardHelper.DeleteBackward();
+
+        public override bool CanBecomeFirstResponder => _keyboardHelper.CanBecomeFirstResponder();
 
         void AutoFit()
         {
@@ -89,6 +104,7 @@ namespace Perspex.iOS
 
         public void Show()
         {
+            _keyboardHelper.ActivateAutoShowKeybord();
         }
 
         public Size MaxClientSize => Bounds.Size.ToPerspex();
