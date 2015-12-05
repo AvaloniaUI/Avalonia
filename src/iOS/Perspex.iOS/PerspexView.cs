@@ -168,8 +168,14 @@ namespace Perspex.iOS
                         RawMouseEventType.Move, location, InputModifiers.LeftMouseButton));
                 else
                 {
-                    Input?.Invoke(new RawMouseWheelEventArgs(PerspexAppDelegate.MouseDevice, (uint) touch.Timestamp,
-                        _inputRoot, location, location - _touchLastPoint, InputModifiers.LeftMouseButton));
+                    double x = location.X - _touchLastPoint.X;
+                    double y = location.Y - _touchLastPoint.Y;
+                    double correction = 0.02;
+                    var scale = PerspexLocator.Current.GetService<IPlatformSettings>().RenderScalingFactor;
+                    scale = 1;
+
+                    Input?.Invoke(new RawMouseWheelEventArgs(PerspexAppDelegate.MouseDevice, (uint)touch.Timestamp,
+                        _inputRoot, location, new Vector(x * correction / scale, y * correction / scale), InputModifiers.LeftMouseButton));
                 }
                 _touchLastPoint = location;
             }
