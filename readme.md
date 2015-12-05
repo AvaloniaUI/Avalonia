@@ -13,7 +13,7 @@ Desktop platforms:
 
 Mobile platforms:
 
-<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0 target='_blank'>![](https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg)<a/>
+<a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'>![](https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg)<a/>
 
 ## NuGet
 
