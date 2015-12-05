@@ -12,7 +12,7 @@ namespace Perspex.Xaml.Interactions.Core
     /// </summary>
     /// TODO:
     ///[ContentPropertyAttribute(Name = "Actions")]
-    public sealed class DataTriggerBehavior : PerspexObject, IBehavior
+    public sealed class DataTriggerBehavior : Behavior
     {
         static DataTriggerBehavior()
         {
@@ -48,8 +48,6 @@ namespace Perspex.Xaml.Interactions.Core
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
         public static readonly PerspexProperty ValueProperty =
             PerspexProperty.Register<DataTriggerBehavior, object>("Value");
-
-        private PerspexObject associatedObject;
 
         /// <summary>
         /// Gets the collection of actions associated with the behavior. This is a dependency property.
@@ -114,54 +112,7 @@ namespace Perspex.Xaml.Interactions.Core
                 this.SetValue(DataTriggerBehavior.ValueProperty, value);
             }
         }
-
-        /// <summary>
-        /// Gets the <seealso cref="PerspexObject"/> to which the <seealso cref="IBehavior"/> is attached.
-        /// </summary>
-        public PerspexObject AssociatedObject
-        {
-            get
-            {
-                return this.associatedObject;
-            }
-        }
-
-        /// <summary>
-        /// Attaches to the specified object.
-        /// </summary>
-        /// <param name="associatedObject">The <seealso cref="PerspexObject"/> to which the <seealso cref="IBehavior"/> will be attached.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1500:VariableNamesShouldNotMatchFieldNames", MessageId = "associatedObject")]
-        public void Attach(PerspexObject associatedObject)
-        {
-            // TODO: Check for design mode
-            if (associatedObject == this.associatedObject /*|| Windows.ApplicationModel.DesignMode.DesignModeEnabled*/)
-            {
-                return;
-            }
-
-            if (this.associatedObject != null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "CannotAttachBehaviorMultipleTimesExceptionMessage",
-                    associatedObject,
-                    this.associatedObject));
-            }
-
-            Debug.Assert(associatedObject != null, "Cannot attach the behavior to a null object.");
-
-            this.associatedObject = associatedObject;
-        }
-
-        /// <summary>
-        /// Detaches this instance from its associated object.
-        /// </summary>
-        public void Detach()
-        {
-            this.associatedObject = null;
-        }
-
+        
         private static bool Compare(object leftOperand, ComparisonConditionType operatorType, object rightOperand)
         {
             if (leftOperand != null && rightOperand != null)

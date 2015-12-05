@@ -15,7 +15,7 @@ namespace Perspex.Xaml.Interactions.Core
     /// </summary>
     /// TODO:
     ///[ContentPropertyAttribute(Name = "Actions")]
-    public sealed class EventTriggerBehavior : PerspexObject, IBehavior
+    public sealed class EventTriggerBehavior : Behavior
     {
         static EventTriggerBehavior()
         {
@@ -45,24 +45,23 @@ namespace Perspex.Xaml.Interactions.Core
         /// Identifies the <seealso cref="Actions"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty ActionsProperty = 
+        public static readonly PerspexProperty ActionsProperty =
             PerspexProperty.Register<EventTriggerBehavior, ActionCollection>("Actions");
 
         /// <summary>
         /// Identifies the <seealso cref="EventName"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty EventNameProperty = 
+        public static readonly PerspexProperty EventNameProperty =
             PerspexProperty.Register<EventTriggerBehavior, string>("EventName", "Loaded");
 
         /// <summary>
         /// Identifies the <seealso cref="SourceObject"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty SourceObjectProperty = 
+        public static readonly PerspexProperty SourceObjectProperty =
             PerspexProperty.Register<EventTriggerBehavior, object>("SourceObject");
 
-        private PerspexObject associatedObject;
         private object resolvedSource;
         private Delegate eventHandler;
         private bool isLoadedEventRegistered;
@@ -127,52 +126,21 @@ namespace Perspex.Xaml.Interactions.Core
         }
 
         /// <summary>
-        /// Gets the <seealso cref="PerspexObject"/> to which the <seealso cref="IBehavior"/> is attached.
+        /// Called after the behavior is attached to the <see cref="Behavior.AssociatedObject"/>.
         /// </summary>
-        public PerspexObject AssociatedObject
+        protected override void OnAttached()
         {
-            get
-            {
-                return this.associatedObject;
-            }
-        }
-
-        /// <summary>
-        /// Attaches to the specified object.
-        /// </summary>
-        /// <param name="associatedObject">The <seealso cref="PerspexObject"/> to which the <seealso cref="IBehavior"/> will be attached.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1500:VariableNamesShouldNotMatchFieldNames", MessageId = "associatedObject")]
-        public void Attach(PerspexObject associatedObject)
-        {
-            // TODO: Check for design mode
-            if (associatedObject == this.associatedObject /*|| Windows.ApplicationModel.DesignMode.DesignModeEnabled*/)
-            {
-                return;
-            }
-
-            if (this.associatedObject != null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "CannotAttachBehaviorMultipleTimesExceptionMessage",
-                    associatedObject,
-                    this.associatedObject));
-            }
-
-            Debug.Assert(associatedObject != null, "Cannot attach the behavior to a null object.");
-
-            this.associatedObject = associatedObject;
+            base.OnAttached();
             this.SetResolvedSource(this.ComputeResolvedSource());
         }
 
         /// <summary>
-        /// Detaches this instance from its associated object.
+        /// Called when the behavior is being detached from its <see cref="Behavior.AssociatedObject"/>.
         /// </summary>
-        public void Detach()
+        protected override void OnDetaching()
         {
+            base.OnDetaching();
             this.SetResolvedSource(null);
-            this.associatedObject = null;
         }
 
         private void SetResolvedSource(object newSource)
