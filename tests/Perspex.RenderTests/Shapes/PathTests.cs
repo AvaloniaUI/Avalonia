@@ -15,6 +15,8 @@ namespace Perspex.Skia.RenderTests
 namespace Perspex.Direct2D1.RenderTests.Shapes
 #endif
 {
+    using Perspex.Collections;
+
     public class PathTests : TestBase
     {
         public PathTests()
@@ -123,6 +125,35 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                         Stretch = Stretch.Uniform,
                         Data = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z"),
                     }
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if PERSPEX_SKIA
+        [Fact(Skip = "FIXME")]
+#else
+        [Fact]
+#endif
+        public void Path_With_PenLineCap()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 10,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    DashCap = PenLineCap.Triangle,
+                    StrokeDashArray = new PerspexList<double>(3, 1),
+                    StartLineCap = PenLineCap.Round,
+                    EndLineCap = PenLineCap.Square,
+                    Data = StreamGeometry.Parse("M 20,20 L 180,180"),
                 }
             };
 
