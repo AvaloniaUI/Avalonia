@@ -60,13 +60,13 @@ namespace Perspex.Styling
                     var activator = match.ObservableResult ?? 
                         Observable.Never<bool>().StartWith(true);
 
-                    //if (visual != null)
-                    //{
-                    //    var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                    //        x => visual.DetachedFromVisualTree += x,
-                    //        x => visual.DetachedFromVisualTree -= x);
-                    //    activator = activator.TakeUntil(detached);
-                    //}
+                    if (visual != null)
+                    {
+                        var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                            x => visual.DetachedFromVisualTree += x,
+                            x => visual.DetachedFromVisualTree -= x);
+                        activator = activator.TakeUntil(detached);
+                    }
 
                     foreach (var setter in Setters)
                     {
