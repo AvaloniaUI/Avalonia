@@ -90,13 +90,20 @@ namespace Perspex.Controls.Shapes
             set { SetValue(StrokeThicknessProperty, value); }
         }
 
+        public PenLineCap DashCap { get; set; } = PenLineCap.Flat;
+
+        public PenLineCap StartLineCap { get; set; } = PenLineCap.Flat;
+
+        public PenLineCap EndLineCap { get; set; } = PenLineCap.Flat;
+
         public override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
 
             if (geometry != null)
             {
-                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray));
+                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray), 
+                    DashCap, StartLineCap, EndLineCap);
                 context.DrawGeometry(Fill, pen, geometry);
             }
         }
