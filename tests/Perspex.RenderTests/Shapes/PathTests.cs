@@ -149,10 +149,10 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                     StrokeThickness = 10,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    DashCap = PenLineCap.Triangle,
+                    StrokeDashCap = PenLineCap.Triangle,
                     StrokeDashArray = new PerspexList<double>(3, 1),
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Square,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Square,
                     Data = StreamGeometry.Parse("M 20,20 L 180,180"),
                 }
             };
