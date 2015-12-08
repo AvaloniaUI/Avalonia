@@ -132,7 +132,9 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Path with StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap rendering is not implemented in Cairo yet")]
+#elif PERSPEX_SKIA
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
