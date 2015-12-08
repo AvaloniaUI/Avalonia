@@ -20,6 +20,11 @@ namespace XamlTestApplication.Views
             DataContext = new MainWindowViewModel();
             DevTools.Attach(this);
 
+            XamlBehaviorsTest();
+        }
+
+        private void XamlBehaviorsTest()
+        {
             //
             // TODO: Remove code below used only for temporary test of DragPositionBehavior
             //
@@ -31,7 +36,7 @@ namespace XamlTestApplication.Views
             */
 
             Interaction.SetBehaviors(
-                this.FindControl<Ellipse>("dragEllipse"), 
+                this.FindControl<Ellipse>("dragEllipse"),
                 new BehaviorCollection { new DragPositionBehavior() });
 
             //
