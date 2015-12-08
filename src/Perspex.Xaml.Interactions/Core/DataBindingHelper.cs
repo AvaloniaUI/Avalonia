@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Perspex.Xaml.Interactivity;
+using Perspex.Markup.Xaml.Data;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using Interactivity;
-    using Markup.Xaml.Data;
-
     internal static class DataBindingHelper
     {
         private static readonly Dictionary<Type, List<PerspexProperty>> DependenciesPropertyCache = new Dictionary<Type, List<PerspexProperty>>();

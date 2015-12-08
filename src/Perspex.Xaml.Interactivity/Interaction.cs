@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using Perspex.Controls;
+
 namespace Perspex.Xaml.Interactivity
 {
-    using System;
-    using System.Collections.Generic;
-    using Perspex.Controls;
-
     /// <summary>
     /// Defines a <see cref="BehaviorCollection"/> attached property and provides a method for executing an <seealso cref="ActionCollection"/>.
     /// </summary>
@@ -44,7 +45,7 @@ namespace Perspex.Xaml.Interactivity
         /// Gets or sets the <see cref="BehaviorCollection"/> associated with a specified object.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty<BehaviorCollection> BehaviorsProperty = 
+        public static readonly PerspexProperty<BehaviorCollection> BehaviorsProperty =
             PerspexProperty.RegisterAttached<Interaction, PerspexObject, BehaviorCollection>(
                 "Behaviors");
 

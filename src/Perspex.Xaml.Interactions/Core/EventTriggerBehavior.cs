@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Perspex.Xaml.Interactivity;
+using Perspex.Controls;
+using OmniXaml.Attributes;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.Reflection;
-    using System.Runtime.InteropServices.WindowsRuntime;
-    using Interactivity;
-    using Controls;
-
     /// <summary>
     /// A behavior that listens for a specified event on its source and executes its actions when that event is fired.
     /// </summary>
-    /// TODO:
-    ///[ContentPropertyAttribute(Name = "Actions")]
+    [ContentPropertyAttribute("Actions")]
     public sealed class EventTriggerBehavior : Behavior
     {
         static EventTriggerBehavior()
@@ -97,15 +97,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public string EventName
         {
-            get
-            {
-                return (string)this.GetValue(EventTriggerBehavior.EventNameProperty);
-            }
-
-            set
-            {
-                this.SetValue(EventTriggerBehavior.EventNameProperty, value);
-            }
+            get { return (string)this.GetValue(EventTriggerBehavior.EventNameProperty); }
+            set { this.SetValue(EventTriggerBehavior.EventNameProperty, value); }
         }
 
         /// <summary>
@@ -114,15 +107,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public object SourceObject
         {
-            get
-            {
-                return (object)this.GetValue(EventTriggerBehavior.SourceObjectProperty);
-            }
-
-            set
-            {
-                this.SetValue(EventTriggerBehavior.SourceObjectProperty, value);
-            }
+            get { return (object)this.GetValue(EventTriggerBehavior.SourceObjectProperty); }
+            set { this.SetValue(EventTriggerBehavior.SourceObjectProperty, value); }
         }
 
         /// <summary>
@@ -167,7 +153,6 @@ namespace Perspex.Xaml.Interactions.Core
         {
             // If the SourceObject property is set at all, we want to use it. It is possible that it is data
             // bound and bindings haven't been evaluated yet. Plus, this makes the API more predictable.
-            // TODO: use this.ReadLocalValue
             if (this.GetValue(EventTriggerBehavior.SourceObjectProperty) != PerspexProperty.UnsetValue)
             {
                 return this.SourceObject;
@@ -191,8 +176,7 @@ namespace Perspex.Xaml.Interactions.Core
                 {
                     throw new ArgumentException(string.Format(
                         CultureInfo.CurrentCulture,
-                        // TODO: Replace string from original resources
-                        "CannotFindEventNameExceptionMessage",
+                        "Cannot find an event named {0} on type {1}.",
                         this.EventName,
                         sourceObjectType.Name));
                 }
@@ -283,18 +267,7 @@ namespace Perspex.Xaml.Interactions.Core
                 return false;
             }
 
-            // TODO:
-            //Control rootVisual = Window.Current.Content;
-            var parent = element.Parent;
-            /*
-            if (parent == null)
-            {
-                // If the element is the child of a ControlTemplate it will have a null parent even when it is loaded.
-                // To catch that scenario, also check it's parent in the visual tree.
-                parent = VisualTreeHelper.GetParent(element);
-            }
-            */
-            return (parent != null /*|| (rootVisual != null && element == rootVisual)*/);
+            return (element.Parent != null);
         }
 
         private static bool IsWindowsRuntimeType(Type type)

@@ -72,6 +72,7 @@
     <Compile Include="Behavior.cs" />
     <Compile Include="BehaviorCollection.cs" />
     <Compile Include="BehaviorOfT.cs" />
+    <Compile Include="CustomPropertyValueEditor.cs" />
     <Compile Include="CustomPropertyValueEditorAttribute.cs" />
     <Compile Include="DefaultEventAttribute.cs" />
     <Compile Include="GlobalSuppressions.cs" />

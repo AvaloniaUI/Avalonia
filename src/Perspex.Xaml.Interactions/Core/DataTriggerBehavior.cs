@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using Perspex.Xaml.Interactivity;
+using OmniXaml.Attributes;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using Interactivity;
-
     /// <summary>
     /// A behavior that performs actions when the bound data meets a specified condition.
     /// </summary>
-    /// TODO:
-    ///[ContentPropertyAttribute(Name = "Actions")]
+    [ContentPropertyAttribute("Actions")]
     public sealed class DataTriggerBehavior : Behavior
     {
         static DataTriggerBehavior()
@@ -25,14 +25,14 @@ namespace Perspex.Xaml.Interactions.Core
         /// Identifies the <seealso cref="Actions"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty ActionsProperty = 
+        public static readonly PerspexProperty ActionsProperty =
             PerspexProperty.Register<DataTriggerBehavior, ActionCollection>("Actions");
 
         /// <summary>
         /// Identifies the <seealso cref="Binding"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty BindingProperty = 
+        public static readonly PerspexProperty BindingProperty =
             PerspexProperty.Register<DataTriggerBehavior, object>("Binding");
 
         /// <summary>
@@ -72,14 +72,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public object Binding
         {
-            get
-            {
-                return (object)this.GetValue(DataTriggerBehavior.BindingProperty);
-            }
-            set
-            {
-                this.SetValue(DataTriggerBehavior.BindingProperty, value);
-            }
+            get { return (object)this.GetValue(DataTriggerBehavior.BindingProperty); }
+            set { this.SetValue(DataTriggerBehavior.BindingProperty, value); }
         }
 
         /// <summary>
@@ -87,14 +81,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public ComparisonConditionType ComparisonCondition
         {
-            get
-            {
-                return (ComparisonConditionType)this.GetValue(DataTriggerBehavior.ComparisonConditionProperty);
-            }
-            set
-            {
-                this.SetValue(DataTriggerBehavior.ComparisonConditionProperty, value);
-            }
+            get { return (ComparisonConditionType)this.GetValue(DataTriggerBehavior.ComparisonConditionProperty); }
+            set { this.SetValue(DataTriggerBehavior.ComparisonConditionProperty, value); }
         }
 
         /// <summary>
@@ -103,16 +91,10 @@ namespace Perspex.Xaml.Interactions.Core
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
         public object Value
         {
-            get
-            {
-                return (object)this.GetValue(DataTriggerBehavior.ValueProperty);
-            }
-            set
-            {
-                this.SetValue(DataTriggerBehavior.ValueProperty, value);
-            }
+            get { return (object)this.GetValue(DataTriggerBehavior.ValueProperty); }
+            set { this.SetValue(DataTriggerBehavior.ValueProperty, value); }
         }
-        
+
         private static bool Compare(object leftOperand, ComparisonConditionType operatorType, object rightOperand)
         {
             if (leftOperand != null && rightOperand != null)
@@ -144,8 +126,7 @@ namespace Perspex.Xaml.Interactions.Core
                         {
                             throw new ArgumentException(string.Format(
                                 CultureInfo.CurrentCulture,
-                                // TODO: Replace string from original resources
-                                "InvalidOperands",
+                                "Binding property of type {0} and Value property of type {1} cannot be used with operator {2}.",
                                 leftOperand != null ? leftOperand.GetType().Name : "null",
                                 rightOperand != null ? rightOperand.GetType().Name : "null",
                                 operatorType.ToString()));
@@ -154,8 +135,7 @@ namespace Perspex.Xaml.Interactions.Core
                         {
                             throw new ArgumentException(string.Format(
                                 CultureInfo.CurrentCulture,
-                                // TODO: Replace string from original resources
-                                "InvalidLeftOperand",
+                                "Binding property of type {0} cannot be used with operator {1}.",
                                 leftOperand != null ? leftOperand.GetType().Name : "null",
                                 operatorType.ToString()));
                         }
@@ -163,8 +143,7 @@ namespace Perspex.Xaml.Interactions.Core
                         {
                             throw new ArgumentException(string.Format(
                                 CultureInfo.CurrentCulture,
-                                // TODO: Replace string from original resources
-                                "InvalidRightOperand",
+                                "Value property of type {0} cannot be used with operator {1}.",
                                 rightOperand != null ? rightOperand.GetType().Name : "null",
                                 operatorType.ToString()));
                         }

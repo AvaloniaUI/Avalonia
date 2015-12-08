@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace Perspex.Xaml.Interactivity
 {
     /// <summary>
@@ -10,10 +11,7 @@ namespace Perspex.Xaml.Interactivity
         /// <summary>
         /// Gets the <see cref="PerspexObject"/> to which the <seealso cref="IBehavior"/> is attached.
         /// </summary>
-        PerspexObject AssociatedObject
-        {
-            get;
-        }
+        PerspexObject AssociatedObject { get; }
 
         /// <summary>
         /// Attaches to the specified object.

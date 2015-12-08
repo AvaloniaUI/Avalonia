@@ -1,19 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Globalization;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Globalization;
-    using Interactivity;
-
     /// <summary>
     /// A helper class that enables converting values specified in markup (strings) to their object representation.
     /// </summary>
     internal static class TypeConverterHelper
     {
-        // TODO:
-        //private const string ContentControlFormatString = "<ContentControl xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:c='using:{0}'><c:{1}>{2}</c:{1}></ContentControl>";
-
         /// <summary>
         /// Converts string representation of a value to its object representation.
         /// </summary>
@@ -50,18 +47,6 @@ namespace Perspex.Xaml.Interactions.Core
                     return double.Parse(value, CultureInfo.CurrentCulture);
                 }
             }
-
-            // TODO:
-            /*
-            string type = TypeConverterHelper.GetType(destinationTypeFullName);
-            string contentControlXaml = string.Format(CultureInfo.InvariantCulture, TypeConverterHelper.ContentControlFormatString, scope, type, value);
-
-            ContentControl contentControl = XamlReader.Load(contentControlXaml) as ContentControl;
-            if (contentControl != null)
-            {
-                return contentControl.Content;
-            }
-            */
 
             return null;
         }

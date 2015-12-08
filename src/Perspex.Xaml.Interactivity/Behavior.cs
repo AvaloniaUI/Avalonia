@@ -47,7 +47,7 @@ namespace Perspex.Xaml.Interactivity
         }
 
         /// <summary>
-        /// Detaches the behaviors from the <see cref="Behavior.AssociatedObject"/>.
+        /// Detaches the behaviors from the <see cref="AssociatedObject"/>.
         /// </summary>
         public void Detach()
         {
@@ -56,20 +56,20 @@ namespace Perspex.Xaml.Interactivity
         }
 
         /// <summary>
-        /// Called after the behavior is attached to the <see cref="Behavior.AssociatedObject"/>.
+        /// Called after the behavior is attached to the <see cref="AssociatedObject"/>.
         /// </summary>
         /// <remarks>
-        /// Override this to hook up functionality to the <see cref="Behavior.AssociatedObject"/>
+        /// Override this to hook up functionality to the <see cref="AssociatedObject"/>
         /// </remarks>
         protected virtual void OnAttached()
         {
         }
 
         /// <summary>
-        /// Called when the behavior is being detached from its <see cref="Behavior.AssociatedObject"/>.
+        /// Called when the behavior is being detached from its <see cref="AssociatedObject"/>.
         /// </summary>
         /// <remarks>
-        /// Override this to unhook functionality from the <see cref="Behavior.AssociatedObject"/>
+        /// Override this to unhook functionality from the <see cref="AssociatedObject"/>
         /// </remarks>
         protected virtual void OnDetaching()
         {

@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using Perspex.Collections;
+
 namespace Perspex.Xaml.Interactivity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Diagnostics;
-    using Perspex.Collections;
-
     /// <summary>
-    /// Represents a collection of IBehaviors with a shared <see cref="BehaviorCollection.AssociatedObject"/>.
+    /// Represents a collection of IBehaviors with a shared <see cref="AssociatedObject"/>.
     /// </summary>
     public sealed class BehaviorCollection : PerspexList<PerspexObject>
     {
@@ -62,7 +63,7 @@ namespace Perspex.Xaml.Interactivity
         }
 
         /// <summary>
-        /// Detaches the collection of behaviors from the <see cref="Microsoft.Xaml.Interactivity.BehaviorCollection.AssociatedObject"/>.
+        /// Detaches the collection of behaviors from the <see cref="BehaviorCollection.AssociatedObject"/>.
         /// </summary>
         public void Detach()
         {

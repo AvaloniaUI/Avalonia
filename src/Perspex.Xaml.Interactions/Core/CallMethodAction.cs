@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
+using Perspex.Xaml.Interactivity;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.Reflection;
-    using Interactivity;
-
     /// <summary>
     /// An action that calls a method on a specified object when invoked.
     /// </summary>
@@ -32,11 +33,11 @@ namespace Perspex.Xaml.Interactions.Core
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty MethodNameProperty = 
+        public static readonly PerspexProperty MethodNameProperty =
             PerspexProperty.Register<CallMethodAction, string>("MethodName");
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty TargetObjectProperty = 
+        public static readonly PerspexProperty TargetObjectProperty =
             PerspexProperty.Register<CallMethodAction, object>("TargetObject");
 
         private Type targetObjectType;
@@ -48,15 +49,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public string MethodName
         {
-            get
-            {
-                return (string)this.GetValue(CallMethodAction.MethodNameProperty);
-            }
-
-            set
-            {
-                this.SetValue(CallMethodAction.MethodNameProperty, value);
-            }
+            get { return (string)this.GetValue(CallMethodAction.MethodNameProperty); }
+            set { this.SetValue(CallMethodAction.MethodNameProperty, value); }
         }
 
         /// <summary>
@@ -64,27 +58,19 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public object TargetObject
         {
-            get
-            {
-                return this.GetValue(CallMethodAction.TargetObjectProperty);
-            }
-
-            set
-            {
-                this.SetValue(CallMethodAction.TargetObjectProperty, value);
-            }
+            get { return this.GetValue(CallMethodAction.TargetObjectProperty); }
+            set { this.SetValue(CallMethodAction.TargetObjectProperty, value); }
         }
 
         /// <summary>
         /// Executes the action.
         /// </summary>
-        /// <param name="sender">The <see cref="System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="Microsoft.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+        /// <param name="sender">The <see cref="System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="IBehavior.AssociatedObject"/> or a target object.</param>
         /// <param name="parameter">The value of this parameter is determined by the caller.</param>
         /// <returns>True if the method is called; else false.</returns>
         public object Execute(object sender, object parameter)
         {
             object target;
-            // TODO: use this.ReadLocalValue
             if (this.GetValue(CallMethodAction.TargetObjectProperty) != PerspexProperty.UnsetValue)
             {
                 target = this.TargetObject;
@@ -108,8 +94,7 @@ namespace Perspex.Xaml.Interactions.Core
                 {
                     throw new ArgumentException(string.Format(
                         CultureInfo.CurrentCulture,
-                        // TODO: Replace string from original resources
-                        "CallMethodActionValidMethodNotFoundExceptionMessage",
+                        "Cannot find method named {0} on object of type {1} that matches the expected signature.",
                         this.MethodName,
                         this.targetObjectType));
                 }
@@ -204,7 +189,7 @@ namespace Perspex.Xaml.Interactions.Core
             }
 
             // We didn't find a parameterless method, so we want to find a method that accepts null
-            // as a second parameter, but if we have more than one of these it is ambigious which
+            // as a second parameter, but if we have more than one of these it is ambiguous which
             // we should call, so we do nothing.
             if (this.cachedMethodDescriptor == null)
             {
@@ -236,24 +221,13 @@ namespace Perspex.Xaml.Interactions.Core
                 this.Parameters = methodParameters;
             }
 
-            public MethodInfo MethodInfo
-            {
-                get;
-                private set;
-            }
+            public MethodInfo MethodInfo { get; private set; }
 
-            public ParameterInfo[] Parameters
-            {
-                get;
-                private set;
-            }
+            public ParameterInfo[] Parameters { get; private set; }
 
             public int ParameterCount
             {
-                get
-                {
-                    return this.Parameters.Length;
-                }
+                get { return this.Parameters.Length; }
             }
 
             public TypeInfo SecondParameterTypeInfo

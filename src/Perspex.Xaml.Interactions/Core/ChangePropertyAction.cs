@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.Reflection;
+using Perspex.Xaml.Interactivity;
+
 namespace Perspex.Xaml.Interactions.Core
 {
-    using System;
-    using System.Globalization;
-    using System.Reflection;
-    using Interactivity;
-
     /// <summary>
     /// An action that will change a specified property to a specified value when invoked.
     /// </summary>
@@ -16,21 +17,21 @@ namespace Perspex.Xaml.Interactions.Core
         /// Identifies the <seealso cref="PropertyName"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty PropertyNameProperty = 
+        public static readonly PerspexProperty PropertyNameProperty =
             PerspexProperty.Register<ChangePropertyAction, string>("PropertyName");
 
         /// <summary>
         /// Identifies the <seealso cref="TargetObject"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty TargetObjectProperty = 
+        public static readonly PerspexProperty TargetObjectProperty =
             PerspexProperty.Register<ChangePropertyAction, object>("TargetObject");
 
         /// <summary>
         /// Identifies the <seealso cref="Value"/> dependency property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
-        public static readonly PerspexProperty ValueProperty = 
+        public static readonly PerspexProperty ValueProperty =
             PerspexProperty.Register<ChangePropertyAction, object>("Value");
 
         /// <summary>
@@ -38,14 +39,8 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public string PropertyName
         {
-            get
-            {
-                return (string)this.GetValue(ChangePropertyAction.PropertyNameProperty);
-            }
-            set
-            {
-                this.SetValue(ChangePropertyAction.PropertyNameProperty, value);
-            }
+            get { return (string)this.GetValue(ChangePropertyAction.PropertyNameProperty); }
+            set { this.SetValue(ChangePropertyAction.PropertyNameProperty, value); }
         }
 
         /// <summary>
@@ -54,14 +49,8 @@ namespace Perspex.Xaml.Interactions.Core
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
         public object Value
         {
-            get
-            {
-                return this.GetValue(ChangePropertyAction.ValueProperty);
-            }
-            set
-            {
-                this.SetValue(ChangePropertyAction.ValueProperty, value);
-            }
+            get { return this.GetValue(ChangePropertyAction.ValueProperty); }
+            set { this.SetValue(ChangePropertyAction.ValueProperty, value); }
         }
 
         /// <summary>
@@ -70,26 +59,19 @@ namespace Perspex.Xaml.Interactions.Core
         /// </summary>
         public object TargetObject
         {
-            get
-            {
-                return (object)this.GetValue(ChangePropertyAction.TargetObjectProperty);
-            }
-            set
-            {
-                this.SetValue(ChangePropertyAction.TargetObjectProperty, value);
-            }
+            get { return (object)this.GetValue(ChangePropertyAction.TargetObjectProperty); }
+            set { this.SetValue(ChangePropertyAction.TargetObjectProperty, value); }
         }
 
         /// <summary>
         /// Executes the action.
         /// </summary>
-        /// <param name="sender">The <see cref="System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="Microsoft.Xaml.Interactivity.IBehavior.AssociatedObject"/> or a target object.</param>
+        /// <param name="sender">The <see cref="System.Object"/> that is passed to the action by the behavior. Generally this is <seealso cref="IBehavior.AssociatedObject"/> or a target object.</param>
         /// <param name="parameter">The value of this parameter is determined by the caller.</param>
         /// <returns>True if updating the property value succeeds; else false.</returns>
         public object Execute(object sender, object parameter)
         {
             object targetObject;
-            // TODO: Use this.ReadLocalValue
             if (this.GetValue(ChangePropertyAction.TargetObjectProperty) != PerspexProperty.UnsetValue)
             {
                 targetObject = this.TargetObject;
@@ -152,8 +134,7 @@ namespace Perspex.Xaml.Interactions.Core
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "ChangePropertyActionCannotSetValueExceptionMessage",
+                    "Cannot assign value of type {0} to property {1} of type {2}. The {1} property can be assigned only values of type {2}.",
                     this.Value != null ? this.Value.GetType().Name : "null",
                     this.PropertyName,
                     propertyInfo.PropertyType.Name),
@@ -170,8 +151,7 @@ namespace Perspex.Xaml.Interactions.Core
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "ChangePropertyActionCannotFindPropertyNameExceptionMessage",
+                    "Cannot find a property named {0} on type {1}.",
                     this.PropertyName,
                     targetTypeName));
             }
@@ -179,8 +159,7 @@ namespace Perspex.Xaml.Interactions.Core
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "ChangePropertyActionCannotFindPropertyNameExceptionMessage",
+                    "Cannot find a property named {0} on type {1}.",
                     this.PropertyName,
                     targetTypeName));
             }
