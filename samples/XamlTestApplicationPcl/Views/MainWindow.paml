@@ -299,11 +299,13 @@
                                   <Button Name="button" Content="Click Me" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Margin="0,10,0,10" FontSize="20" Foreground="PaleGrey" Background="DarkGrey">
                                       <Interactivity:Interaction.Behaviors>
                                           <Interactions:EventTriggerBehavior EventName="Click" SourceObject="{Binding ElementName=button}">
-                                              <Interactions:ChangePropertyAction TargetObject="{Binding ElementName=DataTriggerText}" PropertyName="Text" Value="PaleYellow"/>
+                                              <Interactions:ChangePropertyAction TargetObject="{Binding ElementName=DataTriggerText}" PropertyName="Text" Value="Hello"/>
                                           </Interactions:EventTriggerBehavior>
                                       </Interactivity:Interaction.Behaviors>
                                   </Button>
                                   -->
+                                  <Button Name="button" Content="Click Me" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Margin="0,10,0,10" FontSize="20" Foreground="Gray" Background="DarkGray">
+                                  </Button>
                               </Grid>
                           </TabItem>
                           <TabItem Header="Incremental Update">
