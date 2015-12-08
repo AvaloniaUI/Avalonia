@@ -104,8 +104,7 @@ namespace Perspex.Xaml.Interactivity
         {
             List<object> results = new List<object>();
 
-            // TODO: Check for design mode
-            if (actions == null /*|| Windows.ApplicationModel.DesignMode.DesignModeEnabled*/)
+            if (actions == null)
             {
                 return results;
             }

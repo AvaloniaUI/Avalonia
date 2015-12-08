@@ -24,8 +24,7 @@ namespace Perspex.Xaml.Interactivity
         /// <exception cref="System.ArgumentNullException"><paramref name="associatedObject"/> is null.</exception>
         public void Attach(PerspexObject associatedObject)
         {
-            // TODO: Check for design mode
-            if (associatedObject == this.AssociatedObject /*|| Windows.ApplicationModel.DesignMode.DesignModeEnabled*/)
+            if (associatedObject == this.AssociatedObject)
             {
                 return;
             }

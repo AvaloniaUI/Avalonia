@@ -23,7 +23,7 @@ namespace Perspex.Xaml.Interactivity.UnitTests
             BehaviorCollection behaviorCollection = new BehaviorCollection();
             behaviorCollection.Add(new StubBehavior());
             
-            TestUtilities.AssertThrowsInvalidOperationException(() => behaviorCollection[0] = new ToggleButton()); // TODO: ToggleSwitch
+            TestUtilities.AssertThrowsInvalidOperationException(() => behaviorCollection[0] = new ToggleButton());
         }
 
         [AppContainerUITestMethod]
@@ -97,7 +97,7 @@ namespace Perspex.Xaml.Interactivity.UnitTests
         public void VectorChanged_RemoveWhileAttached_Detached()
         {
             BehaviorCollection behaviorCollection = new BehaviorCollection();
-            behaviorCollection.Attach(new ToggleButton()); // TODO: ToggleSwitch
+            behaviorCollection.Attach(new ToggleButton());
 
             StubBehavior behavior = new StubBehavior();
             behaviorCollection.Add(behavior);

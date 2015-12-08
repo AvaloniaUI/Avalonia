@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Input;
-using Perspex;
 using Perspex.Controls;
 using Perspex.Markup;
-using Perspex.Xaml.Interactivity;
 
 namespace Perspex.Xaml.Interactivity.UnitTests
 {
@@ -195,39 +193,7 @@ namespace Perspex.Xaml.Interactivity.UnitTests
             }
         }
     }
-
-    // TODO:
-    /*
-    public class NavigateToPageActionTargetStub : Frame
-    {
-        public bool HasNavigated
-        {
-            get;
-            private set;
-        }
-
-        public object LastParameter
-        {
-            get;
-            private set;
-        }
-
-        public new bool Navigate(Type sourcePageType)
-        {
-            this.HasNavigated = true;
-            return true;
-        }
-
-        public new bool Navigate(Type sourcePageType, object parameter)
-        {
-            this.HasNavigated = true;
-            this.LastParameter = parameter;
-
-            return true;
-        }
-    }
-    */
-
+    
     public class MethodObjectStub : PerspexObject
     {
         public string LastMethodCalled
@@ -358,54 +324,6 @@ namespace Perspex.Xaml.Interactivity.UnitTests
             throw new NotImplementedException();
         }
     }
-
-    // TODO:
-    /*
-    public class StubFrame : Frame
-    {
-        public bool NavigatedTo
-        {
-            get;
-            private set;
-        }
-
-        public object Parameter
-        {
-            get;
-            private set;
-        }
-
-        public StubFrame()
-        {
-            this.Navigated += this.OnNavigated;
-        }
-
-        private void OnNavigated(object sender, NavigationEventArgs e)
-        {
-            this.NavigatedTo = true;
-            this.Parameter = e.Parameter;
-        }
-    }
-
-    public class StubPage : Page
-    {
-    }
-    
-    public class NavigableStub : PerspexObject, INavigate
-    {
-        public string NavigatedTypeFullName
-        {
-            get;
-            private set;
-        }
-
-        public bool Navigate(Type sourcePageType)
-        {
-            this.NavigatedTypeFullName = sourcePageType.FullName;
-            return true;
-        }
-    }
-    */
 
     public static class BehaviorTestHelper
     {

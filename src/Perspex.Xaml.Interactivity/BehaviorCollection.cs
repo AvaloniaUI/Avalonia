@@ -46,12 +46,6 @@ namespace Perspex.Xaml.Interactivity
                 return;
             }
 
-            // TODO: Check for design mode
-            //if (Windows.ApplicationModel.DesignMode.DesignModeEnabled)
-            //{
-            //    return;
-            //}
-
             if (this.AssociatedObject != null)
             {
                 throw new InvalidOperationException("An instance of a behavior cannot be attached to more than one object at a time.");
