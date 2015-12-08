@@ -41,8 +41,7 @@ namespace Perspex.Xaml.Interactivity
         {
             if (!(item is IAction))
             {
-                // TODO: Replace string from original resources
-                throw new InvalidOperationException("NonActionAddedToActionCollectionExceptionMessage");
+                throw new InvalidOperationException("Only IAction types are supported in an ActionCollection.");
             }
         }
     }

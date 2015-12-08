@@ -34,8 +34,7 @@ namespace Perspex.Xaml.Interactivity
             {
                 throw new InvalidOperationException(string.Format(
                     CultureInfo.CurrentCulture,
-                    // TODO: Replace string from original resources
-                    "CannotAttachBehaviorMultipleTimesExceptionMessage",
+                    "An instance of a behavior cannot be attached to more than one object at a time.",
                     associatedObject,
                     this.AssociatedObject));
             }

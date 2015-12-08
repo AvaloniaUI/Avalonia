@@ -54,8 +54,7 @@ namespace Perspex.Xaml.Interactivity
 
             if (this.AssociatedObject != null)
             {
-                // TODO: Replace string from original resources
-                throw new InvalidOperationException("CannotAttachBehaviorMultipleTimesExceptionMessage");
+                throw new InvalidOperationException("An instance of a behavior cannot be attached to more than one object at a time.");
             }
 
             Debug.Assert(associatedObject != null, "The previous checks should keep us from ever setting null here.");
@@ -168,14 +167,12 @@ namespace Perspex.Xaml.Interactivity
             IBehavior behavior = item as IBehavior;
             if (behavior == null)
             {
-                // TODO: Replace string from original resources
-                throw new InvalidOperationException("NonBehaviorAddedToBehaviorCollectionExceptionMessage");
+                throw new InvalidOperationException("Only IBehavior types are supported in a BehaviorCollection.");
             }
 
             if (this.oldCollection.Contains(behavior))
             {
-                // TODO: Replace string from original resources
-                throw new InvalidOperationException("DuplicateBehaviorInCollectionExceptionMessage");
+                throw new InvalidOperationException("Cannot add an instance of a behavior to a BehaviorCollection more than once.");
             }
 
             if (this.AssociatedObject != null)

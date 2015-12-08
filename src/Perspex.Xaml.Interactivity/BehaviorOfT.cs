@@ -35,8 +35,7 @@ namespace Perspex.Xaml.Interactivity
             {
                 string actualType = base.AssociatedObject.GetType().FullName;
                 string expectedType = typeof (T).FullName;
-                // TODO: Replace string from original resources
-                string message = string.Format("InvalidAssociatedObjectExceptionMessage", actualType, expectedType);
+                string message = string.Format("AssociatedObject is of type {0} but should be of type {1}.", actualType, expectedType);
                 throw new InvalidOperationException(message);
             }
         }
