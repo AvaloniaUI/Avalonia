@@ -71,26 +71,23 @@ namespace Perspex.Direct2D1
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Perspex.Media.Pen pen, SharpDX.Direct2D1.RenderTarget target)
         {
-            if (pen.DashStyle != null)
+            var properties = new StrokeStyleProperties
             {
-                if (pen.DashStyle.Dashes != null && pen.DashStyle.Dashes.Count > 0)
-                {
-                    var properties = new StrokeStyleProperties
-                    {
-                        DashStyle = DashStyle.Custom,
-                        DashOffset = (float)pen.DashStyle.Offset,
-                        MiterLimit = (float)pen.MiterLimit,
-                        LineJoin = pen.LineJoin.ToDirect2D(),
-                        StartCap = pen.StartLineCap.ToDirect2D(),
-                        EndCap = pen.EndLineCap.ToDirect2D(),
-                        DashCap = pen.DashCap.ToDirect2D()
-                    };
-
-                    return new StrokeStyle(target.Factory, properties, pen.DashStyle?.Dashes.Select(x => (float)x).ToArray());
-                }
+                DashStyle = DashStyle.Solid,
+                MiterLimit = (float)pen.MiterLimit,
+                LineJoin = pen.LineJoin.ToDirect2D(),
+                StartCap = pen.StartLineCap.ToDirect2D(),
+                EndCap = pen.EndLineCap.ToDirect2D(),
+                DashCap = pen.DashCap.ToDirect2D()
+            };
+            var dashes = new float[0];
+            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            {
+                properties.DashStyle = DashStyle.Custom;
+                properties.DashOffset = (float)pen.DashStyle.Offset;
+                dashes = pen.DashStyle?.Dashes.Select(x => (float)x).ToArray();
             }
-
-            return null;
+            return new StrokeStyle(target.Factory, properties, dashes);
         }
 
         /// <summary>
