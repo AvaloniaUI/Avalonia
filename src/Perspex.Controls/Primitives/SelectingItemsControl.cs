@@ -287,7 +287,7 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextFinishedChanging()
+        protected override void OnDataContextChanged()
         {
             if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
             {

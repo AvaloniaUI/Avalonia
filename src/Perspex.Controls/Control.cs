@@ -94,6 +94,15 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Occurs when the <see cref="DataContext"/> property changes.
+        /// </summary>
+        /// <remarks>
+        /// This event will be raised when the <see cref="DataContext"/> property has changed and
+        /// all subscribers to that change have been notified.
+        /// </remarks>
+        public event EventHandler DataContextChanged;
+
+        /// <summary>
         /// Gets or sets the control's classes.
         /// </summary>
         /// <remarks>
@@ -394,8 +403,9 @@ namespace Perspex.Controls
         /// Called when the <see cref="DataContext"/> is changed and all subscribers to that change
         /// have been notified.
         /// </summary>
-        protected virtual void OnDataContextFinishedChanging()
+        protected virtual void OnDataContextChanged()
         {
+            DataContextChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -422,7 +432,7 @@ namespace Perspex.Controls
 
                 if (!notifying)
                 {
-                    control.OnDataContextFinishedChanging();
+                    control.OnDataContextChanged();
                 }
             }
         }
