@@ -31,12 +31,12 @@ namespace Perspex.Media
         {
             Brush = brush;
             Thickness = thickness;
+            DashCap = dashCap;
             StartLineCap = startLineCap;
             EndLineCap = endLineCap;
             LineJoin = lineJoin;
             MiterLimit = miterLimit;
             DashStyle = dashStyle;
-            DashCap = dashCap;
         }
 
         /// <summary>

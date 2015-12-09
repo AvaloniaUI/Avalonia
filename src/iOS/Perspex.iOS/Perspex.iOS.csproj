@@ -42,6 +42,7 @@
     <Compile Include="PlatformSettings.cs" />
     <Compile Include="PlatformThreadingInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Specific\KeyboardEventsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Perspex.Animation\Perspex.Animation.csproj">
