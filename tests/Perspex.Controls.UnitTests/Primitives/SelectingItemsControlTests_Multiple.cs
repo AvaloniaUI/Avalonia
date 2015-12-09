@@ -427,6 +427,34 @@ namespace Perspex.Controls.UnitTests.Primitives
             // Clear DataContext and ensure that SelectedItems is still set in the VM.
             target.DataContext = null;
             Assert.Equal(new[] { "bar" }, vm.SelectedItems);
+
+            // Ensure target's SelectedItems is now clear.
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Unbound_SelectedItems_Should_Be_Cleared_When_DataContext_Cleared()
+        {
+            var data = new
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var target = new TestSelector
+            {
+                DataContext = data,
+                Template = Template(),
+            };
+
+            var itemsBinding = new Binding { Path = "Items" };
+            itemsBinding.Bind(target, TestSelector.ItemsProperty);
+
+            Assert.Same(data.Items, target.Items);
+
+            target.SelectedItems.Add("bar");
+            target.DataContext = null;
+
+            Assert.Empty(target.SelectedItems);
         }
 
         private FuncControlTemplate Template()

@@ -419,6 +419,11 @@ namespace Perspex.Controls
             if (control != null)
             {
                 control.IsDataContextChanging = notifying;
+
+                if (!notifying)
+                {
+                    control.OnDataContextFinishedChanging();
+                }
             }
         }
     }
