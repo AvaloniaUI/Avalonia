@@ -1,0 +1,8 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="VerticalGridSplitter">
+  <Setter Property="Width" Value="6"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"/> 
+    </ControlTemplate>
+  </Setter>
+</Style>

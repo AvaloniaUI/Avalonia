@@ -52,7 +52,7 @@ namespace Perspex.Diagnostics.Views
                         },
                         [!ItemsControl.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Nodes),
                     }),
-                    new GridSplitter
+                    new VerticalGridSplitter
                     {
                         [Grid.ColumnProperty] = 1,
                         Width = 4,

@@ -1,12 +1,12 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.FocusAdorner.paml"/>
-  
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Button.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Carousel.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.CheckBox.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ContentControl.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.DropDown.paml"/>
-  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.GridSplitter.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.VerticalGridSplitter.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.HorizontalGridSplitter.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ItemsControl.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ListBox.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ListBoxItem.paml"/>
