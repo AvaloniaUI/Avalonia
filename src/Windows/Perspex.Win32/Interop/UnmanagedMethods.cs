@@ -571,6 +571,9 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint SetWindowLong(IntPtr hWnd, int nIndex, uint value);
+
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 

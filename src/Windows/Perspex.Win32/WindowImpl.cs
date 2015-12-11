@@ -37,6 +37,8 @@ namespace Perspex.Win32
 
         private bool _isActive;
 
+        private bool _decorated = true;
+
         public WindowImpl()
         {
             CreateWindow();
@@ -143,6 +145,47 @@ namespace Perspex.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
+        }
+
+        public void SetSystemDecorations(bool value)
+        {
+            if (value == _decorated)
+                return;
+            var style = (UnmanagedMethods.WindowStyles) UnmanagedMethods.GetWindowLong(_hwnd, -16);
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+            if (!value)
+                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+
+            UnmanagedMethods.RECT windowRect;
+
+            UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+            Rect newRect;
+            var oldThickness = BorderThickness;
+
+            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint) style);
+            if (value)
+            {
+                var thickness = BorderThickness;
+                newRect = new Rect(
+                    windowRect.left - thickness.Left,
+                    windowRect.top - thickness.Top,
+                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+            }
+            else
+                newRect = new Rect(
+                    windowRect.left + oldThickness.Left,
+                    windowRect.top + oldThickness.Top,
+                    (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
+                    (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
+            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int) newRect.X, (int) newRect.Y, (int) newRect.Width,
+                (int) newRect.Height,
+                UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+
+
+            _decorated = value;
+
+
         }
 
         public void Invalidate(Rect rect)

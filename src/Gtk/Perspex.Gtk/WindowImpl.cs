@@ -170,6 +170,8 @@ namespace Perspex.Gtk
             return Disposable.Empty;
         }
 
+        public void SetSystemDecorations(bool enabled) => Decorated = enabled;
+
         void ITopLevelImpl.Activate()
         {
             Activate();

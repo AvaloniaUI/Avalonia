@@ -124,6 +124,11 @@ namespace Perspex.iOS
             //Not supported
         }
 
+        public void SetSystemDecorations(bool enabled)
+        {
+            //Not supported
+        }
+
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
             var touch = touches.AnyObject as UITouch;

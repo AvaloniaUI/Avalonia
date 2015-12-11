@@ -178,6 +178,7 @@ namespace Perspex.Controls.Platform
             public IDisposable ShowDialog() => _window.ShowDialog();
 
             public void Hide() => _popup.Hide();
+            public void SetSystemDecorations(bool enabled) => _window.SetSystemDecorations(enabled);
         }
 
         public static IWindowImpl CreateWindow()

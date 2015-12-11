@@ -94,6 +94,9 @@ namespace Perspex.Android.Platform.SkiaPlatform
             this.Visibility = ViewStates.Invisible;
         }
 
+        public void SetSystemDecorations(bool enabled)
+        {
+        }
         public void Invalidate(Rect rect)
         {
             if (Holder?.Surface?.IsValid == true) base.Invalidate();
