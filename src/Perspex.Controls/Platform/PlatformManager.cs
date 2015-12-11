@@ -174,6 +174,7 @@ namespace Perspex.Controls.Platform
             public void SetTitle(string title) => _window.SetTitle(title);
 
             public void Show() => _tl.Show();
+            public void BeginMoveDrag() => _tl.BeginMoveDrag();
 
             public IDisposable ShowDialog() => _window.ShowDialog();
 

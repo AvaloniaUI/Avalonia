@@ -107,6 +107,11 @@ namespace Perspex.iOS
             _keyboardHelper.ActivateAutoShowKeybord();
         }
 
+        public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
         public Size MaxClientSize => Bounds.Size.ToPerspex();
         public void SetTitle(string title)
         {

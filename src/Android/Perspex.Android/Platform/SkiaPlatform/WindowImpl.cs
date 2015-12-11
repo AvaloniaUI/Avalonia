@@ -126,6 +126,11 @@ namespace Perspex.Android.Platform.SkiaPlatform
             this.Visibility = ViewStates.Visible;
         }
 
+        public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
         public IDisposable ShowDialog()
         {
             throw new NotImplementedException();

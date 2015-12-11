@@ -162,6 +162,14 @@ namespace Perspex.Gtk
             GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
         }
 
+        public void BeginMoveDrag()
+        {
+            int x, y;
+            ModifierType mod;
+            Screen.RootWindow.GetPointer(out x, out y, out mod);
+            BeginMoveDrag(0, x, y, 0);
+        }
+
         public IDisposable ShowDialog()
         {
             Modal = true;

@@ -88,5 +88,10 @@ namespace Perspex.Platform
         /// Shows the toplevel.
         /// </summary>
         void Show();
+
+        /// <summary>
+        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
+        /// </summary>
+        void BeginMoveDrag();
     }
 }

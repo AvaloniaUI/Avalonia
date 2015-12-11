@@ -223,6 +223,12 @@ namespace Perspex.Win32
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
         }
 
+        public void BeginMoveDrag()
+        {
+            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr(2), IntPtr.Zero);
+        }
+
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();

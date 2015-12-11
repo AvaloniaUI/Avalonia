@@ -364,5 +364,10 @@ namespace Perspex.Controls
         {
             _renderQueueManager?.InvalidateRender(this);
         }
+
+        /// <summary>
+        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
+        /// </summary>
+        public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
     }
 }
