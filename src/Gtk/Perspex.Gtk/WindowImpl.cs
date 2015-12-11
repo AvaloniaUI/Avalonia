@@ -167,7 +167,7 @@ namespace Perspex.Gtk
             int x, y;
             ModifierType mod;
             Screen.RootWindow.GetPointer(out x, out y, out mod);
-            BeginMoveDrag(0, x, y, 0);
+            BeginMoveDrag(1, x, y, 0);
         }
 
         public IDisposable ShowDialog()
