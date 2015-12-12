@@ -30,7 +30,15 @@ namespace Perspex.Input
         No,
         Hand,
         AppStarting,
-        Help
+        Help,
+        TopSide,
+        BottomSize,
+        LeftSide,
+        RightSide,
+        TopLeftCorner,
+        TopRightCorner,
+        BottomLeftCorner,
+        BottomRightCorner
 
         // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
         // We might enable them later, preferably, by loading pixmax direclty from theme with fallback image
