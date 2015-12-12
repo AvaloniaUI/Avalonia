@@ -171,6 +171,7 @@
     <Compile Include="TreeView.cs" />
     <Compile Include="TreeViewItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowEdge.cs" />
     <Compile Include="WrapPanel.cs" />
   </ItemGroup>
   <ItemGroup>

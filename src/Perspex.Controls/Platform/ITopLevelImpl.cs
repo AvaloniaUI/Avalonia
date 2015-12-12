@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Input.Raw;
 
@@ -90,8 +91,14 @@ namespace Perspex.Platform
         void Show();
 
         /// <summary>
-        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
+        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler.
         /// </summary>
         void BeginMoveDrag();
+
+        /// <summary>
+        /// Starts resizing a window. This function is used if an application has window resizing controls. 
+        /// Should be called from left mouse button press event handler
+        /// </summary>
+        void BeginResizeDrag(WindowEdge edge);
     }
 }

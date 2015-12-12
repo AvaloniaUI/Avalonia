@@ -11,6 +11,7 @@ using Perspex.Platform;
 using Perspex.Input;
 using Perspex.Threading;
 using Action = System.Action;
+using WindowEdge = Perspex.Controls.WindowEdge;
 
 namespace Perspex.Gtk
 {
@@ -168,6 +169,14 @@ namespace Perspex.Gtk
             ModifierType mod;
             Screen.RootWindow.GetPointer(out x, out y, out mod);
             BeginMoveDrag(1, x, y, 0);
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            int x, y;
+            ModifierType mod;
+            Screen.RootWindow.GetPointer(out x, out y, out mod);
+            BeginResizeDrag((Gdk.WindowEdge) (int) edge, 1, x, y, 0);
         }
 
         public IDisposable ShowDialog()

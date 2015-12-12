@@ -16,6 +16,7 @@ using Perspex.Skia.iOS;
 using UIKit;
 using Perspex.iOS.Specific;
 using ObjCRuntime;
+using Perspex.Controls;
 
 namespace Perspex.iOS
 {
@@ -108,6 +109,11 @@ namespace Perspex.iOS
         }
 
         public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
         {
             //Not supported
         }

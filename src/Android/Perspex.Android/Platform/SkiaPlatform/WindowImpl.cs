@@ -9,6 +9,7 @@ using Perspex.Input.Raw;
 using Perspex.Platform;
 using Perspex.Skia.Android;
 using System;
+using Perspex.Controls;
 
 namespace Perspex.Android.Platform.SkiaPlatform
 {
@@ -127,6 +128,11 @@ namespace Perspex.Android.Platform.SkiaPlatform
         }
 
         public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
         {
             //Not supported
         }

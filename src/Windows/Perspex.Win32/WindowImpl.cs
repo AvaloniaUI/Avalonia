@@ -226,7 +226,25 @@ namespace Perspex.Win32
         public void BeginMoveDrag()
         {
             UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr(2), IntPtr.Zero);
+                new IntPtr((int)UnmanagedMethods.HitTestValues.HTCAPTION), IntPtr.Zero);
+        }
+
+        static readonly Dictionary<WindowEdge, UnmanagedMethods.HitTestValues> EdgeDic = new Dictionary<WindowEdge, UnmanagedMethods.HitTestValues>
+        {
+            {WindowEdge.East, UnmanagedMethods.HitTestValues.HTRIGHT},
+            {WindowEdge.North, UnmanagedMethods.HitTestValues.HTTOP },
+            {WindowEdge.NorthEast, UnmanagedMethods.HitTestValues.HTTOPRIGHT },
+            {WindowEdge.NorthWest, UnmanagedMethods.HitTestValues.HTTOPLEFT },
+            {WindowEdge.South, UnmanagedMethods.HitTestValues.HTBOTTOM },
+            {WindowEdge.SouthEast, UnmanagedMethods.HitTestValues.HTBOTTOMRIGHT },
+            {WindowEdge.SouthWest, UnmanagedMethods.HitTestValues.HTBOTTOMLEFT },
+            {WindowEdge.West, UnmanagedMethods.HitTestValues.HTLEFT}
+        };
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int) EdgeDic[edge]), IntPtr.Zero);
         }
 
         public virtual IDisposable ShowDialog()

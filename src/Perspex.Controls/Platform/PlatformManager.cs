@@ -175,6 +175,7 @@ namespace Perspex.Controls.Platform
 
             public void Show() => _tl.Show();
             public void BeginMoveDrag() => _tl.BeginMoveDrag();
+            public void BeginResizeDrag(WindowEdge edge) => _tl.BeginResizeDrag(edge);
 
             public IDisposable ShowDialog() => _window.ShowDialog();
 
