@@ -89,6 +89,11 @@ namespace Perspex.Platform
         /// Shows the toplevel.
         /// </summary>
         void Show();
+        
+        /// <summary>
+        /// Hides the window.
+        /// </summary>
+        void Hide();
 
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler.
@@ -100,5 +105,7 @@ namespace Perspex.Platform
         /// Should be called from left mouse button press event handler
         /// </summary>
         void BeginResizeDrag(WindowEdge edge);
+
+        Point Position { get; set; }
     }
 }

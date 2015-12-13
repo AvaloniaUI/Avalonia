@@ -137,6 +137,8 @@ namespace Perspex.Android.Platform.SkiaPlatform
             //Not supported
         }
 
+        public Point Position { get; set; }
+
         public IDisposable ShowDialog()
         {
             throw new NotImplementedException();

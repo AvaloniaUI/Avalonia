@@ -179,6 +179,20 @@ namespace Perspex.Gtk
             BeginResizeDrag((Gdk.WindowEdge) (int) edge, 1, x, y, 0);
         }
 
+        public Point Position
+        {
+            get
+            {
+                int x, y;
+                GetPosition(out x, out y);
+                return new Point(x, y);
+            }
+            set
+            {
+                Move((int)value.X, (int)value.Y);
+            }
+        }
+
         public IDisposable ShowDialog()
         {
             Modal = true;

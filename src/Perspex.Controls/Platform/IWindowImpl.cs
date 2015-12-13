@@ -30,11 +30,6 @@ namespace Perspex.Platform
         IDisposable ShowDialog();
 
         /// <summary>
-        /// Hides the window.
-        /// </summary>
-        void Hide();
-
-        /// <summary>
         /// Enables of disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);

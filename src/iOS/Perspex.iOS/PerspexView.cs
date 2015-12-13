@@ -118,6 +118,8 @@ namespace Perspex.iOS
             //Not supported
         }
 
+        public Point Position { get; set; }
+
         public Size MaxClientSize => Bounds.Size.ToPerspex();
         public void SetTitle(string title)
         {

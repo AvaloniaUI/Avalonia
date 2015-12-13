@@ -169,7 +169,7 @@ namespace Perspex.Controls.Primitives
                 ((ISetLogicalParent)_popupRoot).SetParent(this);
             }
 
-            _popupRoot.SetPosition(GetPosition());
+            _popupRoot.Position = GetPosition();
             _popupRoot.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Bubble, true);
 
             if (_topLevel != null)

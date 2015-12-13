@@ -155,11 +155,6 @@ namespace Perspex.Controls.Platform
                 set { _tl.Deactivated = value; }
             }
 
-            public void SetPosition(Point p)
-            {
-                _popup.SetPosition(p*ScalingFactor);
-            }
-            
             public void Dispose() => _tl.Dispose();
 
             public IPlatformHandle Handle => _tl.Handle;
@@ -176,6 +171,12 @@ namespace Perspex.Controls.Platform
             public void Show() => _tl.Show();
             public void BeginMoveDrag() => _tl.BeginMoveDrag();
             public void BeginResizeDrag(WindowEdge edge) => _tl.BeginResizeDrag(edge);
+
+            public Point Position
+            {
+                get { return _tl.Position; }
+                set { _tl.Position = value; }
+            }
 
             public IDisposable ShowDialog() => _window.ShowDialog();
 

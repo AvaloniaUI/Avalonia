@@ -247,6 +247,28 @@ namespace Perspex.Win32
                 new IntPtr((int) EdgeDic[edge]), IntPtr.Zero);
         }
 
+        public Point Position
+        {
+            get
+            {
+                UnmanagedMethods.RECT rc;
+                UnmanagedMethods.GetWindowRect(_hwnd, out rc);
+                return new Point(rc.left, rc.top);
+            }
+            set
+            {
+                UnmanagedMethods.SetWindowPos(
+                    Handle.Handle,
+                    IntPtr.Zero,
+                    (int) value.X,
+                    (int) value.Y,
+                    0,
+                    0,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+
+            }
+        }
+
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();

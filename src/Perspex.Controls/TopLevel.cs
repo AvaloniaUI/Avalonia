@@ -375,5 +375,11 @@ namespace Perspex.Controls
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
+
+        public Point Position
+        {
+            get { return PlatformImpl.Position; }
+            set { PlatformImpl.Position = value; }
+        }
     }
 }

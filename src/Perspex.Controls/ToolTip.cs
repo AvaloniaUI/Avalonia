@@ -118,7 +118,7 @@ namespace Perspex.Controls
                 var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
 
                 ((ToolTip)s_popup.Content).Content = GetTip(control);
-                s_popup.SetPosition(position);
+                s_popup.Position = position;
                 s_popup.Show();
 
                 s_current = control;
