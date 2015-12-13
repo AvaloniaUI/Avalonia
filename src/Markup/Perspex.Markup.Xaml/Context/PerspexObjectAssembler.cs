@@ -29,6 +29,8 @@ namespace Perspex.Markup.Xaml.Context
 
         public object Result => _objectAssembler.Result;
 
+        public InstanceLifeCycleHandler InstanceLifeCycleHandler { get; set; } = new InstanceLifeCycleHandler();
+
         public EventHandler<XamlSetValueEventArgs> XamlSetValueHandler { get; set; }
 
         public IWiringContext WiringContext => _objectAssembler.WiringContext;

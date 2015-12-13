@@ -109,6 +109,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\IDeferredLoader.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IMarkupExtension.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\INameScope.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\InstanceLifeCycleHandler.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\InstructionNode.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\InstructionTreeBuilder.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IObjectAssembler.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\ITypeProvider.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IValueConverter.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IWiringContext.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\IXamlLoader.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IXamlParser.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IXamlParserFactory.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\IXamlXmlLoader.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\MemberReverserVisitor.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\NamespaceDeclaration.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\NamespacePrefix.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssemblerMixin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\Command.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\Commands\EndMemberCommand.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\Commands\EndObjectCommand.cs" />
@@ -141,6 +144,7 @@
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\Commands\ValueCommand.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\ConstructionArgument.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\CurrentLevelWrapper.cs" />
+    <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\InstanceLifeCycleNotifier.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\InstanceProperties.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\Level.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\ObjectAssembler\NullLevel.cs" />
