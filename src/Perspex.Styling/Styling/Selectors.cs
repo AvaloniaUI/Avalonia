@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 
@@ -178,16 +179,16 @@ namespace Perspex.Styling
 
         private static SelectorMatch MatchClass(IStyleable control, string name)
         {
-            var changed = Observable.FromEventPattern<
+            var observable = Observable.FromEventPattern<
                     NotifyCollectionChangedEventHandler,
-                    NotifyCollectionChangedEventHandler>(
+                    NotifyCollectionChangedEventArgs>(
                 x => control.Classes.CollectionChanged += x,
-                x => control.Classes.CollectionChanged -= x);
+                x => control.Classes.CollectionChanged -= x)
+                .Select(_ => Unit.Default)
+                .StartWith(Unit.Default)
+                .Select(_ => control.Classes.Contains(name));
 
-            return new SelectorMatch(
-                Observable
-                    .Return(control.Classes.Contains(name))
-                    .Concat(changed.Select(e => control.Classes.Contains(name))));
+            return new SelectorMatch(observable);
         }
 
         private static SelectorMatch MatchDescendent(IStyleable control, Selector previous)

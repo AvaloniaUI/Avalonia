@@ -2,14 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using JetBrains.dotMemoryUnit;
 using Perspex.Controls;
-using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
 using Perspex.Styling;
-using Perspex.VisualTree;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -123,7 +119,6 @@ namespace Perspex.LeakTests
 
             dotMemory.Check(memory =>
                 Assert.Equal(1, memory.GetObjects(where => where.Type.Is<StyleActivator>()).ObjectsCount));
-            Assert.False(true);
         }
     }
 }

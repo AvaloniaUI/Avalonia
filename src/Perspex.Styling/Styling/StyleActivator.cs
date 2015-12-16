@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Perspex.Styling
 {
@@ -14,134 +15,30 @@ namespace Perspex.Styling
         Or,
     }
 
-    public class StyleActivator : IObservable<bool>, IDisposable
+    public class StyleActivator : ObservableBase<bool>
     {
+        private readonly IObservable<bool>[] _inputs;
         private readonly ActivatorMode _mode;
-
-        private readonly bool[] _values;
-
-        private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
-
-        private readonly List<IObserver<bool>> _observers = new List<IObserver<bool>>();
 
         public StyleActivator(
             IList<IObservable<bool>> inputs,
             ActivatorMode mode = ActivatorMode.And)
         {
-            int i = 0;
-
+            _inputs = inputs.ToArray();
             _mode = mode;
-            _values = new bool[inputs.Count];
-
-            foreach (IObservable<bool> input in inputs)
-            {
-                int capturedIndex = i;
-
-                IDisposable subscription = input.Subscribe(
-                    x => Update(capturedIndex, x),
-                    x => Finish(capturedIndex),
-                    () => Finish(capturedIndex));
-                _subscriptions.Add(subscription);
-                ++i;
-            }
         }
 
-        public bool CurrentValue
+        protected override IDisposable SubscribeCore(IObserver<bool> observer)
         {
-            get;
-            private set;
+            return _inputs.CombineLatest()
+                .Select(Calculate)
+                .DistinctUntilChanged()
+                .Subscribe(observer);
         }
 
-        public bool HasCompleted
+        private bool Calculate(IList<bool> values)
         {
-            get;
-            private set;
-        }
-
-        public void Dispose()
-        {
-            foreach (IObserver<bool> observer in _observers)
-            {
-                observer.OnCompleted();
-            }
-
-            foreach (IDisposable subscription in _subscriptions)
-            {
-                subscription.Dispose();
-            }
-        }
-
-        public IDisposable Subscribe(IObserver<bool> observer)
-        {
-            Contract.Requires<ArgumentNullException>(observer != null);
-
-            observer.OnNext(CurrentValue);
-
-            if (HasCompleted)
-            {
-                observer.OnCompleted();
-                return Disposable.Empty;
-            }
-            else
-            {
-                _observers.Add(observer);
-                return Disposable.Create(() => _observers.Remove(observer));
-            }
-        }
-
-        private void Update(int index, bool value)
-        {
-            _values[index] = value;
-
-            bool current;
-
-            switch (_mode)
-            {
-                case ActivatorMode.And:
-                    current = _values.All(x => x);
-                    break;
-                case ActivatorMode.Or:
-                    current = _values.Any(x => x);
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid Activator mode.");
-            }
-
-            if (current != CurrentValue)
-            {
-                Push(current);
-                CurrentValue = current;
-            }
-        }
-
-        private void Finish(int i)
-        {
-            // We can unsubscribe from everything if the completed observable:
-            // - Is the only subscription.
-            // - Has finished on 'false' and we're in And mode
-            // - Has finished on 'true' and we're in Or mode
-            var value = _values[i];
-            var unsubscribe =
-                (_values.Length == 1) ||
-                (_mode == ActivatorMode.And ? !value : value);
-
-            if (unsubscribe)
-            {
-                foreach (IDisposable subscription in _subscriptions)
-                {
-                    subscription.Dispose();
-                }
-
-                HasCompleted = true;
-            }
-        }
-
-        private void Push(bool value)
-        {
-            foreach (IObserver<bool> observer in _observers)
-            {
-                observer.OnNext(value);
-            }
+            return _mode == ActivatorMode.And ? values.All(x => x) : values.Any(x => x);
         }
     }
 }

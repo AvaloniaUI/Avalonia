@@ -171,7 +171,7 @@ namespace Perspex.Collections
         /// Adds an item to the collection.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             Validate?.Invoke(item);
             int index = _inner.Count;
@@ -183,7 +183,7 @@ namespace Perspex.Collections
         /// Adds multiple items to the collection.
         /// </summary>
         /// <param name="items">The items.</param>
-        public void AddRange(IEnumerable<T> items)
+        public virtual void AddRange(IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
@@ -264,7 +264,7 @@ namespace Perspex.Collections
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="item">The item.</param>
-        public void Insert(int index, T item)
+        public virtual void Insert(int index, T item)
         {
             Validate?.Invoke(item);
             _inner.Insert(index, item);
@@ -276,7 +276,7 @@ namespace Perspex.Collections
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="items">The items.</param>
-        public void InsertRange(int index, IEnumerable<T> items)
+        public virtual void InsertRange(int index, IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
@@ -302,7 +302,7 @@ namespace Perspex.Collections
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>True if the item was found and removed, otherwise false.</returns>
-        public bool Remove(T item)
+        public virtual bool Remove(T item)
         {
             int index = _inner.IndexOf(item);
 
@@ -320,7 +320,7 @@ namespace Perspex.Collections
         /// Removes multiple items from the collection.
         /// </summary>
         /// <param name="items">The items.</param>
-        public void RemoveAll(IEnumerable<T> items)
+        public virtual void RemoveAll(IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
@@ -337,7 +337,7 @@ namespace Perspex.Collections
         /// Removes the item at the specified index.
         /// </summary>
         /// <param name="index">The index.</param>
-        public void RemoveAt(int index)
+        public virtual void RemoveAt(int index)
         {
             T item = _inner[index];
             _inner.RemoveAt(index);
@@ -349,7 +349,7 @@ namespace Perspex.Collections
         /// </summary>
         /// <param name="index">The first index to remove.</param>
         /// <param name="count">The number of items to remove.</param>
-        public void RemoveRange(int index, int count)
+        public virtual void RemoveRange(int index, int count)
         {
             if (count > 0)
             {

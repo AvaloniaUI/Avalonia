@@ -682,7 +682,10 @@ namespace Perspex.Controls.Primitives
                 case NotifyCollectionChangedAction.Reset:
                     foreach (var item in ItemContainerGenerator.Containers)
                     {
-                        MarkContainerSelected(item, false);
+                        if (item != null)
+                        {
+                            MarkContainerSelected(item, false);
+                        }
                     }
 
                     if (!_syncingSelectedItems)
