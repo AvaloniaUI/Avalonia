@@ -42,6 +42,7 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Classes.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="INameScope.cs" />

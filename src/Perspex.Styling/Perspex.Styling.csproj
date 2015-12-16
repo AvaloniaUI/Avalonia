@@ -45,7 +45,6 @@
     <Compile Include="ILogical.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Styling\Classes.cs" />
     <Compile Include="Styling\IGlobalStyles.cs" />
     <Compile Include="Styling\ISetter.cs" />
     <Compile Include="Styling\IStyle.cs" />

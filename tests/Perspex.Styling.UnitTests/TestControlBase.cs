@@ -3,6 +3,8 @@
 
 using System;
 using System.Reactive.Subjects;
+using Perspex.Collections;
+using Perspex.Controls;
 
 namespace Perspex.Styling.UnitTests
 {
@@ -35,6 +37,8 @@ namespace Perspex.Styling.UnitTests
                 throw new NotImplementedException();
             }
         }
+
+        IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
         public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
         {

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Collections;
 
 namespace Perspex.Styling
 {
@@ -13,7 +14,7 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets the list of classes for the control.
         /// </summary>
-        Classes Classes { get; }
+        IPerspexReadOnlyList<string> Classes { get; }
 
         /// <summary>
         /// Gets the type by which the control is styled.

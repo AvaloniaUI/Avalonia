@@ -7,6 +7,8 @@ using OmniXaml;
 using OmniXaml.ObjectAssembler.Commands;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
+using Perspex.Collections;
+using Perspex.Controls;
 using Perspex.Markup.Xaml.Converters;
 using Perspex.Styling;
 using Xunit;
@@ -74,7 +76,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             public static readonly PerspexProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo");
 
-            public Classes Classes
+            public IPerspexReadOnlyList<string> Classes
             {
                 get { throw new NotImplementedException(); }
             }

@@ -593,7 +593,6 @@ namespace Perspex.Controls.Primitives
             try
             {
                 var selectable = container as ISelectable;
-                var styleable = container as IStyleable;
 
                 _ignoreContainerSelectionChanged = true;
 
@@ -601,15 +600,15 @@ namespace Perspex.Controls.Primitives
                 {
                     selectable.IsSelected = selected;
                 }
-                else if (styleable != null)
+                else
                 {
                     if (selected)
                     {
-                        styleable.Classes.Add(":selected");
+                        container.Classes.Add(":selected");
                     }
                     else
                     {
-                        styleable.Classes.Remove(":selected");
+                        container.Classes.Remove(":selected");
                     }
                 }
             }

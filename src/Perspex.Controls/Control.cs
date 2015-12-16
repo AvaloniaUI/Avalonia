@@ -129,7 +129,7 @@ namespace Perspex.Controls
                 if (_classes != value)
                 {
                     _classes.Clear();
-                    _classes.Add(value);
+                    _classes.AddRange(value);
                 }
             }
         }
@@ -215,6 +215,9 @@ namespace Perspex.Controls
         /// Gets the control's logical children.
         /// </summary>
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
         /// <summary>
         /// Gets the type by which the control is styled.

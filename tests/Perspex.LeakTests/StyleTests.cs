@@ -123,6 +123,7 @@ namespace Perspex.LeakTests
 
             dotMemory.Check(memory =>
                 Assert.Equal(1, memory.GetObjects(where => where.Type.Is<StyleActivator>()).ObjectsCount));
+            Assert.False(true);
         }
     }
 }

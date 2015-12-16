@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using Perspex.Collections;
+using Perspex.Controls;
 
 namespace Perspex.Styling.UnitTests
 {
@@ -41,6 +43,8 @@ namespace Perspex.Styling.UnitTests
                 throw new NotImplementedException();
             }
         }
+
+        IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
         public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
         {

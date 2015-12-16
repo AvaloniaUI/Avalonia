@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Perspex.Collections;
+using Perspex.Controls;
 using Perspex.Styling;
 using Xunit;
 
@@ -127,6 +128,8 @@ namespace Perspex.Styling.UnitTests
                     throw new NotImplementedException();
                 }
             }
+
+            IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
             public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
             {

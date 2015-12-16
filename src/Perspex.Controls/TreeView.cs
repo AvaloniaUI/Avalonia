@@ -179,21 +179,20 @@ namespace Perspex.Controls
         private void MarkContainerSelected(IControl container, bool selected)
         {
             var selectable = container as ISelectable;
-            var styleable = container as IStyleable;
 
             if (selectable != null)
             {
                 selectable.IsSelected = selected;
             }
-            else if (styleable != null)
+            else
             {
                 if (selected)
                 {
-                    styleable.Classes.Add(":selected");
+                    container.Classes.Add(":selected");
                 }
                 else
                 {
-                    styleable.Classes.Remove(":selected");
+                    container.Classes.Remove(":selected");
                 }
             }
         }

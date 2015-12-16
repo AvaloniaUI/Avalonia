@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Perspex.Collections;
+using Perspex.Controls;
 using Perspex.Styling;
 using Xunit;
 
@@ -43,7 +45,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
+        public async void Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
         {
             var parent = new TestLogical1();
             var child = new TestLogical2();
@@ -52,6 +54,7 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType<TestLogical1>().Class("foo").Child().OfType<TestLogical2>();
             var activator = selector.Match(child).ObservableResult;
+            var result = new List<bool>();
 
             Assert.False(await activator.Take(1));
             parent.Classes.Add("foo");
@@ -95,6 +98,8 @@ namespace Perspex.Styling.UnitTests
                     throw new NotImplementedException();
                 }
             }
+
+            IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
             public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
             {

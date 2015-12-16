@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using OmniXaml.TypeConversion;
+using Perspex.Controls;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Converters
