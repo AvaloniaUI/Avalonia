@@ -21,7 +21,7 @@ namespace Perspex.Diagnostics.ViewModels
 
             var classesChanged = Observable.FromEventPattern<
                     NotifyCollectionChangedEventHandler, 
-                    NotifyCollectionChangedEventHandler>(
+                    NotifyCollectionChangedEventArgs>(
                 x => control.Classes.CollectionChanged += x,
                 x => control.Classes.CollectionChanged -= x);
 
