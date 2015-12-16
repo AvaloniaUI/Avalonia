@@ -269,12 +269,12 @@ namespace Perspex.LeakTests
                     Content = target = new TreeView
                     {
                         DataTemplates = new DataTemplates
-                    {
-                        new FuncTreeDataTemplate<Node>(
-                            x => new TextBlock { Text = x.Name },
-                            x => x.Children,
-                            x => true)
-                    },
+                        {
+                            new FuncTreeDataTemplate<Node>(
+                                x => new TextBlock { Text = x.Name },
+                                x => x.Children,
+                                x => true)
+                        },
                         Items = nodes
                     }
                 };
