@@ -224,13 +224,13 @@
                       <TextBlock Text="GridSplitter" FontWeight="Medium" FontSize="20" Foreground="#212121" />
                       <Grid Height="500" Width="500" ColumnDefinitions="*,Auto,*,Auto,*" RowDefinitions="*,Auto,*">
                          <Border Grid.Column="0" Grid.Row="0" Background="Red" />
-                         <HorizontalGridSplitter Grid.Column="0" Grid.Row="1" />
+                         <GridSplitter Grid.Column="0" Grid.Row="1" />
                          <Border Grid.Column="0" Grid.Row="2" Background="Yellow" />
-                         <VerticalGridSplitter Grid.Column="1" Grid.RowSpan="3" />
+                         <GridSplitter Grid.Column="1" Grid.RowSpan="3" />
                          <Border Grid.Column="2" Grid.RowSpan="3" Background="Green" />
-                         <VerticalGridSplitter Grid.Column="3" Grid.RowSpan="3" />
+                         <GridSplitter Grid.Column="3" Grid.RowSpan="3" />
                          <Border Grid.Column="4" Grid.Row="0" Background="Blue" />
-                         <HorizontalGridSplitter Grid.Column="4" Grid.Row="1" />
+                         <GridSplitter Grid.Column="4" Grid.Row="1" />
                          <Border Grid.Column="4" Grid.Row="3" Background="Pink" />
                       </Grid>
                   </StackPanel>

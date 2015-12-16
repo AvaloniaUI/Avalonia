@@ -119,7 +119,7 @@
     <EmbeddedResource Include="FocusAdorner.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="VerticalGridSplitter.paml">
+    <EmbeddedResource Include="GridSplitter.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemsControl.paml">
@@ -186,9 +186,6 @@
     <EmbeddedResource Include="Separator.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="HorizontalGridSplitter.paml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
