@@ -65,15 +65,6 @@ namespace Perspex.Controls.Primitives
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <summary>
-        /// Sets the position of the popup in screen coordinates.
-        /// </summary>
-        /// <param name="p">The position.</param>
-        public void SetPosition(Point p)
-        {
-            PlatformImpl.SetPosition(p);
-        }
-
-        /// <summary>
         /// Hides the popup.
         /// </summary>
         public void Hide()

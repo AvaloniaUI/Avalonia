@@ -50,6 +50,12 @@ namespace Perspex.Controls
             PerspexProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
+        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// </summary>
+        public static readonly PerspexProperty<bool> HasSystemDecorationsProperty =
+            PerspexProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
+
+        /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
         public static readonly PerspexProperty<string> TitleProperty =
@@ -66,6 +72,8 @@ namespace Perspex.Controls
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
+            HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
+                (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
         }
 
         /// <summary>
@@ -112,6 +120,16 @@ namespace Perspex.Controls
         {
             get { return GetValue(TitleProperty); }
             set { SetValue(TitleProperty, value); }
+        }
+
+        /// <summary>
+        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// </summary>
+        /// 
+        public bool HasSystemDecorations
+        {
+            get { return GetValue(HasSystemDecorationsProperty); }
+            set { SetValue(HasSystemDecorationsProperty, value); }
         }
 
         /// <inheritdoc/>

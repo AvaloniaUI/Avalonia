@@ -16,6 +16,7 @@ using Perspex.Skia.iOS;
 using UIKit;
 using Perspex.iOS.Specific;
 using ObjCRuntime;
+using Perspex.Controls;
 
 namespace Perspex.iOS
 {
@@ -107,6 +108,18 @@ namespace Perspex.iOS
             _keyboardHelper.ActivateAutoShowKeybord();
         }
 
+        public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            //Not supported
+        }
+
+        public Point Position { get; set; }
+
         public Size MaxClientSize => Bounds.Size.ToPerspex();
         public void SetTitle(string title)
         {
@@ -120,6 +133,11 @@ namespace Perspex.iOS
         }
 
         public void Hide()
+        {
+            //Not supported
+        }
+
+        public void SetSystemDecorations(bool enabled)
         {
             //Not supported
         }
@@ -168,14 +186,11 @@ namespace Perspex.iOS
                         RawMouseEventType.Move, location, InputModifiers.LeftMouseButton));
                 else
                 {
-                    double x = location.X - _touchLastPoint.X;
-                    double y = location.Y - _touchLastPoint.Y;
+                    //magic number based on test - correction of 0.02 is working perfect
                     double correction = 0.02;
-                    var scale = PerspexLocator.Current.GetService<IPlatformSettings>().RenderScalingFactor;
-                    scale = 1;
 
                     Input?.Invoke(new RawMouseWheelEventArgs(PerspexAppDelegate.MouseDevice, (uint)touch.Timestamp,
-                        _inputRoot, location, new Vector(x * correction / scale, y * correction / scale), InputModifiers.LeftMouseButton));
+                        _inputRoot, location, (location - _touchLastPoint)* correction, InputModifiers.LeftMouseButton));
                 }
                 _touchLastPoint = location;
             }

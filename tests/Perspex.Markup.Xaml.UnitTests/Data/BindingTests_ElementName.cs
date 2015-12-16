@@ -10,7 +10,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
     public class BindingTests_ElementName
     {
         [Fact]
-        public void Should_Bind_To_Element()
+        public void Should_Bind_To_Element_Path()
         {
             TextBlock target;
             var root = new TestRoot
@@ -44,7 +44,42 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Should_Bind_To_Later_Added_Element()
+        public void Should_Bind_To_Element()
+        {
+            TextBlock source;
+            ContentControl target;
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children = new Controls.Controls
+                    {
+                        (source = new TextBlock
+                        {
+                            Name = "source",
+                            Text = "foo",
+                        }),
+                        (target = new ContentControl
+                        {
+                            Name = "target",
+                        })
+                    }
+                }
+            };
+
+            var binding = new Binding
+            {
+                ElementName = "source",
+            };
+
+            binding.Bind(target, ContentControl.ContentProperty);
+
+            Assert.Same(source, target.Content);
+        }
+
+        [Fact]
+        public void Should_Bind_To_Later_Added_Element_Path()
         {
             TextBlock target;
             StackPanel stackPanel;
@@ -78,6 +113,44 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             });
 
             Assert.Equal("foo", target.Text);
+        }
+
+        [Fact]
+        public void Should_Bind_To_Later_Added_Element()
+        {
+            ContentControl target;
+            StackPanel stackPanel;
+
+            var root = new TestRoot
+            {
+                Child = stackPanel = new StackPanel
+                {
+                    Children = new Controls.Controls
+                    {
+                        (target = new ContentControl
+                        {
+                            Name = "target",
+                        }),
+                    }
+                }
+            };
+
+            var binding = new Binding
+            {
+                ElementName = "source",
+            };
+
+            binding.Bind(target, ContentControl.ContentProperty);
+
+            var source = new TextBlock
+            {
+                Name = "source",
+                Text = "foo",
+            };
+
+            stackPanel.Children.Add(source);
+
+            Assert.Same(source, target.Content);
         }
     }
 }

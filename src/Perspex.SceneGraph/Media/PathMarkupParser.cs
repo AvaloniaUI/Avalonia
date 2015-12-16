@@ -28,6 +28,8 @@ namespace Perspex.Media
             { 'v', Command.VerticalLineRelative },
             { 'C', Command.CubicBezierCurve },
             { 'c', Command.CubicBezierCurveRelative },
+            { 'A', Command.Arc },
+            { 'a', Command.Arc },
             { 'Z', Command.Close },
             { 'z', Command.Close },
         };
@@ -64,6 +66,7 @@ namespace Perspex.Media
             VerticalLineRelative,
             CubicBezierCurve,
             CubicBezierCurveRelative,
+            Arc,
             Close,
             Eof,
         }
@@ -98,8 +101,8 @@ namespace Perspex.Media
                                 _context.EndFigure(false);
                             }
 
-                            point = command == Command.Move ? 
-                                ReadPoint(reader) : 
+                            point = command == Command.Move ?
+                                ReadPoint(reader) :
                                 ReadRelativePoint(reader, point);
 
                             _context.BeginFigure(point, true);
@@ -142,6 +145,22 @@ namespace Perspex.Media
                                 Point point2 = ReadPoint(reader);
                                 point = ReadPoint(reader);
                                 _context.CubicBezierTo(point1, point2, point);
+                                break;
+                            }
+                        case Command.Arc:
+                            {
+                                //example: A10,10 0 0,0 10,20
+                                //format - size rotationAngle isLargeArcFlag sweepDirectionFlag endPoint
+                                Size size = ReadSize(reader);
+                                ReadSeparator(reader);
+                                double rotationAngle = ReadDouble(reader);
+                                ReadSeparator(reader);
+                                bool isLargeArc = ReadBool(reader);
+                                ReadSeparator(reader);
+                                SweepDirection sweepDirection = ReadBool(reader) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+                                point = ReadPoint(reader);
+
+                                _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
                                 break;
                             }
 
@@ -242,6 +261,20 @@ namespace Perspex.Media
             ReadSeparator(reader);
             double y = ReadDouble(reader);
             return new Point(x, y);
+        }
+
+        private static Size ReadSize(StringReader reader)
+        {
+            ReadWhitespace(reader);
+            double x = ReadDouble(reader);
+            ReadSeparator(reader);
+            double y = ReadDouble(reader);
+            return new Size(x, y);
+        }
+
+        private static bool ReadBool(StringReader reader)
+        {
+            return ReadDouble(reader) != 0;
         }
 
         private static Point ReadRelativePoint(StringReader reader, Point lastPoint)

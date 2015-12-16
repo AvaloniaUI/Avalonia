@@ -201,6 +201,10 @@ namespace Perspex.Markup.Data
                     subscription.Dispose();
                 });
             }
+            else if (_rootObservable != null)
+            {
+                return _rootObservable.Subscribe(observer);
+            }
             else
             {
                 if (_update == null)

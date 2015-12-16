@@ -369,5 +369,22 @@ namespace Perspex.Controls
         {
             _renderQueueManager?.InvalidateRender(this);
         }
+
+        /// <summary>
+        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
+        /// </summary>
+        public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
+
+        /// <summary>
+        /// Starts resizing a window. This function is used if an application has window resizing controls. 
+        /// Should be called from left mouse button press event handler
+        /// </summary>
+        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
+
+        public Point Position
+        {
+            get { return PlatformImpl.Position; }
+            set { PlatformImpl.Position = value; }
+        }
     }
 }

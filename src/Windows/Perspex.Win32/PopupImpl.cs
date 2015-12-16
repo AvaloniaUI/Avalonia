@@ -9,18 +9,6 @@ namespace Perspex.Win32
 {
     public class PopupImpl : WindowImpl, IPopupImpl
     {
-        public void SetPosition(Point p)
-        {
-            UnmanagedMethods.SetWindowPos(
-                Handle.Handle,
-                IntPtr.Zero,
-                (int)p.X,
-                (int)p.Y,
-                0,
-                0,
-                UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
-        }
-
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
