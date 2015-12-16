@@ -10,7 +10,7 @@ using Perspex.Rendering;
 
 namespace Perspex.Styling.UnitTests
 {
-    internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot
+    internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot, IStyleRoot
     {
         public Size ClientSize => new Size(100, 100);
 

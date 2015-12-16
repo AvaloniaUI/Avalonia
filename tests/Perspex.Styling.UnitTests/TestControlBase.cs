@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive;
 using System.Reactive.Subjects;
 using Perspex.Collections;
 using Perspex.Controls;
@@ -39,6 +40,8 @@ namespace Perspex.Styling.UnitTests
         }
 
         IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
+
+        IObservable<Unit> IStyleable.StyleDetach { get; }
 
         public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
         {

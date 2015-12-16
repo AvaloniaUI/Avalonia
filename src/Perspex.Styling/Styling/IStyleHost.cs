@@ -6,7 +6,7 @@ namespace Perspex.Styling
     /// <summary>
     /// Defines an element that has a <see cref="Styles"/> collection.
     /// </summary>
-    public interface IStyleHost : IVisual
+    public interface IStyleHost
     {
         /// <summary>
         /// Gets the styles for the element.

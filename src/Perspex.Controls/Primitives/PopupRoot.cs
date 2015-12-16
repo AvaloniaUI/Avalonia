@@ -44,7 +44,6 @@ namespace Perspex.Controls.Primitives
         public PopupRoot(IPerspexDependencyResolver dependencyResolver)
             : base(PlatformManager.CreatePopup(), dependencyResolver)
         {
-            GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }
 
         /// <summary>
@@ -94,9 +93,9 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(INameScope nameScope)
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(nameScope);
+            base.OnTemplateApplied(e);
 
             if (Parent.TemplatedParent != null)
             {

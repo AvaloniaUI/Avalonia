@@ -206,7 +206,8 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.Equal(panel, target.Panel);
+            Assert.Same(panel, target.Panel);
+            Assert.Same(target, target.Panel.Parent);
         }
 
         [Fact]

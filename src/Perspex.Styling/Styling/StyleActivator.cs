@@ -15,30 +15,28 @@ namespace Perspex.Styling
         Or,
     }
 
-    public class StyleActivator : ObservableBase<bool>
+    public static class StyleActivator
     {
-        private readonly IObservable<bool>[] _inputs;
-        private readonly ActivatorMode _mode;
-
-        public StyleActivator(
-            IList<IObservable<bool>> inputs,
-            ActivatorMode mode = ActivatorMode.And)
+        public static IObservable<bool> And(IEnumerable<IObservable<bool>> inputs)
         {
-            _inputs = inputs.ToArray();
-            _mode = mode;
-        }
+            var sourceArray = inputs.Select(s => s.Publish().RefCount()).ToArray();
 
-        protected override IDisposable SubscribeCore(IObserver<bool> observer)
-        {
-            return _inputs.CombineLatest()
-                .Select(Calculate)
+            var terminate = sourceArray
+                .ToObservable()
+                .SelectMany(x => x.LastAsync()
+                .Where(y => y == false));
+
+            return sourceArray
+                .CombineLatest(values => values.All(x => x))
                 .DistinctUntilChanged()
-                .Subscribe(observer);
+                .TakeUntil(terminate);
         }
 
-        private bool Calculate(IList<bool> values)
+        public static IObservable<bool> Or(IEnumerable<IObservable<bool>> inputs)
         {
-            return _mode == ActivatorMode.And ? values.All(x => x) : values.Any(x => x);
+            return inputs.CombineLatest()
+                .Select(values => values.Any(x => x))
+                .DistinctUntilChanged();
         }
     }
 }

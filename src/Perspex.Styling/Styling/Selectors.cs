@@ -64,7 +64,7 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(previous != null);
 
-            return new Selector(previous, x => MatchIs(x, type), type.Name, type);
+            return new Selector(previous, x => MatchIs(x, type), $":is({type.Name})", type);
         }
 
         /// <summary>
@@ -218,9 +218,7 @@ namespace Perspex.Styling
                 }
             }
 
-            return new SelectorMatch(new StyleActivator(
-                descendentMatches,
-                ActivatorMode.Or));
+            return new SelectorMatch(StyleActivator.Or(descendentMatches));
         }
 
         private static SelectorMatch MatchIs(IStyleable control, Type type)

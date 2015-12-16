@@ -32,7 +32,7 @@ namespace Perspex
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles
+    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot
     {
         static Action _platformInitializationCallback;
 
@@ -134,6 +134,11 @@ namespace Perspex
             get;
             protected set;
         }
+
+        /// <summary>
+        /// Gets the styling parent of the application, which is null.
+        /// </summary>
+        IStyleHost IStyleHost.StylingParent => null;
 
         /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.

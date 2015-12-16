@@ -81,11 +81,13 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="HeaderedItemsControlTests .cs" />
     <Compile Include="ControlTests_NameScope.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
-    <Compile Include="ContentPresenterTests.cs" />
+    <Compile Include="Presenters\ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
     <Compile Include="ListBoxTests_Single.cs" />
     <Compile Include="NameScopeTests.cs" />

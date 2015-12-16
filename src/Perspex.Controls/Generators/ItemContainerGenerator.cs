@@ -15,9 +15,7 @@ namespace Perspex.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private List<IControl> _containers = new List<IControl>();
-
-        private readonly Subject<ItemContainers> _containersInitialized = new Subject<ItemContainers>();
+        private List<ItemContainer> _containers = new List<ItemContainer>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -31,10 +29,13 @@ namespace Perspex.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IControl> Containers => _containers;
+        public IEnumerable<ItemContainer> Containers => _containers;
 
         /// <inheritdoc/>
-        public IObservable<ItemContainers> ContainersInitialized => _containersInitialized;
+        public event EventHandler<ItemContainerEventArgs> Materialized;
+
+        /// <inheritdoc/>
+        public event EventHandler<ItemContainerEventArgs> Dematerialized;
 
         /// <summary>
         /// Gets the owner control.
@@ -42,7 +43,7 @@ namespace Perspex.Controls.Generators
         public IControl Owner { get; }
 
         /// <inheritdoc/>
-        public IEnumerable<IControl> Materialize(
+        public IEnumerable<ItemContainer> Materialize(
             int startingIndex,
             IEnumerable items,
             IMemberSelector selector)
@@ -50,25 +51,25 @@ namespace Perspex.Controls.Generators
             Contract.Requires<ArgumentNullException>(items != null);
 
             int index = startingIndex;
-            var result = new List<IControl>();
+            var result = new List<ItemContainer>();
 
             foreach (var item in items)
             {
                 var i = selector != null ? selector.Select(item) : item;
-                var container = CreateContainer(i);
+                var container = new ItemContainer(CreateContainer(i), item, index++);
                 result.Add(container);
             }
 
-            AddContainers(startingIndex, result);
-            _containersInitialized.OnNext(new ItemContainers(startingIndex, result));
+            AddContainers(result);
+            Materialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
 
             return result.Where(x => x != null).ToList();
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<IControl> Dematerialize(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
         {
-            var result = new List<IControl>();
+            var result = new List<ItemContainer>();
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
@@ -79,22 +80,31 @@ namespace Perspex.Controls.Generators
                 }
             }
 
+            Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+
             return result;
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<IControl> RemoveRange(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
         {
             var result = _containers.GetRange(startingIndex, count);
             _containers.RemoveRange(startingIndex, count);
+            Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
             return result;
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<IControl> Clear()
+        public virtual IEnumerable<ItemContainer> Clear()
         {
             var result = _containers;
-            _containers = new List<IControl>();
+            _containers = new List<ItemContainer>();
+
+            if (result.Count > 0)
+            {
+                Dematerialized?.Invoke(this, new ItemContainerEventArgs(0, result));
+            }
+
             return result;
         }
 
@@ -103,7 +113,7 @@ namespace Perspex.Controls.Generators
         {
             if (index < _containers.Count)
             {
-                return _containers[index];
+                return _containers[index]?.ContainerControl;
             }
 
             return null;
@@ -112,7 +122,19 @@ namespace Perspex.Controls.Generators
         /// <inheritdoc/>
         public int IndexFromContainer(IControl container)
         {
-            return _containers.IndexOf(container);
+            var index = 0;
+
+            foreach (var i in _containers)
+            {
+                if (i?.ContainerControl == container)
+                {
+                    return index;
+                }
+
+                ++index;
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -135,33 +157,30 @@ namespace Perspex.Controls.Generators
         /// <summary>
         /// Adds a collection of containers to the index.
         /// </summary>
-        /// <param name="index">The starting index.</param>
-        /// <param name="container">The container.</param>
-        protected void AddContainers(int index, IList<IControl> container)
+        /// <param name="containers">The containers.</param>
+        protected void AddContainers(IList<ItemContainer> containers)
         {
-            Contract.Requires<ArgumentNullException>(container != null);
+            Contract.Requires<ArgumentNullException>(containers != null);
 
-            foreach (var c in container)
+            foreach (var c in containers)
             {
-                while (_containers.Count < index)
+                while (_containers.Count < c.Index)
                 {
                     _containers.Add(null);
                 }
 
-                if (_containers.Count == index)
+                if (_containers.Count == c.Index)
                 {
                     _containers.Add(c);
                 }
-                else if (_containers[index] == null)
+                else if (_containers[c.Index] == null)
                 {
-                    _containers[index] = c;
+                    _containers[c.Index] = c;
                 }
                 else
                 {
                     throw new InvalidOperationException("Container already created.");
                 }
-
-                ++index;
             }
         }
 
@@ -171,7 +190,7 @@ namespace Perspex.Controls.Generators
         /// <param name="index">The first index.</param>
         /// <param name="count">The number of elements in the range.</param>
         /// <returns>The containers.</returns>
-        protected IEnumerable<IControl> GetContainerRange(int index, int count)
+        protected IEnumerable<ItemContainer> GetContainerRange(int index, int count)
         {
             return _containers.GetRange(index, count);
         }

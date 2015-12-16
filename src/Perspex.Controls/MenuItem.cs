@@ -20,7 +20,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
-    public class MenuItem : SelectingItemsControl, ISelectable
+    public class MenuItem : HeaderedSelectingItemsControl, ISelectable
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -39,12 +39,6 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly PerspexProperty<object> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<MenuItem>();
-
-        /// <summary>
-        /// Defines the <see cref="Header"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<object> HeaderProperty =
-            HeaderedItemsControl.HeaderProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
@@ -136,7 +130,6 @@ namespace Perspex.Controls
             set { SetValue(CommandProperty, value); }
         }
 
-
         /// <summary>
         /// Gets or sets an <see cref="KeyGesture"/> associated with this control
         /// </summary>
@@ -154,15 +147,6 @@ namespace Perspex.Controls
         {
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the <see cref="MenuItem"/>'s header.
-        /// </summary>
-        public object Header
-        {
-            get { return GetValue(HeaderProperty); }
-            set { SetValue(HeaderProperty, value); }
         }
 
         /// <summary>
@@ -370,14 +354,12 @@ namespace Perspex.Controls
             }
         }
 
-        /// <summary>
-        /// Called when the MenuItem's template has been applied.
-        /// </summary>
-        protected override void OnTemplateApplied(INameScope nameScope)
+        /// <inheritdoc/>
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(nameScope);
+            base.OnTemplateApplied(e);
 
-            _popup = nameScope.Get<Popup>("PART_Popup");
+            _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.DependencyResolver = DependencyResolver.Instance;
             _popup.PopupRootCreated += PopupRootCreated;
             _popup.Opened += PopupOpened;

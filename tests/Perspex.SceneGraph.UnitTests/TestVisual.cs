@@ -20,8 +20,6 @@ namespace Perspex.SceneGraph.UnitTests
 
     public class TestVisual : Visual
     {
-        public new PerspexObject InheritanceParent => base.InheritanceParent;
-
         public IVisual Child
         {
             get
@@ -33,34 +31,34 @@ namespace Perspex.SceneGraph.UnitTests
             {
                 if (Child != null)
                 {
-                    RemoveVisualChild(Child);
+                    VisualChildren.Remove(Child);
                 }
 
                 if (value != null)
                 {
-                    AddVisualChild(value);
+                    VisualChildren.Add(value);
                 }
             }
         }
 
         public void AddChild(Visual v)
         {
-            AddVisualChild(v);
+            VisualChildren.Add(v);
         }
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            AddVisualChildren(v);
+            VisualChildren.AddRange(v);
         }
 
         public void RemoveChild(Visual v)
         {
-            RemoveVisualChild(v);
+            VisualChildren.Remove(v);
         }
 
         public void ClearChildren()
         {
-            ClearVisualChildren();
+            VisualChildren.Clear();
         }
     }
 }

@@ -5,10 +5,11 @@ using System;
 using Perspex.Controls;
 using Perspex.Platform;
 using Perspex.Rendering;
+using Perspex.Styling;
 
 namespace Perspex.Markup.UnitTests
 {
-    public class TestRoot : Decorator, IRenderRoot, INameScope
+    public class TestRoot : Decorator, IRenderRoot, INameScope, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 

@@ -4,9 +4,9 @@
 namespace Perspex.Styling
 {
     /// <summary>
-    /// Defines the style host that provides styles global to the application.
+    /// Denotes the root <see cref="IStyleHost"/> in a tree.
     /// </summary>
-    public interface IGlobalStyles : IStyleRoot
+    public interface IStyleRoot : IStyleHost
     {
     }
 }

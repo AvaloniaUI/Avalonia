@@ -5,6 +5,7 @@ using System;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Rendering;
+using Perspex.Styling;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -71,7 +72,7 @@ namespace Perspex.Controls.UnitTests
             Assert.Null(NameScope.GetNameScope(root.Presenter).Find("foo"));
         }
 
-        private class TestRoot : ContentControl, IRenderRoot, INameScope
+        private class TestRoot : ContentControl, IRenderRoot, INameScope, IStyleRoot
         {
             private readonly NameScope _nameScope = new NameScope();
 

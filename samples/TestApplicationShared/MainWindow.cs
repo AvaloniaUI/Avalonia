@@ -105,7 +105,6 @@ namespace TestApplication
             };
 
             container.Classes.Add(":container");
-
             
             window.Show();
             return window;

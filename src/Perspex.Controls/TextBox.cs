@@ -157,9 +157,9 @@ namespace Perspex.Controls
             set { SetValue(TextWrappingProperty, value); }
         }
 
-        protected override void OnTemplateApplied(INameScope nameScope)
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            _presenter = nameScope.Get<TextPresenter>("PART_TextPresenter");
+            _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
         }
 

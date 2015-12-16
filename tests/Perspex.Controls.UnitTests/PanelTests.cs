@@ -118,23 +118,6 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new ILogical[0], panel.GetLogicalChildren());
         }
 
-        [Fact]
-        public void Should_Be_Able_To_Reparent_Child_Controls()
-        {
-            var target = new Panel();
-            var parent = new TestReparent();
-            var control1 = new Control();
-            var control2 = new Control();
-
-            target.Children.Add(control1);
-            ((IReparentingControl)target).ReparentLogicalChildren(parent, parent.LogicalChildren);
-            target.Children.Add(control2);
-
-            Assert.Equal(new[] { control1, control2 }, parent.LogicalChildren);
-            Assert.Equal(parent, target.Children[0].Parent);
-            Assert.Equal(parent, target.Children[1].Parent);
-        }
-
         private class TestReparent : Panel
         {
             public new IPerspexList<ILogical> LogicalChildren => base.LogicalChildren;

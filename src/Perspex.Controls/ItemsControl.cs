@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,7 +21,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
-    public class ItemsControl : TemplatedControl, IReparentingHost
+    public class ItemsControl : TemplatedControl
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -78,6 +78,12 @@ namespace Perspex.Controls
                 if (_itemContainerGenerator == null)
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
+
+                    if (_itemContainerGenerator != null)
+                    {
+                        _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
+                        _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
+                    }
                 }
 
                 return _itemContainerGenerator;
@@ -118,38 +124,130 @@ namespace Perspex.Controls
         public IItemsPresenter Presenter
         {
             get;
-            set;
+            protected set;
         }
 
-        /// <inheritdoc/>
-        IPerspexList<ILogical> IReparentingHost.LogicalChildren => LogicalChildren;
+        /// <summary>
+        /// Gets the item at the specified index in a collection.
+        /// </summary>
+        /// <param name="items">The collection.</param>
+        /// <param name="index">The index.</param>
+        /// <returns>The index of the item or -1 if the item was not found.</returns>
+        protected static object ElementAt(IEnumerable items, int index)
+        {
+            var typedItems = items?.Cast<object>();
+
+            if (index != -1 && typedItems != null && index < typedItems.Count())
+            {
+                return typedItems.ElementAt(index) ?? null;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         /// <summary>
-        /// Asks the control whether it wants to reparent the logical children of the specified
-        /// control.
+        /// Gets the index of an item in a collection.
         /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>
-        /// True if the control wants to reparent its logical children otherwise false.
-        /// </returns>
-        bool IReparentingHost.WillReparentChildrenOf(IControl control)
+        /// <param name="items">The collection.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>The index of the item or -1 if the item was not found.</returns>
+        protected static int IndexOf(IEnumerable items, object item)
         {
-            return control is IItemsPresenter && control.TemplatedParent == this;
+            if (items != null && item != null)
+            {
+                var list = items as IList;
+
+                if (list != null)
+                {
+                    return list.IndexOf(item);
+                }
+                else
+                {
+                    int index = 0;
+
+                    foreach (var i in items)
+                    {
+                        if (Equals(i, item))
+                        {
+                            return index;
+                        }
+
+                        ++index;
+                    }
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
-        /// <returns>An <see cref="IItemContainerGenerator"/>.</returns>
+        /// <returns>
+        /// An <see cref="IItemContainerGenerator"/> or null.
+        /// </returns>
+        /// <remarks>
+        /// Certain controls such as <see cref="TabControl"/> don't actually create item 
+        /// containers; however they want it to be ItemsControls so that they have an Items 
+        /// property etc. In this case, a derived class can override this method to return null
+        /// in order to disable the creation of item containers.
+        /// </remarks>
         protected virtual IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
         }
 
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied(INameScope nameScope)
+        /// <summary>
+        /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its
+        /// <see cref="ItemContainerGenerator"/>.
+        /// </summary>
+        /// <param name="e">The details of the containers.</param>
+        protected virtual void OnContainersMaterialized(ItemContainerEventArgs e)
         {
-            Presenter = nameScope.Find<IItemsPresenter>("PART_ItemsPresenter");
+            var toAdd = new List<ILogical>();
+
+            foreach (var container in e.Containers)
+            {
+                // If the item is its own container, then it will be added to the logical tree when
+                // it was added to the Items collection.
+                if (container.ContainerControl != container.Item)
+                {
+                    toAdd.Add(container.ContainerControl);
+                }
+            }
+
+            LogicalChildren.AddRange(toAdd);
+        }
+
+        /// <summary>
+        /// Called when containers are dematerialized for the <see cref="ItemsControl"/> by its
+        /// <see cref="ItemContainerGenerator"/>.
+        /// </summary>
+        /// <param name="e">The details of the containers.</param>
+        protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
+        {
+            var toRemove = new List<ILogical>();
+
+            foreach (var container in e.Containers)
+            {
+                // If the item is its own container, then it will be removed from the logical tree
+                // when it is removed from the Items collection.
+                if (container.ContainerControl != container.Item)
+                {
+                    toRemove.Add(container.ContainerControl);
+                }
+            }
+
+            LogicalChildren.RemoveAll(toRemove);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+            Presenter = e.NameScope.Find<IItemsPresenter>("PART_ItemsPresenter");
         }
 
         /// <inheritdoc/>
@@ -176,7 +274,11 @@ namespace Perspex.Controls
                 incc.CollectionChanged -= ItemsCollectionChanged;
             }
 
+            var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
+
+            RemoveControlItemsFromLogicalChildren(oldValue);
+            AddControlItemsToLogicalChildren(newValue);
             SubscribeToItems(newValue);
         }
 
@@ -188,6 +290,17 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddControlItemsToLogicalChildren(e.NewItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveControlItemsFromLogicalChildren(e.OldItems);
+                    break;
+            }
+
             var collection = sender as ICollection;
 
             if (collection.Count == 0)
@@ -198,6 +311,54 @@ namespace Perspex.Controls
             {
                 Classes.Remove(":empty");
             }
+        }
+
+        /// <summary>
+        /// Given a collection of items, adds those that are controls to the logical children.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        private void AddControlItemsToLogicalChildren(IEnumerable items)
+        {
+            var toAdd = new List<ILogical>();
+
+            if (items != null)
+            {
+                foreach (var i in items)
+                {
+                    var control = i as IControl;
+
+                    if (control != null && !LogicalChildren.Contains(control))
+                    {
+                        toAdd.Add(control);
+                    }
+                }
+            }
+
+            LogicalChildren.AddRange(toAdd);
+        }
+
+        /// <summary>
+        /// Given a collection of items, removes those that are controls to from logical children.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        private void RemoveControlItemsFromLogicalChildren(IEnumerable items)
+        {
+            var toRemove = new List<ILogical>();
+
+            if (items != null)
+            {
+                foreach (var i in items)
+                {
+                    var control = i as IControl;
+
+                    if (control != null)
+                    {
+                        toRemove.Add(control);
+                    }
+                }
+            }
+
+            LogicalChildren.RemoveAll(toRemove);
         }
 
         /// <summary>

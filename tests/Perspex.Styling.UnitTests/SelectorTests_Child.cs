@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -83,6 +84,8 @@ namespace Perspex.Styling.UnitTests
 
             public string Name { get; set; }
 
+            public bool IsAttachedToLogicalTree { get; }
+
             public IPerspexReadOnlyList<ILogical> LogicalChildren { get; set; }
 
             public ILogical LogicalParent { get; set; }
@@ -90,6 +93,8 @@ namespace Perspex.Styling.UnitTests
             public Type StyleKey { get; }
 
             public ITemplatedControl TemplatedParent { get; }
+
+            IObservable<Unit> IStyleable.StyleDetach { get; }
 
             public IPropertyBag InheritanceParent
             {

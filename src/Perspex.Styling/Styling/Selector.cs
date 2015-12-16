@@ -141,7 +141,7 @@ namespace Perspex.Styling
 
             if (inputs.Count > 0)
             {
-                return new SelectorMatch(new StyleActivator(inputs));
+                return new SelectorMatch(StyleActivator.And(inputs));
             }
             else
             {

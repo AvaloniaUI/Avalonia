@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive;
 using Moq;
 using OmniXaml;
 using OmniXaml.ObjectAssembler.Commands;
@@ -95,6 +96,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             {
                 get { throw new NotImplementedException(); }
             }
+
+            IObservable<Unit> IStyleable.StyleDetach { get; }
         }
 
         private class AttachedOwner

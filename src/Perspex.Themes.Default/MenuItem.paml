@@ -24,7 +24,8 @@
                   IsVisible="False"
                   Margin="3"
                   VerticalAlignment="Center"/>
-            <ContentPresenter Content="{TemplateBinding Header}"
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Content="{TemplateBinding Header}"
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
                               Grid.Column="2">
@@ -78,7 +79,8 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Panel>
-            <ContentPresenter Content="{TemplateBinding Header}"
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Content="{TemplateBinding Header}"
                               Margin="{TemplateBinding Padding}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">

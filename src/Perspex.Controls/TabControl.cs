@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Animation;
-using Perspex.Controls.Presenters;
+using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 
@@ -11,22 +11,25 @@ namespace Perspex.Controls
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
-    public class TabControl : SelectingItemsControl, IReparentingHost
+    public class TabControl : SelectingItemsControl
     {
-        /// <summary>
-        /// Defines the <see cref="SelectedTab"/> property.
-        /// </summary>
-        public static readonly PerspexProperty<TabItem> SelectedTabProperty =
-            PerspexProperty.Register<TabControl, TabItem>("SelectedTab");
-
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly PerspexProperty<IPageTransition> TransitionProperty =
-            Carousel.TransitionProperty.AddOwner<TabControl>();
+            Perspex.Controls.Carousel.TransitionProperty.AddOwner<TabControl>();
 
-        private static readonly IMemberSelector s_contentSelector =
+        /// <summary>
+        /// Defines an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
+        /// </summary>
+        public static readonly IMemberSelector ContentSelector =
             new FuncMemberSelector<object, object>(SelectContent);
+
+        /// <summary>
+        /// Defines an <see cref="IMemberSelector"/> that selects the header of a <see cref="TabItem"/>.
+        /// </summary>
+        public static readonly IMemberSelector HeaderSelector =
+            new FuncMemberSelector<object, object>(SelectHeader);
 
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -41,22 +44,25 @@ namespace Perspex.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
-            SelectedItemProperty.Changed.AddClassHandler<TabControl>(x => x.SelectedItemChanged);
             AffectsMeasure(TabStripPlacementProperty);
         }
 
         /// <summary>
-        /// Gets an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
+        /// Gets the pages portion of the <see cref="TabControl"/>'s template.
         /// </summary>
-        public IMemberSelector ContentSelector => s_contentSelector;
+        public IControl Pages
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
-        /// Gets the <see cref="SelectingItemsControl.SelectedItem"/> as a <see cref="TabItem"/>.
+        /// Gets the tab strip portion of the <see cref="TabControl"/>'s template.
         /// </summary>
-        public TabItem SelectedTab
+        public IControl TabStrip
         {
-            get { return GetValue(SelectedTabProperty); }
-            private set { SetValue(SelectedTabProperty, value); }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -77,17 +83,21 @@ namespace Perspex.Controls
             set { SetValue(TabStripPlacementProperty, value); }
         }
 
-        /// <summary>
-        /// Asks the control whether it wants to reparent the logical children of the specified
-        /// control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>
-        /// True if the control wants to reparent its logical children otherwise false.
-        /// </returns>
-        bool IReparentingHost.WillReparentChildrenOf(IControl control)
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return control is CarouselPresenter;
+            // TabControl doesn't actually create items - instead its TabStrip and Carousel
+            // children create the items. However we want it to be a SelectingItemsControl
+            // so that it has the Items/SelectedItem etc properties. In this case, we can
+            // return a null ItemContainerGenerator to disable the creation of item containers.
+            return null;
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+
+            TabStrip = e.NameScope.Find<IControl>("PART_TabStrip");
+            Pages = e.NameScope.Find<IControl>("PART_Content");
         }
 
         /// <summary>
@@ -110,14 +120,31 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="SelectingItemsControl.SelectedIndex"/> property changes.
+        /// Selects the header of a tab item.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
+        /// <param name="o">The tab item.</param>
+        /// <returns>The content.</returns>
+        private static object SelectHeader(object o)
         {
-            var item = e.NewValue as IContentControl;
-            var content = item?.Content ?? item;
-            SelectedTab = item as TabItem;
+            var headered = o as IHeadered;
+            var control = o as IControl;
+
+            if (headered != null)
+            {
+                return headered.Header ?? string.Empty;
+            }
+            else if (control != null)
+            {
+                // Non-headered control items should result in TabStripItems with empty content.
+                // If a TabStrip is created with non IHeadered controls as its items, don't try to
+                // display the control in the TabStripItem: the content portion will also try to 
+                // display this control, resulting in dual-parentage breakage.
+                return string.Empty;
+            }
+            else
+            {
+                return o;
+            }
         }
     }
 }

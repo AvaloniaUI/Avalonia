@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using Perspex.VisualTree;
 
 namespace Perspex.Styling
 {
@@ -11,39 +9,27 @@ namespace Perspex.Styling
     {
         public void ApplyStyles(IStyleable control)
         {
-            IVisual visual = control as IVisual;
-            IStyleHost styleContainer = visual
-                .GetSelfAndVisualAncestors()
-                .OfType<IStyleHost>()
-                .FirstOrDefault();
-            IGlobalStyles global = PerspexLocator.Current.GetService<IGlobalStyles>();
+            var styleHost = control as IStyleHost;
 
-            global?.Styles.Attach(control, null);
-
-            if (styleContainer != null)
+            if (styleHost != null)
             {
-                ApplyStyles(control, styleContainer);
+                ApplyStyles(control, styleHost);
             }
         }
 
-        private void ApplyStyles(IStyleable control, IStyleHost container)
+        private void ApplyStyles(IStyleable control, IStyleHost styleHost)
         {
             Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(container != null);
+            Contract.Requires<ArgumentNullException>(styleHost != null);
 
-            var parentContainer = container.StylingParent;
+            var parentContainer = styleHost.StylingParent;
 
             if (parentContainer != null)
             {
                 ApplyStyles(control, parentContainer);
             }
 
-            container.Styles.Attach(control, container);
-        }
-
-        private IStyleHost GetParentContainer(IStyleHost container)
-        {
-            return container.GetVisualAncestors().OfType<IStyleHost>().FirstOrDefault();
+            styleHost.Styles.Attach(control, styleHost);
         }
     }
 }

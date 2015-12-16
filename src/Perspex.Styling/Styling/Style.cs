@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Metadata;
 
@@ -13,6 +14,8 @@ namespace Perspex.Styling
     /// </summary>
     public class Style : IStyle
     {
+        private static readonly IObservable<bool> True = Observable.Never<bool>().StartWith(true);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
@@ -56,17 +59,8 @@ namespace Perspex.Styling
 
                 if (match.ImmediateResult != false)
                 {
-                    var visual = control as IVisual;
-                    var activator = match.ObservableResult ?? 
-                        Observable.Never<bool>().StartWith(true);
-
-                    if (visual != null)
-                    {
-                        var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                            x => visual.DetachedFromVisualTree += x,
-                            x => visual.DetachedFromVisualTree -= x);
-                        activator = activator.TakeUntil(detached);
-                    }
+                    var activator = (match.ObservableResult ?? True)
+                        .TakeUntil(control.StyleDetach);
 
                     foreach (var setter in Setters)
                     {

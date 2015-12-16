@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -150,7 +151,6 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         private void CreatePanel()
         {
-            ClearVisualChildren();
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
@@ -161,16 +161,10 @@ namespace Perspex.Controls.Presenters
                     KeyboardNavigationMode.Contained);
             }
 
-            AddVisualChild(Panel);
-
-            var logicalHost = this.FindReparentingHost();
-
-            if (logicalHost != null)
-            {
-                ((IReparentingControl)Panel).ReparentLogicalChildren(
-                    logicalHost,
-                    logicalHost.LogicalChildren);
-            }
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
+            LogicalChildren.Add(Panel);
+            VisualChildren.Add(Panel);
 
             KeyboardNavigation.SetTabNavigation(
                 (InputElement)Panel,
@@ -187,7 +181,7 @@ namespace Perspex.Controls.Presenters
         {
             if (items != null)
             {
-                Panel.Children.AddRange(ItemContainerGenerator.Materialize(0, Items, MemberSelector));
+                AddContainers(ItemContainerGenerator.Materialize(0, Items, MemberSelector));
 
                 INotifyCollectionChanged incc = items as INotifyCollectionChanged;
 
@@ -238,30 +232,28 @@ namespace Perspex.Controls.Presenters
             if (_createdPanel)
             {
                 var generator = ItemContainerGenerator;
-                IEnumerable<IControl> containers;
 
                 // TODO: Handle Move and Replace etc.
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
-                        Panel.Children.AddRange(containers);
+                        AddContainers(generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector));
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
-                        Panel.Children.RemoveAll(containers);
+                        RemoveContainers(generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
                         break;
 
                     case NotifyCollectionChangedAction.Replace:
-                        generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count);
-                        containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+                        RemoveContainers(generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count));
+                        var containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
+                        AddContainers(containers);
 
                         var i = e.NewStartingIndex;
 
                         foreach (var container in containers)
                         {
-                            Panel.Children[i++] = container;
+                            Panel.Children[i++] = container.ContainerControl;
                         }
 
                         break;
@@ -269,12 +261,34 @@ namespace Perspex.Controls.Presenters
                     case NotifyCollectionChangedAction.Move:
                         // TODO: Implement Move in a more efficient manner.
                     case NotifyCollectionChangedAction.Reset:
-                        Panel.Children.RemoveAll(generator.Clear());
-                        Panel.Children.AddRange(generator.Materialize(0, Items, MemberSelector));
+                        RemoveContainers(generator.Clear());
+                        AddContainers(generator.Materialize(0, Items, MemberSelector));
                         break;
                 }
 
                 InvalidateMeasure();
+            }
+        }
+
+        private void AddContainers(IEnumerable<ItemContainer> items)
+        {
+            foreach (var i in items)
+            {
+                if (i.ContainerControl != null)
+                {
+                    this.Panel.Children.Add(i.ContainerControl);
+                }
+            }
+        }
+
+        private void RemoveContainers(IEnumerable<ItemContainer> items)
+        {
+            foreach (var i in items)
+            {
+                if (i.ContainerControl != null)
+                {
+                    this.Panel.Children.Remove(i.ContainerControl);
+                }
             }
         }
     }

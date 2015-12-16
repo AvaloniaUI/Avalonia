@@ -82,11 +82,6 @@ namespace Perspex
         private string _name;
 
         /// <summary>
-        /// Holds the children of the visual.
-        /// </summary>
-        private readonly PerspexList<IVisual> _visualChildren;
-
-        /// <summary>
         /// The visual's bounds relative to its parent.
         /// </summary>
         private Rect _bounds;
@@ -128,9 +123,10 @@ namespace Perspex
                 new PropertyEnricher("Id", GetHashCode()),
             });
 
-            _visualChildren = new PerspexList<IVisual>();
-            _visualChildren.ResetBehavior = ResetBehavior.Remove;
-            _visualChildren.CollectionChanged += VisualChildrenChanged;
+            var visualChildren = new PerspexList<IVisual>();
+            visualChildren.ResetBehavior = ResetBehavior.Remove;
+            visualChildren.CollectionChanged += VisualChildrenChanged;
+            VisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -250,6 +246,15 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the control's visual children.
+        /// </summary>
+        protected IPerspexList<IVisual> VisualChildren
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
         bool IVisual.IsAttachedToVisualTree => _isAttachedToVisualTree;
@@ -257,7 +262,7 @@ namespace Perspex
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
-        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => _visualChildren;
+        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => VisualChildren;
 
         /// <summary>
         /// Gets the scene graph node's parent node.
@@ -334,61 +339,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Adds a visual child to the control.
-        /// </summary>
-        /// <param name="visual">The child to add.</param>
-        protected void AddVisualChild(IVisual visual)
-        {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
-            _visualChildren.Add(visual);
-        }
-
-        /// <summary>
-        /// Adds visual children to the control.
-        /// </summary>
-        /// <param name="visuals">The children to add.</param>
-        protected void AddVisualChildren(IEnumerable<IVisual> visuals)
-        {
-            Contract.Requires<ArgumentNullException>(visuals != null);
-
-            _visualChildren.AddRange(visuals);
-        }
-
-        /// <summary>
-        /// Removes all visual children from the control.
-        /// </summary>
-        protected void ClearVisualChildren()
-        {
-            _visualChildren.Clear();
-        }
-
-        /// <summary>
-        /// Removes a visual child from the control;
-        /// </summary>
-        /// <param name="visual">The child to remove.</param>
-        protected void RemoveVisualChild(IVisual visual)
-        {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
-            _visualChildren.Remove(visual);
-        }
-
-        /// <summary>
-        /// Removes a visual children from the control;
-        /// </summary>
-        /// <param name="visuals">The children to remove.</param>
-        protected void RemoveVisualChildren(IEnumerable<IVisual> visuals)
-        {
-            Contract.Requires<ArgumentNullException>(visuals != null);
-
-            foreach (var v in visuals)
-            {
-                _visualChildren.Remove(v);
-            }
-        }
-
-        /// <summary>
         /// Called when the control is added to a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -431,20 +381,6 @@ namespace Perspex
         private static void AffectsRenderInvalidate(PerspexPropertyChangedEventArgs e)
         {
             (e.Sender as Visual)?.InvalidateVisual();
-        }
-
-        /// <summary>
-        /// Gets the event args for an <see cref="AttachedToVisualTree"/> or
-        /// <see cref="DetachedFromVisualTree"/> event.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="VisualTreeAttachmentEventArgs"/> if the visual currently has a root;
-        /// otherwise null.
-        /// </returns>
-        private VisualTreeAttachmentEventArgs GetAttachmentEventArgs()
-        {
-            var root = this.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-            return root != null ? new VisualTreeAttachmentEventArgs(root) : null;
         }
 
         /// <summary>
@@ -544,38 +480,28 @@ namespace Perspex
             }
             
             var old = _visualParent;
+            _visualParent = value;
 
             if (_isAttachedToVisualTree)
             {
-                var oldArgs = GetAttachmentEventArgs();
-
-                _visualParent = value;
-
-                if (oldArgs != null)
-                {
-                    NotifyDetachedFromVisualTree(oldArgs);
-                }
-            }
-            else
-            {
-                _visualParent = value;
+                var root = (this as IRenderRoot) ?? 
+                    old.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var e = new VisualTreeAttachmentEventArgs(root);
+                NotifyDetachedFromVisualTree(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var newArgs = GetAttachmentEventArgs();
-
-                if (newArgs != null)
-                {
-                    NotifyAttachedToVisualTree(newArgs);
-                }
+                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var e = new VisualTreeAttachmentEventArgs(root);
+                NotifyAttachedToVisualTree(e);
             }
 
             RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
         }
 
         /// <summary>
-        /// Called when the <see cref="_visualChildren"/> collection changes.
+        /// Called when the <see cref="VisualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
@@ -586,7 +512,6 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual v in e.NewItems)
                     {
-                        v.InheritanceParent = this;
                         v.SetVisualParent(this);
                     }
 
@@ -595,7 +520,6 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Remove:
                     foreach (Visual v in e.OldItems)
                     {
-                        v.InheritanceParent = null;
                         v.SetVisualParent(null);
                     }
 
@@ -616,9 +540,9 @@ namespace Perspex
 
             OnAttachedToVisualTree(e);
 
-            if (_visualChildren != null)
+            if (VisualChildren != null)
             {
-                foreach (Visual child in _visualChildren.OfType<Visual>())
+                foreach (Visual child in VisualChildren.OfType<Visual>())
                 {
                     child.NotifyAttachedToVisualTree(e);
                 }
@@ -637,9 +561,9 @@ namespace Perspex
             _isAttachedToVisualTree = false;
             OnDetachedFromVisualTree(e);
 
-            if (_visualChildren != null)
+            if (VisualChildren != null)
             {
-                foreach (Visual child in _visualChildren.OfType<Visual>())
+                foreach (Visual child in VisualChildren.OfType<Visual>())
                 {
                     child.NotifyDetachedFromVisualTree(e);
                 }

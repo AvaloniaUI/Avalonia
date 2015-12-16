@@ -188,7 +188,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Style_Should_Detach_When_Removed_From_Visual_Tree()
+        public void Style_Should_Detach_When_Removed_From_Logical_Tree()
         {
             Border border;
 

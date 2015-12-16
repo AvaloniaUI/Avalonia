@@ -19,8 +19,8 @@
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ScrollBar.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ScrollViewer.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabControl.paml"/>
-  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabItem.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabStrip.paml"/>
+  <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TabStripItem.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.TextBox.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToggleButton.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.ToolTip.paml"/>

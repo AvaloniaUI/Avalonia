@@ -42,7 +42,7 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single();
+            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
             var header = (TextBlock)container.Header;
             Assert.Equal("Root", header.Text);
         }

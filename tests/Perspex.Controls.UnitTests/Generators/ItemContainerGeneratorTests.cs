@@ -16,7 +16,11 @@ namespace Perspex.Controls.UnitTests.Generators
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
             var containers = target.Materialize(0, items, null);
-            var result = containers.OfType<TextBlock>().Select(x => x.Text).ToList();
+            var result = containers
+                .Select(x => x.ContainerControl)
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
 
             Assert.Equal(items, result);
         }
@@ -29,9 +33,9 @@ namespace Perspex.Controls.UnitTests.Generators
             var target = new ItemContainerGenerator(owner);
             var containers = target.Materialize(0, items, null).ToList();
 
-            Assert.Equal(containers[0], target.ContainerFromIndex(0));
-            Assert.Equal(containers[1], target.ContainerFromIndex(1));
-            Assert.Equal(containers[2], target.ContainerFromIndex(2));
+            Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
+            Assert.Equal(containers[1].ContainerControl, target.ContainerFromIndex(1));
+            Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(2));
         }
 
         [Fact]
@@ -42,9 +46,9 @@ namespace Perspex.Controls.UnitTests.Generators
             var target = new ItemContainerGenerator(owner);
             var containers = target.Materialize(0, items, null).ToList();
 
-            Assert.Equal(0, target.IndexFromContainer(containers[0]));
-            Assert.Equal(1, target.IndexFromContainer(containers[1]));
-            Assert.Equal(2, target.IndexFromContainer(containers[2]));
+            Assert.Equal(0, target.IndexFromContainer(containers[0].ContainerControl));
+            Assert.Equal(1, target.IndexFromContainer(containers[1].ContainerControl));
+            Assert.Equal(2, target.IndexFromContainer(containers[2].ContainerControl));
         }
 
         [Fact]
@@ -57,9 +61,9 @@ namespace Perspex.Controls.UnitTests.Generators
 
             target.Dematerialize(1, 1);
 
-            Assert.Equal(containers[0], target.ContainerFromIndex(0));
+            Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
             Assert.Equal(null, target.ContainerFromIndex(1));
-            Assert.Equal(containers[2], target.ContainerFromIndex(2));
+            Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(2));
         }
 
         [Fact]
@@ -85,8 +89,8 @@ namespace Perspex.Controls.UnitTests.Generators
 
             var removed = target.RemoveRange(1, 1).Single();
 
-            Assert.Equal(containers[0], target.ContainerFromIndex(0));
-            Assert.Equal(containers[2], target.ContainerFromIndex(1));
+            Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
+            Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(1));
             Assert.Equal(containers[1], removed);
         }
     }

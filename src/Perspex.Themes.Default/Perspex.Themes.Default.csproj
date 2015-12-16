@@ -159,7 +159,7 @@
     <EmbeddedResource Include="TabControl.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TabItem.paml">
+    <EmbeddedResource Include="TabStripItem.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TabStrip.paml">

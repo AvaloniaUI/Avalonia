@@ -49,6 +49,7 @@
     <Compile Include="Styling\ISetter.cs" />
     <Compile Include="Styling\IStyle.cs" />
     <Compile Include="Styling\IStyleable.cs" />
+    <Compile Include="Styling\IStyleRoot.cs" />
     <Compile Include="Styling\IStyleHost.cs" />
     <Compile Include="Styling\IStyler.cs" />
     <Compile Include="Styling\ITemplatedControl.cs" />

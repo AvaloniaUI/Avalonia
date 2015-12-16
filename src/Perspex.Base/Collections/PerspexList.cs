@@ -52,7 +52,7 @@ namespace Perspex.Collections
     /// </item>
     /// </list>
     /// </remarks>
-    public class PerspexList<T> : IPerspexList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged
+    public class PerspexList<T> : IPerspexList<T>, IList
     {
         private List<T> _inner;
 
@@ -150,7 +150,8 @@ namespace Perspex.Collections
                     var e = new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Replace,
                         value,
-                        old);
+                        old,
+                        index);
                     CollectionChanged(this, e);
                 }
             }

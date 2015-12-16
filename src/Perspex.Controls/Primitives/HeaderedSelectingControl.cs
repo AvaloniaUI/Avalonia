@@ -9,22 +9,22 @@ using Perspex.Controls.Presenters;
 namespace Perspex.Controls.Primitives
 {
     /// <summary>
-    /// Represents an <see cref="ItemsControl"/> with a related header.
+    /// Represents a <see cref="SelectingItemsControl"/> with a related header.
     /// </summary>
-    public class HeaderedItemsControl : ItemsControl
+    public class HeaderedSelectingItemsControl : SelectingItemsControl
     {
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
         public static readonly PerspexProperty<object> HeaderProperty =
-            HeaderedContentControl.HeaderProperty.AddOwner<HeaderedItemsControl>();
+            HeaderedContentControl.HeaderProperty.AddOwner<HeaderedSelectingItemsControl>();
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentControl"/> class.
         /// </summary>
-        static HeaderedItemsControl()
+        static HeaderedSelectingItemsControl()
         {
-            ContentControlMixin.Attach<HeaderedItemsControl>(
+            ContentControlMixin.Attach<HeaderedSelectingItemsControl>(
                 HeaderProperty,
                 x => x.LogicalChildren,
                 "PART_HeaderPresenter");

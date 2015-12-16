@@ -120,13 +120,13 @@ namespace Perspex.Controls.Generators
             }
         }
 
-        public override IEnumerable<IControl> Clear()
+        public override IEnumerable<ItemContainer> Clear()
         {
             ClearIndex();
             return base.Clear();
         }
 
-        public override IEnumerable<IControl> Dematerialize(int startingIndex, int count)
+        public override IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
         {
             RemoveFromIndex(GetContainerRange(startingIndex, count));
             return base.Dematerialize(startingIndex, count);
@@ -145,7 +145,7 @@ namespace Perspex.Controls.Generators
             }
         }
 
-        private void RemoveFromIndex(IEnumerable<IControl> containers)
+        private void RemoveFromIndex(IEnumerable<ItemContainer> containers)
         {
             if (RootGenerator != null)
             {
@@ -155,8 +155,8 @@ namespace Perspex.Controls.Generators
             {
                 foreach (var container in containers)
                 {
-                    var item = _containerToItem[container];
-                    _containerToItem.Remove(container);
+                    var item = _containerToItem[container.ContainerControl];
+                    _containerToItem.Remove(container.ContainerControl);
                     _itemToContainer.Remove(item);
                 }
             }

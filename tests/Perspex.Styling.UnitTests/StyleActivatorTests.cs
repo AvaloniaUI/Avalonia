@@ -17,7 +17,7 @@ namespace Perspex.Styling.UnitTests
         {
             var scheduler = new TestScheduler();
             var source = scheduler.CreateColdObservable<bool>();
-            var target = new StyleActivator(new[] { source }, ActivatorMode.And);
+            var target = StyleActivator.And(new[] { source });
 
             Assert.Equal(0, source.Subscriptions.Count);
             target.Subscribe(_ => { });
@@ -29,7 +29,7 @@ namespace Perspex.Styling.UnitTests
         {
             var scheduler = new TestScheduler();
             var source = scheduler.CreateColdObservable<bool>();
-            var target = new StyleActivator(new[] { source }, ActivatorMode.And);
+            var target = StyleActivator.And(new[] { source });
 
             var dispose = target.Subscribe(_ => { });
             Assert.Equal(1, source.Subscriptions.Count);
@@ -44,7 +44,7 @@ namespace Perspex.Styling.UnitTests
         public void Activator_And_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new StyleActivator(inputs, ActivatorMode.And);
+            var target = StyleActivator.And(inputs);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -68,7 +68,7 @@ namespace Perspex.Styling.UnitTests
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new StyleActivator(inputs, ActivatorMode.And);
+            var target = StyleActivator.And(inputs);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -85,7 +85,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Activator_And_Should_Not_Unsubscribe_All_When_Input_Completes_On_True()
+        public void Activator_And_Should_Complete_When_Input_Completes_On_False()
         {
             var inputs = new[]
             {
@@ -93,24 +93,22 @@ namespace Perspex.Styling.UnitTests
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new StyleActivator(inputs, ActivatorMode.And);
+            var target = StyleActivator.And(inputs);
             var result = new TestObserver<bool>();
+            var completed = false;
 
-            target.Subscribe(result);
-            Assert.False(result.GetValue());
-            inputs[0].OnNext(true);
+            target.Subscribe(_ => { }, () => completed = true);
+            inputs[0].OnNext(false);
             inputs[0].OnCompleted();
 
-            Assert.Equal(0, inputs[0].SubscriberCount);
-            Assert.Equal(1, inputs[1].SubscriberCount);
-            Assert.Equal(1, inputs[2].SubscriberCount);
+            Assert.True(completed);
         }
 
         [Fact]
         public void Activator_Or_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
-            var target = new StyleActivator(inputs, ActivatorMode.Or);
+            var target = StyleActivator.Or(inputs);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -134,7 +132,7 @@ namespace Perspex.Styling.UnitTests
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new StyleActivator(inputs, ActivatorMode.Or);
+            var target = StyleActivator.Or(inputs);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -158,7 +156,7 @@ namespace Perspex.Styling.UnitTests
                 new TestSubject<bool>(false),
                 new TestSubject<bool>(true),
             };
-            var target = new StyleActivator(inputs, ActivatorMode.Or);
+            var target = StyleActivator.Or(inputs);
             var result = new TestObserver<bool>();
 
             target.Subscribe(result);
@@ -180,7 +178,7 @@ namespace Perspex.Styling.UnitTests
                 Observable.Return(false),
             };
 
-            var target = new StyleActivator(inputs, ActivatorMode.Or);
+            var target = StyleActivator.Or(inputs);
             var completed = false;
 
             target.Subscribe(_ => { }, () => completed = true);

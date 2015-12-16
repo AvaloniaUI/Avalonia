@@ -246,8 +246,6 @@ namespace Perspex.Markup.Xaml.Data
 
             var update = target.GetObservable(Control.TemplatedParentProperty)
                 .Skip(1)
-                .Where(x => x != null)
-                .Take(1)
                 .Select(_ => Unit.Default);
 
             var result = new ExpressionObserver(

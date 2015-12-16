@@ -24,7 +24,7 @@ namespace Perspex.Controls
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
-    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable
+    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IStyleRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -202,6 +202,11 @@ namespace Perspex.Controls
         {
             get { return GetValue(AccessText.ShowAccessKeyProperty); }
             set { SetValue(AccessText.ShowAccessKeyProperty, value); }
+        }
+
+        IStyleHost IStyleHost.StylingParent
+        {
+            get { return PerspexLocator.Current.GetService<IGlobalStyles>(); }
         }
 
         /// <summary>

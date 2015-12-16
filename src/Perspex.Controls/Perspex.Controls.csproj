@@ -44,23 +44,27 @@
     </Compile>
     <Compile Include="Classes.cs" />
     <Compile Include="DockPanel.cs" />
+    <Compile Include="Generators\ItemContainer.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="INameScope.cs" />
+    <Compile Include="Mixins\ContentControlMixin.cs" />
     <Compile Include="NameScope.cs" />
     <Compile Include="NameScopeEventArgs.cs" />
     <Compile Include="NameScopeExtensions.cs" />
     <Compile Include="Platform\ITopLevelRenderer.cs" />
     <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
+    <Compile Include="Primitives\HeaderedSelectingControl.cs" />
+    <Compile Include="Primitives\TabStripItem.cs" />
+    <Compile Include="Primitives\TemplateAppliedEventArgs.cs" />
     <Compile Include="SelectionMode.cs" />
     <Compile Include="Separator.cs" />
     <Compile Include="SystemDialog.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
-    <Compile Include="Generators\ItemContainers.cs" />
+    <Compile Include="Generators\ItemContainerEventArgs.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="IControl.cs" />
     <Compile Include="IPanel.cs" />
-    <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
@@ -72,7 +76,6 @@
     <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="DropDown.cs" />
-    <Compile Include="IReparentingControl.cs" />
     <Compile Include="Carousel.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
@@ -150,6 +153,7 @@
     <Compile Include="TopLevel.cs" />
     <Compile Include="Primitives\PopupRoot.cs" />
     <Compile Include="Utils\UndoRedoHelper.cs" />
+    <Compile Include="LogicalTreeAttachmentEventArgs.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />
