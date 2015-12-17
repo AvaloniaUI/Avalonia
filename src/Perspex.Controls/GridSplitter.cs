@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Perspex.Collections;
 using Perspex.Controls.Primitives;
@@ -11,8 +13,11 @@ using Perspex.VisualTree;
 namespace Perspex.Controls
 {
     /// <summary>
-    /// Unlike WPF GridSplitter, Perspex GridSplitter has only one Behavior, GridResizeBehavior.PreviousAndNext
+    /// Represents the control that redistributes space between columns or rows of a Grid control.
     /// </summary>
+    /// <remarks>
+    /// Unlike WPF GridSplitter, Perspex GridSplitter has only one Behavior, GridResizeBehavior.PreviousAndNext.
+    /// </remarks>
     public class GridSplitter : Thumb
     {
         /// <summary>
@@ -23,30 +28,78 @@ namespace Perspex.Controls
 
         protected Grid _grid;
 
-        private IGridColumnsResizer _resizer;
+        private DefinitionBase _prevDefinition;
+
+        private DefinitionBase _nextDefinition;
+
+        private bool _isResizingColumns;
+
+        private List<DefinitionBase> _definitions;
 
         /// <summary>
-        /// Gets or sets the orientation of the GridsSlitter, if null, it's inferred from column/row defenition(should be auto).
+        /// Gets or sets the orientation of the GridsSlitter.
         /// </summary>
-        public Orientation? Orientation { get { return GetValue(OrientationProperty); } set { SetValue(OrientationProperty, value); } }
-
-
+        /// <remarks>
+        /// if null, it's inferred from column/row definition (should be auto).
+        /// </remarks>
+        public Orientation? Orientation {
+            get
+            {
+                return GetValue(OrientationProperty);
+            }
+            set
+            {
+                SetValue(OrientationProperty, value);
+            }
+        }
+        
         static GridSplitter()
         {
             PseudoClass(OrientationProperty, o => o == Perspex.Controls.Orientation.Vertical, ":vertical");
             PseudoClass(OrientationProperty, o => o == Perspex.Controls.Orientation.Horizontal, ":horizontal");
         }
 
+        private void GetDeltaConstraints(out double min, out double max)
+        {
+            double prevDefinitionLen = GetActualLength(_prevDefinition);
+            double prevDefinitionMin = GetMinLength(_prevDefinition);
+            double prevDefinitionMax = GetMaxLength(_prevDefinition);
+
+            double nextDefinitionLen = GetActualLength(_nextDefinition);
+            double nextDefinitionMin = GetMinLength(_nextDefinition);
+            double nextDefinitionMax = GetMaxLength(_nextDefinition);
+            // Determine the minimum and maximum the columns can be resized
+            min = -Math.Min(prevDefinitionLen - prevDefinitionMin, nextDefinitionMax - nextDefinitionLen);
+            max = Math.Min(prevDefinitionMax - prevDefinitionLen, nextDefinitionLen - nextDefinitionMin);
+        }
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
-            _resizer.DragDelta(e);
+            var delta = Orientation.Value == Perspex.Controls.Orientation.Vertical ? e.Vector.X : e.Vector.Y;
+            double max;
+            double min;
+            GetDeltaConstraints(out min, out max);
+            delta = Math.Min(Math.Max(delta, min), max);
+            foreach (var definition in _definitions)
+            {
+                if (definition == _prevDefinition)
+                {
+                    SetLengthInStars(_prevDefinition, GetActualLength(_prevDefinition) + delta);
+                }
+                else if (definition == _nextDefinition)
+                {
+                    SetLengthInStars(_nextDefinition, GetActualLength(_nextDefinition) - delta);
+                }
+                else if (IsStar(definition))
+                {
+                    SetLengthInStars(definition, GetActualLength(definition)); // same size but in stars.
+                }
+            }
         }
 
         /// <summary>
-        /// If orientation is not set, method automatically calculates orientation based column/row auto size
+        /// If orientation is not set, method automatically calculates orientation based column/row auto size.
         /// </summary>
-        /// <returns></returns>
         private void AutoSetOrientation()
         {
             if (Orientation.HasValue)
@@ -66,176 +119,65 @@ namespace Perspex.Controls
             throw new InvalidOperationException("GridSpliter Should have Orientation, width or height set.");
         }
 
+        private double GetActualLength(DefinitionBase definition)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            return columnDefinition?.ActualWidth ?? ((RowDefinition)definition).ActualHeight;
+        }
+
+        private double GetMinLength(DefinitionBase definition)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            return columnDefinition?.MinWidth ?? ((RowDefinition)definition).MinHeight;
+        }
+
+        private double GetMaxLength(DefinitionBase definition)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            return columnDefinition?.MaxWidth ?? ((RowDefinition)definition).MaxHeight;
+        }
+
+        private bool IsStar(DefinitionBase definition)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            return columnDefinition?.Width.IsStar ?? ((RowDefinition)definition).Height.IsStar;
+        }
+
+        private void SetLengthInStars(DefinitionBase definition, double value)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            if (columnDefinition != null)
+            {
+                columnDefinition.Width = new GridLength(value, GridUnitType.Star);
+            }
+            else
+            {
+                ((RowDefinition)definition).Height = new GridLength(value, GridUnitType.Star);
+            }
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            base.OnAttachedToVisualTree(e);
             _grid = this.GetVisualParent<Grid>();
             AutoSetOrientation();
-            switch (Orientation)
+            if (Orientation.Value == Perspex.Controls.Orientation.Vertical)
             {
-                case Perspex.Controls.Orientation.Vertical:
-                    _resizer = new VerticalColumnsResizer(_grid, GetValue(Grid.ColumnProperty));
-                    break;
-                case Perspex.Controls.Orientation.Horizontal:
-                    _resizer = new HorizontalGridColumnsResizer(_grid, GetValue(Grid.RowProperty));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Cursor = new Cursor(StandardCursorType.SizeWestEast);
+                var col = GetValue(Grid.ColumnProperty);
+                _definitions = _grid.ColumnDefinitions.Cast<DefinitionBase>().ToList();
+                _prevDefinition = _definitions[col - 1];
+                _nextDefinition = _definitions[col + 1];
             }
-            base.OnAttachedToVisualTree(e);
-        }
-    }
-
-    internal interface IGridColumnsResizer
-    {
-        void DragDelta(VectorEventArgs e);
-    }
-
-    internal abstract class GridColumnsResizer<T> : IGridColumnsResizer
-        where T : DefinitionBase
-    {
-        protected PerspexList<T> _definitions;
-
-        protected T _nextDefinition;
-
-        protected T _prevDefinition;
-
-        public abstract Cursor Cursor { get; }
-
-        public void DragDelta(VectorEventArgs e)
-        {
-            var delta = GetDelta(e);
-
-            double max;
-            double min;
-            GetDeltaConstraints(out min, out max);
-            delta = Math.Min(Math.Max(delta, min), max);
-
-            foreach (var definition in _definitions)
+            else
             {
-                if (definition == _prevDefinition)
-                {
-                    SetLengthInStars(_prevDefinition, GetActualLength(_prevDefinition) + delta);
-                }
-                else if (definition == _nextDefinition)
-                {
-                    SetLengthInStars(_nextDefinition, GetActualLength(_nextDefinition) - delta);
-                }
-                else if (IsStar(definition))
-                {
-                    SetLengthInStars(definition, GetActualLength(definition)); // same size but in stars
-                }
+                Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
+                var row = GetValue(Grid.RowProperty);
+                _definitions = _grid.RowDefinitions.Cast<DefinitionBase>().ToList();
+                _prevDefinition = _definitions[row - 1];
+                _nextDefinition = _definitions[row + 1];
             }
-        }
-
-        protected abstract double GetActualLength(T definition);
-
-        protected abstract double GetMinLength(T definition);
-
-        protected abstract double GetMaxLength(T definition);
-
-        protected abstract bool IsStar(T definition);
-
-        protected abstract void SetLengthInStars(T definition, double value);
-
-        protected abstract double GetDelta(VectorEventArgs vectorEventArgs);
-
-        protected void GetDeltaConstraints(out double min, out double max)
-        {
-            var _prevDefinitionLen = GetActualLength(_prevDefinition);
-            var _prevDefinitionMin = GetMinLength(_prevDefinition);
-            var _prevDefinitionMax = GetMaxLength(_prevDefinition);
-
-            var _nextDefinitionLen = GetActualLength(_nextDefinition);
-            var _nextDefinitionMin = GetMinLength(_nextDefinition);
-            var _nextDefinitionMax = GetMaxLength(_nextDefinition);
-
-            // Determine the minimum and maximum the columns can be resized
-            min = -Math.Min(_prevDefinitionLen - _prevDefinitionMin, _nextDefinitionMax - _nextDefinitionLen);
-            max = Math.Min(_prevDefinitionMax - _prevDefinitionLen, _nextDefinitionLen - _nextDefinitionMin);
-        }
-    }
-
-    internal class HorizontalGridColumnsResizer : GridColumnsResizer<RowDefinition>
-    {
-        public HorizontalGridColumnsResizer(Grid _grid, int splitterRow)
-        {
-            _definitions = _grid.RowDefinitions;
-            _nextDefinition = _definitions[splitterRow + 1];
-            _prevDefinition = _definitions[splitterRow - 1];
-        }
-
-        public override Cursor Cursor => new Cursor(StandardCursorType.SizeNorthSouth);
-
-        protected override double GetActualLength(RowDefinition definition)
-        {
-            return definition.ActualHeight;
-        }
-
-        protected override double GetMaxLength(RowDefinition definition)
-        {
-            return definition.MaxHeight;
-        }
-
-        protected override double GetMinLength(RowDefinition definition)
-        {
-            return definition.MinHeight;
-        }
-
-        protected override bool IsStar(RowDefinition definition)
-        {
-            return definition.Height.IsStar;
-        }
-
-        protected override double GetDelta(VectorEventArgs vectorEventArgs)
-        {
-            return vectorEventArgs.Vector.Y;
-        }
-
-        protected override void SetLengthInStars(RowDefinition definition, double value)
-        {
-            definition.Height = new GridLength(value, GridUnitType.Star);
-        }
-    }
-
-    internal class VerticalColumnsResizer : GridColumnsResizer<ColumnDefinition>
-    {
-        public VerticalColumnsResizer(Grid _grid, int splitterColumn)
-        {
-            _definitions = _grid.ColumnDefinitions;
-            _nextDefinition = _definitions[splitterColumn + 1];
-            _prevDefinition = _definitions[splitterColumn - 1];
-        }
-
-        public override Cursor Cursor => new Cursor(StandardCursorType.SizeWestEast);
-
-        protected override double GetActualLength(ColumnDefinition definition)
-        {
-            return definition.ActualWidth;
-        }
-
-        protected override double GetMaxLength(ColumnDefinition definition)
-        {
-            return definition.MaxWidth;
-        }
-
-        protected override double GetMinLength(ColumnDefinition definition)
-        {
-            return definition.MinWidth;
-        }
-
-        protected override bool IsStar(ColumnDefinition definition)
-        {
-            return definition.Width.IsStar;
-        }
-
-        protected override double GetDelta(VectorEventArgs vectorEventArgs)
-        {
-            return vectorEventArgs.Vector.X;
-        }
-
-        protected override void SetLengthInStars(ColumnDefinition definition, double value)
-        {
-            definition.Width = new GridLength(value, GridUnitType.Star);
         }
     }
 }
+
