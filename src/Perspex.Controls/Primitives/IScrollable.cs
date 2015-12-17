@@ -12,12 +12,17 @@ namespace Perspex.Controls.Primitives
     public interface IScrollable
     {
         /// <summary>
-        /// Gets or sets the invalidation method which notifies the attached 
-        /// <see cref="ScrollViewer"/> of a change in <see cref="Extent"/> or <see cref="Offset"/>.
+        /// Gets or sets the scroll invalidation method.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// This method notifies the attached <see cref="ScrollViewer"/> of a change in 
+        /// the <see cref="Extent"/>, <see cref="Offset"/> or <see cref="Viewport"/> properties.
+        /// </para>
+        /// <para>
         /// This property is set by the parent <see cref="ScrollViewer"/> when the 
         /// <see cref="IScrollable"/> is placed inside it.
+        /// </para>
         /// </remarks>
         Action InvalidateScroll { get; set; }
 

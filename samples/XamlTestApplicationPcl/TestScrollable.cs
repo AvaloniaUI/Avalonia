@@ -9,17 +9,12 @@ namespace XamlTestApplication
     public class TestScrollable : Control, IScrollable
     {
         private int itemCount = 100;
-        private Action _invalidateScroll;
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
         private Size _lineSize;
 
-        public Action InvalidateScroll
-        {
-            get { return _invalidateScroll; }
-            set { _invalidateScroll = value; }
-        }
+        public Action InvalidateScroll { get; set; }
 
         Size IScrollable.Extent
         {
@@ -28,10 +23,7 @@ namespace XamlTestApplication
 
         Vector IScrollable.Offset
         {
-            get
-            {
-                return _offset;
-            }
+            get { return _offset; }
 
             set
             {
@@ -64,8 +56,8 @@ namespace XamlTestApplication
         protected override Size ArrangeOverride(Size finalSize)
         {
             _viewport = new Size(finalSize.Width, finalSize.Height / _lineSize.Height);
-            _extent = new Size(_lineSize.Width, itemCount);
-            InvalidateScroll();
+            _extent = new Size(_lineSize.Width, itemCount + 1);
+            InvalidateScroll?.Invoke();
             return finalSize;
         }
 
