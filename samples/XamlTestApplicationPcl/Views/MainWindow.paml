@@ -5,11 +5,11 @@
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
       <Menu Grid.ColumnSpan="2">
-        <MenuItem Header="_File">
+        <MenuItem Header="_File" Background="Red">
           <MenuItem Header="_Hello">
             <MenuItem Header="_Goodbye"/>
             <Separator/>
-            <MenuItem Header="_World"/>
+            <MenuItem Header="_World" Background="Red"/>
           </MenuItem>
           <Separator Background="Red"/>
           <MenuItem Header="_Test"/>

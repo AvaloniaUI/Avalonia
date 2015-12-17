@@ -64,7 +64,7 @@ namespace Perspex.Controls
         /// </summary>
         public ItemsControl()
         {
-            Classes.Add(":empty");
+            PseudoClasses.Add(":empty");
             SubscribeToItems(_items);
         }
 
@@ -302,15 +302,7 @@ namespace Perspex.Controls
             }
 
             var collection = sender as ICollection;
-
-            if (collection.Count == 0)
-            {
-                Classes.Add(":empty");
-            }
-            else
-            {
-                Classes.Remove(":empty");
-            }
+            PseudoClasses.Set(":empty", collection.Count == 0);
         }
 
         /// <summary>
@@ -367,14 +359,7 @@ namespace Perspex.Controls
         /// <param name="items"></param>
         private void SubscribeToItems(IEnumerable items)
         {
-            if (items == null || items.Count() == 0)
-            {
-                Classes.Add(":empty");
-            }
-            else
-            {
-                Classes.Remove(":empty");
-            }
+            PseudoClasses.Set(":empty", items == null || items.Count() == 0);
 
             var incc = items as INotifyCollectionChanged;
 

@@ -249,6 +249,16 @@ namespace Perspex.Collections
         }
 
         /// <summary>
+        /// Gets a range of items from the collection.
+        /// </summary>
+        /// <param name="index">The first index to remove.</param>
+        /// <param name="count">The number of items to remove.</param>
+        public IEnumerable<T> GetRange(int index, int count)
+        {
+            return _inner.GetRange(index, count);
+        }
+
+        /// <summary>
         /// Gets the index of the specified item in the collection.
         /// </summary>
         /// <param name="item">The item.</param>

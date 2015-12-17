@@ -146,8 +146,7 @@ namespace Perspex.Controls
             {
                 if (_classes != value)
                 {
-                    _classes.Clear();
-                    _classes.AddRange(value);
+                    _classes.Replace(value);
                 }
             }
         }
@@ -308,6 +307,12 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
+        /// pseudoclasses.
+        /// </summary>
+        protected IPseudoClasses PseudoClasses => Classes;
+
+        /// <summary>
         /// Sets the control's logical parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
@@ -382,11 +387,11 @@ namespace Perspex.Controls
                 {
                     if (selector((T)e.NewValue))
                     {
-                        ((Control)e.Sender).Classes.Add(className);
+                        ((Control)e.Sender).PseudoClasses.Add(className);
                     }
                     else
                     {
-                        ((Control)e.Sender).Classes.Remove(className);
+                        ((Control)e.Sender).PseudoClasses.Remove(className);
                     }
                 });
         }

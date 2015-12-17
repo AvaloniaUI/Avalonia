@@ -19,7 +19,7 @@ namespace TestApplication
         {
             this.AddRange(new[]
             {
-                new Style (s => s.Class(":container").OfType<TabControl> ())
+                new Style (s => s.Class("container").OfType<TabControl> ())
                 {
                     Setters = new[]
                     {
@@ -27,7 +27,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Class(":container").OfType<TabControl>().Child().Child().Child().Child().Child().OfType<TabStripItem>())
+                new Style(s => s.Class("container").OfType<TabControl>().Child().Child().Child().Child().Child().OfType<TabStripItem>())
                 {
                     Setters = new[]
                     {

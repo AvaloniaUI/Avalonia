@@ -546,14 +546,7 @@ namespace Perspex.Controls.Primitives
                 }
                 else
                 {
-                    if (selected)
-                    {
-                        container.Classes.Add(":selected");
-                    }
-                    else
-                    {
-                        container.Classes.Remove(":selected");
-                    }
+                    ((IPseudoClasses)container.Classes).Set(":selected", selected);
                 }
             }
             finally

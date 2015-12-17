@@ -215,7 +215,7 @@ namespace Perspex.Controls
         {
             base.OnPointerPressed(e);
 
-            Classes.Add(":pressed");
+            PseudoClasses.Add(":pressed");
             e.Device.Capture(this);
             e.Handled = true;
 
@@ -231,7 +231,7 @@ namespace Perspex.Controls
             base.OnPointerReleased(e);
 
             e.Device.Capture(null);
-            Classes.Remove(":pressed");
+            PseudoClasses.Remove(":pressed");
             e.Handled = true;
 
             if (ClickMode == ClickMode.Release && Classes.Contains(":pointerover"))
