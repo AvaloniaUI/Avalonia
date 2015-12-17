@@ -45,22 +45,22 @@
                    PlacementMode="Right"
                    StaysOpen="True"
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}">
-              <Border Background="#fff0f0f0"
+              <Border Background="{TemplateBinding Background}"
                       BorderBrush="#ff999999"
                       BorderThickness="1"
                       Padding="2">
                 <ScrollViewer>
                   <Panel>
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Items="{TemplateBinding Items}"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
                                Fill="#ffd7d7d7"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
                                Width="1"/>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
                   </Panel>
                 </ScrollViewer>
               </Border>
@@ -91,22 +91,22 @@
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
                    StaysOpen="True">
-              <Border Background="#fff0f0f0"
+              <Border Background="{TemplateBinding Background}"
                       BorderBrush="#ff999999"
                       BorderThickness="1"
                       Padding="2">
                 <ScrollViewer>
                   <Panel>
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Items="{TemplateBinding Items}"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
                                Fill="#ffd7d7d7"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
                                Width="1"/>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
                   </Panel>
                 </ScrollViewer>
               </Border>
