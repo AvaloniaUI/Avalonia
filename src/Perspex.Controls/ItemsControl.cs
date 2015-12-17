@@ -257,7 +257,7 @@ namespace Perspex.Controls
 
             if (e.NewValue == null)
             {
-                ItemContainerGenerator.Clear();
+                ItemContainerGenerator?.Clear();
             }
         }
 
