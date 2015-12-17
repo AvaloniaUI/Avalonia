@@ -56,6 +56,7 @@
     <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
     <Compile Include="Primitives\HeaderedSelectingControl.cs" />
+    <Compile Include="Primitives\IScrollable.cs" />
     <Compile Include="Primitives\TabStripItem.cs" />
     <Compile Include="Primitives\TemplateAppliedEventArgs.cs" />
     <Compile Include="SelectionMode.cs" />
@@ -81,9 +82,7 @@
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="PlacementMode.cs" />
-    <Compile Include="Primitives\IScrollInfo.cs" />
     <Compile Include="Primitives\Popup.cs" />
-    <Compile Include="Primitives\ScrollInfoAdapter.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\FuncControlTemplate`2.cs" />
     <Compile Include="Templates\FuncDataTemplate`1.cs" />

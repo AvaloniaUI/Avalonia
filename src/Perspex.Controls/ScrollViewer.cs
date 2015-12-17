@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
@@ -116,6 +119,8 @@ namespace Perspex.Controls
             PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(VerticalScrollBarVisibility), 
                 ScrollBarVisibility.Auto);
+
+        private IDisposable _scrollableSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.

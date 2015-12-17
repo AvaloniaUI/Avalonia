@@ -3,6 +3,9 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Layout;
 using Perspex.VisualTree;
@@ -39,6 +42,7 @@ namespace Perspex.Controls.Presenters
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
         private Size _measuredExtent;
+        private IDisposable _scrollableSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -56,6 +60,8 @@ namespace Perspex.Controls.Presenters
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
+
+            GetObservable(ChildProperty).Subscribe(ChildChanged);
         }
 
         /// <summary>
@@ -149,19 +155,24 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = Content as ILayoutable;
+            var child = Child;
 
-            if (content != null)
+            if (child != null)
             {
-                var measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
+                var measureSize = availableSize;
 
-                if (!CanScrollHorizontally)
+                if (_scrollableSubscription == null)
                 {
-                    measureSize = measureSize.WithWidth(availableSize.Width);
+                    measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
+
+                    if (!CanScrollHorizontally)
+                    {
+                        measureSize = measureSize.WithWidth(availableSize.Width);
+                    }
                 }
 
-                content.Measure(measureSize);
-                var size = content.DesiredSize;
+                child.Measure(measureSize);
+                var size = child.DesiredSize;
                 _measuredExtent = size;
                 return size.Constrain(availableSize);
             }
@@ -175,16 +186,21 @@ namespace Perspex.Controls.Presenters
         protected override Size ArrangeOverride(Size finalSize)
         {
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
+            var offset = default(Vector);
 
-            Viewport = finalSize;
-            Extent = _measuredExtent;
+            if (_scrollableSubscription == null)
+            {
+                Viewport = finalSize;
+                Extent = _measuredExtent;
+                offset = Offset;
+            }
 
             if (child != null)
             {
                 var size = new Size(
                     Math.Max(finalSize.Width, child.DesiredSize.Width),
                     Math.Max(finalSize.Height, child.DesiredSize.Height));
-                child.Arrange(new Rect((Point)(-Offset), size));
+                child.Arrange(new Rect((Point)(-offset), size));
                 return finalSize;
             }
 
@@ -207,6 +223,30 @@ namespace Perspex.Controls.Presenters
         private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
         {
             e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
+        }
+
+        private void ChildChanged(IControl child)
+        {
+            var scrollable = child as IScrollable;
+
+            _scrollableSubscription?.Dispose();
+            _scrollableSubscription = null;
+
+            if (scrollable != null)
+            {
+                scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
+                _scrollableSubscription = new CompositeDisposable(
+                    GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
+                    Disposable.Create(() => scrollable.InvalidateScroll = null));
+                UpdateFromScrollable(scrollable);
+            }
+        }
+
+        private void UpdateFromScrollable(IScrollable scrollable)
+        {
+            Viewport = scrollable.Viewport;
+            Extent = scrollable.Extent;
+            Offset = scrollable.Offset;
         }
 
         private static Vector ValidateOffset(ScrollContentPresenter o, Vector value)

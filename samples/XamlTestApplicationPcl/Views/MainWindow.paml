@@ -1,6 +1,7 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:XamlTestApplication;assembly=XamlTestApplicationPcl"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
@@ -271,6 +272,11 @@
                       </Border.Background>
                   </Border>
               </Grid>
+          </TabItem>
+          <TabItem Header="IScrollable">
+            <ScrollViewer>
+              <local:TestScrollable/>
+            </ScrollViewer>
           </TabItem>
       </TabControl>
     </Grid>
