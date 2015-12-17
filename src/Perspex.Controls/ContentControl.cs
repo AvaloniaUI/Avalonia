@@ -36,8 +36,6 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
-        private IDisposable _presenterSubscription;
-
         /// <summary>
         /// Initializes static members of the <see cref="ContentControl"/> class.
         /// </summary>

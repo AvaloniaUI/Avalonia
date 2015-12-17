@@ -93,6 +93,7 @@
     <Compile Include="ListBoxTests_Single.cs" />
     <Compile Include="NameScopeTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests_Multiple.cs" />
+    <Compile Include="Presenters\ScrollContentPresenterTests_IScrollable.cs" />
     <Compile Include="WindowingPlatformMock.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
