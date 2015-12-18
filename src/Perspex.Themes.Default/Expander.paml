@@ -95,27 +95,27 @@
   <Style Selector="Expander /template/ ToggleButton#PART_toggle:pointerover /template/ Border">
     <Setter Property="BorderBrush" Value="#ffaaaaaa" />
   </Style>
-  <Style Selector="Expander:ExpandDirectionDown:expanded /template/ ToggleButton#PART_toggle /template/ Path">
+  <Style Selector="Expander:down:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
       <RotateTransform Angle="90" />
     </Setter>
   </Style>
-  <Style Selector="Expander:ExpandDirectionUp:expanded /template/ ToggleButton#PART_toggle /template/ Path">
+  <Style Selector="Expander:up:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
       <RotateTransform Angle="-90" />
     </Setter>
   </Style>
-  <Style Selector="Expander:ExpandDirectionLeft:expanded /template/ ToggleButton#PART_toggle /template/ Path">
+  <Style Selector="Expander:left:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
       <RotateTransform Angle="180" />
     </Setter>
   </Style>
-  <Style Selector="Expander:ExpandDirectionRight /template/ ToggleButton#PART_toggle /template/ Path">
+  <Style Selector="Expander:right /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
       <RotateTransform Angle="180" />
     </Setter>
   </Style>
-  <Style Selector="Expander:ExpandDirectionRight:expanded /template/ ToggleButton#PART_toggle /template/ Path">
+  <Style Selector="Expander:right:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
       <RotateTransform Angle="0" />
     </Setter>

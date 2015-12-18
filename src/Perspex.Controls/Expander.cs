@@ -13,24 +13,53 @@ namespace Perspex.Controls
 
     public class Expander : HeaderedContentControl
     {
+        public static readonly PerspexProperty<bool> IsExpandedProperty =
+            PerspexProperty.Register<Expander, bool>(nameof(IsExpanded), true);
+
+        public static readonly PerspexProperty<ExpandDirection> ExpandDirectionProperty =
+            PerspexProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
+
+        public static readonly PerspexProperty<IPageTransition> ContentTransitionProperty =
+            PerspexProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
+
         static Expander()
         {
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Down, ":ExpandDirectionDown");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Up, ":ExpandDirectionUp");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Left, ":ExpandDirectionLeft");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Right, ":ExpandDirectionRight");
+            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Down, ":down");
+            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Up, ":up");
+            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Left, ":left");
+            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Right, ":right");
 
             PseudoClass(IsExpandedProperty, ":expanded");
 
             IsExpandedProperty.Changed.AddClassHandler<Expander>(x => x.OnIsExpandedChanged);
         }
 
+        public bool IsExpanded
+        {
+            get { return GetValue(IsExpandedProperty); }
+            set { SetValue(IsExpandedProperty, value); }
+        }
+
+        public ExpandDirection ExpandDirection
+        {
+            get { return GetValue(ExpandDirectionProperty); }
+            set { SetValue(ExpandDirectionProperty, value); }
+        }
+
+        public IPageTransition ContentTransition
+        {
+            get { return GetValue(ContentTransitionProperty); }
+            set { SetValue(ContentTransitionProperty, value); }
+        }
+
         protected virtual void OnIsExpandedChanged(PerspexPropertyChangedEventArgs e)
         {
             IVisual visualContent = Presenter;
+
             if (Content != null && ContentTransition != null && visualContent != null)
             {
-                bool forward = ExpandDirection == ExpandDirection.Left || ExpandDirection == ExpandDirection.Up;
+                bool forward = ExpandDirection == ExpandDirection.Left ||
+                                ExpandDirection == ExpandDirection.Up;
                 if (IsExpanded)
                 {
                     ContentTransition.Start(null, visualContent, forward);
@@ -40,30 +69,6 @@ namespace Perspex.Controls
                     ContentTransition.Start(visualContent, null, !forward);
                 }
             }
-        }
-
-        public static readonly PerspexProperty<bool> IsExpandedProperty = PerspexProperty.Register<Expander, bool>(nameof(IsExpanded), true);
-
-        public bool IsExpanded
-        {
-            get { return GetValue(IsExpandedProperty); }
-            set { SetValue(IsExpandedProperty, value); }
-        }
-
-        public static readonly PerspexProperty<ExpandDirection> ExpandDirectionProperty = PerspexProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
-
-        public ExpandDirection ExpandDirection
-        {
-            get { return GetValue(ExpandDirectionProperty); }
-            set { SetValue(ExpandDirectionProperty, value); }
-        }
-
-        public static readonly PerspexProperty<IPageTransition> ContentTransitionProperty = PerspexProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
-
-        public IPageTransition ContentTransition
-        {
-            get { return GetValue(ContentTransitionProperty); }
-            set { SetValue(ContentTransitionProperty, value); }
         }
     }
 }
