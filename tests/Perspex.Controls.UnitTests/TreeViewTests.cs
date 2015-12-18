@@ -59,10 +59,10 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            // For TreeViewItem to find its parent TreeView, OnAttachedToVisualTree needs
-            // to be called, which requires an IRenderRoot.
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+            // For TreeViewItem to find its parent TreeView, OnAttachedToLogicalTree needs
+            // to be called, which requires an IStyleRoot.
+            var root = new TestRoot();
+            root.Child = target;
 
             ApplyTemplates(target);
 
