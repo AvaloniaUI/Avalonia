@@ -15,6 +15,6 @@
     </Setter>
   </Style>
   <Style Selector="TabStrip > TabStripItem">
-    <Setter Property="Margin" Value="4"/>
+    <Setter Property="Margin" Value="16"/>
   </Style>
 </Styles>
