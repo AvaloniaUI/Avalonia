@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -65,7 +66,7 @@ namespace Perspex.Controls.UnitTests
 
             ApplyTemplates(target);
 
-            var container = target.ItemContainerGenerator.TreeContainerFromItem(
+            var container = target.ItemContainerGenerator.Index.ContainerFromItem(
                 tree[0].Children[1].Children[0]);
 
             Assert.NotNull(container);
@@ -92,7 +93,7 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplates(target);
 
             var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.TreeContainerFromItem(item);
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
 
             Assert.NotNull(container);
 

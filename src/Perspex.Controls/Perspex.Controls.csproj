@@ -46,6 +46,7 @@
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
     <Compile Include="Generators\ItemContainer.cs" />
+    <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />

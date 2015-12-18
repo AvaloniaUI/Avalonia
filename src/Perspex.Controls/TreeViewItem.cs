@@ -79,7 +79,7 @@ namespace Perspex.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
-                _treeView?.ItemContainerGenerator);
+                _treeView?.ItemContainerGenerator.Index ?? new TreeContainerIndex());
         }
 
         /// <inheritdoc/>
