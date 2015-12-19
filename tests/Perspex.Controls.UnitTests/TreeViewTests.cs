@@ -129,6 +129,28 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void Removing_Item_Should_Remove_Itself_And_Children_From_Index()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                DataTemplates = CreateNodeDataTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+            ApplyTemplates(target);
+
+            Assert.Equal(4, target.ItemContainerGenerator.Index.Items.Count());
+
+            tree[0].Children.RemoveAt(1);
+
+            Assert.Equal(2, target.ItemContainerGenerator.Index.Items.Count());
+        }
+
+        [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
             var items = new object[]
@@ -180,12 +202,12 @@ namespace Perspex.Controls.UnitTests
 
         private IList<Node> CreateTestTreeData()
         {
-            return new[]
+            return new PerspexList<Node>
             {
                 new Node
                 {
                     Value = "Root",
-                    Children = new[]
+                    Children = new PerspexList<Node>
                     {
                         new Node
                         {
@@ -194,7 +216,7 @@ namespace Perspex.Controls.UnitTests
                         new Node
                         {
                             Value = "Child2",
-                            Children = new[]
+                            Children = new PerspexList<Node>
                             {
                                 new Node
                                 {
@@ -271,7 +293,7 @@ namespace Perspex.Controls.UnitTests
         private class Node
         {
             public string Value { get; set; }
-            public IList<Node> Children { get; set; }
+            public IPerspexList<Node> Children { get; set; }
         }
     }
 }

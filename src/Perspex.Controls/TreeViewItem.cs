@@ -88,6 +88,12 @@ namespace Perspex.Controls
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
         }
 
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            ItemContainerGenerator.Clear();
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {

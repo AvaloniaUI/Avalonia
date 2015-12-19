@@ -103,6 +103,12 @@ namespace Perspex.Controls.Generators
             return base.Dematerialize(startingIndex, count);
         }
 
+        public override IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
+        {
+            Index.Remove(GetContainerRange(startingIndex, count));
+            return base.RemoveRange(startingIndex, count);
+        }
+
         /// <summary>
         /// Gets the data template for the specified item.
         /// </summary>
