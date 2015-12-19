@@ -12,6 +12,11 @@ namespace Perspex
     public struct Rect
     {
         /// <summary>
+        /// An empty rectangle.
+        /// </summary>
+        public static readonly Rect Empty = default(Rect);
+
+        /// <summary>
         /// The X position.
         /// </summary>
         private readonly double _x;
@@ -328,23 +333,31 @@ namespace Perspex
         /// <returns>The intersection.</returns>
         public Rect Intersect(Rect rect)
         {
-            double x = Math.Max(_x, rect._x);
-            double y = Math.Max(_y, rect._y);
-            double width = Math.Min(Right, rect.Right) - x;
-            double height = Math.Min(Bottom, rect.Bottom) - y;
+            var newLeft = (rect.X > X) ? rect.X : X;
+            var newTop = (rect.Y > Y) ? rect.Y : Y;
+            var newRight = (rect.Right < Right) ? rect.Right : Right;
+            var newBottom = (rect.Bottom < Bottom) ? rect.Bottom : Bottom;
 
-            if (width < 0 || height < 0)
+            if ((newRight > newLeft) && (newBottom > newTop))
             {
-                return new Rect(
-                    double.PositiveInfinity,
-                    double.PositiveInfinity,
-                    double.NegativeInfinity,
-                    double.NegativeInfinity);
+                return new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
             }
             else
             {
-                return new Rect(x, y, width, height);
+                return Empty;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a rectangle intersects with this rectangle.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>
+        /// True if the specified rectangle intersects with this one; otherwise false.
+        /// </returns>
+        public bool Intersects(Rect rect)
+        {
+            return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
         }
 
         /// <summary>
