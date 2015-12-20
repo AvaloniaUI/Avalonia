@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Perspex
 {
@@ -358,6 +359,47 @@ namespace Perspex
         public bool Intersects(Rect rect)
         {
             return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
+        }
+
+        /// <summary>
+        /// Returns the axis-aligned bounding box of a transformed rectangle.
+        /// </summary>
+        /// <param name="matrix">The transform.</param>
+        /// <returns>The bounding box</returns>
+        public Rect TransformToAABB(Matrix matrix)
+        {
+            var points = new[]
+            {
+                TopLeft.Transform(matrix),
+                TopRight.Transform(matrix),
+                BottomRight.Transform(matrix),
+                BottomLeft.Transform(matrix),
+            };
+
+            var left = double.MaxValue;
+            var right = double.MinValue;
+            var top = double.MaxValue;
+            var bottom = double.MinValue;
+
+            foreach (var p in points)
+            {
+                if (p.X < left) left = p.X;
+                if (p.X > right) right = p.X;
+                if (p.Y < top) top = p.Y;
+                if (p.Y > bottom) bottom = p.Y;
+            }
+
+            return new Rect(new Point(left, top), new Point(right, bottom));
+        }
+
+        /// <summary>
+        /// Translates the rectangle by an offset.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns>The translated rectangle.</returns>
+        public Rect Translate(Vector offset)
+        {
+            return new Rect(Position + offset, Size);
         }
 
         /// <summary>

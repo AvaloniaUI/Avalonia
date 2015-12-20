@@ -47,7 +47,7 @@ namespace Perspex.VisualTree
             var bounds = boundsSubscriptions.CombineLatest().Select(ExtractBounds);
 
             // TODO: Track transform and clip rectangle.
-            return bounds.Select(x => new TransformedBounds((Rect)x, (Rect)new Rect(), (Matrix)Matrix.Identity));
+            return bounds.Select(x => new TransformedBounds(x, new Rect(), Matrix.Identity));
         }
 
         /// <summary>
