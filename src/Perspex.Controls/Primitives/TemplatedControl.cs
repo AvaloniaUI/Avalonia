@@ -91,6 +91,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static TemplatedControl()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
             TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
         }
 

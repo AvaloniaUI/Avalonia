@@ -127,7 +127,7 @@ namespace Perspex.Rendering
                     {
                         var childBounds = GetTransformedBounds(child);
 
-                        if (clipRect.Intersects(childBounds))
+                        if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
                             var childClipRect = clipRect.Translate(-childBounds.Position);
                             context.Render(child, childClipRect);

@@ -52,6 +52,7 @@ namespace Perspex.SceneGraph.UnitTests
                     {
                         Width = 10,
                         Height = 10,
+                        ClipToBounds = true,
                         [Canvas.LeftProperty] = 110,
                         [Canvas.TopProperty] = 110,
                     })
@@ -86,42 +87,7 @@ namespace Perspex.SceneGraph.UnitTests
                             {
                                 Width = 10,
                                 Height = 10,
-                                [Canvas.LeftProperty] = 50,
-                                [Canvas.TopProperty] = 50,
-                            })
-                        }
-                    }
-                }
-            };
-
-            Render(container);
-
-            Assert.False(target.Rendered);
-        }
-
-
-        [Fact]
-        public void Nested_ClipToBounds_Should_Be_Respected()
-        {
-            TestControl target;
-            var container = new Canvas
-            {
-                Width = 100,
-                Height = 100,
-                ClipToBounds = true,
-                Children = new Controls.Controls
-                {
-                    new Canvas
-                    {
-                        Width = 50,
-                        Height = 50,
-                        ClipToBounds = true,
-                        Children = new Controls.Controls
-                        {
-                            (target = new TestControl
-                            {
-                                Width = 10,
-                                Height = 10,
+                                ClipToBounds = true,
                                 [Canvas.LeftProperty] = 50,
                                 [Canvas.TopProperty] = 50,
                             })
@@ -154,6 +120,35 @@ namespace Perspex.SceneGraph.UnitTests
                         [Canvas.TopProperty] = 110,
                         RenderTransform = new TranslateTransform(-100, -100),
                     })
+                }
+            };
+
+            Render(container);
+
+            Assert.True(target.Rendered);
+        }
+
+        [Fact]
+        public void Negative_Margin_Should_Be_Respected()
+        {
+            TestControl target;
+            var container = new Canvas
+            {
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children = new Controls.Controls
+                {
+                    new Border
+                    {
+                        Margin = new Thickness(100, 100, 0, 0),
+                        Child = target = new TestControl
+                        {
+                            Width = 10,
+                            Height = 10,
+                            Margin = new Thickness(-100, -100, 0, 0),
+                        }
+                    }
                 }
             };
 
