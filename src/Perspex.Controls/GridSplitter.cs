@@ -106,12 +106,14 @@ namespace Perspex.Controls
             {
                 return;
             }
-            if (_grid.ColumnDefinitions[GetValue(Grid.ColumnProperty)].Width.IsAuto)
+            var column = GetValue(Grid.ColumnProperty);
+            if (column < _grid.ColumnDefinitions.Count && _grid.ColumnDefinitions[column].Width.IsAuto)
             {
                 Orientation = Perspex.Controls.Orientation.Vertical;
                 return;
             }
-            if (_grid.RowDefinitions[GetValue(Grid.RowProperty)].Height.IsAuto)
+            var row = GetValue(Grid.RowProperty);
+            if (row < _grid.RowDefinitions.Count && _grid.RowDefinitions[row].Height.IsAuto)
             {
                 Orientation = Perspex.Controls.Orientation.Horizontal;
                 return;
