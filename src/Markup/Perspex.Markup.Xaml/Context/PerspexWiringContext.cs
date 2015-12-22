@@ -88,7 +88,7 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
+                new TypeConverterRegistration(typeof(IBitmap), new BitmapTypeConverter()),
                 new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
                 new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
                 new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
