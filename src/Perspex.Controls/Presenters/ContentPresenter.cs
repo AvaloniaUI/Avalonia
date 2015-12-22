@@ -64,6 +64,14 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            _createdChild = false;
+            InvalidateMeasure();
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
             return base.MeasureCore(availableSize);
@@ -101,17 +109,11 @@ namespace Perspex.Controls.Presenters
             var old = Child;
             var content = Content;
             var result = this.MaterializeDataTemplate(content);
-            var logicalHost = this.FindReparentingHost();
-            var logicalChildren = logicalHost?.LogicalChildren ?? LogicalChildren;
 
             if (old != null)
             {
-                ((ISetLogicalParent)old).SetParent(null);
-                logicalChildren.Remove(old);
-                ClearVisualChildren();
+                VisualChildren.Remove(old);
             }
-
-            Child = result;
 
             if (result != null)
             {
@@ -120,14 +122,12 @@ namespace Perspex.Controls.Presenters
                     result.DataContext = content;
                 }
 
-                if (result.Parent == null)
-                {
-                    ((ISetLogicalParent)result).SetParent((ILogical)logicalHost ?? this);
-                }
-
-                AddVisualChild(result);
-                logicalChildren.Remove(old);
-                logicalChildren.Add(result);
+                Child = result;
+                VisualChildren.Add(result);
+            }
+            else
+            {
+                Child = null;
             }
 
             _createdChild = true;

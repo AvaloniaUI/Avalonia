@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Controls;
@@ -216,15 +217,13 @@ namespace Perspex.Markup.Xaml.Data
 
             if (!targetIsDataContext)
             {
+                var update = target.GetObservable(Control.DataContextProperty)
+                    .Skip(1)
+                    .Select(_ => Unit.Default);
                 var result = new ExpressionObserver(
                     () => target.GetValue(Control.DataContextProperty),
-                    path);
-
-                /// TODO: Instead of doing this, make the ExpressionObserver accept an "update"
-                /// observable as doing it this way can will cause a leak in Binding as this 
-                /// observable is never unsubscribed.
-                target.GetObservable(Control.DataContextProperty).Subscribe(x =>
-                    result.UpdateRoot());
+                    path,
+                    update);
 
                 return result;
             }
@@ -245,19 +244,14 @@ namespace Perspex.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            var update = target.GetObservable(Control.TemplatedParentProperty)
+                .Skip(1)
+                .Select(_ => Unit.Default);
+
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
-                path);
-
-            if (target.GetValue(Control.TemplatedParentProperty) == null)
-            {
-                // TemplatedParent should only be set once, so only listen for the first non-null
-                // value.
-                target.GetObservable(Control.TemplatedParentProperty)
-                    .Where(x => x != null)
-                    .Take(1)
-                    .Subscribe(x => result.UpdateRoot());
-            }
+                path,
+                update);
 
             return result;
         }

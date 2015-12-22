@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -42,7 +43,7 @@ namespace Perspex.Controls.UnitTests
 
             target.ApplyTemplate();
 
-            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single();
+            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
             var header = (TextBlock)container.Header;
             Assert.Equal("Root", header.Text);
         }
@@ -58,15 +59,18 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            // For TreeViewItem to find its parent TreeView, OnAttachedToVisualTree needs
-            // to be called, which requires an IRenderRoot.
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+            // For TreeViewItem to find its parent TreeView, OnAttachedToLogicalTree needs
+            // to be called, which requires an IStyleRoot.
+            var root = new TestRoot();
+            root.Child = target;
 
             ApplyTemplates(target);
 
-            var container = target.ItemContainerGenerator.TreeContainerFromItem(
+            var container = target.ItemContainerGenerator.Index.ContainerFromItem(
                 tree[0].Children[1].Children[0]);
+
+            Assert.NotNull(container);
+
             var header = ((TreeViewItem)container).Header;
             var headerContent = ((TextBlock)header).Text;
 
@@ -89,7 +93,9 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplates(target);
 
             var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.TreeContainerFromItem(item);
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+            Assert.NotNull(container);
 
             container.RaiseEvent(new PointerPressEventArgs
             {
@@ -120,6 +126,28 @@ namespace Perspex.Controls.UnitTests
                 .ToList();
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz " }, result);
+        }
+
+        [Fact]
+        public void Removing_Item_Should_Remove_Itself_And_Children_From_Index()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                DataTemplates = CreateNodeDataTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+            ApplyTemplates(target);
+
+            Assert.Equal(4, target.ItemContainerGenerator.Index.Items.Count());
+
+            tree[0].Children.RemoveAt(1);
+
+            Assert.Equal(2, target.ItemContainerGenerator.Index.Items.Count());
         }
 
         [Fact]
@@ -174,12 +202,12 @@ namespace Perspex.Controls.UnitTests
 
         private IList<Node> CreateTestTreeData()
         {
-            return new[]
+            return new PerspexList<Node>
             {
                 new Node
                 {
                     Value = "Root",
-                    Children = new[]
+                    Children = new PerspexList<Node>
                     {
                         new Node
                         {
@@ -188,7 +216,7 @@ namespace Perspex.Controls.UnitTests
                         new Node
                         {
                             Value = "Child2",
-                            Children = new[]
+                            Children = new PerspexList<Node>
                             {
                                 new Node
                                 {
@@ -265,7 +293,7 @@ namespace Perspex.Controls.UnitTests
         private class Node
         {
             public string Value { get; set; }
-            public IList<Node> Children { get; set; }
+            public IPerspexList<Node> Children { get; set; }
         }
     }
 }

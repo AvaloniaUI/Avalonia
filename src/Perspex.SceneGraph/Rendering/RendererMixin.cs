@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Perspex.Media;
 using Perspex.Platform;
 
 namespace Perspex.Rendering
 {
     /// <summary>
-    /// Base class for standard renderers.
+    /// Extension methods for rendering.
     /// </summary>
     /// <remarks>
     /// This class provides implements the platform-independent parts of <see cref="IRenderTarget"/>.
@@ -21,11 +20,20 @@ namespace Perspex.Rendering
     [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
     public static class RendererMixin
     {
-        static int s_frameNum;
-        static int s_fps;
-        static int s_currentFrames;
-        static TimeSpan s_lastMeasure;
-        static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
+        private static int s_frameNum;
+        private static int s_fps;
+        private static int s_currentFrames;
+        private static TimeSpan s_lastMeasure;
+        private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
+        private static readonly Stack<List<IVisual>> s_listPool = new Stack<List<IVisual>>();
+        private static readonly ZIndexComparer s_visualComparer = new ZIndexComparer();
+
+        /// <summary>
+        /// Gets or sets a value which determines whether an FPS counted will be drawn on each
+        /// rendered frame.
+        /// </summary>
+        public static bool DrawFpsCounter { get; set; }
+
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
@@ -62,17 +70,30 @@ namespace Perspex.Rendering
             }
         }
 
-        public static bool DrawFpsCounter { get; set; }
+        /// <summary>
+        /// Renders the specified visual.
+        /// </summary>
+        /// <param name="visual">The visual to render.</param>
+        /// <param name="context">The drawing context.</param>
+        public static void Render(this DrawingContext context, IVisual visual)
+        {
+            context.Render(visual, visual.Bounds);
+        }
 
         /// <summary>
         /// Renders the specified visual.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        /// 
         /// <param name="context">The drawing context.</param>
-        public static void Render(this DrawingContext context, IVisual visual)
+        /// <param name="clipRect">
+        /// The current clip rect, in coordinates relative to <paramref name="visual"/>.
+        /// </param>
+        private static void Render(this DrawingContext context, IVisual visual, Rect clipRect)
         {
             var opacity = visual.Opacity;
+            var clipToBounds = visual.ClipToBounds;
+            var bounds = new Rect(visual.Bounds.Size);
+
             if (visual.IsVisible && opacity > 0)
             {
                 var m = Matrix.CreateTranslation(visual.Bounds.Position);
@@ -83,49 +104,71 @@ namespace Perspex.Rendering
                 {
                     var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                     var offset = Matrix.CreateTranslation(origin);
-                    renderTransform = (-offset)*visual.RenderTransform.Value*(offset);
+                    renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
                 }
-                m = renderTransform*m;
+
+                m = renderTransform * m;
+
+                if (clipToBounds)
+                {
+                    clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                }
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (visual.ClipToBounds ? context.PushClip(new Rect(visual.Bounds.Size)) : default(DrawingContext.PushedState))
+                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
+
                     var lst = GetSortedVisualList(visual.VisualChildren);
+
                     foreach (var child in lst)
                     {
-                        context.Render(child);
+                        var childBounds = GetTransformedBounds(child);
+
+                        if (!child.ClipToBounds || clipRect.Intersects(childBounds))
+                        {
+                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            context.Render(child, childClipRect);
+                        }
                     }
+
                     ReturnListToPool(lst);
                 }
             }
         }
 
-        static readonly Stack<List<IVisual>> ListPool = new Stack<List<IVisual>>();
-        static readonly ZIndexComparer VisualComparer = new ZIndexComparer();
+        private static void ReturnListToPool(List<IVisual> lst)
+        {
+            lst.Clear();
+            s_listPool.Push(lst);
+        }
+
+        private static List<IVisual> GetSortedVisualList(IReadOnlyList<IVisual> source)
+        {
+            var lst = s_listPool.Count == 0 ? new List<IVisual>() : s_listPool.Pop();
+            for (var c = 0; c < source.Count; c++)
+                lst.Add(source[c]);
+            lst.Sort(s_visualComparer);
+            return lst;
+        }
+
+        private static Rect GetTransformedBounds(IVisual visual)
+        {
+            if (visual.RenderTransform == null)
+            {
+                return visual.Bounds;
+            }
+            else
+            {
+                return visual.Bounds.TransformToAABB(visual.RenderTransform.Value);
+            }
+        }
+
         class ZIndexComparer : IComparer<IVisual>
         {
             public int Compare(IVisual x, IVisual y) => x.ZIndex.CompareTo(y.ZIndex);
         }
-
-        static void ReturnListToPool(List<IVisual> lst)
-        {
-            lst.Clear();
-            ListPool.Push(lst);
-        }
-
-        static List<IVisual> GetSortedVisualList(IReadOnlyList<IVisual> source)
-        {
-            var lst = ListPool.Count == 0 ? new List<IVisual>() : ListPool.Pop();
-            for (var c = 0; c < source.Count; c++)
-                lst.Add(source[c]);
-            lst.Sort(VisualComparer);
-            return lst;
-        }
-
-
-
     }
 }

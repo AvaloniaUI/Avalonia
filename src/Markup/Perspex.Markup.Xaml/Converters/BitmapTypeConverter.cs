@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using OmniXaml.TypeConversion;
 using Perspex.Media.Imaging;
+using Perspex.Platform;
 
 namespace Perspex.Markup.Xaml.Converters
 {
@@ -22,7 +23,19 @@ namespace Perspex.Markup.Xaml.Converters
 
         public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
         {
-            return new Bitmap((string)value);
+            var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
+            var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
+
+            switch (scheme)
+            {
+                case "file":
+                    return new Bitmap((string)value);
+                case "resource":
+                    var assets = PerspexLocator.Current.GetService<IAssetLoader>();
+                    return new Bitmap(assets.Open(uri));
+                default:
+                    throw new NotSupportedException($"Unsupported bitmap URI scheme: {uri.Scheme}.");
+            }
         }
 
         public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)

@@ -18,6 +18,8 @@ namespace Perspex
         /// <param name="root">The root visual.</param>
         public VisualTreeAttachmentEventArgs(IRenderRoot root)
         {
+            Contract.Requires<ArgumentNullException>(root != null);
+
             Root = root;
         }
 

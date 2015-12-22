@@ -88,13 +88,13 @@ namespace Perspex.Controls
             {
                 ((ISetLogicalParent)oldChild).SetParent(null);
                 LogicalChildren.Clear();
-                RemoveVisualChild(oldChild);
+                VisualChildren.Remove(oldChild);
             }
 
             if (newChild != null)
             {
                 ((ISetLogicalParent)newChild).SetParent(this);
-                AddVisualChild(newChild);
+                VisualChildren.Add(newChild);
                 LogicalChildren.Add(newChild);
             }
         }

@@ -162,20 +162,13 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         private void CreatePanel()
         {
-            var logicalHost = this.FindReparentingHost();
-
-            ClearVisualChildren();
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
-            AddVisualChild(Panel);
-
-            if (logicalHost != null)
-            {
-                ((IReparentingControl)Panel).ReparentLogicalChildren(
-                    logicalHost,
-                    logicalHost.LogicalChildren);
-            }
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
+            LogicalChildren.Add(Panel);
+            VisualChildren.Add(Panel);
 
             _createdPanel = true;
             var task = MoveToPage(-1, SelectedIndex);
@@ -204,7 +197,8 @@ namespace Perspex.Controls.Presenters
                 {
                     var item = Items.Cast<object>().ElementAt(toIndex);
                     to = generator.ContainerFromIndex(toIndex) ??
-                        generator.Materialize(toIndex, new[] { item }, MemberSelector).FirstOrDefault();
+                         generator.Materialize(toIndex, new[] { item }, MemberSelector)
+                            .FirstOrDefault()?.ContainerControl;
 
                     if (to != null)
                     {

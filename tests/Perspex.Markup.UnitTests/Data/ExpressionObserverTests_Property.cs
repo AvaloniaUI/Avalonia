@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
 using Perspex.Markup.Data;
 using Xunit;
@@ -193,13 +194,14 @@ namespace Perspex.Markup.UnitTests.Data
         public void Empty_Expression_Should_Track_Root()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(() => data.Foo, "");
+            var update = new Subject<Unit>();
+            var target = new ExpressionObserver(() => data.Foo, "", update);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
 
             data.Foo = "bar";
-            target.UpdateRoot();
+            update.OnNext(Unit.Default);
 
             Assert.Equal(new[] { "foo", "bar" }, result);
         }
@@ -286,14 +288,15 @@ namespace Perspex.Markup.UnitTests.Data
             var first = new Class1 { Foo = "foo" };
             var second = new Class1 { Foo = "bar" };
             var root = first;
-            var target = new ExpressionObserver(() => root, "Foo");
+            var update = new Subject<Unit>();
+            var target = new ExpressionObserver(() => root, "Foo", update);
             var result = new List<object>();
             var sub = target.Subscribe(x => result.Add(x));
 
             root = second;
-            target.UpdateRoot();
+            update.OnNext(Unit.Default);
             root = null;
-            target.UpdateRoot();
+            update.OnNext(Unit.Default);
 
             Assert.Equal(new[] { "foo", "bar", PerspexProperty.UnsetValue }, result);
 
@@ -355,7 +358,7 @@ namespace Perspex.Markup.UnitTests.Data
         {
         }
 
-        public Recorded<Notification<object>> OnNext(long time, object value)
+        private Recorded<Notification<object>> OnNext(long time, object value)
         {
             return new Recorded<Notification<object>>(time, Notification.CreateOnNext<object>(value));
         }

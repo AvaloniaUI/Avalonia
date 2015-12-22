@@ -3,8 +3,10 @@
 
 namespace Perspex.Styling
 {
-    public interface IGlobalStyles
+    /// <summary>
+    /// Defines the style host that provides styles global to the application.
+    /// </summary>
+    public interface IGlobalStyles : IStyleRoot
     {
-        Styles Styles { get; }
     }
 }

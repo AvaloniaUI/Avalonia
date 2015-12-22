@@ -45,12 +45,12 @@ namespace Perspex.Controls.Primitives
                     val.Item1.DragDelta -= ThumbDragged;
                 }
 
-                ClearVisualChildren();
+                VisualChildren.Clear();
 
                 if (val.Item2 != null)
                 {
                     val.Item2.DragDelta += ThumbDragged;
-                    AddVisualChild(val.Item2);
+                    VisualChildren.Add(val.Item2);
                 }
             });
         }

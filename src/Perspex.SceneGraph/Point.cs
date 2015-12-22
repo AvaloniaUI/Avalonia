@@ -230,6 +230,24 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Transforms the point by a matrix.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        /// <returns>The transformed point.</returns>
+        public Point Transform(Matrix transform)
+        {
+            var x = X;
+            var y = Y;
+            var xadd = y * transform.M21 + transform.M31;
+            var yadd = x * transform.M12 + transform.M32;
+            x *= transform.M11;
+            x += xadd;
+            y *= transform.M22;
+            y += yadd;
+            return new Point(x, y);
+        }
+
+        /// <summary>
         /// Returns a new point with the specified X coordinate.
         /// </summary>
         /// <param name="x">The X coordinate.</param>

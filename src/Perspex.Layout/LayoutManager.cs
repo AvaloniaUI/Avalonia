@@ -226,12 +226,12 @@ namespace Perspex.Layout
                         {
                             var parent = item.Control.GetVisualParent<ILayoutable>();
 
-                            while (parent.PreviousMeasure == null)
+                            while (parent != null && parent.PreviousMeasure == null)
                             {
                                 parent = parent.GetVisualParent<ILayoutable>();
                             }
 
-                            if (parent.GetVisualRoot() == Root)
+                            if (parent != null && parent.GetVisualRoot() == Root)
                             {
                                 parent.Measure(parent.PreviousMeasure.Value, true);
                             }

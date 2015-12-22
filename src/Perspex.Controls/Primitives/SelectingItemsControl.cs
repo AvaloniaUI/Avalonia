@@ -98,7 +98,6 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public SelectingItemsControl()
         {
-            ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
         }
 
         /// <summary>
@@ -287,6 +286,27 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
+        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersMaterialized(e);
+
+            var selectedIndex = SelectedIndex;
+            var selectedContainer = e.Containers
+                .FirstOrDefault(x => (x.ContainerControl as ISelectable)?.IsSelected == true);
+
+            if (selectedContainer != null)
+            {
+                SelectedIndex = selectedContainer.Index;
+            }
+            else if (selectedIndex >= e.StartingIndex &&
+                     selectedIndex < e.StartingIndex + e.Containers.Count)
+            {
+                var container = e.Containers[selectedIndex - e.StartingIndex];
+                MarkContainerSelected(container.ContainerControl, true);
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnDataContextChanged()
         {
             if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
@@ -379,7 +399,7 @@ namespace Perspex.Controls.Primitives
             bool rangeModifier = false,
             bool toggleModifier = false)
         {
-            var index = ItemContainerGenerator.IndexFromContainer(container);
+            var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
 
             if (index != -1)
             {
@@ -414,61 +434,6 @@ namespace Perspex.Controls.Primitives
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Gets the item at the specified index in a collection.
-        /// </summary>
-        /// <param name="items">The collection.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>The index of the item or -1 if the item was not found.</returns>
-        private static object ElementAt(IEnumerable items, int index)
-        {
-            var typedItems = items?.Cast<object>();
-
-            if (index != -1 && typedItems != null && index < typedItems.Count())
-            {
-                return typedItems.ElementAt(index) ?? null;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the index of an item in a collection.
-        /// </summary>
-        /// <param name="items">The collection.</param>
-        /// <param name="item">The item.</param>
-        /// <returns>The index of the item or -1 if the item was not found.</returns>
-        private static int IndexOf(IEnumerable items, object item)
-        {
-            if (items != null && item != null)
-            {
-                var list = items as IList;
-
-                if (list != null)
-                {
-                    return list.IndexOf(item);
-                }
-                else
-                {
-                    int index = 0;
-
-                    foreach (var i in items)
-                    {
-                        if (Equals(i, item))
-                        {
-                            return index;
-                        }
-
-                        ++index;
-                    }
-                }
-            }
-
-            return -1;
         }
 
         /// <summary>
@@ -524,27 +489,6 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Called when new containers are initialized by the <see cref="ItemContainerGenerator"/>.
-        /// </summary>
-        /// <param name="containers">The containers.</param>
-        private void ContainersInitialized(ItemContainers containers)
-        {
-            var selectedIndex = SelectedIndex;
-            var selectedContainer = containers.Items.OfType<ISelectable>().FirstOrDefault(x => x.IsSelected);
-
-            if (selectedContainer != null)
-            {
-                SelectedIndex = containers.Items.IndexOf((IControl)selectedContainer) + containers.StartingIndex;
-            }
-            else if (selectedIndex >= containers.StartingIndex &&
-                     selectedIndex < containers.StartingIndex + containers.Items.Count)
-            {
-                var container = containers.Items[selectedIndex - containers.StartingIndex];
-                MarkContainerSelected(container, true);
-            }
-        }
-
-        /// <summary>
         /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
         /// </summary>
         /// <param name="e">The event.</param>
@@ -593,7 +537,6 @@ namespace Perspex.Controls.Primitives
             try
             {
                 var selectable = container as ISelectable;
-                var styleable = container as IStyleable;
 
                 _ignoreContainerSelectionChanged = true;
 
@@ -601,16 +544,9 @@ namespace Perspex.Controls.Primitives
                 {
                     selectable.IsSelected = selected;
                 }
-                else if (styleable != null)
+                else
                 {
-                    if (selected)
-                    {
-                        styleable.Classes.Add(":selected");
-                    }
-                    else
-                    {
-                        styleable.Classes.Remove(":selected");
-                    }
+                    ((IPseudoClasses)container.Classes).Set(":selected", selected);
                 }
             }
             finally
@@ -626,7 +562,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="selected">Whether the item should be selected or deselected.</param>
         private void MarkItemSelected(int index, bool selected)
         {
-            var container = ItemContainerGenerator.ContainerFromIndex(index);
+            var container = ItemContainerGenerator?.ContainerFromIndex(index);
 
             if (container != null)
             {
@@ -656,6 +592,8 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void SelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            var generator = ItemContainerGenerator;
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -681,9 +619,15 @@ namespace Perspex.Controls.Primitives
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    foreach (var item in ItemContainerGenerator.Containers)
+                    if (generator != null)
                     {
-                        MarkContainerSelected(item, false);
+                        foreach (var item in generator.Containers)
+                        {
+                            if (item != null)
+                            {
+                                MarkContainerSelected(item.ContainerControl, false);
+                            }
+                        }
                     }
 
                     if (!_syncingSelectedItems)

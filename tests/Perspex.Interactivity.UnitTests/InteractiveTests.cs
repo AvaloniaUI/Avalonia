@@ -395,7 +395,7 @@ namespace Perspex.Interactivity.UnitTests
 
                 set
                 {
-                    AddVisualChildren(value.Cast<Visual>());
+                    VisualChildren.AddRange(value.Cast<Visual>());
                 }
             }
 

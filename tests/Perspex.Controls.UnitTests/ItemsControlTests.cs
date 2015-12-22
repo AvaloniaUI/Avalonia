@@ -7,7 +7,6 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
-using Perspex.Styling;
 using Perspex.VisualTree;
 using Xunit;
 
@@ -24,10 +23,7 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
-            var panel = target.GetTemplateChildren().OfType<StackPanel>().Single();
-
-            Assert.Equal(target, panel.TemplatedParent);
+            Assert.Equal(target, target.Presenter.Panel.TemplatedParent);
         }
 
         [Fact]
@@ -39,29 +35,57 @@ namespace Perspex.Controls.UnitTests
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
 
-            var presenter = target.GetTemplateChildren().OfType<ItemsPresenter>().Single();
-            var panel = target.GetTemplateChildren().OfType<StackPanel>().Single();
-            var item = (TextBlock)panel.GetVisualChildren().First();
+            var item = (TextBlock)target.Presenter.Panel.GetVisualChildren().First();
 
             Assert.Null(item.TemplatedParent);
         }
 
         [Fact]
-        public void Control_Item_Should_Have_Parent_Set()
+        public void Control_Item_Should_Be_Logical_Child_Before_ApplyTemplate()
         {
             var target = new ItemsControl();
             var child = new Control();
 
             target.Template = GetTemplate();
             target.Items = new[] { child };
-            target.ApplyTemplate();
 
-            Assert.Equal(target, child.Parent);
-            Assert.Equal(target, ((ILogical)child).LogicalParent);
+            Assert.Equal(child.Parent, target);
+            Assert.Equal(child.GetLogicalParent(), target);
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
         }
 
         [Fact]
-        public void Clearing_Control_Item_Should_Clear_Child_Controls_Parent()
+        public void Control_Item_Should_Be_Removed_From_Logical_Children_Before_ApplyTemplate()
+        {
+            var target = new ItemsControl();
+            var child = new Control();
+            var items = new PerspexList<Control>(child);
+
+            target.Template = GetTemplate();
+            target.Items = items;
+            items.RemoveAt(0);
+
+            Assert.Null(child.Parent);
+            Assert.Null(child.GetLogicalParent());
+            Assert.Empty(target.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Clearing_Items_Should_Clear_Child_Controls_Parent_Before_ApplyTemplate()
+        {
+            var target = new ItemsControl();
+            var child = new Control();
+
+            target.Template = GetTemplate();
+            target.Items = new[] { child };
+            target.Items = null;
+
+            Assert.Null(child.Parent);
+            Assert.Null(((ILogical)child).LogicalParent);
+        }
+
+        [Fact]
+        public void Clearing_Items_Should_Clear_Child_Controls_Parent()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -83,9 +107,13 @@ namespace Perspex.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.Items = new[] { child };
+
+            // Should appear both before and after applying template.
+            Assert.Equal(new ILogical[] { child }, target.GetLogicalChildren());
+
             target.ApplyTemplate();
 
-            Assert.Equal(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[] { child }, target.GetLogicalChildren());
         }
 
         [Fact]
@@ -114,7 +142,7 @@ namespace Perspex.Controls.UnitTests
             target.ApplyTemplate();
             target.Items = null;
 
-            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], target.GetLogicalChildren());
         }
 
         [Fact]

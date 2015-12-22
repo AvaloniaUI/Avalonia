@@ -166,7 +166,7 @@ namespace Perspex.Styling.UnitTests
         {
             var source = new BehaviorSubject<string>("Foo");
 
-            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            var style = new Style(x => x.OfType<Class1>().Class("foo"))
             {
                 Setters = new[]
                 {
@@ -185,6 +185,31 @@ namespace Perspex.Styling.UnitTests
             Assert.Equal("Bar", target.Foo);
             target.Classes.Remove("foo");
             Assert.Equal("foodefault", target.Foo);
+        }
+
+        [Fact]
+        public void Style_Should_Detach_When_Removed_From_Logical_Tree()
+        {
+            Border border;
+
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters = new[]
+                {
+                    new Setter(Border.BorderThicknessProperty, 4),
+                }
+            };
+
+            var root = new TestRoot
+            {
+                Child = border = new Border(),
+            };
+
+            style.Attach(border, null);
+
+            Assert.Equal(4, border.BorderThickness);
+            root.Child = null;
+            Assert.Equal(0, border.BorderThickness);
         }
 
         private class Class1 : Control

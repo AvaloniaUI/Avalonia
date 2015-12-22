@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Perspex.Controls.Templates;
@@ -14,9 +15,6 @@ namespace Perspex.Controls.Generators
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator<T>, ITreeItemContainerGenerator
         where T : class, IControl, new()
     {
-        private readonly Dictionary<object, T> _itemToContainer;
-        private readonly Dictionary<IControl, object> _containerToItem;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.
         /// </summary>
@@ -24,34 +22,30 @@ namespace Perspex.Controls.Generators
         /// <param name="contentProperty">The container's Content property.</param>
         /// <param name="itemsProperty">The container's Items property.</param>
         /// <param name="isExpandedProperty">The container's IsExpanded property.</param>
-        /// <param name="rootGenerator">
-        /// The item container for the root of the tree, or null if this generator is itself the
-        /// root of the tree.
-        /// </param>
+        /// <param name="index">The container index for the tree</param>
         public TreeItemContainerGenerator(
             IControl owner,
             PerspexProperty contentProperty,
             PerspexProperty itemsProperty,
             PerspexProperty isExpandedProperty,
-            ITreeItemContainerGenerator rootGenerator)
+            TreeContainerIndex index)
             : base(owner, contentProperty)
         {
+            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.Requires<ArgumentNullException>(contentProperty != null);
+            Contract.Requires<ArgumentNullException>(itemsProperty != null);
+            Contract.Requires<ArgumentNullException>(isExpandedProperty != null);
+            Contract.Requires<ArgumentNullException>(index != null);
+
             ItemsProperty = itemsProperty;
             IsExpandedProperty = isExpandedProperty;
-            RootGenerator = rootGenerator;
-
-            if (rootGenerator == null)
-            {
-                _itemToContainer = new Dictionary<object, T>();
-                _containerToItem = new Dictionary<IControl, object>();
-            }
+            Index = index;
         }
 
         /// <summary>
-        /// Gets the item container for the root of the tree, or null if this generator is itself 
-        /// the root of the tree.
+        /// Gets the container index for the tree.
         /// </summary>
-        public ITreeItemContainerGenerator RootGenerator { get; }
+        public TreeContainerIndex Index { get; }
 
         /// <summary>
         /// Gets the item container's Items property.
@@ -62,30 +56,6 @@ namespace Perspex.Controls.Generators
         /// Gets the item container's IsExpanded property.
         /// </summary>
         protected PerspexProperty IsExpandedProperty { get; }
-
-        /// <summary>
-        /// Gets the item container for the specified item, anywhere in the tree.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The container, or null if not found.</returns>
-        public IControl TreeContainerFromItem(object item)
-        {
-            T result;
-            _itemToContainer.TryGetValue(item, out result);
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the item for the specified item container, anywhere in the tree.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>The item, or null if not found.</returns>
-        public object TreeItemFromContainer(IControl container)
-        {
-            object result;
-            _containerToItem.TryGetValue(container, out result);
-            return result;
-        }
 
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
@@ -114,65 +84,29 @@ namespace Perspex.Controls.Generators
                     result.DataContext = item;
                 }
 
-                AddToIndex(item, result);
+                Index.Add(item, result);
 
                 return result;
             }
         }
 
-        public override IEnumerable<IControl> Clear()
+        public override IEnumerable<ItemContainer> Clear()
         {
-            ClearIndex();
-            return base.Clear();
+            var items = base.Clear();
+            Index.Remove(items);
+            return items;
         }
 
-        public override IEnumerable<IControl> Dematerialize(int startingIndex, int count)
+        public override IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
         {
-            RemoveFromIndex(GetContainerRange(startingIndex, count));
+            Index.Remove(GetContainerRange(startingIndex, count));
             return base.Dematerialize(startingIndex, count);
         }
 
-        private void AddToIndex(object item, T container)
+        public override IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
         {
-            if (RootGenerator != null)
-            {
-                ((TreeItemContainerGenerator<T>)RootGenerator).AddToIndex(item, container);
-            }
-            else
-            {
-                _itemToContainer.Add(item, container);
-                _containerToItem.Add(container, item);
-            }
-        }
-
-        private void RemoveFromIndex(IEnumerable<IControl> containers)
-        {
-            if (RootGenerator != null)
-            {
-                ((TreeItemContainerGenerator<T>)RootGenerator).RemoveFromIndex(containers);
-            }
-            else
-            {
-                foreach (var container in containers)
-                {
-                    var item = _containerToItem[container];
-                    _containerToItem.Remove(container);
-                    _itemToContainer.Remove(item);
-                }
-            }
-        }
-
-        private void ClearIndex()
-        {
-            if (RootGenerator != null)
-            {
-                ((TreeItemContainerGenerator<T>)RootGenerator).ClearIndex();
-            }
-            else
-            {
-                _containerToItem.Clear();
-                _itemToContainer.Clear();
-            }
+            Index.Remove(GetContainerRange(startingIndex, count));
+            return base.RemoveRange(startingIndex, count);
         }
 
         /// <summary>

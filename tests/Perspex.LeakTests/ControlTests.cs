@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.dotMemoryUnit;
 using Perspex.Controls;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.VisualTree;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -82,6 +84,172 @@ namespace Perspex.LeakTests
         }
 
         [Fact]
+        public void Templated_Child_Is_Freed_When_Template_Cleared()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new TestTemplatedControl()
+                };
+
+                // Do a layout and make sure that the control gets added to visual tree and its
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TestTemplatedControl>(window.Presenter.Child);
+                Assert.IsType<Canvas>(window.Presenter.Child.GetVisualChildren().SingleOrDefault());
+
+                // Clear the template and ensure the control template gets removed
+                ((TestTemplatedControl)window.Content).Template = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void ScrollViewer_With_Content_Is_Freed()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new ScrollViewer
+                    {
+                        Content = new Canvas()
+                    }
+                };
+
+                // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<ScrollViewer>(window.Presenter.Child);
+                Assert.IsType<Canvas>(((ScrollViewer)window.Presenter.Child).Presenter.Child);
+
+                // Clear the content and ensure the ScrollViewer is removed.
+                window.Content = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Null(window.Presenter.Child);
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void TextBox_Is_Freed()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new TextBox()
+                };
+
+                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TextBox>(window.Presenter.Child);
+                Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                // Clear the content and ensure the TextBox is removed.
+                window.Content = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Null(window.Presenter.Child);
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void TextBox_With_Xaml_Binding_Is_Freed()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    DataContext = new Node { Name = "foo" },
+                    Content = new TextBox()
+                };
+
+                var binding = new Perspex.Markup.Xaml.Data.Binding
+                {
+                    Path = "Name"
+                };
+
+                binding.Bind((TextBox)window.Content, TextBox.TextProperty);
+
+                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // Text property set.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TextBox>(window.Presenter.Child);
+                Assert.Equal("foo", ((TextBox)window.Presenter.Child).Text);
+
+                // Clear the content and DataContext and ensure the TextBox is removed.
+                window.Content = null;
+                window.DataContext = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Null(window.Presenter.Child);
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Node>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void TextBox_ScrollViewer_Is_Freed_When_Template_Cleared()
+        {
+            Func<Window> run = () =>
+            {
+                var window = new Window
+                {
+                    Content = new TextBox()
+                };
+
+                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // template applied.
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.IsType<TextBox>(window.Presenter.Child);
+                Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                // Clear the template and ensure the TextBox template gets removed
+                ((TextBox)window.Content).Template = null;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
+
+                return window;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ScrollViewer>()).ObjectsCount));
+        }
+
+        [Fact]
         public void TreeView_Is_Freed()
         {
             Func<Window> run = () =>
@@ -101,12 +269,12 @@ namespace Perspex.LeakTests
                     Content = target = new TreeView
                     {
                         DataTemplates = new DataTemplates
-                    {
-                        new FuncTreeDataTemplate<Node>(
-                            x => new TextBlock { Text = x.Name },
-                            x => x.Children,
-                            x => true)
-                    },
+                        {
+                            new FuncTreeDataTemplate<Node>(
+                                x => new TextBlock { Text = x.Name },
+                                x => x.Children,
+                                x => true)
+                        },
                         Items = nodes
                     }
                 };
@@ -127,6 +295,21 @@ namespace Perspex.LeakTests
 
             dotMemory.Check(memory =>
                 Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
+        }
+
+        private class TestTemplatedControl : TemplatedControl
+        {
+            public static readonly PerspexProperty<int> IsCanvasVisibleProperty =
+                PerspexProperty.Register<TestTemplatedControl, int>("IsCanvasVisible");
+
+            public TestTemplatedControl()
+            {
+                Template = new FuncControlTemplate<TestTemplatedControl>(parent =>
+                    new Canvas
+                    {
+                        [~IsVisibleProperty] = parent[~IsCanvasVisibleProperty]
+                    });
+            }
         }
 
         private class Node

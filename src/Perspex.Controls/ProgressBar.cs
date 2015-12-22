@@ -26,9 +26,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(INameScope nameScope)
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            _indicator = nameScope.Get<Border>("PART_Indicator");
+            _indicator = e.NameScope.Get<Border>("PART_Indicator");
             UpdateIndicator(Bounds.Size);
         }
 

@@ -19,7 +19,7 @@ namespace TestApplication
         {
             this.AddRange(new[]
             {
-                new Style (s => s.Class(":container").OfType<TabControl> ())
+                new Style (s => s.Class("container").OfType<TabControl> ())
                 {
                     Setters = new[]
                     {
@@ -27,15 +27,15 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Class(":container").OfType<TabControl>().Child().Child().Child().Child().Child().OfType<TabItem>())
+                new Style(s => s.Class("container").OfType<TabControl>().Child().Child().Child().Child().Child().OfType<TabStripItem>())
                 {
                     Setters = new[]
                     {
-                        new Setter (TemplatedControl.TemplateProperty, new FuncControlTemplate<TabItem> (TabItemTemplate)),
+                        new Setter (TemplatedControl.TemplateProperty, new FuncControlTemplate<TabStripItem>(TabStripItemTemplate)),
                     }
                 },
 
-                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>())
+                new Style(s => s.Name("PART_TabStrip").OfType<TabStrip>().Child().OfType<TabStripItem>())
                 {
                     Setters = new[]
                     {
@@ -44,7 +44,7 @@ namespace TestApplication
                     }
                 },
 
-                new Style(s => s.Name("internalStrip").OfType<TabStrip>().Child().OfType<TabItem>().Class(":selected"))
+                new Style(s => s.Name("PART_TabStrip").OfType<TabStrip>().Child().OfType<TabStripItem>().Class(":selected"))
                 {
                     Setters = new[]
                     {
@@ -55,7 +55,7 @@ namespace TestApplication
             });
         }
 
-        public static Control TabItemTemplate(TabItem control)
+        public static Control TabStripItemTemplate(TabStripItem control)
         {
             return new ContentPresenter
             {
@@ -72,8 +72,8 @@ namespace TestApplication
                         }
                     })
                 },
-                Name = "headerPresenter",
-                [~ContentPresenter.ContentProperty] = control[~HeaderedContentControl.HeaderProperty],
+                Name = "PART_ContentPresenter",
+                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
         }
 
@@ -96,9 +96,10 @@ namespace TestApplication
                         {
                             Content = new TabStrip
                             {
+                                Name = "PART_TabStrip",
                                 ItemsPanel = new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical, Gap = 4 }),
                                 Margin = new Thickness(0, 10, 0, 0),
-                                Name = "internalStrip",
+                                MemberSelector = TabControl.HeaderSelector,
                                 [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
                                 [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
                             }
@@ -106,8 +107,8 @@ namespace TestApplication
                     },
                     new Carousel
                     {
-                        Name = "carousel",
-                        MemberSelector = control.ContentSelector,
+                        Name = "PART_Content",
+                        MemberSelector = TabControl.ContentSelector,
                         [~Carousel.TransitionProperty] = control[~TabControl.TransitionProperty],
                         [!Carousel.ItemsProperty] = control[!ItemsControl.ItemsProperty],
                         [!Carousel.SelectedItemProperty] = control[!SelectingItemsControl.SelectedItemProperty],

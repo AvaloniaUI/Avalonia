@@ -14,6 +14,11 @@ namespace Perspex.Controls
     public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IStyleable, IStyleHost
     {
         /// <summary>
+        /// Gets or sets the control's styling classes.
+        /// </summary>
+        new Classes Classes { get; set; }
+
+        /// <summary>
         /// Gets or sets the control's data context.
         /// </summary>
         object DataContext { get; set; }

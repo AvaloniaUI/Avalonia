@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive;
 using Moq;
 using OmniXaml;
 using OmniXaml.ObjectAssembler.Commands;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
+using Perspex.Collections;
+using Perspex.Controls;
 using Perspex.Markup.Xaml.Converters;
 using Perspex.Styling;
 using Xunit;
@@ -74,7 +77,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             public static readonly PerspexProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo");
 
-            public Classes Classes
+            public IPerspexReadOnlyList<string> Classes
             {
                 get { throw new NotImplementedException(); }
             }
@@ -93,6 +96,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             {
                 get { throw new NotImplementedException(); }
             }
+
+            IObservable<Unit> IStyleable.StyleDetach { get; }
         }
 
         private class AttachedOwner

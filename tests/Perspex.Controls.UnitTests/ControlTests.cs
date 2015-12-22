@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 using Moq;
 using Perspex.Layout;
 using Perspex.Platform;
@@ -22,24 +24,105 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_Control_To_IRenderRoot_Should_Style_Control()
+        public void LogicalParent_Should_Be_Set_To_Parent()
         {
-            using (PerspexLocator.EnterScope())
-            {
-                var root = new TestRoot();
-                var target = new Control();
-                var styler = new Mock<IStyler>();
+            var parent = new Decorator();
+            var target = new TestControl();
 
-                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+            parent.Child = target;
 
-                root.Child = target;
-
-                styler.Verify(x => x.ApplyStyles(target), Times.Once());
-            }
+            Assert.Equal(parent, target.InheritanceParent);
         }
 
         [Fact]
-        public void Adding_Tree_To_ILayoutRoot_Should_Style_Controls()
+        public void LogicalParent_Should_Be_Cleared_When_Removed_From_Parent()
+        {
+            var parent = new Decorator();
+            var target = new TestControl();
+
+            parent.Child = target;
+            parent.Child = null;
+
+            Assert.Null(target.InheritanceParent);
+        }
+
+        [Fact]
+        public void AttachedToLogicalParent_Should_Be_Called_When_Added_To_Tree()
+        {
+            var root = new TestRoot();
+            var parent = new Border();
+            var child = new Border();
+            var grandchild = new Border();
+            var parentRaised = false;
+            var childRaised = false;
+            var grandchildRaised = false;
+
+            parent.AttachedToLogicalTree += (s, e) => parentRaised = true;
+            child.AttachedToLogicalTree += (s, e) => childRaised = true;
+            grandchild.AttachedToLogicalTree += (s, e) => grandchildRaised = true;
+
+            parent.Child = child;
+            child.Child = grandchild;
+
+            Assert.False(parentRaised);
+            Assert.False(childRaised);
+            Assert.False(grandchildRaised);
+
+            root.Child = parent;
+
+            Assert.True(parentRaised);
+            Assert.True(childRaised);
+            Assert.True(grandchildRaised);
+        }
+
+        [Fact]
+        public void AttachedToLogicalParent_Should_Be_Called_Before_Parent_Change_Signalled()
+        {
+            var root = new TestRoot();
+            var child = new Border();
+            var raised = new List<string>();
+
+            child.AttachedToLogicalTree += (s, e) =>
+            {
+                Assert.Equal(root, child.Parent);
+                raised.Add("attached");
+            };
+
+            child.GetObservable(Control.ParentProperty).Skip(1).Subscribe(_ => raised.Add("parent"));
+
+            root.Child = child;
+
+            Assert.Equal(new[] { "attached", "parent" }, raised);
+        }
+
+        [Fact]
+        public void DetachedToLogicalParent_Should_Be_Called_When_Removed_From_Tree()
+        {
+            var root = new TestRoot();
+            var parent = new Border();
+            var child = new Border();
+            var grandchild = new Border();
+            var parentRaised = false;
+            var childRaised = false;
+            var grandchildRaised = false;
+
+            parent.Child = child;
+            child.Child = grandchild;
+            root.Child = parent;
+
+            parent.DetachedFromLogicalTree += (s, e) => parentRaised = true;
+            child.DetachedFromLogicalTree += (s, e) => childRaised = true;
+            grandchild.DetachedFromLogicalTree += (s, e) => grandchildRaised = true;
+
+            root.Child = null;
+
+            Assert.True(parentRaised);
+            Assert.True(childRaised);
+            Assert.True(grandchildRaised);
+        }
+
+        [Fact]
+        public void Adding_Tree_To_IStyleRoot_Should_Style_Controls()
         {
             using (PerspexLocator.EnterScope())
             {
@@ -64,7 +147,7 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        private class TestRoot : Decorator, ILayoutRoot, IRenderRoot
+        private class TestRoot : Decorator, ILayoutRoot, IRenderRoot, IStyleRoot
         {
             public Size ClientSize
             {
@@ -90,6 +173,11 @@ namespace Perspex.Controls.UnitTests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class TestControl : Control
+        {
+            public new PerspexObject InheritanceParent => base.InheritanceParent;
         }
     }
 }

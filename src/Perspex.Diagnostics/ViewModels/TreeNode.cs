@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Perspex.Controls;
@@ -18,7 +19,13 @@ namespace Perspex.Diagnostics.ViewModels
             Control = control;
             Type = control.GetType().Name;
 
-            control.Classes.Changed.Select(_ => Unit.Default)
+            var classesChanged = Observable.FromEventPattern<
+                    NotifyCollectionChangedEventHandler, 
+                    NotifyCollectionChangedEventArgs>(
+                x => control.Classes.CollectionChanged += x,
+                x => control.Classes.CollectionChanged -= x);
+
+            classesChanged.Select(_ => Unit.Default)
                 .StartWith(Unit.Default)
                 .Subscribe(_ =>
                 {

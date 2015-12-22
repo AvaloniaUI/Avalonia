@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Markup.Data.Plugins;
 
@@ -29,10 +30,11 @@ namespace Perspex.Markup.Data
         private readonly object _root;
         private readonly Func<object> _rootGetter;
         private readonly IObservable<object> _rootObservable;
+        private readonly IObservable<Unit> _update;
         private IDisposable _rootObserverSubscription;
+        private IDisposable _updateSubscription;
         private int _count;
         private readonly ExpressionNode _node;
-        private ISubject<object> _empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -78,12 +80,18 @@ namespace Perspex.Markup.Data
         /// </summary>
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
-        public ExpressionObserver(Func<object> rootGetter, string expression)
+        /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        public ExpressionObserver(
+            Func<object> rootGetter, 
+            string expression,
+            IObservable<Unit> update)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
+            Contract.Requires<ArgumentNullException>(update != null);
 
             _rootGetter = rootGetter;
+            _update = update;
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
@@ -104,7 +112,11 @@ namespace Perspex.Markup.Data
         public bool SetValue(object value)
         {
             IncrementCount();
-            UpdateRoot();
+
+            if (_rootGetter != null && _node != null)
+            {
+                _node.Target = _rootGetter();
+            }
 
             try
             {
@@ -157,6 +169,11 @@ namespace Perspex.Markup.Data
         string IDescription.Description => Expression;
 
         /// <summary>
+        /// Gets the root expression node. Used for testing.
+        /// </summary>
+        internal ExpressionNode Node => _node;
+
+        /// <summary>
         /// Gets the leaf node.
         /// </summary>
         private ExpressionNode Leaf
@@ -166,26 +183,6 @@ namespace Perspex.Markup.Data
                 var node = _node;
                 while (node.Next != null) node = node.Next;
                 return node;
-            }
-        }
-
-        /// <summary>
-        /// Causes the root object to be re-read from the root getter.
-        /// </summary>
-        /// TODO: Instead of doing this, make the object accept an "update" observable
-        /// as doing it this way can cause a leak in Binding.
-        public void UpdateRoot()
-        {
-            if (_count > 0 && _rootGetter != null)
-            {
-                if (_node != null)
-                {
-                    _node.Target = _rootGetter();
-                }
-                else
-                {
-                    _empty?.OnNext(_rootGetter());
-                }
             }
         }
 
@@ -204,14 +201,23 @@ namespace Perspex.Markup.Data
                     subscription.Dispose();
                 });
             }
+            else if (_rootObservable != null)
+            {
+                return _rootObservable.Subscribe(observer);
+            }
             else
             {
-                if (_empty == null)
+                if (_update == null)
                 {
-                    _empty = new BehaviorSubject<object>(_rootGetter());
+                    return Observable.Never<object>().StartWith(_root).Subscribe(observer);
                 }
-
-                return _empty.Subscribe(observer);
+                else
+                {
+                    return _update
+                        .Select(_ => _rootGetter())
+                        .StartWith(_rootGetter())
+                        .Subscribe(observer);
+                }
             }
         }
 
@@ -222,6 +228,11 @@ namespace Perspex.Markup.Data
                 if (_rootGetter != null)
                 {
                     _node.Target = _rootGetter();
+
+                    if (_update != null)
+                    {
+                        _updateSubscription = _update.Subscribe(x => _node.Target = _rootGetter());
+                    }
                 }
                 else if (_rootObservable != null)
                 {
@@ -242,6 +253,12 @@ namespace Perspex.Markup.Data
                 {
                     _rootObserverSubscription.Dispose();
                     _rootObserverSubscription = null;
+                }
+
+                if (_updateSubscription != null)
+                {
+                    _updateSubscription.Dispose();
+                    _updateSubscription = null;
                 }
 
                 _node.Target = null;

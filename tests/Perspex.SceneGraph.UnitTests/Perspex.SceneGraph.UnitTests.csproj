@@ -40,6 +40,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq, Version=4.2.1507.118, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Moq.4.2.1507.0118\lib\net40\Moq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="xunit.assert">
       <HintPath>..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
@@ -80,6 +84,7 @@
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestVisual.cs" />
     <Compile Include="RelativePointTests.cs" />
+    <Compile Include="RenderTests_Culling.cs" />
     <Compile Include="VisualTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisualTree\BoundsTrackerTests.cs" />

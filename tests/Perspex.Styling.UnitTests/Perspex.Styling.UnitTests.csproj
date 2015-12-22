@@ -40,6 +40,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Reactive.Testing, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Rx-Testing.2.2.5\lib\net45\Microsoft.Reactive.Testing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="xunit.assert">
       <HintPath>..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
@@ -85,10 +90,12 @@
     <Compile Include="SelectorTests_OfType.cs" />
     <Compile Include="SelectorTests_Template.cs" />
     <Compile Include="StyleActivatorTests.cs" />
+    <Compile Include="StyleBindingTests.cs" />
     <Compile Include="StyleTests.cs" />
     <Compile Include="TestControlBase.cs" />
     <Compile Include="TestObservable.cs" />
     <Compile Include="TestObserver.cs" />
+    <Compile Include="TestRoot.cs" />
     <Compile Include="TestSelectors.cs" />
     <Compile Include="TestSubject.cs" />
     <Compile Include="TestTemplatedControl.cs" />

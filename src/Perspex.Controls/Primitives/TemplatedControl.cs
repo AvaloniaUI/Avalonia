@@ -3,8 +3,10 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.VisualTree;
@@ -72,6 +74,14 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<IControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");
 
+        /// <summary>
+        /// Defines the <see cref="TemplateApplied"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
+            RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
+                "TemplateApplied", 
+                RoutingStrategies.Direct);
+
         private bool _templateApplied;
 
         private readonly ILogger _templateLog;
@@ -81,12 +91,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static TemplatedControl()
         {
-            TemplateProperty.Changed.Subscribe(e =>
-            {
-                var templatedControl = (TemplatedControl)e.Sender;
-                templatedControl._templateApplied = false;
-                templatedControl.InvalidateMeasure();
-            });
+            ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
+            TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
         }
 
         /// <summary>
@@ -100,6 +106,15 @@ namespace Perspex.Controls.Primitives
                 new PropertyEnricher("SourceContext", GetType()),
                 new PropertyEnricher("Id", GetHashCode()),
             });
+        }
+
+        /// <summary>
+        /// Raised when the control's template is applied.
+        /// </summary>
+        public event EventHandler<TemplateAppliedEventArgs> TemplateApplied
+        {
+            add { AddHandler(TemplateAppliedEvent, value); }
+            remove { RemoveHandler(TemplateAppliedEvent, value); }
         }
 
         /// <summary>
@@ -188,7 +203,7 @@ namespace Perspex.Controls.Primitives
         {
             if (!_templateApplied)
             {
-                ClearVisualChildren();
+                VisualChildren.Clear();
 
                 if (Template != null)
                 {
@@ -198,30 +213,60 @@ namespace Perspex.Controls.Primitives
                     var nameScope = new NameScope();
                     NameScope.SetNameScope((Control)child, nameScope);
 
-                    // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
-                    // before the controls are added to the visual tree so that the logical
-                    // tree can be set up before styling is applied.
+                    // We need to call SetupTemplateControls twice:
+                    // - Once before the controls are added to the visual/logical trees so that the
+                    //   TemplatedParent property is set and names are registered; if 
+                    //   TemplatedParent is not set when the control is added to the logical tree, 
+                    //   then styles with the /template/ selector won't match.
+                    // - Once after the controls are added to the logical tree (and thus styled) to
+                    //   call ApplyTemplate on nested templated controls and register any of our
+                    //   templated children that appear as children of presenters in these nested
+                    //   templated child controls.
+                    SetupTemplateControls(child, nameScope);
+                    VisualChildren.Add(child);
                     ((ISetLogicalParent)child).SetParent(this);
                     SetupTemplateControls(child, nameScope);
 
-                    // And again after the controls are added to the visual tree, and have their
-                    // styling and thus Template property set.
-                    AddVisualChild((Visual)child);
-                    SetupTemplateControls(child, nameScope);
-
-                    OnTemplateApplied(nameScope);
+                    OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
                 }
 
                 _templateApplied = true;
             }
         }
 
+        protected sealed override BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        {
+            var result = base.CreateBindingDescriptor(source);
+
+            // If the binding is a template binding, then complete when the Template changes.
+            if (source.Priority == BindingPriority.TemplatedParent)
+            {
+                var templateChanged = GetObservable(TemplateProperty).Skip(1);
+
+                result.SourceObservable = result.Source.GetObservable(result.Property)
+                    .TakeUntil(templateChanged);
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Called when the control's template is applied.
         /// </summary>
-        /// <param name="nameScope">The template name scope.</param>
-        protected virtual void OnTemplateApplied(INameScope nameScope)
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
+            RaiseEvent(e);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Template"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
+        {
+            _templateApplied = false;
+            InvalidateMeasure();
         }
 
         /// <summary>

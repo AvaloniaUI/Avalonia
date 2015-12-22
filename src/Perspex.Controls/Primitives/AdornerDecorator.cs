@@ -10,7 +10,7 @@ namespace Perspex.Controls.Primitives
             AdornerLayer = new AdornerLayer();
             ((ISetLogicalParent)AdornerLayer).SetParent(this);
             AdornerLayer.ZIndex = int.MaxValue;
-            AddVisualChild(AdornerLayer);
+            VisualChildren.Add(AdornerLayer);
         }
 
         public AdornerLayer AdornerLayer

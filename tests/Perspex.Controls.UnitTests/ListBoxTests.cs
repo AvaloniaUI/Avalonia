@@ -14,7 +14,31 @@ namespace Perspex.Controls.UnitTests
     public class ListBoxTests
     {
         [Fact]
-        public void LogicalChildren_Should_Be_Set()
+        public void ListBoxItem_Containers_Should_Be_Generated()
+        {
+            var items = new[] { "Foo", "Bar", "Baz " };
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+
+            var text = target.Presenter.Panel.Children
+                .OfType<ListBoxItem>()
+                .Do(x => x.Template = ListBoxItemTemplate())
+                .Do(x => x.ApplyTemplate())
+                .Select(x => x.Presenter.Child)
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(items, text);
+        }
+
+        [Fact]
+        public void LogicalChildren_Should_Be_Set_For_DataTemplate_Generated_Items()
         {
             var target = new ListBox
             {
@@ -101,6 +125,15 @@ namespace Perspex.Controls.UnitTests
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
                 }
             };
+        }
+
+        private FuncControlTemplate ListBoxItemTemplate()
+        {
+            return new FuncControlTemplate<ListBoxItem>(parent => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
+            });
         }
 
         private Control CreateScrollViewerTemplate(ITemplatedControl parent)

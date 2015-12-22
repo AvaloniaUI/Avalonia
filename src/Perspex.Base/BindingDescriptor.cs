@@ -79,6 +79,18 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets or sets the source observable.
+        /// </summary>
+        /// <remarks>
+        /// If null, then <see cref="Source"/>.<see cref="Property"/> will be used.
+        /// </remarks>
+        public IObservable<object> SourceObservable
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets a description of the binding.
         /// </summary>
         public string Description => $"{Source?.GetType().Name}.{Property.Name}";
@@ -128,7 +140,7 @@ namespace Perspex
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
-            return Source.GetObservable(Property).Subscribe(observer);
+            return (SourceObservable ?? Source.GetObservable(Property)).Subscribe(observer);
         }
     }
 }

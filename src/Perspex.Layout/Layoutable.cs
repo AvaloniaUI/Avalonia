@@ -472,7 +472,7 @@ namespace Perspex.Layout
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
 
-                return new Size(width, height).Inflate(Margin);
+                return NonNegative(new Size(width, height).Inflate(Margin));
             }
             else
             {
@@ -647,6 +647,16 @@ namespace Perspex.Layout
             return size.Width < 0 || size.Height < 0 ||
                 double.IsInfinity(size.Width) || double.IsInfinity(size.Height) ||
                 double.IsNaN(size.Width) || double.IsNaN(size.Height);
+        }
+
+        /// <summary>
+        /// Ensures neither component of a <see cref="Size"/> is negative.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <returns>The non-negative size.</returns>
+        private static Size NonNegative(Size size)
+        {
+            return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
         }
 
         /// <summary>

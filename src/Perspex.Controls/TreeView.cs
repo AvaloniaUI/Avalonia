@@ -58,7 +58,7 @@ namespace Perspex.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
-                null);
+                new TreeContainerIndex());
         }
 
         /// <inheritdoc/>
@@ -101,13 +101,13 @@ namespace Perspex.Controls
             bool rangeModifier = false,
             bool toggleModifier = false)
         {
-            var item = ItemContainerGenerator.TreeItemFromContainer(container);
+            var item = ItemContainerGenerator.Index.ItemFromContainer(container);
 
             if (item != null)
             {
                 if (SelectedItem != null)
                 {
-                    var old = ItemContainerGenerator.TreeContainerFromItem(SelectedItem);
+                    var old = ItemContainerGenerator.Index.ContainerFromItem(SelectedItem);
                     MarkContainerSelected(old, false);
                 }
 
@@ -162,7 +162,7 @@ namespace Perspex.Controls
 
             if (item != null)
             {
-                if (item.ItemContainerGenerator.RootGenerator == this.ItemContainerGenerator)
+                if (item.ItemContainerGenerator.Index == this.ItemContainerGenerator.Index)
                 {
                     return item;
                 }
@@ -179,22 +179,14 @@ namespace Perspex.Controls
         private void MarkContainerSelected(IControl container, bool selected)
         {
             var selectable = container as ISelectable;
-            var styleable = container as IStyleable;
 
             if (selectable != null)
             {
                 selectable.IsSelected = selected;
             }
-            else if (styleable != null)
+            else
             {
-                if (selected)
-                {
-                    styleable.Classes.Add(":selected");
-                }
-                else
-                {
-                    styleable.Classes.Remove(":selected");
-                }
+                ((IPseudoClasses)container.Classes).Set(":selected", selected);
             }
         }
     }

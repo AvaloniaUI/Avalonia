@@ -143,6 +143,35 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Measure_Should_Pass_Bounded_X_If_CannotScrollHorizontally()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+                [ScrollContentPresenter.CanScrollHorizontallyProperty] = false,
+            };
+
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(new Size(100, double.PositiveInfinity), child.AvailableSize);
+        }
+
+        [Fact]
+        public void Measure_Should_Pass_Unbounded_X_If_CanScrollHorizontally()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+            };
+
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(Size.Infinity, child.AvailableSize);
+        }
+
+        [Fact]
         public void Arrange_Should_Set_Viewport_And_Extent_In_That_Order()
         {
             var target = new ScrollContentPresenter
@@ -240,8 +269,11 @@ namespace Perspex.Controls.UnitTests.Presenters
 
         private class TestControl : Control
         {
+            public Size AvailableSize { get; private set; }
+
             protected override Size MeasureOverride(Size availableSize)
             {
+                AvailableSize = availableSize;
                 return new Size(150, 150);
             }
         }

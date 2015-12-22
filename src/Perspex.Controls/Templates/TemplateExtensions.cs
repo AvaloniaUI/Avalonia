@@ -12,35 +12,6 @@ namespace Perspex.Controls.Templates
 {
     public static class TemplateExtensions
     {
-        public static IReparentingHost FindReparentingHost(this IControl control)
-        {
-            var tp = control.TemplatedParent;
-            var chain = new List<IReparentingHost>();
-
-            while (tp != null)
-            {
-                var reparentingHost = tp as IReparentingHost;
-                var styleable = tp as IStyleable;
-
-                if (reparentingHost != null)
-                {
-                    chain.Add(reparentingHost);
-                }
-
-                tp = styleable?.TemplatedParent ?? null;
-            }
-
-            foreach (var reparenting in chain.AsEnumerable().Reverse())
-            {
-                if (reparenting.WillReparentChildrenOf(control))
-                {
-                    return reparenting;
-                }
-            }
-
-            return null;
-        }
-
         public static IEnumerable<Control> GetTemplateChildren(this ITemplatedControl control)
         {
             var visual = control as IVisual;

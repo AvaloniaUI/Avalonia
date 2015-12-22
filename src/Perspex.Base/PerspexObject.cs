@@ -163,13 +163,7 @@ namespace Perspex
         {
             get
             {
-                return new BindingDescriptor
-                {
-                    Mode = binding.Mode,
-                    Priority = binding.Priority,
-                    Property = binding.Property,
-                    Source = this,
-                };
+                return CreateBindingDescriptor(binding);
             }
 
             set
@@ -201,6 +195,17 @@ namespace Perspex
                         break;
                 }
             }
+        }
+
+        protected virtual BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        {
+            return new BindingDescriptor
+            {
+                Mode = source.Mode,
+                Priority = source.Priority,
+                Property = source.Property,
+                Source = this,
+            };
         }
 
         public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();

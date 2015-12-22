@@ -119,27 +119,6 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Templated_Child_Should_Have_ApplyTemplate_Called_With_Logical_Then_Visual_Parent()
-        {
-            var target = new TemplatedControl
-            {
-                Template = new FuncControlTemplate(_ => new ApplyTemplateTracker())
-            };
-
-            target.ApplyTemplate();
-
-            var child = (ApplyTemplateTracker)target.GetVisualChildren().Single();
-
-            Assert.Equal(
-                new[]
-                {
-                    new Tuple<IVisual, ILogical>(null, target),
-                    new Tuple<IVisual, ILogical>(target, target),
-                },
-                child.Invocations);
-        }
-
-        [Fact]
         public void Nested_TemplatedControls_Should_Be_Expanded_And_Have_Correct_TemplatedParent()
         {
             var target = new ItemsControl
@@ -186,6 +165,76 @@ namespace Perspex.Controls.UnitTests.Primitives
                 templatedParents);
         }
 
+
+
+        [Fact]
+        public void Nested_TemplatedControls_Should_Register_With_Correct_NameScope()
+        {
+            var target = new ContentControl
+            {
+                Template = new FuncControlTemplate<ContentControl>(ScrollingContentControlTemplate),
+                Content = "foo"
+            };
+
+            target.ApplyTemplate();
+
+            var border = target.GetVisualChildren().FirstOrDefault();
+            Assert.IsType<Border>(border);
+            var scrollViewer = border.GetVisualChildren().FirstOrDefault();
+            Assert.IsType<ScrollViewer>(scrollViewer);
+            var scrollContentPresenter = scrollViewer.GetVisualChildren().FirstOrDefault();
+            Assert.IsType<ScrollContentPresenter>(scrollContentPresenter);
+            var contentPresenter = scrollContentPresenter.GetVisualChildren().FirstOrDefault();
+            Assert.IsType<ContentPresenter>(contentPresenter);
+
+            var borderNs = NameScope.GetNameScope((Control)border);
+            var scrollContentPresenterNs = NameScope.GetNameScope((Control)scrollContentPresenter);
+            Assert.NotNull(borderNs);
+            Assert.Same(scrollViewer, borderNs.Find("ScrollViewer"));
+            Assert.Same(contentPresenter, borderNs.Find("PART_ContentPresenter"));
+            Assert.Same(scrollContentPresenter, scrollContentPresenterNs.Find("PART_ContentPresenter"));
+        }
+
+        [Fact]
+        public void ApplyTemplate_Should_Raise_TemplateApplied()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new FuncControlTemplate(_ => new Decorator())
+            };
+
+            var raised = false;
+
+            target.TemplateApplied += (s, e) =>
+            {
+                Assert.Equal(TemplatedControl.TemplateAppliedEvent, e.RoutedEvent);
+                Assert.Same(target, e.Source);
+                Assert.NotNull(e.NameScope);
+                raised = true;
+            };
+
+            target.ApplyTemplate();
+
+            Assert.True(raised);
+        }
+
+        private static IControl ScrollingContentControlTemplate(ContentControl control)
+        {
+            return new Border
+            {
+                Child = new ScrollViewer
+                {
+                    Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTemplate),
+                    Name = "ScrollViewer",
+                    Content = new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = control[!ContentControl.ContentProperty],
+                    }
+                }
+            };
+        }
+
         private static IControl ItemsControlTemplate(ItemsControl control)
         {
             return new Border
@@ -195,9 +244,9 @@ namespace Perspex.Controls.UnitTests.Primitives
                     Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTemplate),
                     Content = new ItemsPresenter
                     {
-                        Name = "itemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                        [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                        Name = "PART_ItemsPresenter",
+                        [!ItemsPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
+                        [!ItemsPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
                     }
                 }
             };
@@ -207,7 +256,7 @@ namespace Perspex.Controls.UnitTests.Primitives
         {
             var result = new ScrollContentPresenter
             {
-                Name = "contentPresenter",
+                Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
             };
 
