@@ -19,17 +19,9 @@ namespace Perspex.Styling
     {
         public static IObservable<bool> And(IEnumerable<IObservable<bool>> inputs)
         {
-            var sourceArray = inputs.Select(s => s.Publish().RefCount()).ToArray();
-
-            var terminate = sourceArray
-                .ToObservable()
-                .SelectMany(x => x.LastAsync()
-                .Where(y => y == false));
-
-            return sourceArray
-                .CombineLatest(values => values.All(x => x))
-                .DistinctUntilChanged()
-                .TakeUntil(terminate);
+            return inputs.CombineLatest()
+                .Select(values => values.All(x => x))
+                .DistinctUntilChanged();
         }
 
         public static IObservable<bool> Or(IEnumerable<IObservable<bool>> inputs)
