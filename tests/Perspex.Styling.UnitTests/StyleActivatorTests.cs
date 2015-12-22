@@ -85,26 +85,6 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Activator_And_Should_Complete_When_Input_Completes_On_False()
-        {
-            var inputs = new[]
-            {
-                new TestSubject<bool>(false),
-                new TestSubject<bool>(false),
-                new TestSubject<bool>(true),
-            };
-            var target = StyleActivator.And(inputs);
-            var result = new TestObserver<bool>();
-            var completed = false;
-
-            target.Subscribe(_ => { }, () => completed = true);
-            inputs[0].OnNext(false);
-            inputs[0].OnCompleted();
-
-            Assert.True(completed);
-        }
-
-        [Fact]
         public void Activator_Or_Should_Follow_Single_Input()
         {
             var inputs = new[] { new TestSubject<bool>(false) };
