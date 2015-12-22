@@ -1,0 +1,29 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">Border</TextBlock>
+    <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <Border BorderBrush="#f44336" BorderThickness="2" Padding="16">
+        <TextBlock>Border</TextBlock>
+      </Border>
+      <Border Background="#f44336" BorderBrush="#4285f4" BorderThickness="4" Padding="16">
+        <TextBlock>Border and Background</TextBlock>
+      </Border>
+      <Border BorderBrush="#4285f4" 
+              BorderThickness="4" 
+              CornerRadius="8"
+              Padding="16">
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+      <Border Background="#f44336" 
+              CornerRadius="8"
+              Padding="16">
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+    </StackPanel>    
+  </StackPanel>
+</UserControl>

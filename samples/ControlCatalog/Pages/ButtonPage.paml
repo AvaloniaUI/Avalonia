@@ -1,0 +1,26 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">Button</TextBlock>
+    <TextBlock Classes="h2">A button control</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <StackPanel Orientation="Vertical" Gap="8" Width="150">
+        <Button>Button</Button>
+        <Button Foreground="Blue">Foreground</Button>
+        <Button Background="#f44336">Background</Button>
+        <Button IsEnabled="False">Disabled</Button>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Gap="8" Width="150">
+        <Button BorderThickness="0">No Border</Button>
+        <Button BorderBrush="#f44336">Border Color</Button>
+        <Button BorderBrush="#f44336" BorderThickness="4">Thick Border</Button>
+        <Button BorderBrush="#f44336" BorderThickness="4" IsEnabled="False">Disabled</Button>
+      </StackPanel>
+    </StackPanel>
+    
+  </StackPanel>
+</UserControl>

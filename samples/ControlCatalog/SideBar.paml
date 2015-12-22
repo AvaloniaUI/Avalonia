@@ -1,0 +1,39 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="TabControl.sidebar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="Auto,*">
+          <Border Width="190" Background="#1976D2">
+            <TabStrip Classes="sidebar"
+                      Items="{TemplateBinding Items}"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
+              <TabStrip.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical" Gap="4" Margin="0,10,0,0"/>
+                </ItemsPanelTemplate>
+              </TabStrip.ItemsPanel>
+            </TabStrip>
+          </Border>
+          <ScrollViewer Grid.Column="1">
+            <Carousel Items="{TemplateBinding Items}"
+                      MemberSelector="Content"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                      Transition="{TemplateBinding Transition}"
+                      Margin="8,0,0,0"/>
+          </ScrollViewer>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TabStrip.sidebar TabItem">
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="Padding" Value="8"/>
+  </Style>
+
+  <Style Selector="TabStrip.sidebar TabItem:selected">
+    <Setter Property="Background" Value="#20ffffff"/>
+  </Style>
+</Styles>
