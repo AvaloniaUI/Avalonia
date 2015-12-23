@@ -4,9 +4,13 @@
     <Setter Property="Foreground" Value="Gray"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentPresenter Name="PART_ContentPresenter"
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Name="PART_ContentPresenter"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"/>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>

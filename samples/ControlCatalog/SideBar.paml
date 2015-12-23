@@ -2,38 +2,39 @@
   <Style Selector="TabControl.sidebar">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*">
-          <Border Width="190" Background="#1976D2">
-            <TabStrip Classes="sidebar"
+        <DockPanel>
+          <Border MinWidth="190" Background="#1976D2" DockPanel.Dock="Left">
+            <TabStrip Name="PART_TabStrip"
+                      MemberSelector="{Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
               <TabStrip.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <StackPanel Orientation="Vertical" Gap="4" Margin="0,10,0,0"/>
+                  <StackPanel Orientation="Vertical"/>
                 </ItemsPanelTemplate>
               </TabStrip.ItemsPanel>
             </TabStrip>
           </Border>
-          <ScrollViewer Grid.Column="1">
-            <Carousel Items="{TemplateBinding Items}"
-                      MemberSelector="Content"
-                      SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                      Transition="{TemplateBinding Transition}"
-                      Margin="8,0,0,0"/>
-          </ScrollViewer>
-        </Grid>
+          <Carousel Name="PART_Content"
+                    Margin="8 0 0 0"
+                    MemberSelector="{Static TabControl.ContentSelector}"
+                    Items="{TemplateBinding Items}"
+                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                    Transition="{TemplateBinding Transition}"
+                    Grid.Row="1"/>
+        </DockPanel>
       </ControlTemplate>
     </Setter>
   </Style>
 
-  <Style Selector="TabStrip.sidebar TabItem">
+  <Style Selector="TabControl.sidebar TabStripItem">
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="Margin" Value="0"/>
-    <Setter Property="Padding" Value="8"/>
+    <Setter Property="Padding" Value="16"/>
   </Style>
 
-  <Style Selector="TabStrip.sidebar TabItem:selected">
+  <Style Selector="TabControl.sidebar TabStripItem:selected">
     <Setter Property="Background" Value="#20ffffff"/>
   </Style>
 </Styles>
