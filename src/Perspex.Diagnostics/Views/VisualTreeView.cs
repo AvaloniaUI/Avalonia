@@ -55,8 +55,9 @@ namespace Perspex.Diagnostics.Views
                     }),
                     new GridSplitter
                     {
-                        [Grid.ColumnProperty] = 1,
                         Width = 4,
+                        Orientation = Orientation.Vertical,
+                        [Grid.ColumnProperty] = 1,
                     },
                     new ContentControl
                     {
