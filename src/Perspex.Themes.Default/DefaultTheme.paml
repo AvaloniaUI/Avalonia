@@ -1,6 +1,5 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.FocusAdorner.paml"/>
-  
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Button.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.Carousel.paml"/>
   <StyleInclude Source="resource://application/Perspex.Themes.Default/Perspex.Themes.Default.CheckBox.paml"/>
