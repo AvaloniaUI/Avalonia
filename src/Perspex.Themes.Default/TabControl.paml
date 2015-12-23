@@ -1,93 +1,50 @@
 ﻿<Styles xmlns="https://github.com/perspex">
-  <Style Selector="TabControl[TabStripPlacement=Top]">
+  <Style Selector="TabControl">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid RowDefinitions="Auto,*">
-          <TabStrip Name="PART_TabStrip"
-                    MemberSelector="{Static TabControl.HeaderSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
-          <Carousel Name="PART_Content"
-                    MemberSelector="{Static TabControl.ContentSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                    Transition="{TemplateBinding Transition}"
-                    Grid.Row="1"/>
-        </Grid>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <DockPanel>
+            <TabStrip Name="PART_TabStrip"
+                      MemberSelector="{Static TabControl.HeaderSelector}"
+                      Items="{TemplateBinding Items}"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+            <Carousel Name="PART_Content"
+                      MemberSelector="{Static TabControl.ContentSelector}"
+                      Items="{TemplateBinding Items}"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                      Transition="{TemplateBinding Transition}"
+                      Grid.Row="1"/>
+          </DockPanel>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Bottom]">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Grid RowDefinitions="*,Auto">
-          <Carousel Name="PART_Content"
-                    MemberSelector="{Static TabControl.ContentSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                    Transition="{TemplateBinding Transition}"/>
-          <TabStrip Name="PART_TabStrip"
-                    MemberSelector="{Static TabControl.HeaderSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"
-                    Grid.Row="1"/>
-        </Grid>
-      </ControlTemplate>
+  <Style Selector="TabControl[TabStripPlacement=Top] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Top"/>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Bottom"/>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Left] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Left"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
     </Setter>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Left]">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*">
-          <Border>
-            <ScrollViewer>
-              <TabStrip Name="PART_TabStrip"
-                        MemberSelector="{Static TabControl.HeaderSelector}"
-                        Items="{TemplateBinding Items}"
-                        SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
-                <TabStrip.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                  </ItemsPanelTemplate>
-                </TabStrip.ItemsPanel>
-              </TabStrip>
-            </ScrollViewer>
-          </Border>
-          <Carousel Name="PART_Content"
-                    MemberSelector="{Static TabControl.ContentSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                    Transition="{TemplateBinding Transition}"
-                    Grid.Column="1"/>
-        </Grid>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="TabControl[TabStripPlacement=Right]">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto">
-          <Carousel Name="PART_Content"
-                    MemberSelector="{Static TabControl.ContentSelector}"
-                    Items="{TemplateBinding Items}"
-                    SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                    Transition="{TemplateBinding Transition}"/>
-          <Border Grid.Column="1">
-            <ScrollViewer>
-              <TabStrip Name="PART_TabStrip"
-                        MemberSelector="{Static TabControl.HeaderSelector}"
-                        Items="{TemplateBinding Items}"
-                        SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
-                <TabStrip.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                  </ItemsPanelTemplate>
-                </TabStrip.ItemsPanel>
-              </TabStrip>
-            </ScrollViewer>
-          </Border>
-        </Grid>
-      </ControlTemplate>
+  <Style Selector="TabControl[TabStripPlacement=Right] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Right"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
     </Setter>
   </Style>
 </Styles>
