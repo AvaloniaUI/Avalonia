@@ -539,7 +539,12 @@ namespace Perspex.Layout
 
                 if (UseLayoutRounding)
                 {
-                    size = new Size(Math.Ceiling(size.Width), Math.Ceiling(size.Height));
+                    size = new Size(
+                        Math.Ceiling(size.Width), 
+                        Math.Ceiling(size.Height));
+                    sizeMinusMargins = new Size(
+                        Math.Ceiling(sizeMinusMargins.Width), 
+                        Math.Ceiling(sizeMinusMargins.Height));
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
