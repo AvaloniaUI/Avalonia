@@ -23,8 +23,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Orientation?> OrientationProperty =
-            PerspexProperty.Register<GridSplitter, Orientation?>(nameof(Orientation));
+        public static readonly PerspexProperty<Orientation> OrientationProperty =
+            PerspexProperty.Register<GridSplitter, Orientation>(nameof(Orientation));
 
         protected Grid _grid;
 
@@ -42,7 +42,7 @@ namespace Perspex.Controls
         /// <remarks>
         /// if null, it's inferred from column/row definition (should be auto).
         /// </remarks>
-        public Orientation? Orientation {
+        public Orientation Orientation {
             get
             {
                 return GetValue(OrientationProperty);
@@ -75,7 +75,7 @@ namespace Perspex.Controls
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
-            var delta = Orientation.Value == Perspex.Controls.Orientation.Vertical ? e.Vector.X : e.Vector.Y;
+            var delta = Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
             double max;
             double min;
             GetDeltaConstraints(out min, out max);
@@ -95,30 +95,6 @@ namespace Perspex.Controls
                     SetLengthInStars(definition, GetActualLength(definition)); // same size but in stars.
                 }
             }
-        }
-
-        /// <summary>
-        /// If orientation is not set, method automatically calculates orientation based column/row auto size.
-        /// </summary>
-        private void AutoSetOrientation()
-        {
-            if (Orientation.HasValue)
-            {
-                return;
-            }
-            var column = GetValue(Grid.ColumnProperty);
-            if (column < _grid.ColumnDefinitions.Count && _grid.ColumnDefinitions[column].Width.IsAuto)
-            {
-                Orientation = Perspex.Controls.Orientation.Vertical;
-                return;
-            }
-            var row = GetValue(Grid.RowProperty);
-            if (row < _grid.RowDefinitions.Count && _grid.RowDefinitions[row].Height.IsAuto)
-            {
-                Orientation = Perspex.Controls.Orientation.Horizontal;
-                return;
-            }
-            throw new InvalidOperationException("GridSpliter Should have Orientation, width or height set.");
         }
 
         private double GetActualLength(DefinitionBase definition)
@@ -162,8 +138,8 @@ namespace Perspex.Controls
         {
             base.OnAttachedToVisualTree(e);
             _grid = this.GetVisualParent<Grid>();
-            AutoSetOrientation();
-            if (Orientation.Value == Perspex.Controls.Orientation.Vertical)
+            
+            if (Orientation == Orientation.Vertical)
             {
                 Cursor = new Cursor(StandardCursorType.SizeWestEast);
                 var col = GetValue(Grid.ColumnProperty);
