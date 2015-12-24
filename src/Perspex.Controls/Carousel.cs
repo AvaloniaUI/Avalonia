@@ -44,6 +44,28 @@ namespace Perspex.Controls
             set { SetValue(TransitionProperty, value); }
         }
 
+        /// <summary>
+        /// Moves to the next item in the carousel.
+        /// </summary>
+        public void Next()
+        {
+            if (SelectedIndex < Items.Count() - 1)
+            {
+                ++SelectedIndex;
+            }
+        }
+
+        /// <summary>
+        /// Moves to the previous item in the carousel.
+        /// </summary>
+        public void Previous()
+        {
+            if (SelectedIndex > 0)
+            {
+                --SelectedIndex;
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {

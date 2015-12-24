@@ -1,0 +1,16 @@
+﻿<Application xmlns="https://github.com/perspex">
+  <Application.Styles>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="Foreground" Value="#212121"/>
+      <Setter Property="FontSize" Value="20"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="TextBlock.h2">
+      <Setter Property="Foreground" Value="#727272"/>
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <StyleInclude Source="resource://application/ControlCatalog/ControlCatalog.SideBar.paml"/>
+  </Application.Styles>
+</Application>

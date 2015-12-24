@@ -1,0 +1,13 @@
+﻿<Window xmlns="https://github.com/perspex"
+        xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
+        Title="Perspex Control Gallery">
+  <TabControl Classes="sidebar">
+    <TabControl.Transition>
+      <CrossFade Duration="0.25"/>
+    </TabControl.Transition>
+    <TabItem Header="Border"><pages:BorderPage/></TabItem>
+    <TabItem Header="Button"><pages:ButtonPage/></TabItem>
+    <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
+    <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
+  </TabControl>
+</Window>
