@@ -15,24 +15,91 @@ namespace Perspex.Shared.PlatformSupport
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
-        private static readonly Dictionary<string, Assembly> AssemblyNameCache
-            = new Dictionary<string, Assembly>();
+        class AssemblyDescriptor
+        {
+            public AssemblyDescriptor(Assembly assembly)
+            {
+                Assembly = assembly;
+                Resources = assembly.GetManifestResourceNames()
+                    .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
+                Name = assembly.GetName().Name;
+            }
 
-        private readonly Assembly _defaultAssembly;
+            public Assembly Assembly { get; }
+            public Dictionary<string, IAssetDescriptor> Resources { get; }
+            public string Name { get; }
+        }
+
+
+        private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
+            = new Dictionary<string, AssemblyDescriptor>();
+
+        private readonly AssemblyDescriptor _defaultAssembly;
 
         public AssetLoader(Assembly assembly = null)
         {
-            _defaultAssembly = assembly;
+            if (assembly == null)
+                assembly = Assembly.GetEntryAssembly();
+            _defaultAssembly = new AssemblyDescriptor(assembly);
         }
+    
 
-        static Assembly GetAssembly(string name)
+
+        AssemblyDescriptor GetAssembly(string name)
         {
-            Assembly rv;
+            if (name == null)
+                return _defaultAssembly;
+            AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
                 AssemblyNameCache[name] = rv =
-                    AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == name)
-                    ?? Assembly.Load(name);
+                    new AssemblyDescriptor(AppDomain.CurrentDomain.GetAssemblies()
+                        .FirstOrDefault(a => a.GetName().Name == name)
+                                           ?? Assembly.Load(name));
             return rv;
+        }
+
+        interface IAssetDescriptor
+        {
+            Stream GetStream();
+        }
+
+
+        class AssemblyResourceDescriptor : IAssetDescriptor
+        {
+            private readonly Assembly _asm;
+            private readonly string _name;
+
+            public AssemblyResourceDescriptor(Assembly asm, string name)
+            {
+                _asm = asm;
+                _name = name;
+            }
+
+            public Stream GetStream()
+            {
+                return _asm.GetManifestResourceStream(_name);
+            }
+        }
+        
+
+        IAssetDescriptor GetAsset(Uri uri)
+        {
+            if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
+            {
+                var qs = uri.Query.TrimStart('?')
+                    .Split('&')
+                    .Select(p => p.Split('='))
+                    .ToDictionary(p => p[0], p => p[1]);
+                //TODO: Replace _defaultAssembly by current one (need support from OmniXAML)
+                var asm = _defaultAssembly;
+                if (qs.ContainsKey("assembly"))
+                    asm = GetAssembly(qs["assembly"]);
+
+                IAssetDescriptor rv;
+                asm.Resources.TryGetValue(uri.AbsolutePath, out rv);
+                return rv;
+            }
+            throw new ArgumentException($"Invalid uri, see https://github.com/Perspex/Perspex/issues/282#issuecomment-166982104", nameof(uri));
         }
 
         /// <summary>
@@ -42,11 +109,7 @@ namespace Perspex.Shared.PlatformSupport
         /// <returns>True if the asset could be found; otherwise false.</returns>
         public bool Exists(Uri uri)
         {
-            var parts = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            var asm = parts.Length == 1 ? (_defaultAssembly ?? Assembly.GetEntryAssembly()) : GetAssembly(parts[0]);
-            var typeName = parts[parts.Length == 1 ? 0 : 1];
-            var rv = asm.GetManifestResourceStream(typeName);
-            return rv != null;
+            return GetAsset(uri) != null;
         }
 
         /// <summary>
@@ -59,18 +122,10 @@ namespace Perspex.Shared.PlatformSupport
         /// </exception>
         public Stream Open(Uri uri)
         {
-            var parts = uri.AbsolutePath.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
-            var asm = parts.Length == 1 ? (_defaultAssembly ?? Assembly.GetEntryAssembly()) : GetAssembly(parts[0]);
-            var typeName = parts[parts.Length == 1 ? 0 : 1];
-            var rv = asm.GetManifestResourceStream(typeName);
-            if (rv == null)
-            {
-#if DEBUG
-                var names = asm.GetManifestResourceNames().ToList();
-#endif
+            var asset = GetAsset(uri);
+            if (asset == null)
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
-            }
-            return rv;
+            return asset.GetStream();
         }
     }
 }
