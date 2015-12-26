@@ -162,7 +162,10 @@ namespace Perspex.Rendering
             }
             else
             {
-                return visual.Bounds.TransformToAABB(visual.RenderTransform.Value);
+                var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                var offset = Matrix.CreateTranslation(visual.Bounds.Position + origin);
+                var m = (-offset) * visual.RenderTransform.Value * (offset);
+                return visual.Bounds.TransformToAABB(m);
             }
         }
 
