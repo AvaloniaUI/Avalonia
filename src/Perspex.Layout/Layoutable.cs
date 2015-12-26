@@ -446,11 +446,13 @@ namespace Perspex.Layout
         {
             if (IsVisible)
             {
+                var margin = Margin;
+
                 ApplyTemplate();
 
                 var constrained = LayoutHelper
                     .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(Margin);
+                    .Deflate(margin);
 
                 var measured = MeasureOverride(constrained);
                 var width = measured.Width;
@@ -472,7 +474,7 @@ namespace Perspex.Layout
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
 
-                return NonNegative(new Size(width, height).Inflate(Margin));
+                return NonNegative(new Size(width, height).Inflate(margin));
             }
             else
             {
