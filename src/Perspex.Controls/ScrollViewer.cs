@@ -231,12 +231,6 @@ namespace Perspex.Controls
             return new Vector(Clamp(offset.X, 0, maxX), Clamp(offset.Y, 0, maxY));
         }
 
-        /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return base.MeasureOverride(availableSize);
-        }
-
         private static double Clamp(double value, double min, double max)
         {
             return (value < min) ? min : (value > max) ? max : value;

@@ -72,12 +72,6 @@ namespace Perspex.Controls.Primitives
             set { SetValue(OrientationProperty, value); }
         }
 
-        /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return base.MeasureOverride(availableSize);
-        }
-
         /// <summary>
         /// Calculates whether the scrollbar should be visible.
         /// </summary>

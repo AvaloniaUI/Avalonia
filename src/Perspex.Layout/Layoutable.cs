@@ -490,7 +490,7 @@ namespace Perspex.Layout
             double width = 0;
             double height = 0;
 
-            foreach (ILayoutable child in this.GetVisualChildren().OfType<ILayoutable>())
+            foreach (ILayoutable child in this.GetVisualChildren())
             {
                 child.Measure(availableSize);
                 width = Math.Max(width, child.DesiredSize.Width);
