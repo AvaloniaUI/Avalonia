@@ -108,8 +108,8 @@ namespace Perspex.Markup.Xaml
         {
             var asm = type.GetTypeInfo().Assembly.GetName().Name;
             var typeName = type.FullName;
-            yield return new Uri("resource://application/" + asm + "/" + typeName + ".xaml");
-            yield return new Uri("resource://application/" + asm + "/" + typeName + ".paml");
+            yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
+            yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
 
         }
     }
