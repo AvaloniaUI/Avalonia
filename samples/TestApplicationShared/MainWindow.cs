@@ -358,7 +358,7 @@ namespace TestApplication
 
         static Stream GetImage(string path)
         {
-            return PerspexLocator.Current.GetService<IAssetLoader>().Open(new Uri("res:///" + RootNamespace + "." + path));
+            return PerspexLocator.Current.GetService<IAssetLoader>().Open(new Uri("resm:" + RootNamespace + "." + path));
         }
 
         private static TabItem ListsTab()

@@ -87,7 +87,7 @@ namespace Perspex.Shared.PlatformSupport
             if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
             {
                 var qs = uri.Query.TrimStart('?')
-                    .Split('&')
+                    .Split(new[] {'&'}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(p => p.Split('='))
                     .ToDictionary(p => p[0], p => p[1]);
                 //TODO: Replace _defaultAssembly by current one (need support from OmniXAML)
