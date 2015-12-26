@@ -30,11 +30,9 @@ namespace Perspex.Markup.Xaml.Converters
             {
                 case "file":
                     return new Bitmap((string)value);
-                case "resource":
+                default:
                     var assets = PerspexLocator.Current.GetService<IAssetLoader>();
                     return new Bitmap(assets.Open(uri));
-                default:
-                    throw new NotSupportedException($"Unsupported bitmap URI scheme: {uri.Scheme}.");
             }
         }
 

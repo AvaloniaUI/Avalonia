@@ -11,6 +11,6 @@
       <Setter Property="FontSize" Value="13"/>
     </Style>
 
-    <StyleInclude Source="resource://application/ControlCatalog/ControlCatalog.SideBar.paml"/>
+    <StyleInclude Source="resm:ControlCatalog.SideBar.paml"/>
   </Application.Styles>
 </Application>
