@@ -44,7 +44,8 @@ namespace Perspex.Shared.PlatformSupport
         {
             if (assembly == null)
                 assembly = Assembly.GetEntryAssembly();
-            _defaultAssembly = new AssemblyDescriptor(assembly);
+            if (assembly != null)
+                _defaultAssembly = new AssemblyDescriptor(assembly);
         }
     
 
@@ -98,6 +99,10 @@ namespace Perspex.Shared.PlatformSupport
                 var asm = _defaultAssembly;
                 if (qs.ContainsKey("assembly"))
                     asm = GetAssembly(qs["assembly"]);
+
+                if (asm == null && _defaultAssembly == null)
+                    throw new ArgumentException(
+                        "No defaultAssembly, entry assembly or explicit assembly specified, don't know where to look up for the resource, try specifiyng assembly explicitly");
 
                 IAssetDescriptor rv;
                 asm.Resources.TryGetValue(uri.AbsolutePath, out rv);
