@@ -122,7 +122,6 @@
     <Compile Include="PanelTests.cs" />
     <Compile Include="ControlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TemplatedControlTests.cs" />
     <Compile Include="Templates\TemplateExtensionsTests.cs" />
     <Compile Include="TestTemplatedControl.cs" />
     <Compile Include="TestRoot.cs" />

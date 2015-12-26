@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Perspex.Collections;
+using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
+using Perspex.Styling;
 using Perspex.VisualTree;
 using Xunit;
 
@@ -17,7 +18,47 @@ namespace Perspex.Controls.UnitTests.Primitives
     public class TemplatedControlTests
     {
         [Fact]
-        public void ApplyTemplate_Should_Create_Visual_Child()
+        public void Template_Doesnt_Get_Executed_On_Set()
+        {
+            bool executed = false;
+
+            var template = new FuncControlTemplate(_ =>
+            {
+                executed = true;
+                return new Control();
+            });
+
+            var target = new TemplatedControl
+            {
+                Template = template,
+            };
+
+            Assert.False(executed);
+        }
+
+        [Fact]
+        public void Template_Gets_Executed_On_Measure()
+        {
+            bool executed = false;
+
+            var template = new FuncControlTemplate(_ =>
+            {
+                executed = true;
+                return new Control();
+            });
+
+            var target = new TemplatedControl
+            {
+                Template = template,
+            };
+
+            target.Measure(new Size(100, 100));
+
+            Assert.True(executed);
+        }
+
+        [Fact]
+        public void ApplyTemplate_Should_Create_Visual_Children()
         {
             var target = new TemplatedControl
             {
@@ -119,53 +160,81 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Nested_TemplatedControls_Should_Be_Expanded_And_Have_Correct_TemplatedParent()
+        public void Nested_Templated_Controls_Have_Correct_TemplatedParent()
         {
-            var target = new ItemsControl
+            var target = new TestTemplatedControl
             {
-                Template = new FuncControlTemplate<ItemsControl>(ItemsControlTemplate),
-                Items = new[] { "Foo", }
+                Template = new FuncControlTemplate(_ =>
+                {
+                    return new ContentControl
+                    {
+                        Template = new FuncControlTemplate(parent =>
+                        {
+                            return new Border
+                            {
+                                Child = new ContentPresenter
+                                {
+                                    [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
+                                }
+                            };
+                        }),
+                        Content = new TextBlock
+                        {
+                        }
+                    };
+                }),
             };
 
             target.ApplyTemplate();
 
-            var scrollViewer = target.GetVisualDescendents()
-                .OfType<ScrollViewer>()
-                .Single();
-            var types = target.GetVisualDescendents()
-                .Select(x => x.GetType())
-                .ToList();
-            var templatedParents = target.GetVisualDescendents()
-                .OfType<IControl>()
-                .Select(x => x.TemplatedParent)
-                .ToList();
+            var contentControl = target.GetTemplateChildren().OfType<ContentControl>().Single();
+            var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
+            var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
+            var textBlock = (TextBlock)presenter.Content;
 
-            Assert.Equal(
-                new[]
-                {
-                    typeof(Border),
-                    typeof(ScrollViewer),
-                    typeof(ScrollContentPresenter),
-                    typeof(ItemsPresenter),
-                    typeof(StackPanel),
-                    typeof(TextBlock),
-                },
-                types);
-
-            Assert.Equal(
-                new object[]
-                {
-                    target,
-                    target,
-                    scrollViewer,
-                    target,
-                    target,
-                    null
-                },
-                templatedParents);
+            Assert.Equal(target, contentControl.TemplatedParent);
+            Assert.Equal(contentControl, border.TemplatedParent);
+            Assert.Equal(contentControl, presenter.TemplatedParent);
+            Assert.Equal(target, textBlock.TemplatedParent);
         }
 
+        [Fact]
+        public void Templated_Children_Should_Be_Styled()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var styler = new Mock<IStyler>();
 
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+
+                TestTemplatedControl target;
+
+                var root = new TestRoot
+                {
+                    Child = target = new TestTemplatedControl
+                    {
+                        Template = new FuncControlTemplate(_ =>
+                        {
+                            return new StackPanel
+                            {
+                                Children = new Controls
+                            {
+                                new TextBlock
+                                {
+                                }
+                            }
+                            };
+                        }),
+                    }
+                };
+
+                target.ApplyTemplate();
+
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
+            }
+        }
 
         [Fact]
         public void Nested_TemplatedControls_Should_Register_With_Correct_NameScope()
