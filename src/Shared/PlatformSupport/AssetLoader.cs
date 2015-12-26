@@ -20,9 +20,13 @@ namespace Perspex.Shared.PlatformSupport
             public AssemblyDescriptor(Assembly assembly)
             {
                 Assembly = assembly;
-                Resources = assembly.GetManifestResourceNames()
-                    .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
-                Name = assembly.GetName().Name;
+
+                if (assembly != null)
+                {
+                    Resources = assembly.GetManifestResourceNames()
+                        .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
+                    Name = assembly.GetName().Name;
+                }
             }
 
             public Assembly Assembly { get; }
