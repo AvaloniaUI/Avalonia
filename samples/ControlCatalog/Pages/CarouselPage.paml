@@ -20,9 +20,9 @@
       </Button>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal">
-      <TextBlock>Transition</TextBlock>
-      <DropDown SelectedIndex="0">
+    <StackPanel Orientation="Horizontal" Gap="4">
+      <TextBlock VerticalAlignment="Center">Transition</TextBlock>
+      <DropDown SelectedIndex="0" VerticalAlignment="Center">
         <ListBoxItem>None</ListBoxItem>
         <ListBoxItem>Slide</ListBoxItem>
         <ListBoxItem>Crossfade</ListBoxItem>

@@ -83,6 +83,12 @@ namespace Perspex.Controls
             return new ItemContainerGenerator<ListBoxItem>(this, ListBoxItem.ContentProperty);
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            this.UpdateSelectionBoxItem(this.SelectedItem);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -149,7 +155,19 @@ namespace Perspex.Controls
 
         private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)
         {
-            var control = e.NewValue as IControl;
+            UpdateSelectionBoxItem(e.NewValue);
+        }
+
+        private void UpdateSelectionBoxItem(object item)
+        {
+            var contentControl = item as IContentControl;
+
+            if (contentControl != null)
+            {
+                item = contentControl.Content;
+            }
+
+            var control = item as IControl;
 
             if (control != null)
             {
@@ -169,7 +187,7 @@ namespace Perspex.Controls
             }
             else
             {
-                SelectionBoxItem = e.NewValue;
+                SelectionBoxItem = item;
             }
         }
     }
