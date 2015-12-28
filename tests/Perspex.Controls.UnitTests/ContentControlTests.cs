@@ -54,7 +54,6 @@ namespace Perspex.Controls.UnitTests
                 root.Child = target;
 
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
 
                 styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
                 styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());

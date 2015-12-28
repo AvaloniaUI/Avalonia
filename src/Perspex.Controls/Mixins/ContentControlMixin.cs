@@ -59,6 +59,8 @@ namespace Perspex.Controls.Mixins
 
                     if (presenter != null)
                     {
+                        presenter.ApplyTemplate();
+
                         var logicalChildren = logicalChildrenSelector(sender);
                         var subscription = presenter
                             .GetObservable(ContentPresenter.ChildProperty)
