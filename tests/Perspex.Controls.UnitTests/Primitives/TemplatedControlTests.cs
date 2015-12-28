@@ -230,8 +230,9 @@ namespace Perspex.Controls.UnitTests.Primitives
                                 }
                             };
                         }),
-                        Content = new TextBlock
+                        Content = new Decorator
                         {
+                            Child = new TextBlock()
                         }
                     };
                 }),
@@ -244,11 +245,13 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
             var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
-            var textBlock = (TextBlock)presenter.Content;
+            var decorator = (Decorator)presenter.Content;
+            var textBlock = (TextBlock)decorator.Child;
 
             Assert.Equal(target, contentControl.TemplatedParent);
             Assert.Equal(contentControl, border.TemplatedParent);
             Assert.Equal(contentControl, presenter.TemplatedParent);
+            Assert.Equal(target, decorator.TemplatedParent);
             Assert.Equal(target, textBlock.TemplatedParent);
         }
 

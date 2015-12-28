@@ -64,7 +64,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
-            PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent));
+            PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
 
         /// <summary>
         /// Event raised when an element wishes to be scrolled into view.

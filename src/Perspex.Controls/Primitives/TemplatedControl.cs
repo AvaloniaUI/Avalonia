@@ -212,7 +212,8 @@ namespace Perspex.Controls.Primitives
                     var child = Template.Build(this);
                     var nameScope = new NameScope();
                     NameScope.SetNameScope((Control)child, nameScope);
-                    SetupTemplateControls(child, nameScope);
+                    child.SetValue(TemplatedParentProperty, this);
+                    RegisterNames(child, nameScope);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
 
@@ -259,31 +260,22 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Sets the TemplatedParent property for a control created from the control template and
-        /// applies the templates of nested templated controls. Also adds each control to its name
-        /// scope if it has a name.
+        /// Registers each control with its name scope.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="nameScope">The name scope.</param>
-        private void SetupTemplateControls(IControl control, INameScope nameScope)
+        private void RegisterNames(IControl control, INameScope nameScope)
         {
-            // If control.TemplatedParent is null at this point, then the control is our templated
-            // child so set its TemplatedParent and register it with its name scope.
-            if (control.TemplatedParent == null)
+            if (control.Name != null)
             {
-                control.SetValue(TemplatedParentProperty, this);
-
-                if (control.Name != null)
-                {
-                    nameScope.Register(control.Name, control);
-                }
+                nameScope.Register(control.Name, control);
             }
 
-            if (!(control is IPresenter && control.TemplatedParent == this))
+            if (control.TemplatedParent == this)
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    SetupTemplateControls(child, nameScope);
+                    RegisterNames(child, nameScope);
                 }
             }
         }
