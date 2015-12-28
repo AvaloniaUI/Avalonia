@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
-using Perspex.Controls.UnitTests.Primitives;
 using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Styling;
@@ -35,6 +32,7 @@ namespace Perspex.Controls.UnitTests.Utils
                 tl.Content = button;
                 tl.Template = CreateWindowTemplate();
                 tl.ApplyTemplate();
+                tl.Presenter.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(button, gesture1);
 

@@ -1,12 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Linq;
-using Perspex.Controls;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
-using Perspex.VisualTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -23,26 +20,9 @@ namespace Perspex.Controls.UnitTests
             };
 
             target.ApplyTemplate();
+            target.Presenter.UpdateChild();
 
             Assert.IsType<TextBlock>(target.Presenter.Child);
-        }
-
-        [Fact]
-        public void ScrollViewer_In_Template_Sets_Child_TemplatedParent()
-        {
-            var target = new ContentControl
-            {
-                Template = new FuncControlTemplate<ContentControl>(CreateNestedTemplate),
-                Content = "Foo",
-            };
-
-            target.ApplyTemplate();
-
-            var presenter = target.GetVisualDescendents()
-                .OfType<ContentPresenter>()
-                .Single(x => x.Name == "this");
-
-            Assert.Equal(target, presenter.TemplatedParent);
         }
 
         [Fact]
@@ -112,7 +92,7 @@ namespace Perspex.Controls.UnitTests
                 Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
                 Content = new ContentPresenter
                 {
-                    Name = "this"
+                    Name = "PART_ContentPresenter",
                 }
             };
         }

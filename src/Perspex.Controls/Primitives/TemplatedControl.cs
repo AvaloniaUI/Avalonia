@@ -212,20 +212,9 @@ namespace Perspex.Controls.Primitives
                     var child = Template.Build(this);
                     var nameScope = new NameScope();
                     NameScope.SetNameScope((Control)child, nameScope);
-
-                    // We need to call SetupTemplateControls twice:
-                    // - Once before the controls are added to the visual/logical trees so that the
-                    //   TemplatedParent property is set and names are registered; if 
-                    //   TemplatedParent is not set when the control is added to the logical tree, 
-                    //   then styles with the /template/ selector won't match.
-                    // - Once after the controls are added to the logical tree (and thus styled) to
-                    //   call ApplyTemplate on nested templated controls and register any of our
-                    //   templated children that appear as children of presenters in these nested
-                    //   templated child controls.
                     SetupTemplateControls(child, nameScope);
-                    VisualChildren.Add(child);
                     ((ISetLogicalParent)child).SetParent(this);
-                    SetupTemplateControls(child, nameScope);
+                    VisualChildren.Add(child);
 
                     OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
                 }
@@ -289,8 +278,6 @@ namespace Perspex.Controls.Primitives
                     nameScope.Register(control.Name, control);
                 }
             }
-
-            control.ApplyTemplate();
 
             if (!(control is IPresenter && control.TemplatedParent == this))
             {

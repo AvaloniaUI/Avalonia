@@ -45,6 +45,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.Equal(1, target.GetLogicalChildren().Count());
 
@@ -57,7 +58,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new CarouselPresenter
             {
-                Name = "itemsPresenter",
+                Name = "PART_ItemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                 [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],

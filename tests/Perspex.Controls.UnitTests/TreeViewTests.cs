@@ -24,7 +24,7 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
             Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
@@ -41,7 +41,7 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
             var header = (TextBlock)container.Header;
@@ -116,7 +116,7 @@ namespace Perspex.Controls.UnitTests
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             var result = target.GetLogicalChildren()
                 .OfType<TreeViewItem>()
@@ -172,7 +172,7 @@ namespace Perspex.Controls.UnitTests
                 Items = items,
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             var dataContexts = target.Presenter.Panel.Children
                 .Cast<Control>()
@@ -187,6 +187,7 @@ namespace Perspex.Controls.UnitTests
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
+            tree.Presenter.ApplyTemplate();
             ApplyTemplates(tree.Presenter.Panel.Children);
         }
 
@@ -196,6 +197,7 @@ namespace Perspex.Controls.UnitTests
             {
                 control.Template = CreateTreeViewItemTemplate();
                 control.ApplyTemplate();
+                control.Presenter.ApplyTemplate();
                 ApplyTemplates(control.Presenter.Panel.Children);
             }
         }

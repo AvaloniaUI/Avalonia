@@ -1,8 +1,11 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Linq;
 using Perspex.Controls.Presenters;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.VisualTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Presenters
@@ -17,11 +20,8 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             target.Content = child;
 
-            // Child should not update until ApplyTemplate called.
             Assert.Null(target.Child);
-
-            target.ApplyTemplate();
-
+            target.UpdateChild();
             Assert.Equal(child, target.Child);
         }
 
@@ -32,13 +32,39 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             target.Content = "Foo";
 
-            // Child should not update until ApplyTemplate called.
             Assert.Null(target.Child);
-
-            target.ApplyTemplate();
-
+            target.UpdateChild();
             Assert.IsType<TextBlock>(target.Child);
             Assert.Equal("Foo", ((TextBlock)target.Child).Text);
+        }
+
+        [Fact]
+        public void Should_Set_Childs_Parent_To_TemplatedParent()
+        {
+            var content = new Border();
+            var target = new TestContentControl
+            {
+                Template = new FuncControlTemplate<TestContentControl>(parent =>
+                    new ContentPresenter { Content = parent.Child }),
+                Child = content,
+            };
+
+            target.ApplyTemplate();
+            var presenter = ((ContentPresenter)target.GetVisualChildren().Single());
+            presenter.UpdateChild();
+
+            Assert.Same(target, content.Parent);
+        }
+
+        [Fact]
+        public void Should_Set_Childs_Parent_To_Itself_Outside_Template()
+        {
+            var content = new Border();
+            var target = new ContentPresenter { Content = content };
+
+            target.UpdateChild();
+
+            Assert.Same(target, content.Parent);
         }
 
         [Fact]
@@ -49,7 +75,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 Content = "Foo",
             };
 
-            target.ApplyTemplate();
+            target.UpdateChild();
             Assert.IsType<TextBlock>(target.Child);
 
             var root = new TestRoot
@@ -63,6 +89,11 @@ namespace Perspex.Controls.UnitTests.Presenters
             root.Child = target;
             target.ApplyTemplate();
             Assert.IsType<Decorator>(target.Child);
+        }
+
+        private class TestContentControl : TemplatedControl
+        {
+            public IControl Child { get; set; }
         }
     }
 }

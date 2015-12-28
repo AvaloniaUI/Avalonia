@@ -96,6 +96,7 @@ namespace Perspex.Controls.Primitives
                     _presenterSubscription = null;
                 }
 
+                Presenter?.ApplyTemplate();
                 Presenter?.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
             }

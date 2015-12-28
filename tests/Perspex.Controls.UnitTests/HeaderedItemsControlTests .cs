@@ -37,6 +37,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Header = "Foo";
             target.ApplyTemplate();
+            target.HeaderPresenter.UpdateChild();
 
             var child = target.HeaderPresenter.Child;
 

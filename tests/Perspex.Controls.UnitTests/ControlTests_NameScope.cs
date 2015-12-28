@@ -28,6 +28,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             root.ApplyTemplate();
+            root.Presenter.UpdateChild();
 
             Assert.Same(root.Find("foo"), root.Content);
             Assert.Same(root.Find("bar"), ((Border)root.Content).Child);

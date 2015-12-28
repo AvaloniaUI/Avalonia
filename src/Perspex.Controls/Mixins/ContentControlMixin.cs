@@ -8,6 +8,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Interactivity;
+using Perspex.Styling;
 
 namespace Perspex.Controls.Mixins
 {
@@ -62,6 +63,7 @@ namespace Perspex.Controls.Mixins
                         var subscription = presenter
                             .GetObservable(ContentPresenter.ChildProperty)
                             .Subscribe(child => UpdateLogicalChild(
+                                sender,
                                 logicalChildren, 
                                 logicalChildren.FirstOrDefault(), 
                                 child));
@@ -82,7 +84,18 @@ namespace Perspex.Controls.Mixins
                 if (sender != null)
                 {
                     var logicalChildren = logicalChildrenSelector(sender);
-                    UpdateLogicalChild(logicalChildren, e.OldValue, e.NewValue);
+                    UpdateLogicalChild(sender, logicalChildren, e.OldValue, e.NewValue);
+                }
+            });
+
+            Control.TemplatedParentProperty.Changed.Subscribe(e =>
+            {
+                var sender = e.Sender as TControl;
+
+                if (sender != null)
+                {
+                    var logicalChild = logicalChildrenSelector(sender).FirstOrDefault() as IControl;
+                    logicalChild?.SetValue(Control.TemplatedParentProperty, sender.TemplatedParent);
                 }
             });
 
@@ -111,24 +124,26 @@ namespace Perspex.Controls.Mixins
         }
 
         private static void UpdateLogicalChild(
+            IControl control,
             IPerspexList<ILogical> logicalChildren,
             object oldValue, 
             object newValue)
         {
             if (oldValue != newValue)
             {
-                var logical = oldValue as ILogical;
+                var child = oldValue as IControl;
 
-                if (logical != null)
+                if (child != null)
                 {
-                    logicalChildren.Remove(logical);
+                    logicalChildren.Remove(child);
                 }
 
-                logical = newValue as ILogical;
+                child = newValue as IControl;
 
-                if (logical != null)
+                if (child != null)
                 {
-                    logicalChildren.Add(logical);
+                    child.SetValue(Control.TemplatedParentProperty, control.TemplatedParent);
+                    logicalChildren.Add(child);
                 }
             }
         }

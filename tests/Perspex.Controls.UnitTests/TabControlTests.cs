@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Perspex.Controls.Presenters;
@@ -181,8 +182,7 @@ namespace Perspex.Controls.UnitTests
                 Items = items,
             };
 
-            target.ApplyTemplate();
-
+            ApplyTemplate(target);
             var carousel = (Carousel)target.Pages;
 
             var dataContext = ((TextBlock)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
@@ -229,7 +229,7 @@ namespace Perspex.Controls.UnitTests
                 Items = items,
             };
 
-            target.ApplyTemplate();
+            ApplyTemplate(target);
 
             var result = target.TabStrip.GetLogicalChildren()
                 .OfType<TabStripItem>()
@@ -286,6 +286,17 @@ namespace Perspex.Controls.UnitTests
                 [!CarouselPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
                 [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
             };
+        }
+
+        private void ApplyTemplate(TabControl target)
+        {
+            target.ApplyTemplate();
+            var carousel = (Carousel)target.Pages;
+            carousel.ApplyTemplate();
+            carousel.Presenter.ApplyTemplate();
+            var tabStrip = (TabStrip)target.TabStrip;
+            tabStrip.ApplyTemplate();
+            tabStrip.Presenter.ApplyTemplate();
         }
 
         private class Item

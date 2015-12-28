@@ -64,6 +64,7 @@ namespace Perspex.Controls.Presenters
         static CarouselPresenter()
         {
             SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.SelectedIndexChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.TemplatedParentChanged);
         }
 
         /// <summary>
@@ -255,6 +256,11 @@ namespace Perspex.Controls.Presenters
                     _queuedTransitionIndex = (int)e.NewValue;
                 }
             }
+        }
+
+        private void TemplatedParentChanged(PerspexPropertyChangedEventArgs e)
+        {
+            (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
         }
     }
 }

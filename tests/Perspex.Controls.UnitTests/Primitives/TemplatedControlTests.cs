@@ -160,6 +160,58 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Nested_Templated_Control_Should_Not_Have_Template_Applied()
+        {
+            var target = new TemplatedControl
+            {
+                Template = new FuncControlTemplate(_ => new ScrollViewer())
+            };
+
+            target.ApplyTemplate();
+
+            var child = (ScrollViewer)target.GetVisualChildren().Single();
+            Assert.Empty(child.GetVisualChildren());
+        }
+
+        [Fact]
+        public void Templated_Children_Should_Be_Styled()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var styler = new Mock<IStyler>();
+
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+
+                TestTemplatedControl target;
+
+                var root = new TestRoot
+                {
+                    Child = target = new TestTemplatedControl
+                    {
+                        Template = new FuncControlTemplate(_ =>
+                        {
+                            return new StackPanel
+                            {
+                                Children = new Controls
+                                {
+                                    new TextBlock
+                                    {
+                                    }
+                                }
+                            };
+                        }),
+                    }
+                };
+
+                target.ApplyTemplate();
+
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
+                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
+            }
+        }
+
+        [Fact]
         public void Nested_Templated_Controls_Have_Correct_TemplatedParent()
         {
             var target = new TestTemplatedControl
@@ -188,6 +240,8 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.ApplyTemplate();
 
             var contentControl = target.GetTemplateChildren().OfType<ContentControl>().Single();
+            contentControl.ApplyTemplate();
+
             var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
             var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
             var textBlock = (TextBlock)presenter.Content;
@@ -199,44 +253,6 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Templated_Children_Should_Be_Styled()
-        {
-            using (PerspexLocator.EnterScope())
-            {
-                var styler = new Mock<IStyler>();
-
-                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
-
-                TestTemplatedControl target;
-
-                var root = new TestRoot
-                {
-                    Child = target = new TestTemplatedControl
-                    {
-                        Template = new FuncControlTemplate(_ =>
-                        {
-                            return new StackPanel
-                            {
-                                Children = new Controls
-                            {
-                                new TextBlock
-                                {
-                                }
-                            }
-                            };
-                        }),
-                    }
-                };
-
-                target.ApplyTemplate();
-
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
-            }
-        }
-
-        [Fact]
         public void Nested_TemplatedControls_Should_Register_With_Correct_NameScope()
         {
             var target = new ContentControl
@@ -245,19 +261,26 @@ namespace Perspex.Controls.UnitTests.Primitives
                 Content = "foo"
             };
 
+            var root = new TestRoot { Child = target };
             target.ApplyTemplate();
 
             var border = target.GetVisualChildren().FirstOrDefault();
             Assert.IsType<Border>(border);
+
             var scrollViewer = border.GetVisualChildren().FirstOrDefault();
             Assert.IsType<ScrollViewer>(scrollViewer);
+            ((ScrollViewer)scrollViewer).ApplyTemplate();
+
             var scrollContentPresenter = scrollViewer.GetVisualChildren().FirstOrDefault();
             Assert.IsType<ScrollContentPresenter>(scrollContentPresenter);
+            ((ContentPresenter)scrollContentPresenter).UpdateChild();
+
             var contentPresenter = scrollContentPresenter.GetVisualChildren().FirstOrDefault();
             Assert.IsType<ContentPresenter>(contentPresenter);
 
             var borderNs = NameScope.GetNameScope((Control)border);
             var scrollContentPresenterNs = NameScope.GetNameScope((Control)scrollContentPresenter);
+
             Assert.NotNull(borderNs);
             Assert.Same(scrollViewer, borderNs.Find("ScrollViewer"));
             Assert.Same(contentPresenter, borderNs.Find("PART_ContentPresenter"));

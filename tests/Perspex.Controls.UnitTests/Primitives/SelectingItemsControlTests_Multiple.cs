@@ -168,6 +168,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems.Add(items[0]);
             target.SelectedItems.Add(items[1]);
 
@@ -195,6 +196,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems = new PerspexList<object> { items[0], items[1] };
 
             Assert.True(items[0].IsSelected);
@@ -219,6 +221,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems.Add(items[0]);
             target.SelectedItems.Add(items[1]);
             target.SelectedItems.Remove(items[1]);
@@ -270,6 +273,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedIndex = 1;
             target.SelectedItems[0] = items[2];
 

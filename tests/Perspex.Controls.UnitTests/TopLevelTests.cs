@@ -311,8 +311,9 @@ namespace Perspex.Controls.UnitTests
 
                 target.Template = CreateTemplate();
                 target.Content = child;
+                target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
+                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
             }
         }
 
@@ -321,6 +322,7 @@ namespace Perspex.Controls.UnitTests
             return new FuncControlTemplate<TestTopLevel>(x =>
                 new ContentPresenter
                 {
+                    Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
                 });
         }

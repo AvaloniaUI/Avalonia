@@ -21,7 +21,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
-    public class ItemsControl : TemplatedControl
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -125,6 +125,12 @@ namespace Perspex.Controls
         {
             get;
             protected set;
+        }
+
+        /// <inheritdoc/>
+        void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
+        {
+            Presenter = presenter;
         }
 
         /// <summary>
@@ -241,13 +247,6 @@ namespace Perspex.Controls
             }
 
             LogicalChildren.RemoveAll(toRemove);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-            Presenter = e.NameScope.Find<IItemsPresenter>("PART_ItemsPresenter");
         }
 
         /// <inheritdoc/>

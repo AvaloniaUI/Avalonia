@@ -22,6 +22,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.Equal(target, target.Presenter.Panel.TemplatedParent);
         }
@@ -34,6 +35,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var item = (TextBlock)target.Presenter.Panel.GetVisualChildren().First();
 
@@ -125,6 +127,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
@@ -140,6 +143,10 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = new[] { "Foo" };
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.NotEmpty(target.GetLogicalChildren());
+
             target.Items = null;
 
             Assert.Equal(new ILogical[0], target.GetLogicalChildren());
@@ -210,6 +217,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
@@ -229,6 +237,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
@@ -339,6 +348,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var dataContexts = target.Presenter.Panel.Children
                 .Cast<Control>()
@@ -361,6 +371,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var text = target.Presenter.Panel.Children
                 .Cast<TextBlock>()

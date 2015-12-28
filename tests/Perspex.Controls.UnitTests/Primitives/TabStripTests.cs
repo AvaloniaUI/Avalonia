@@ -30,6 +30,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var result = target.GetLogicalChildren()
                 .OfType<TabStripItem>()
@@ -55,6 +56,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             var result = target.GetLogicalChildren()
                 .OfType<TabStripItem>()

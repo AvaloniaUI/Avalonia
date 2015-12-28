@@ -49,6 +49,7 @@ namespace Perspex.Controls.Presenters
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
             ItemsProperty.Changed.AddClassHandler<ItemsPresenter>(x => x.ItemsChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenter>(x => x.TemplatedParentChanged);
         }
 
         /// <summary>
@@ -268,6 +269,11 @@ namespace Perspex.Controls.Presenters
 
                 InvalidateMeasure();
             }
+        }
+
+        private void TemplatedParentChanged(PerspexPropertyChangedEventArgs e)
+        {
+            (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
         }
 
         private void AddContainers(IEnumerable<ItemContainer> items)

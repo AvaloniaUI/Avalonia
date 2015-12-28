@@ -20,6 +20,7 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable,
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
 
             Assert.Equal(new Size(100, 100), scrollable.AvailableSize);
@@ -40,6 +41,7 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable,
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -56,6 +58,7 @@ namespace Perspex.Controls.UnitTests
 
             var changed = false;
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
 
             target.GetObservable(ScrollViewer.ViewportProperty).Skip(1).Subscribe(_ => changed = true);
@@ -75,7 +78,7 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable
             };
 
-            target.ApplyTemplate();
+            target.UpdateChild();
 
             Assert.NotNull(scrollable.InvalidateScroll);
         }
@@ -89,9 +92,9 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable
             };
 
-            target.ApplyTemplate();
+            target.UpdateChild();
             target.Content = null;
-            target.ApplyTemplate();
+            target.UpdateChild();
 
             Assert.Null(scrollable.InvalidateScroll);
         }
@@ -111,7 +114,7 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable
             };
 
-            target.ApplyTemplate();
+            target.UpdateChild();
 
             Assert.Equal(scrollable.Extent, target.Extent);
             Assert.Equal(scrollable.Offset, target.Offset);
@@ -140,8 +143,7 @@ namespace Perspex.Controls.UnitTests
                 Content = scrollable
             };
 
-            target.ApplyTemplate();
-
+            target.UpdateChild();
             target.Offset = new Vector(25, 25);
 
             Assert.Equal(target.Offset, scrollable.Offset);

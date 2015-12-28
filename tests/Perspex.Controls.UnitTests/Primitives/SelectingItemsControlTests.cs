@@ -6,7 +6,6 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
-using Perspex.Input;
 using Perspex.Interactivity;
 using Xunit;
 
@@ -69,6 +68,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -92,6 +92,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.SelectedItem = items[1];
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -114,6 +115,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.SelectedIndex = 1;
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -241,6 +243,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             items.Add(new Item { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
@@ -346,6 +349,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -376,6 +380,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);

@@ -120,8 +120,6 @@ namespace Perspex.Controls
                 nameof(VerticalScrollBarVisibility), 
                 ScrollBarVisibility.Auto);
 
-        private IDisposable _scrollableSubscription;
-
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
         /// </summary>
