@@ -43,7 +43,7 @@ namespace Perspex.Markup.Data.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
             Contract.Requires<ArgumentNullException>(changed != null);
 
-            var p = instance.GetType().GetRuntimeProperties().First(_ => _.Name == propertyName);
+            var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(_ => _.Name == propertyName);
 
             if (p != null)
             {
