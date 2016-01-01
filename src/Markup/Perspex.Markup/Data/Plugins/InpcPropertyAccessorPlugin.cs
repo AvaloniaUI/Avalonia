@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 
@@ -42,7 +43,7 @@ namespace Perspex.Markup.Data.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
             Contract.Requires<ArgumentNullException>(changed != null);
 
-            var p = instance.GetType().GetRuntimeProperty(propertyName);
+            var p = instance.GetType().GetRuntimeProperties().First(_ => _.Name == propertyName);
 
             if (p != null)
             {
