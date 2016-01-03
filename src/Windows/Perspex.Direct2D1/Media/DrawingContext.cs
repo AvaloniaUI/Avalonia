@@ -7,6 +7,7 @@ using Perspex.Media;
 using SharpDX;
 using SharpDX.Direct2D1;
 using IBitmap = Perspex.Media.Imaging.IBitmap;
+using SharpDX.Mathematics.Interop;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -214,11 +215,11 @@ namespace Perspex.Direct2D1.Media
                         _renderTarget.FillRoundedRectangle(
                             new RoundedRectangle
                             {
-                                Rect = new RectangleF(
+                                Rect = new RawRectangleF(
                                         (float)rect.X,
                                         (float)rect.Y,
-                                        (float)rect.Width,
-                                        (float)rect.Height),
+                                        (float)rect.Right,
+                                        (float)rect.Bottom),
                                 RadiusX = cornerRadius,
                                 RadiusY = cornerRadius
                             },
@@ -254,8 +255,8 @@ namespace Perspex.Direct2D1.Media
             {
                 var parameters = new LayerParameters
                 {
-                    ContentBounds = RectangleF.Infinite,
-                    MaskTransform = Matrix3x2.Identity,
+                    ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                    MaskTransform = Matrix.Identity.ToDirect2D(),
                     Opacity = (float)opacity,
                 };
 
@@ -282,14 +283,14 @@ namespace Perspex.Direct2D1.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public IDisposable PushTransform(Matrix matrix)
         {
-            Matrix3x2 m3x2 = matrix.ToDirect2D();
-            Matrix3x2 transform = _renderTarget.Transform * m3x2;
+            RawMatrix3x2 m3x2 = matrix.ToDirect2D();
+            RawMatrix3x2 transform = PrimitiveExtensions.Multiply(_renderTarget.Transform, m3x2);
             _renderTarget.Transform = transform;
 
             return Disposable.Create(() =>
             {
-                m3x2.Invert();
-                _renderTarget.Transform = transform * m3x2;
+                PrimitiveExtensions.Invert(ref m3x2, out m3x2);
+                _renderTarget.Transform = PrimitiveExtensions.Multiply(transform, m3x2);
             });
         }
 
@@ -303,8 +304,8 @@ namespace Perspex.Direct2D1.Media
         {
             var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
             var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
-            var imageBrush = brush as ImageBrush;
-            var visualBrush = brush as VisualBrush;
+            var imageBrush = brush as Perspex.Media.ImageBrush;
+            var visualBrush = brush as Perspex.Media.VisualBrush;
 
             if (solidColorBrush != null)
             {

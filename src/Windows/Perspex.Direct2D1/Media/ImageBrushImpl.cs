@@ -10,7 +10,7 @@ namespace Perspex.Direct2D1.Media
     public class ImageBrushImpl : TileBrushImpl
     {
         public ImageBrushImpl(
-            ImageBrush brush,
+            Perspex.Media.ImageBrush brush,
             RenderTarget target,
             Size targetSize)
         {
@@ -58,7 +58,7 @@ namespace Perspex.Direct2D1.Media
         }
 
         private BitmapBrush CreateDirectBrush(
-            ImageBrush brush,
+            Perspex.Media.ImageBrush brush,
             RenderTarget target,
             Bitmap image, 
             Rect sourceRect, 

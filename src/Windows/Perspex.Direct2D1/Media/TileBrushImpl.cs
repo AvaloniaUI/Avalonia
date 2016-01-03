@@ -93,15 +93,14 @@ namespace Perspex.Direct2D1.Media
         protected static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
         {
             var tileMode = brush.TileMode;
+            var tileTransform = brush.TileMode != TileMode.None ?
+                Matrix.CreateTranslation(destinationRect.X, destinationRect.Y) :
+                Matrix.Identity;
 
             return new BrushProperties
             {
                 Opacity = (float)brush.Opacity,
-                Transform = brush.TileMode != TileMode.None ?
-                    SharpDX.Matrix3x2.Translation(
-                        (float)destinationRect.X,
-                        (float)destinationRect.Y) :
-                    SharpDX.Matrix3x2.Identity,
+                Transform = tileTransform.ToDirect2D()
             };
         }
 
