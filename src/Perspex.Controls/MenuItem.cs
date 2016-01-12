@@ -2,18 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows.Input;
 using Perspex.Controls.Mixins;
-using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Threading;
-using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
@@ -361,7 +357,6 @@ namespace Perspex.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.DependencyResolver = DependencyResolver.Instance;
-            _popup.PopupRootCreated += PopupRootCreated;
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
         }
@@ -413,40 +408,6 @@ namespace Perspex.Controls
             {
                 CloseSubmenus();
                 SelectedIndex = -1;
-            }
-        }
-
-        /// <summary>
-        /// Called when the submenu's <see cref="PopupRoot"/> is created.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void PopupRootCreated(object sender, EventArgs e)
-        {
-            var popup = (Popup)sender;
-            ItemsPresenter presenter = null;
-
-            // Our ItemsPresenter is in a Popup which means that it's only created when the
-            // Popup is opened, therefore it wasn't found by ItemsControl.OnTemplateApplied.
-            // Now the Popup has been opened for the first time it should exist, so make sure
-            // the PopupRoot's template is applied and look for the ItemsPresenter.
-            foreach (var c in popup.PopupRoot.GetSelfAndVisualDescendents().OfType<Control>())
-            {
-                if (c.Name == "itemsPresenter" && c is ItemsPresenter)
-                {
-                    presenter = c as ItemsPresenter;
-                    break;
-                }
-
-                c.ApplyTemplate();
-            }
-
-            if (presenter != null)
-            {
-                // The presenter was found. Set its TemplatedParent so it thinks that it had a
-                // normal birth; may it never know its own perveristy.
-                presenter.TemplatedParent = this;
-                Presenter = presenter;
             }
         }
 
