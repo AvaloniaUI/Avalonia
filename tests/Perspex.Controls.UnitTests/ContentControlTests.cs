@@ -28,7 +28,7 @@ namespace Perspex.Controls.UnitTests
                 target.Content = "Foo";
                 target.Template = GetTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                ((ContentPresenter)target.Presenter).UpdateChild();
 
                 var child = ((IVisual)target).VisualChildren.Single();
                 Assert.IsType<Border>(child);
@@ -71,7 +71,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             var contentPresenter = child.GetVisualParent<ContentPresenter>();
             Assert.Equal(target, contentPresenter.TemplatedParent);
@@ -86,7 +86,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Null(child.TemplatedParent);
         }
@@ -117,7 +117,7 @@ namespace Perspex.Controls.UnitTests
 
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             var child = target.Presenter.Child;
 
@@ -157,7 +157,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.True(called);
         }
@@ -172,12 +172,12 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = null;
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.True(called);
         }
@@ -193,7 +193,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child1;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
@@ -210,13 +210,13 @@ namespace Perspex.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             target.Content = "Foo";
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
             Assert.Equal("Foo", ((TextBlock)target.Presenter.Child).Text);
             target.Content = "Bar";
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
             Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
         }
 
@@ -228,7 +228,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Equal("Foo", target.Presenter.Child.DataContext);
         }
@@ -241,7 +241,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = new TextBlock();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Null(target.Presenter.Child.DataContext);
         }

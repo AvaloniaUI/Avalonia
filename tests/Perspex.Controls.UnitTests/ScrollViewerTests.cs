@@ -20,7 +20,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.IsType<TextBlock>(target.Presenter.Child);
         }

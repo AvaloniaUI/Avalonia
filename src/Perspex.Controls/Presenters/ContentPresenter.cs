@@ -34,6 +34,7 @@ namespace Perspex.Controls.Presenters
         static ContentPresenter()
         {
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
         }
 
         /// <summary>
@@ -145,6 +146,11 @@ namespace Perspex.Controls.Presenters
         {
             _createdChild = false;
             InvalidateMeasure();
+        }
+
+        private void TemplatedParentChanged(PerspexPropertyChangedEventArgs e)
+        {
+            (e.NewValue as IContentPresenterHost)?.RegisterContentPresenter(this);
         }
     }
 }

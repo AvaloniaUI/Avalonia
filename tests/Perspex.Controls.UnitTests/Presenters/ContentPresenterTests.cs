@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
+using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
@@ -12,6 +13,17 @@ namespace Perspex.Controls.UnitTests.Presenters
 {
     public class ContentPresenterTests
     {
+        [Fact]
+        public void Should_Register_With_Host_When_TemplatedParent_Set()
+        {
+            var host = new Mock<IContentPresenterHost>();
+            var target = new ContentPresenter();
+
+            target.SetValue(Control.TemplatedParentProperty, host.Object);
+
+            host.Verify(x => x.RegisterContentPresenter(target));
+        }
+
         [Fact]
         public void Setting_Content_To_Control_Should_Set_Child()
         {

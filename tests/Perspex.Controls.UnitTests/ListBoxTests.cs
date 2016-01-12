@@ -42,7 +42,7 @@ namespace Perspex.Controls.UnitTests
             var text = target.Presenter.Panel.Children
                 .OfType<ListBoxItem>()
                 .Do(x => x.Template = ListBoxItemTemplate())
-                .Do(x => { x.ApplyTemplate(); x.Presenter.UpdateChild(); })
+                .Do(x => { x.ApplyTemplate(); ((ContentPresenter)x.Presenter).UpdateChild(); })
                 .Select(x => x.Presenter.Child)
                 .OfType<TextBlock>()
                 .Select(x => x.Text)
@@ -169,7 +169,7 @@ namespace Perspex.Controls.UnitTests
             scrollViewer.ApplyTemplate();
 
             // Then make the ScrollViewer create its child.
-            scrollViewer.Presenter.UpdateChild();
+            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
             target.Presenter.ApplyTemplate();

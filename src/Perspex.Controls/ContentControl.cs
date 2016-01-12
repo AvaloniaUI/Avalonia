@@ -16,7 +16,7 @@ namespace Perspex.Controls
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
-    public class ContentControl : TemplatedControl, IContentControl
+    public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property.
@@ -57,7 +57,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        public ContentPresenter Presenter
+        public IContentPresenter Presenter
         {
             get;
             private set;
@@ -82,14 +82,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
-            base.OnTemplateApplied(e);
-
-            // We allow ContentControls without ContentPresenters in the template. This can be
-            // useful for e.g. a simple ToggleButton that displays an image. There's no need to
-            // have a ContentPresenter in the visual tree for that.
-            Presenter = e.NameScope.Find<ContentPresenter>("PART_ContentPresenter");
+            Presenter = presenter;
         }
     }
 }

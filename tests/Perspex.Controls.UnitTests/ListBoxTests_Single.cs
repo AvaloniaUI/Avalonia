@@ -231,7 +231,7 @@ namespace Perspex.Controls.UnitTests
             scrollViewer.ApplyTemplate();
 
             // Then make the ScrollViewer create its child.
-            scrollViewer.Presenter.UpdateChild();
+            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
             target.Presenter.ApplyTemplate();

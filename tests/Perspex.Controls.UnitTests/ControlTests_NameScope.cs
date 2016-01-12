@@ -28,7 +28,7 @@ namespace Perspex.Controls.UnitTests
             };
 
             root.ApplyTemplate();
-            root.Presenter.UpdateChild();
+            ((ContentPresenter)root.Presenter).UpdateChild();
 
             Assert.Same(root.Find("foo"), root.Content);
             Assert.Same(root.Find("bar"), ((Border)root.Content).Child);
@@ -70,7 +70,7 @@ namespace Perspex.Controls.UnitTests
 
             root.ApplyTemplate();
 
-            Assert.Null(NameScope.GetNameScope(root.Presenter).Find("foo"));
+            Assert.Null(NameScope.GetNameScope((Control)root.Presenter).Find("foo"));
         }
 
         private class TestRoot : ContentControl, IRenderRoot, INameScope, IStyleRoot
