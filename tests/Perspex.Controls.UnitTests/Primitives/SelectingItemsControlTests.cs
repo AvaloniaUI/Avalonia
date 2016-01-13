@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.ObjectModel;
+using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
@@ -423,6 +424,67 @@ namespace Perspex.Controls.UnitTests.Primitives
             });
 
             Assert.Equal(target.SelectedItem, items[1]);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Should_Raise_SelectionChanged_Event()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Same(items[1], e.AddedItems.Cast<object>().Single());
+                Assert.Empty(e.RemovedItems);
+                called = true;
+            };
+
+            target.SelectedIndex = 1;
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Clearing_SelectedIndex_Should_Raise_SelectionChanged_Event()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+                SelectedIndex = 1,
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Same(items[1], e.RemovedItems.Cast<object>().Single());
+                Assert.Empty(e.AddedItems);
+                called = true;
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectedIndex = -1;
+
+            Assert.True(called);
         }
 
         private FuncControlTemplate Template()

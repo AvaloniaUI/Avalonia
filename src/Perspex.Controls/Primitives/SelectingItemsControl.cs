@@ -76,7 +76,19 @@ namespace Perspex.Controls.Primitives
         /// has changed.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
-            RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
+            RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>(
+                "IsSelectedChanged", 
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="SelectionChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
+            RoutedEvent.Register<SelectingItemsControl, SelectionChangedEventArgs>(
+                "SelectionChanged", 
+                RoutingStrategies.Bubble);
+
+        private static readonly IList Empty = new object[0];
 
         private int _selectedIndex = -1;
         private object _selectedItem;
@@ -98,6 +110,15 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public SelectingItemsControl()
         {
+        }
+
+        /// <summary>
+        /// Occurs when the control's selection changes.
+        /// </summary>
+        public event EventHandler<SelectionChangedEventArgs> SelectionChanged
+        {
+            add { AddHandler(SelectionChangedEvent, value); }
+            remove { RemoveHandler(SelectionChangedEvent, value); }
         }
 
         /// <summary>
@@ -532,22 +553,28 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(IControl container, bool selected)
+        /// <returns>The previous selection state.</returns>
+        private bool MarkContainerSelected(IControl container, bool selected)
         {
             try
             {
                 var selectable = container as ISelectable;
+                bool result;
 
                 _ignoreContainerSelectionChanged = true;
 
                 if (selectable != null)
                 {
+                    result = selectable.IsSelected;
                     selectable.IsSelected = selected;
                 }
                 else
                 {
+                    result = container.Classes.Contains(":selected");
                     ((IPseudoClasses)container.Classes).Set(":selected", selected);
                 }
+
+                return result;
             }
             finally
             {
@@ -593,11 +620,14 @@ namespace Perspex.Controls.Primitives
         private void SelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             var generator = ItemContainerGenerator;
+            IList added = null;
+            IList removed = null;
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     SelectedItemsAdded(e.NewItems.Cast<object>().ToList());
+                    added = e.NewItems;
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -616,26 +646,36 @@ namespace Perspex.Controls.Primitives
                         }
                     }
 
+                    removed = e.OldItems;
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
                     if (generator != null)
                     {
+                        removed = new List<object>();
+
                         foreach (var item in generator.Containers)
                         {
                             if (item != null)
                             {
-                                MarkContainerSelected(item.ContainerControl, false);
+                                if (MarkContainerSelected(item.ContainerControl, false))
+                                {
+                                    removed.Add(item.Item);
+                                }
                             }
                         }
                     }
 
-                    if (!_syncingSelectedItems)
+                    if (SelectedItems.Count > 0)
+                    {
+                        SelectedItemsAdded(SelectedItems);
+                        added = SelectedItems;
+                    }
+                    else if (!_syncingSelectedItems)
                     {
                         SelectedIndex = -1;
                     }
 
-                    SelectedItemsAdded(SelectedItems);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
@@ -661,7 +701,18 @@ namespace Perspex.Controls.Primitives
                         RaisePropertyChanged(SelectedItemProperty, oldItem, item, BindingPriority.LocalValue);
                     }
 
+                    added = e.OldItems;
+                    removed = e.NewItems;
                     break;
+            }
+
+            if (added?.Count > 0 || removed?.Count > 0)
+            {
+                var changed = new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    added ?? Empty,
+                    removed ?? Empty);
+                RaiseEvent(changed);
             }
         }
 

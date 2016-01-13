@@ -461,6 +461,85 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Empty(target.SelectedItems);
         }
 
+        [Fact]
+        public void Adding_To_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                DataContext = items,
+                Template = Template(),
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "bar" }, e.AddedItems.Cast<object>().ToList());
+                Assert.Empty(e.RemovedItems);
+                called = true;
+            };
+
+            target.SelectedItems.Add("bar");
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Removing_From_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectedItem = "bar",
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>().ToList());
+                Assert.Empty(e.AddedItems);
+                called = true;
+            };
+
+            target.SelectedItems.Remove("bar");
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Assigning_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectedItem = "bar",
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo", "baz" }, e.AddedItems.Cast<object>());
+                Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>());
+                called = true;
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectedItems = new[] { "foo", "baz" };
+
+            Assert.True(called);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>(control =>
