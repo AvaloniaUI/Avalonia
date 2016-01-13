@@ -5,6 +5,7 @@ using System;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
+using SharpDX.Mathematics.Interop;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -54,7 +55,7 @@ namespace Perspex.Direct2D1.Media
                 _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
 
             _renderTarget.DrawGlyphRun(
-                new Vector2(baselineOriginX, baselineOriginY),
+                new RawVector2 { X = baselineOriginX, Y = baselineOriginY },
                 glyphRun,
                 brush,
                 measuringMode);
@@ -82,7 +83,7 @@ namespace Perspex.Direct2D1.Media
             throw new NotImplementedException();
         }
 
-        public Matrix3x2 GetCurrentTransform(object clientDrawingContext)
+        public RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
         {
             return _renderTarget.Transform;
         }

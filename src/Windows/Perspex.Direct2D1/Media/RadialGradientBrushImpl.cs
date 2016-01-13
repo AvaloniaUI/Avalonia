@@ -47,7 +47,7 @@ namespace Perspex.Direct2D1.Media
                     new SharpDX.Direct2D1.BrushProperties
                     {
                         Opacity = (float)brush.Opacity,
-                        Transform = SharpDX.Matrix3x2.Identity,
+                        Transform = PrimitiveExtensions.Matrix3x2Identity,
                     },
                     stops);
             }
