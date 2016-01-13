@@ -5,25 +5,50 @@ using System;
 using System.Linq;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 using DWrite = SharpDX.DirectWrite;
 
 namespace Perspex.Direct2D1
 {
     public static class PrimitiveExtensions
     {
-        public static Rect ToPerspex(this RectangleF r)
+        /// <summary>
+        /// The value for which all absolute numbers smaller than are considered equal to zero.
+        /// </summary>
+        public const float ZeroTolerance = 1e-6f; // Value a 8x higher than 1.19209290E-07F
+
+        public static readonly RawRectangleF RectangleInfinite;
+
+        /// <summary>
+        /// Gets the identity matrix.
+        /// </summary>
+        /// <value>The identity matrix.</value>
+        public readonly static RawMatrix3x2 Matrix3x2Identity = new RawMatrix3x2 { M11 = 1, M12 = 0, M21 = 0, M22 = 1, M31 = 0, M32 = 0 };
+
+        static PrimitiveExtensions()
         {
-            return new Rect(r.X, r.Y, r.Width, r.Height);
+            RectangleInfinite = new RawRectangleF
+            {
+                Left = float.NegativeInfinity,
+                Top = float.NegativeInfinity,
+                Right = float.PositiveInfinity,
+                Bottom = float.PositiveInfinity
+            };
         }
 
-        public static RectangleF ToSharpDX(this Rect r)
+        public static Rect ToPerspex(this RawRectangleF r)
         {
-            return new RectangleF((float)r.X, (float)r.Y, (float)r.Width, (float)r.Height);
+            return new Rect(new Point(r.Left, r.Top), new Point(r.Right, r.Bottom));
         }
 
-        public static Vector2 ToSharpDX(this Point p)
+        public static RawRectangleF ToSharpDX(this Rect r)
         {
-            return new Vector2((float)p.X, (float)p.Y);
+            return new RawRectangleF((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
+        }
+
+        public static RawVector2 ToSharpDX(this Point p)
+        {
+            return new RawVector2 { X = (float)p.X, Y = (float)p.Y };
         }
 
         public static Size2F ToSharpDX(this Size p)
@@ -95,9 +120,9 @@ namespace Perspex.Direct2D1
         /// </summary>
         /// <param name="color">The color to convert.</param>
         /// <returns>The Direct2D color.</returns>
-        public static Color4 ToDirect2D(this Perspex.Media.Color color)
+        public static RawColor4 ToDirect2D(this Perspex.Media.Color color)
         {
-            return new Color4(
+            return new RawColor4(
                 (float)(color.R / 255.0),
                 (float)(color.G / 255.0),
                 (float)(color.B / 255.0),
@@ -105,27 +130,29 @@ namespace Perspex.Direct2D1
         }
 
         /// <summary>
-        /// Converts a Perspex <see cref="Perspex.Matrix"/> to a Direct2D <see cref="Matrix3x2"/>
+        /// Converts a Perspex <see cref="Perspex.Matrix"/> to a Direct2D <see cref="RawMatrix3x2"/>
         /// </summary>
         /// <param name="matrix">The <see cref="Matrix"/>.</param>
-        /// <returns>The <see cref="Matrix3x2"/>.</returns>
-        public static Matrix3x2 ToDirect2D(this Matrix matrix)
+        /// <returns>The <see cref="RawMatrix3x2"/>.</returns>
+        public static RawMatrix3x2 ToDirect2D(this Matrix matrix)
         {
-            return new Matrix3x2(
-                (float)matrix.M11,
-                (float)matrix.M12,
-                (float)matrix.M21,
-                (float)matrix.M22,
-                (float)matrix.M31,
-                (float)matrix.M32);
+            return new RawMatrix3x2
+            {
+                M11 = (float)matrix.M11,
+                M12 = (float)matrix.M12,
+                M21 = (float)matrix.M21,
+                M22 = (float)matrix.M22,
+                M31 = (float)matrix.M31,
+                M32 = (float)matrix.M32
+            };
         }
 
         /// <summary>
-        /// Converts a Direct2D <see cref="Matrix3x2"/> to a Perspex <see cref="Perspex.Matrix"/>.
+        /// Converts a Direct2D <see cref="RawMatrix3x2"/> to a Perspex <see cref="Perspex.Matrix"/>.
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>a <see cref="Perspex.Matrix"/>.</returns>
-        public static Matrix ToPerspex(this Matrix3x2 matrix)
+        public static Matrix ToPerspex(this RawMatrix3x2 matrix)
         {
             return new Matrix(
                 matrix.M11,
@@ -137,17 +164,17 @@ namespace Perspex.Direct2D1
         }
 
         /// <summary>
-        /// Converts a Perspex <see cref="Rect"/> to a Direct2D <see cref="RectangleF"/>
+        /// Converts a Perspex <see cref="Rect"/> to a Direct2D <see cref="RawRectangleF"/>
         /// </summary>
         /// <param name="rect">The <see cref="Rect"/>.</param>
-        /// <returns>The <see cref="RectangleF"/>.</returns>
-        public static RectangleF ToDirect2D(this Rect rect)
+        /// <returns>The <see cref="RawRectangleF"/>.</returns>
+        public static RawRectangleF ToDirect2D(this Rect rect)
         {
-            return new RectangleF(
+            return new RawRectangleF(
                 (float)rect.X,
                 (float)rect.Y,
-                (float)rect.Width,
-                (float)rect.Height);
+                (float)rect.Right,
+                (float)rect.Bottom);
         }
 
         public static DWrite.TextAlignment ToDirect2D(this Perspex.Media.TextAlignment alignment)

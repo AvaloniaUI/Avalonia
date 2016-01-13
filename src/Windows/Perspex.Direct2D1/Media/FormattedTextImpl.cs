@@ -68,8 +68,8 @@ namespace Perspex.Direct2D1.Media
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            SharpDX.Bool isTrailingHit;
-            SharpDX.Bool isInside;
+            SharpDX.Mathematics.Interop.RawBool isTrailingHit;
+            SharpDX.Mathematics.Interop.RawBool isInside;
 
             var result = TextLayout.HitTestPoint(
                 (float)point.X,
