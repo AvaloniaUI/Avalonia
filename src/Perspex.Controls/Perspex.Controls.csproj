@@ -63,6 +63,7 @@
     <Compile Include="Primitives\IScrollable.cs" />
     <Compile Include="Primitives\TabStripItem.cs" />
     <Compile Include="Primitives\TemplateAppliedEventArgs.cs" />
+    <Compile Include="SelectionChangedEventArgs.cs" />
     <Compile Include="SelectionMode.cs" />
     <Compile Include="Separator.cs" />
     <Compile Include="SystemDialog.cs" />
