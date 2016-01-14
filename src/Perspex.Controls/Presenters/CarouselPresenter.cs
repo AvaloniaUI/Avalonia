@@ -211,12 +211,17 @@ namespace Perspex.Controls.Presenters
                 {
                     await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
                 }
+                else if (to != null)
+                {
+                    to.IsVisible = true;
+                }
 
                 if (from != null)
                 {
                     Panel.Children.Remove(from);
                     generator.Dematerialize(fromIndex, 1);
                 }
+
             }
         }
 
