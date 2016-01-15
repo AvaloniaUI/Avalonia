@@ -108,7 +108,10 @@ namespace Perspex.RenderHelpers
                 }
                 else if (_visualBrush != null)
                 {
-                    ctx.Render(_visualBrush.Visual);
+                    using (ctx.PushPostTransform(Matrix.CreateTranslation(-_visualBrush.Visual.Bounds.Position)))
+                    {
+                        ctx.Render(_visualBrush.Visual);
+                    }
                 }
             }
         }
