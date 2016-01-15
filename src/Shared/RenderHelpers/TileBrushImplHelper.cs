@@ -47,14 +47,17 @@ namespace Perspex.RenderHelpers
                     return;
                 var layoutable = visual as ILayoutable;
 
-                if (layoutable?.IsArrangeValid == false)
+                if (layoutable != null)
                 {
-                    layoutable.Measure(Size.Infinity);
-                    layoutable.Arrange(new Rect(layoutable.DesiredSize));
+                    if (layoutable.IsArrangeValid == false)
+                    {
+                        layoutable.Measure(Size.Infinity);
+                        layoutable.Arrange(new Rect(layoutable.DesiredSize));
+                    }
+
+                    _imageSize = layoutable.Bounds.Size;
+                    IsValid = true;
                 }
-                //I have no idea why are we using layoutable after `as` cast, but it was in original VisualBrush code by @grokys
-                _imageSize = layoutable.Bounds.Size;
-                IsValid = true;
             }
             else
                 return;
