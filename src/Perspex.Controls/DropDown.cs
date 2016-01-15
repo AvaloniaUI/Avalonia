@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
-using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Media;
@@ -14,6 +12,10 @@ using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
+
+    /// <summary>
+    /// A drop-down list control.
+    /// </summary>
     public class DropDown : SelectingItemsControl, IContentControl
     {
         public static readonly PerspexProperty<object> ContentProperty =
@@ -36,7 +38,6 @@ namespace Perspex.Controls
 
         private bool _isDropDownOpen;
         private Popup _popup;
-        private bool _closing;
 
         static DropDown()
         {
@@ -73,7 +74,7 @@ namespace Perspex.Controls
             set { SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value); }
         }
 
-        public object SelectionBoxItem
+        protected object SelectionBoxItem
         {
             get { return GetValue(SelectionBoxItemProperty); }
             set { SetValue(SelectionBoxItemProperty, value); }
@@ -112,18 +113,17 @@ namespace Perspex.Controls
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
-            if (!IsDropDownOpen && !_closing && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
+            if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
             {
                 IsDropDownOpen = true;
                 e.Handled = true;
             }
 
-            _closing = false;
-
             if (!e.Handled)
             {
                 if (UpdateSelectionFromEventSource(e.Source))
                 {
+                    _popup?.Close();
                     e.Handled = true;
                 }
             }
@@ -140,7 +140,6 @@ namespace Perspex.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
-            _popup.Closed += PopupClosed;
         }
 
         private void PopupOpened(object sender, EventArgs e)
@@ -152,11 +151,6 @@ namespace Perspex.Controls
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 container?.Focus();
             }
-        }
-
-        private void PopupClosed(object sender, EventArgs e)
-        {
-            _closing = true;
         }
 
         private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)

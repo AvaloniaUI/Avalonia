@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Metadata;
 using Perspex.Rendering;
@@ -171,12 +172,11 @@ namespace Perspex.Controls.Primitives
             }
 
             _popupRoot.Position = GetPosition();
-            _popupRoot.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Bubble, true);
 
             if (_topLevel != null)
             {
-                _topLevel.Deactivated += MaybeClose;
-                _topLevel.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Tunnel);
+                _topLevel.Deactivated += TopLevelDeactivated;
+                _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
             }
 
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
@@ -193,9 +193,8 @@ namespace Perspex.Controls.Primitives
         {
             if (_popupRoot != null)
             {
-                _popupRoot.PointerPressed -= MaybeClose;
-                _topLevel.RemoveHandler(PointerPressedEvent, MaybeClose);
-                _topLevel.Deactivated -= MaybeClose;
+                _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
+                _topLevel.Deactivated -= TopLevelDeactivated;
                 _popupRoot.Hide();
             }
 
@@ -292,23 +291,23 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Conditionally closes the popup in response to an event, based on the value of the
-        /// <see cref="StaysOpen"/> property.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void MaybeClose(object sender, EventArgs e)
+        private void PointerPressedOutside(object sender, PointerPressEventArgs e)
         {
-            var routed = e as RoutedEventArgs;
-            var outside = true;
-
-            if (routed != null)
+            if (!StaysOpen)
             {
-                outside = ((IVisual)routed.Source).GetVisualRoot() != this.PopupRoot;
-            }
+                var root = ((IVisual)e.Source).GetVisualRoot();
 
-            if (outside && !StaysOpen)
+                if (root != this.PopupRoot)
+                {
+                    Close();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void TopLevelDeactivated(object sender, EventArgs e)
+        {
+            if (!StaysOpen)
             {
                 Close();
             }
