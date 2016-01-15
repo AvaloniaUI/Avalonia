@@ -392,5 +392,11 @@ namespace Perspex.Controls
 
             return new Size();
         }
+
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            InvalidateFormattedText();
+        }
     }
 }
