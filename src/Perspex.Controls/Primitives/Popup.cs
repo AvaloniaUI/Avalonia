@@ -300,7 +300,15 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void MaybeClose(object sender, EventArgs e)
         {
-            if (!StaysOpen)
+            var routed = e as RoutedEventArgs;
+            var outside = true;
+
+            if (routed != null)
+            {
+                outside = ((IVisual)routed.Source).GetVisualRoot() != this.PopupRoot;
+            }
+
+            if (outside && !StaysOpen)
             {
                 Close();
             }
