@@ -64,6 +64,9 @@
     <Compile Include="Pages\ButtonPage.paml.cs">
       <DependentUpon>ButtonPage.paml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\DropDownPage.paml.cs">
+      <DependentUpon>DropDownPage.paml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +92,7 @@
     <EmbeddedResource Include="Pages\CarouselPage.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DropDownPage.paml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
