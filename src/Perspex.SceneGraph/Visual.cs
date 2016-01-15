@@ -125,6 +125,7 @@ namespace Perspex
 
             var visualChildren = new PerspexList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
+            visualChildren.Validate = ValidateLogicalChild;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -454,6 +455,18 @@ namespace Perspex
                 }
 
                 sender.InvalidateVisual();
+            }
+        }
+
+        /// <summary>
+        /// Ensures a visual child is not null.
+        /// </summary>
+        /// <param name="c">The visual child.</param>
+        private static void ValidateLogicalChild(IVisual c)
+        {
+            if (c == null)
+            {
+                throw new ArgumentNullException("Cannot add null to VisualChildren.");
             }
         }
 

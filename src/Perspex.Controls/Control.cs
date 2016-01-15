@@ -278,31 +278,13 @@ namespace Perspex.Controls
                 if (_logicalChildren == null)
                 {
                     var list = new PerspexList<ILogical>();
-                    LogicalChildren = list;
+                    list.ResetBehavior = ResetBehavior.Remove;
+                    list.Validate = ValidateLogicalChild;
+                    list.CollectionChanged += LogicalChildrenCollectionChanged;
+                    _logicalChildren = list;
                 }
 
                 return _logicalChildren;
-            }
-
-            set
-            {
-                Contract.Requires<ArgumentNullException>(value != null);
-
-                if (_logicalChildren != value)
-                {
-                    if (_logicalChildren != null)
-                    {
-                        _logicalChildren.CollectionChanged -= LogicalChildrenCollectionChanged;
-                    }
-                }
-
-                if (value is PerspexList<ILogical>)
-                {
-                    ((PerspexList<ILogical>)value).ResetBehavior = ResetBehavior.Remove;
-                }
-
-                _logicalChildren = value;
-                _logicalChildren.CollectionChanged += LogicalChildrenCollectionChanged;
             }
         }
 
@@ -521,15 +503,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Makes the control use a different control's logical children as its own.
-        /// </summary>
-        /// <param name="collection">The logical children to use.</param>
-        protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
-        {
-            LogicalChildren = collection;
-        }
-
-        /// <summary>
         /// Called when the <see cref="DataContext"/> property begins and ends being notified.
         /// </summary>
         /// <param name="o">The object on which the DataContext is changing.</param>
@@ -564,6 +537,14 @@ namespace Perspex.Controls
             }
 
             return null;
+        }
+
+        private static void ValidateLogicalChild(ILogical c)
+        {
+            if (c == null)
+            {
+                throw new ArgumentException("Cannot add null to LogicalChildren.");
+            }
         }
 
         private void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
