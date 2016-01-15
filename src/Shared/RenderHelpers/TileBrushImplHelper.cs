@@ -105,7 +105,6 @@ namespace Perspex.RenderHelpers
                 }
                 else if (_visualBrush != null)
                 {
-                    ctx.FillRectangle(Brushes.Black, new Rect(new Point(0, 0), IntermediateSize));
                     ctx.Render(_visualBrush.Visual);
                 }
             }

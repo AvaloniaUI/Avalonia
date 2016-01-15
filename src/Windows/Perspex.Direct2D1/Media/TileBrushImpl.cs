@@ -25,7 +25,10 @@ namespace Perspex.Direct2D1.Media
             using (var intermediate = new BitmapRenderTarget(target, CompatibleRenderTargetOptions.None, helper.IntermediateSize.ToSharpDX()))
             {
                 using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
+                {
+                    intermediate.Clear(null);
                     helper.DrawIntermediate(ctx);
+                }
 
                 PlatformBrush = new BitmapBrush(
                     target,
