@@ -36,6 +36,7 @@ namespace Perspex.Controls
 
         private bool _isDropDownOpen;
         private Popup _popup;
+        private bool _closing;
 
         static DropDown()
         {
@@ -111,14 +112,13 @@ namespace Perspex.Controls
 
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
-            if (!IsDropDownOpen)
+            if (!IsDropDownOpen && !_closing && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
             {
-                if (((IVisual)e.Source).GetVisualAncestors().Last().GetType() != typeof(PopupRoot))
-                {
-                    IsDropDownOpen = true;
-                    e.Handled = true;
-                }
+                IsDropDownOpen = true;
+                e.Handled = true;
             }
+
+            _closing = false;
 
             if (!e.Handled)
             {
@@ -140,6 +140,7 @@ namespace Perspex.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
+            _popup.Closed += PopupClosed;
         }
 
         private void PopupOpened(object sender, EventArgs e)
@@ -151,6 +152,11 @@ namespace Perspex.Controls
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 container?.Focus();
             }
+        }
+
+        private void PopupClosed(object sender, EventArgs e)
+        {
+            _closing = true;
         }
 
         private void SelectedItemChanged(PerspexPropertyChangedEventArgs e)

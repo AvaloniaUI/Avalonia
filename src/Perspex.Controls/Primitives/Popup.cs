@@ -59,6 +59,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static Popup()
         {
+            IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
         }

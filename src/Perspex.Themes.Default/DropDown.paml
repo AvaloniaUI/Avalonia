@@ -20,6 +20,7 @@
                           Background="Transparent"
                           ClickMode="Press"
                           Focusable="False"
+                          IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                           Grid.Column="1">
               <Path Fill="Black"
                     Width="8"
