@@ -245,8 +245,8 @@ namespace Perspex.Controls.Primitives
         protected IControl GetContainerFromEventSource(IInteractive eventSource)
         {
             var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<ILogical>()
-                .FirstOrDefault(x => x.LogicalParent == this);
+                .OfType<IControl>()
+                .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
 
             return item as IControl;
         }

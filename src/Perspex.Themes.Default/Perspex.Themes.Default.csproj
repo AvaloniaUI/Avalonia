@@ -144,6 +144,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Expander.paml" />
+    <EmbeddedResource Include="DropDownItem.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <EmbeddedResource Include="PopupRoot.paml">
       <SubType>Designer</SubType>

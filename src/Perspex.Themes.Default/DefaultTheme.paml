@@ -5,6 +5,7 @@
   <StyleInclude Source="resm:Perspex.Themes.Default.CheckBox.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ContentControl.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.DropDown.paml?assembly=Perspex.Themes.Default"/>
+  <StyleInclude Source="resm:Perspex.Themes.Default.DropDownItem.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.GridSplitter.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ItemsControl.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ListBox.paml?assembly=Perspex.Themes.Default"/>

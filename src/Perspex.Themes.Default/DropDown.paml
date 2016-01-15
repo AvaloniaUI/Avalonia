@@ -35,8 +35,7 @@
                    PlacementTarget="{TemplateBinding}"
                    StaysOpen="False">
               <Border BorderBrush="Black"
-                      BorderThickness="1"
-                      Padding="4">
+                      BorderThickness="1">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}" 
                                 MemberSelector="{TemplateBinding MemberSelector}"/>
@@ -46,7 +45,6 @@
         </Border>
       </ControlTemplate>
     </Setter>
-
   </Style>
   <Style Selector="CheckBox /template/ Path#checkMark">
     <Setter Property="IsVisible" Value="False"/>

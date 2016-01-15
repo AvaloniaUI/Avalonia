@@ -80,7 +80,7 @@ namespace Perspex.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ListBoxItem>(this, ListBoxItem.ContentProperty);
+            return new ItemContainerGenerator<DropDownItem>(this, DropDownItem.ContentProperty);
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)

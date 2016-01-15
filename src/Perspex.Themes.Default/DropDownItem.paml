@@ -1,0 +1,23 @@
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="DropDownItem">
+    <Setter Property="Padding" Value="2"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="DropDownItem:selected /template/ Border#border">
+    <Setter Property="Background" Value="#ffe5f0fc"/>
+  </Style>
+  <Style Selector="DropDownItem:pointerover /template/ Border#border">
+    <Setter Property="Background" Value="#ffd0d0d0"/>
+  </Style>
+</Styles>
