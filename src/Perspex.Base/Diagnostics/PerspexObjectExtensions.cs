@@ -27,7 +27,7 @@ namespace Perspex.Diagnostics
             {
                 return new PerspexPropertyValue(
                     property,
-                    value.Value,
+                    o.GetValue(property),
                     (BindingPriority)value.ValuePriority,
                     value.GetDiagnostic());
             }
