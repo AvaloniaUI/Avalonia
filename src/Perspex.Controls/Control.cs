@@ -406,19 +406,28 @@ namespace Perspex.Controls
         /// </remarks>
         protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (_nameScope == null)
+            // This method can be called when a control is already attached to the logical tree
+            // in the following scenario:
+            // - ListBox gets assigned Items containing ListBoxItem
+            // - ListBox makes ListBoxItem a logical child
+            // - ListBox template gets applied; making its Panel get attached to logical tree
+            // - That AttachedToLogicalTree signal travels down to the ListBoxItem
+            if (!_isAttachedToLogicalTree)
             {
-                _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
-            }
+                if (_nameScope == null)
+                {
+                    _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
+                }
 
-            if (Name != null)
-            {
-                _nameScope?.Register(Name, this);
-            }
+                if (Name != null)
+                {
+                    _nameScope?.Register(Name, this);
+                }
 
-            _isAttachedToLogicalTree = true;
-            PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
-            AttachedToLogicalTree?.Invoke(this, e);
+                _isAttachedToLogicalTree = true;
+                PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                AttachedToLogicalTree?.Invoke(this, e);
+            }
 
             foreach (var child in LogicalChildren.OfType<Control>())
             {
@@ -436,6 +445,11 @@ namespace Perspex.Controls
         /// </remarks>
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (!_isAttachedToLogicalTree)
+            {
+                throw new Exception("Logic error: Control is not attached to logical tree");
+            }
+
             if (Name != null)
             {
                 _nameScope?.Unregister(Name);
