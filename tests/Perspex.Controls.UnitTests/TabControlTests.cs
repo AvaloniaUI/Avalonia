@@ -239,6 +239,30 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new object[] { string.Empty, string.Empty }, result);
         }
 
+        [Fact]
+        public void Should_Handle_Changing_To_TabItem_With_Null_Content()
+        {
+            TabControl target = new TabControl
+            {
+                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Items = new[]
+                {
+                    new TabItem { Header = "Foo" },
+                    new TabItem { Header = "Foo", Content = new Decorator() },
+                    new TabItem { Header = "Baz" },
+                },
+            };
+
+            ApplyTemplate(target);
+
+            target.SelectedIndex = 2;
+
+            var carousel = (Carousel)target.Pages;
+            var page = (TabItem)carousel.SelectedItem;
+
+            Assert.Null(page.Content);
+        }
+
         private Control CreateTabControlTemplate(TabControl parent)
         {
             return new StackPanel

@@ -323,7 +323,11 @@ namespace Perspex.Controls.Primitives
                      selectedIndex < e.StartingIndex + e.Containers.Count)
             {
                 var container = e.Containers[selectedIndex - e.StartingIndex];
-                MarkContainerSelected(container.ContainerControl, true);
+
+                if (container.ContainerControl != null)
+                {
+                    MarkContainerSelected(container.ContainerControl, true);
+                }
             }
         }
 
@@ -656,7 +660,7 @@ namespace Perspex.Controls.Primitives
 
                         foreach (var item in generator.Containers)
                         {
-                            if (item != null)
+                            if (item?.ContainerControl != null)
                             {
                                 if (MarkContainerSelected(item.ContainerControl, false))
                                 {
