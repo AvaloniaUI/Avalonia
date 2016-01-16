@@ -15,7 +15,7 @@
     </Setter>
   </Style>
   <Style Selector="DropDownItem:selected /template/ Border#border">
-    <Setter Property="Background" Value="#ffe5f0fc"/>
+    <Setter Property="Background" Value="#fff0f0f0"/>
   </Style>
   <Style Selector="DropDownItem:pointerover /template/ Border#border">
     <Setter Property="Background" Value="#ffd0d0d0"/>
