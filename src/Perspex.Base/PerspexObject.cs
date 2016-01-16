@@ -775,7 +775,11 @@ namespace Perspex
                 validate2 = v => validate(this, v);
             }
 
-            PriorityValue result = new PriorityValue(property.Name, property.PropertyType, validate2);
+            PriorityValue result = new PriorityValue(
+                property.Name, 
+                property.PropertyType, 
+                validate2,
+                _propertyLog);
 
             result.Changed.Subscribe(x =>
             {
