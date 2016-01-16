@@ -34,10 +34,11 @@ namespace Perspex.Controls
                 (o, v) => o.IsDropDownOpen = v);
 
         public static readonly PerspexProperty<object> SelectionBoxItemProperty =
-            PerspexProperty.Register<DropDown, object>("SelectionBoxItem");
+            PerspexProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
 
         private bool _isDropDownOpen;
         private Popup _popup;
+        private object _selectionBoxItem;
 
         static DropDown()
         {
@@ -76,8 +77,8 @@ namespace Perspex.Controls
 
         protected object SelectionBoxItem
         {
-            get { return GetValue(SelectionBoxItemProperty); }
-            set { SetValue(SelectionBoxItemProperty, value); }
+            get { return _selectionBoxItem; }
+            set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
