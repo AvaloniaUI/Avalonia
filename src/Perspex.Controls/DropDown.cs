@@ -16,23 +16,20 @@ namespace Perspex.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
-    public class DropDown : SelectingItemsControl, IContentControl
+    public class DropDown : SelectingItemsControl
     {
-        public static readonly PerspexProperty<object> ContentProperty =
-            ContentControl.ContentProperty.AddOwner<DropDown>();
-
-        public static readonly PerspexProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
-            ContentControl.HorizontalContentAlignmentProperty.AddOwner<DropDown>();
-
-        public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
-            ContentControl.VerticalContentAlignmentProperty.AddOwner<DropDown>();
-
+        /// <summary>
+        /// Defines the <see cref="IsDropDownOpen"/> property.
+        /// </summary>
         public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
             PerspexProperty.RegisterDirect<DropDown, bool>(
                 nameof(IsDropDownOpen),
                 o => o.IsDropDownOpen,
                 (o, v) => o.IsDropDownOpen = v);
 
+        /// <summary>
+        /// Defines the <see cref="SelectionBoxItem"/> property.
+        /// </summary>
         public static readonly PerspexProperty<object> SelectionBoxItemProperty =
             PerspexProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
 
@@ -40,58 +37,47 @@ namespace Perspex.Controls
         private Popup _popup;
         private object _selectionBoxItem;
 
+        /// <summary>
+        /// Initializes static members of the <see cref="DropDown"/> class.
+        /// </summary>
         static DropDown()
         {
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
             SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
         }
 
-        public DropDown()
-        {
-            Bind(ContentProperty, GetObservable(SelectedItemProperty));
-        }
-
-        public object Content
-        {
-            get { return GetValue(ContentProperty); }
-            set { SetValue(ContentProperty, value); }
-        }
-
-        public HorizontalAlignment HorizontalContentAlignment
-        {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
-        }
-
-        public VerticalAlignment VerticalContentAlignment
-        {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
-        }
-
+        /// <summary>
+        /// Gets or sets a value indicating whether the dropdown is currently open.
+        /// </summary>
         public bool IsDropDownOpen
         {
             get { return _isDropDownOpen; }
             set { SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the item to display as the control's content.
+        /// </summary>
         protected object SelectionBoxItem
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
         }
 
+        /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator<DropDownItem>(this, DropDownItem.ContentProperty);
         }
 
+        /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
             this.UpdateSelectionBoxItem(this.SelectedItem);
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -112,6 +98,7 @@ namespace Perspex.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressEventArgs e)
         {
             if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
@@ -132,6 +119,7 @@ namespace Perspex.Controls
             base.OnPointerPressed(e);
         }
 
+        /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             if (_popup != null)
