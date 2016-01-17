@@ -231,7 +231,7 @@ namespace Perspex.Controls.Primitives
             // If the binding is a template binding, then complete when the Template changes.
             if (source.Priority == BindingPriority.TemplatedParent)
             {
-                var templateChanged = GetObservable(TemplateProperty).Skip(1);
+                var templateChanged = this.GetObservable(TemplateProperty).Skip(1);
 
                 result.SourceObservable = result.Source.GetObservable(result.Property)
                     .TakeUntil(templateChanged);

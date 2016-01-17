@@ -240,7 +240,7 @@ namespace Perspex.Styling
 
         private static SelectorMatch MatchPropertyEquals(IStyleable x, PerspexProperty property, object value)
         {
-            if (!x.IsRegistered(property))
+            if (!PerspexPropertyRegistry.Instance.IsRegistered(x, property))
             {
                 return SelectorMatch.False;
             }

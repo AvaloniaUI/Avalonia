@@ -21,7 +21,7 @@ namespace Perspex.Diagnostics.Views
         public VisualTreeView()
         {
             InitializeComponent();
-            GetObservable(DataContextProperty)
+            this.GetObservable(DataContextProperty)
                 .Subscribe(x => ViewModel = (VisualTreeViewModel)x);
         }
 

@@ -38,7 +38,7 @@ namespace Perspex.Controls.Primitives
 
         public Track()
         {
-            GetObservableWithHistory(ThumbProperty).Subscribe(val =>
+            this.GetObservableWithHistory(ThumbProperty).Subscribe(val =>
             {
                 if (val.Item1 != null)
                 {

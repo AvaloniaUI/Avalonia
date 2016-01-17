@@ -16,7 +16,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         /// <param name="instance">The target instance.</param>
         /// <param name="property">The target property.</param>
-        void Bind(IObservablePropertyBag instance, PerspexProperty property);
+        void Bind(IPerspexObject instance, PerspexProperty property);
 
         /// <summary>
         /// Creates a subject that can be used to get and set the value of the binding.
@@ -28,7 +28,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </param>
         /// <returns>An <see cref="ISubject{object}"/>.</returns>
         ISubject<object> CreateSubject(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             Type targetType,
             bool targetIsDataContext = false);
     }

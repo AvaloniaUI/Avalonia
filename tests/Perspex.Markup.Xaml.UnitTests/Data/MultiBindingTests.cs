@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Moq;
 using Perspex.Controls;
 using Perspex.Markup.Xaml.Data;
@@ -31,10 +30,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 }
             };
 
-            var target = new Mock<IObservablePropertyBag>();
+            var target = new Mock<IPerspexObject>();
             target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
-            target.Setup(x => x.GetObservable(Control.DataContextProperty)).Returns(
-                Observable.Never<object>().StartWith(source));
 
             var subject = binding.CreateSubject(target.Object, typeof(string));
             var result = await subject.Take(1);

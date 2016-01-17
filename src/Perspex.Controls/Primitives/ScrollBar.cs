@@ -36,10 +36,10 @@ namespace Perspex.Controls.Primitives
         public ScrollBar()
         {
             var isVisible = Observable.Merge(
-                GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                GetObservable(VisibilityProperty).Select(_ => Unit.Default))
+                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
+                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
+                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
+                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
                 .Select(_ => CalculateIsVisible());
             Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
         }

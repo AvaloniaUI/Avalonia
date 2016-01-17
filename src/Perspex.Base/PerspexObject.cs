@@ -23,7 +23,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IObservablePropertyBag, INotifyPropertyChanged
+    public class PerspexObject : IPerspexObject, INotifyPropertyChanged
     {
         /// <summary>
         /// The parent object that inherited values are inherited from.
@@ -88,11 +88,6 @@ namespace Perspex
             add { _inpcChanged += value; }
             remove { _inpcChanged -= value; }
         }
-
-        /// <summary>
-        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
-        /// </summary>
-        IPropertyBag IPropertyBag.InheritanceParent => InheritanceParent;
 
         /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
@@ -188,7 +183,7 @@ namespace Perspex
                         SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
                         break;
                     case BindingMode.OneWayToSource:
-                        sourceBinding.Source.Bind(sourceBinding.Property, GetObservable(binding.Property), binding.Priority);
+                        sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
                         break;
                     case BindingMode.TwoWay:
                         BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
@@ -221,81 +216,6 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(property != null);
 
             SetValue(property, PerspexProperty.UnsetValue);
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        public IObservable<object> GetObservable(PerspexProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new PerspexObservable<object>(
-                observer =>
-                {
-                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(e.NewValue);
-                        }
-                    };
-
-                    observer.OnNext(GetValue(property));
-
-                    PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(property));
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return GetObservable((PerspexProperty)property).Cast<T>();
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable which when subscribed pushes the old and new values of the
-        /// property each time it is changed.</returns>
-        public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
-        {
-            return new PerspexObservable<Tuple<T, T>>(
-                observer =>
-                {
-                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
-                        }
-                    };
-
-                    PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(property));
         }
 
         /// <summary>
@@ -589,7 +509,7 @@ namespace Perspex
 
             return new CompositeDisposable(
                 Bind(property, source.GetObservable(sourceProperty)),
-                source.Bind(sourceProperty, GetObservable(property)));
+                source.Bind(sourceProperty, this.GetObservable(property)));
         }
 
         /// <summary>
@@ -619,7 +539,7 @@ namespace Perspex
 
             return new CompositeDisposable(
                 Bind(property, source),
-                GetObservable(property).Subscribe(source));
+                this.GetObservable(property).Subscribe(source));
         }
 
         /// <summary>
@@ -638,11 +558,6 @@ namespace Perspex
         }
 
         /// <inheritdoc/>
-        bool IPropertyBag.IsRegistered(PerspexProperty property)
-        {
-            return PerspexPropertyRegistry.Instance.IsRegistered(this, property);
-        }
-
         /// <summary>
         /// Gets all priority values set on the object.
         /// </summary>

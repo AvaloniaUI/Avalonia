@@ -21,7 +21,7 @@ namespace Perspex.Media
         /// </summary>
         public RotateTransform()
         {
-            GetObservable(AngleProperty).Subscribe(_ => RaiseChanged());
+            this.GetObservable(AngleProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>

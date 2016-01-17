@@ -55,7 +55,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         /// <param name="instance">The target instance.</param>
         /// <param name="property">The target property.</param>
-        public void Bind(IObservablePropertyBag instance, PerspexProperty property)
+        public void Bind(IPerspexObject instance, PerspexProperty property)
         {
             Contract.Requires<ArgumentNullException>(instance != null);
             Contract.Requires<ArgumentNullException>(property != null);
@@ -67,7 +67,8 @@ namespace Perspex.Markup.Xaml.Data
 
             if (subject != null)
             {
-                Bind(instance, property, subject);
+                var mode = Mode == BindingMode.Default ? property.DefaultBindingMode : Mode;
+                instance.Bind(property, subject, mode, Priority);
             }
         }
 
@@ -81,7 +82,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </param>
         /// <returns>An <see cref="ISubject{object}"/>.</returns>
         public ISubject<object> CreateSubject(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             Type targetType,
             bool targetIsDataContext = false)
         {
@@ -123,42 +124,6 @@ namespace Perspex.Markup.Xaml.Data
                 targetType,
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter);
-        }
-
-        /// <summary>
-        /// Applies a binding subject to a property on an instance.
-        /// </summary>
-        /// <param name="target">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="subject">The binding subject.</param>
-        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
-        {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(subject != null);
-
-            var mode = Mode == BindingMode.Default ?
-                property.DefaultBindingMode : Mode;
-
-            switch (mode)
-            {
-                case BindingMode.Default:
-                case BindingMode.OneWay:
-                    target.Bind(property, subject, Priority);
-                    break;
-                case BindingMode.TwoWay:
-                    target.BindTwoWay(property, subject, Priority);
-                    break;
-                case BindingMode.OneTime:
-                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
-                    {
-                        subject.Take(1).Subscribe(x => target.SetValue(property, x, Priority));
-                    });
-                    break;
-                case BindingMode.OneWayToSource:
-                    target.GetObservable(property).Subscribe(subject);
-                    break;
-            }
         }
 
         private static PathInfo ParsePath(string path)
@@ -209,7 +174,7 @@ namespace Perspex.Markup.Xaml.Data
         }
 
         private ExpressionObserver CreateDataContextSubject(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             string path,
             bool targetIsDataContext)
         {
@@ -231,7 +196,7 @@ namespace Perspex.Markup.Xaml.Data
             {
                 return new ExpressionObserver(
                     target.GetObservable(Visual.VisualParentProperty)
-                          .OfType<IObservablePropertyBag>()
+                          .OfType<IPerspexObject>()
                           .Select(x => x.GetObservable(Control.DataContextProperty))
                           .Switch(),
                     path);
@@ -239,7 +204,7 @@ namespace Perspex.Markup.Xaml.Data
         }
 
         private ExpressionObserver CreateTemplatedParentSubject(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             string path)
         {
             Contract.Requires<ArgumentNullException>(target != null);

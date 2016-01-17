@@ -48,7 +48,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         /// <param name="instance">The target instance.</param>
         /// <param name="property">The target property.</param>
-        public void Bind(IObservablePropertyBag instance, PerspexProperty property)
+        public void Bind(IPerspexObject instance, PerspexProperty property)
         {
             var subject = CreateSubject(instance, property.PropertyType);
 
@@ -68,7 +68,7 @@ namespace Perspex.Markup.Xaml.Data
         /// </param>
         /// <returns>An <see cref="ISubject{object}"/>.</returns>
         public ISubject<object> CreateSubject(
-            IObservablePropertyBag target, 
+            IPerspexObject target, 
             Type targetType,
             bool targetIsDataContext = false)
         {
@@ -91,7 +91,7 @@ namespace Perspex.Markup.Xaml.Data
         /// <param name="target">The target instance.</param>
         /// <param name="property">The target property.</param>
         /// <param name="subject">The binding subject.</param>
-        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
+        internal void Bind(IPerspexObject target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = Mode == BindingMode.Default ?
                 property.DefaultBindingMode : Mode;

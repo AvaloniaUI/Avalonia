@@ -21,7 +21,7 @@ namespace Perspex.Media
         /// </summary>
         public MatrixTransform()
         {
-            GetObservable(MatrixProperty).Subscribe(_ => RaiseChanged());
+            this.GetObservable(MatrixProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>

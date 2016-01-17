@@ -23,7 +23,7 @@ namespace TestApplication
                 {
                     Setters = new[]
                     {
-                        new Setter (TemplatedControl.TemplateProperty, new FuncControlTemplate<TabControl> (TabControlTemplate))
+                        new Setter (TemplatedControl.TemplateProperty, new FuncControlTemplate<TabControl>(TabControlTemplate))
                     }
                 },
 

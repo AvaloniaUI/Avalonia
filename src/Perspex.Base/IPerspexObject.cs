@@ -1,23 +1,19 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Perspex
 {
     /// <summary>
     /// Interface for getting/setting <see cref="PerspexProperty"/> values on an object.
     /// </summary>
-    public interface IPropertyBag
+    public interface IPerspexObject
     {
         /// <summary>
-        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
+        /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
         /// </summary>
-        IPropertyBag InheritanceParent { get; }
-
-        /// <summary>
-        /// Clears a <see cref="PerspexProperty"/>'s local value.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        void ClearValue(PerspexProperty property);
+        event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
 
         /// <summary>
         /// Gets a <see cref="PerspexProperty"/> value.
@@ -35,13 +31,6 @@ namespace Perspex
         T GetValue<T>(PerspexProperty<T> property);
 
         /// <summary>
-        /// Checks whether a <see cref="PerspexProperty"/> is registered on this object.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>True if the property is registered, otherwise false.</returns>
-        bool IsRegistered(PerspexProperty property);
-
-        /// <summary>
         /// Checks whether a <see cref="PerspexProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -54,7 +43,10 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        void SetValue(PerspexProperty property, object value, BindingPriority priority = BindingPriority.LocalValue);
+        void SetValue(
+            PerspexProperty property, 
+            object value, 
+            BindingPriority priority = BindingPriority.LocalValue);
 
         /// <summary>
         /// Sets a <see cref="PerspexProperty"/> value.
@@ -63,6 +55,38 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue);
+        void SetValue<T>(
+            PerspexProperty<T> property,
+            T value,
+            BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Binds a <see cref="PerspexProperty"/> to an observable.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="source">The observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        IDisposable Bind(
+            PerspexProperty property,
+            IObservable<object> source,
+            BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Binds a <see cref="PerspexProperty"/> to an observable.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="source">The observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        IDisposable Bind<T>(
+            PerspexProperty<T> property,
+            IObservable<T> source,
+            BindingPriority priority = BindingPriority.LocalValue);
     }
 }

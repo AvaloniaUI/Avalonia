@@ -48,46 +48,26 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
             binding.Bind(target.Object, TextBox.TextProperty);
 
-            target.Verify(x => x.BindTwoWay(
+            target.Verify(x => x.Bind(
                 TextBox.TextProperty,
                 It.IsAny<ISubject<object>>(),
                 BindingPriority.TemplatedParent));
         }
 
-        [Fact]
-        public void OneWayToSource_Binding_Should_Be_Set_Up()
+        private Mock<IPerspexObject> CreateTarget(ITemplatedControl templatedParent)
         {
-            var textObservable = new Mock<IObservable<string>>();
-            var expression = new Mock<ISubject<object>>();
-            var target = CreateTarget(text: textObservable.Object);
-            var binding = new Binding
-            {
-                Path = "Foo",
-                Mode = BindingMode.OneWayToSource,
-            };
-
-            binding.Bind(target.Object, TextBox.TextProperty, expression.Object);
-
-            textObservable.Verify(x => x.Subscribe(expression.Object));
+            return CreateTarget(templatedParent: templatedParent);
         }
 
-        private Mock<IObservablePropertyBag> CreateTarget(ITemplatedControl templatedParent)
+        private Mock<IPerspexObject> CreateTarget(
+            ITemplatedControl templatedParent = null,
+            string text = null)
         {
-            return CreateTarget(templatedParent: Observable.Never<ITemplatedControl>().StartWith(templatedParent));
-        }
+            var result = new Mock<IPerspexObject>();
 
-        private Mock<IObservablePropertyBag> CreateTarget(
-            IObservable<ITemplatedControl> templatedParent = null,
-            IObservable<string> text = null)
-        {
-            var result = new Mock<IObservablePropertyBag>();
-
-            templatedParent = templatedParent ?? Observable.Never<ITemplatedControl>().StartWith((ITemplatedControl)null);
-            text = text ?? Observable.Never<string>().StartWith((string)null);
-
-            result.Setup(x => x.GetObservable(Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetObservable((PerspexProperty)Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetObservable((PerspexProperty)TextBox.TextProperty)).Returns(text);
+            result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
+            result.Setup(x => x.GetValue((PerspexProperty)Control.TemplatedParentProperty)).Returns(templatedParent);
+            result.Setup(x => x.GetValue((PerspexProperty)TextBox.TextProperty)).Returns(text);
             return result;
         }
     }

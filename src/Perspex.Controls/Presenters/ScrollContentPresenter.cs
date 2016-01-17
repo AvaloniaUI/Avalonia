@@ -61,7 +61,7 @@ namespace Perspex.Controls.Presenters
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
 
-            GetObservable(ChildProperty).Subscribe(ChildChanged);
+            this.GetObservable(ChildProperty).Subscribe(ChildChanged);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace Perspex.Controls.Presenters
             {
                 scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
                 _scrollableSubscription = new CompositeDisposable(
-                    GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
+                    this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
                     Disposable.Create(() => scrollable.InvalidateScroll = null));
                 UpdateFromScrollable(scrollable);
             }

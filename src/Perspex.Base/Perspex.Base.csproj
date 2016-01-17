@@ -45,8 +45,7 @@
     <Compile Include="BindingDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
-    <Compile Include="IObservablePropertyBag.cs" />
-    <Compile Include="IPropertyBag.cs" />
+    <Compile Include="IPerspexObject.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />
     <Compile Include="PerspexLocator.cs" />
