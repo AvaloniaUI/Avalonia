@@ -62,15 +62,53 @@ namespace Perspex.Styling
         /// <param name="activator">An optional activator.</param>
         public void Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
-            if (activator == null)
+            if (Property == null)
             {
-                control.SetValue(Property, Value, BindingPriority.Style);
+                throw new InvalidOperationException("Setter.Property must be set.");
+            }
+
+            var binding = Value as IBinding;
+
+            if (binding != null)
+            {
+                if (activator == null)
+                {
+                    Bind(control, Property, binding);
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        "Setter bindings with activators not yet supported.");
+                }
             }
             else
             {
-                var binding = new StyleBinding(activator, Value, style.ToString());
-                control.Bind(Property, binding, BindingPriority.StyleTrigger);
+                if (activator == null)
+                {
+                    control.SetValue(Property, Value, BindingPriority.Style);
+                }
+                else
+                {
+                    var activated = new StyleBinding(activator, Value, style.ToString());
+                    control.Bind(Property, activated, BindingPriority.StyleTrigger);
+                }
             }
+        }
+
+        private void Bind(IStyleable control, PerspexProperty property, IBinding binding)
+        {
+            var mode = binding.Mode;
+
+            if (mode == BindingMode.Default)
+            {
+                mode = property.DefaultBindingMode;
+            }
+
+            control.Bind(
+                property,
+                binding.CreateSubject(control, property),
+                mode,
+                binding.Priority);
         }
     }
 }
