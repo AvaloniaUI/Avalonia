@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -234,7 +235,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -248,7 +249,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -264,7 +265,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];

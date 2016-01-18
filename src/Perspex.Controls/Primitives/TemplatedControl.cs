@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Styling;
@@ -224,7 +225,7 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        protected sealed override BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        protected sealed override IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
             var result = base.CreateBindingDescriptor(source);
 

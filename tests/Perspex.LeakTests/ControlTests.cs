@@ -194,7 +194,8 @@ namespace Perspex.LeakTests
                     Path = "Name"
                 };
 
-                binding.Bind((TextBox)window.Content, TextBox.TextProperty);
+                var textBox = (TextBox)window.Content;
+                textBox.Bind(TextBox.TextProperty, binding);
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // Text property set.

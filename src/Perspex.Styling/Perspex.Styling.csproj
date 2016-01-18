@@ -56,7 +56,6 @@
     <Compile Include="Styling\SelectorMatch.cs" />
     <Compile Include="Styling\Selector.cs" />
     <Compile Include="Styling\Selectors.cs" />
-    <Compile Include="Styling\ObservableSetter.cs" />
     <Compile Include="Styling\Setter.cs" />
     <Compile Include="Styling\Style.cs" />
     <Compile Include="Styling\StyleActivator.cs" />

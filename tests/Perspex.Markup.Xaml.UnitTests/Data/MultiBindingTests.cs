@@ -33,7 +33,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             var target = new Mock<IPerspexObject>();
             target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
 
-            var subject = binding.CreateSubject(target.Object, typeof(string));
+            var subject = binding.CreateSubject(target.Object, null);
             var result = await subject.Take(1);
 
             Assert.Equal("1,2,3", result);

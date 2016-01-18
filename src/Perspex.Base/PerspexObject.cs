@@ -8,8 +8,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
-using Perspex.Reactive;
+using Perspex.Data;
 using Perspex.Threading;
 using Perspex.Utilities;
 using Serilog;
@@ -154,7 +153,7 @@ namespace Perspex
         /// Gets or sets a binding for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IObservable<object> this[BindingDescriptor binding]
+        public IObservable<object> this[IndexerDescriptor binding]
         {
             get
             {
@@ -166,7 +165,7 @@ namespace Perspex
                 var mode = (binding.Mode == BindingMode.Default) ?
                     binding.Property.DefaultBindingMode :
                     binding.Mode;
-                var sourceBinding = value as BindingDescriptor;
+                var sourceBinding = value as IndexerDescriptor;
 
                 if (sourceBinding == null && mode > BindingMode.OneWay)
                 {
@@ -192,9 +191,9 @@ namespace Perspex
             }
         }
 
-        protected virtual BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        protected virtual IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
-            return new BindingDescriptor
+            return new IndexerDescriptor
             {
                 Mode = source.Mode,
                 Priority = source.Priority,

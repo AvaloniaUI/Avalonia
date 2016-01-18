@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Moq;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Styling;
 using Xunit;
@@ -26,7 +27,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty);
+            target.Object.Bind(TextBox.TextProperty, binding);
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty, 
@@ -46,7 +47,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty);
+            target.Object.Bind(TextBox.TextProperty, binding);
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty,
@@ -59,11 +60,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             return CreateTarget(templatedParent: templatedParent);
         }
 
-        private Mock<IPerspexObject> CreateTarget(
+        private Mock<IControl> CreateTarget(
             ITemplatedControl templatedParent = null,
             string text = null)
         {
-            var result = new Mock<IPerspexObject>();
+            var result = new Mock<IControl>();
 
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue((PerspexProperty)Control.TemplatedParentProperty)).Returns(templatedParent);

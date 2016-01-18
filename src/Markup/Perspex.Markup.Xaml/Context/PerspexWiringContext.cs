@@ -15,6 +15,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Markup.Xaml.Converters;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.Metadata;
@@ -58,9 +59,10 @@ namespace Perspex.Markup.Xaml.Context
 
             var forcedAssemblies = new[]
             {
+                typeof(Binding),
                 typeof(Control),
-                typeof(Style),
                 typeof(IValueConverter),
+                typeof(Style),
             }.Select(t => t.GetTypeInfo().Assembly);
 
             foreach (var nsa in 

@@ -3,6 +3,7 @@
 
 using Moq;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 using ReactiveUI;
@@ -23,7 +24,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.OneWay,
             };
 
-            binding.Bind(target, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
             source.Foo = "bar";
@@ -43,7 +44,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.TwoWay,
             };
 
-            binding.Bind(target, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
             source.Foo = "bar";
@@ -63,7 +64,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.OneTime,
             };
 
-            binding.Bind(target, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
             source.Foo = "bar";
@@ -83,7 +84,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Mode = BindingMode.OneWayToSource,
             };
 
-            binding.Bind(target, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("bar", source.Foo);
             target.Text = "baz";
@@ -103,7 +104,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            binding.Bind(target, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
             source.Foo = "bar";
@@ -128,7 +129,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Header",
             };
 
-            binding.Bind(parent.Child, Control.DataContextProperty);
+            parent.Child.Bind(Control.DataContextProperty, binding);
 
             Assert.Equal("Foo", parent.Child.DataContext);
 
@@ -152,7 +153,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            binding.Bind(child, Control.DataContextProperty);
+            child.Bind(Control.DataContextProperty, binding);
+
             Assert.Null(child.DataContext);
             parent.Child = child;
             Assert.Equal("foo", child.DataContext);
@@ -167,7 +169,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty.PropertyType);
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
 
             Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
         }
@@ -183,7 +185,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty.PropertyType);
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
 
             Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
         }
@@ -200,7 +202,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Bar",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty.PropertyType);
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
 
             Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
         }
@@ -236,8 +238,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             };
 
             // Bind Foo and Bar to the VM.
-            fooBinding.Bind(target, OldDataContextTest.FooProperty);
-            barBinding.Bind(target, OldDataContextTest.BarProperty);
+            target.Bind(OldDataContextTest.FooProperty, fooBinding);
+            target.Bind(OldDataContextTest.BarProperty, barBinding);
             target.DataContext = vm;
 
             // Make sure the control's Foo and Bar properties are read from the VM

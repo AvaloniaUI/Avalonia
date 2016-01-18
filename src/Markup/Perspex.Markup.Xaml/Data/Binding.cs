@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Data;
 
 namespace Perspex.Markup.Xaml.Data
@@ -13,7 +14,7 @@ namespace Perspex.Markup.Xaml.Data
     /// <summary>
     /// A XAML binding.
     /// </summary>
-    public class Binding : IXamlBinding
+    public class Binding : IBinding
     {
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
@@ -51,48 +52,22 @@ namespace Perspex.Markup.Xaml.Data
         public string Path { get; set; }
 
         /// <summary>
-        /// Applies the binding to a property on an instance.
-        /// </summary>
-        /// <param name="instance">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        public void Bind(IPerspexObject instance, PerspexProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(instance != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            var subject = CreateSubject(
-                instance,
-                property.PropertyType,
-                property == Control.DataContextProperty);
-
-            if (subject != null)
-            {
-                var mode = Mode == BindingMode.Default ? property.DefaultBindingMode : Mode;
-                instance.Bind(property, subject, mode, Priority);
-            }
-        }
-
-        /// <summary>
         /// Creates a subject that can be used to get and set the value of the binding.
         /// </summary>
         /// <param name="target">The target instance.</param>
-        /// <param name="targetType">The type of the target property.</param>
-        /// <param name="targetIsDataContext">
-        /// Whether the target property is the DataContext property.
-        /// </param>
-        /// <returns>An <see cref="ISubject{object}"/>.</returns>
+        /// <param name="targetProperty">The target property. May be null.</param>
+        /// <returns>An <see cref="ISubject{Object}"/>.</returns>
         public ISubject<object> CreateSubject(
-            IPerspexObject target,
-            Type targetType,
-            bool targetIsDataContext = false)
+            IPerspexObject target, 
+            PerspexProperty targetProperty)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(targetType != null);
 
             var pathInfo = ParsePath(Path);
             ValidateState(pathInfo);
 
             ExpressionObserver observer;
+            var targetIsDataContext = targetProperty == Control.DataContextProperty;
 
             if (pathInfo.ElementName != null || ElementName != null)
             {
@@ -121,7 +96,7 @@ namespace Perspex.Markup.Xaml.Data
 
             return new ExpressionSubject(
                 observer,
-                targetType,
+                targetProperty?.PropertyType ?? typeof(object),
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter);
         }

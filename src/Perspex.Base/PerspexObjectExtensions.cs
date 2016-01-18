@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Perspex.Reactive;
 
 namespace Perspex
@@ -141,7 +142,7 @@ namespace Perspex
         /// <param name="source">The binding source.</param>
         /// <param name="mode">The binding mode.</param>
         /// <param name="priority">The binding priority.</param>
-        /// <returns></returns>
+        /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
         public static IDisposable Bind(
             this IPerspexObject o, 
             PerspexProperty property,

@@ -11,6 +11,7 @@ using System.Reactive.Subjects;
 using Perspex.Collections;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.LogicalTree;

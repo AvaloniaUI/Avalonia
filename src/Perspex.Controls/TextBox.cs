@@ -14,6 +14,7 @@ using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Metadata;
+using Perspex.Data;
 
 namespace Perspex.Controls
 {

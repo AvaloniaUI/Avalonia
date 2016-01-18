@@ -142,52 +142,6 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Style_With_ObservableSetter_Should_Update_Value()
-        {
-            var source = new BehaviorSubject<string>("Foo");
-
-            Style style = new Style(x => x.OfType<Class1>())
-            {
-                Setters = new[]
-                {
-                    new ObservableSetter(Class1.FooProperty, source),
-                },
-            };
-
-            var target = new Class1();
-
-            style.Attach(target, null);
-
-            Assert.Equal("Foo", target.Foo);
-        }
-
-        [Fact]
-        public void Style_With_ObservableSetter_Should_Update_And_Restore_Value()
-        {
-            var source = new BehaviorSubject<string>("Foo");
-
-            var style = new Style(x => x.OfType<Class1>().Class("foo"))
-            {
-                Setters = new[]
-                {
-                    new ObservableSetter(Class1.FooProperty, source),
-                },
-            };
-
-            var target = new Class1();
-
-            style.Attach(target, null);
-
-            Assert.Equal("foodefault", target.Foo);
-            target.Classes.Add("foo");
-            Assert.Equal("Foo", target.Foo);
-            source.OnNext("Bar");
-            Assert.Equal("Bar", target.Foo);
-            target.Classes.Remove("foo");
-            Assert.Equal("foodefault", target.Foo);
-        }
-
-        [Fact]
         public void Style_Should_Detach_When_Removed_From_Logical_Tree()
         {
             Border border;

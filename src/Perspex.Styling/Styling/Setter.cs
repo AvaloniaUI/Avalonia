@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 using Perspex.Metadata;
 
 namespace Perspex.Styling
@@ -46,6 +47,7 @@ namespace Perspex.Styling
         /// Gets or sets the property value.
         /// </summary>
         [Content]
+        [AssignBinding]
         public object Value
         {
             get;

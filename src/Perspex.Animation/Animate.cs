@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using Perspex.Data;
 using Perspex.Threading;
 
 namespace Perspex.Animation

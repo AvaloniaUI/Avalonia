@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using OmniXaml;
+using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
