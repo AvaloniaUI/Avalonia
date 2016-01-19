@@ -688,6 +688,15 @@ namespace TestApplication
                                         [Canvas.LeftProperty] = 130,
                                         [Canvas.TopProperty] = 79,
                                     },
+                                    new Line
+                                    {
+                                        Width = 90,
+                                        Height = 70,
+                                        Stroke = Brushes.Red,
+                                        StrokeThickness = 2,
+                                        [Canvas.LeftProperty] = 30,
+                                        [Canvas.TopProperty] = 120
+                                    }
                                 }
                             },
                         }
