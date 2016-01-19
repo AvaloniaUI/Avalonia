@@ -11,54 +11,63 @@ namespace Perspex.Diagnostics.ViewModels
 {
     internal class DevToolsViewModel : ReactiveObject
     {
-        private Control _root;
+        private IControl _root;
 
-        private LogicalTreeViewModel _logicalTree;
+        private ReactiveObject _content;
 
-        private VisualTreeViewModel _visualTree;
+        private int _selectedTab;
+
+        private TreePageViewModel _logicalTree;
+
+        private TreePageViewModel _visualTree;
 
         private readonly ObservableAsPropertyHelper<IInputElement> _focusedControl;
 
         private readonly ObservableAsPropertyHelper<IInputElement> _pointerOverElement;
 
-        public DevToolsViewModel()
+        public DevToolsViewModel(IControl root)
         {
-            this.WhenAnyValue(x => x.Root).Subscribe(x =>
+            _root = root;
+            _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
+            _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
+
+            this.WhenAnyValue(x => x.SelectedTab).Subscribe(index =>
             {
-                LogicalTree = new LogicalTreeViewModel(_root);
-                VisualTree = new VisualTreeViewModel(_root);
+                switch (index)
+                {
+                    case 0:
+                        Content = _logicalTree;
+                        break;
+                    case 1:
+                        Content = _visualTree;
+                        break;
+                }
             });
 
             _focusedControl = KeyboardDevice.Instance
                 .WhenAnyValue(x => x.FocusedElement)
                 .ToProperty(this, x => x.FocusedControl);
 
-            _pointerOverElement = this.WhenAnyValue(x => x.Root, x => x as TopLevel)
-                .Select(x => x?.GetObservable(TopLevel.PointerOverElementProperty) ?? Observable.Empty<IInputElement>())
-                .Switch()
-                .ToProperty(this, x => x.PointerOverElement);
+            //_pointerOverElement = this.WhenAnyValue(x => x.Root, x => x as TopLevel)
+            //    .Select(x => x?.GetObservable(TopLevel.PointerOverElementProperty) ?? Observable.Empty<IInputElement>())
+            //    .Switch()
+            //    .ToProperty(this, x => x.PointerOverElement);
         }
 
-        public Control Root
+        public ReactiveObject Content
         {
-            get { return _root; }
-            set { this.RaiseAndSetIfChanged(ref _root, value); }
+            get { return _content; }
+            private set { this.RaiseAndSetIfChanged(ref _content, value); }
         }
 
-        public LogicalTreeViewModel LogicalTree
+        public int SelectedTab
         {
-            get { return _logicalTree; }
-            private set { this.RaiseAndSetIfChanged(ref _logicalTree, value); }
-        }
-
-        public VisualTreeViewModel VisualTree
-        {
-            get { return _visualTree; }
-            private set { this.RaiseAndSetIfChanged(ref _visualTree, value); }
+            get { return _selectedTab; }
+            set { this.RaiseAndSetIfChanged(ref _selectedTab, value); }
         }
 
         public IInputElement FocusedControl => _focusedControl.Value;
 
-        public IInputElement PointerOverElement => _pointerOverElement.Value;
+        //public IInputElement PointerOverElement => _pointerOverElement.Value;
     }
 }

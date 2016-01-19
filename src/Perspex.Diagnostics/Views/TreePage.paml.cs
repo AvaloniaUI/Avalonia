@@ -1,18 +1,21 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Perspex.Controls;
+﻿using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Diagnostics.ViewModels;
 using Perspex.Input;
+using Perspex.Markup.Xaml;
 using Perspex.Media;
 
 namespace Perspex.Diagnostics.Views
 {
-    internal class TreePage : UserControl
+    public class TreePageView : UserControl
     {
         private Control _adorner;
+
+        public TreePageView()
+        {
+            this.InitializeComponent();
+        }
 
         protected void AddAdorner(object sender, PointerEventArgs e)
         {
@@ -38,6 +41,11 @@ namespace Perspex.Diagnostics.Views
                 ((Panel)_adorner.Parent).Children.Remove(_adorner);
                 _adorner = null;
             }
+        }
+
+        private void InitializeComponent()
+        {
+            PerspexXamlLoader.Load(this);
         }
     }
 }

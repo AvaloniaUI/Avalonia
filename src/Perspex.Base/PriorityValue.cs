@@ -224,26 +224,29 @@ namespace Perspex
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            if (TypeUtilities.TryCast(_valueType, value, out value))
+            object castValue;
+
+            if (TypeUtilities.TryCast(_valueType, value, out castValue))
             {
                 var old = _value;
 
-                if (_validate != null && value != PerspexProperty.UnsetValue)
+                if (_validate != null && castValue != PerspexProperty.UnsetValue)
                 {
-                    value = _validate(value);
+                    castValue = _validate(castValue);
                 }
 
                 ValuePriority = priority;
-                _value = value;
+                _value = castValue;
                 _changed.OnNext(Tuple.Create(old, _value));
             }
             else if (_logger != null)
             {
                 _logger.Error(
-                    "Binding produced invalid value for {$Type} {$Property}: {$Value}",
-                    _valueType,
+                    "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     _name,
-                    value);
+                    _valueType,
+                    value,
+                    value.GetType());
             }
         }
 

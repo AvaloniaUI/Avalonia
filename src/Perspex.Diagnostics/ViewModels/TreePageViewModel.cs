@@ -2,28 +2,27 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Reactive.Linq;
-using Perspex.Controls;
 using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
 {
-    internal class LogicalTreeViewModel : ReactiveObject
+    internal class TreePageViewModel : ReactiveObject
     {
-        private LogicalTreeNode _selected;
+        private TreeNode _selected;
 
         private readonly ObservableAsPropertyHelper<ControlDetailsViewModel> _details;
 
-        public LogicalTreeViewModel(Control root)
+        public TreePageViewModel(TreeNode[] nodes)
         {
-            Nodes = LogicalTreeNode.Create(root);
+            Nodes = nodes;
             _details = this.WhenAnyValue(x => x.SelectedNode)
                 .Select(x => x != null ? new ControlDetailsViewModel(x.Control) : null)
                 .ToProperty(this, x => x.Details);
         }
 
-        public LogicalTreeNode[] Nodes { get; }
+        public TreeNode[] Nodes { get; protected set; }
 
-        public LogicalTreeNode SelectedNode
+        public TreeNode SelectedNode
         {
             get { return _selected; }
             set { this.RaiseAndSetIfChanged(ref _selected, value); }

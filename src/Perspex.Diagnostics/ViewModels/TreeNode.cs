@@ -13,6 +13,7 @@ namespace Perspex.Diagnostics.ViewModels
     internal class TreeNode : ReactiveObject
     {
         private string _classes;
+        private bool _isExpanded = true;
 
         public TreeNode(Control control)
         {
@@ -50,6 +51,12 @@ namespace Perspex.Diagnostics.ViewModels
         {
             get { return _classes; }
             private set { this.RaiseAndSetIfChanged(ref _classes, value); }
+        }
+
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            private set { this.RaiseAndSetIfChanged(ref _isExpanded, value); }
         }
 
         public string Type

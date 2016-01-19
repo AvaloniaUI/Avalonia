@@ -1,0 +1,24 @@
+﻿<UserControl xmlns="https://github.com/perspex"
+             xmlns:vm="clr-namespace:Perspex.Diagnostics.ViewModels;assembly=Perspex.Diagnostics">
+  <Grid ColumnDefinitions="*,4,3*">    
+    <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="vm:TreeNode"
+                          ItemsSource="{Binding Children}">
+          <StackPanel Orientation="Horizontal" Gap="8">
+            <TextBlock Text="{Binding Type}"/>
+            <TextBlock Text="{Binding Classes}"/>
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.DataTemplates>
+      <!--<TreeView.Styles>
+        <Style Selector="TreeViewItem">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+        </Style>
+      </TreeView.Styles>-->
+    </TreeView>
+
+    <GridSplitter Width="4" Orientation="Vertical" Grid.Column="1"/>
+    <ContentControl Content="{Binding Details}" Grid.Column="2"/>
+  </Grid>
+</UserControl>

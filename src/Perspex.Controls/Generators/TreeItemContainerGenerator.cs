@@ -77,7 +77,7 @@ namespace Perspex.Controls.Generators
 
                 result.SetValue(ContentProperty, template.Build(item));
                 result.SetValue(ItemsProperty, template.ItemsSelector(item));
-                result.SetValue(IsExpandedProperty, template.IsExpanded(item));
+                //result.SetValue(IsExpandedProperty, template.IsExpanded(item));
 
                 if (!(item is IControl))
                 {
