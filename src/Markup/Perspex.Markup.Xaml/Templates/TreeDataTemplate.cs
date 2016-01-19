@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Reactive.Linq;
+using System.Reflection;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
 using Perspex.Data;
@@ -27,10 +28,12 @@ namespace Perspex.Markup.Xaml.Templates
         {
             if (DataType == null)
             {
-                throw new InvalidOperationException("DataTemplate must have a DataType.");
+                return true;
             }
-
-            return DataType == data.GetType();
+            else
+            {
+                return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+            }
         }
 
         public IEnumerable ItemsSelector(object item)
