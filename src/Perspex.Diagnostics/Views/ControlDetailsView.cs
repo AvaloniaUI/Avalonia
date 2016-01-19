@@ -19,7 +19,7 @@ namespace Perspex.Diagnostics.Views
         public ControlDetailsView()
         {
             InitializeComponent();
-            GetObservable(DataContextProperty)
+            this.GetObservable(DataContextProperty)
                 .Subscribe(x => ViewModel = (ControlDetailsViewModel)x);
         }
 

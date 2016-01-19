@@ -20,7 +20,7 @@ namespace Perspex.Diagnostics.Views
         public LogicalTreeView()
         {
             InitializeComponent();
-            GetObservable(DataContextProperty)
+            this.GetObservable(DataContextProperty)
                 .Subscribe(x => ViewModel = (LogicalTreeViewModel)x);
         }
 

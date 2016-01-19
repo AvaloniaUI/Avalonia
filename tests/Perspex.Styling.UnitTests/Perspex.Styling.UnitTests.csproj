@@ -91,6 +91,7 @@
     <Compile Include="SelectorTests_Template.cs" />
     <Compile Include="StyleActivatorTests.cs" />
     <Compile Include="StyleBindingTests.cs" />
+    <Compile Include="SetterTests.cs" />
     <Compile Include="StyleTests.cs" />
     <Compile Include="TestControlBase.cs" />
     <Compile Include="TestObservable.cs" />

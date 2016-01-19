@@ -21,7 +21,7 @@ namespace Perspex.Diagnostics
         public DevTools()
         {
             _viewModel = new DevToolsViewModel();
-            GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
+            this.GetObservable(RootProperty).Subscribe(x => _viewModel.Root = x);
 
             InitializeComponent();
         }

@@ -38,7 +38,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Text",
             };
 
-            binding.Bind(target, TextBlock.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
         }
@@ -73,7 +73,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 ElementName = "source",
             };
 
-            binding.Bind(target, ContentControl.ContentProperty);
+            target.Bind(ContentControl.ContentProperty, binding);
 
             Assert.Same(source, target.Content);
         }
@@ -104,7 +104,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Text",
             };
 
-            binding.Bind(target, TextBlock.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
             stackPanel.Children.Add(new TextBlock
             {
@@ -140,7 +140,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 ElementName = "source",
             };
 
-            binding.Bind(target, ContentControl.ContentProperty);
+            target.Bind(ContentControl.ContentProperty, binding);
 
             var source = new TextBlock
             {

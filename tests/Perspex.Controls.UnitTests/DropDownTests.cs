@@ -40,7 +40,7 @@ namespace Perspex.Controls.UnitTests
                         new ContentControl
                         {
                             Name = "contentControl",
-                            [~ContentPresenter.ContentProperty] = parent[~DropDown.ContentProperty],
+                            [~ContentPresenter.ContentProperty] = parent[~DropDown.SelectionBoxItemProperty],
                         },
                         new ToggleButton
                         {

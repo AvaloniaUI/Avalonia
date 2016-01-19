@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Generators;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Styling;

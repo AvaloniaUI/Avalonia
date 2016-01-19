@@ -2,8 +2,6 @@
   <Style Selector="DropDown">
     <Setter Property="BorderBrush" Value="#ff707070"/>
     <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -13,8 +11,8 @@
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
                               Margin="{TemplateBinding Padding}"
-                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
             <ToggleButton Name="toggle"
                           BorderThickness="0"
                           Background="Transparent"

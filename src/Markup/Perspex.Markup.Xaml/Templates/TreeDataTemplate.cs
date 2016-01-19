@@ -6,6 +6,7 @@ using System.Collections;
 using System.Reactive.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Metadata;
@@ -19,6 +20,7 @@ namespace Perspex.Markup.Xaml.Templates
         [Content]
         public TemplateContent Content { get; set; }
 
+        [AssignBinding]
         public Binding ItemsSource { get; set; }
 
         public bool Match(object data)

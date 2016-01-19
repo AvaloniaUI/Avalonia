@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Metadata;
 
 namespace Perspex.Markup.Xaml.Data
@@ -15,13 +16,13 @@ namespace Perspex.Markup.Xaml.Data
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : IXamlBinding
+    public class MultiBinding : IBinding
     {
         /// <summary>
         /// Gets the collection of child bindings.
         /// </summary>
         [Content]
-        public IList<IXamlBinding> Bindings { get; set; } = new List<IXamlBinding>();
+        public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
 
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
@@ -48,9 +49,9 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         /// <param name="instance">The target instance.</param>
         /// <param name="property">The target property.</param>
-        public void Bind(IObservablePropertyBag instance, PerspexProperty property)
+        public void Bind(IPerspexObject instance, PerspexProperty property)
         {
-            var subject = CreateSubject(instance, property.PropertyType);
+            var subject = CreateSubject(instance, property);
 
             if (subject != null)
             {
@@ -62,23 +63,18 @@ namespace Perspex.Markup.Xaml.Data
         /// Creates a subject that can be used to get and set the value of the binding.
         /// </summary>
         /// <param name="target">The target instance.</param>
-        /// <param name="targetType">The type of the target property.</param>
-        /// <param name="targetIsDataContext">
-        /// Whether the target property is the DataContext property.
-        /// </param>
-        /// <returns>An <see cref="ISubject{object}"/>.</returns>
-        public ISubject<object> CreateSubject(
-            IObservablePropertyBag target, 
-            Type targetType,
-            bool targetIsDataContext = false)
+        /// <param name="targetProperty">The target property.</param>
+        /// <returns>An <see cref="ISubject{Object}"/>.</returns>
+        public ISubject<object> CreateSubject(IPerspexObject target, PerspexProperty targetProperty)
         {
             if (Converter == null)
             {
                 throw new NotSupportedException("MultiBinding without Converter not currently supported.");
             }
 
+            var targetType = targetProperty?.PropertyType ?? typeof(object);
             var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
-            var children = Bindings.Select(x => x.CreateSubject(target, typeof(object)));
+            var children = Bindings.Select(x => x.CreateSubject(target, null));
             var input = children.CombineLatest().Select(x =>
                 Converter.Convert(x, targetType, null, CultureInfo.CurrentUICulture));
             input.Subscribe(result);
@@ -91,7 +87,7 @@ namespace Perspex.Markup.Xaml.Data
         /// <param name="target">The target instance.</param>
         /// <param name="property">The target property.</param>
         /// <param name="subject">The binding subject.</param>
-        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
+        internal void Bind(IPerspexObject target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = Mode == BindingMode.Default ?
                 property.DefaultBindingMode : Mode;

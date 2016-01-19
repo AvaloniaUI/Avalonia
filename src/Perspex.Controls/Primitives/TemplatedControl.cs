@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Styling;
@@ -224,14 +225,14 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        protected sealed override BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        protected sealed override IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
             var result = base.CreateBindingDescriptor(source);
 
             // If the binding is a template binding, then complete when the Template changes.
             if (source.Priority == BindingPriority.TemplatedParent)
             {
-                var templateChanged = GetObservable(TemplateProperty).Skip(1);
+                var templateChanged = this.GetObservable(TemplateProperty).Skip(1);
 
                 result.SourceObservable = result.Source.GetObservable(result.Property)
                     .TakeUntil(templateChanged);

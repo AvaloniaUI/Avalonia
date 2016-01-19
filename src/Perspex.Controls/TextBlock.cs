@@ -4,6 +4,7 @@
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
+using Perspex.Data;
 using Perspex.Media;
 using Perspex.Metadata;
 
@@ -106,10 +107,10 @@ namespace Perspex.Controls
         public TextBlock()
         {
             Observable.Merge(
-                GetObservable(TextProperty).Select(_ => Unit.Default),
-                GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
-                GetObservable(FontSizeProperty).Select(_ => Unit.Default),
-                GetObservable(FontStyleProperty).Select(_ => Unit.Default))
+                this.GetObservable(TextProperty).Select(_ => Unit.Default),
+                this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
+                this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
+                this.GetObservable(FontStyleProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
                     InvalidateFormattedText();
