@@ -10,6 +10,9 @@ namespace Perspex.Media
     /// </summary>
     public class LineGeometry : Geometry
     {
+        private Point _startPoint;
+        private Point _endPoint;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LineGeometry"/> class.
         /// </summary>
@@ -17,21 +20,23 @@ namespace Perspex.Media
         /// <param name="endPoint">The end point.</param>
         public LineGeometry(Point startPoint, Point endPoint)
         {
+            _startPoint = startPoint;
+            _endPoint = endPoint;
             IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             IStreamGeometryImpl impl = factory.CreateStreamGeometry();
 
             using (IStreamGeometryContextImpl context = impl.Open())
             {
-                context.BeginFigure(startPoint, true);
+                context.BeginFigure(startPoint, false);
                 context.LineTo(endPoint);
-                context.EndFigure(true);
+                context.EndFigure(false);
             }
 
             PlatformImpl = impl;
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds => PlatformImpl.Bounds;
+        public override Rect Bounds => new Rect(_startPoint, _endPoint);
 
         /// <inheritdoc/>
         public override Geometry Clone()

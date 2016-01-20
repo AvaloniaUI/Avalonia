@@ -71,6 +71,7 @@
     <Compile Include="Media\ImageBrushTests.cs" />
     <Compile Include="Media\LinearGradientBrushTests.cs" />
     <Compile Include="Media\VisualBrushTests.cs" />
+    <Compile Include="Shapes\LineTests.cs" />
     <Compile Include="Shapes\PathTests.cs" />
     <Compile Include="Shapes\EllipseTests.cs" />
     <Compile Include="Shapes\RectangleTests.cs" />

@@ -22,7 +22,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         }
 
         [Fact]
-        public void Circle_1px_Stroke()
+        public void Line_1px_Stroke()
         {
             Decorator target = new Decorator
             {
