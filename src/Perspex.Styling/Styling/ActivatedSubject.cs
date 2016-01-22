@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -18,11 +17,10 @@ namespace Perspex.Styling
     /// produce the current activated value. When the activator produces false it will produce
     /// <see cref="PerspexProperty.UnsetValue"/>.
     /// </remarks>
-    internal class ActivatedSubject : ISubject<object>, IDescription
+    internal class ActivatedSubject : ActivatedObservable, ISubject<object>, IDescription
     {
-        private IObservable<bool> _activator;
         private bool _active;
-        private object _pushValue;
+        private object _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivatedSubject"/> class.
@@ -34,28 +32,17 @@ namespace Perspex.Styling
             IObservable<bool> activator,
             ISubject<object> source,
             string description)
+            : base(activator, source, description)
         {
-            _activator = activator;
-            Description = description;
-            Source = source;
-
-            _activator.Skip(1).Subscribe(ActivatorChanged);
-        }
-
-        /// <summary>
-        /// Gets a description of the binding.
-        /// </summary>
-        public string Description
-        {
-            get;
+            Activator.Skip(1).Subscribe(ActivatorChanged);
         }
 
         /// <summary>
         /// Gets the underlying subject.
         /// </summary>
-        public ISubject<object> Source
+        public new ISubject<object> Source
         {
-            get;
+            get { return (ISubject<object>)base.Source; }
         }
 
         /// <summary>
@@ -88,7 +75,7 @@ namespace Perspex.Styling
         /// <param name="value">The value to send to all subscribed observers.</param>        
         public void OnNext(object value)
         {
-            _pushValue = value;
+            _value = value;
 
             if (_active)
             {
@@ -96,29 +83,10 @@ namespace Perspex.Styling
             }
         }
 
-        /// <summary>
-        /// Notifies the provider that an observer is to receive notifications.
-        /// </summary>
-        /// <param name="observer">The observer.</param>
-        /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
-        public IDisposable Subscribe(IObserver<object> observer)
-        {
-            Contract.Requires<ArgumentNullException>(observer != null);
-
-            var completed = _activator.TakeLast(1).Select(_ => Unit.Default);
-
-            return _activator
-                .CombineLatest(Source, (x, y) => new { Active = x, Value = y })
-                .Select(x => x.Active ? x.Value : PerspexProperty.UnsetValue)
-                .DistinctUntilChanged()
-                .TakeUntil(completed)
-                .Subscribe(observer);
-        }
-
         private void ActivatorChanged(bool active)
         {
             _active = active;
-            Source.OnNext(active ? _pushValue : PerspexProperty.UnsetValue);
+            Source.OnNext(active ? _value : PerspexProperty.UnsetValue);
         }
     }
 }

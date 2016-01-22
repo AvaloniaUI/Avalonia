@@ -20,11 +20,6 @@ namespace Perspex.Styling
     internal class ActivatedObservable : ObservableBase<object>, IDescription
     {
         /// <summary>
-        /// The activator.
-        /// </summary>
-        private readonly IObservable<bool> _activator;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ActivatedObservable"/> class.
         /// </summary>
         /// <param name="activator">The activator.</param>
@@ -35,26 +30,25 @@ namespace Perspex.Styling
             IObservable<object> source,
             string description)
         {
-            _activator = activator;
+            Activator = activator;
             Description = description;
             Source = source;
         }
 
         /// <summary>
+        /// Gets the activator observable.
+        /// </summary>
+        public IObservable<bool> Activator { get; }
+
+        /// <summary>
         /// Gets a description of the binding.
         /// </summary>
-        public string Description
-        {
-            get;
-        }
+        public string Description { get; }
 
         /// <summary>
         /// Gets an observable which produces the <see cref="ActivatedValue"/>.
         /// </summary>
-        public IObservable<object> Source
-        {
-            get;
-        }
+        public IObservable<object> Source { get; }
 
         /// <summary>
         /// Notifies the provider that an observer is to receive notifications.
@@ -66,10 +60,10 @@ namespace Perspex.Styling
             Contract.Requires<ArgumentNullException>(observer != null);
 
             var sourceCompleted = Source.TakeLast(1).Select(_ => Unit.Default);
-            var activatorCompleted = _activator.TakeLast(1).Select(_ => Unit.Default);
+            var activatorCompleted = Activator.TakeLast(1).Select(_ => Unit.Default);
             var completed = sourceCompleted.Merge(activatorCompleted);
 
-            return _activator
+            return Activator
                 .CombineLatest(Source, (x, y) => new { Active = x, Value = y })
                 .Select(x => x.Active ? x.Value : PerspexProperty.UnsetValue)
                 .DistinctUntilChanged()
