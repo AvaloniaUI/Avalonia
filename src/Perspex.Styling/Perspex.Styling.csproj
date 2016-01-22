@@ -45,6 +45,8 @@
     <Compile Include="ILogical.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Styling\ActivatedSubject.cs" />
+    <Compile Include="Styling\ActivatedValue.cs" />
     <Compile Include="Styling\IGlobalStyles.cs" />
     <Compile Include="Styling\ISetter.cs" />
     <Compile Include="Styling\IStyle.cs" />
@@ -59,7 +61,7 @@
     <Compile Include="Styling\Setter.cs" />
     <Compile Include="Styling\Style.cs" />
     <Compile Include="Styling\StyleActivator.cs" />
-    <Compile Include="Styling\StyleBinding.cs" />
+    <Compile Include="Styling\ActivatedObservable.cs" />
     <Compile Include="Styling\Styler.cs" />
     <Compile Include="Styling\Styles.cs" />
   </ItemGroup>

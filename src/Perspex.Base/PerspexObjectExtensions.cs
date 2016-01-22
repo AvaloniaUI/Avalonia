@@ -106,6 +106,36 @@ namespace Perspex
         /// <summary>
         /// Gets a subject for a <see cref="PerspexProperty"/>.
         /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="priority">
+        /// The priority with which binding values are written to the object.
+        /// </param>
+        /// <returns>
+        /// An <see cref="ISubject{Object}"/> which can be used for two-way binding to/from the 
+        /// property.
+        /// </returns>
+        public static ISubject<object> GetSubject(
+            this IPerspexObject o,
+            PerspexProperty property,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            // TODO: Subject.Create<T> is not yet in stable Rx : once it is, remove the 
+            // AnonymousSubject classes from this file and use Subject.Create<T>.
+            var output = new Subject<object>();
+            var result = new AnonymousSubject<object>(
+                Observer.Create<object>(
+                    x => output.OnNext(x),
+                    e => output.OnError(e),
+                    () => output.OnCompleted()),
+                o.GetObservable(property));
+            o.Bind(property, output, priority);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a subject for a <see cref="PerspexProperty"/>.
+        /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>

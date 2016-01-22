@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 using Perspex.Data;
 using Perspex.Metadata;
 
@@ -77,8 +78,9 @@ namespace Perspex.Styling
                 }
                 else
                 {
-                    throw new NotSupportedException(
-                        "Setter bindings with activators not yet supported.");
+                    var subject = binding.CreateSubject(control, Property);
+                    var activated = new ActivatedSubject(activator, subject, style.ToString());
+                    Bind(control, Property, binding, activated);
                 }
             }
             else
@@ -89,13 +91,22 @@ namespace Perspex.Styling
                 }
                 else
                 {
-                    var activated = new StyleBinding(activator, Value, style.ToString());
+                    var activated = new ActivatedValue(activator, Value, style.ToString());
                     control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
             }
         }
 
         private void Bind(IStyleable control, PerspexProperty property, IBinding binding)
+        {
+            Bind(control, property, binding, binding.CreateSubject(control, property));
+        }
+
+        private void Bind(
+            IStyleable control, 
+            PerspexProperty property, 
+            IBinding binding, 
+            ISubject<object> subject)
         {
             var mode = binding.Mode;
 
@@ -106,7 +117,7 @@ namespace Perspex.Styling
 
             control.Bind(
                 property,
-                binding.CreateSubject(control, property),
+                subject,
                 mode,
                 binding.Priority);
         }
