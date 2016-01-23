@@ -21,9 +21,9 @@ namespace Perspex.Diagnostics.ViewModels
 
         private TreePageViewModel _visualTree;
 
-        private readonly ObservableAsPropertyHelper<IInputElement> _focusedControl;
+        private readonly ObservableAsPropertyHelper<string> _focusedControl;
 
-        private readonly ObservableAsPropertyHelper<IInputElement> _pointerOverElement;
+        private readonly ObservableAsPropertyHelper<string> _pointerOverElement;
 
         public DevToolsViewModel(IControl root)
         {
@@ -46,12 +46,12 @@ namespace Perspex.Diagnostics.ViewModels
 
             _focusedControl = KeyboardDevice.Instance
                 .WhenAnyValue(x => x.FocusedElement)
+                .Select(x => x?.GetType().Name)
                 .ToProperty(this, x => x.FocusedControl);
 
-            //_pointerOverElement = this.WhenAnyValue(x => x.Root, x => x as TopLevel)
-            //    .Select(x => x?.GetObservable(TopLevel.PointerOverElementProperty) ?? Observable.Empty<IInputElement>())
-            //    .Switch()
-            //    .ToProperty(this, x => x.PointerOverElement);
+            _pointerOverElement = root.GetObservable(TopLevel.PointerOverElementProperty)
+                .Select(x => x?.GetType().Name)
+                .ToProperty(this, x => x.PointerOverElement);
         }
 
         public ReactiveObject Content
@@ -66,8 +66,8 @@ namespace Perspex.Diagnostics.ViewModels
             set { this.RaiseAndSetIfChanged(ref _selectedTab, value); }
         }
 
-        public IInputElement FocusedControl => _focusedControl.Value;
+        public string FocusedControl => _focusedControl.Value;
 
-        //public IInputElement PointerOverElement => _pointerOverElement.Value;
+        public string PointerOverElement => _pointerOverElement.Value;
     }
 }

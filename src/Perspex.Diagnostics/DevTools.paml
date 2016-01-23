@@ -10,6 +10,7 @@
     <StackPanel Gap="4" Orientation="Horizontal" Grid.Row="2">
       <TextBlock>Focused:</TextBlock>
       <TextBlock Text="{Binding FocusedControl}"/>
+      <Separator/>
       <TextBlock>Pointer Over:</TextBlock>
       <TextBlock Text="{Binding PointerOverElement}"/>
     </StackPanel>
