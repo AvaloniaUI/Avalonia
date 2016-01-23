@@ -33,15 +33,15 @@ namespace Perspex.Controls.Presenters
             _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             _caretTimer.Tick += CaretTimerTick;
 
-            _canScrollHorizontally = GetObservable(TextWrappingProperty)
+            _canScrollHorizontally = this.GetObservable(TextWrappingProperty)
                 .Select(x => x == TextWrapping.NoWrap);
 
             Observable.Merge(
-                GetObservable(SelectionStartProperty),
-                GetObservable(SelectionEndProperty))
+                this.GetObservable(SelectionStartProperty),
+                this.GetObservable(SelectionEndProperty))
                 .Subscribe(_ => InvalidateFormattedText());
 
-            GetObservable(CaretIndexProperty)
+            this.GetObservable(CaretIndexProperty)
                 .Subscribe(CaretIndexChanged);
         }
 

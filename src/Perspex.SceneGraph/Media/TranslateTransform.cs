@@ -27,8 +27,8 @@ namespace Perspex.Media
         /// </summary>
         public TranslateTransform()
         {
-            GetObservable(XProperty).Subscribe(_ => RaiseChanged());
-            GetObservable(YProperty).Subscribe(_ => RaiseChanged());
+            this.GetObservable(XProperty).Subscribe(_ => RaiseChanged());
+            this.GetObservable(YProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>

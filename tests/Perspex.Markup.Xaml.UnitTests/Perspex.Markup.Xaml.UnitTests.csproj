@@ -43,9 +43,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Octokit">
-      <HintPath>..\..\packages\Octokit.0.14.0\lib\net45\Octokit.dll</HintPath>
-    </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
       <Private>True</Private>
@@ -104,7 +101,9 @@
     <Compile Include="SampleModel\Repository.cs" />
     <Compile Include="SampleModel\UserRepositoriesViewModel.cs" />
     <Compile Include="SamplePerspexObject.cs" />
+    <Compile Include="StyleTests.cs" />
     <Compile Include="Templates\DataTemplateTests.cs" />
+    <Compile Include="Templates\TreeDataTemplateTests.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TypeProviderMock.cs" />
     <Compile Include="ViewModelMock.cs" />

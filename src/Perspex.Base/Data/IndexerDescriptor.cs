@@ -4,43 +4,12 @@
 using System;
 using System.Reactive;
 
-namespace Perspex
+namespace Perspex.Data
 {
     /// <summary>
-    /// Defines possible binding modes.
+    /// Holds a description of a binding for <see cref="PerspexObject"/>'s [] operator.
     /// </summary>
-    public enum BindingMode
-    {
-        /// <summary>
-        /// Uses the default binding mode specified for the property.
-        /// </summary>
-        Default,
-
-        /// <summary>
-        /// Binds one way from source to target.
-        /// </summary>
-        OneWay,
-
-        /// <summary>
-        /// Binds two-way with the initial value coming from the target.
-        /// </summary>
-        TwoWay,
-
-        /// <summary>
-        /// Updates the target when the application starts or when the data context changes.
-        /// </summary>
-        OneTime,
-
-        /// <summary>
-        /// Binds one way from target to source.
-        /// </summary>
-        OneWayToSource,
-    }
-
-    /// <summary>
-    /// Holds a description of a binding, usually for <see cref="PerspexObject"/>'s [] operator.
-    /// </summary>
-    public class BindingDescriptor : ObservableBase<object>, IDescription
+    public class IndexerDescriptor : ObservableBase<object>, IDescription
     {
         /// <summary>
         /// Gets or sets the binding mode.
@@ -100,7 +69,7 @@ namespace Perspex
         /// </summary>
         /// <param name="binding">The current binding.</param>
         /// <returns>A two-way binding.</returns>
-        public static BindingDescriptor operator !(BindingDescriptor binding)
+        public static IndexerDescriptor operator !(IndexerDescriptor binding)
         {
             return binding.WithMode(BindingMode.TwoWay);
         }
@@ -110,7 +79,7 @@ namespace Perspex
         /// </summary>
         /// <param name="binding">The current binding.</param>
         /// <returns>A two-way binding.</returns>
-        public static BindingDescriptor operator ~(BindingDescriptor binding)
+        public static IndexerDescriptor operator ~(IndexerDescriptor binding)
         {
             return binding.WithMode(BindingMode.TwoWay);
         }
@@ -120,7 +89,7 @@ namespace Perspex
         /// </summary>
         /// <param name="mode">The binding mode.</param>
         /// <returns>The object that the method was called on.</returns>
-        public BindingDescriptor WithMode(BindingMode mode)
+        public IndexerDescriptor WithMode(BindingMode mode)
         {
             Mode = mode;
             return this;
@@ -131,7 +100,7 @@ namespace Perspex
         /// </summary>
         /// <param name="priority">The binding priority.</param>
         /// <returns>The object that the method was called on.</returns>
-        public BindingDescriptor WithPriority(BindingPriority priority)
+        public IndexerDescriptor WithPriority(BindingPriority priority)
         {
             Priority = priority;
             return this;

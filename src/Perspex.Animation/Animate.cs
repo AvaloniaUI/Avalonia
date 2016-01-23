@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using Perspex.Data;
 using Perspex.Threading;
 
 namespace Perspex.Animation
@@ -96,7 +97,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         public static Animation Property(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             PerspexProperty property,
             object start,
             object finish,
@@ -119,7 +120,7 @@ namespace Perspex.Animation
         /// <param name="duration">The duration of the animation.</param>
         /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         public static Animation<T> Property<T>(
-            IObservablePropertyBag target,
+            IPerspexObject target,
             PerspexProperty<T> property,
             T start,
             T finish,

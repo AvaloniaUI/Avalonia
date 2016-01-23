@@ -11,6 +11,7 @@ using Perspex.Controls.Html;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;

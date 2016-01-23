@@ -9,6 +9,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
 using Xunit;
 
@@ -418,8 +419,8 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             // Bind Items and SelectedItems to the VM.
-            itemsBinding.Bind(target, TestSelector.ItemsProperty);
-            selectedItemsBinding.Bind(target, TestSelector.SelectedItemsProperty);
+            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            target.Bind(TestSelector.SelectedItemsProperty, selectedItemsBinding);
 
             // Set DataContext and SelectedIndex
             target.DataContext = vm;
@@ -451,7 +452,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             var itemsBinding = new Binding { Path = "Items" };
-            itemsBinding.Bind(target, TestSelector.ItemsProperty);
+            target.Bind(TestSelector.ItemsProperty, itemsBinding);
 
             Assert.Same(data.Items, target.Items);
 

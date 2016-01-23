@@ -42,11 +42,13 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="BindingDescriptor.cs" />
+    <Compile Include="Data\AssignBindingAttribute.cs" />
+    <Compile Include="Data\IBinding.cs" />
+    <Compile Include="Data\IndexerDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />
+    <Compile Include="Data\BindingMode.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
-    <Compile Include="IObservablePropertyBag.cs" />
-    <Compile Include="IPropertyBag.cs" />
+    <Compile Include="IPerspexObject.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />
     <Compile Include="PerspexLocator.cs" />
@@ -56,7 +58,7 @@
     <Compile Include="PerspexProperty`1.cs" />
     <Compile Include="Platform\IAssetLoader.cs" />
     <Compile Include="Platform\IPclPlatformWrapper.cs" />
-    <Compile Include="BindingPriority.cs" />
+    <Compile Include="Data\BindingPriority.cs" />
     <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IPerspexList.cs" />
     <Compile Include="Collections\PerspexList.cs" />
@@ -74,6 +76,8 @@
     <Compile Include="PriorityLevel.cs" />
     <Compile Include="PriorityValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reactive\AnonymousSubject`1.cs" />
+    <Compile Include="Reactive\AnonymousSubject`2.cs" />
     <Compile Include="Reactive\PerspexObservable.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />

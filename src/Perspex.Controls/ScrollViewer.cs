@@ -135,8 +135,8 @@ namespace Perspex.Controls
         public ScrollViewer()
         {
             var extentAndViewport = Observable.CombineLatest(
-                GetObservable(ExtentProperty),
-                GetObservable(ViewportProperty))
+                this.GetObservable(ExtentProperty),
+                this.GetObservable(ViewportProperty))
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
 
             Bind(
@@ -155,15 +155,15 @@ namespace Perspex.Controls
                 VerticalScrollBarMaximumProperty,
                 extentAndViewport.Select(x => Max(x.Extent.Height - x.Viewport.Height, 0)));
 
-            GetObservable(OffsetProperty).Subscribe(x =>
+            this.GetObservable(OffsetProperty).Subscribe(x =>
             {
                 SetValue(HorizontalScrollBarValueProperty, x.X);
                 SetValue(VerticalScrollBarValueProperty, x.Y);
             });
 
             var scrollBarOffset = Observable.CombineLatest(
-                GetObservable(HorizontalScrollBarValueProperty),
-                GetObservable(VerticalScrollBarValueProperty))
+                this.GetObservable(HorizontalScrollBarValueProperty),
+                this.GetObservable(VerticalScrollBarValueProperty))
                 .Select(x => new Vector(x[0], x[1]))
                 .Subscribe(x => Offset = x);
         }

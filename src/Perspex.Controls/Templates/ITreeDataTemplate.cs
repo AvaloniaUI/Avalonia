@@ -11,13 +11,6 @@ namespace Perspex.Controls.Templates
     public interface ITreeDataTemplate : IDataTemplate
     {
         /// <summary>
-        /// Checks to see if the item should be initially expanded.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>True if the item should be initially expanded, otherwise false.</returns>
-        bool IsExpanded(object item);
-
-        /// <summary>
         /// Selects the child items of an item.
         /// </summary>
         /// <param name="item">The item.</param>

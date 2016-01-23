@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
+using Perspex.Data;
 using Perspex.Metadata;
+using Perspex.Reactive;
 
 namespace Perspex.Styling
 {
@@ -46,6 +49,7 @@ namespace Perspex.Styling
         /// Gets or sets the property value.
         /// </summary>
         [Content]
+        [AssignBinding]
         public object Value
         {
             get;
@@ -60,15 +64,67 @@ namespace Perspex.Styling
         /// <param name="activator">An optional activator.</param>
         public void Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
-            if (activator == null)
+            Contract.Requires<ArgumentNullException>(control != null);
+
+            var description = style?.ToString();
+
+            if (Property == null)
             {
-                control.SetValue(Property, Value, BindingPriority.Style);
+                throw new InvalidOperationException("Setter.Property must be set.");
+            }
+
+            var binding = Value as IBinding;
+
+            if (binding != null)
+            {
+                if (activator == null)
+                {
+                    Bind(control, Property, binding);
+                }
+                else
+                {
+                    var subject = binding.CreateSubject(control, Property);
+                    var activated = new ActivatedSubject(activator, subject, description);
+                    Bind(control, Property, binding, activated);
+                }
             }
             else
             {
-                var binding = new StyleBinding(activator, Value, style.ToString());
-                control.Bind(Property, binding, BindingPriority.StyleTrigger);
+                if (activator == null)
+                {
+                    control.SetValue(Property, Value, BindingPriority.Style);
+                }
+                else
+                {
+                    var activated = new ActivatedValue(activator, Value, description);
+                    control.Bind(Property, activated, BindingPriority.StyleTrigger);
+                }
             }
+        }
+
+        private void Bind(IStyleable control, PerspexProperty property, IBinding binding)
+        {
+            Bind(control, property, binding, binding.CreateSubject(control, property));
+        }
+
+        private void Bind(
+            IStyleable control, 
+            PerspexProperty property, 
+            IBinding binding, 
+            ISubject<object> subject)
+        {
+            var mode = binding.Mode;
+
+            if (mode == BindingMode.Default)
+            {
+                mode = property.DefaultBindingMode;
+            }
+
+            control.Bind(
+                property,
+                subject,
+                mode,
+                binding.Priority);
         }
     }
 }

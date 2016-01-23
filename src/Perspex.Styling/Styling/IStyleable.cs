@@ -10,7 +10,7 @@ namespace Perspex.Styling
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
-    public interface IStyleable : IObservablePropertyBag, INamed
+    public interface IStyleable : IPerspexObject, INamed
     {
         /// <summary>
         /// Raised when the control's style should be removed.

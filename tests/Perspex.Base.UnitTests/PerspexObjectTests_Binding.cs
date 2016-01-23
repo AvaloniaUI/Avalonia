@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -81,7 +82,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Two_Way_Binding_Works()
+        public void Two_Way_Separate_Binding_Works()
         {
             Class1 obj1 = new Class1();
             Class1 obj2 = new Class1();
@@ -140,34 +141,6 @@ namespace Perspex.Base.UnitTests
 
             Assert.Equal("third", obj1.GetValue(Class1.FooProperty));
             Assert.Equal("third", obj2.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
-        public void BindTwoWay_Gets_Initial_Value_From_Source()
-        {
-            Class1 source = new Class1();
-            Class1 target = new Class1();
-
-            source.SetValue(Class1.FooProperty, "initial");
-            target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
-
-            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
-        public void BindTwoWay_Updates_Values()
-        {
-            Class1 source = new Class1();
-            Class1 target = new Class1();
-
-            source.SetValue(Class1.FooProperty, "first");
-            target.BindTwoWay(Class1.FooProperty, source, Class1.FooProperty);
-
-            Assert.Equal("first", target.GetValue(Class1.FooProperty));
-            source.SetValue(Class1.FooProperty, "second");
-            Assert.Equal("second", target.GetValue(Class1.FooProperty));
-            target.SetValue(Class1.FooProperty, "third");
-            Assert.Equal("third", source.GetValue(Class1.FooProperty));
         }
 
         [Fact]
@@ -234,7 +207,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -248,7 +221,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
@@ -264,7 +237,7 @@ namespace Perspex.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            BindingDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
+            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];

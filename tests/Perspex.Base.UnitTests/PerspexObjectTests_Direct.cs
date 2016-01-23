@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Xunit;
 
 namespace Perspex.Base.UnitTests

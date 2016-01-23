@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using OmniXaml;
 using Perspex.Markup.Xaml.Context;
 using Perspex.Platform;
@@ -39,6 +40,8 @@ namespace Perspex.Markup.Xaml
         /// <param name="obj">The object to load the XAML into.</param>
         public static void Load(object obj)
         {
+            Contract.Requires<ArgumentNullException>(obj != null);
+
             var loader = new PerspexXamlLoader();
             loader.Load(obj.GetType(), obj);
         }
@@ -53,6 +56,8 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Type type, object rootInstance = null)
         {
+            Contract.Requires<ArgumentNullException>(type != null);
+
             // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
             // in certain situations, so we try to load .xaml and if that's not found we try .paml.
             // Ideally we'd be able to use .xaml everywhere
@@ -85,6 +90,8 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Uri uri, object rootInstance = null)
         {
+            Contract.Requires<ArgumentNullException>(uri != null);
+
             var assetLocator = PerspexLocator.Current.GetService<IAssetLoader>();
 
             if (assetLocator == null)
@@ -94,6 +101,24 @@ namespace Perspex.Markup.Xaml
             }
 
             using (var stream = assetLocator.Open(uri))
+            {
+                return Load(stream, rootInstance);
+            }
+        }
+
+        /// <summary>
+        /// Loads XAML from a string.
+        /// </summary>
+        /// <param name="xaml">The string containing the XAML.</param>
+        /// <param name="rootInstance">
+        /// The optional instance into which the XAML should be loaded.
+        /// </param>
+        /// <returns>The loaded object.</returns>
+        public object Load(string xaml, object rootInstance = null)
+        {
+            Contract.Requires<ArgumentNullException>(xaml != null);
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
                 return Load(stream, rootInstance);
             }

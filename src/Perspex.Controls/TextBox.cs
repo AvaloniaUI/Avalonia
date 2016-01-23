@@ -14,6 +14,7 @@ using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Metadata;
+using Perspex.Data;
 
 namespace Perspex.Controls
 {
@@ -73,7 +74,7 @@ namespace Perspex.Controls
 
         public TextBox()
         {
-            var canScrollHorizontally = GetObservable(AcceptsReturnProperty)
+            var canScrollHorizontally = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => !x);
 
             Bind(
@@ -81,7 +82,7 @@ namespace Perspex.Controls
                 canScrollHorizontally,
                 BindingPriority.Style);
 
-            var horizontalScrollBarVisibility = GetObservable(AcceptsReturnProperty)
+            var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
 
             Bind(

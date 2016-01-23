@@ -4,8 +4,10 @@
 using System;
 using System.Collections;
 using System.Reactive.Linq;
+using System.Reflection;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Metadata;
@@ -19,16 +21,19 @@ namespace Perspex.Markup.Xaml.Templates
         [Content]
         public TemplateContent Content { get; set; }
 
+        [AssignBinding]
         public Binding ItemsSource { get; set; }
 
         public bool Match(object data)
         {
             if (DataType == null)
             {
-                throw new InvalidOperationException("DataTemplate must have a DataType.");
+                return true;
             }
-
-            return DataType == data.GetType();
+            else
+            {
+                return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+            }
         }
 
         public IEnumerable ItemsSelector(object item)

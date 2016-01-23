@@ -8,8 +8,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
-using Perspex.Reactive;
+using Perspex.Data;
 using Perspex.Threading;
 using Perspex.Utilities;
 using Serilog;
@@ -23,7 +22,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IObservablePropertyBag, INotifyPropertyChanged
+    public class PerspexObject : IPerspexObject, INotifyPropertyChanged
     {
         /// <summary>
         /// The parent object that inherited values are inherited from.
@@ -90,11 +89,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets the object that inherited <see cref="PerspexProperty"/> values are inherited from.
-        /// </summary>
-        IPropertyBag IPropertyBag.InheritanceParent => InheritanceParent;
-
-        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="PerspexProperty"/> values
         /// are inherited from.
         /// </summary>
@@ -159,7 +153,7 @@ namespace Perspex
         /// Gets or sets a binding for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IObservable<object> this[BindingDescriptor binding]
+        public IObservable<object> this[IndexerDescriptor binding]
         {
             get
             {
@@ -171,7 +165,7 @@ namespace Perspex
                 var mode = (binding.Mode == BindingMode.Default) ?
                     binding.Property.DefaultBindingMode :
                     binding.Mode;
-                var sourceBinding = value as BindingDescriptor;
+                var sourceBinding = value as IndexerDescriptor;
 
                 if (sourceBinding == null && mode > BindingMode.OneWay)
                 {
@@ -188,18 +182,19 @@ namespace Perspex
                         SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
                         break;
                     case BindingMode.OneWayToSource:
-                        sourceBinding.Source.Bind(sourceBinding.Property, GetObservable(binding.Property), binding.Priority);
+                        sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
                         break;
                     case BindingMode.TwoWay:
-                        BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
+                        var subject = sourceBinding.Source.GetSubject(sourceBinding.Property, sourceBinding.Priority);
+                        this.Bind(binding.Property, subject, BindingMode.TwoWay, sourceBinding.Priority);
                         break;
                 }
             }
         }
 
-        protected virtual BindingDescriptor CreateBindingDescriptor(BindingDescriptor source)
+        protected virtual IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
-            return new BindingDescriptor
+            return new IndexerDescriptor
             {
                 Mode = source.Mode,
                 Priority = source.Priority,
@@ -221,81 +216,6 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(property != null);
 
             SetValue(property, PerspexProperty.UnsetValue);
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        public IObservable<object> GetObservable(PerspexProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new PerspexObservable<object>(
-                observer =>
-                {
-                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(e.NewValue);
-                        }
-                    };
-
-                    observer.OnNext(GetValue(property));
-
-                    PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(property));
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return GetObservable((PerspexProperty)property).Cast<T>();
-        }
-
-        /// <summary>
-        /// Gets an observable for a <see cref="PerspexProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable which when subscribed pushes the old and new values of the
-        /// property each time it is changed.</returns>
-        public IObservable<Tuple<T, T>> GetObservableWithHistory<T>(PerspexProperty<T> property)
-        {
-            return new PerspexObservable<Tuple<T, T>>(
-                observer =>
-                {
-                    EventHandler<PerspexPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
-                        }
-                    };
-
-                    PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(property));
         }
 
         /// <summary>
@@ -562,67 +482,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Initiates a two-way binding between <see cref="PerspexProperty"/>s.
-        /// </summary>
-        /// <param name="property">The property on this object.</param>
-        /// <param name="source">The source object.</param>
-        /// <param name="sourceProperty">The property on the source object.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        /// <remarks>
-        /// The binding is first carried out from <paramref name="source"/> to this.
-        /// </remarks>
-        public IDisposable BindTwoWay(
-            PerspexProperty property,
-            PerspexObject source,
-            PerspexProperty sourceProperty,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            VerifyAccess();
-            _propertyLog.Verbose(
-                "Bound two way {Property} to {Binding} with priority {Priority}",
-                property,
-                source,
-                priority);
-
-            return new CompositeDisposable(
-                Bind(property, source.GetObservable(sourceProperty)),
-                source.Bind(sourceProperty, GetObservable(property)));
-        }
-
-        /// <summary>
-        /// Initiates a two-way binding between a <see cref="PerspexProperty"/> and an 
-        /// <see cref="ISubject{Object}"/>.
-        /// </summary>
-        /// <param name="property">The property on this object.</param>
-        /// <param name="source">The subject to bind to.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        /// <remarks>
-        /// The binding is first carried out from <paramref name="source"/> to this.
-        /// </remarks>
-        public IDisposable BindTwoWay(
-            PerspexProperty property,
-            ISubject<object> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            VerifyAccess();
-            _propertyLog.Verbose(
-                "Bound two way {Property} to {Binding} with priority {Priority}",
-                property,
-                GetDescription(source),
-                priority);
-
-            return new CompositeDisposable(
-                Bind(property, source),
-                GetObservable(property).Subscribe(source));
-        }
-
-        /// <summary>
         /// Forces the specified property to be revalidated.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -638,11 +497,6 @@ namespace Perspex
         }
 
         /// <inheritdoc/>
-        bool IPropertyBag.IsRegistered(PerspexProperty property)
-        {
-            return PerspexPropertyRegistry.Instance.IsRegistered(this, property);
-        }
-
         /// <summary>
         /// Gets all priority values set on the object.
         /// </summary>
