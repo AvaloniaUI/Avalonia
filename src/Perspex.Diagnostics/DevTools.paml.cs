@@ -19,6 +19,7 @@ namespace Perspex.Diagnostics
             InitializeComponent();
             Root = root;
             DataContext = new DevToolsViewModel(root);
+            Root.PointerMoved += RootPointerMoved;
         }
 
         public IControl Root { get; }
@@ -75,6 +76,17 @@ namespace Perspex.Diagnostics
         private void InitializeComponent()
         {
             PerspexXamlLoader.Load(this);
+        }
+
+        private void RootPointerMoved(object sender, PointerEventArgs e)
+        {
+            var modifiers = InputModifiers.Control | InputModifiers.Shift;
+
+            if ((e.InputModifiers & modifiers) == modifiers)
+            {
+                var vm = (DevToolsViewModel)DataContext;
+                vm.SelectControl((IControl)e.Source);
+            }
         }
     }
 }

@@ -11,11 +11,11 @@
           </StackPanel>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
-      <!--<TreeView.Styles>
+      <TreeView.Styles>
         <Style Selector="TreeViewItem">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
         </Style>
-      </TreeView.Styles>-->
+      </TreeView.Styles>
     </TreeView>
 
     <GridSplitter Width="4" Orientation="Vertical" Grid.Column="1"/>

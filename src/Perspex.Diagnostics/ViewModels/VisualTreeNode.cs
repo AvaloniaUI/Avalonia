@@ -9,18 +9,18 @@ namespace Perspex.Diagnostics.ViewModels
 {
     internal class VisualTreeNode : TreeNode
     {
-        public VisualTreeNode(IVisual visual)
-            : base((Control)visual)
+        public VisualTreeNode(IVisual visual, TreeNode parent)
+            : base((Control)visual, parent)
         {
             var host = visual as IVisualTreeHost;
 
             if (host?.Root == null)
             {
-                Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x));
+                Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x, this));
             }
             else
             {
-                Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root) });
+                Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root, this) });
             }
 
             if (Control != null)
@@ -34,7 +34,7 @@ namespace Perspex.Diagnostics.ViewModels
         public static VisualTreeNode[] Create(object control)
         {
             var visual = control as IVisual;
-            return visual != null ? new[] { new VisualTreeNode(visual) } : null;
+            return visual != null ? new[] { new VisualTreeNode(visual, null) } : null;
         }
     }
 }

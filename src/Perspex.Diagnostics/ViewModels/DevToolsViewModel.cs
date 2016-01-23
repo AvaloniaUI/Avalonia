@@ -69,5 +69,15 @@ namespace Perspex.Diagnostics.ViewModels
         public string FocusedControl => _focusedControl.Value;
 
         public string PointerOverElement => _pointerOverElement.Value;
+
+        public void SelectControl(IControl control)
+        {
+            var tree = Content as TreePageViewModel;
+
+            if (tree != null)
+            {
+                tree.SelectControl(control);
+            }
+        }
     }
 }
