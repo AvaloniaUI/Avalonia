@@ -15,36 +15,6 @@ namespace Perspex.Controls
     public static class ControlExtensions
     {
         /// <summary>
-        /// Binds a property on an <see cref="IControl"/> to an <see cref="IBinding"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property to bind.</param>
-        /// <param name="binding">The binding.</param>
-        /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
-        public static IDisposable Bind(
-            this IControl o,
-            PerspexProperty property,
-            IBinding binding)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(binding != null);
-
-            var mode = binding.Mode;
-
-            if (mode == BindingMode.Default)
-            {
-                mode = property.DefaultBindingMode;
-            }
-
-            return o.Bind(
-                property, 
-                binding.CreateSubject(o, property), 
-                mode,
-                binding.Priority);
-        }
-
-        /// <summary>
         /// Tries to being the control into view.
         /// </summary>
         /// <param name="control">The control.</param>

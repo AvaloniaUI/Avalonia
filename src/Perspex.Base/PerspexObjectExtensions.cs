@@ -165,6 +165,36 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Binds a property on an <see cref="IPerspexObject"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property to bind.</param>
+        /// <param name="binding">The binding.</param>
+        /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
+        public static IDisposable Bind(
+            this IPerspexObject o,
+            PerspexProperty property,
+            IBinding binding)
+        {
+            Contract.Requires<ArgumentNullException>(o != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(binding != null);
+
+            var mode = binding.Mode;
+
+            if (mode == BindingMode.Default)
+            {
+                mode = property.DefaultBindingMode;
+            }
+
+            return o.Bind(
+                property,
+                binding.CreateSubject(o, property),
+                mode,
+                binding.Priority);
+        }
+
+        /// <summary>
         /// Binds a property to a subject according to a <see cref="BindingMode"/>.
         /// </summary>
         /// <param name="o">The object.</param>
