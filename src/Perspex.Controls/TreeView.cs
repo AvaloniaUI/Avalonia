@@ -46,8 +46,27 @@ namespace Perspex.Controls
         /// </summary>
         public object SelectedItem
         {
-            get { return _selectedItem; }
-            set { SetAndRaise(SelectedItemProperty, ref _selectedItem, value); }
+            get
+            {
+                return _selectedItem;
+            }
+
+            set
+            {
+                if (_selectedItem != null)
+                {
+                    var container = ItemContainerGenerator.Index.ContainerFromItem(_selectedItem);
+                    MarkContainerSelected(container, false);
+                }
+
+                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+
+                if (_selectedItem != null)
+                {
+                    var container = ItemContainerGenerator.Index.ContainerFromItem(_selectedItem);
+                    MarkContainerSelected(container, true);
+                }
+            }
         }
 
         /// <inheritdoc/>
