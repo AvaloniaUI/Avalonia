@@ -108,6 +108,31 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_SelectedItem_Should_Set_Container_Selected()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+            ApplyTemplates(target);
+
+            var item = tree[0].Children[1].Children[0];
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+            Assert.NotNull(container);
+
+            target.SelectedItem = item;
+
+            Assert.True(container.IsSelected);
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
             var target = new TreeView

@@ -79,7 +79,7 @@ namespace Perspex.Styling
             {
                 if (activator == null)
                 {
-                    Bind(control, Property, binding);
+                    control.Bind(Property, binding);
                 }
                 else
                 {
@@ -102,15 +102,10 @@ namespace Perspex.Styling
             }
         }
 
-        private void Bind(IStyleable control, PerspexProperty property, IBinding binding)
-        {
-            Bind(control, property, binding, binding.CreateSubject(control, property));
-        }
-
         private void Bind(
-            IStyleable control, 
-            PerspexProperty property, 
-            IBinding binding, 
+            IStyleable control,
+            PerspexProperty property,
+            IBinding binding,
             ISubject<object> subject)
         {
             var mode = binding.Mode;
