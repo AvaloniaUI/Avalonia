@@ -25,7 +25,10 @@ namespace Perspex.Controls.Primitives
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsOpenProperty =
-            PerspexProperty.Register<Popup, bool>(nameof(IsOpen));
+            PerspexProperty.RegisterDirect<Popup, bool>(
+                nameof(IsOpen),
+                o => o.IsOpen,
+                (o, v) => o.IsOpen = v);
 
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
@@ -45,14 +48,8 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<bool> StaysOpenProperty =
             PerspexProperty.Register<Popup, bool>(nameof(StaysOpen), true);
 
-        /// <summary>
-        /// The root of the popup.
-        /// </summary>
+        private bool _isOpen;
         private PopupRoot _popupRoot;
-
-        /// <summary>
-        /// The top level control of the Popup's visual tree.
-        /// </summary>
         private TopLevel _topLevel;
 
         /// <summary>
@@ -108,8 +105,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool IsOpen
         {
-            get { return GetValue(IsOpenProperty); }
-            set { SetValue(IsOpenProperty, value); }
+            get { return _isOpen; }
+            set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
         }
 
         /// <summary>
