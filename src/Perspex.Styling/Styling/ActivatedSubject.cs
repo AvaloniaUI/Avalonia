@@ -19,7 +19,8 @@ namespace Perspex.Styling
     /// </remarks>
     internal class ActivatedSubject : ActivatedObservable, ISubject<object>, IDescription
     {
-        private bool _active;
+        private bool? _active;
+        private bool _completed;
         private object _value;
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace Perspex.Styling
             string description)
             : base(activator, source, description)
         {
-            Activator.Skip(1).Subscribe(ActivatorChanged);
+            Activator.Subscribe(ActivatorChanged, ActivatorError, ActivatorCompleted);
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace Perspex.Styling
         /// </summary>
         public void OnCompleted()
         {
-            if (_active)
+            if (_active.Value && !_completed)
             {
                 Source.OnCompleted();
             }
@@ -63,7 +64,7 @@ namespace Perspex.Styling
         /// <exception cref="ArgumentNullException"><paramref name="error"/> is null.</exception>
         public void OnError(Exception error)
         {
-            if (_active)
+            if (_active.Value && !_completed)
             {
                 Source.OnError(error);
             }
@@ -77,7 +78,7 @@ namespace Perspex.Styling
         {
             _value = value;
 
-            if (_active)
+            if (_active.Value && !_completed)
             {
                 Source.OnNext(value);
             }
@@ -85,8 +86,26 @@ namespace Perspex.Styling
 
         private void ActivatorChanged(bool active)
         {
+            bool first = !_active.HasValue;
+
             _active = active;
-            Source.OnNext(active ? _value : PerspexProperty.UnsetValue);
+
+            if (!first)
+            {
+                Source.OnNext(active ? _value : PerspexProperty.UnsetValue);
+            }
+        }
+
+        private void ActivatorCompleted()
+        {
+            _completed = true;
+            Source.OnCompleted();
+        }
+
+        private void ActivatorError(Exception e)
+        {
+            _completed = true;
+            Source.OnError(e);
         }
     }
 }

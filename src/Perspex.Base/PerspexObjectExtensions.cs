@@ -121,7 +121,7 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             // TODO: Subject.Create<T> is not yet in stable Rx : once it is, remove the 
-            // AnonymousSubject classes from this file and use Subject.Create<T>.
+            // AnonymousSubject classes and use Subject.Create<T>.
             var output = new Subject<object>();
             var result = new AnonymousSubject<object>(
                 Observer.Create<object>(
@@ -270,55 +270,6 @@ namespace Perspex
             if (target != null)
             {
                 handler(target)(e);
-            }
-        }
-
-        class AnonymousSubject<T, U> : ISubject<T, U>
-        {
-            private readonly IObserver<T> _observer;
-            private readonly IObservable<U> _observable;
-
-            public AnonymousSubject(IObserver<T> observer, IObservable<U> observable)
-            {
-                _observer = observer;
-                _observable = observable;
-            }
-
-            public void OnCompleted()
-            {
-                _observer.OnCompleted();
-            }
-
-            public void OnError(Exception error)
-            {
-                if (error == null)
-                    throw new ArgumentNullException("error");
-
-                _observer.OnError(error);
-            }
-
-            public void OnNext(T value)
-            {
-                _observer.OnNext(value);
-            }
-
-            public IDisposable Subscribe(IObserver<U> observer)
-            {
-                if (observer == null)
-                    throw new ArgumentNullException("observer");
-
-                //
-                // [OK] Use of unsafe Subscribe: non-pretentious wrapping of an observable sequence.
-                //
-                return _observable.Subscribe/*Unsafe*/(observer);
-            }
-        }
-
-        class AnonymousSubject<T> : AnonymousSubject<T, T>, ISubject<T>
-        {
-            public AnonymousSubject(IObserver<T> observer, IObservable<T> observable)
-                : base(observer, observable)
-            {
             }
         }
     }

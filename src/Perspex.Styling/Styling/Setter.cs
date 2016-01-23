@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Subjects;
 using Perspex.Data;
 using Perspex.Metadata;
+using Perspex.Reactive;
 
 namespace Perspex.Styling
 {
@@ -63,6 +64,10 @@ namespace Perspex.Styling
         /// <param name="activator">An optional activator.</param>
         public void Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
+            var description = style?.ToString();
+
             if (Property == null)
             {
                 throw new InvalidOperationException("Setter.Property must be set.");
@@ -79,7 +84,7 @@ namespace Perspex.Styling
                 else
                 {
                     var subject = binding.CreateSubject(control, Property);
-                    var activated = new ActivatedSubject(activator, subject, style.ToString());
+                    var activated = new ActivatedSubject(activator, subject, description);
                     Bind(control, Property, binding, activated);
                 }
             }
@@ -91,7 +96,7 @@ namespace Perspex.Styling
                 }
                 else
                 {
-                    var activated = new ActivatedValue(activator, Value, style.ToString());
+                    var activated = new ActivatedValue(activator, Value, description);
                     control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
             }

@@ -25,9 +25,9 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 Converter = Converter,
                 ElementName = ElementName,
                 Mode = Mode,
-                Priority = BindingPriority.TemplatedParent,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                 Path = Path,
+                Priority = Priority,
             };
         }
 
@@ -35,5 +35,6 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
         public string ElementName { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
+        public BindingPriority Priority { get; set; } = BindingPriority.TemplatedParent;
     }
 }

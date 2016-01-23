@@ -9,21 +9,22 @@ namespace Perspex.Controls.Primitives
     public class ToggleButton : Button
     {
         public static readonly PerspexProperty<bool> IsCheckedProperty =
-            PerspexProperty.Register<ToggleButton, bool>("IsChecked");
+            PerspexProperty.RegisterDirect<ToggleButton, bool>(
+                "IsChecked",
+                o => o.IsChecked,
+                (o,v) => o.IsChecked = v);
+
+        private bool _isChecked;
 
         static ToggleButton()
         {
             PseudoClass(IsCheckedProperty, ":checked");
         }
 
-        public ToggleButton()
-        {
-        }
-
         public bool IsChecked
         {
-            get { return GetValue(IsCheckedProperty); }
-            set { SetValue(IsCheckedProperty, value); }
+            get { return _isChecked; }
+            set { SetAndRaise(IsCheckedProperty, ref _isChecked, value); }
         }
 
         protected override void OnClick(RoutedEventArgs e)

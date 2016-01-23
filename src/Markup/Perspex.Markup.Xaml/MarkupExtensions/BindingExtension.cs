@@ -27,6 +27,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 ElementName = ElementName,
                 Mode = Mode,
                 Path = Path,
+                Priority = Priority,
             };
         }
 
@@ -35,5 +36,6 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
         public string ElementName { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
+        public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
     }
 }
