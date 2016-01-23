@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
 using Perspex.Diagnostics.ViewModels;
@@ -11,11 +12,16 @@ namespace Perspex.Diagnostics
 {
     public class DevTools : UserControl
     {
+        private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
+
         public DevTools(IControl root)
         {
-            this.InitializeComponent();
-            this.DataContext = new DevToolsViewModel(root);
+            InitializeComponent();
+            Root = root;
+            DataContext = new DevToolsViewModel(root);
         }
+
+        public IControl Root { get; }
 
         public static IDisposable Attach(Window window)
         {
@@ -29,19 +35,41 @@ namespace Perspex.Diagnostics
         {
             if (e.Key == Key.F12)
             {
-                Window window = new Window
-                {
-                    Width = 1024,
-                    Height = 512,
-                    Content = new DevTools((IControl)sender),
-                    DataTemplates = new DataTemplates
-                    {
-                        new ViewLocator<ReactiveObject>(),
-                    }
-                };
+                var window = (Window)sender;
+                var devToolsWindow = default(Window);
 
-                window.Show();
+                if (s_open.TryGetValue(window, out devToolsWindow))
+                {
+                    devToolsWindow.Activate();
+                }
+                else
+                {
+                    devToolsWindow = new Window
+                    {
+                        Width = 1024,
+                        Height = 512,
+                        Content = new DevTools(window),
+                        DataTemplates = new DataTemplates
+                        {
+                            new ViewLocator<ReactiveObject>(),
+                        }
+                    };
+
+                    devToolsWindow.Closed += DevToolsClosed;
+                    s_open.Add((Window)sender, devToolsWindow);
+                    devToolsWindow.Show();
+                }
             }
+        }
+
+        private static void DevToolsClosed(object sender, EventArgs e)
+        {
+            var devToolsWindow = (Window)sender;
+            var devTools = (DevTools)devToolsWindow.Content;
+            var window = (Window)devTools.Root;
+
+            s_open.Remove(window);
+            devToolsWindow.Closed -= DevToolsClosed;
         }
 
         private void InitializeComponent()
