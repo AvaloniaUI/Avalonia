@@ -35,32 +35,6 @@ namespace Perspex.Controls.Templates
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncTreeDataTemplate{T}"/> class.
         /// </summary>
-        /// <param name="build">
-        /// A function which when passed an object of <typeparamref name="T"/> returns a control.
-        /// </param>
-        /// <param name="itemsSelector">
-        /// A function which when passed an object of <typeparamref name="T"/> returns the child
-        /// items.
-        /// </param>
-        /// <param name="isExpanded">
-        /// A function which when passed an object of <typeparamref name="T"/> returns the the
-        /// initial expanded state of the node.
-        /// </param>
-        public FuncTreeDataTemplate(
-            Func<T, Control> build,
-            Func<T, IEnumerable> itemsSelector,
-            Func<T, bool> isExpanded)
-            : base(
-                typeof(T),
-                Cast(build),
-                Cast(itemsSelector),
-                Cast(isExpanded))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate{T}"/> class.
-        /// </summary>
         /// <param name="match">
         /// A function which determines whether the data template matches the specified data.
         /// </param>
@@ -78,35 +52,6 @@ namespace Perspex.Controls.Templates
                 CastMatch(match),
                 Cast(build),
                 Cast(itemsSelector))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FuncTreeDataTemplate{T}"/> class.
-        /// </summary>
-        /// <param name="match">
-        /// A function which determines whether the data template matches the specified data.
-        /// </param>
-        /// <param name="build">
-        /// A function which when passed a matching object returns a control.
-        /// </param>
-        /// <param name="itemsSelector">
-        /// A function which when passed a matching object returns the child items.
-        /// </param>
-        /// <param name="isExpanded">
-        /// A function which when passed a matching object returns the the initial expanded state
-        /// of the node.
-        /// </param>
-        public FuncTreeDataTemplate(
-            Func<T, bool> match,
-            Func<T, Control> build,
-            Func<T, IEnumerable> itemsSelector,
-            Func<T, bool> isExpanded)
-            : base(
-                CastMatch(match),
-                Cast(build),
-                Cast(itemsSelector),
-                Cast(isExpanded))
         {
         }
 

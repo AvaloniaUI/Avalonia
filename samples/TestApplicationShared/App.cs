@@ -21,11 +21,8 @@ namespace TestApplication
             {
                 new FuncTreeDataTemplate<Node>(
                     x => new TextBlock {Text = x.Name},
-                    x => x.Children,
-                    x => true),
+                    x => x.Children),
             };
         }
-
-
     }
 }
