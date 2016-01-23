@@ -197,15 +197,18 @@ namespace Perspex.Controls
         /// <param name="selected">Whether the control is selected</param>
         private void MarkContainerSelected(IControl container, bool selected)
         {
-            var selectable = container as ISelectable;
+            if (container != null)
+            {
+                var selectable = container as ISelectable;
 
-            if (selectable != null)
-            {
-                selectable.IsSelected = selected;
-            }
-            else
-            {
-                ((IPseudoClasses)container.Classes).Set(":selected", selected);
+                if (selectable != null)
+                {
+                    selectable.IsSelected = selected;
+                }
+                else
+                {
+                    ((IPseudoClasses)container.Classes).Set(":selected", selected);
+                }
             }
         }
     }
