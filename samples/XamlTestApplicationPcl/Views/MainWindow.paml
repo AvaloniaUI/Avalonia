@@ -147,6 +147,11 @@
                       </StackPanel>
                   </DropDown>
                   <TreeView Items="{Binding Nodes}">
+                      <TreeView.Styles>
+                          <Style Selector="TreeViewItem">
+                              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                          </Style>
+                      </TreeView.Styles>
                       <TreeView.DataTemplates>
                           <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                               <StackPanel>
@@ -156,6 +161,10 @@
                           </TreeDataTemplate>
                       </TreeView.DataTemplates>
                   </TreeView>
+                  <StackPanel Orientation="Vertical" Gap="4">
+                      <Button Command="{Binding CollapseNodesCommand}">Collapse Nodes</Button>
+                      <Button Command="{Binding ExpandNodesCommand}">Expand Nodes</Button>
+                  </StackPanel>
               </StackPanel>
           </TabItem>
           <TabItem Header="Layout">

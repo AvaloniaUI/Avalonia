@@ -273,8 +273,7 @@ namespace Perspex.LeakTests
                         {
                             new FuncTreeDataTemplate<Node>(
                                 x => new TextBlock { Text = x.Name },
-                                x => x.Children,
-                                x => true)
+                                x => x.Children)
                         },
                         Items = nodes
                     }

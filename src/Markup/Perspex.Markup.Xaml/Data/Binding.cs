@@ -71,21 +71,21 @@ namespace Perspex.Markup.Xaml.Data
 
             if (pathInfo.ElementName != null || ElementName != null)
             {
-                observer = CreateElementSubject(
+                observer = CreateElementObserver(
                     (IControl)target, 
                     pathInfo.ElementName ?? ElementName, 
                     pathInfo.Path);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                observer = CreateDataContextSubject(
+                observer = CreateDataContexObserver(
                     target, 
                     pathInfo.Path,
                     targetIsDataContext);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentSubject(
+                observer = CreateTemplatedParentObserver(
                     target,
                     pathInfo.Path);
             }
@@ -148,7 +148,7 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateDataContextSubject(
+        private ExpressionObserver CreateDataContexObserver(
             IPerspexObject target,
             string path,
             bool targetIsDataContext)
@@ -178,7 +178,7 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateTemplatedParentSubject(
+        private ExpressionObserver CreateTemplatedParentObserver(
             IPerspexObject target,
             string path)
         {
@@ -196,7 +196,7 @@ namespace Perspex.Markup.Xaml.Data
             return result;
         }
 
-        private ExpressionObserver CreateElementSubject(
+        private ExpressionObserver CreateElementObserver(
             IControl target,
             string elementName,
             string path)

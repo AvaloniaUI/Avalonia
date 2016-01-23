@@ -106,6 +106,36 @@ namespace Perspex
         /// <summary>
         /// Gets a subject for a <see cref="PerspexProperty"/>.
         /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="priority">
+        /// The priority with which binding values are written to the object.
+        /// </param>
+        /// <returns>
+        /// An <see cref="ISubject{Object}"/> which can be used for two-way binding to/from the 
+        /// property.
+        /// </returns>
+        public static ISubject<object> GetSubject(
+            this IPerspexObject o,
+            PerspexProperty property,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            // TODO: Subject.Create<T> is not yet in stable Rx : once it is, remove the 
+            // AnonymousSubject classes and use Subject.Create<T>.
+            var output = new Subject<object>();
+            var result = new AnonymousSubject<object>(
+                Observer.Create<object>(
+                    x => output.OnNext(x),
+                    e => output.OnError(e),
+                    () => output.OnCompleted()),
+                o.GetObservable(property));
+            o.Bind(property, output, priority);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a subject for a <see cref="PerspexProperty"/>.
+        /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>
@@ -240,55 +270,6 @@ namespace Perspex
             if (target != null)
             {
                 handler(target)(e);
-            }
-        }
-
-        class AnonymousSubject<T, U> : ISubject<T, U>
-        {
-            private readonly IObserver<T> _observer;
-            private readonly IObservable<U> _observable;
-
-            public AnonymousSubject(IObserver<T> observer, IObservable<U> observable)
-            {
-                _observer = observer;
-                _observable = observable;
-            }
-
-            public void OnCompleted()
-            {
-                _observer.OnCompleted();
-            }
-
-            public void OnError(Exception error)
-            {
-                if (error == null)
-                    throw new ArgumentNullException("error");
-
-                _observer.OnError(error);
-            }
-
-            public void OnNext(T value)
-            {
-                _observer.OnNext(value);
-            }
-
-            public IDisposable Subscribe(IObserver<U> observer)
-            {
-                if (observer == null)
-                    throw new ArgumentNullException("observer");
-
-                //
-                // [OK] Use of unsafe Subscribe: non-pretentious wrapping of an observable sequence.
-                //
-                return _observable.Subscribe/*Unsafe*/(observer);
-            }
-        }
-
-        class AnonymousSubject<T> : AnonymousSubject<T, T>, ISubject<T>
-        {
-            public AnonymousSubject(IObserver<T> observer, IObservable<T> observable)
-                : base(observer, observable)
-            {
             }
         }
     }

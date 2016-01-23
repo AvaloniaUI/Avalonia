@@ -67,6 +67,7 @@
     <Compile Include="SelectionChangedEventArgs.cs" />
     <Compile Include="SelectionMode.cs" />
     <Compile Include="Separator.cs" />
+    <Compile Include="Shapes\Line.cs" />
     <Compile Include="SystemDialog.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerEventArgs.cs" />

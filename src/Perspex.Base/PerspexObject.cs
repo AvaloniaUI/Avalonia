@@ -185,7 +185,8 @@ namespace Perspex
                         sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
                         break;
                     case BindingMode.TwoWay:
-                        BindTwoWay(binding.Property, sourceBinding.Source, sourceBinding.Property);
+                        var subject = sourceBinding.Source.GetSubject(sourceBinding.Property, sourceBinding.Priority);
+                        this.Bind(binding.Property, subject, BindingMode.TwoWay, sourceBinding.Priority);
                         break;
                 }
             }
@@ -478,67 +479,6 @@ namespace Perspex
             {
                 return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
             }
-        }
-
-        /// <summary>
-        /// Initiates a two-way binding between <see cref="PerspexProperty"/>s.
-        /// </summary>
-        /// <param name="property">The property on this object.</param>
-        /// <param name="source">The source object.</param>
-        /// <param name="sourceProperty">The property on the source object.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        /// <remarks>
-        /// The binding is first carried out from <paramref name="source"/> to this.
-        /// </remarks>
-        public IDisposable BindTwoWay(
-            PerspexProperty property,
-            PerspexObject source,
-            PerspexProperty sourceProperty,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            VerifyAccess();
-            _propertyLog.Verbose(
-                "Bound two way {Property} to {Binding} with priority {Priority}",
-                property,
-                source,
-                priority);
-
-            return new CompositeDisposable(
-                Bind(property, source.GetObservable(sourceProperty)),
-                source.Bind(sourceProperty, this.GetObservable(property)));
-        }
-
-        /// <summary>
-        /// Initiates a two-way binding between a <see cref="PerspexProperty"/> and an 
-        /// <see cref="ISubject{Object}"/>.
-        /// </summary>
-        /// <param name="property">The property on this object.</param>
-        /// <param name="source">The subject to bind to.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        /// <remarks>
-        /// The binding is first carried out from <paramref name="source"/> to this.
-        /// </remarks>
-        public IDisposable BindTwoWay(
-            PerspexProperty property,
-            ISubject<object> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            VerifyAccess();
-            _propertyLog.Verbose(
-                "Bound two way {Property} to {Binding} with priority {Priority}",
-                property,
-                GetDescription(source),
-                priority);
-
-            return new CompositeDisposable(
-                Bind(property, source),
-                this.GetObservable(property).Subscribe(source));
         }
 
         /// <summary>

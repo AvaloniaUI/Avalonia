@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 using Perspex.Data;
 using Perspex.Metadata;
+using Perspex.Reactive;
 
 namespace Perspex.Styling
 {
@@ -62,6 +64,10 @@ namespace Perspex.Styling
         /// <param name="activator">An optional activator.</param>
         public void Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
+            var description = style?.ToString();
+
             if (Property == null)
             {
                 throw new InvalidOperationException("Setter.Property must be set.");
@@ -77,8 +83,9 @@ namespace Perspex.Styling
                 }
                 else
                 {
-                    throw new NotSupportedException(
-                        "Setter bindings with activators not yet supported.");
+                    var subject = binding.CreateSubject(control, Property);
+                    var activated = new ActivatedSubject(activator, subject, description);
+                    Bind(control, Property, binding, activated);
                 }
             }
             else
@@ -89,13 +96,22 @@ namespace Perspex.Styling
                 }
                 else
                 {
-                    var activated = new StyleBinding(activator, Value, style.ToString());
+                    var activated = new ActivatedValue(activator, Value, description);
                     control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
             }
         }
 
         private void Bind(IStyleable control, PerspexProperty property, IBinding binding)
+        {
+            Bind(control, property, binding, binding.CreateSubject(control, property));
+        }
+
+        private void Bind(
+            IStyleable control, 
+            PerspexProperty property, 
+            IBinding binding, 
+            ISubject<object> subject)
         {
             var mode = binding.Mode;
 
@@ -106,7 +122,7 @@ namespace Perspex.Styling
 
             control.Bind(
                 property,
-                binding.CreateSubject(control, property),
+                subject,
                 mode,
                 binding.Priority);
         }
