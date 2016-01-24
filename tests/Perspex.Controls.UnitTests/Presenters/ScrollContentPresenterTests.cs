@@ -219,17 +219,6 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Offset_Should_Be_Coerced_To_Viewport()
-        {
-            var target = new ScrollContentPresenter();
-            target.SetValue(ScrollContentPresenter.ExtentProperty, new Size(20, 20));
-            target.SetValue(ScrollContentPresenter.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(12, 12);
-
-            Assert.Equal(new Vector(10, 10), target.Offset);
-        }
-
-        [Fact]
         public void BringDescendentIntoView_Should_Update_Offset()
         {
             var target = new ScrollContentPresenter

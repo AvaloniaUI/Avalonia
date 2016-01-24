@@ -21,19 +21,25 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ExtentProperty =
-            ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>();
+            ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>(
+                o => o.Extent,
+                (o, v) => o.Extent = v);
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
         public static readonly PerspexProperty<Vector> OffsetProperty =
-            ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>();
+            ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>(
+                o => o.Offset,
+                (o, v) => o.Offset = v);
 
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ViewportProperty =
-            ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>();
+            ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>(
+                o => o.Viewport,
+                (o, v) => o.Viewport = v);
 
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.
@@ -41,8 +47,11 @@ namespace Perspex.Controls.Presenters
         public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
+        private Size _extent;
         private Size _measuredExtent;
+        private Vector _offset;
         private IDisposable _scrollableSubscription;
+        private Size _viewport;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -69,8 +78,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public Size Extent
         {
-            get { return GetValue(ExtentProperty); }
-            private set { SetValue(ExtentProperty, value); }
+            get { return _extent; }
+            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
         }
 
         /// <summary>
@@ -78,8 +87,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public Vector Offset
         {
-            get { return GetValue(OffsetProperty); }
-            set { SetValue(OffsetProperty, value); }
+            get { return _offset; }
+            set { SetAndRaise(OffsetProperty, ref _offset, value); }
         }
 
         /// <summary>
@@ -87,8 +96,8 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public Size Viewport
         {
-            get { return GetValue(ViewportProperty); }
-            private set { SetValue(ViewportProperty, value); }
+            get { return _viewport; }
+            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
 
         /// <summary>
