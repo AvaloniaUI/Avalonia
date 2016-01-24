@@ -26,19 +26,26 @@ namespace Perspex.Controls
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ExtentProperty =
-            PerspexProperty.Register<ScrollViewer, Size>(nameof(Extent));
+            PerspexProperty.RegisterDirect<ScrollViewer, Size>(nameof(Extent), 
+                o => o.Extent,
+                (o, v) => o.Extent = v);
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
         public static readonly PerspexProperty<Vector> OffsetProperty =
-            PerspexProperty.Register<ScrollViewer, Vector>(nameof(Offset), validate: ValidateOffset);
+            PerspexProperty.RegisterDirect<ScrollViewer, Vector>(
+                nameof(Offset),
+                o => o.Offset,
+                (o, v) => o.Offset = v);
 
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
         public static readonly PerspexProperty<Size> ViewportProperty =
-            PerspexProperty.Register<ScrollViewer, Size>(nameof(Viewport));
+            PerspexProperty.RegisterDirect<ScrollViewer, Size>(nameof(Viewport), 
+                o => o.Viewport,
+                (o, v) => o.Viewport = v);
 
         /// <summary>
         /// Defines the HorizontalScrollBarMaximum property.
@@ -120,6 +127,10 @@ namespace Perspex.Controls
                 nameof(VerticalScrollBarVisibility), 
                 ScrollBarVisibility.Auto);
 
+        private Size _extent;
+        private Vector _offset;
+        private Size _viewport;
+
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
         /// </summary>
@@ -173,8 +184,8 @@ namespace Perspex.Controls
         /// </summary>
         public Size Extent
         {
-            get { return GetValue(ExtentProperty); }
-            private set { SetValue(ExtentProperty, value); }
+            get { return _extent; }
+            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
         }
 
         /// <summary>
@@ -182,8 +193,16 @@ namespace Perspex.Controls
         /// </summary>
         public Vector Offset
         {
-            get { return GetValue(OffsetProperty); }
-            set { SetValue(OffsetProperty, value); }
+            get
+            {
+                return _offset;
+            }
+
+            set
+            {
+                value = ValidateOffset(this, value);
+                SetAndRaise(OffsetProperty, ref _offset, value);
+            }
         }
 
         /// <summary>
@@ -191,8 +210,8 @@ namespace Perspex.Controls
         /// </summary>
         public Size Viewport
         {
-            get { return GetValue(ViewportProperty); }
-            private set { SetValue(ViewportProperty, value); }
+            get { return _viewport; }
+            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
 
         /// <summary>
