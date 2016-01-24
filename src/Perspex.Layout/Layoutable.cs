@@ -67,6 +67,12 @@ namespace Perspex.Layout
     public class Layoutable : Visual, ILayoutable
     {
         /// <summary>
+        /// Defines the <see cref="DesiredSize"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Size> DesiredSizeProperty =
+            PerspexProperty.RegisterDirect<Layoutable, Size>(nameof(DesiredSize), o => o.DesiredSize);
+
+        /// <summary>
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> WidthProperty =
@@ -249,7 +255,7 @@ namespace Perspex.Layout
         public Size DesiredSize
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
