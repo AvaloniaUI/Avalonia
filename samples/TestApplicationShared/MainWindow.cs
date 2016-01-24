@@ -542,6 +542,17 @@ namespace TestApplication
 
         private static TabItem LayoutTab()
         {
+            var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
+                new Point(9, 1), new Point(10, 0), new Point(15, 0) };
+            var polygonPoints = new Point[] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) };
+            for (int i = 0; i < polylinePoints.Length; i++)
+            {
+                polylinePoints[i] = polylinePoints[i] * 13;
+            }
+            for (int i = 0; i < polygonPoints.Length; i++)
+            {
+                polygonPoints[i] = polygonPoints[i] * 15;
+            }
             return new TabItem
             {
                 Header = "Layout",
@@ -690,13 +701,31 @@ namespace TestApplication
                                     },
                                     new Line
                                     {
-                                        Width = 90,
-                                        Height = 70,
                                         Stroke = Brushes.Red,
                                         StrokeThickness = 2,
+                                        PointPair = new PointPair(120, 185, 30, 115)
+                                    },
+                                    new Perspex.Controls.Shapes.Path
+                                    {
+                                        Fill = Brushes.Orange,
+                                        Data = StreamGeometry.Parse("M 30,250 c 50,0 50,-50 c 50,0 50,50 h -50 v 50 l -50,-50 Z"),
+                                    },
+                                    new Polygon
+                                    {
+                                        Stroke = Brushes.DarkBlue,
+                                        Fill = Brushes.Violet,
+                                        Points = polygonPoints,
+                                        StrokeThickness = 1,
+                                        [Canvas.LeftProperty] = 150,
+                                        [Canvas.TopProperty] = 180,
+                                    },
+                                    new Polyline
+                                    {
+                                        Stroke = Brushes.Brown,
+                                        Points = polylinePoints,
                                         [Canvas.LeftProperty] = 30,
-                                        [Canvas.TopProperty] = 120
-                                    }
+                                        [Canvas.TopProperty] = 350,
+                                    },
                                 }
                             },
                         }
