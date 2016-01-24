@@ -2,18 +2,25 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Collections;
+using System.Reactive;
 
 namespace Perspex.Styling
 {
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
-    public interface IStyleable : IObservablePropertyBag, INamed
+    public interface IStyleable : IPerspexObject, INamed
     {
+        /// <summary>
+        /// Raised when the control's style should be removed.
+        /// </summary>
+        IObservable<Unit> StyleDetach { get; }
+
         /// <summary>
         /// Gets the list of classes for the control.
         /// </summary>
-        Classes Classes { get; }
+        IPerspexReadOnlyList<string> Classes { get; }
 
         /// <summary>
         /// Gets the type by which the control is styled.

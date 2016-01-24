@@ -1,7 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
+using ReactiveUI;
 
 namespace XamlTestApplication.ViewModels
 {
@@ -22,6 +24,7 @@ namespace XamlTestApplication.ViewModels
                 {
                     Header = "Root",
                     SubHeader = "Root Item",
+                    IsExpanded = true,
                     Children = new[]
                     {
                         new TestNode
@@ -33,6 +36,7 @@ namespace XamlTestApplication.ViewModels
                         {
                             Header = "Child 2",
                             SubHeader = "Child 2 Value",
+                            IsExpanded = false,
                             Children = new[]
                             {
                                 new TestNode
@@ -50,9 +54,39 @@ namespace XamlTestApplication.ViewModels
                     }
                 }
             };
+
+            CollapseNodesCommand = ReactiveCommand.Create();
+            CollapseNodesCommand.Subscribe(_ => ExpandNodes(false));
+            ExpandNodesCommand = ReactiveCommand.Create();
+            ExpandNodesCommand.Subscribe(_ => ExpandNodes(true));
         }
 
         public List<TestItem> Items { get; }
         public List<TestNode> Nodes { get; }
+
+        public ReactiveCommand<object> CollapseNodesCommand { get; }
+
+        public ReactiveCommand<object> ExpandNodesCommand { get; }
+
+        public void ExpandNodes(bool expanded)
+        {
+            foreach (var node in Nodes)
+            {
+                ExpandNodes(node, expanded);
+            }
+        }
+
+        private void ExpandNodes(TestNode node, bool expanded)
+        {
+            node.IsExpanded = expanded;
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                {
+                    ExpandNodes(child, expanded);
+                }
+            }
+        }
     }
 }

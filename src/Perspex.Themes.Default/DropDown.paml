@@ -2,8 +2,7 @@
   <Style Selector="DropDown">
     <Setter Property="BorderBrush" Value="#ff707070"/>
     <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"
@@ -12,13 +11,14 @@
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
                               Margin="{TemplateBinding Padding}"
-                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
             <ToggleButton Name="toggle"
                           BorderThickness="0"
                           Background="Transparent"
                           ClickMode="Press"
                           Focusable="False"
+                          IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                           Grid.Column="1">
               <Path Fill="Black"
                     Width="8"
@@ -34,8 +34,7 @@
                    PlacementTarget="{TemplateBinding}"
                    StaysOpen="False">
               <Border BorderBrush="Black"
-                      BorderThickness="1"
-                      Padding="4">
+                      BorderThickness="1">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}" 
                                 MemberSelector="{TemplateBinding MemberSelector}"/>
@@ -45,7 +44,6 @@
         </Border>
       </ControlTemplate>
     </Setter>
-
   </Style>
   <Style Selector="CheckBox /template/ Path#checkMark">
     <Setter Property="IsVisible" Value="False"/>

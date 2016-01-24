@@ -1,0 +1,16 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="ToolTip">
+  <Setter Property="BorderBrush" Value="Gray"/>
+  <Setter Property="BorderThickness" Value="1"/>
+  <Setter Property="Padding" Value="4,2"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+        <ContentPresenter Name="PART_ContentPresenter" 
+                          Content="{TemplateBinding Content}" 
+                          Margin="{TemplateBinding Padding}"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

@@ -20,10 +20,12 @@ namespace Perspex.Markup.Xaml.Templates
         {
             if (DataType == null)
             {
-                throw new InvalidOperationException("DataTemplate must have a DataType.");
+                return true;
             }
-
-            return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+            else
+            {
+                return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+            }
         }
 
         public IControl Build(object data)

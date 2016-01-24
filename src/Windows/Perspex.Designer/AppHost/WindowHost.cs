@@ -11,20 +11,39 @@ namespace Perspex.Designer.AppHost
 {
     class WindowHost : UserControl
     {
-        public WindowHost()
+        private readonly bool _supportScroll;
+
+        public WindowHost(bool supportScroll)
         {
-            AutoScroll = true;
-            VerticalScroll.Enabled = true;
-            HorizontalScroll.Enabled = true;
+            _supportScroll = supportScroll;
+            if (_supportScroll)
+            {
+                AutoScroll = true;
+                VerticalScroll.Enabled = true;
+                HorizontalScroll.Enabled = true;
+            }
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            Text = "ScrollableArea";
             Controls.Add(_windowHost);
             _windowHost.Anchor = AnchorStyles.None;
-            _timer.Tick += delegate { FixWindow(); };
+            if (!supportScroll)
+                _windowHost.Visible = false;
+            _timer.Tick += delegate
+            {
+                ReloadSettings();
+                FixWindow();
+            };
         }
 
-        private Control _windowHost = new Control() {Text = "WindowWrapper"};
-        private Timer _timer = new Timer {Enabled = true, Interval = 50};
+        private void ReloadSettings()
+        {
+            var bkg = Settings.Background;
+            var color = System.Drawing.ColorTranslator.FromHtml(bkg);
+            if (BackColor != color)
+                BackColor = color;
+        }
+
+        private readonly Control _windowHost = new Control() {Text = "WindowWrapper"};
+        private readonly Timer _timer = new Timer {Enabled = true, Interval = 50};
         private IntPtr _hWnd;
         private int _desiredWidth;
         private int _desiredHeight;
@@ -41,6 +60,12 @@ namespace Perspex.Designer.AppHost
                 m.WParam = (IntPtr) (((int) m.WParam & ~0xFFFF) | 4);
             }
             base.WndProc(ref m);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            using (var b = new SolidBrush(BackColor))
+                e.Graphics.FillRectangle(b, e.ClipRectangle);
         }
 
         void FixPosition()
@@ -75,7 +100,7 @@ namespace Perspex.Designer.AppHost
             _hWnd = hWnd;
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.SetParent(hWnd, _windowHost.Handle);
+                WinApi.SetParent(hWnd, _supportScroll ? _windowHost.Handle : Handle);
                 FixWindow();
             }
         }
@@ -84,25 +109,34 @@ namespace Perspex.Designer.AppHost
         {
             if (_hWnd != IntPtr.Zero)
             {
-                WinApi.RECT rc;
-                WinApi.GetWindowRect(_hWnd, out rc);
-                _desiredWidth = rc.Right - rc.Left;
-                _desiredHeight = rc.Bottom - rc.Top;
-                var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
-
-                if (!(pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width && _desiredHeight == _windowHost.Height))
+                if (_supportScroll)
                 {
-                    _windowHost.Width = _desiredWidth;
-                    _windowHost.Height = _desiredHeight;
-                    WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                    WinApi.RECT rc;
+                    WinApi.GetWindowRect(_hWnd, out rc);
+                    _desiredWidth = rc.Right - rc.Left;
+                    _desiredHeight = rc.Bottom - rc.Top;
+                    var pt = _windowHost.PointToClient(new Point(rc.Left, rc.Top));
+
+                    if (
+                        !(pt.Y == 0 && pt.X == 0 && _desiredWidth == _windowHost.Width &&
+                          _desiredHeight == _windowHost.Height))
+                    {
+                        _windowHost.Width = _desiredWidth;
+                        _windowHost.Height = _desiredHeight;
+                        WinApi.MoveWindow(_hWnd, 0, 0, _desiredWidth, _desiredHeight, true);
+                    }
+                    FixPosition();
                 }
-                FixPosition();
+                else
+                {
+                    WinApi.MoveWindow(_hWnd, 0, 0, Width, Height, true);
+                }
             }
         }
 
         protected override void OnResize(EventArgs e)
         {
-            FixPosition();
+            FixWindow();
             base.OnResize(e);
         }
     }

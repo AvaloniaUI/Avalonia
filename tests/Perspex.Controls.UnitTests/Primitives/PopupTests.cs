@@ -184,21 +184,6 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void PopupRoot_Should_Have_Child_As_LogicalChild()
-        {
-            using (CreateServices())
-            {
-                var target = new Popup();
-                var child = new Control();
-
-                target.Child = child;
-                target.Open();
-
-                Assert.Equal(new[] { child }, target.PopupRoot.GetLogicalChildren());
-            }
-        }
-
-        [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
             using (CreateServices())
@@ -263,11 +248,10 @@ namespace Perspex.Controls.UnitTests.Primitives
             var globalStyles = new Mock<IGlobalStyles>();
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
-
             PerspexLocator.CurrentMutable
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
-                .Bind<IPopupImpl>().ToConstant(new Mock<IPopupImpl>().Object)
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                 .Bind<IStyler>().ToTransient<Styler>();
 
             return result;

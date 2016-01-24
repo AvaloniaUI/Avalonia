@@ -11,6 +11,7 @@ using Perspex.Platform;
 using Perspex.Input;
 using Perspex.Threading;
 using Action = System.Action;
+using WindowEdge = Perspex.Controls.WindowEdge;
 
 namespace Perspex.Gtk
 {
@@ -162,6 +163,36 @@ namespace Perspex.Gtk
             GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
         }
 
+        public void BeginMoveDrag()
+        {
+            int x, y;
+            ModifierType mod;
+            Screen.RootWindow.GetPointer(out x, out y, out mod);
+            BeginMoveDrag(1, x, y, 0);
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            int x, y;
+            ModifierType mod;
+            Screen.RootWindow.GetPointer(out x, out y, out mod);
+            BeginResizeDrag((Gdk.WindowEdge) (int) edge, 1, x, y, 0);
+        }
+
+        public Point Position
+        {
+            get
+            {
+                int x, y;
+                GetPosition(out x, out y);
+                return new Point(x, y);
+            }
+            set
+            {
+                Move((int)value.X, (int)value.Y);
+            }
+        }
+
         public IDisposable ShowDialog()
         {
             Modal = true;
@@ -169,6 +200,8 @@ namespace Perspex.Gtk
 
             return Disposable.Empty;
         }
+
+        public void SetSystemDecorations(bool enabled) => Decorated = enabled;
 
         void ITopLevelImpl.Activate()
         {

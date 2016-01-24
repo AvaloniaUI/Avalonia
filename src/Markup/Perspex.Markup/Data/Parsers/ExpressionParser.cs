@@ -34,7 +34,7 @@ namespace Perspex.Markup.Data.Parsers
 
             if (state == State.BeforeMember)
             {
-                throw new ExpressionParseException(r, "Unexpected end of expression.");
+                throw new ExpressionParseException(r.Position, "Unexpected end of expression.");
             }
 
             for (int n = 0; n < nodes.Count - 1; ++n)
@@ -80,7 +80,7 @@ namespace Perspex.Markup.Data.Parsers
                 {
                     if (args.Count == 0)
                     {
-                        throw new ExpressionParseException(r, "Indexer may not be empty.");
+                        throw new ExpressionParseException(r.Position, "Indexer may not be empty.");
                     }
 
                     nodes.Add(new IndexerNode(args));

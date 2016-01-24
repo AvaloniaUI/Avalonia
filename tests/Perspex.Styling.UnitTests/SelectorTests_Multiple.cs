@@ -44,7 +44,7 @@ namespace Perspex.Styling.UnitTests
             activator.Subscribe(x => values.Add(x));
 
             Assert.Equal(new[] { false }, values);
-            control.Classes.Add("foo", "bar");
+            control.Classes.AddRange(new[] { "foo", "bar" });
             Assert.Equal(new[] { false, true }, values);
             control.Classes.Remove("foo");
             Assert.Equal(new[] { false, true, false }, values);

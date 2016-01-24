@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
+using Perspex.Data;
 
 namespace Perspex.Animation
 {
@@ -25,12 +26,7 @@ namespace Perspex.Animation
         {
             get
             {
-                if (_propertyTransitions == null)
-                {
-                    _propertyTransitions = new PropertyTransitions();
-                }
-
-                return _propertyTransitions;
+                return _propertyTransitions ?? (_propertyTransitions = new PropertyTransitions());
             }
 
             set

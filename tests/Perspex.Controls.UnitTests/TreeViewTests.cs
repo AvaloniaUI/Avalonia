@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -23,7 +24,7 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
             Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
@@ -40,9 +41,9 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
-            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single();
+            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
             var header = (TextBlock)container.Header;
             Assert.Equal("Root", header.Text);
         }
@@ -58,15 +59,18 @@ namespace Perspex.Controls.UnitTests
                 DataTemplates = CreateNodeDataTemplate(),
             };
 
-            // For TreeViewItem to find its parent TreeView, OnAttachedToVisualTree needs
-            // to be called, which requires an IRenderRoot.
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+            // For TreeViewItem to find its parent TreeView, OnAttachedToLogicalTree needs
+            // to be called, which requires an IStyleRoot.
+            var root = new TestRoot();
+            root.Child = target;
 
             ApplyTemplates(target);
 
-            var container = target.ItemContainerGenerator.TreeContainerFromItem(
+            var container = target.ItemContainerGenerator.Index.ContainerFromItem(
                 tree[0].Children[1].Children[0]);
+
+            Assert.NotNull(container);
+
             var header = ((TreeViewItem)container).Header;
             var headerContent = ((TextBlock)header).Text;
 
@@ -89,7 +93,9 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplates(target);
 
             var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.TreeContainerFromItem(item);
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+            Assert.NotNull(container);
 
             container.RaiseEvent(new PointerPressEventArgs
             {
@@ -102,6 +108,31 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_SelectedItem_Should_Set_Container_Selected()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+            ApplyTemplates(target);
+
+            var item = tree[0].Children[1].Children[0];
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+            Assert.NotNull(container);
+
+            target.SelectedItem = item;
+
+            Assert.True(container.IsSelected);
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
             var target = new TreeView
@@ -110,7 +141,7 @@ namespace Perspex.Controls.UnitTests
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             var result = target.GetLogicalChildren()
                 .OfType<TreeViewItem>()
@@ -120,6 +151,28 @@ namespace Perspex.Controls.UnitTests
                 .ToList();
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz " }, result);
+        }
+
+        [Fact]
+        public void Removing_Item_Should_Remove_Itself_And_Children_From_Index()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                DataTemplates = CreateNodeDataTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+            ApplyTemplates(target);
+
+            Assert.Equal(4, target.ItemContainerGenerator.Index.Items.Count());
+
+            tree[0].Children.RemoveAt(1);
+
+            Assert.Equal(2, target.ItemContainerGenerator.Index.Items.Count());
         }
 
         [Fact]
@@ -144,7 +197,7 @@ namespace Perspex.Controls.UnitTests
                 Items = items,
             };
 
-            target.ApplyTemplate();
+            ApplyTemplates(target);
 
             var dataContexts = target.Presenter.Panel.Children
                 .Cast<Control>()
@@ -159,6 +212,7 @@ namespace Perspex.Controls.UnitTests
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
+            tree.Presenter.ApplyTemplate();
             ApplyTemplates(tree.Presenter.Panel.Children);
         }
 
@@ -168,18 +222,19 @@ namespace Perspex.Controls.UnitTests
             {
                 control.Template = CreateTreeViewItemTemplate();
                 control.ApplyTemplate();
+                control.Presenter.ApplyTemplate();
                 ApplyTemplates(control.Presenter.Panel.Children);
             }
         }
 
         private IList<Node> CreateTestTreeData()
         {
-            return new[]
+            return new PerspexList<Node>
             {
                 new Node
                 {
                     Value = "Root",
-                    Children = new[]
+                    Children = new PerspexList<Node>
                     {
                         new Node
                         {
@@ -188,7 +243,7 @@ namespace Perspex.Controls.UnitTests
                         new Node
                         {
                             Value = "Child2",
-                            Children = new[]
+                            Children = new PerspexList<Node>
                             {
                                 new Node
                                 {
@@ -265,7 +320,7 @@ namespace Perspex.Controls.UnitTests
         private class Node
         {
             public string Value { get; set; }
-            public IList<Node> Children { get; set; }
+            public IPerspexList<Node> Children { get; set; }
         }
     }
 }

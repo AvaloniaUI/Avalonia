@@ -148,6 +148,10 @@ namespace Perspex.Cairo.Media
                 _context.AppendPath(impl.Path);
                 using (var b = SetBrush(brush, geometry.Bounds.Size))
                 {
+                    _context.FillRule = impl.FillRule == FillRule.EvenOdd
+                        ? Cairo.FillRule.EvenOdd
+                        : Cairo.FillRule.Winding;
+
                     if (pen != null)
                         _context.FillPreserve();
                     else

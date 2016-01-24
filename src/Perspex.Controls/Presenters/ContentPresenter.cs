@@ -34,6 +34,7 @@ namespace Perspex.Controls.Presenters
         static ContentPresenter()
         {
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
         }
 
         /// <summary>
@@ -57,10 +58,64 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
-            if (!_createdChild)
+            if (!_createdChild && ((ILogical)this).IsAttachedToLogicalTree)
             {
-                CreateChild();
+                UpdateChild();
             }
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Child"/> control based on the control's <see cref="Content"/>.
+        /// </summary>
+        /// <remarks>
+        /// Usually the <see cref="Child"/> control is created automatically when 
+        /// <see cref="ApplyTemplate"/> is called; however for this to happen, the control needs to
+        /// be attached to a logical tree (if the control is not attached to the logical tree, it
+        /// is reasonable to expect that the DataTemplates needed for the child are not yet 
+        /// available). This method forces the <see cref="Child"/> control's creation at any point, 
+        /// and is particularly useful in unit tests.
+        /// </remarks>
+        public void UpdateChild()
+        {
+            var old = Child;
+            var content = Content;
+            var result = this.MaterializeDataTemplate(content);
+
+            if (old != null)
+            {
+                VisualChildren.Remove(old);
+            }
+
+            if (result != null)
+            {
+                if (!(content is IControl))
+                {
+                    result.DataContext = content;
+                }
+
+                Child = result;
+
+                if (result.Parent == null)
+                {
+                    ((ISetLogicalParent)result).SetParent((ILogical)this.TemplatedParent ?? this);
+                }
+
+                VisualChildren.Add(result);
+            }
+            else
+            {
+                Child = null;
+            }
+
+            _createdChild = true;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            _createdChild = false;
+            InvalidateMeasure();
         }
 
         /// <inheritdoc/>
@@ -93,45 +148,9 @@ namespace Perspex.Controls.Presenters
             InvalidateMeasure();
         }
 
-        /// <summary>
-        /// Creates the <see cref="Child"/> control from the <see cref="Content"/>.
-        /// </summary>
-        private void CreateChild()
+        private void TemplatedParentChanged(PerspexPropertyChangedEventArgs e)
         {
-            var old = Child;
-            var content = Content;
-            var result = this.MaterializeDataTemplate(content);
-            var logicalHost = this.FindReparentingHost();
-            var logicalChildren = logicalHost?.LogicalChildren ?? LogicalChildren;
-
-            if (old != null)
-            {
-                logicalChildren.Remove(old);
-                ((ISetLogicalParent)old).SetParent(null);
-                ClearVisualChildren();
-            }
-
-            Child = result;
-
-            if (result != null)
-            {
-                if (!(content is IControl))
-                {
-                    result.DataContext = content;
-                }
-
-                AddVisualChild(result);
-
-                if (result.Parent == null)
-                {
-                    ((ISetLogicalParent)result).SetParent((ILogical)logicalHost ?? this);
-                }
-
-                logicalChildren.Remove(old);
-                logicalChildren.Add(result);
-            }
-
-            _createdChild = true;
+            (e.NewValue as IContentPresenterHost)?.RegisterContentPresenter(this);
         }
     }
 }

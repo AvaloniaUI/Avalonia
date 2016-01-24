@@ -8,15 +8,6 @@ namespace Perspex.Platform
     /// </summary>
     public interface IPopupImpl : ITopLevelImpl
     {
-        /// <summary>
-        /// Sets the position of the popup.
-        /// </summary>
-        /// <param name="p">The position, in screen coordinates.</param>
-        void SetPosition(Point p);
 
-        /// <summary>
-        /// Hides the popup.
-        /// </summary>
-        void Hide();
     }
 }

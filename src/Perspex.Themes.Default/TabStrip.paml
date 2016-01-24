@@ -2,7 +2,9 @@
   <Style Selector="TabStrip">
     <Setter Property="Template">
       <ControlTemplate>
-        <ItemsPresenter Items="{TemplateBinding Items}"
+        <ItemsPresenter Name="PART_ItemsPresenter"
+                        MemberSelector="{TemplateBinding MemberSelector}"
+                        Items="{TemplateBinding Items}"
                         ItemsPanel="{TemplateBinding ItemsPanel}"/>
       </ControlTemplate>
     </Setter>
@@ -12,7 +14,7 @@
       </ItemsPanelTemplate>
     </Setter>
   </Style>
-  <Style Selector="TabStrip > TabItem">
+  <Style Selector="TabStrip > TabStripItem">
     <Setter Property="Margin" Value="16"/>
   </Style>
 </Styles>

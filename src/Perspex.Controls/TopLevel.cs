@@ -24,7 +24,7 @@ namespace Perspex.Controls
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
-    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable
+    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IStyleRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -102,7 +102,7 @@ namespace Perspex.Controls
             PlatformImpl.Input = HandleInput;
             PlatformImpl.Resized = HandleResized;
 
-            Size clientSize = ClientSize = PlatformImpl.ClientSize;
+            var clientSize = ClientSize = PlatformImpl.ClientSize;
 
             if (LayoutManager != null)
             {
@@ -111,20 +111,12 @@ namespace Perspex.Controls
                 LayoutManager.LayoutCompleted.Subscribe(_ => HandleLayoutCompleted());
             }
 
-            if (_keyboardNavigationHandler != null)
-            {
-                _keyboardNavigationHandler.SetOwner(this);
-            }
-
-            if (_accessKeyHandler != null)
-            {
-                _accessKeyHandler.SetOwner(this);
-            }
-
+            _keyboardNavigationHandler?.SetOwner(this);
+            _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
-            GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.ClientSize = x);
-            GetObservable(PointerOverElementProperty)
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.ClientSize = x);
+            this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
@@ -210,6 +202,11 @@ namespace Perspex.Controls
         {
             get { return GetValue(AccessText.ShowAccessKeyProperty); }
             set { SetValue(AccessText.ShowAccessKeyProperty, value); }
+        }
+
+        IStyleHost IStyleHost.StylingParent
+        {
+            get { return PerspexLocator.Current.GetService<IGlobalStyles>(); }
         }
 
         /// <summary>
@@ -306,12 +303,9 @@ namespace Perspex.Controls
         {
             var result = resolver.GetService<T>();
 
-            if (result == null)
-            {
-                System.Diagnostics.Debug.WriteLineIf(
-                    result == null,
-                    $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
-            }
+            System.Diagnostics.Debug.WriteLineIf(
+                result == null,
+                $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
 
             return result;
         }
@@ -321,10 +315,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleActivated()
         {
-            if (Activated != null)
-            {
-                Activated(this, EventArgs.Empty);
-            }
+            Activated?.Invoke(this, EventArgs.Empty);
 
             var scope = this as IFocusScope;
 
@@ -341,10 +332,7 @@ namespace Perspex.Controls
         /// </summary>
         private void HandleClosed()
         {
-            if (Closed != null)
-            {
-                Closed(this, EventArgs.Empty);
-            }
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -354,10 +342,7 @@ namespace Perspex.Controls
         {
             IsActive = false;
 
-            if (Deactivated != null)
-            {
-                Deactivated(this, EventArgs.Empty);
-            }
+            Deactivated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -383,6 +368,23 @@ namespace Perspex.Controls
         private void HandleLayoutCompleted()
         {
             _renderQueueManager?.InvalidateRender(this);
+        }
+
+        /// <summary>
+        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
+        /// </summary>
+        public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
+
+        /// <summary>
+        /// Starts resizing a window. This function is used if an application has window resizing controls. 
+        /// Should be called from left mouse button press event handler
+        /// </summary>
+        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
+
+        public Point Position
+        {
+            get { return PlatformImpl.Position; }
+            set { PlatformImpl.Position = value; }
         }
     }
 }

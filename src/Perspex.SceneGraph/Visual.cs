@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Animation;
 using Perspex.Collections;
+using Perspex.Data;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
@@ -82,11 +83,6 @@ namespace Perspex
         private string _name;
 
         /// <summary>
-        /// Holds the children of the visual.
-        /// </summary>
-        private readonly PerspexList<IVisual> _visualChildren;
-
-        /// <summary>
         /// The visual's bounds relative to its parent.
         /// </summary>
         private Rect _bounds;
@@ -128,9 +124,11 @@ namespace Perspex
                 new PropertyEnricher("Id", GetHashCode()),
             });
 
-            _visualChildren = new PerspexList<IVisual>();
-            _visualChildren.ResetBehavior = ResetBehavior.Remove;
-            _visualChildren.CollectionChanged += VisualChildrenChanged;
+            var visualChildren = new PerspexList<IVisual>();
+            visualChildren.ResetBehavior = ResetBehavior.Remove;
+            visualChildren.Validate = ValidateLogicalChild;
+            visualChildren.CollectionChanged += VisualChildrenChanged;
+            VisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -250,6 +248,15 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the control's visual children.
+        /// </summary>
+        protected IPerspexList<IVisual> VisualChildren
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
         bool IVisual.IsAttachedToVisualTree => _isAttachedToVisualTree;
@@ -257,7 +264,7 @@ namespace Perspex
         /// <summary>
         /// Gets the scene graph node's child nodes.
         /// </summary>
-        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => _visualChildren;
+        IPerspexReadOnlyList<IVisual> IVisual.VisualChildren => VisualChildren;
 
         /// <summary>
         /// Gets the scene graph node's parent node.
@@ -272,11 +279,7 @@ namespace Perspex
             IRenderRoot root = this.GetSelfAndVisualAncestors()
                 .OfType<IRenderRoot>()
                 .FirstOrDefault();
-
-            if (root != null && root.RenderQueueManager != null)
-            {
-                root.RenderQueueManager.InvalidateRender(this);
-            }
+            root?.RenderQueueManager?.InvalidateRender(this);
         }
 
         /// <summary>
@@ -304,12 +307,22 @@ namespace Perspex
         /// of the specified <paramref name="visual"/>.
         /// </summary>
         /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>A <see cref="Matrix"/> containing the transform.</returns>
-        public Matrix TransformToVisual(IVisual visual)
+        /// <returns>
+        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
+        /// common ancestor.
+        /// </returns>
+        public Matrix? TransformToVisual(IVisual visual)
         {
-            var thisOffset = GetOffsetFromRoot(this).Item2;
-            var thatOffset = GetOffsetFromRoot(visual).Item2;
-            return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+            var common = this.FindCommonVisualAncestor(visual);
+
+            if (common != null)
+            {
+                var thisOffset = GetOffsetFrom(common, this);
+                var thatOffset = GetOffsetFrom(common, visual);
+                return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -328,66 +341,20 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Adds a visual child to the control.
-        /// </summary>
-        /// <param name="visual">The child to add.</param>
-        protected void AddVisualChild(IVisual visual)
-        {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
-            _visualChildren.Add(visual);
-        }
-
-        /// <summary>
-        /// Adds visual children to the control.
-        /// </summary>
-        /// <param name="visuals">The children to add.</param>
-        protected void AddVisualChildren(IEnumerable<IVisual> visuals)
-        {
-            Contract.Requires<ArgumentNullException>(visuals != null);
-
-            _visualChildren.AddRange(visuals);
-        }
-
-        /// <summary>
-        /// Removes all visual children from the control.
-        /// </summary>
-        protected void ClearVisualChildren()
-        {
-            _visualChildren.Clear();
-        }
-
-        /// <summary>
-        /// Removes a visual child from the control;
-        /// </summary>
-        /// <param name="visual">The child to remove.</param>
-        protected void RemoveVisualChild(IVisual visual)
-        {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
-            _visualChildren.Remove(visual);
-        }
-
-        /// <summary>
-        /// Removes a visual children from the control;
-        /// </summary>
-        /// <param name="visuals">The children to remove.</param>
-        protected void RemoveVisualChildren(IEnumerable<IVisual> visuals)
-        {
-            Contract.Requires<ArgumentNullException>(visuals != null);
-
-            foreach (var v in visuals)
-            {
-                _visualChildren.Remove(v);
-            }
-        }
-
-        /// <summary>
         /// Called when the control is added to a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
         protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (RenderTransform != null)
+            {
+                RenderTransform.Changed += RenderTransformChanged;
+            }
+
             AttachedToVisualTree?.Invoke(this, e);
         }
 
@@ -395,8 +362,17 @@ namespace Perspex
         /// Called when the control is removed from a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (RenderTransform != null)
+            {
+                RenderTransform.Changed -= RenderTransformChanged;
+            }
+
             DetachedFromVisualTree?.Invoke(this, e);
         }
 
@@ -406,66 +382,31 @@ namespace Perspex
         /// <param name="e">The event args.</param>
         private static void AffectsRenderInvalidate(PerspexPropertyChangedEventArgs e)
         {
-            Visual visual = e.Sender as Visual;
-
-            if (visual != null)
-            {
-                visual.InvalidateVisual();
-            }
+            (e.Sender as Visual)?.InvalidateVisual();
         }
 
         /// <summary>
-        /// Gets the event args for an <see cref="AttachedToVisualTree"/> or
-        /// <see cref="DetachedFromVisualTree"/> event.
+        /// Gets the visual offset from the specified ancestor.
         /// </summary>
-        /// <returns>
-        /// A <see cref="VisualTreeAttachmentEventArgs"/> if the visual currently has a root;
-        /// otherwise null.
-        /// </returns>
-        private VisualTreeAttachmentEventArgs GetAttachmentEventArgs()
+        /// <param name="ancestor">The ancestor visual.</param>
+        /// <param name="visual">The visual.</param>
+        /// <returns>The visual offset.</returns>
+        private static Vector GetOffsetFrom(IVisual ancestor, IVisual visual)
         {
-            var e = (IVisual)this;
-            IRenderRoot root = null;
-            INameScope nameScope = null;
+            var result = new Vector();
 
-            while (e != null)
+            while (visual != ancestor)
             {
-                if (nameScope == null)
+                result = new Vector(result.X + visual.Bounds.X, result.Y + visual.Bounds.Y);
+                visual = visual.VisualParent;
+
+                if (visual == null)
                 {
-                    nameScope = e as INameScope ?? NameScope.GetNameScope((Visual)e);
+                    throw new ArgumentException("'visual' is not a descendent of 'ancestor'.");
                 }
-
-                root = e as IRenderRoot;
-
-                if (root != null)
-                {
-                    return new VisualTreeAttachmentEventArgs(root, nameScope);
-                }
-
-                e = e.VisualParent;
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the <see cref="VisualTreeAttachmentEventArgs"/> for this element based on the 
-        /// parent's args.
-        /// </summary>
-        /// <param name="e">The parent args.</param>
-        /// <returns>The args for this element.</returns>
-        private VisualTreeAttachmentEventArgs GetAttachmentEventArgs(VisualTreeAttachmentEventArgs e)
-        {
-            var childNameScope = (this as INameScope) ?? NameScope.GetNameScope(this);
-
-            if (childNameScope != null)
-            {
-                return new VisualTreeAttachmentEventArgs(e.Root, childNameScope);
-            }
-            else
-            {
-                return e;
-            }
+            return result;
         }
 
         /// <summary>
@@ -499,7 +440,7 @@ namespace Perspex
         {
             var sender = e.Sender as Visual;
 
-            if (sender != null)
+            if (sender?._isAttachedToVisualTree == true)
             {
                 var oldValue = e.OldValue as Transform;
                 var newValue = e.NewValue as Transform;
@@ -515,6 +456,18 @@ namespace Perspex
                 }
 
                 sender.InvalidateVisual();
+            }
+        }
+
+        /// <summary>
+        /// Ensures a visual child is not null.
+        /// </summary>
+        /// <param name="c">The visual child.</param>
+        private static void ValidateLogicalChild(IVisual c)
+        {
+            if (c == null)
+            {
+                throw new ArgumentNullException("Cannot add null to VisualChildren.");
             }
         }
 
@@ -535,30 +488,34 @@ namespace Perspex
         /// <param name="value">The visual parent.</param>
         private void SetVisualParent(Visual value)
         {
-            if (_visualParent != value)
+            if (_visualParent == value)
             {
-                var oldArgs = GetAttachmentEventArgs();
-
-                _visualParent = value;
-
-                if (oldArgs != null)
-                {
-                    NotifyDetachedFromVisualTree(oldArgs);
-                }
-
-                var newArgs = GetAttachmentEventArgs();
-
-                if (newArgs != null)
-                {
-                    NotifyAttachedToVisualTree(newArgs);
-                }
-
-                RaisePropertyChanged(VisualParentProperty, oldArgs, value, BindingPriority.LocalValue);
+                return;
             }
+            
+            var old = _visualParent;
+            _visualParent = value;
+
+            if (_isAttachedToVisualTree)
+            {
+                var root = (this as IRenderRoot) ?? 
+                    old.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var e = new VisualTreeAttachmentEventArgs(root);
+                NotifyDetachedFromVisualTree(e);
+            }
+
+            if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
+            {
+                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var e = new VisualTreeAttachmentEventArgs(root);
+                NotifyAttachedToVisualTree(e);
+            }
+
+            RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
         }
 
         /// <summary>
-        /// Called when the <see cref="_visualChildren"/> collection changes.
+        /// Called when the <see cref="VisualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
@@ -569,7 +526,6 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual v in e.NewItems)
                     {
-                        v.InheritanceParent = this;
                         v.SetVisualParent(this);
                     }
 
@@ -578,7 +534,6 @@ namespace Perspex
                 case NotifyCollectionChangedAction.Remove:
                     foreach (Visual v in e.OldItems)
                     {
-                        v.InheritanceParent = null;
                         v.SetVisualParent(null);
                     }
 
@@ -597,19 +552,13 @@ namespace Perspex
 
             _isAttachedToVisualTree = true;
 
-            if (Name != null && e.NameScope != null)
-            {
-                e.NameScope.Register(Name, this);
-            }
-
             OnAttachedToVisualTree(e);
 
-            if (_visualChildren != null)
+            if (VisualChildren != null)
             {
-                foreach (Visual child in _visualChildren.OfType<Visual>())
+                foreach (Visual child in VisualChildren.OfType<Visual>())
                 {
-                    var ce = child.GetAttachmentEventArgs(e);
-                    child.NotifyAttachedToVisualTree(ce);
+                    child.NotifyAttachedToVisualTree(e);
                 }
             }
         }
@@ -623,20 +572,14 @@ namespace Perspex
         {
             _visualLogger.Verbose("Detached from visual tree");
 
-            if (Name != null && e.NameScope != null)
-            {
-                e.NameScope.Unregister(Name);
-            }
-
             _isAttachedToVisualTree = false;
             OnDetachedFromVisualTree(e);
 
-            if (_visualChildren != null)
+            if (VisualChildren != null)
             {
-                foreach (Visual child in _visualChildren.OfType<Visual>())
+                foreach (Visual child in VisualChildren.OfType<Visual>())
                 {
-                    var ce = child.GetAttachmentEventArgs(e);
-                    child.NotifyDetachedFromVisualTree(ce);
+                    child.NotifyDetachedFromVisualTree(e);
                 }
             }
         }

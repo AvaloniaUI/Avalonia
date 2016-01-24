@@ -5,6 +5,7 @@
         <ScrollContentPresenter Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
+                                Margin="{TemplateBinding Padding}"
                                 Offset="{TemplateBinding Path=Offset, Mode=TwoWay}"
                                 Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"
                                 CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"/>

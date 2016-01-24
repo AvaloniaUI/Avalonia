@@ -72,6 +72,36 @@ namespace Perspex.Markup.UnitTests
         }
 
         [Fact]
+        public void Track_By_Name_Should_Track_Removal_And_Readd()
+        {
+            StackPanel panel;
+            TextBlock target;
+            TextBlock relativeTo;
+
+            var root = new TestRoot
+            {
+                Child = panel = new StackPanel
+                {
+                    Children = new Controls.Controls
+                    {
+                        (target = new TextBlock { Name = "target" }),
+                        (relativeTo = new TextBlock { Name = "start" }),
+                    }
+                }
+            };
+
+            var locator = ControlLocator.Track(relativeTo, "target");
+            var result = new List<IControl>();
+            locator.Subscribe(x => result.Add(x));
+
+            var other = new TextBlock { Name = "target" };
+            panel.Children.Remove(target);
+            panel.Children.Add(other);
+
+            Assert.Equal(new[] { target, null, other }, result);
+        }
+
+        [Fact]
         public void Track_By_Name_Should_Find_Control_When_Tree_Changed()
         {
             TextBlock target1;

@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Perspex.Designer.AppHost;
+using TextBox = System.Windows.Controls.TextBox;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace Perspex.Designer.InProcDesigner
 {
@@ -30,7 +33,7 @@ namespace Perspex.Designer.InProcDesigner
             InitializeComponent();
             DataContext = _appModel;
             _appModel.PropertyChanged += ModelPropertyChanged;
-            WindowHostControl.Child = _host = new WindowHost();
+            WindowHostControl.Child = _host = new WindowHost(true);
             HandleVisibility();
             HandleWindow();
 
@@ -79,6 +82,17 @@ namespace Perspex.Designer.InProcDesigner
                 }
             };
             wnd.ShowDialog();
+        }
+
+        private void ColorPicker_OnClick(object sender, MouseButtonEventArgs e)
+        {
+            var dlg = new ColorDialog() {Color = ColorTranslator.FromHtml(Settings.Background)};
+            if (dlg.ShowDialog(_host) == DialogResult.OK)
+            {
+                var color = ColorTranslator.ToHtml(dlg.Color);
+                _appModel.Background = color;
+                Settings.Background = color;
+            }
         }
     }
 }

@@ -26,14 +26,14 @@ namespace Perspex.Markup.Data.Parsers
                     }
                     else
                     {
-                        throw new ExpressionParseException(r, "Expected integer.");
+                        throw new ExpressionParseException(r.Position, "Expected integer.");
                     }
 
                     r.SkipWhitespace();
 
                     if (r.End)
                     {
-                        throw new ExpressionParseException(r, "Expected ','.");
+                        throw new ExpressionParseException(r.Position, "Expected ','.");
                     }
                     else if (r.TakeIf(close))
                     {
@@ -43,7 +43,7 @@ namespace Perspex.Markup.Data.Parsers
                     {
                         if (r.Take() != ',')
                         {
-                            throw new ExpressionParseException(r, "Expected ','.");
+                            throw new ExpressionParseException(r.Position, "Expected ','.");
                         }
 
                         r.SkipWhitespace();
@@ -57,7 +57,7 @@ namespace Perspex.Markup.Data.Parsers
                 }
                 else
                 {
-                    throw new ExpressionParseException(r, "Expected ']'.");
+                    throw new ExpressionParseException(r.Position, "Expected ']'.");
                 }
             }
 

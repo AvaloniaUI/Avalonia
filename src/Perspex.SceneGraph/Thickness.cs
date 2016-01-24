@@ -231,7 +231,7 @@ namespace Perspex
         /// <returns>The string representation of the thickness.</returns>
         public override string ToString()
         {
-            return string.Format("{0},{1},{2},{3}", _left, _top, _right, _bottom);
+            return $"{_left},{_top},{_right},{_bottom}";
         }
     }
 }

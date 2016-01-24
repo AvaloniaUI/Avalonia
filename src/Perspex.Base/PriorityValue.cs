@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using Perspex.Utilities;
+using Serilog;
 
 namespace Perspex
 {
@@ -55,18 +56,29 @@ namespace Perspex
         private readonly Func<object, object> _validate;
 
         /// <summary>
+        /// An optional logger.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The value type.</param>
         /// <param name="validate">An optional validation function.</param>
-        public PriorityValue(string name, Type valueType, Func<object, object> validate = null)
+        /// <param name="logger">An optional logger</param>
+        public PriorityValue(
+            string name, 
+            Type valueType,
+            Func<object, object> validate = null,
+            ILogger logger = null)
         {
             _name = name;
             _valueType = valueType;
             _value = PerspexProperty.UnsetValue;
             ValuePriority = int.MaxValue;
             _validate = validate;
+            _logger = logger;
         }
 
         /// <summary>
@@ -225,9 +237,13 @@ namespace Perspex
                 _value = value;
                 _changed.OnNext(Tuple.Create(old, _value));
             }
-            else
+            else if (_logger != null)
             {
-                // TODO: Log error.
+                _logger.Error(
+                    "Binding produced invalid value for {$Type} {$Property}: {$Value}",
+                    _valueType,
+                    _name,
+                    value);
             }
         }
 

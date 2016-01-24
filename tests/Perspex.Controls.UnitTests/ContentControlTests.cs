@@ -27,8 +27,8 @@ namespace Perspex.Controls.UnitTests
                 var target = new ContentControl();
                 target.Content = "Foo";
                 target.Template = GetTemplate();
-
-                target.Measure(new Size(100, 100));
+                target.ApplyTemplate();
+                ((ContentPresenter)target.Presenter).UpdateChild();
 
                 var child = ((IVisual)target).VisualChildren.Single();
                 Assert.IsType<Border>(child);
@@ -71,6 +71,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             var contentPresenter = child.GetVisualParent<ContentPresenter>();
             Assert.Equal(target, contentPresenter.TemplatedParent);
@@ -85,12 +86,13 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Null(child.TemplatedParent);
         }
 
         [Fact]
-        public void Setting_Content_To_Control_Should_Set_Child_Controls_Parent()
+        public void Control_Content_Should_Be_Logical_Child_Before_ApplyTemplate()
         {
             var target = new ContentControl
             {
@@ -99,14 +101,14 @@ namespace Perspex.Controls.UnitTests
 
             var child = new Control();
             target.Content = child;
-            target.ApplyTemplate();
 
             Assert.Equal(child.Parent, target);
-            Assert.Equal(((ILogical)child).LogicalParent, target);
+            Assert.Equal(child.GetLogicalParent(), target);
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
         }
 
         [Fact]
-        public void Setting_Content_To_String_Should_Set_Child_Controls_Parent()
+        public void DataTemplate_Created_Control_Should_Be_Logical_Child_After_ApplyTemplate()
         {
             var target = new ContentControl
             {
@@ -115,69 +117,30 @@ namespace Perspex.Controls.UnitTests
 
             target.Content = "Foo";
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             var child = target.Presenter.Child;
 
-            Assert.Equal(child.Parent, target);
-            Assert.Equal(((ILogical)child).LogicalParent, target);
+            Assert.NotNull(child);
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, child.GetLogicalParent());
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
         }
 
         [Fact]
-        public void Clearing_Content_Should_Clear_Child_Controls_Parent()
+        public void Clearing_Content_Should_Clear_Logical_Child()
         {
             var target = new ContentControl();
             var child = new Control();
 
             target.Content = child;
+
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
+
             target.Content = null;
 
             Assert.Null(child.Parent);
-            Assert.Null(((ILogical)child).LogicalParent);
-        }
-
-        [Fact]
-        public void Setting_Content_To_Control_Should_Make_Control_Appear_In_LogicalChildren()
-        {
-            var target = new ContentControl();
-            var child = new Control();
-
-            target.Template = GetTemplate();
-            target.Content = child;
-            target.ApplyTemplate();
-
-            Assert.Equal(new[] { child }, ((ILogical)target).LogicalChildren.ToList());
-        }
-
-        [Fact]
-        public void Setting_Content_To_String_Should_Make_TextBlock_Appear_In_LogicalChildren()
-        {
-            var target = new ContentControl();
-            var child = new Control();
-
-            target.Template = GetTemplate();
-            target.Content = "Foo";
-            target.ApplyTemplate();
-
-            var logical = (ILogical)target;
-            Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
-        }
-
-        [Fact]
-        public void Clearing_Content_Should_Remove_From_LogicalChildren()
-        {
-            var target = new ContentControl();
-            var child = new Control();
-
-            target.Template = GetTemplate();
-            target.Content = child;
-            target.ApplyTemplate();
-
-            target.Content = null;
-
-            // Need to call ApplyTemplate on presenter for LogicalChildren to be updated.
-            target.Presenter.ApplyTemplate();
-
+            Assert.Null(child.GetLogicalParent());
             Assert.Empty(target.GetLogicalChildren());
         }
 
@@ -194,9 +157,7 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-
-            // Need to call ApplyTemplate on presenter for LogicalChildren to be updated.
-            target.Presenter.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.True(called);
         }
@@ -211,13 +172,12 @@ namespace Perspex.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = null;
-
-            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            target.Presenter.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.True(called);
         }
@@ -225,21 +185,20 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Changing_Content_Should_Fire_LogicalChildren_CollectionChanged()
         {
-            var contentControl = new ContentControl();
+            var target = new ContentControl();
             var child1 = new Control();
             var child2 = new Control();
             var called = false;
 
-            contentControl.Template = GetTemplate();
-            contentControl.Content = child1;
-            contentControl.ApplyTemplate();
+            target.Template = GetTemplate();
+            target.Content = child1;
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
-            ((ILogical)contentControl).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
-            contentControl.Content = child2;
-
-            // Need to call ApplyTemplate on presenter for CollectionChanged to be called.
-            contentControl.Presenter.ApplyTemplate();
+            target.Content = child2;
+            target.Presenter.ApplyTemplate();
 
             Assert.True(called);
         }
@@ -251,35 +210,38 @@ namespace Perspex.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             target.Content = "Foo";
-            target.Presenter.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
             Assert.Equal("Foo", ((TextBlock)target.Presenter.Child).Text);
             target.Content = "Bar";
-            target.Presenter.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
             Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
         }
 
         [Fact]
-        public void DataContext_Should_Be_Set_For_Templated_Data()
+        public void DataContext_Should_Be_Set_For_DataTemplate_Created_Content()
         {
             var target = new ContentControl();
 
             target.Template = GetTemplate();
             target.Content = "Foo";
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Equal("Foo", target.Presenter.Child.DataContext);
         }
 
         [Fact]
-        public void DataContext_Should_Not_Be_Set_For_Control_Data()
+        public void DataContext_Should_Not_Be_Set_For_Control_Content()
         {
             var target = new ContentControl();
 
             target.Template = GetTemplate();
             target.Content = new TextBlock();
             target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Null(target.Presenter.Child.DataContext);
         }

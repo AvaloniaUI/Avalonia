@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using Perspex.Collections;
-using Perspex.Styling;
+using Perspex.Controls;
+using Perspex.Data;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests
@@ -43,7 +44,7 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
+        public async void Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
         {
             var parent = new TestLogical1();
             var child = new TestLogical2();
@@ -52,6 +53,7 @@ namespace Perspex.Styling.UnitTests
 
             var selector = new Selector().OfType<TestLogical1>().Class("foo").Child().OfType<TestLogical2>();
             var activator = selector.Match(child).ObservableResult;
+            var result = new List<bool>();
 
             Assert.False(await activator.Take(1));
             parent.Classes.Add("foo");
@@ -76,9 +78,13 @@ namespace Perspex.Styling.UnitTests
                 Classes = new Classes();
             }
 
+            public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
+
             public Classes Classes { get; }
 
             public string Name { get; set; }
+
+            public bool IsAttachedToLogicalTree { get; }
 
             public IPerspexReadOnlyList<ILogical> LogicalChildren { get; set; }
 
@@ -88,15 +94,16 @@ namespace Perspex.Styling.UnitTests
 
             public ITemplatedControl TemplatedParent { get; }
 
-            public IPropertyBag InheritanceParent
+            IObservable<Unit> IStyleable.StyleDetach { get; }
+
+            IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
+
+            public object GetValue(PerspexProperty property)
             {
-                get
-                {
-                    throw new NotImplementedException();
-                }
+                throw new NotImplementedException();
             }
 
-            public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+            public T GetValue<T>(PerspexProperty<T> property)
             {
                 throw new NotImplementedException();
             }
@@ -106,22 +113,12 @@ namespace Perspex.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IObservable<object> GetObservable(PerspexProperty property)
+            public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
             {
                 throw new NotImplementedException();
             }
 
-            public bool IsRegistered(PerspexProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ClearValue(PerspexProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object GetValue(PerspexProperty property)
+            public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
             {
                 throw new NotImplementedException();
             }
@@ -132,31 +129,6 @@ namespace Perspex.Styling.UnitTests
             }
 
             public IDisposable Bind<T>(PerspexProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IObservable<T> GetObservable<T>(PerspexProperty<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public T GetValue<T>(PerspexProperty<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetValue<T>(PerspexProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable BindTwoWay(PerspexProperty property, PerspexObject source, PerspexProperty sourceProperty, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable BindTwoWay(PerspexProperty property, ISubject<object> source, BindingPriority priority = BindingPriority.LocalValue)
             {
                 throw new NotImplementedException();
             }

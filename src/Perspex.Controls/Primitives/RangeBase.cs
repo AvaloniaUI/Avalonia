@@ -15,34 +15,38 @@ namespace Perspex.Controls.Primitives
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> MinimumProperty =
-            PerspexProperty.Register<RangeBase, double>(
+            PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Minimum),
-                validate: ValidateMinimum);
+                o => o.Minimum,
+                (o, v) => o.Minimum = v);
 
         /// <summary>
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> MaximumProperty =
-            PerspexProperty.Register<RangeBase, double>(
+            PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Maximum),
-                defaultValue: 100.0,
-                validate: ValidateMaximum);
+                o => o.Maximum,
+                (o, v) => o.Maximum = v);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> ValueProperty =
-            PerspexProperty.Register<RangeBase, double>(
+            PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Value),
-                validate: ValidateValue);
+                o => o.Value,
+                (o, v) => o.Value = v);
+
+        private double _minimum;
+        private double _maximum = 100.0;
+        private double _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeBase"/> class.
         /// </summary>
         public RangeBase()
         {
-            AffectsValidation(MinimumProperty, MaximumProperty, ValueProperty);
-            AffectsValidation(MaximumProperty, ValueProperty);
         }
 
         /// <summary>
@@ -50,8 +54,18 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Minimum
         {
-            get { return GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
+            get
+            {
+                return _minimum;
+            }
+
+            set
+            {
+                value = ValidateMinimum(value);
+                SetAndRaise(MinimumProperty, ref _minimum, value);
+                Maximum = ValidateMaximum(Maximum);
+                Value = ValidateValue(Value);
+            }
         }
 
         /// <summary>
@@ -59,8 +73,17 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Maximum
         {
-            get { return GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
+            get
+            {
+                return _maximum;
+            }
+
+            set
+            {
+                value = ValidateMaximum(value);
+                SetAndRaise(MaximumProperty, ref _maximum, value);
+                Value = ValidateValue(Value);
+            }
         }
 
         /// <summary>
@@ -68,8 +91,16 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public double Value
         {
-            get { return GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
+            get
+            {
+                return _value;
+            }
+
+            set
+            {
+                value = ValidateValue(value);
+                SetAndRaise(ValueProperty, ref _value, value);
+            }
         }
 
         /// <summary>
@@ -88,10 +119,9 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Validates the <see cref="Minimum"/> property.
         /// </summary>
-        /// <param name="sender">The RangeBase control.</param>
         /// <param name="value">The value.</param>
         /// <returns>The coerced value.</returns>
-        private static double ValidateMinimum(RangeBase sender, double value)
+        private double ValidateMinimum(double value)
         {
             ValidateDouble(value, "Minimum");
             return value;
@@ -100,25 +130,23 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Validates/coerces the <see cref="Maximum"/> property.
         /// </summary>
-        /// <param name="sender">The RangeBase control.</param>
         /// <param name="value">The value.</param>
         /// <returns>The coerced value.</returns>
-        private static double ValidateMaximum(RangeBase sender, double value)
+        private double ValidateMaximum(double value)
         {
             ValidateDouble(value, "Maximum");
-            return Math.Max(value, sender.Minimum);
+            return Math.Max(value, Minimum);
         }
 
         /// <summary>
         /// Validates/coerces the <see cref="Value"/> property.
         /// </summary>
-        /// <param name="sender">The RangeBase control.</param>
         /// <param name="value">The value.</param>
         /// <returns>The coerced value.</returns>
-        private static double ValidateValue(RangeBase sender, double value)
+        private double ValidateValue(double value)
         {
             ValidateDouble(value, "Value");
-            return MathUtilities.Clamp(value, sender.Minimum, sender.Maximum);
+            return MathUtilities.Clamp(value, Minimum, Maximum);
         }
     }
 }

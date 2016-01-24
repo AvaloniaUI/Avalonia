@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Perspex
 {
@@ -11,6 +12,11 @@ namespace Perspex
     /// </summary>
     public struct Rect
     {
+        /// <summary>
+        /// An empty rectangle.
+        /// </summary>
+        public static readonly Rect Empty = default(Rect);
+
         /// <summary>
         /// The X position.
         /// </summary>
@@ -328,23 +334,72 @@ namespace Perspex
         /// <returns>The intersection.</returns>
         public Rect Intersect(Rect rect)
         {
-            double x = Math.Max(_x, rect._x);
-            double y = Math.Max(_y, rect._y);
-            double width = Math.Min(Right, rect.Right) - x;
-            double height = Math.Min(Bottom, rect.Bottom) - y;
+            var newLeft = (rect.X > X) ? rect.X : X;
+            var newTop = (rect.Y > Y) ? rect.Y : Y;
+            var newRight = (rect.Right < Right) ? rect.Right : Right;
+            var newBottom = (rect.Bottom < Bottom) ? rect.Bottom : Bottom;
 
-            if (width < 0 || height < 0)
+            if ((newRight > newLeft) && (newBottom > newTop))
             {
-                return new Rect(
-                    double.PositiveInfinity,
-                    double.PositiveInfinity,
-                    double.NegativeInfinity,
-                    double.NegativeInfinity);
+                return new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
             }
             else
             {
-                return new Rect(x, y, width, height);
+                return Empty;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a rectangle intersects with this rectangle.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>
+        /// True if the specified rectangle intersects with this one; otherwise false.
+        /// </returns>
+        public bool Intersects(Rect rect)
+        {
+            return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
+        }
+
+        /// <summary>
+        /// Returns the axis-aligned bounding box of a transformed rectangle.
+        /// </summary>
+        /// <param name="matrix">The transform.</param>
+        /// <returns>The bounding box</returns>
+        public Rect TransformToAABB(Matrix matrix)
+        {
+            var points = new[]
+            {
+                TopLeft.Transform(matrix),
+                TopRight.Transform(matrix),
+                BottomRight.Transform(matrix),
+                BottomLeft.Transform(matrix),
+            };
+
+            var left = double.MaxValue;
+            var right = double.MinValue;
+            var top = double.MaxValue;
+            var bottom = double.MinValue;
+
+            foreach (var p in points)
+            {
+                if (p.X < left) left = p.X;
+                if (p.X > right) right = p.X;
+                if (p.Y < top) top = p.Y;
+                if (p.Y > bottom) bottom = p.Y;
+            }
+
+            return new Rect(new Point(left, top), new Point(right, bottom));
+        }
+
+        /// <summary>
+        /// Translates the rectangle by an offset.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns>The translated rectangle.</returns>
+        public Rect Translate(Vector offset)
+        {
+            return new Rect(Position + offset, Size);
         }
 
         /// <summary>

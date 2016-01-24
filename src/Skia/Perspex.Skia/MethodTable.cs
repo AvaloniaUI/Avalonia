@@ -67,7 +67,7 @@ namespace Perspex.Skia
         public _DisposePath DisposePath;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void _DrawGeometry(IntPtr ctx, IntPtr path, void* fill, void* stroke);
+        public delegate void _DrawGeometry(IntPtr ctx, IntPtr path, void* fill, void* stroke, bool useEvenOdd);
 
         public _DrawGeometry DrawGeometry;
 

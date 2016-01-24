@@ -93,13 +93,9 @@ namespace Perspex.Controls
             {
                 var text = e.Text.ToUpper();
                 var focus = _registered
-                    .Where(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)
-                    .FirstOrDefault()?.Item2;
+                    .FirstOrDefault(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)?.Item2;
 
-                if (focus != null)
-                {
-                    focus.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
-                }
+                focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 
                 e.Handled = true;
             }

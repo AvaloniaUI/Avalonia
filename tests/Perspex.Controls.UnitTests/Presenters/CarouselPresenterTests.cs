@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Moq;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
@@ -10,6 +11,17 @@ namespace Perspex.Controls.UnitTests.Presenters
 {
     public class CarouselPresenterTests
     {
+        [Fact]
+        public void Should_Register_With_Host_When_TemplatedParent_Set()
+        {
+            var host = new Mock<IItemsPresenterHost>();
+            var target = new CarouselPresenter();
+
+            target.SetValue(Control.TemplatedParentProperty, host.Object);
+
+            host.Verify(x => x.RegisterItemsPresenter(target));
+        }
+
         [Fact]
         public void ApplyTemplate_Should_Create_Panel()
         {

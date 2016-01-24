@@ -9,6 +9,7 @@ using Perspex.Input.Raw;
 using Perspex.Platform;
 using Perspex.Skia.Android;
 using System;
+using Perspex.Controls;
 
 namespace Perspex.Android.Platform.SkiaPlatform
 {
@@ -94,6 +95,9 @@ namespace Perspex.Android.Platform.SkiaPlatform
             this.Visibility = ViewStates.Invisible;
         }
 
+        public void SetSystemDecorations(bool enabled)
+        {
+        }
         public void Invalidate(Rect rect)
         {
             if (Holder?.Surface?.IsValid == true) base.Invalidate();
@@ -122,6 +126,18 @@ namespace Perspex.Android.Platform.SkiaPlatform
         {
             this.Visibility = ViewStates.Visible;
         }
+
+        public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            //Not supported
+        }
+
+        public Point Position { get; set; }
 
         public IDisposable ShowDialog()
         {

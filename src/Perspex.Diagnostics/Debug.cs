@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Controls;
+using Perspex.Data;
 
 namespace Perspex.Diagnostics
 {

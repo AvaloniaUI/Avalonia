@@ -67,6 +67,12 @@ namespace Perspex.Layout
     public class Layoutable : Visual, ILayoutable
     {
         /// <summary>
+        /// Defines the <see cref="DesiredSize"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<Size> DesiredSizeProperty =
+            PerspexProperty.RegisterDirect<Layoutable, Size>(nameof(DesiredSize), o => o.DesiredSize);
+
+        /// <summary>
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly PerspexProperty<double> WidthProperty =
@@ -249,7 +255,7 @@ namespace Perspex.Layout
         public Size DesiredSize
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -386,11 +392,7 @@ namespace Perspex.Layout
             else
             {
                 var root = GetLayoutRoot();
-
-                if (root != null && root.Item1.LayoutManager != null)
-                {
-                    root.Item1.LayoutManager.InvalidateMeasure(this, root.Item2);
-                }
+                root?.Item1.LayoutManager?.InvalidateMeasure(this, root.Item2);
             }
         }
 
@@ -408,11 +410,7 @@ namespace Perspex.Layout
 
             IsArrangeValid = false;
             _previousArrange = null;
-
-            if (root != null && root.Item1.LayoutManager != null)
-            {
-                root.Item1.LayoutManager.InvalidateArrange(this, root.Item2);
-            }
+            root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
         }
 
         /// <summary>
@@ -454,11 +452,13 @@ namespace Perspex.Layout
         {
             if (IsVisible)
             {
+                var margin = Margin;
+
                 ApplyTemplate();
 
                 var constrained = LayoutHelper
                     .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(Margin);
+                    .Deflate(margin);
 
                 var measured = MeasureOverride(constrained);
                 var width = measured.Width;
@@ -480,7 +480,7 @@ namespace Perspex.Layout
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
 
-                return new Size(width, height).Inflate(Margin);
+                return NonNegative(new Size(width, height).Inflate(margin));
             }
             else
             {
@@ -498,7 +498,7 @@ namespace Perspex.Layout
             double width = 0;
             double height = 0;
 
-            foreach (ILayoutable child in this.GetVisualChildren().OfType<ILayoutable>())
+            foreach (ILayoutable child in this.GetVisualChildren())
             {
                 child.Measure(availableSize);
                 width = Math.Max(width, child.DesiredSize.Width);
@@ -547,7 +547,12 @@ namespace Perspex.Layout
 
                 if (UseLayoutRounding)
                 {
-                    size = new Size(Math.Ceiling(size.Width), Math.Ceiling(size.Height));
+                    size = new Size(
+                        Math.Ceiling(size.Width), 
+                        Math.Ceiling(size.Height));
+                    sizeMinusMargins = new Size(
+                        Math.Ceiling(sizeMinusMargins.Width), 
+                        Math.Ceiling(sizeMinusMargins.Height));
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -606,11 +611,7 @@ namespace Perspex.Layout
         private static void AffectsMeasureInvalidate(PerspexPropertyChangedEventArgs e)
         {
             ILayoutable control = e.Sender as ILayoutable;
-
-            if (control != null)
-            {
-                control.InvalidateMeasure();
-            }
+            control?.InvalidateMeasure();
         }
 
         /// <summary>
@@ -620,11 +621,7 @@ namespace Perspex.Layout
         private static void AffectsArrangeInvalidate(PerspexPropertyChangedEventArgs e)
         {
             ILayoutable control = e.Sender as ILayoutable;
-
-            if (control != null)
-            {
-                control.InvalidateArrange();
-            }
+            control?.InvalidateArrange();
         }
 
         /// <summary>
@@ -663,6 +660,16 @@ namespace Perspex.Layout
             return size.Width < 0 || size.Height < 0 ||
                 double.IsInfinity(size.Width) || double.IsInfinity(size.Height) ||
                 double.IsNaN(size.Width) || double.IsNaN(size.Height);
+        }
+
+        /// <summary>
+        /// Ensures neither component of a <see cref="Size"/> is negative.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <returns>The non-negative size.</returns>
+        private static Size NonNegative(Size size)
+        {
+            return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
         }
 
         /// <summary>

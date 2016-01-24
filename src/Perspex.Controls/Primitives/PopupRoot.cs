@@ -44,7 +44,6 @@ namespace Perspex.Controls.Primitives
         public PopupRoot(IPerspexDependencyResolver dependencyResolver)
             : base(PlatformManager.CreatePopup(), dependencyResolver)
         {
-            GetObservable(ParentProperty).Subscribe(x => InheritanceParent = (PerspexObject)x);
         }
 
         /// <summary>
@@ -66,15 +65,6 @@ namespace Perspex.Controls.Primitives
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <summary>
-        /// Sets the position of the popup in screen coordinates.
-        /// </summary>
-        /// <param name="p">The position.</param>
-        public void SetPosition(Point p)
-        {
-            PlatformImpl.SetPosition(p);
-        }
-
-        /// <summary>
         /// Hides the popup.
         /// </summary>
         public void Hide()
@@ -94,9 +84,9 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(INameScope nameScope)
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(nameScope);
+            base.OnTemplateApplied(e);
 
             if (Parent.TemplatedParent != null)
             {
@@ -106,13 +96,9 @@ namespace Perspex.Controls.Primitives
                     _presenterSubscription = null;
                 }
 
-                var presenter = Presenter;
-
-                if (presenter != null)
-                {
-                    presenter.GetObservable(ContentPresenter.ChildProperty)
-                        .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-                }
+                Presenter?.ApplyTemplate();
+                Presenter?.GetObservable(ContentPresenter.ChildProperty)
+                    .Subscribe(SetTemplatedParentAndApplyChildTemplates);
             }
         }
 

@@ -321,6 +321,7 @@ namespace Perspex.Controls.UnitTests
             return new FuncControlTemplate<TestTopLevel>(x =>
                 new ContentPresenter
                 {
+                    Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
                 });
         }

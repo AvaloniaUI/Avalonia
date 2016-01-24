@@ -7,22 +7,8 @@ using Perspex.Rendering;
 
 namespace Perspex.SceneGraph.UnitTests
 {
-    public class TestRoot : TestVisual, IRenderRoot, INameScope
+    public class TestRoot : TestVisual, IRenderRoot
     {
-        private NameScope _nameScope = new NameScope();
-
-        event EventHandler<NameScopeEventArgs> INameScope.Registered
-        {
-            add { _nameScope.Registered += value; }
-            remove { _nameScope.Registered -= value; }
-        }
-
-        public event EventHandler<NameScopeEventArgs> Unregistered
-        {
-            add { _nameScope.Unregistered += value; }
-            remove { _nameScope.Unregistered -= value; }
-        }
-
         public IRenderTarget RenderTarget
         {
             get { throw new NotImplementedException(); }
@@ -36,21 +22,6 @@ namespace Perspex.SceneGraph.UnitTests
         public Point TranslatePointToScreen(Point p)
         {
             throw new NotImplementedException();
-        }
-
-        public void Register(string name, object element)
-        {
-            _nameScope.Register(name, element);
-        }
-
-        public object Find(string name)
-        {
-            return _nameScope.Find(name);
-        }
-
-        public void Unregister(string name)
-        {
-            _nameScope.Unregister(name);
         }
     }
 }

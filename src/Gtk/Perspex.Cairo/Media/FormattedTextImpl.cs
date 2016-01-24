@@ -13,7 +13,7 @@ namespace Perspex.Cairo.Media
     public class FormattedTextImpl : IFormattedTextImpl
     {
         private Size _size;
-        private string _text;
+        private readonly string _text;
 
         public FormattedTextImpl(
             Pango.Context context,

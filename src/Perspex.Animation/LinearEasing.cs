@@ -27,9 +27,8 @@ namespace Perspex.Animation
             }
             else
             {
-                throw new NotSupportedException(string.Format(
-                    "Don't know how to create a LinearEasing for type '{0}'.",
-                    typeof(T).FullName));
+                throw new NotSupportedException(
+                    $"Don't know how to create a LinearEasing for type '{typeof(T).FullName}'.");
             }
         }
     }

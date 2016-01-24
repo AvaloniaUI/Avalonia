@@ -46,7 +46,7 @@ namespace Perspex.Skia
             using (var stroke = pen?.Brush != null ? CreateBrush(pen, size) : null)
             {
                 MethodTable.Instance.DrawGeometry(Handle, impl.Path.Handle, fill != null ? fill.Brush : null,
-                    stroke != null ? stroke.Brush : null);
+                    stroke != null ? stroke.Brush : null, impl.FillRule == FillRule.EvenOdd);
             }
             Transform = oldTransform;
         }
@@ -187,7 +187,7 @@ namespace Perspex.Skia
         public void PopOpacity() => _settings->Opacity = _opacityStack.Pop();
 
         private Matrix _currentTransform = Matrix.Identity;
-        private float[] _fmatrix = new float[6];
+        private readonly float[] _fmatrix = new float[6];
         public Matrix Transform
         {
             get { return _currentTransform; }

@@ -25,6 +25,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 },
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -43,6 +44,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 },
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -62,6 +64,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 },
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -81,6 +84,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 },
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -101,6 +105,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 },
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -116,6 +121,7 @@ namespace Perspex.Controls.UnitTests.Presenters
                 Content = content = new TestControl(),
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -136,10 +142,42 @@ namespace Perspex.Controls.UnitTests.Presenters
                 Offset = new Vector(25, 25),
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(-25, -25, 150, 150), content.Bounds);
+        }
+
+        [Fact]
+        public void Measure_Should_Pass_Bounded_X_If_CannotScrollHorizontally()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+                [ScrollContentPresenter.CanScrollHorizontallyProperty] = false,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(new Size(100, double.PositiveInfinity), child.AvailableSize);
+        }
+
+        [Fact]
+        public void Measure_Should_Pass_Unbounded_X_If_CanScrollHorizontally()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(Size.Infinity, child.AvailableSize);
         }
 
         [Fact]
@@ -152,6 +190,7 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             var set = new List<string>();
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
 
             target.GetObservable(ScrollViewer.ViewportProperty).Skip(1).Subscribe(_ => set.Add("Viewport"));
@@ -167,9 +206,10 @@ namespace Perspex.Controls.UnitTests.Presenters
         {
             var target = new ScrollContentPresenter
             {
-                Content = new Border { Width = 40, Height = 50 }
+                Content = new Border { Width = 140, Height = 150 }
             };
 
+            target.UpdateChild();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
             target.Offset = new Vector(10, 100);
@@ -178,10 +218,62 @@ namespace Perspex.Controls.UnitTests.Presenters
             Assert.False(target.IsArrangeValid);
         }
 
+        [Fact]
+        public void BringDescendentIntoView_Should_Update_Offset()
+        {
+            var target = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = new Border
+                {
+                    Width = 200,
+                    Height = 200,
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendentIntoView(target.Child, new Rect(200, 200, 0, 0));
+
+            Assert.Equal(new Vector(100, 100), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendentIntoView_Should_Handle_Child_Margin()
+        {
+            Border border;
+            var target = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Margin = new Thickness(50),
+                    Child = border = new Border
+                    {
+                        Width = 200,
+                        Height = 200,
+                    }
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendentIntoView(border, new Rect(200, 200, 0, 0));
+
+            Assert.Equal(new Vector(150, 150), target.Offset);
+        }
+
         private class TestControl : Control
         {
+            public Size AvailableSize { get; private set; }
+
             protected override Size MeasureOverride(Size availableSize)
             {
+                AvailableSize = availableSize;
                 return new Size(150, 150);
             }
         }

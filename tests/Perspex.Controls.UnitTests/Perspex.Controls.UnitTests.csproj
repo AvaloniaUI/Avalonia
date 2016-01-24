@@ -81,13 +81,22 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="ClassesTests.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="GridSplitterTests.cs" />
+    <Compile Include="GridTests.cs" />
+    <Compile Include="HeaderedItemsControlTests .cs" />
+    <Compile Include="ControlTests_NameScope.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
-    <Compile Include="ContentPresenterTests.cs" />
+    <Compile Include="Presenters\ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
     <Compile Include="ListBoxTests_Single.cs" />
+    <Compile Include="NameScopeTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests_Multiple.cs" />
+    <Compile Include="Presenters\ScrollContentPresenterTests_IScrollable.cs" />
+    <Compile Include="WindowingPlatformMock.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="Mixins\SelectableMixinTests.cs" />
     <Compile Include="StackPanelTests.cs" />
@@ -114,7 +123,6 @@
     <Compile Include="PanelTests.cs" />
     <Compile Include="ControlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TemplatedControlTests.cs" />
     <Compile Include="Templates\TemplateExtensionsTests.cs" />
     <Compile Include="TestTemplatedControl.cs" />
     <Compile Include="TestRoot.cs" />

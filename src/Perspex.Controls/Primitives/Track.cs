@@ -11,13 +11,13 @@ namespace Perspex.Controls.Primitives
     public class Track : Control
     {
         public static readonly PerspexProperty<double> MinimumProperty =
-            RangeBase.MinimumProperty.AddOwner<Track>();
+            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o,v) => o.Minimum = v);
 
         public static readonly PerspexProperty<double> MaximumProperty =
-            RangeBase.MaximumProperty.AddOwner<Track>();
+            RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
 
         public static readonly PerspexProperty<double> ValueProperty =
-            RangeBase.ValueProperty.AddOwner<Track>();
+            RangeBase.ValueProperty.AddOwner<Track>(o => o.Value, (o, v) => o.Value = v);
 
         public static readonly PerspexProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
@@ -27,6 +27,10 @@ namespace Perspex.Controls.Primitives
 
         public static readonly PerspexProperty<Thumb> ThumbProperty =
             PerspexProperty.Register<Track, Thumb>("Thumb");
+
+        private double _minimum;
+        private double _maximum = 100.0;
+        private double _value;
 
         static Track()
         {
@@ -38,39 +42,39 @@ namespace Perspex.Controls.Primitives
 
         public Track()
         {
-            GetObservableWithHistory(ThumbProperty).Subscribe(val =>
+            this.GetObservableWithHistory(ThumbProperty).Subscribe(val =>
             {
                 if (val.Item1 != null)
                 {
                     val.Item1.DragDelta -= ThumbDragged;
                 }
 
-                ClearVisualChildren();
+                VisualChildren.Clear();
 
                 if (val.Item2 != null)
                 {
                     val.Item2.DragDelta += ThumbDragged;
-                    AddVisualChild(val.Item2);
+                    VisualChildren.Add(val.Item2);
                 }
             });
         }
 
         public double Minimum
         {
-            get { return GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
+            get { return _minimum; }
+            set { SetAndRaise(MinimumProperty, ref _minimum, value); }
         }
 
         public double Maximum
         {
-            get { return GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
+            get { return _maximum; }
+            set { SetAndRaise(MaximumProperty, ref _maximum, value); }
         }
 
         public double Value
         {
-            get { return GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
+            get { return _value; }
+            set { SetAndRaise(ValueProperty, ref _value, value); }
         }
 
         public double ViewportSize

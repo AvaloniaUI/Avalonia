@@ -21,20 +21,28 @@ namespace Perspex.Gtk
         private static readonly Dictionary<StandardCursorType, object> CursorTypeMapping = new Dictionary
             <StandardCursorType, object>
         {
-            { StandardCursorType.AppStarting, CursorType.Watch },
-            { StandardCursorType.Arrow, CursorType.LeftPtr },
-            { StandardCursorType.Cross, CursorType.Cross },
-            { StandardCursorType.Hand, CursorType.Hand1 },
-            { StandardCursorType.Ibeam, CursorType.Xterm },
-            { StandardCursorType.No, Gtk.Stock.Cancel},
-            { StandardCursorType.SizeAll, CursorType.Sizing },
+            {StandardCursorType.AppStarting, CursorType.Watch},
+            {StandardCursorType.Arrow, CursorType.LeftPtr},
+            {StandardCursorType.Cross, CursorType.Cross},
+            {StandardCursorType.Hand, CursorType.Hand1},
+            {StandardCursorType.Ibeam, CursorType.Xterm},
+            {StandardCursorType.No, Gtk.Stock.Cancel},
+            {StandardCursorType.SizeAll, CursorType.Sizing},
             //{ StandardCursorType.SizeNorthEastSouthWest, 32643 },
-            { StandardCursorType.SizeNorthSouth, CursorType.SbVDoubleArrow},
+            {StandardCursorType.SizeNorthSouth, CursorType.SbVDoubleArrow},
             //{ StandardCursorType.SizeNorthWestSouthEast, 32642 },
-            { StandardCursorType.SizeWestEast, CursorType.SbHDoubleArrow },
-            { StandardCursorType.UpArrow, CursorType.BasedArrowUp },
-            { StandardCursorType.Wait, CursorType.Watch },
-            { StandardCursorType.Help, Gtk.Stock.Help }
+            {StandardCursorType.SizeWestEast, CursorType.SbHDoubleArrow},
+            {StandardCursorType.UpArrow, CursorType.BasedArrowUp},
+            {StandardCursorType.Wait, CursorType.Watch},
+            {StandardCursorType.Help, Gtk.Stock.Help},
+            {StandardCursorType.TopSide, CursorType.TopSide},
+            {StandardCursorType.BottomSize, CursorType.BottomSide},
+            {StandardCursorType.LeftSide, CursorType.LeftSide},
+            {StandardCursorType.RightSide, CursorType.RightSide},
+            {StandardCursorType.TopLeftCorner, CursorType.TopLeftCorner},
+            {StandardCursorType.TopRightCorner, CursorType.TopRightCorner},
+            {StandardCursorType.BottomLeftCorner, CursorType.BottomLeftCorner},
+            {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner}
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =

@@ -1,13 +1,19 @@
 # Perspex
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/grokys/Perspex?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Perspex/Perspex?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/Perspex/Perspex/branch/master)
 
-A multi-platform .NET UI framework.
+A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
 ![](docs/screen.png)
 
+Desktop platforms:
+
 <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)<a/>
+
+Mobile platforms:
+
+<a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'>![](https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg)<a/>
 
 ## NuGet
 
@@ -39,7 +45,7 @@ framework.
 As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can
 take a look at the [getting started page](docs/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
-about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/grokys/Perspex).
+about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/Perspex/Perspex).
 
 There's also a high-level [architecture document](docs/architecture.md) that is currently a little bit
 out of date, and I've also started writing blog posts on Perspex at http://grokys.github.io/.

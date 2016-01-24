@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Metadata;
 using Perspex.Rendering;
@@ -24,7 +25,10 @@ namespace Perspex.Controls.Primitives
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
         public static readonly PerspexProperty<bool> IsOpenProperty =
-            PerspexProperty.Register<Popup, bool>(nameof(IsOpen));
+            PerspexProperty.RegisterDirect<Popup, bool>(
+                nameof(IsOpen),
+                o => o.IsOpen,
+                (o, v) => o.IsOpen = v);
 
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
@@ -44,14 +48,8 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<bool> StaysOpenProperty =
             PerspexProperty.Register<Popup, bool>(nameof(StaysOpen), true);
 
-        /// <summary>
-        /// The root of the popup.
-        /// </summary>
+        private bool _isOpen;
         private PopupRoot _popupRoot;
-
-        /// <summary>
-        /// The top level control of the Popup's visual tree.
-        /// </summary>
         private TopLevel _topLevel;
 
         /// <summary>
@@ -59,6 +57,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static Popup()
         {
+            IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
         }
@@ -106,8 +105,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public bool IsOpen
         {
-            get { return GetValue(IsOpenProperty); }
-            set { SetValue(IsOpenProperty, value); }
+            get { return _isOpen; }
+            set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
         }
 
         /// <summary>
@@ -169,13 +168,12 @@ namespace Perspex.Controls.Primitives
                 ((ISetLogicalParent)_popupRoot).SetParent(this);
             }
 
-            _popupRoot.SetPosition(GetPosition());
-            _popupRoot.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Bubble, true);
+            _popupRoot.Position = GetPosition();
 
             if (_topLevel != null)
             {
-                _topLevel.Deactivated += MaybeClose;
-                _topLevel.AddHandler(PointerPressedEvent, MaybeClose, RoutingStrategies.Tunnel);
+                _topLevel.Deactivated += TopLevelDeactivated;
+                _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
             }
 
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
@@ -192,9 +190,8 @@ namespace Perspex.Controls.Primitives
         {
             if (_popupRoot != null)
             {
-                _popupRoot.PointerPressed -= MaybeClose;
-                _topLevel.RemoveHandler(PointerPressedEvent, MaybeClose);
-                _topLevel.Deactivated -= MaybeClose;
+                _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
+                _topLevel.Deactivated -= TopLevelDeactivated;
                 _popupRoot.Hide();
             }
 
@@ -250,10 +247,7 @@ namespace Perspex.Controls.Primitives
         {
             LogicalChildren.Clear();
 
-            if (e.OldValue != null)
-            {
-                ((ISetLogicalParent)e.OldValue).SetParent(null);
-            }
+            ((ISetLogicalParent)e.OldValue)?.SetParent(null);
 
             if (e.NewValue != null)
             {
@@ -269,10 +263,11 @@ namespace Perspex.Controls.Primitives
         private Point GetPosition()
         {
             var target = PlacementTarget ?? this.GetVisualParent<Control>();
-            Point point;
 
             if (target != null)
             {
+                Point point;
+
                 switch (PlacementMode)
                 {
                     case PlacementMode.Bottom:
@@ -293,13 +288,21 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Conditionally closes the popup in response to an event, based on the value of the
-        /// <see cref="StaysOpen"/> property.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void MaybeClose(object sender, EventArgs e)
+        private void PointerPressedOutside(object sender, PointerPressEventArgs e)
+        {
+            if (!StaysOpen)
+            {
+                var root = ((IVisual)e.Source).GetVisualRoot();
+
+                if (root != this.PopupRoot)
+                {
+                    Close();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void TopLevelDeactivated(object sender, EventArgs e)
         {
             if (!StaysOpen)
             {

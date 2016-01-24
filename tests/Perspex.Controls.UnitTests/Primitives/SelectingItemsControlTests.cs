@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.ObjectModel;
+using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
-using Perspex.Input;
 using Perspex.Interactivity;
 using Xunit;
 
@@ -69,6 +69,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -92,6 +93,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.SelectedItem = items[1];
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -114,6 +116,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.SelectedIndex = 1;
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -241,6 +244,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             items.Add(new Item { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
@@ -346,6 +350,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -376,6 +381,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -418,6 +424,67 @@ namespace Perspex.Controls.UnitTests.Primitives
             });
 
             Assert.Equal(target.SelectedItem, items[1]);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Should_Raise_SelectionChanged_Event()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Same(items[1], e.AddedItems.Cast<object>().Single());
+                Assert.Empty(e.RemovedItems);
+                called = true;
+            };
+
+            target.SelectedIndex = 1;
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Clearing_SelectedIndex_Should_Raise_SelectionChanged_Event()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+                SelectedIndex = 1,
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Same(items[1], e.RemovedItems.Cast<object>().Single());
+                Assert.Empty(e.AddedItems);
+                called = true;
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectedIndex = -1;
+
+            Assert.True(called);
         }
 
         private FuncControlTemplate Template()

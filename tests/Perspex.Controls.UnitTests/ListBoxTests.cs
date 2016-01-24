@@ -7,6 +7,7 @@ using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.LogicalTree;
 using Perspex.Styling;
+using Perspex.VisualTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -14,7 +15,44 @@ namespace Perspex.Controls.UnitTests
     public class ListBoxTests
     {
         [Fact]
-        public void LogicalChildren_Should_Be_Set()
+        public void ListBox_Should_Find_ItemsPresenter_In_ScrollViewer()
+        {
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+            };
+
+            ApplyTemplate(target);
+
+            Assert.IsType<ItemsPresenter>(target.Presenter);
+        }
+
+        [Fact]
+        public void ListBoxItem_Containers_Should_Be_Generated()
+        {
+            var items = new[] { "Foo", "Bar", "Baz " };
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Items = items,
+            };
+
+            ApplyTemplate(target);
+
+            var text = target.Presenter.Panel.Children
+                .OfType<ListBoxItem>()
+                .Do(x => x.Template = ListBoxItemTemplate())
+                .Do(x => { x.ApplyTemplate(); ((ContentPresenter)x.Presenter).UpdateChild(); })
+                .Select(x => x.Presenter.Child)
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(items, text);
+        }
+
+        [Fact]
+        public void LogicalChildren_Should_Be_Set_For_DataTemplate_Generated_Items()
         {
             var target = new ListBox
             {
@@ -22,7 +60,7 @@ namespace Perspex.Controls.UnitTests
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
+            ApplyTemplate(target);
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
@@ -54,7 +92,7 @@ namespace Perspex.Controls.UnitTests
                 Items = items,
             };
 
-            target.ApplyTemplate();
+            ApplyTemplate(target);
 
             var dataContexts = target.Presenter.Panel.Children
                 .Cast<Control>()
@@ -75,7 +113,7 @@ namespace Perspex.Controls.UnitTests
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
+            ApplyTemplate(target);
 
             target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressEventArgs
             {
@@ -103,12 +141,38 @@ namespace Perspex.Controls.UnitTests
             };
         }
 
+        private FuncControlTemplate ListBoxItemTemplate()
+        {
+            return new FuncControlTemplate<ListBoxItem>(parent => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
+            });
+        }
+
         private Control CreateScrollViewerTemplate(ITemplatedControl parent)
         {
             return new ScrollContentPresenter
             {
+                Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
             };
+        }
+
+        private void ApplyTemplate(ListBox target)
+        {
+            // Apply the template to the ListBox itself.
+            target.ApplyTemplate();
+
+            // Then to its inner ScrollViewer.
+            var scrollViewer = (ScrollViewer)target.GetVisualChildren().Single();
+            scrollViewer.ApplyTemplate();
+
+            // Then make the ScrollViewer create its child.
+            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
+
+            // Now the ItemsPresenter should be reigstered, so apply its template.
+            target.Presenter.ApplyTemplate();
         }
 
         private class Item

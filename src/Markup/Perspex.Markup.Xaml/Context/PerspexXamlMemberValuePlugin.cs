@@ -9,6 +9,8 @@ using System.Runtime.CompilerServices;
 using Glass;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Typing;
+using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Styling;
 
@@ -39,9 +41,9 @@ namespace Perspex.Markup.Xaml.Context
 
         public override void SetValue(object instance, object value)
         {
-            if (value is IXamlBinding)
+            if (value is IBinding)
             {
-                HandleBinding(instance, (IXamlBinding)value);
+                HandleBinding(instance, (IBinding)value);
             }
             else if (IsPerspexProperty)
             {
@@ -68,35 +70,38 @@ namespace Perspex.Markup.Xaml.Context
             po.SetValue(pp, value);
         }
 
-        private void HandleBinding(object instance, IXamlBinding binding)
+        private void HandleBinding(object instance, IBinding binding)
         {
-            if (typeof(IXamlBinding).GetTypeInfo().IsAssignableFrom(_xamlMember.XamlType.UnderlyingType.GetTypeInfo()))
-            {
-                var property = instance.GetType().GetRuntimeProperty(_xamlMember.Name);
-
-                if (property == null || !property.CanWrite)
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot assign to '{_xamlMember.Name}' on '{instance.GetType()}");
-                }
-
-                property.SetValue(instance, binding);
-            }
-            else
-            {
-                ApplyBinding(instance, binding);
-            }                
-        }
-
-        private void ApplyBinding(object instance, IXamlBinding binding)
-        {
-            var perspexObject = instance as PerspexObject;
-            var attached = _xamlMember as PerspexAttachableXamlMember;
-
-            if (perspexObject == null)
+            if (!(AssignBinding(instance, binding) || ApplyBinding(instance, binding)))
             {
                 throw new InvalidOperationException(
-                    $"Cannot bind to an object of type '{instance.GetType()}");
+                    $"Cannot assign to '{_xamlMember.Name}' on '{instance.GetType()}");
+            }
+        }
+
+        private bool AssignBinding(object instance, IBinding binding)
+        {
+            var property = instance.GetType()
+                .GetRuntimeProperties()
+                .FirstOrDefault(x => x.Name == _xamlMember.Name);
+
+            if (property?.GetCustomAttribute<AssignBindingAttribute>() != null)
+            {
+                property.SetValue(instance, binding);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool ApplyBinding(object instance, IBinding binding)
+        {
+            var targetControl = instance as IControl;
+            var attached = _xamlMember as PerspexAttachableXamlMember;
+
+            if (targetControl == null)
+            {
+                return false;
             }
 
             PerspexProperty property;
@@ -105,7 +110,7 @@ namespace Perspex.Markup.Xaml.Context
             if (attached == null)
             {
                 propertyName = _xamlMember.Name;
-                property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
+                property = PerspexPropertyRegistry.Instance.GetRegistered((PerspexObject)targetControl)
                     .FirstOrDefault(x => x.Name == propertyName);
             }
             else
@@ -115,18 +120,18 @@ namespace Perspex.Markup.Xaml.Context
 
                 propertyName = attached.DeclaringType.UnderlyingType.Name + '.' + _xamlMember.Name;
 
-                property = PerspexPropertyRegistry.Instance.GetRegistered(perspexObject)
+                property = PerspexPropertyRegistry.Instance.GetRegistered((PerspexObject)targetControl)
                     .Where(x => x.IsAttached && x.OwnerType == attached.DeclaringType.UnderlyingType)
                     .FirstOrDefault(x => x.Name == _xamlMember.Name);
             }
 
             if (property == null)
             {
-                throw new InvalidOperationException(
-                    $"Cannot find '{propertyName}' on '{instance.GetType()}");
+                return false;
             }
 
-            binding.Bind(perspexObject, property);
+            targetControl.Bind(property, binding);
+            return true;
         }
 
         private bool ValueRequiresSpecialHandling(object value)

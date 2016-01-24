@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Perspex.Interactivity
 {
@@ -100,7 +101,15 @@ namespace Perspex.Interactivity
                     ((e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0) &&
                     (!e.Handled || sub.AlsoIfHandled))
                 {
-                    sub.Handler.DynamicInvoke(sender, e);
+                    try
+                    {
+                        sub.Handler.DynamicInvoke(sender, e);
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        // Unwrap the inner exception.
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    }
                 }
             }
         }

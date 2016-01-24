@@ -71,12 +71,7 @@ namespace Perspex.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             Control content = Child;
-
-            if (content != null)
-            {
-                content.Arrange(new Rect(finalSize).Deflate(Padding));
-            }
-
+            content?.Arrange(new Rect(finalSize).Deflate(Padding));
             return finalSize;
         }
 
@@ -93,14 +88,14 @@ namespace Perspex.Controls
             {
                 ((ISetLogicalParent)oldChild).SetParent(null);
                 LogicalChildren.Clear();
-                RemoveVisualChild(oldChild);
+                VisualChildren.Remove(oldChild);
             }
 
             if (newChild != null)
             {
-                AddVisualChild(newChild);
-                LogicalChildren.Add(newChild);
                 ((ISetLogicalParent)newChild).SetParent(this);
+                VisualChildren.Add(newChild);
+                LogicalChildren.Add(newChild);
             }
         }
     }

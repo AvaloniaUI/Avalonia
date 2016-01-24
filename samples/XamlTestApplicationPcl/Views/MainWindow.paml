@@ -1,15 +1,16 @@
 ﻿<Window x:Class="XamlTestApplication.MainWindow"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:XamlTestApplication;assembly=XamlTestApplicationPcl"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
         Title="Perspex Test Application" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
       <Menu Grid.ColumnSpan="2">
-        <MenuItem Header="_File">
+        <MenuItem Header="_File" Background="Red">
           <MenuItem Header="_Hello">
             <MenuItem Header="_Goodbye"/>
             <Separator/>
-            <MenuItem Header="_World"/>
+            <MenuItem Header="_World" Background="Red"/>
           </MenuItem>
           <Separator Background="Red"/>
           <MenuItem Header="_Test"/>
@@ -146,6 +147,11 @@
                       </StackPanel>
                   </DropDown>
                   <TreeView Items="{Binding Nodes}">
+                      <TreeView.Styles>
+                          <Style Selector="TreeViewItem">
+                              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                          </Style>
+                      </TreeView.Styles>
                       <TreeView.DataTemplates>
                           <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                               <StackPanel>
@@ -155,6 +161,10 @@
                           </TreeDataTemplate>
                       </TreeView.DataTemplates>
                   </TreeView>
+                  <StackPanel Orientation="Vertical" Gap="4">
+                      <Button Command="{Binding CollapseNodesCommand}">Collapse Nodes</Button>
+                      <Button Command="{Binding ExpandNodesCommand}">Expand Nodes</Button>
+                  </StackPanel>
               </StackPanel>
           </TabItem>
           <TabItem Header="Layout">
@@ -220,6 +230,19 @@
                           <Rectangle Fill="Yellow" Height="25" DockPanel.Dock="Bottom" />
                           <Rectangle Fill="Pink" />
                       </DockPanel>
+                  
+                      <TextBlock Text="GridSplitter" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                      <Grid Height="500" Width="500" ColumnDefinitions="*,Auto,*,Auto,*" RowDefinitions="*,Auto,*">
+                         <Border Grid.Column="0" Grid.Row="0" Background="Red" />
+                         <GridSplitter Grid.Column="0" Grid.Row="1" Orientation="Horizontal" />
+                         <Border Grid.Column="0" Grid.Row="2" Background="Yellow" />
+                         <GridSplitter Grid.Column="1" Grid.RowSpan="3" Orientation="Vertical" />
+                         <Border Grid.Column="2" Grid.RowSpan="3" Background="Green" />
+                         <GridSplitter Grid.Column="3" Grid.RowSpan="3" Orientation="Vertical"/>
+                         <Border Grid.Column="4" Grid.Row="0" Background="Blue" />
+                         <GridSplitter Grid.Column="4" Grid.Row="1" Orientation="Horizontal" />
+                         <Border Grid.Column="4" Grid.Row="3" Background="Pink" />
+                      </Grid>
                   </StackPanel>
               </ScrollViewer>
           </TabItem>            
@@ -271,6 +294,11 @@
                       </Border.Background>
                   </Border>
               </Grid>
+          </TabItem>
+          <TabItem Header="IScrollable">
+            <ScrollViewer>
+              <local:TestScrollable/>
+            </ScrollViewer>
           </TabItem>
       </TabControl>
     </Grid>

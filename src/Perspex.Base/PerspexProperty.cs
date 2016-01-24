@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using Perspex.Data;
 using Perspex.Utilities;
 
 namespace Perspex
@@ -56,7 +57,7 @@ namespace Perspex
         /// <summary>
         /// Gets the ID of the property.
         /// </summary>
-        private int _id;
+        private readonly int _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
@@ -323,10 +324,10 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="BindingDescriptor"/> describing the binding.</returns>
-        public static BindingDescriptor operator !(PerspexProperty property)
+        /// <returns>A <see cref="IndexerDescriptor"/> describing the binding.</returns>
+        public static IndexerDescriptor operator !(PerspexProperty property)
         {
-            return new BindingDescriptor
+            return new IndexerDescriptor
             {
                 Priority = BindingPriority.LocalValue,
                 Property = property,
@@ -338,10 +339,10 @@ namespace Perspex
         /// indexer.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>A <see cref="BindingDescriptor"/> describing the binding.</returns>
-        public static BindingDescriptor operator ~(PerspexProperty property)
+        /// <returns>A <see cref="IndexerDescriptor"/> describing the binding.</returns>
+        public static IndexerDescriptor operator ~(PerspexProperty property)
         {
-            return new BindingDescriptor
+            return new IndexerDescriptor
             {
                 Priority = BindingPriority.TemplatedParent,
                 Property = property,
@@ -538,7 +539,7 @@ namespace Perspex
         public override bool Equals(object obj)
         {
             var p = obj as PerspexProperty;
-            return p != null ? Equals(p) : false;
+            return p != null && Equals(p);
         }
 
         /// <inheritdoc/>
@@ -557,13 +558,13 @@ namespace Perspex
         /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s []
         /// operator to initiate a binding.
         /// </summary>
-        /// <returns>A <see cref="BindingDescriptor"/>.</returns>
+        /// <returns>A <see cref="IndexerDescriptor"/>.</returns>
         /// <remarks>
         /// The ! and ~ operators are short forms of this.
         /// </remarks>
-        public BindingDescriptor Bind()
+        public IndexerDescriptor Bind()
         {
-            return new BindingDescriptor
+            return new IndexerDescriptor
             {
                 Property = this,
             };

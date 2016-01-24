@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using CoreAnimation;
 using CoreGraphics;
+using CoreMedia;
 using Foundation;
 using Perspex.Media;
 using Perspex.Platform;
@@ -10,54 +12,40 @@ using UIKit;
 namespace Perspex.Skia.iOS.TestApp
 {
     [Register("MainView")]
-    public class MainView : UIView
+    public class MainView : SkiaView
     {
-        CAEAGLLayer _layer = new CAEAGLLayer();
         private IRenderTarget _target;
-
+        FormattedText _text;
         public MainView()
         {
-            Initialize();
-        }
-
-        public MainView(RectangleF bounds) : base(bounds)
-        {
-            Initialize();
-        }
-        
-
-        void Initialize()
-        {
             AutoresizingMask = UIViewAutoresizing.All;
-            Layer.AddSublayer(_layer);
-            
             SkiaPlatform.Initialize();
             _target = PerspexLocator.Current.GetService<IPlatformRenderInterface>()
-                .CreateRenderer(new PlatformHandle(_layer.DangerousRetain().Handle, "Layer"));
+                .CreateRenderer(PerspexPlatformHandle);
+            UpdateText(0);
         }
-
         double _radians = 0;
 
-        public override void TouchesMoved(NSSet touches, UIEvent evt)
+
+        void UpdateText(int fps)
         {
-            foreach (var touch in touches)
-            {
-                var loc = ((UITouch) touch).LocationInView(this);
-                _radians = (loc.X + loc.Y)/100;
-            }
-            SetNeedsDisplay();
-            base.TouchesMoved(touches, evt);
+            _text?.Dispose();
+            _text = new FormattedText("FPS: " + fps, "Arial", 15, FontStyle.Normal, TextAlignment.Left,
+                FontWeight.Normal);
         }
 
-        public override void Draw(CGRect rect)
+        double _lastFps;
+        int _frames;
+        Stopwatch St = Stopwatch.StartNew();
+        protected override void Draw()
         {
-            _layer.Bounds = new CGRect(0, 0, Bounds.Width, Bounds.Height);
+            _radians += 0.02;
             var scale = UIScreen.MainScreen.Scale;
             int width = (int) (Bounds.Width*scale), height = (int) (Bounds.Height*scale);
             using (var ctx = _target.CreateDrawingContext())
             {
                 ctx.FillRectangle(Brushes.Green, new Rect(0, 0, width, height));
-
+                ctx.DrawText(Brushes.Red, new Point(50, 50), _text);
                 var rc = new Rect(0, 0, width/3, height/3);
                 using (ctx.PushPostTransform(
                     Perspex.Matrix.CreateTranslation(-width/6, -width/6)*
@@ -74,7 +62,16 @@ namespace Perspex.Skia.iOS.TestApp
                     }, rc, 5);
                 }
             }
-
+            _frames++;
+            var now = St.Elapsed.TotalSeconds;
+            var elapsed = now - _lastFps;
+            if (elapsed > 1)
+            {
+                UpdateText((int) (_frames/elapsed));
+                _frames = 0;
+                _lastFps = now;
+            }
+            DrawOnNextFrame();
         }
     }
 }

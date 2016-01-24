@@ -11,6 +11,11 @@ namespace Perspex
     public interface ILogical
     {
         /// <summary>
+        /// Gets a value indicating whether the element is attached to a rooted logical tree.
+        /// </summary>
+        bool IsAttachedToLogicalTree { get; }
+
+        /// <summary>
         /// Gets the logical parent.
         /// </summary>
         ILogical LogicalParent { get; }

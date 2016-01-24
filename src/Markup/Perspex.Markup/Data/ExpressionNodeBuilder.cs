@@ -20,7 +20,7 @@ namespace Perspex.Markup.Data
 
             if (!reader.End)
             {
-                throw new ExpressionParseException(reader, "Expected end of expression.");
+                throw new ExpressionParseException(reader.Position, "Expected end of expression.");
             }
 
             return node;

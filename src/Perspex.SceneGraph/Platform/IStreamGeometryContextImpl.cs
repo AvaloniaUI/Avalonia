@@ -36,14 +36,14 @@ namespace Perspex.Platform
         /// <param name="point1">The first control point used to specify the shape of the curve.</param>
         /// <param name="point2">The second control point used to specify the shape of the curve.</param>
         /// <param name="point3">The destination point for the end of the curve.</param>
-        void BezierTo(Point point1, Point point2, Point point3);
+        void CubicBezierTo(Point point1, Point point2, Point point3);
 
         /// <summary>
         /// Draws a quadratic Bezier curve to the specified point
         /// </summary>
         /// <param name="control">Control point</param>
         /// <param name="endPoint">DestinationPoint</param>
-        void QuadTo(Point control, Point endPoint);
+        void QuadraticBezierTo(Point control, Point endPoint);
 
         /// <summary>
         /// Draws a line to the specified point.
@@ -56,5 +56,7 @@ namespace Perspex.Platform
         /// </summary>
         /// <param name="isClosed">Whether the figure is closed.</param>
         void EndFigure(bool isClosed);
+
+        void SetFillRule(FillRule fillRule);
     }
 }

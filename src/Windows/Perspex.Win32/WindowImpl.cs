@@ -37,6 +37,8 @@ namespace Perspex.Win32
 
         private bool _isActive;
 
+        private bool _decorated = true;
+
         public WindowImpl()
         {
             CreateWindow();
@@ -145,6 +147,47 @@ namespace Perspex.Win32
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
+        public void SetSystemDecorations(bool value)
+        {
+            if (value == _decorated)
+                return;
+            var style = (UnmanagedMethods.WindowStyles) UnmanagedMethods.GetWindowLong(_hwnd, -16);
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+            if (!value)
+                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+
+            UnmanagedMethods.RECT windowRect;
+
+            UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+            Rect newRect;
+            var oldThickness = BorderThickness;
+
+            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint) style);
+            if (value)
+            {
+                var thickness = BorderThickness;
+                newRect = new Rect(
+                    windowRect.left - thickness.Left,
+                    windowRect.top - thickness.Top,
+                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+            }
+            else
+                newRect = new Rect(
+                    windowRect.left + oldThickness.Left,
+                    windowRect.top + oldThickness.Top,
+                    (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
+                    (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
+            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int) newRect.X, (int) newRect.Y, (int) newRect.Width,
+                (int) newRect.Height,
+                UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+
+
+            _decorated = value;
+
+
+        }
+
         public void Invalidate(Rect rect)
         {
             var r = new UnmanagedMethods.RECT
@@ -180,6 +223,52 @@ namespace Perspex.Win32
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
         }
 
+        public void BeginMoveDrag()
+        {
+            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int)UnmanagedMethods.HitTestValues.HTCAPTION), IntPtr.Zero);
+        }
+
+        static readonly Dictionary<WindowEdge, UnmanagedMethods.HitTestValues> EdgeDic = new Dictionary<WindowEdge, UnmanagedMethods.HitTestValues>
+        {
+            {WindowEdge.East, UnmanagedMethods.HitTestValues.HTRIGHT},
+            {WindowEdge.North, UnmanagedMethods.HitTestValues.HTTOP },
+            {WindowEdge.NorthEast, UnmanagedMethods.HitTestValues.HTTOPRIGHT },
+            {WindowEdge.NorthWest, UnmanagedMethods.HitTestValues.HTTOPLEFT },
+            {WindowEdge.South, UnmanagedMethods.HitTestValues.HTBOTTOM },
+            {WindowEdge.SouthEast, UnmanagedMethods.HitTestValues.HTBOTTOMRIGHT },
+            {WindowEdge.SouthWest, UnmanagedMethods.HitTestValues.HTBOTTOMLEFT },
+            {WindowEdge.West, UnmanagedMethods.HitTestValues.HTLEFT}
+        };
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int) EdgeDic[edge]), IntPtr.Zero);
+        }
+
+        public Point Position
+        {
+            get
+            {
+                UnmanagedMethods.RECT rc;
+                UnmanagedMethods.GetWindowRect(_hwnd, out rc);
+                return new Point(rc.left, rc.top);
+            }
+            set
+            {
+                UnmanagedMethods.SetWindowPos(
+                    Handle.Handle,
+                    IntPtr.Zero,
+                    (int) value.X,
+                    (int) value.Y,
+                    0,
+                    0,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+
+            }
+        }
+
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
@@ -204,10 +293,7 @@ namespace Perspex.Win32
                     window.IsEnabled = true;
                 }
 
-                if (activated != null)
-                {
-                    activated.Activate();
-                }
+                activated?.Activate();
             });
         }
 
@@ -256,20 +342,12 @@ namespace Perspex.Win32
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
                             _isActive = true;
-                            if (Activated != null)
-                            {
-                                Activated();
-                            }
-
+                            Activated?.Invoke();
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
                             _isActive = false;
-                            if (Deactivated != null)
-                            {
-                                Deactivated();
-                            }
-
+                            Deactivated?.Invoke();
                             break;
                     }
 

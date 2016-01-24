@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Input;
@@ -17,6 +18,9 @@ namespace Perspex.Controls.Platform
         static IPlatformSettings GetSettings()
             => PerspexLocator.Current.GetService<IPlatformSettings>();
 
+        static bool s_designerMode;
+        private static double _designerScalingFactor = 1;
+
         public static IRenderTarget CreateRenderTarget(ITopLevelImpl window)
         {
             return
@@ -24,6 +28,19 @@ namespace Perspex.Controls.Platform
                     PerspexLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderer(window.Handle), window);
         }
 
+        public static IDisposable DesignerMode()
+        {
+            s_designerMode = true;
+            return Disposable.Create(() => s_designerMode = false);
+        }
+
+        public static void SetDesignerScalingFactor(double factor)
+        {
+            _designerScalingFactor = factor;
+        }
+
+        static double RenderScalingFactor => (GetSettings()?.RenderScalingFactor ?? 1)*_designerScalingFactor;
+        static double LayoutScalingFactor => (GetSettings()?.LayoutScalingFactor ?? 1) * _designerScalingFactor;
 
         class RenderTargetDecorator : IRenderTarget
         {
@@ -45,7 +62,7 @@ namespace Perspex.Controls.Platform
             {
                 var cs = _window.ClientSize;
                 var ctx = _target.CreateDrawingContext();
-                var factor = GetSettings()?.RenderScalingFactor ?? 1;
+                var factor = RenderScalingFactor;
                 if (factor != 1)
                 {
                     ctx.PushPostTransform(Matrix.CreateScale(factor, factor));
@@ -62,7 +79,7 @@ namespace Perspex.Controls.Platform
             private readonly IPopupImpl _popup;
 
             public ITopLevelImpl TopLevel => _tl;
-            double ScalingFactor => GetSettings()?.LayoutScalingFactor ?? 1;
+            double ScalingFactor => LayoutScalingFactor;
 
             public WindowDecorator(ITopLevelImpl tl)
             {
@@ -138,11 +155,6 @@ namespace Perspex.Controls.Platform
                 set { _tl.Deactivated = value; }
             }
 
-            public void SetPosition(Point p)
-            {
-                _popup.SetPosition(p*ScalingFactor);
-            }
-            
             public void Dispose() => _tl.Dispose();
 
             public IPlatformHandle Handle => _tl.Handle;
@@ -157,20 +169,31 @@ namespace Perspex.Controls.Platform
             public void SetTitle(string title) => _window.SetTitle(title);
 
             public void Show() => _tl.Show();
+            public void BeginMoveDrag() => _tl.BeginMoveDrag();
+            public void BeginResizeDrag(WindowEdge edge) => _tl.BeginResizeDrag(edge);
+
+            public Point Position
+            {
+                get { return _tl.Position; }
+                set { _tl.Position = value; }
+            }
 
             public IDisposable ShowDialog() => _window.ShowDialog();
 
             public void Hide() => _popup.Hide();
+            public void SetSystemDecorations(bool enabled) => _window.SetSystemDecorations(enabled);
         }
 
         public static IWindowImpl CreateWindow()
         {
-            return new WindowDecorator(PerspexLocator.Current.GetService<IWindowImpl>());
+            var platform = PerspexLocator.Current.GetService<IWindowingPlatform>();
+            return
+                new WindowDecorator(s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow());
         }
 
         public static IPopupImpl CreatePopup()
         {
-            return new WindowDecorator(PerspexLocator.Current.GetService<IPopupImpl>());
+            return new WindowDecorator(PerspexLocator.Current.GetService<IWindowingPlatform>().CreatePopup());
         }
     }
 }

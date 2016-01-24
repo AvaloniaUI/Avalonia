@@ -45,7 +45,7 @@ namespace Perspex.Input
         public InputModifiers Modifiers { get; set; }
 
         
-        static Dictionary<string, Key> KeySynonims = new Dictionary<string, Key>
+        static readonly Dictionary<string, Key> KeySynonims = new Dictionary<string, Key>
         {
             {"+", Key.OemPlus },
             {"-", Key.OemMinus},

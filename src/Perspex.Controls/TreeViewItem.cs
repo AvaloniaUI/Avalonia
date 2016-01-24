@@ -7,8 +7,7 @@ using Perspex.Controls.Mixins;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
-using Perspex.Rendering;
-using Perspex.VisualTree;
+using Perspex.LogicalTree;
 
 namespace Perspex.Controls
 {
@@ -74,19 +73,29 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TreeItemContainerGenerator<TreeViewItem>(
+            var result =  new TreeItemContainerGenerator<TreeViewItem>(
                 this,
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
-                _treeView?.ItemContainerGenerator);
+                _treeView?.ItemContainerGenerator.Index ?? new TreeContainerIndex());
+
+            result.Materialized += ItemMaterialized;
+
+            return result;
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
-            _treeView = this.GetVisualAncestors().OfType<TreeView>().FirstOrDefault();
+            base.OnAttachedToLogicalTree(e);
+            _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            ItemContainerGenerator.Clear();
         }
 
         /// <inheritdoc/>
@@ -113,6 +122,22 @@ namespace Perspex.Controls
             }
 
             base.OnKeyDown(e);
+        }
+
+        private void ItemMaterialized(object sender, ItemContainerEventArgs e)
+        {
+            var selectedItem = _treeView?.SelectedItem;
+
+            if (selectedItem != null)
+            {
+                foreach (var container in e.Containers)
+                {
+                    if (container.Item == selectedItem)
+                    {
+                        ((TreeViewItem)container.ContainerControl).IsSelected = true;
+                    }
+                }
+            }
         }
     }
 }

@@ -24,9 +24,9 @@ namespace Perspex.Skia
                 return new FormattedTextImpl(handle, pShared, text);
             }
         }
-        
-        List<FormattedTextLine> _lines = new List<FormattedTextLine>();
-        List<Rect> _rects = new List<Rect>();
+
+        readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
+        readonly List<Rect> _rects = new List<Rect>();
         Size _size;
 
         public IEnumerable<FormattedTextLine> GetLines()
@@ -114,6 +114,8 @@ namespace Perspex.Skia
             get { return _constraint; }
             set
             {
+                if(_constraint == value)
+                    return;
                 _constraint = value;
 
                 _shared->WidthConstraint = (_constraint.Width != double.PositiveInfinity)

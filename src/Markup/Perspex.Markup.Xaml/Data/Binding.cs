@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Data;
 
 namespace Perspex.Markup.Xaml.Data
@@ -12,12 +14,17 @@ namespace Perspex.Markup.Xaml.Data
     /// <summary>
     /// A XAML binding.
     /// </summary>
-    public class Binding : IXamlBinding
+    public class Binding : IBinding
     {
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a parameter to pass to <see cref="Converter"/>.
+        /// </summary>
+        public object ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the element to use as the binding source.
@@ -45,65 +52,40 @@ namespace Perspex.Markup.Xaml.Data
         public string Path { get; set; }
 
         /// <summary>
-        /// Applies the binding to a property on an instance.
-        /// </summary>
-        /// <param name="instance">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        public void Bind(IObservablePropertyBag instance, PerspexProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(instance != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            var subject = CreateSubject(
-                instance,
-                property.PropertyType,
-                property == Control.DataContextProperty);
-
-            if (subject != null)
-            {
-                Bind(instance, property, subject);
-            }
-        }
-
-        /// <summary>
         /// Creates a subject that can be used to get and set the value of the binding.
         /// </summary>
         /// <param name="target">The target instance.</param>
-        /// <param name="targetType">The type of the target property.</param>
-        /// <param name="targetIsDataContext">
-        /// Whether the target property is the DataContext property.
-        /// </param>
-        /// <returns>An <see cref="ISubject{object}"/>.</returns>
+        /// <param name="targetProperty">The target property. May be null.</param>
+        /// <returns>An <see cref="ISubject{Object}"/>.</returns>
         public ISubject<object> CreateSubject(
-            IObservablePropertyBag target,
-            Type targetType,
-            bool targetIsDataContext = false)
+            IPerspexObject target, 
+            PerspexProperty targetProperty)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(targetType != null);
 
             var pathInfo = ParsePath(Path);
             ValidateState(pathInfo);
 
             ExpressionObserver observer;
+            var targetIsDataContext = targetProperty == Control.DataContextProperty;
 
             if (pathInfo.ElementName != null || ElementName != null)
             {
-                observer = CreateElementSubject(
+                observer = CreateElementObserver(
                     (IControl)target, 
                     pathInfo.ElementName ?? ElementName, 
                     pathInfo.Path);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                observer = CreateDataContextSubject(
+                observer = CreateDataContexObserver(
                     target, 
                     pathInfo.Path,
                     targetIsDataContext);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentSubject(
+                observer = CreateTemplatedParentObserver(
                     target,
                     pathInfo.Path);
             }
@@ -114,44 +96,9 @@ namespace Perspex.Markup.Xaml.Data
 
             return new ExpressionSubject(
                 observer,
-                targetType,
-                Converter ?? DefaultValueConverter.Instance);
-        }
-
-        /// <summary>
-        /// Applies a binding subject to a property on an instance.
-        /// </summary>
-        /// <param name="target">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="subject">The binding subject.</param>
-        internal void Bind(IObservablePropertyBag target, PerspexProperty property, ISubject<object> subject)
-        {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(subject != null);
-
-            var mode = Mode == BindingMode.Default ?
-                property.DefaultBindingMode : Mode;
-
-            switch (mode)
-            {
-                case BindingMode.Default:
-                case BindingMode.OneWay:
-                    target.Bind(property, subject, Priority);
-                    break;
-                case BindingMode.TwoWay:
-                    target.BindTwoWay(property, subject, Priority);
-                    break;
-                case BindingMode.OneTime:
-                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
-                    {
-                        subject.Take(1).Subscribe(x => target.SetValue(property, x, Priority));
-                    });
-                    break;
-                case BindingMode.OneWayToSource:
-                    target.GetObservable(property).Subscribe(subject);
-                    break;
-            }
+                targetProperty?.PropertyType ?? typeof(object),
+                Converter ?? DefaultValueConverter.Instance,
+                ConverterParameter);
         }
 
         private static PathInfo ParsePath(string path)
@@ -201,56 +148,55 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateDataContextSubject(
-            IObservablePropertyBag target,
+        private ExpressionObserver CreateDataContexObserver(
+            IPerspexObject target,
             string path,
             bool targetIsDataContext)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            var dataContextHost = targetIsDataContext ?
-                target.InheritanceParent as IObservablePropertyBag : target;
-
-            if (dataContextHost != null)
+            if (!targetIsDataContext)
             {
+                var update = target.GetObservable(Control.DataContextProperty)
+                    .Skip(1)
+                    .Select(_ => Unit.Default);
                 var result = new ExpressionObserver(
-                    () => dataContextHost.GetValue(Control.DataContextProperty),
-                    path);
-                dataContextHost.GetObservable(Control.DataContextProperty).Subscribe(x =>
-                    result.UpdateRoot());
+                    () => target.GetValue(Control.DataContextProperty),
+                    path,
+                    update);
+
                 return result;
             }
             else
             {
-                throw new InvalidOperationException(
-                    "Cannot bind to DataContext of object with no parent.");
+                return new ExpressionObserver(
+                    target.GetObservable(Visual.VisualParentProperty)
+                          .OfType<IPerspexObject>()
+                          .Select(x => x.GetObservable(Control.DataContextProperty))
+                          .Switch(),
+                    path);
             }
         }
 
-        private ExpressionObserver CreateTemplatedParentSubject(
-            IObservablePropertyBag target,
+        private ExpressionObserver CreateTemplatedParentObserver(
+            IPerspexObject target,
             string path)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            var update = target.GetObservable(Control.TemplatedParentProperty)
+                .Skip(1)
+                .Select(_ => Unit.Default);
+
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
-                path);
-
-            if (target.GetValue(Control.TemplatedParentProperty) == null)
-            {
-                // TemplatedParent should only be set once, so only listen for the first non-null
-                // value.
-                target.GetObservable(Control.TemplatedParentProperty)
-                    .Where(x => x != null)
-                    .Take(1)
-                    .Subscribe(x => result.UpdateRoot());
-            }
+                path,
+                update);
 
             return result;
         }
 
-        private ExpressionObserver CreateElementSubject(
+        private ExpressionObserver CreateElementObserver(
             IControl target,
             string elementName,
             string path)

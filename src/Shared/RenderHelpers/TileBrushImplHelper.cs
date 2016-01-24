@@ -23,8 +23,8 @@ namespace Perspex.RenderHelpers
         private readonly Size _imageSize;
         private readonly VisualBrush _visualBrush;
         private readonly ImageBrush _imageBrush;
-        private Matrix _transform;
-        private Rect _drawRect;
+        private readonly Matrix _transform;
+        private readonly Rect _drawRect;
 
         public bool IsValid { get; }
 
@@ -47,14 +47,17 @@ namespace Perspex.RenderHelpers
                     return;
                 var layoutable = visual as ILayoutable;
 
-                if (layoutable?.IsArrangeValid == false)
+                if (layoutable != null)
                 {
-                    layoutable.Measure(Size.Infinity);
-                    layoutable.Arrange(new Rect(layoutable.DesiredSize));
+                    if (layoutable.IsArrangeValid == false)
+                    {
+                        layoutable.Measure(Size.Infinity);
+                        layoutable.Arrange(new Rect(layoutable.DesiredSize));
+                    }
+
+                    _imageSize = layoutable.Bounds.Size;
+                    IsValid = true;
                 }
-                //I have no idea why are we using layoutable after `as` cast, but it was in original VisualBrush code by @grokys
-                _imageSize = layoutable.Bounds.Size;
-                IsValid = true;
             }
             else
                 return;
@@ -105,8 +108,10 @@ namespace Perspex.RenderHelpers
                 }
                 else if (_visualBrush != null)
                 {
-                    ctx.FillRectangle(Brushes.Black, new Rect(new Point(0, 0), IntermediateSize));
-                    ctx.Render(_visualBrush.Visual);
+                    using (ctx.PushPostTransform(Matrix.CreateTranslation(-_visualBrush.Visual.Bounds.Position)))
+                    {
+                        ctx.Render(_visualBrush.Visual);
+                    }
                 }
             }
         }

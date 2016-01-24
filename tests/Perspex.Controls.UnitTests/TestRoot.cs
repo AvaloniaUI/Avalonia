@@ -6,10 +6,11 @@ using Moq;
 using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
+using Perspex.Styling;
 
 namespace Perspex.Controls.UnitTests
 {
-    internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot
+    internal class TestRoot : Decorator, ILayoutRoot, IRenderRoot, IStyleRoot
     {
         public Size ClientSize => new Size(100, 100);
 

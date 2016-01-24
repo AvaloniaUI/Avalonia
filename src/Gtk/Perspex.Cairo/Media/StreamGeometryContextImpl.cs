@@ -13,11 +13,13 @@ namespace Perspex.Cairo.Media
 
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
+        private readonly StreamGeometryImpl _target;
         private Point _currentPoint;
-		public StreamGeometryContextImpl(Cairo.Path path = null)
+		public StreamGeometryContextImpl(StreamGeometryImpl target, Cairo.Path path)
         {
+		    _target = target;
 
-			_surf = new Cairo.ImageSurface (Cairo.Format.Argb32, 0, 0);
+		    _surf = new Cairo.ImageSurface (Cairo.Format.Argb32, 0, 0);
 			_context = new Cairo.Context (_surf);
 			this.Path = path;
 
@@ -42,7 +44,7 @@ namespace Perspex.Cairo.Media
             }
         }
 
-        public void BezierTo(Point point1, Point point2, Point point3)
+        public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
             if (this.Path == null)
             {
@@ -51,11 +53,11 @@ namespace Perspex.Cairo.Media
             }
         }
 
-        public void QuadTo(Point control, Point endPoint)
+        public void QuadraticBezierTo(Point control, Point endPoint)
         {
             if (this.Path == null)
             {
-                QuadBezierHelper.QuadTo(this, _currentPoint, control, endPoint);
+                QuadBezierHelper.QuadraticBezierTo(this, _currentPoint, control, endPoint);
                 _currentPoint = endPoint;
             }
         }
@@ -85,6 +87,12 @@ namespace Perspex.Cairo.Media
 				Bounds = _context.FillExtents ().ToPerspex ();
 			}
         }
+
+        public void SetFillRule(FillRule fillRule)
+        {
+            _target.FillRule = fillRule;
+        }
+
 
         public void Dispose()
         {

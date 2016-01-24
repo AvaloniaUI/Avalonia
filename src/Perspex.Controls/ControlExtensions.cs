@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Perspex.Data;
 using Perspex.LogicalTree;
 using Perspex.Styling;
 
@@ -59,16 +60,46 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Finds the name scope for a control.
+        /// Finds the name scope for a control by searching up the logical tree.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The control's name scope, or null if not found.</returns>
         public static INameScope FindNameScope(this IControl control)
         {
             return control.GetSelfAndLogicalAncestors()
-                .OfType<Visual>()
+                .OfType<Control>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
                 .FirstOrDefault(x => x != null);
+        }
+
+        /// <summary>
+        /// Adds or removes a pseudoclass depending on a boolean value.
+        /// </summary>
+        /// <param name="classes">The pseudoclasses collection.</param>
+        /// <param name="name">The name of the pseudoclass to set.</param>
+        /// <param name="value">True to add the pseudoclass or false to remove.</param>
+        public static void Set(this IPseudoClasses classes, string name, bool value)
+        {
+            if (value)
+            {
+                classes.Add(name);
+            }
+            else
+            {
+                classes.Remove(name);
+            }
+        }
+
+        /// <summary>
+        /// Sets a pseudoclass depending on an observable trigger.
+        /// </summary>
+        /// <param name="classes">The pseudoclasses collection.</param>
+        /// <param name="name">The name of the pseudoclass to set.</param>
+        /// <param name="trigger">The trigger: true adds the pseudoclass, false removes.</param>
+        /// <returns>A disposable used to cancel the subscription.</returns>
+        public static IDisposable Set(this IPseudoClasses classes, string name, IObservable<bool> trigger)
+        {
+            return trigger.Subscribe(x => classes.Set(name, x));
         }
     }
 }

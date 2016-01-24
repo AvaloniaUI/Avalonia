@@ -9,6 +9,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
 using Xunit;
 
@@ -168,6 +169,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems.Add(items[0]);
             target.SelectedItems.Add(items[1]);
 
@@ -195,6 +197,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems = new PerspexList<object> { items[0], items[1] };
 
             Assert.True(items[0].IsSelected);
@@ -219,6 +222,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems.Add(items[0]);
             target.SelectedItems.Add(items[1]);
             target.SelectedItems.Remove(items[1]);
@@ -270,6 +274,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedIndex = 1;
             target.SelectedItems[0] = items[2];
 
@@ -414,8 +419,8 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             // Bind Items and SelectedItems to the VM.
-            itemsBinding.Bind(target, TestSelector.ItemsProperty);
-            selectedItemsBinding.Bind(target, TestSelector.SelectedItemsProperty);
+            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            target.Bind(TestSelector.SelectedItemsProperty, selectedItemsBinding);
 
             // Set DataContext and SelectedIndex
             target.DataContext = vm;
@@ -427,6 +432,113 @@ namespace Perspex.Controls.UnitTests.Primitives
             // Clear DataContext and ensure that SelectedItems is still set in the VM.
             target.DataContext = null;
             Assert.Equal(new[] { "bar" }, vm.SelectedItems);
+
+            // Ensure target's SelectedItems is now clear.
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Unbound_SelectedItems_Should_Be_Cleared_When_DataContext_Cleared()
+        {
+            var data = new
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var target = new TestSelector
+            {
+                DataContext = data,
+                Template = Template(),
+            };
+
+            var itemsBinding = new Binding { Path = "Items" };
+            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+
+            Assert.Same(data.Items, target.Items);
+
+            target.SelectedItems.Add("bar");
+            target.DataContext = null;
+
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Adding_To_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                DataContext = items,
+                Template = Template(),
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "bar" }, e.AddedItems.Cast<object>().ToList());
+                Assert.Empty(e.RemovedItems);
+                called = true;
+            };
+
+            target.SelectedItems.Add("bar");
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Removing_From_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectedItem = "bar",
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>().ToList());
+                Assert.Empty(e.AddedItems);
+                called = true;
+            };
+
+            target.SelectedItems.Remove("bar");
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Assigning_SelectedItems_Should_Raise_SelectionChanged()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectedItem = "bar",
+            };
+
+            var called = false;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo", "baz" }, e.AddedItems.Cast<object>());
+                Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>());
+                called = true;
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectedItems = new[] { "foo", "baz" };
+
+            Assert.True(called);
         }
 
         private FuncControlTemplate Template()

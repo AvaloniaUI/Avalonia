@@ -1,3 +1,4 @@
+$ErrorActionPreference = "Stop"
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
 Push-Location $dir
@@ -9,6 +10,7 @@ sv version $env:APPVEYOR_BUILD_NUMBER
 sv version 9999.0.$version-nightly
 sv key $env:myget_key
 
+. ".\include.ps1"
 .\build-version.ps1 $version
 
 sv reponame $env:APPVEYOR_REPO_NAME
@@ -23,10 +25,10 @@ if ([string]::IsNullOrWhiteSpace($pullreq))
     if($repobranch -eq "master")
     {
         echo "Repo branch matched"
-        nuget.exe push Perspex.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
-		nuget.exe push Perspex.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
-		nuget.exe push Perspex.Skia.Desktop.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
-		nuget.exe push Perspex.Android.$version.nupkg $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
+        foreach($pkg in $Packages)
+        {
+            nuget.exe push "$($pkg).$($version).nupkg" $key -Source https://www.myget.org/F/perspex-nightly/api/v2/package
+        }
     }
 }
 

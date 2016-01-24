@@ -27,6 +27,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Perspex.Controls.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,10 +42,29 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Classes.cs" />
     <Compile Include="DockPanel.cs" />
+    <Compile Include="Expander.cs" />
+    <Compile Include="Generators\ItemContainer.cs" />
+    <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
+    <Compile Include="INameScope.cs" />
+    <Compile Include="IPseudoClasses.cs" />
+    <Compile Include="DropDownItem.cs" />
+    <Compile Include="Mixins\ContentControlMixin.cs" />
+    <Compile Include="NameScope.cs" />
+    <Compile Include="NameScopeEventArgs.cs" />
+    <Compile Include="NameScopeExtensions.cs" />
     <Compile Include="Platform\ITopLevelRenderer.cs" />
+    <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
+    <Compile Include="Presenters\IContentPresenterHost.cs" />
+    <Compile Include="Presenters\IItemsPresenterHost.cs" />
+    <Compile Include="Primitives\HeaderedSelectingControl.cs" />
+    <Compile Include="Primitives\IScrollable.cs" />
+    <Compile Include="Primitives\TabStripItem.cs" />
+    <Compile Include="Primitives\TemplateAppliedEventArgs.cs" />
+    <Compile Include="SelectionChangedEventArgs.cs" />
     <Compile Include="SelectionMode.cs" />
     <Compile Include="Separator.cs" />
     <Compile Include="Shapes\Line.cs" />
@@ -52,11 +72,10 @@
     <Compile Include="Shapes\Polyline.cs" />
     <Compile Include="SystemDialog.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
-    <Compile Include="Generators\ItemContainers.cs" />
+    <Compile Include="Generators\ItemContainerEventArgs.cs" />
     <Compile Include="IContentControl.cs" />
     <Compile Include="IControl.cs" />
     <Compile Include="IPanel.cs" />
-    <Compile Include="IReparentingHost.cs" />
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
     <Compile Include="Mixins\SelectableMixin.cs" />
@@ -68,14 +87,11 @@
     <Compile Include="Menu.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="DropDown.cs" />
-    <Compile Include="IReparentingControl.cs" />
     <Compile Include="Carousel.cs" />
     <Compile Include="Platform\IPopupImpl.cs" />
     <Compile Include="Platform\ITopLevelImpl.cs" />
     <Compile Include="PlacementMode.cs" />
-    <Compile Include="Primitives\IScrollInfo.cs" />
     <Compile Include="Primitives\Popup.cs" />
-    <Compile Include="Primitives\ScrollInfoAdapter.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="Templates\FuncControlTemplate`2.cs" />
     <Compile Include="Templates\FuncDataTemplate`1.cs" />
@@ -145,6 +161,8 @@
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TopLevel.cs" />
     <Compile Include="Primitives\PopupRoot.cs" />
+    <Compile Include="Utils\UndoRedoHelper.cs" />
+    <Compile Include="LogicalTreeAttachmentEventArgs.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />
@@ -167,9 +185,14 @@
     <Compile Include="TreeView.cs" />
     <Compile Include="TreeViewItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowEdge.cs" />
     <Compile Include="WrapPanel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations.PCL328, Version=9.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\JetBrains.Annotations.9.2.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
     </Reference>

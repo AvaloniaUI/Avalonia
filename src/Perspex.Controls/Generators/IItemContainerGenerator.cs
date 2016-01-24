@@ -16,12 +16,17 @@ namespace Perspex.Controls.Generators
         /// <summary>
         /// Gets the currently realized containers.
         /// </summary>
-        IEnumerable<IControl> Containers { get; }
+        IEnumerable<ItemContainer> Containers { get; }
 
         /// <summary>
-        /// Signalled whenever new containers are initialized.
+        /// Signalled whenever new containers are materialized.
         /// </summary>
-        IObservable<ItemContainers> ContainersInitialized { get; }
+        event EventHandler<ItemContainerEventArgs> Materialized;
+
+        /// <summary>
+        /// Event raised whenever containers are dematerialized.
+        /// </summary>
+        event EventHandler<ItemContainerEventArgs> Dematerialized;
 
         /// <summary>
         /// Creates container controls for a collection of items.
@@ -32,7 +37,7 @@ namespace Perspex.Controls.Generators
         /// <param name="items">The items.</param>
         /// <param name="selector">An optional member selector.</param>
         /// <returns>The created controls.</returns>
-        IEnumerable<IControl> Materialize(
+        IEnumerable<ItemContainer> Materialize(
             int startingIndex,
             IEnumerable items,
             IMemberSelector selector);
@@ -45,7 +50,7 @@ namespace Perspex.Controls.Generators
         /// </param>
         /// <param name="count">The the number of items to remove.</param>
         /// <returns>The removed containers.</returns>
-        IEnumerable<IControl> Dematerialize(int startingIndex, int count);
+        IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count);
 
         /// <summary>
         /// Removes a set of created containers and updates the index of later containers to fill
@@ -56,13 +61,13 @@ namespace Perspex.Controls.Generators
         /// </param>
         /// <param name="count">The the number of items to remove.</param>
         /// <returns>The removed containers.</returns>
-        IEnumerable<IControl> RemoveRange(int startingIndex, int count);
+        IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count);
 
         /// <summary>
         /// Clears all created containers and returns the removed controls.
         /// </summary>
         /// <returns>The removed controls.</returns>
-        IEnumerable<IControl> Clear();
+        IEnumerable<ItemContainer> Clear();
 
         /// <summary>
         /// Gets the container control representing the item with the specified index.

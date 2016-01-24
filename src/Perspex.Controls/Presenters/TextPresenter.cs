@@ -33,15 +33,15 @@ namespace Perspex.Controls.Presenters
             _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             _caretTimer.Tick += CaretTimerTick;
 
-            _canScrollHorizontally = GetObservable(TextWrappingProperty)
+            _canScrollHorizontally = this.GetObservable(TextWrappingProperty)
                 .Select(x => x == TextWrapping.NoWrap);
 
             Observable.Merge(
-                GetObservable(SelectionStartProperty),
-                GetObservable(SelectionEndProperty))
+                this.GetObservable(SelectionStartProperty),
+                this.GetObservable(SelectionEndProperty))
                 .Subscribe(_ => InvalidateFormattedText());
 
-            GetObservable(CaretIndexProperty)
+            this.GetObservable(CaretIndexProperty)
                 .Subscribe(CaretIndexChanged);
         }
 
@@ -91,9 +91,7 @@ namespace Perspex.Controls.Presenters
             base.Render(context);
 
             if (selectionStart == selectionEnd)
-            {
-                var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-                
+            {                
                 var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
                 var caretBrush = Brushes.Black;
 
@@ -108,6 +106,7 @@ namespace Perspex.Controls.Presenters
                 
                 if (_caretBlink)
                 {
+                    var charPos = FormattedText.HitTestTextPosition(CaretIndex);
                     var x = Math.Floor(charPos.X) + 0.5;
                     var y = Math.Floor(charPos.Y) + 0.5;
                     var b = Math.Ceiling(charPos.Bottom) - 0.5;
@@ -143,8 +142,24 @@ namespace Perspex.Controls.Presenters
                 _caretTimer.Start();
                 InvalidateVisual();
 
-                var rect = FormattedText.HitTestTextPosition(caretIndex);
-                this.BringIntoView(rect);
+                if (IsMeasureValid)
+                {
+                    var rect = FormattedText.HitTestTextPosition(caretIndex);
+                    this.BringIntoView(rect);
+                }
+                else
+                {
+                    // The measure is currently invalid so there's no point trying to bring the 
+                    // current char into view until a measure has been carried out as the scroll
+                    // viewer extents may not be up-to-date.
+                    Dispatcher.UIThread.InvokeAsync(
+                        () =>
+                        {
+                            var rect = FormattedText.HitTestTextPosition(caretIndex);
+                            this.BringIntoView(rect);
+                        },
+                        DispatcherPriority.Normal);
+                }
             }
         }
 

@@ -15,10 +15,10 @@ namespace Perspex.Cairo
 
             foreach (var stop in brush.GradientStops)
             {
-                ((LinearGradient)this.PlatformBrush).AddColorStop(stop.Offset, stop.Color.ToCairo());
+                ((RadialGradient)this.PlatformBrush).AddColorStop(stop.Offset, stop.Color.ToCairo());
             }
 
-			((LinearGradient)this.PlatformBrush).Extend = Extend.Pad;
+			((RadialGradient)this.PlatformBrush).Extend = Extend.Pad;
 		}
 	}
 }

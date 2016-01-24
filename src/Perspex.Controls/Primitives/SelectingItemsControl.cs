@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Generators;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Styling;
@@ -76,7 +77,19 @@ namespace Perspex.Controls.Primitives
         /// has changed.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
-            RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>("IsSelectedChanged", RoutingStrategies.Bubble);
+            RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>(
+                "IsSelectedChanged", 
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="SelectionChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
+            RoutedEvent.Register<SelectingItemsControl, SelectionChangedEventArgs>(
+                "SelectionChanged", 
+                RoutingStrategies.Bubble);
+
+        private static readonly IList Empty = new object[0];
 
         private int _selectedIndex = -1;
         private object _selectedItem;
@@ -98,7 +111,15 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public SelectingItemsControl()
         {
-            ItemContainerGenerator.ContainersInitialized.Subscribe(ContainersInitialized);
+        }
+
+        /// <summary>
+        /// Occurs when the control's selection changes.
+        /// </summary>
+        public event EventHandler<SelectionChangedEventArgs> SelectionChanged
+        {
+            add { AddHandler(SelectionChangedEvent, value); }
+            remove { RemoveHandler(SelectionChangedEvent, value); }
         }
 
         /// <summary>
@@ -225,8 +246,8 @@ namespace Perspex.Controls.Primitives
         protected IControl GetContainerFromEventSource(IInteractive eventSource)
         {
             var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<ILogical>()
-                .FirstOrDefault(x => x.LogicalParent == this);
+                .OfType<IControl>()
+                .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
 
             return item as IControl;
         }
@@ -287,7 +308,32 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextFinishedChanging()
+        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersMaterialized(e);
+
+            var selectedIndex = SelectedIndex;
+            var selectedContainer = e.Containers
+                .FirstOrDefault(x => (x.ContainerControl as ISelectable)?.IsSelected == true);
+
+            if (selectedContainer != null)
+            {
+                SelectedIndex = selectedContainer.Index;
+            }
+            else if (selectedIndex >= e.StartingIndex &&
+                     selectedIndex < e.StartingIndex + e.Containers.Count)
+            {
+                var container = e.Containers[selectedIndex - e.StartingIndex];
+
+                if (container.ContainerControl != null)
+                {
+                    MarkContainerSelected(container.ContainerControl, true);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDataContextChanged()
         {
             if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
             {
@@ -317,7 +363,7 @@ namespace Perspex.Controls.Primitives
                     var mode = SelectionMode;
                     var toggle = toggleModifier || (mode & SelectionMode.Toggle) != 0;
                     var multi = (mode & SelectionMode.Multiple) != 0;
-                    var range = multi && SelectedIndex != -1 ? rangeModifier : false;
+                    var range = multi && SelectedIndex != -1 && rangeModifier;
 
                     if (!toggle && !range)
                     {
@@ -379,7 +425,7 @@ namespace Perspex.Controls.Primitives
             bool rangeModifier = false,
             bool toggleModifier = false)
         {
-            var index = ItemContainerGenerator.IndexFromContainer(container);
+            var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
 
             if (index != -1)
             {
@@ -414,61 +460,6 @@ namespace Perspex.Controls.Primitives
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Gets the item at the specified index in a collection.
-        /// </summary>
-        /// <param name="items">The collection.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>The index of the item or -1 if the item was not found.</returns>
-        private static object ElementAt(IEnumerable items, int index)
-        {
-            var typedItems = items?.Cast<object>();
-
-            if (index != -1 && typedItems != null && index < typedItems.Count())
-            {
-                return typedItems.ElementAt(index) ?? null;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the index of an item in a collection.
-        /// </summary>
-        /// <param name="items">The collection.</param>
-        /// <param name="item">The item.</param>
-        /// <returns>The index of the item or -1 if the item was not found.</returns>
-        private static int IndexOf(IEnumerable items, object item)
-        {
-            if (items != null && item != null)
-            {
-                var list = items as IList;
-
-                if (list != null)
-                {
-                    return list.IndexOf(item);
-                }
-                else
-                {
-                    int index = 0;
-
-                    foreach (var i in items)
-                    {
-                        if (Equals(i, item))
-                        {
-                            return index;
-                        }
-
-                        ++index;
-                    }
-                }
-            }
-
-            return -1;
         }
 
         /// <summary>
@@ -524,27 +515,6 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
-        /// Called when new containers are initialized by the <see cref="ItemContainerGenerator"/>.
-        /// </summary>
-        /// <param name="containers">The containers.</param>
-        private void ContainersInitialized(ItemContainers containers)
-        {
-            var selectedIndex = SelectedIndex;
-            var selectedContainer = containers.Items.OfType<ISelectable>().FirstOrDefault(x => x.IsSelected);
-
-            if (selectedContainer != null)
-            {
-                SelectedIndex = containers.Items.IndexOf((IControl)selectedContainer) + containers.StartingIndex;
-            }
-            else if (selectedIndex >= containers.StartingIndex &&
-                     selectedIndex < containers.StartingIndex + containers.Items.Count)
-            {
-                var container = containers.Items[selectedIndex - containers.StartingIndex];
-                MarkContainerSelected(container, true);
-            }
-        }
-
-        /// <summary>
         /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
         /// </summary>
         /// <param name="e">The event.</param>
@@ -588,30 +558,28 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(IControl container, bool selected)
+        /// <returns>The previous selection state.</returns>
+        private bool MarkContainerSelected(IControl container, bool selected)
         {
             try
             {
                 var selectable = container as ISelectable;
-                var styleable = container as IStyleable;
+                bool result;
 
                 _ignoreContainerSelectionChanged = true;
 
                 if (selectable != null)
                 {
+                    result = selectable.IsSelected;
                     selectable.IsSelected = selected;
                 }
-                else if (styleable != null)
+                else
                 {
-                    if (selected)
-                    {
-                        styleable.Classes.Add(":selected");
-                    }
-                    else
-                    {
-                        styleable.Classes.Remove(":selected");
-                    }
+                    result = container.Classes.Contains(":selected");
+                    ((IPseudoClasses)container.Classes).Set(":selected", selected);
                 }
+
+                return result;
             }
             finally
             {
@@ -626,7 +594,7 @@ namespace Perspex.Controls.Primitives
         /// <param name="selected">Whether the item should be selected or deselected.</param>
         private void MarkItemSelected(int index, bool selected)
         {
-            var container = ItemContainerGenerator.ContainerFromIndex(index);
+            var container = ItemContainerGenerator?.ContainerFromIndex(index);
 
             if (container != null)
             {
@@ -656,10 +624,15 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void SelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            var generator = ItemContainerGenerator;
+            IList added = null;
+            IList removed = null;
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     SelectedItemsAdded(e.NewItems.Cast<object>().ToList());
+                    added = e.NewItems;
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -678,20 +651,36 @@ namespace Perspex.Controls.Primitives
                         }
                     }
 
+                    removed = e.OldItems;
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    foreach (var item in ItemContainerGenerator.Containers)
+                    if (generator != null)
                     {
-                        MarkContainerSelected(item, false);
+                        removed = new List<object>();
+
+                        foreach (var item in generator.Containers)
+                        {
+                            if (item?.ContainerControl != null)
+                            {
+                                if (MarkContainerSelected(item.ContainerControl, false))
+                                {
+                                    removed.Add(item.Item);
+                                }
+                            }
+                        }
                     }
 
-                    if (!_syncingSelectedItems)
+                    if (SelectedItems.Count > 0)
+                    {
+                        SelectedItemsAdded(SelectedItems);
+                        added = SelectedItems;
+                    }
+                    else if (!_syncingSelectedItems)
                     {
                         SelectedIndex = -1;
                     }
 
-                    SelectedItemsAdded(SelectedItems);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
@@ -717,7 +706,18 @@ namespace Perspex.Controls.Primitives
                         RaisePropertyChanged(SelectedItemProperty, oldItem, item, BindingPriority.LocalValue);
                     }
 
+                    added = e.OldItems;
+                    removed = e.NewItems;
                     break;
+            }
+
+            if (added?.Count > 0 || removed?.Count > 0)
+            {
+                var changed = new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    added ?? Empty,
+                    removed ?? Empty);
+                RaiseEvent(changed);
             }
         }
 

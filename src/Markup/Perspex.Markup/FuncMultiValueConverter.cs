@@ -16,7 +16,7 @@ namespace Perspex.Markup
     /// <typeparam name="TOut">The output type.</typeparam>
     public class FuncMultiValueConverter<TIn, TOut> : IMultiValueConverter
     {
-        private Func<IEnumerable<TIn>, TOut> _convert;
+        private readonly Func<IEnumerable<TIn>, TOut> _convert;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.

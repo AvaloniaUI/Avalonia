@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 // ReSharper disable InconsistentNaming
-#pragma warning disable 169
+#pragma warning disable 169, 649
 
 namespace Perspex.Win32.Interop
 {
@@ -215,6 +215,34 @@ namespace Perspex.Win32.Interop
             WA_INACTIVE,
             WA_ACTIVE,
             WA_CLICKACTIVE,
+        }
+
+        public enum HitTestValues
+        {
+            HTERROR = -2,
+            HTTRANSPARENT = -1,
+            HTNOWHERE = 0,
+            HTCLIENT = 1,
+            HTCAPTION = 2,
+            HTSYSMENU = 3,
+            HTGROWBOX = 4,
+            HTMENU = 5,
+            HTHSCROLL = 6,
+            HTVSCROLL = 7,
+            HTMINBUTTON = 8,
+            HTMAXBUTTON = 9,
+            HTLEFT = 10,
+            HTRIGHT = 11,
+            HTTOP = 12,
+            HTTOPLEFT = 13,
+            HTTOPRIGHT = 14,
+            HTBOTTOM = 15,
+            HTBOTTOMLEFT = 16,
+            HTBOTTOMRIGHT = 17,
+            HTBORDER = 18,
+            HTOBJECT = 19,
+            HTCLOSE = 20,
+            HTHELP = 21
         }
 
         [Flags]
@@ -571,6 +599,9 @@ namespace Perspex.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint SetWindowLong(IntPtr hWnd, int nIndex, uint value);
+
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 
@@ -806,8 +837,8 @@ namespace Perspex.Win32.Interop
             public IntPtr lpstrInitialDir;
             public IntPtr lpstrTitle;
             public OpenFileNameFlags Flags;
-            private ushort Unused;
-            private ushort Unused2;
+            private readonly ushort Unused;
+            private readonly ushort Unused2;
             public IntPtr lpstrDefExt;
             public IntPtr lCustData;
             public IntPtr lpfnHook;

@@ -58,7 +58,7 @@ namespace Perspex.Animation
             if (from != null)
             {
                 tasks.Add(Animate.Property(
-                    (IObservablePropertyBag)from,
+                    (IPerspexObject)from,
                     Visual.OpacityProperty,
                     from.Opacity,
                     0,
@@ -72,7 +72,7 @@ namespace Perspex.Animation
                 to.IsVisible = true;
 
                 tasks.Add(Animate.Property(
-                    (IObservablePropertyBag)to,
+                    (IPerspexObject)to,
                     Visual.OpacityProperty,
                     0,
                     1,

@@ -97,10 +97,7 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets the target type of the selector, if available.
         /// </summary>
-        public Type TargetType
-        {
-            get { return _targetType ?? MovePrevious()?.TargetType; }
-        }
+        public Type TargetType => _targetType ?? MovePrevious()?.TargetType;
 
         /// <summary>
         /// Returns the previous selector if traversal is not stopped.
@@ -144,7 +141,7 @@ namespace Perspex.Styling
 
             if (inputs.Count > 0)
             {
-                return new SelectorMatch(new StyleActivator(inputs));
+                return new SelectorMatch(StyleActivator.And(inputs));
             }
             else
             {

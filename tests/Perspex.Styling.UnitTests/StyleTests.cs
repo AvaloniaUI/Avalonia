@@ -142,49 +142,28 @@ namespace Perspex.Styling.UnitTests
         }
 
         [Fact]
-        public void Style_With_ObservableSetter_Should_Update_Value()
+        public void Style_Should_Detach_When_Removed_From_Logical_Tree()
         {
-            var source = new BehaviorSubject<string>("Foo");
+            Border border;
 
-            Style style = new Style(x => x.OfType<Class1>())
+            var style = new Style(x => x.OfType<Border>())
             {
                 Setters = new[]
                 {
-                    new ObservableSetter(Class1.FooProperty, source),
-                },
+                    new Setter(Border.BorderThicknessProperty, 4),
+                }
             };
 
-            var target = new Class1();
-
-            style.Attach(target, null);
-
-            Assert.Equal("Foo", target.Foo);
-        }
-
-        [Fact]
-        public void Style_With_ObservableSetter_Should_Update_And_Restore_Value()
-        {
-            var source = new BehaviorSubject<string>("Foo");
-
-            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            var root = new TestRoot
             {
-                Setters = new[]
-                {
-                    new ObservableSetter(Class1.FooProperty, source),
-                },
+                Child = border = new Border(),
             };
 
-            var target = new Class1();
+            style.Attach(border, null);
 
-            style.Attach(target, null);
-
-            Assert.Equal("foodefault", target.Foo);
-            target.Classes.Add("foo");
-            Assert.Equal("Foo", target.Foo);
-            source.OnNext("Bar");
-            Assert.Equal("Bar", target.Foo);
-            target.Classes.Remove("foo");
-            Assert.Equal("foodefault", target.Foo);
+            Assert.Equal(4, border.BorderThickness);
+            root.Child = null;
+            Assert.Equal(0, border.BorderThickness);
         }
 
         private class Class1 : Control

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Metadata;
 
@@ -13,6 +14,8 @@ namespace Perspex.Styling
     /// </summary>
     public class Style : IStyle
     {
+        private static readonly IObservable<bool> True = Observable.Never<bool>().StartWith(true);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
@@ -56,9 +59,12 @@ namespace Perspex.Styling
 
                 if (match.ImmediateResult != false)
                 {
+                    var activator = (match.ObservableResult ?? True)
+                        .TakeUntil(control.StyleDetach);
+
                     foreach (var setter in Setters)
                     {
-                        setter.Apply(this, control, match.ObservableResult);
+                        setter.Apply(this, control, activator);
                     }
                 }
             }

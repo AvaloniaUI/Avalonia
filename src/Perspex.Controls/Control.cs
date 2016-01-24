@@ -2,12 +2,19 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Perspex.Collections;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Rendering;
 using Perspex.Styling;
 
@@ -58,7 +65,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
         public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
-            PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent));
+            PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
 
         /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
@@ -70,8 +77,11 @@ namespace Perspex.Controls
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
+        private bool _isAttachedToLogicalTree;
         private IPerspexList<ILogical> _logicalChildren;
+        private INameScope _nameScope;
         private Styles _styles;
+        private Subject<Unit> _styleDetach = new Subject<Unit>();
 
         /// <summary>
         /// Initializes static members of the <see cref="Control"/> class.
@@ -83,6 +93,33 @@ namespace Perspex.Controls
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Control"/> class.
+        /// </summary>
+        public Control()
+        {
+            _nameScope = this as INameScope;
+        }
+
+        /// <summary>
+        /// Raised when the control is attached to a rooted logical tree.
+        /// </summary>
+        public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
+
+        /// <summary>
+        /// Raised when the control is detached from a rooted logical tree.
+        /// </summary>
+        public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
+
+        /// <summary>
+        /// Occurs when the <see cref="DataContext"/> property changes.
+        /// </summary>
+        /// <remarks>
+        /// This event will be raised when the <see cref="DataContext"/> property has changed and
+        /// all subscribers to that change have been notified.
+        /// </remarks>
+        public event EventHandler DataContextChanged;
 
         /// <summary>
         /// Gets or sets the control's classes.
@@ -110,8 +147,7 @@ namespace Perspex.Controls
             {
                 if (_classes != value)
                 {
-                    _classes.Clear();
-                    _classes.Add(value);
+                    _classes.Replace(value);
                 }
             }
         }
@@ -147,20 +183,8 @@ namespace Perspex.Controls
         /// </remarks>
         public DataTemplates DataTemplates
         {
-            get
-            {
-                if (_dataTemplates == null)
-                {
-                    _dataTemplates = new DataTemplates();
-                }
-
-                return _dataTemplates;
-            }
-
-            set
-            {
-                _dataTemplates = value;
-            }
+            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
+            set { _dataTemplates = value; }
         }
 
         /// <summary>
@@ -173,20 +197,8 @@ namespace Perspex.Controls
         /// </remarks>
         public Styles Styles
         {
-            get
-            {
-                if (_styles == null)
-                {
-                    _styles = new Styles();
-                }
-
-                return _styles;
-            }
-
-            set
-            {
-                _styles = value;
-            }
+            get { return _styles ?? (_styles = new Styles()); }
+            set { _styles = value; }
         }
 
         /// <summary>
@@ -213,6 +225,11 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether the element is attached to a rooted logical tree.
+        /// </summary>
+        bool ILogical.IsAttachedToLogicalTree => _isAttachedToLogicalTree;
+
+        /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
         ILogical ILogical.LogicalParent => Parent;
@@ -221,6 +238,9 @@ namespace Perspex.Controls
         /// Gets the control's logical children.
         /// </summary>
         IPerspexReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
         /// <summary>
         /// Gets the type by which the control is styled.
@@ -232,6 +252,12 @@ namespace Perspex.Controls
         /// Button.
         /// </remarks>
         Type IStyleable.StyleKey => GetType();
+
+        /// <inheritdoc/>
+        IObservable<Unit> IStyleable.StyleDetach => _styleDetach;
+
+        /// <inheritdoc/>
+        IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
 
         /// <summary>
         /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
@@ -254,12 +280,20 @@ namespace Perspex.Controls
                 {
                     var list = new PerspexList<ILogical>();
                     list.ResetBehavior = ResetBehavior.Remove;
+                    list.Validate = ValidateLogicalChild;
+                    list.CollectionChanged += LogicalChildrenCollectionChanged;
                     _logicalChildren = list;
                 }
 
                 return _logicalChildren;
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
+        /// pseudoclasses.
+        /// </summary>
+        protected IPseudoClasses PseudoClasses => Classes;
 
         /// <summary>
         /// Sets the control's logical parent.
@@ -276,7 +310,26 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("The Control already has a parent.");
                 }
 
-                SetAndRaise(ParentProperty, ref _parent, (IControl)parent);
+                InheritanceParent = parent as PerspexObject;
+                _parent = (IControl)parent;
+
+                var root = FindStyleRoot(old);
+
+                if (root != null)
+                {
+                    var e = new LogicalTreeAttachmentEventArgs(root);
+                    OnDetachedFromLogicalTree(e);
+                }
+
+                root = FindStyleRoot(this);
+
+                if (root != null)
+                {
+                    var e = new LogicalTreeAttachmentEventArgs(root);
+                    OnAttachedToLogicalTree(e);
+                }
+
+                RaisePropertyChanged(ParentProperty, old, _parent, BindingPriority.LocalValue);
             }
         }
 
@@ -312,18 +365,88 @@ namespace Perspex.Controls
                 throw new ArgumentException("Cannot supply an empty className.");
             }
 
-            Observable.Merge(property.Changed, property.Initialized)
+            property.Changed.Merge(property.Initialized)
                 .Subscribe(e =>
                 {
                     if (selector((T)e.NewValue))
                     {
-                        ((Control)e.Sender).Classes.Add(className);
+                        ((Control)e.Sender).PseudoClasses.Add(className);
                     }
                     else
                     {
-                        ((Control)e.Sender).Classes.Remove(className);
+                        ((Control)e.Sender).PseudoClasses.Remove(className);
                     }
                 });
+        }
+
+        /// <summary>
+        /// Called when the control is added to a logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
+        protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            // This method can be called when a control is already attached to the logical tree
+            // in the following scenario:
+            // - ListBox gets assigned Items containing ListBoxItem
+            // - ListBox makes ListBoxItem a logical child
+            // - ListBox template gets applied; making its Panel get attached to logical tree
+            // - That AttachedToLogicalTree signal travels down to the ListBoxItem
+            if (!_isAttachedToLogicalTree)
+            {
+                if (_nameScope == null)
+                {
+                    _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
+                }
+
+                if (Name != null)
+                {
+                    _nameScope?.Register(Name, this);
+                }
+
+                _isAttachedToLogicalTree = true;
+                PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                AttachedToLogicalTree?.Invoke(this, e);
+            }
+
+            foreach (var child in LogicalChildren.OfType<Control>())
+            {
+                child.OnAttachedToLogicalTree(e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the control is removed from a logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// It is vital that if you override this method you call the base implementation;
+        /// failing to do so will cause numerous features to not work as expected.
+        /// </remarks>
+        protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            if (!_isAttachedToLogicalTree)
+            {
+                throw new Exception("Logic error: Control is not attached to logical tree");
+            }
+
+            if (Name != null)
+            {
+                _nameScope?.Unregister(Name);
+            }
+
+            _isAttachedToLogicalTree = false;
+            _styleDetach.OnNext(Unit.Default);
+            this.TemplatedParent = null;
+            DetachedFromLogicalTree?.Invoke(this, e);
+
+            foreach (var child in LogicalChildren.OfType<Control>())
+            {
+                child.OnDetachedFromLogicalTree(e);
+            }
         }
 
         /// <inheritdoc/>
@@ -371,34 +494,13 @@ namespace Perspex.Controls
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            IStyler styler = PerspexLocator.Current.GetService<IStyler>();
-
-            if (styler != null)
-            {
-                styler.ApplyStyles(this);
-            }
-        }
-
         /// <summary>
         /// Called when the <see cref="DataContext"/> is changed and all subscribers to that change
         /// have been notified.
         /// </summary>
-        protected virtual void OnDataContextFinishedChanging()
+        protected virtual void OnDataContextChanged()
         {
-        }
-
-        /// <summary>
-        /// Makes the control use a different control's logical children as its own.
-        /// </summary>
-        /// <param name="collection">The logical children to use.</param>
-        protected void RedirectLogicalChildren(IPerspexList<ILogical> collection)
-        {
-            _logicalChildren = collection;
+            DataContextChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -413,6 +515,80 @@ namespace Perspex.Controls
             if (control != null)
             {
                 control.IsDataContextChanging = notifying;
+
+                if (!notifying)
+                {
+                    control.OnDataContextChanged();
+                }
+            }
+        }
+
+        private static IStyleRoot FindStyleRoot(IStyleHost e)
+        {
+            while (e != null)
+            {
+                var root = e as IStyleRoot;
+
+                if (root != null && root.StylingParent == null)
+                {
+                    return root;
+                }
+
+                e = e.StylingParent;
+            }
+
+            return null;
+        }
+
+        private static void ValidateLogicalChild(ILogical c)
+        {
+            if (c == null)
+            {
+                throw new ArgumentException("Cannot add null to LogicalChildren.");
+            }
+        }
+
+        private void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    throw new NotSupportedException("Reset should not be signalled on LogicalChildren collection");
+            }
+        }
+
+        private void SetLogicalParent(IEnumerable<ILogical> children)
+        {
+            foreach (var i in children)
+            {
+                if (i.LogicalParent == null)
+                {
+                    ((ISetLogicalParent)i).SetParent(this);
+                }
+            }
+        }
+
+        private void ClearLogicalParent(IEnumerable<ILogical> children)
+        {
+            foreach (var i in children)
+            {
+                if (i.LogicalParent == this)
+                {
+                    ((ISetLogicalParent)i).SetParent(null);
+                }
             }
         }
     }

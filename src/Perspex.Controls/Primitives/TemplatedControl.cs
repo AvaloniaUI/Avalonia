@@ -3,8 +3,11 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Data;
+using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.VisualTree;
@@ -72,6 +75,14 @@ namespace Perspex.Controls.Primitives
         public static readonly PerspexProperty<IControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");
 
+        /// <summary>
+        /// Defines the <see cref="TemplateApplied"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
+            RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
+                "TemplateApplied", 
+                RoutingStrategies.Direct);
+
         private bool _templateApplied;
 
         private readonly ILogger _templateLog;
@@ -81,12 +92,8 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         static TemplatedControl()
         {
-            TemplateProperty.Changed.Subscribe(e =>
-            {
-                var templatedControl = (TemplatedControl)e.Sender;
-                templatedControl._templateApplied = false;
-                templatedControl.InvalidateMeasure();
-            });
+            ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
+            TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
         }
 
         /// <summary>
@@ -100,6 +107,15 @@ namespace Perspex.Controls.Primitives
                 new PropertyEnricher("SourceContext", GetType()),
                 new PropertyEnricher("Id", GetHashCode()),
             });
+        }
+
+        /// <summary>
+        /// Raised when the control's template is applied.
+        /// </summary>
+        public event EventHandler<TemplateAppliedEventArgs> TemplateApplied
+        {
+            add { AddHandler(TemplateAppliedEvent, value); }
+            remove { RemoveHandler(TemplateAppliedEvent, value); }
         }
 
         /// <summary>
@@ -188,7 +204,7 @@ namespace Perspex.Controls.Primitives
         {
             if (!_templateApplied)
             {
-                ClearVisualChildren();
+                VisualChildren.Clear();
 
                 if (Template != null)
                 {
@@ -196,62 +212,71 @@ namespace Perspex.Controls.Primitives
 
                     var child = Template.Build(this);
                     var nameScope = new NameScope();
-                    NameScope.SetNameScope((Visual)child, nameScope);
-
-                    // We need to call SetTemplatedParentAndApplyChildTemplates twice - once
-                    // before the controls are added to the visual tree so that the logical
-                    // tree can be set up before styling is applied.
+                    NameScope.SetNameScope((Control)child, nameScope);
+                    child.SetValue(TemplatedParentProperty, this);
+                    RegisterNames(child, nameScope);
                     ((ISetLogicalParent)child).SetParent(this);
-                    SetupTemplateControls(child, nameScope);
+                    VisualChildren.Add(child);
 
-                    // And again after the controls are added to the visual tree, and have their
-                    // styling and thus Template property set.
-                    AddVisualChild((Visual)child);
-                    SetupTemplateControls(child, nameScope);
-
-                    OnTemplateApplied(nameScope);
+                    OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
                 }
 
                 _templateApplied = true;
             }
         }
 
-        /// <summary>
-        /// Called when the control's template is applied.
-        /// </summary>
-        /// <param name="nameScope">The template name scope.</param>
-        protected virtual void OnTemplateApplied(INameScope nameScope)
+        protected sealed override IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
+            var result = base.CreateBindingDescriptor(source);
+
+            // If the binding is a template binding, then complete when the Template changes.
+            if (source.Priority == BindingPriority.TemplatedParent)
+            {
+                var templateChanged = this.GetObservable(TemplateProperty).Skip(1);
+
+                result.SourceObservable = result.Source.GetObservable(result.Property)
+                    .TakeUntil(templateChanged);
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// Sets the TemplatedParent property for a control created from the control template and
-        /// applies the templates of nested templated controls. Also adds each control to its name
-        /// scope if it has a name.
+        /// Called when the control's template is applied.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Template"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
+        {
+            _templateApplied = false;
+            InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Registers each control with its name scope.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="nameScope">The name scope.</param>
-        private void SetupTemplateControls(IControl control, INameScope nameScope)
+        private void RegisterNames(IControl control, INameScope nameScope)
         {
-            // If control.TemplatedParent is null at this point, then the control is our templated
-            // child so set its TemplatedParent and register it with its name scope.
-            if (control.TemplatedParent == null)
+            if (control.Name != null)
             {
-                control.SetValue(TemplatedParentProperty, this);
-
-                if (control.Name != null)
-                {
-                    nameScope.Register(control.Name, control);
-                }
+                nameScope.Register(control.Name, control);
             }
 
-            control.ApplyTemplate();
-
-            if (!(control is IPresenter && control.TemplatedParent == this))
+            if (control.TemplatedParent == this)
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {
-                    SetupTemplateControls(child, nameScope);
+                    RegisterNames(child, nameScope);
                 }
             }
         }

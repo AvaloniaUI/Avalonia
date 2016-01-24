@@ -11,18 +11,7 @@ namespace Perspex.Diagnostics
     {
         private static LogManager s_instance;
 
-        public static LogManager Instance
-        {
-            get
-            {
-                if (s_instance == null)
-                {
-                    s_instance = new LogManager();
-                }
-
-                return s_instance;
-            }
-        }
+        public static LogManager Instance => s_instance ?? (s_instance = new LogManager());
 
         public ILogger Logger
         {

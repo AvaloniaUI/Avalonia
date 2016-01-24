@@ -73,9 +73,7 @@ namespace Perspex.Controls.Templates
         /// </returns>
         private static bool IsInstance(object o, Type t)
         {
-            return (o != null) ?
-                t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo()) :
-                false;
+            return (o != null) && t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
         }
     }
 }

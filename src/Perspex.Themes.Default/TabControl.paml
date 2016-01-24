@@ -1,15 +1,50 @@
-﻿<Style xmlns="https://github.com/perspex" Selector="TabControl">
-  <Setter Property="Template">
-    <ControlTemplate>
-      <Grid RowDefinitions="Auto,*">
-        <TabStrip Items="{TemplateBinding Items}"
-                  SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
-        <Carousel Items="{TemplateBinding Items}"
-                  MemberSelector="Content"
-                  SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                  Transition="{TemplateBinding Transition}"
-                  Grid.Row="1"/>
-      </Grid>
-    </ControlTemplate>
-  </Setter>
-</Style>
+﻿<Styles xmlns="https://github.com/perspex">
+  <Style Selector="TabControl">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <DockPanel>
+            <TabStrip Name="PART_TabStrip"
+                      MemberSelector="{Static TabControl.HeaderSelector}"
+                      Items="{TemplateBinding Items}"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+            <Carousel Name="PART_Content"
+                      MemberSelector="{Static TabControl.ContentSelector}"
+                      Items="{TemplateBinding Items}"
+                      SelectedIndex="{TemplateBinding Path=SelectedIndex}"
+                      Transition="{TemplateBinding Transition}"
+                      Grid.Row="1"/>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Top] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Top"/>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Bottom"/>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Left] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Left"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Right] /template/ TabStrip">
+    <Setter Property="DockPanel.Dock" Value="Right"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</Styles>

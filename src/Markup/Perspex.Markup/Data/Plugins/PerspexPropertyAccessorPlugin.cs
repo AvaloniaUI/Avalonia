@@ -56,8 +56,8 @@ namespace Perspex.Markup.Data.Plugins
 
         private class Accessor : IPropertyAccessor
         {
-            private PerspexObject _instance;
-            private PerspexProperty _property;
+            private readonly PerspexObject _instance;
+            private readonly PerspexProperty _property;
             private IDisposable _subscription;
 
             public Accessor(PerspexObject instance, PerspexProperty property, Action<object> changed)
@@ -70,15 +70,9 @@ namespace Perspex.Markup.Data.Plugins
                 _subscription = instance.GetObservable(property).Skip(1).Subscribe(changed);
             }
 
-            public Type PropertyType
-            {
-                get { return _property.PropertyType; }
-            }
+            public Type PropertyType => _property.PropertyType;
 
-            public object Value
-            {
-                get { return _instance.GetValue(_property); }
-            }
+            public object Value => _instance.GetValue(_property);
 
             public void Dispose()
             {

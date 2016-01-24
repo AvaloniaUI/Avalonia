@@ -19,7 +19,7 @@ namespace Perspex.Cairo
     public class RenderTarget : IRenderTarget
     {
         private readonly Surface _surface;
-        private Gtk.Window _window;
+        private readonly Gtk.Window _window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTarget"/> class.

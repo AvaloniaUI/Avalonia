@@ -14,10 +14,11 @@ using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Media;
 using Perspex.Metadata;
+using Perspex.Data;
 
 namespace Perspex.Controls
 {
-    public class TextBox : TemplatedControl
+    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static readonly PerspexProperty<bool> AcceptsReturnProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsReturn");
@@ -49,7 +50,22 @@ namespace Perspex.Controls
         public static readonly PerspexProperty<bool> UseFloatingWatermarkProperty =
             PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
 
+        struct UndoRedoState : IEquatable<UndoRedoState>
+        {
+            public string Text { get; }
+            public int CaretPosition { get; }
+
+            public UndoRedoState(string text, int caretPosition)
+            {
+                Text = text;
+                CaretPosition = caretPosition;
+            }
+
+            public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
+        }
+
         private TextPresenter _presenter;
+        private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
 
         static TextBox()
         {
@@ -58,7 +74,7 @@ namespace Perspex.Controls
 
         public TextBox()
         {
-            var canScrollHorizontally = GetObservable(AcceptsReturnProperty)
+            var canScrollHorizontally = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => !x);
 
             Bind(
@@ -66,13 +82,14 @@ namespace Perspex.Controls
                 canScrollHorizontally,
                 BindingPriority.Style);
 
-            var horizontalScrollBarVisibility = GetObservable(AcceptsReturnProperty)
+            var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
 
             Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
         }
 
         public bool AcceptsReturn
@@ -90,7 +107,12 @@ namespace Perspex.Controls
         public int CaretIndex
         {
             get { return GetValue(CaretIndexProperty); }
-            set { SetValue(CaretIndexProperty, value); }
+            set
+            {
+                SetValue(CaretIndexProperty, value);
+                if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState.Text == Text)
+                    _undoRedoHelper.UpdateLastState();
+            }
         }
 
         public int SelectionStart
@@ -136,9 +158,9 @@ namespace Perspex.Controls
             set { SetValue(TextWrappingProperty, value); }
         }
 
-        protected override void OnTemplateApplied(INameScope nameScope)
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            _presenter = nameScope.Get<TextPresenter>("PART_TextPresenter");
+            _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
         }
 
@@ -173,6 +195,7 @@ namespace Perspex.Controls
                 Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
                 CaretIndex += input.Length;
                 SelectionStart = SelectionEnd = CaretIndex;
+                _undoRedoHelper.DiscardRedo();
             }
         }
 
@@ -189,7 +212,7 @@ namespace Perspex.Controls
             {
                 return;
             }
-
+            _undoRedoHelper.Snapshot();
             HandleTextInput(text);
         }
 
@@ -222,6 +245,16 @@ namespace Perspex.Controls
                     {
                         Paste();
                     }
+
+                    break;
+                case Key.Z:
+                    if (modifiers == InputModifiers.Control)
+                        _undoRedoHelper.Undo();
+
+                    break;
+                case Key.Y:
+                    if (modifiers == InputModifiers.Control)
+                        _undoRedoHelper.Redo();
 
                     break;
                 case Key.Left:
@@ -360,7 +393,7 @@ namespace Perspex.Controls
         private static int ValidateCaretIndex(PerspexObject o, int value)
         {
             var text = o.GetValue(TextProperty);
-            var length = (text != null) ? text.Length : 0;
+            var length = text?.Length ?? 0;
             return Math.Max(0, Math.Min(length, value));
         }
 
@@ -523,6 +556,16 @@ namespace Perspex.Controls
             }
 
             return i;
+        }
+
+        UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
+        {
+            get { return new UndoRedoState(Text, CaretIndex); }
+            set
+            {
+                Text = value.Text;
+                SelectionStart = SelectionEnd = CaretIndex = value.CaretPosition;
+            }
         }
     }
 }

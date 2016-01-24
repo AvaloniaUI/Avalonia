@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using OmniXaml;
 using OmniXaml.Typing;
-using Perspex.Markup.Xaml.Data;
+using Perspex.Controls;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -20,15 +20,15 @@ namespace Perspex.Markup.Xaml.Context
 
         public override OmniXaml.INameScope GetNamescope(object instance)
         {
-            var result = this.UnderlyingType as OmniXaml.INameScope;
+            var result = instance as OmniXaml.INameScope;
 
             if (result == null)
             {
-                var visual = instance as Visual;
+                var control = instance as Control;
 
-                if (visual != null)
+                if (control != null)
                 {
-                    var perspexNs = (instance as Perspex.INameScope) ?? NameScope.GetNameScope(visual);
+                    var perspexNs = (instance as Perspex.Controls.INameScope) ?? NameScope.GetNameScope(control);
 
                     if (perspexNs != null)
                     {

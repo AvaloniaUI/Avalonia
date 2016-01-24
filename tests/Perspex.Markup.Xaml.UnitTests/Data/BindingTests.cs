@@ -1,13 +1,12 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Moq;
 using Perspex.Controls;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
+using ReactiveUI;
 using Xunit;
 
 namespace Perspex.Markup.Xaml.UnitTests.Data
@@ -17,101 +16,101 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()
         {
-            var target = CreateTarget();
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
             var binding = new Binding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWay,
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
-            target.Verify(x => x.Bind(
-                TextBox.TextProperty, 
-                It.IsAny<IObservable<object>>(), 
-                BindingPriority.LocalValue));
+            Assert.Equal("foo", target.Text);
+            source.Foo = "bar";
+            Assert.Equal("bar", target.Text);
+            target.Text = "baz";
+            Assert.Equal("bar", source.Foo);
         }
 
         [Fact]
         public void TwoWay_Binding_Should_Be_Set_Up()
         {
-            var target = CreateTarget();
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
             var binding = new Binding
             {
                 Path = "Foo",
                 Mode = BindingMode.TwoWay,
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
-            target.Verify(x => x.BindTwoWay(
-                TextBox.TextProperty,
-                It.IsAny<ISubject<object>>(),
-                BindingPriority.LocalValue));
+            Assert.Equal("foo", target.Text);
+            source.Foo = "bar";
+            Assert.Equal("bar", target.Text);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
         }
 
         [Fact]
         public void OneTime_Binding_Should_Be_Set_Up()
         {
-            var dataContext = new BehaviorSubject<object>(null);
-            var expression = new BehaviorSubject<object>(null);
-            var target = CreateTarget(dataContext: dataContext);
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
             var binding = new Binding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneTime,
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty, expression);
+            target.Bind(TextBox.TextProperty, binding);
 
-            target.Verify(x => x.SetValue(
-                (PerspexProperty)TextBox.TextProperty, 
-                null, 
-                BindingPriority.LocalValue));
-            target.ResetCalls();
-
-            expression.OnNext("foo");
-            dataContext.OnNext(1);
-
-            target.Verify(x => x.SetValue(
-                (PerspexProperty)TextBox.TextProperty,
-                "foo",
-                BindingPriority.LocalValue));
+            Assert.Equal("foo", target.Text);
+            source.Foo = "bar";
+            Assert.Equal("foo", target.Text);
+            target.Text = "baz";
+            Assert.Equal("bar", source.Foo);
         }
 
         [Fact]
         public void OneWayToSource_Binding_Should_Be_Set_Up()
         {
-            var textObservable = new Mock<IObservable<string>>();
-            var expression = new Mock<ISubject<object>>();
-            var target = CreateTarget(text: textObservable.Object);
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source, Text = "bar" };
             var binding = new Binding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty, expression.Object);
+            target.Bind(TextBox.TextProperty, binding);
 
-            textObservable.Verify(x => x.Subscribe(expression.Object));
+            Assert.Equal("bar", source.Foo);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
+            source.Foo = "quz";
+            Assert.Equal("baz", target.Text);
         }
 
         [Fact]
         public void Default_BindingMode_Should_Be_Used()
         {
-            var target = CreateTarget(null);
+            // Default for TextBox.Text is two-way.
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
             var binding = new Binding
             {
                 Path = "Foo",
             };
 
-            binding.Bind(target.Object, TextBox.TextProperty);
+            target.Bind(TextBox.TextProperty, binding);
 
-            // Default for TextBox.Text is two-way.
-            target.Verify(x => x.BindTwoWay(
-                TextBox.TextProperty,
-                It.IsAny<ISubject<object>>(),
-                BindingPriority.LocalValue));
+            Assert.Equal("foo", target.Text);
+            source.Foo = "bar";
+            Assert.Equal("bar", target.Text);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
         }
 
         [Fact]
@@ -130,7 +129,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Header",
             };
 
-            binding.Bind(parent.Child, Control.DataContextProperty);
+            parent.Child.Bind(Control.DataContextProperty, binding);
 
             Assert.Equal("Foo", parent.Child.DataContext);
 
@@ -140,15 +139,37 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
+        public void DataContext_Binding_Should_Track_Parent()
         {
-            var target = CreateTarget(null);
+            var parent = new Decorator
+            {
+                DataContext = new { Foo = "foo" },
+            };
+
+            var child = new Control();
+
             var binding = new Binding
             {
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
+            child.Bind(Control.DataContextProperty, binding);
+
+            Assert.Null(child.DataContext);
+            parent.Child = child;
+            Assert.Equal("foo", child.DataContext);
+        }
+
+        [Fact]
+        public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
+        {
+            var target = new TextBlock(); ;
+            var binding = new Binding
+            {
+                Path = "Foo",
+            };
+
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
 
             Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
         }
@@ -156,7 +177,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         [Fact]
         public void Should_Use_Supplied_Converter()
         {
-            var target = CreateTarget(null);
+            var target = new TextBlock();
             var converter = new Mock<IValueConverter>();
             var binding = new Binding
             {
@@ -164,9 +185,26 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target.Object, TextBox.TextProperty.PropertyType);
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
 
             Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
+        }
+
+        [Fact]
+        public void Should_Pass_ConverterParameter_To_Supplied_Converter()
+        {
+            var target = new TextBlock();
+            var converter = new Mock<IValueConverter>();
+            var binding = new Binding
+            {
+                Converter = converter.Object,
+                ConverterParameter = "foo",
+                Path = "Bar",
+            };
+
+            var result = binding.CreateSubject(target, TextBox.TextProperty);
+
+            Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
         }
 
         /// <summary>
@@ -200,8 +238,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             };
 
             // Bind Foo and Bar to the VM.
-            fooBinding.Bind(target, OldDataContextTest.FooProperty);
-            barBinding.Bind(target, OldDataContextTest.BarProperty);
+            target.Bind(OldDataContextTest.FooProperty, fooBinding);
+            target.Bind(OldDataContextTest.BarProperty, barBinding);
             target.DataContext = vm;
 
             // Make sure the control's Foo and Bar properties are read from the VM
@@ -222,24 +260,15 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             Assert.Equal(2, vm.Bar);
         }
 
-        private Mock<IObservablePropertyBag> CreateTarget(object dataContext)
+        public class Source : ReactiveObject
         {
-            return CreateTarget(dataContext: Observable.Never<object>().StartWith(dataContext));
-        }
+            private string _foo;
 
-        private Mock<IObservablePropertyBag> CreateTarget(
-            IObservable<object> dataContext = null,
-            IObservable<string> text = null)
-        {
-            var result = new Mock<IObservablePropertyBag>();
-
-            dataContext = dataContext ?? Observable.Never<object>().StartWith((object)null);
-            text = text ?? Observable.Never<string>().StartWith((string)null);
-
-            result.Setup(x => x.GetObservable(Control.DataContextProperty)).Returns(dataContext);
-            result.Setup(x => x.GetObservable((PerspexProperty)Control.DataContextProperty)).Returns(dataContext);
-            result.Setup(x => x.GetObservable((PerspexProperty)TextBox.TextProperty)).Returns(text);
-            return result;
+            public string Foo
+            {
+                get { return _foo; }
+                set { this.RaiseAndSetIfChanged(ref _foo, value); }
+            }
         }
 
         private class OldDataContextViewModel
@@ -258,7 +287,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
             public OldDataContextTest()
             {
-                Bind(BarProperty, GetObservable(FooProperty));
+                Bind(BarProperty, this.GetObservable(FooProperty));
             }
         }
     }

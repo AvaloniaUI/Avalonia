@@ -32,9 +32,9 @@ namespace Perspex
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles
+    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot
     {
-        static bool _suppressPlatformInitialization;
+        static Action _platformInitializationCallback;
 
         /// <summary>
         /// The application-global data templates.
@@ -62,9 +62,9 @@ namespace Perspex
             Current = this;
         }
 
-        public static void SuppressPlatformInitialization()
+        public static void RegisterPlatformCallback(Action cb)
         {
-            _suppressPlatformInitialization = true;
+            _platformInitializationCallback = cb;
         }
 
         /// <summary>
@@ -87,20 +87,8 @@ namespace Perspex
         /// </value>
         public DataTemplates DataTemplates
         {
-            get
-            {
-                if (_dataTemplates == null)
-                {
-                    _dataTemplates = new DataTemplates();
-                }
-
-                return _dataTemplates;
-            }
-
-            set
-            {
-                _dataTemplates = value;
-            }
+            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
+            set { _dataTemplates = value; }
         }
 
         /// <summary>
@@ -148,6 +136,11 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the styling parent of the application, which is null.
+        /// </summary>
+        IStyleHost IStyleHost.StylingParent => null;
+
+        /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
         /// </summary>
         /// <param name="closable">The closable to track</param>
@@ -185,9 +178,11 @@ namespace Perspex
         /// <param name="platformID">The value of Environment.OSVersion.Platform.</param>
         protected void InitializeSubsystems(int platformID)
         {
-            if(_suppressPlatformInitialization)
-                return;
-            if (platformID == 4 || platformID == 6)
+            if (_platformInitializationCallback != null)
+            {
+                _platformInitializationCallback();
+            }
+            else if (platformID == 4 || platformID == 6)
             {
                 InitializeSubsystem("Perspex.Cairo");
                 InitializeSubsystem("Perspex.Gtk");
@@ -203,7 +198,7 @@ namespace Perspex
         /// Initializes the rendering or windowing subsystem defined by the specified assemblt.
         /// </summary>
         /// <param name="assemblyName">The name of the assembly.</param>
-        protected void InitializeSubsystem(string assemblyName)
+        protected static void InitializeSubsystem(string assemblyName)
         {
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             var platformClassName = assemblyName.Replace("Perspex.", string.Empty) + "Platform";
@@ -211,6 +206,12 @@ namespace Perspex
             var platformClass = assembly.GetType(platformClassFullName);
             var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
             init.Invoke(null, null);
+        }
+
+        internal static void InitializeWin32Subsystem()
+        {
+            InitializeSubsystem("Perspex.Direct2D1");
+            InitializeSubsystem("Perspex.Win32");
         }
     }
 }

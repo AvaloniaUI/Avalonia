@@ -15,6 +15,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Markup.Xaml.Converters;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.Metadata;
@@ -58,9 +59,10 @@ namespace Perspex.Markup.Xaml.Context
 
             var forcedAssemblies = new[]
             {
+                typeof(Binding),
                 typeof(Control),
-                typeof(Style),
                 typeof(IValueConverter),
+                typeof(Style),
             }.Select(t => t.GetTypeInfo().Assembly);
 
             foreach (var nsa in 
@@ -88,7 +90,7 @@ namespace Perspex.Markup.Xaml.Context
             var typeConverterProvider = new TypeConverterProvider();
             var converters = new[]
             {
-                new TypeConverterRegistration(typeof(Bitmap), new BitmapTypeConverter()),
+                new TypeConverterRegistration(typeof(IBitmap), new BitmapTypeConverter()),
                 new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
                 new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
                 new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
@@ -107,6 +109,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
                 new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
                 new TypeConverterRegistration(typeof(Uri), new UriTypeConverter()),
+                new TypeConverterRegistration(typeof(Cursor), new CursorTypeConverter())
             };
 
             typeConverterProvider.AddAll(converters);

@@ -10,7 +10,7 @@ namespace Perspex.Controls.Templates
     /// </summary>
     public class FuncMemberSelector<TObject, TMember> : IMemberSelector
     {
-        private Func<TObject, TMember> _selector;
+        private readonly Func<TObject, TMember> _selector;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncMemberSelector{TObject, TMember}"/>

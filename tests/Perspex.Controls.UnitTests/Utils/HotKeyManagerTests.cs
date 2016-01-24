@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
@@ -20,11 +18,10 @@ namespace Perspex.Controls.UnitTests.Utils
         {
             using (PerspexLocator.EnterScope())
             {
-                var windowImpl = new Mock<IWindowImpl>();
                 var styler = new Mock<Styler>();
 
                 PerspexLocator.CurrentMutable
-                    .Bind<IWindowImpl>().ToConstant(windowImpl.Object)
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                     .Bind<IStyler>().ToConstant(styler.Object);
 
                 var gesture1 = new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control};
@@ -35,6 +32,7 @@ namespace Perspex.Controls.UnitTests.Utils
                 tl.Content = button;
                 tl.Template = CreateWindowTemplate();
                 tl.ApplyTemplate();
+                tl.Presenter.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(button, gesture1);
 

@@ -27,6 +27,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Perspex.SceneGraph.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -56,7 +57,6 @@
     <Compile Include="Animation\CrossFade.cs" />
     <Compile Include="Animation\IPageTransition.cs" />
     <Compile Include="INamed.cs" />
-    <Compile Include="INameScope.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Media\AlignmentY.cs" />
     <Compile Include="Media\AlignmentX.cs" />
@@ -67,6 +67,7 @@
     <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\DashStyle.cs" />
     <Compile Include="Media\DrawingContext.cs" />
+    <Compile Include="Media\FillRule.cs" />
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
@@ -124,7 +125,7 @@
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
     <Compile Include="Rendering\IRenderQueueManager.cs" />
-    <Compile Include="Rendering\RendererBase.cs" />
+    <Compile Include="Rendering\RendererMixin.cs" />
     <Compile Include="Rendering\RenderQueueManager.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />

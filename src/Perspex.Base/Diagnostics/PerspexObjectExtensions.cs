@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Perspex.Data;
+
 namespace Perspex.Diagnostics
 {
     /// <summary>
@@ -27,7 +29,7 @@ namespace Perspex.Diagnostics
             {
                 return new PerspexPropertyValue(
                     property,
-                    value.Value,
+                    o.GetValue(property),
                     (BindingPriority)value.ValuePriority,
                     value.GetDiagnostic());
             }

@@ -74,11 +74,7 @@ namespace Perspex.Controls.Primitives
             var adorner = (Visual)e.Sender;
             var adorned = (Visual)e.NewValue;
             var layer = adorner.GetVisualParent<AdornerLayer>();
-
-            if (layer != null)
-            {
-                layer.UpdateAdornedElement(adorner, adorned);
-            }
+            layer?.UpdateAdornedElement(adorner, adorned);
         }
 
         private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

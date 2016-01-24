@@ -14,7 +14,7 @@ namespace Perspex.Markup.Xaml.Parsers
     /// </summary>
     public class SelectorParser
     {
-        private Func<string, string, Type> _typeResolver;
+        private readonly Func<string, string, Type> _typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectorParser"/> class.

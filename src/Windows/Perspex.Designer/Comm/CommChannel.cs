@@ -13,13 +13,13 @@ using System.Windows.Threading;
 
 namespace Perspex.Designer.Comm
 {
-    internal class CommChannel : IDisposable
+    class CommChannel : IDisposable
     {
         private readonly BinaryReader _input;
         private readonly BinaryWriter _output;
-        private SynchronizationContext _dispatcher;
-        TaskCompletionSource<bool> _terminating = new TaskCompletionSource<bool>();
-        private BlockingCollection<byte[]> _outputQueue = new BlockingCollection<byte[]>();
+        private readonly SynchronizationContext _dispatcher;
+        readonly TaskCompletionSource<bool> _terminating = new TaskCompletionSource<bool>();
+        private readonly BlockingCollection<byte[]> _outputQueue = new BlockingCollection<byte[]>();
         public event Action<object> OnMessage;
         public event Action Disposed;
         public event Action<Exception> Exception;

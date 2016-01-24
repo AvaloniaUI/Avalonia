@@ -12,7 +12,7 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     Grid.Column="1">
-              <ContentPresenter Name="PART_ContentPresenter"
+              <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
                                 Margin="{TemplateBinding Padding}"/>
             </Border>

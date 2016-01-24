@@ -118,6 +118,52 @@ namespace Perspex.Interactivity.UnitTests
         }
 
         [Fact]
+        public void Handled_Bubbled_Event_Should_Not_Propogate_Further()
+        {
+            var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
+            var invoked = new List<string>();
+
+            EventHandler<RoutedEventArgs> handler = (s, e) =>
+            {
+                var t = (TestInteractive)s;
+                invoked.Add(t.Name);
+                e.Handled = t.Name == "2b";
+            };
+
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "2b" }, invoked);
+        }
+
+        [Fact]
+        public void Handled_Tunnelled_Event_Should_Not_Propogate_Further()
+        {
+            var ev = new RoutedEvent(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel, 
+                typeof(RoutedEventArgs), 
+                typeof(TestInteractive));
+            var invoked = new List<string>();
+
+            EventHandler<RoutedEventArgs> handler = (s, e) =>
+            {
+                var t = (TestInteractive)s;
+                invoked.Add(t.Name);
+                e.Handled = t.Name == "2b";
+            };
+
+            var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "1", "2b" }, invoked);
+        }
+
+        [Fact]
         public void Direct_Subscription_Should_Not_Catch_Tunneling_Or_Bubbling()
         {
             var ev = new RoutedEvent(
@@ -338,8 +384,6 @@ namespace Perspex.Interactivity.UnitTests
 
         private class TestInteractive : Interactive
         {
-            public string Name { get; set; }
-
             public bool ClassHandlerInvoked { get; private set; }
 
             public IEnumerable<IVisual> Children
@@ -351,7 +395,7 @@ namespace Perspex.Interactivity.UnitTests
 
                 set
                 {
-                    AddVisualChildren(value.Cast<Visual>());
+                    VisualChildren.AddRange(value.Cast<Visual>());
                 }
             }
 

@@ -27,7 +27,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets the bitmap image that will be displayed.
         /// </summary>
-        public Bitmap Source
+        public IBitmap Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
@@ -48,7 +48,7 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            Bitmap source = Source;
+            var source = Source;
 
             if (source != null)
             {

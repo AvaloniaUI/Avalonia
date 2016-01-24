@@ -24,6 +24,9 @@ namespace Perspex.Controls.Generators
             PerspexProperty contentProperty)
             : base(owner)
         {
+            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.Requires<ArgumentNullException>(contentProperty != null);
+
             ContentProperty = contentProperty;
         }
 
@@ -48,7 +51,7 @@ namespace Perspex.Controls.Generators
             else
             {
                 var result = new T();
-                result.SetValue(ContentProperty, Owner.MaterializeDataTemplate(item));
+                result.SetValue(ContentProperty, item);
 
                 if (!(item is IControl))
                 {

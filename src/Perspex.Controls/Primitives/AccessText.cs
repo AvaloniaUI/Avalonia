@@ -37,7 +37,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public AccessText()
         {
-            GetObservable(TextProperty).Subscribe(TextChanged);
+            this.GetObservable(TextProperty).Subscribe(TextChanged);
         }
 
         /// <summary>

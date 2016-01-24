@@ -12,10 +12,5 @@ namespace Perspex.Gtk
             : base(WindowType.Popup)
         {
         }
-
-        public void SetPosition(Point p)
-        {
-            Move((int)p.X, (int)p.Y);
-        }
     }
 }

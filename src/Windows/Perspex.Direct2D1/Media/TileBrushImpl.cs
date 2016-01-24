@@ -25,7 +25,10 @@ namespace Perspex.Direct2D1.Media
             using (var intermediate = new BitmapRenderTarget(target, CompatibleRenderTargetOptions.None, helper.IntermediateSize.ToSharpDX()))
             {
                 using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
+                {
+                    intermediate.Clear(null);
                     helper.DrawIntermediate(ctx);
+                }
 
                 PlatformBrush = new BitmapBrush(
                     target,
@@ -36,20 +39,21 @@ namespace Perspex.Direct2D1.Media
         }
 
 
-        protected static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
+        private static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
         {
+            var tileTransform = 
+                brush.TileMode != TileMode.None ? 
+                Matrix.CreateTranslation(destinationRect.X, destinationRect.Y) :
+                Matrix.Identity;
+
             return new BrushProperties
             {
                 Opacity = (float)brush.Opacity,
-                Transform = brush.TileMode != TileMode.None ?
-                    SharpDX.Matrix3x2.Translation(
-                        (float)destinationRect.X,
-                        (float)destinationRect.Y) :
-                    SharpDX.Matrix3x2.Identity,
+                Transform = tileTransform.ToDirect2D(),
             };
         }
 
-        protected static BitmapBrushProperties GetBitmapBrushProperties(TileBrush brush)
+        private static BitmapBrushProperties GetBitmapBrushProperties(TileBrush brush)
         {
             var tileMode = brush.TileMode;
 
@@ -60,12 +64,12 @@ namespace Perspex.Direct2D1.Media
             };
         }
 
-        protected static ExtendMode GetExtendModeX(TileMode tileMode)
+        private static ExtendMode GetExtendModeX(TileMode tileMode)
         {
             return (tileMode & TileMode.FlipX) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
         }
 
-        protected static ExtendMode GetExtendModeY(TileMode tileMode)
+        private static ExtendMode GetExtendModeY(TileMode tileMode)
         {
             return (tileMode & TileMode.FlipY) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
         }
