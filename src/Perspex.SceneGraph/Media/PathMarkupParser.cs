@@ -168,7 +168,7 @@ namespace Perspex.Media
                             {
                                 Point point1 = ReadRelativePoint(reader, point);
                                 Point point2 = ReadRelativePoint(reader, point);
-                                _context.BezierTo(point, point1, point2);
+                                _context.CubicBezierTo(point, point1, point2);
                                 point = point2;
                                 break;
                             }
