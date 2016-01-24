@@ -150,6 +150,15 @@ namespace Perspex.Media
                                 break;
                             }
 
+                        case Command.CubicBezierCurveRelative:
+                            {
+                                Point point1 = ReadRelativePoint(reader, point);
+                                Point point2 = ReadRelativePoint(reader, point);
+                                _context.BezierTo(point, point1, point2);
+                                point = point2;
+                                break;
+                            }
+
                         case Command.Close:
                             _context.EndFigure(true);
                             openFigure = false;
@@ -202,8 +211,9 @@ namespace Perspex.Media
             }
         }
 
-        private static double ReadDouble(TextReader reader)
+        private static double ReadDouble(StringReader reader)
         {
+            ReadWhitespace(reader);
             // TODO: Handle Infinity, NaN and scientific notation.
             StringBuilder b = new StringBuilder();
             bool readSign = false;
