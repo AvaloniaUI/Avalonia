@@ -26,13 +26,51 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
             Decorator target = new Decorator
             {
-                Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
                 Child = new Line
                 {
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
+                    PointPair = new PointPair(0, 0, 200, 200)
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void Line_1px_Stroke_Reversed()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Line
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1,
+                    PointPair = new PointPair(200, 0, 0, 200)
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void Line_1px_Stroke_Vertical()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Line
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1,
+                    PointPair = new PointPair(100, 200, 100, 0)
                 }
             };
 

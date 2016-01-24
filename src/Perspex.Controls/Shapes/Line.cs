@@ -9,19 +9,31 @@ namespace Perspex.Controls.Shapes
 {
     public class Line : Shape
     {
-        private Geometry _geometry;
+        public static readonly PerspexProperty<PointPair> PointPairProperty =
+            PerspexProperty.Register<Line, PointPair>("PointPair");
 
-        private Size _geometrySize;
+        private LineGeometry _geometry;
+        private PointPair _pointPair;
+
+        public Line()
+        {
+            StrokeThickness = 1;
+        }
+
+        public PointPair PointPair
+        {
+            get { return GetValue(PointPairProperty); }
+            set { SetValue(PointPairProperty, value); }
+        }
 
         public override Geometry DefiningGeometry
         {
             get
             {
-                if (_geometry == null || _geometrySize != Bounds.Size)
+                if (_geometry == null || _pointPair == null || PointPair.P1 != _pointPair.P1 || PointPair.P2 != _pointPair.P2)
                 {
-                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
-                    _geometry = new LineGeometry(rect.TopLeft, rect.BottomRight);
-                    _geometrySize = Bounds.Size;
+                    _pointPair = PointPair;
+                    _geometry = new LineGeometry(_pointPair);
                 }
 
                 return _geometry;
