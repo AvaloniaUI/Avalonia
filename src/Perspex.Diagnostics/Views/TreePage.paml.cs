@@ -1,4 +1,5 @@
 ﻿using Perspex.Controls;
+using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Diagnostics.ViewModels;
@@ -11,10 +12,12 @@ namespace Perspex.Diagnostics.Views
     public class TreePageView : UserControl
     {
         private Control _adorner;
+        private TreeView _tree;
 
         public TreePageView()
         {
             this.InitializeComponent();
+            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
         }
 
         protected void AddAdorner(object sender, PointerEventArgs e)
@@ -46,6 +49,22 @@ namespace Perspex.Diagnostics.Views
         private void InitializeComponent()
         {
             PerspexXamlLoader.Load(this);
+            _tree = this.FindControl<TreeView>("tree");
+        }
+
+        private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
+        {
+            var item = (TreeViewItem)e.Containers[0].ContainerControl;
+            item.TemplateApplied += TreeViewItemTemplateApplied;
+        }
+
+        private void TreeViewItemTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        {
+            var item = (TreeViewItem)sender;
+            var header = item.HeaderPresenter.Child;
+            header.PointerEnter += AddAdorner;
+            header.PointerLeave += RemoveAdorner;
+            item.TemplateApplied -= TreeViewItemTemplateApplied;
         }
     }
 }

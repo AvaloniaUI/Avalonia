@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Perspex.Controls.Generators
@@ -20,6 +21,16 @@ namespace Perspex.Controls.Generators
         private readonly Dictionary<IControl, object> _containerToItem = new Dictionary<IControl, object>();
 
         /// <summary>
+        /// Signalled whenever new containers are materialized.
+        /// </summary>
+        public event EventHandler<ItemContainerEventArgs> Materialized;
+
+        /// <summary>
+        /// Event raised whenever containers are dematerialized.
+        /// </summary>
+        public event EventHandler<ItemContainerEventArgs> Dematerialized;
+
+        /// <summary>
         /// Gets the currently materialized containers.
         /// </summary>
         public IEnumerable<IControl> Items => _containerToItem.Keys;
@@ -33,6 +44,10 @@ namespace Perspex.Controls.Generators
         {
             _itemToContainer.Add(item, container);
             _containerToItem.Add(container, item);
+
+            Materialized?.Invoke(
+                this, 
+                new ItemContainerEventArgs(0, new ItemContainer(container, item, 0)));
         }
 
         /// <summary>
@@ -44,6 +59,10 @@ namespace Perspex.Controls.Generators
             var item = _containerToItem[container];
             _containerToItem.Remove(container);
             _itemToContainer.Remove(item);
+
+            Dematerialized?.Invoke(
+                this, 
+                new ItemContainerEventArgs(0, new ItemContainer(container, item, 0)));
         }
 
         /// <summary>
