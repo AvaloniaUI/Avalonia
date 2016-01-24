@@ -29,6 +29,16 @@ namespace Perspex.Media
         }
 
         /// <summary>
+        /// Sets path's winding rule (default is EvenOdd). You should call this method before any calls to BeginFigure. If you wonder why, ask Direct2D guys about their design decisions.
+        /// </summary>
+        /// <param name="fillRule"></param>
+
+        public void SetFillRule(FillRule fillRule)
+        {
+            _impl.SetFillRule(fillRule);
+        }
+
+        /// <summary>
         /// Draws an arc to the specified point.
         /// </summary>
         /// <param name="point">The destination point.</param>

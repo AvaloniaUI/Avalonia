@@ -1,8 +1,10 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Perspex.Media;
 using Perspex.Platform;
 using SharpDX.Direct2D1;
+using SweepDirection = SharpDX.Direct2D1.SweepDirection;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -64,6 +66,11 @@ namespace Perspex.Direct2D1.Media
         public void EndFigure(bool isClosed)
         {
             _sink.EndFigure(isClosed ? FigureEnd.Closed : FigureEnd.Open);
+        }
+
+        public void SetFillRule(FillRule fillRule)
+        {
+            _sink.SetFillMode(fillRule == FillRule.EvenOdd ? FillMode.Alternate : FillMode.Winding);
         }
 
         public void Dispose()

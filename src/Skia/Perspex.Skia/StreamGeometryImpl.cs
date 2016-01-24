@@ -140,6 +140,13 @@ namespace Perspex.Skia
                     Flag = isClosed
                 });
             }
+
+            public void SetFillRule(FillRule fillRule)
+            {
+                _geometryImpl.FillRule = fillRule;
+            }
         }
+
+        public FillRule FillRule { get; set; }
     }
 }

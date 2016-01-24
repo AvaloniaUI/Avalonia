@@ -46,7 +46,7 @@ namespace Perspex.Skia
             using (var stroke = pen?.Brush != null ? CreateBrush(pen, size) : null)
             {
                 MethodTable.Instance.DrawGeometry(Handle, impl.Path.Handle, fill != null ? fill.Brush : null,
-                    stroke != null ? stroke.Brush : null);
+                    stroke != null ? stroke.Brush : null, impl.FillRule == FillRule.EvenOdd);
             }
             Transform = oldTransform;
         }

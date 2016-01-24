@@ -14,7 +14,7 @@ namespace Perspex.Cairo.Media
     {
         public StreamGeometryImpl()
         {
-            _impl = new StreamGeometryContextImpl(null);
+            _impl = new StreamGeometryContextImpl(this, null);
         }
 
         public StreamGeometryImpl(StreamGeometryContextImpl impl)
@@ -49,6 +49,8 @@ namespace Perspex.Cairo.Media
                 }
             }
         }
+
+        public FillRule FillRule { get; set; }
 
         public IStreamGeometryImpl Clone()
 		{

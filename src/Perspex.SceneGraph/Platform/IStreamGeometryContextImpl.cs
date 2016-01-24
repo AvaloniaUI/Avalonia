@@ -56,5 +56,7 @@ namespace Perspex.Platform
         /// </summary>
         /// <param name="isClosed">Whether the figure is closed.</param>
         void EndFigure(bool isClosed);
+
+        void SetFillRule(FillRule fillRule);
     }
 }
