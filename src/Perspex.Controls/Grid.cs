@@ -587,6 +587,11 @@ namespace Perspex.Controls
                 _rowMatrix = new Segment[rowCount, rowCount];
                 _colMatrix = new Segment[colCount, colCount];
             }
+            else
+            {
+                Array.Clear(_rowMatrix, 0, _rowMatrix.Length);
+                Array.Clear(_colMatrix, 0, _colMatrix.Length);
+            }
         }
 
         private void ExpandStarCols(Size availableSize)
