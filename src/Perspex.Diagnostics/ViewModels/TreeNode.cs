@@ -13,10 +13,12 @@ namespace Perspex.Diagnostics.ViewModels
     internal class TreeNode : ReactiveObject
     {
         private string _classes;
+        private bool _isExpanded;
 
-        public TreeNode(Control control)
+        public TreeNode(Control control, TreeNode parent)
         {
             Control = control;
+            Parent = parent;
             Type = control.GetType().Name;
 
             var classesChanged = Observable.FromEventPattern<
@@ -52,13 +54,23 @@ namespace Perspex.Diagnostics.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _classes, value); }
         }
 
-        public string Type
+        public Control Control
         {
             get;
-            private set;
         }
 
-        public Control Control
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            set { this.RaiseAndSetIfChanged(ref _isExpanded, value); }
+        }
+
+        public TreeNode Parent
+        {
+            get;
+        }
+
+        public string Type
         {
             get;
             private set;

@@ -5,6 +5,7 @@ using Perspex.Controls;
 using Perspex.Diagnostics;
 using Perspex.Markup.Xaml;
 using Perspex.Themes.Default;
+using Serilog;
 
 namespace ControlCatalog
 {
@@ -14,6 +15,7 @@ namespace ControlCatalog
         {
             RegisterServices();
             InitializeSubsystems(GetPlatformId());
+            InitializeLogging();
             Styles = new DefaultTheme();
             InitializeComponent();
         }
@@ -36,6 +38,16 @@ namespace ControlCatalog
         private void InitializeComponent()
         {
             PerspexXamlLoader.Load(this);
+        }
+
+        private void InitializeLogging()
+        {
+#if DEBUG
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Error()
+                .WriteTo.Trace(outputTemplate: "{Message}")
+                .CreateLogger();
+#endif
         }
 
         private int GetPlatformId()

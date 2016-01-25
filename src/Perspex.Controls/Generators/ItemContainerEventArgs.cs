@@ -16,6 +16,19 @@ namespace Perspex.Controls.Generators
         /// Initializes a new instance of the <see cref="ItemContainerEventArgs"/> class.
         /// </summary>
         /// <param name="startingIndex">The index of the first container in the source items.</param>
+        /// <param name="container">The container.</param>
+        public ItemContainerEventArgs(
+            int startingIndex,
+            ItemContainer container)
+        {
+            StartingIndex = startingIndex;
+            Containers = new[] { container };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemContainerEventArgs"/> class.
+        /// </summary>
+        /// <param name="startingIndex">The index of the first container in the source items.</param>
         /// <param name="containers">The containers.</param>
         public ItemContainerEventArgs(
             int startingIndex, 

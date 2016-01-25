@@ -8,6 +8,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Styling;
+using Perspex.Threading;
 using Perspex.VisualTree;
 
 namespace Perspex.Controls
@@ -17,6 +18,14 @@ namespace Perspex.Controls
     /// </summary>
     public class TreeView : ItemsControl
     {
+        /// <summary>
+        /// Defines the <see cref="AutoScrollToSelectedItem"/> property.
+        /// </summary>
+        public static readonly PerspexProperty<bool> AutoScrollToSelectedItemProperty =
+            PerspexProperty.Register<TreeView, bool>(
+                nameof(AutoScrollToSelectedItem),
+                defaultValue: true);
+
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
@@ -42,6 +51,15 @@ namespace Perspex.Controls
             (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <summary>
+        /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
+        /// </summary>
+        public bool AutoScrollToSelectedItem
+        {
+            get { return GetValue(AutoScrollToSelectedItemProperty); }
+            set { SetValue(AutoScrollToSelectedItemProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
         public object SelectedItem
@@ -65,6 +83,11 @@ namespace Perspex.Controls
                 {
                     var container = ItemContainerGenerator.Index.ContainerFromItem(_selectedItem);
                     MarkContainerSelected(container, true);
+
+                    if (AutoScrollToSelectedItem && container != null)
+                    {
+                        container.BringIntoView();
+                    }
                 }
             }
         }
@@ -72,12 +95,14 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TreeItemContainerGenerator<TreeViewItem>(
+            var result = new TreeItemContainerGenerator<TreeViewItem>(
                 this,
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
                 new TreeContainerIndex());
+            result.Index.Materialized += ContainerMaterialized;
+            return result;
         }
 
         /// <inheritdoc/>
@@ -188,6 +213,36 @@ namespace Perspex.Controls
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Called when a new item container is materialized, to set its selected state.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void ContainerMaterialized(object sender, ItemContainerEventArgs e)
+        {
+            var selectedItem = SelectedItem;
+
+            if (selectedItem != null)
+            {
+                foreach (var container in e.Containers)
+                {
+                    if (container.Item == selectedItem)
+                    {
+                        ((TreeViewItem)container.ContainerControl).IsSelected = true;
+
+                        if (AutoScrollToSelectedItem)
+                        {
+                            DispatcherTimer.RunOnce(
+                                container.ContainerControl.BringIntoView,
+                                TimeSpan.Zero);
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>

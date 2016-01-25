@@ -7,7 +7,7 @@ using Perspex.Controls.Templates;
 
 namespace Perspex.Diagnostics
 {
-    internal class ViewLocator<TViewModel> : IDataTemplate
+    public class ViewLocator<TViewModel> : IDataTemplate
     {
         public IControl Build(object data)
         {
