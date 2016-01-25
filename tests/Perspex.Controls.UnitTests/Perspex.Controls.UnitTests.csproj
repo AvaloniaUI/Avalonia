@@ -82,6 +82,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ClassesTests.cs" />
+    <Compile Include="DockPanelTests.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="GridSplitterTests.cs" />
     <Compile Include="GridTests.cs" />

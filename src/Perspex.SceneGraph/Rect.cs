@@ -403,6 +403,46 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Returns a new <see cref="Rect"/> with the specified X position.
+        /// </summary>
+        /// <param name="x">The x position.</param>
+        /// <returns>The new <see cref="Rect"/>.</returns>
+        public Rect WithX(double x)
+        {
+            return new Rect(x, _y, _width, _height);
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Rect"/> with the specified Y position.
+        /// </summary>
+        /// <param name="y">The y position.</param>
+        /// <returns>The new <see cref="Rect"/>.</returns>
+        public Rect WithY(double y)
+        {
+            return new Rect(_x, y, _width, _height);
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Rect"/> with the specified width.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <returns>The new <see cref="Rect"/>.</returns>
+        public Rect WithWidth(double width)
+        {
+            return new Rect(_x, _y, width, _height);
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="Rect"/> with the specified height.
+        /// </summary>
+        /// <param name="height">The height.</param>
+        /// <returns>The new <see cref="Rect"/>.</returns>
+        public Rect WithHeight(double height)
+        {
+            return new Rect(_x, _y, _width, height);
+        }
+
+        /// <summary>
         /// Returns the string representation of the rectangle.
         /// </summary>
         /// <returns>The string representation of the rectangle.</returns>
