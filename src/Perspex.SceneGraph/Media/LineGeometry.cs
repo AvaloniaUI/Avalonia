@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Platform;
-using System;
 
 namespace Perspex.Media
 {
@@ -11,22 +10,25 @@ namespace Perspex.Media
     /// </summary>
     public class LineGeometry : Geometry
     {
-        private PointPair _pointPair;
+        private Point _startPoint;
+        private Point _endPoint;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineGeometry"/> class.
         /// </summary>
-        /// <param name="pointPair">The pointPair.</param>
-        public LineGeometry(PointPair pointPair)
+        /// <param name="startPoint">The start point.</param>
+        /// <param name="endPoint">The end point.</param>
+        public LineGeometry(Point startPoint, Point endPoint)
         {
-            _pointPair = pointPair;
+            _startPoint = startPoint;
+            _endPoint = endPoint;
             IPlatformRenderInterface factory = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
             IStreamGeometryImpl impl = factory.CreateStreamGeometry();
 
             using (IStreamGeometryContextImpl context = impl.Open())
             {
-                context.BeginFigure(_pointPair.P1, false);
-                context.LineTo(_pointPair.P2);
+                context.BeginFigure(_startPoint, false);
+                context.LineTo(_endPoint);
                 context.EndFigure(false);
             }
 
@@ -39,25 +41,25 @@ namespace Perspex.Media
             get
             {
                 double xMin, yMin, xMax, yMax;
-                if (_pointPair.P1.X <= _pointPair.P2.X)
+                if (_startPoint.X <= _endPoint.X)
                 {
-                    xMin = _pointPair.P1.X;
-                    xMax = _pointPair.P2.X;
+                    xMin = _startPoint.X;
+                    xMax = _endPoint.X;
                 }
                 else
                 {
-                    xMin = _pointPair.P2.X;
-                    xMax = _pointPair.P1.X;
+                    xMin = _endPoint.X;
+                    xMax = _startPoint.X;
                 }
-                if (_pointPair.P1.Y <= _pointPair.P2.Y)
+                if (_startPoint.Y <= _endPoint.Y)
                 {
-                    yMin = _pointPair.P1.Y;
-                    yMax = _pointPair.P2.Y;
+                    yMin = _startPoint.Y;
+                    yMax = _endPoint.Y;
                 }
                 else
                 {
-                    yMin = _pointPair.P2.Y;
-                    yMax = _pointPair.P1.Y;
+                    yMin = _endPoint.Y;
+                    yMax = _startPoint.Y;
                 }
 
                 return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
@@ -67,7 +69,7 @@ namespace Perspex.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new LineGeometry(new PointPair(_pointPair.P1, _pointPair.P2));
+            return new LineGeometry(_startPoint, _endPoint);
         }
     }
 }

@@ -9,31 +9,42 @@ namespace Perspex.Controls.Shapes
 {
     public class Line : Shape
     {
-        public static readonly PerspexProperty<PointPair> PointPairProperty =
-            PerspexProperty.Register<Line, PointPair>("PointPair");
+        public static readonly PerspexProperty<Point> StartPointProperty =
+            PerspexProperty.Register<Line, Point>("StartPoint");
+
+        public static readonly PerspexProperty<Point> EndPointProperty =
+            PerspexProperty.Register<Line, Point>("EndPoint");
 
         private LineGeometry _geometry;
-        private PointPair _pointPair;
+        private Point _startPoint;
+        private Point _endPoint;
 
         public Line()
         {
             StrokeThickness = 1;
         }
 
-        public PointPair PointPair
+        public Point StartPoint
         {
-            get { return GetValue(PointPairProperty); }
-            set { SetValue(PointPairProperty, value); }
+            get { return GetValue(StartPointProperty); }
+            set { SetValue(StartPointProperty, value); }
+        }
+
+        public Point EndPoint
+        {
+            get { return GetValue(EndPointProperty); }
+            set { SetValue(EndPointProperty, value); }
         }
 
         public override Geometry DefiningGeometry
         {
             get
             {
-                if (_geometry == null || _pointPair == null || PointPair.P1 != _pointPair.P1 || PointPair.P2 != _pointPair.P2)
+                if (_geometry == null || StartPoint != _startPoint || EndPoint != _endPoint)
                 {
-                    _pointPair = PointPair;
-                    _geometry = new LineGeometry(_pointPair);
+                    _startPoint = StartPoint;
+                    _endPoint = EndPoint;
+                    _geometry = new LineGeometry(_startPoint, _endPoint);
                 }
 
                 return _geometry;

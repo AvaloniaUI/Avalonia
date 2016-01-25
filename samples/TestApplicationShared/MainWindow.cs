@@ -704,7 +704,8 @@ namespace TestApplication
                                     {
                                         Stroke = Brushes.Red,
                                         StrokeThickness = 2,
-                                        PointPair = new PointPair(120, 185, 30, 115)
+                                        StartPoint = new Point(120, 185),
+                                        EndPoint = new Point(30, 115)
                                     },
                                     new Perspex.Controls.Shapes.Path
                                     {

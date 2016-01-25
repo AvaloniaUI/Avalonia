@@ -32,7 +32,8 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                 {
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    PointPair = new PointPair(0, 0, 200, 200)
+                    StartPoint = new Point(0, 0),
+                    EndPoint = new Point(200, 200)
                 }
             };
 
@@ -51,7 +52,8 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                 {
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    PointPair = new PointPair(200, 0, 0, 200)
+                    StartPoint = new Point(200, 0),
+                    EndPoint = new Point(0, 200)
                 }
             };
 
@@ -70,7 +72,8 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
                 {
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    PointPair = new PointPair(100, 200, 100, 0)
+                    StartPoint = new Point(100, 200),
+                    EndPoint = new Point(100, 0)
                 }
             };
 
