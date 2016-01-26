@@ -39,7 +39,7 @@ Then install the needed packages:
 
 ### Clone the Perspex repository
 
-    git clone https://github.com/grokys/Perspex.git
+    git clone https://github.com/Perspex/Perspex.git
 
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
@@ -57,4 +57,4 @@ Set the TestApplication project as the startup project and click Run.
 
 There will be some compile errors in the tests, but ignore them for now. 
 
-You can track the Linux version's progress in the [Linux issue](https://github.com/grokys/Perspex/issues/78).
+You can track the Linux version's progress in the [Linux issue](https://github.com/Perspex/Perspex/issues/78).
