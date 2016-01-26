@@ -41,7 +41,11 @@ namespace Perspex.Skia
 
     class StreamGeometryImpl : IStreamGeometryImpl
     {
-        public SkPath Path;
+        RefCountable<SkPath> _path;
+        RefCountable<SkPath> _transformedPath;
+        private Matrix _transform = Matrix.Identity;
+        
+        public IntPtr EffectivePath => (_transformedPath ?? _path).Handle;
 
         public Rect GetRenderBounds(double strokeThickness)
         {
@@ -51,11 +55,35 @@ namespace Perspex.Skia
 
         public Rect Bounds { get; private set; }
 
-        public Matrix Transform { get; set; } = Matrix.Identity;
+        public Matrix Transform
+        {
+            get { return _transform; }
+            set
+            {
+                if(_transform == value)
+                    return;
+                _transform = value;
+                ApplyTransform();
+            }
+        }
+
+        void ApplyTransform()
+        {
+            if(_path == null)
+                return;
+            if (_transformedPath != null)
+            {
+                _transformedPath.Dispose();
+                _transformedPath = null;
+            }
+            if (!_transform.IsIdentity)
+                _transformedPath =
+                    new RefCountable<SkPath>(new SkPath(MethodTable.Instance.TransformPath(_path.Handle, Transform)));
+        }
 
         public IStreamGeometryImpl Clone()
         {
-            return new StreamGeometryImpl() {Path = Path, Transform = Transform, Bounds = Bounds};
+            return new StreamGeometryImpl {_path = _path?.Clone(), _transformedPath = _transformedPath?.Clone(), _transform = Transform, Bounds = Bounds};
         }
 
         public IStreamGeometryContextImpl Open()
@@ -77,7 +105,11 @@ namespace Perspex.Skia
             {
                 var arr = _elements.ToArray();
                 SkRect rc;
-                _geometryImpl.Path = new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc));
+                _geometryImpl._path?.Dispose();
+                _geometryImpl._path =
+                    new RefCountable<SkPath>(new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc)));
+                _geometryImpl.ApplyTransform();
+
                 _geometryImpl.Bounds = rc.ToRect();
 
             }
