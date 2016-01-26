@@ -46,7 +46,7 @@ is linked as a submodule in the git repository, so run:
 
     git submodule update --init
     
-The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```Perspex\src\Skia\```.
+The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```src\Skia\```.
    
 ### Load the Project in MonoDevelop
 
