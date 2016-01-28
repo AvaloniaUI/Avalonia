@@ -725,6 +725,10 @@ namespace TestApplication
                                     {
                                         Stroke = Brushes.Brown,
                                         Points = polylinePoints,
+                                        StrokeThickness = 5,
+                                        StrokeJoin = PenLineJoin.Round,
+                                        StrokeStartLineCap = PenLineCap.Triangle,
+                                        StrokeEndLineCap = PenLineCap.Triangle,
                                         [Canvas.LeftProperty] = 30,
                                         [Canvas.TopProperty] = 350,
                                     },
