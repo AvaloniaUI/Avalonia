@@ -7,8 +7,11 @@ Perspex requires Visual Studio 2015 to build on Windows.
 ### Install GTK Sharp
 
 To compile the full project under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. However, if you're 
-not interested in building the cross-platform bits you can simply unload the Perspex.Cairo and 
-Perspex.Gtk project in Visual Studio.
+not interested in building the cross-platform bits you can simply unload these projects from Visual Studio:
+
+ - Perspex.Cairo
+ - Perspex.Cairo.RenderTests
+ - Perspex.Gtk
 
 ### Clone the Perspex repository
 
@@ -19,7 +22,7 @@ is linked as a submodule in the git repository, so run:
 
     git submodule update --init
     
-The next step is to download the Skia native libraries. Run ```getnatives.ps1``` PowerShell script which can be found under the folder ```Perspex\src\Skia\```.
+The next step is to download the Skia native libraries. Run ```getnatives.ps1``` PowerShell script which can be found under the folder ```src\Skia\```.
 
 ## Linux
 
@@ -39,14 +42,14 @@ Then install the needed packages:
 
 ### Clone the Perspex repository
 
-    git clone https://github.com/grokys/Perspex.git
+    git clone https://github.com/Perspex/Perspex.git
 
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
 
     git submodule update --init
     
-The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```Perspex\src\Skia\```.
+The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```src\Skia\```.
    
 ### Load the Project in MonoDevelop
 
@@ -57,4 +60,4 @@ Set the TestApplication project as the startup project and click Run.
 
 There will be some compile errors in the tests, but ignore them for now. 
 
-You can track the Linux version's progress in the [Linux issue](https://github.com/grokys/Perspex/issues/78).
+You can track the Linux version's progress in the [Linux issue](https://github.com/Perspex/Perspex/issues/78).

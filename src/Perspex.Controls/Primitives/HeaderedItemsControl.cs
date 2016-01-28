@@ -51,8 +51,8 @@ namespace Perspex.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             HeaderPresenter = e.NameScope.Find<ContentPresenter>("PART_HeaderPresenter");
+            base.OnTemplateApplied(e);
         }
     }
 }

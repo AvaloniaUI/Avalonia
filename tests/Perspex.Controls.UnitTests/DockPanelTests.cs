@@ -1,0 +1,62 @@
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Xunit;
+
+namespace Perspex.Controls.UnitTests
+{
+    public class DockPanelTests
+    {
+        [Fact]
+        public void Should_Dock_Controls_Horizontal_First()
+        {
+            var target = new DockPanel
+            {
+                Children = new Controls
+                {
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Top },
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Bottom },
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Left },
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Right },
+                    new Border { },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 500, 500), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 500, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 450, 500, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(0, 50, 50, 400), target.Children[2].Bounds);
+            Assert.Equal(new Rect(450, 50, 50, 400), target.Children[3].Bounds);
+            Assert.Equal(new Rect(50, 50, 400, 400), target.Children[4].Bounds);
+        }
+
+        [Fact]
+        public void Should_Dock_Controls_Vertical_First()
+        {
+            var target = new DockPanel
+            {
+                Children = new Controls
+                {
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Left },
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Right },
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Top },
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Bottom },
+                    new Border { },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 600, 400), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 50, 400), target.Children[0].Bounds);
+            Assert.Equal(new Rect(550, 0, 50, 400), target.Children[1].Bounds);
+            Assert.Equal(new Rect(50, 0, 500, 50), target.Children[2].Bounds);
+            Assert.Equal(new Rect(50, 350, 500, 50), target.Children[3].Bounds);
+            Assert.Equal(new Rect(50, 50, 500, 300), target.Children[4].Bounds);
+        }
+    }
+}

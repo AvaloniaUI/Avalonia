@@ -147,6 +147,33 @@ namespace Perspex.Threading
         }
 
         /// <summary>
+        /// Runs a method once, after the specified interval.
+        /// </summary>
+        /// <param name="action">
+        /// The method to call after the interval has elapsed.
+        /// </param>
+        /// <param name="interval">The interval after which to call the method.</param>
+        /// <param name="priority">The priority to use.</param>
+        /// <returns>An <see cref="IDisposable"/> used to cancel the timer.</returns>
+        public static IDisposable RunOnce(
+            Action action,
+            TimeSpan interval,
+            DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            var timer = new DispatcherTimer(priority) { Interval = interval };
+
+            timer.Tick += (s, e) =>
+            {
+                action();
+                timer.Stop();
+            };
+
+            timer.Start();
+
+            return Disposable.Create(() => timer.Stop());
+        }
+
+        /// <summary>
         /// Starts the timer.
         /// </summary>
         public void Start()
