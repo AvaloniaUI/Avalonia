@@ -27,8 +27,8 @@ namespace Perspex.Media
 
             using (IStreamGeometryContextImpl context = impl.Open())
             {
-                context.BeginFigure(startPoint, false);
-                context.LineTo(endPoint);
+                context.BeginFigure(_startPoint, false);
+                context.LineTo(_endPoint);
                 context.EndFigure(false);
             }
 
@@ -36,12 +36,40 @@ namespace Perspex.Media
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds => new Rect(_startPoint, _endPoint);
+        public override Rect Bounds
+        {
+            get
+            {
+                double xMin, yMin, xMax, yMax;
+                if (_startPoint.X <= _endPoint.X)
+                {
+                    xMin = _startPoint.X;
+                    xMax = _endPoint.X;
+                }
+                else
+                {
+                    xMin = _endPoint.X;
+                    xMax = _startPoint.X;
+                }
+                if (_startPoint.Y <= _endPoint.Y)
+                {
+                    yMin = _startPoint.Y;
+                    yMax = _endPoint.Y;
+                }
+                else
+                {
+                    yMin = _endPoint.Y;
+                    yMax = _startPoint.Y;
+                }
+
+                return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+            }
+        }
 
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new LineGeometry(Bounds.TopLeft, Bounds.BottomRight);
+            return new LineGeometry(_startPoint, _endPoint);
         }
     }
 }
