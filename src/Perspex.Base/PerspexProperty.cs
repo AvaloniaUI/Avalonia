@@ -2,14 +2,16 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
+using System.Reflection;
 using Perspex.Data;
 using Perspex.Utilities;
 
 namespace Perspex
 {
     /// <summary>
-    /// Base class for perspex property metadata.
+    /// Base class for perspex properties.
     /// </summary>
     public class PerspexProperty : IEquatable<PerspexProperty>
     {
@@ -18,25 +20,12 @@ namespace Perspex
         /// </summary>
         public static readonly object UnsetValue = new Unset();
 
-        /// <summary>
-        /// Gets the next ID that will be allocated to a property.
-        /// </summary>
         private static int s_nextId = 1;
-
-        /// <summary>
-        /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
-        /// </summary>
-        private readonly Subject<PerspexPropertyChangedEventArgs> _initialized;
-
-        /// <summary>
-        /// Observable fired when this property changes on any <see cref="PerspexObject"/>.
-        /// </summary>
-        private readonly Subject<PerspexPropertyChangedEventArgs> _changed;
-
-        /// <summary>
-        /// Gets the ID of the property.
-        /// </summary>
         private readonly int _id;
+        private readonly Subject<PerspexPropertyChangedEventArgs> _initialized;
+        private readonly Subject<PerspexPropertyChangedEventArgs> _changed;
+        private readonly PropertyMetadata _defaultMetadata;
+        private readonly Dictionary<Type, PropertyMetadata> _metadata;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexProperty"/> class.
@@ -44,22 +33,17 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The type of the property's value.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="notifying">
-        /// A method that gets called before and after the property starts being notified on an
-        /// object; the bool argument will be true before and false afterwards. This callback is
-        /// intended to support IsDataContextChanging.
-        /// </param>
+        /// <param name="metadata">The property metadata.</param>
         protected PerspexProperty(
             string name,
             Type valueType,
             Type ownerType,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            Action<PerspexObject, bool> notifying = null)
+            PropertyMetadata metadata)
         {
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(valueType != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.Requires<ArgumentNullException>(metadata != null);
 
             if (name.Contains("."))
             {
@@ -68,13 +52,15 @@ namespace Perspex
 
             _initialized = new Subject<PerspexPropertyChangedEventArgs>();
             _changed = new Subject<PerspexPropertyChangedEventArgs>();
+            _metadata = new Dictionary<Type, PropertyMetadata>();
 
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
-            DefaultBindingMode = defaultBindingMode;
-            Notifying = notifying;
             _id = s_nextId++;
+
+            _metadata.Add(ownerType, metadata);
+            _defaultMetadata = metadata;
         }
 
         /// <summary>
@@ -87,19 +73,13 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            if (source.IsDirect)
-            {
-                throw new InvalidOperationException(
-                    "This method cannot be called on direct PerspexProperties.");
-            }
-
             _initialized = source._initialized;
             _changed = source._changed;
+            _metadata = source._metadata;
 
             Name = source.Name;
             PropertyType = source.PropertyType;
             OwnerType = ownerType;
-            DefaultBindingMode = source.DefaultBindingMode;
             Notifying = Notifying;
             _id = source._id;
         }
@@ -108,12 +88,6 @@ namespace Perspex
         /// Gets the name of the property.
         /// </summary>
         public string Name { get; }
-
-        /// <summary>
-        /// Gets the full name of the property, wich includes the owner type in the case of
-        /// attached properties.
-        /// </summary>
-        public virtual string FullName => Name;
 
         /// <summary>
         /// Gets the type of the property's value.
@@ -129,11 +103,6 @@ namespace Perspex
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
         public virtual bool Inherits => false;
-
-        /// <summary>
-        /// Gets the default binding mode for the property.
-        /// </summary>
-        public BindingMode DefaultBindingMode { get; }
 
         /// <summary>
         /// Gets a value indicating whether this is an attached property.
@@ -272,21 +241,18 @@ namespace Perspex
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TOwner, TValue, TValue> validate = null,
             Action<IPerspexObject, bool> notifying = null)
-            where TOwner : IPerspexObject
+                where TOwner : IPerspexObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var result = new StyledProperty<TValue>(
-                name,
-                typeof(TOwner),
+            var metadata = new StyledPropertyMetadata(
                 defaultValue,
-                inherits,
-                defaultBindingMode,
-                Cast(validate),
-                notifying);
+                validate: Cast(validate),
+                defaultBindingMode: defaultBindingMode,
+                notifyingCallback: notifying);
 
+            var result = new StyledProperty<TValue>(name, typeof(TOwner), inherits, metadata);
             PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
-
             return result;
         }
 
@@ -312,16 +278,13 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var result = new AttachedProperty<TValue>(
-                name,
-                typeof(TOwner),
+            var metadata = new StyledPropertyMetadata(
                 defaultValue,
-                inherits,
-                defaultBindingMode,
-                Cast(validate));
+                validate: Cast(validate),
+                defaultBindingMode: defaultBindingMode);
 
+            var result = new AttachedProperty<TValue>(name, typeof(TOwner), inherits, metadata);
             PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
-
             return result;
         }
 
@@ -337,7 +300,7 @@ namespace Perspex
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
         /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
-        public static PerspexProperty<TValue> RegisterAttached<THost, TValue>(
+        public static AttachedProperty<TValue> RegisterAttached<THost, TValue>(
             string name,
             Type ownerType,
             TValue defaultValue = default(TValue),
@@ -348,16 +311,13 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var result = new AttachedProperty<TValue>(
-                name,
-                ownerType,
+            var metadata = new StyledPropertyMetadata(
                 defaultValue,
-                inherits,
-                defaultBindingMode,
-                Cast(validate));
+                validate: Cast(validate),
+                defaultBindingMode: defaultBindingMode);
 
+            var result = new AttachedProperty<TValue>(name, ownerType, inherits, metadata);
             PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
-
             return result;
         }
 
@@ -383,6 +343,22 @@ namespace Perspex
             return result;
         }
 
+        /// <summary>
+        /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s []
+        /// operator to initiate a binding.
+        /// </summary>
+        /// <returns>A <see cref="IndexerDescriptor"/>.</returns>
+        /// <remarks>
+        /// The ! and ~ operators are short forms of this.
+        /// </remarks>
+        public IndexerDescriptor Bind()
+        {
+            return new IndexerDescriptor
+            {
+                Property = this,
+            };
+        }
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
@@ -403,19 +379,56 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Returns a binding accessor that can be passed to <see cref="PerspexObject"/>'s []
-        /// operator to initiate a binding.
+        /// Gets the property metadata for the specified type.
         /// </summary>
-        /// <returns>A <see cref="IndexerDescriptor"/>.</returns>
-        /// <remarks>
-        /// The ! and ~ operators are short forms of this.
-        /// </remarks>
-        public IndexerDescriptor Bind()
+        /// <typeparam name="T">The type.</typeparam>
+        /// <returns>
+        /// The property metadata.
+        /// </returns>
+        public PropertyMetadata GetMetadata<T>() where T : IPerspexObject
         {
-            return new IndexerDescriptor
+            var type = typeof(T);
+
+            while (type != null)
             {
-                Property = this,
-            };
+                PropertyMetadata result;
+
+                if (_metadata.TryGetValue(type, out result))
+                {
+                    return result;
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return _defaultMetadata;
+        }
+
+
+        /// <summary>
+        /// Gets the property metadata for the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>
+        /// The property metadata.
+        /// </returns>
+        public PropertyMetadata GetMetadata(Type type)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+
+            while (type != null)
+            {
+                PropertyMetadata result;
+
+                if (_metadata.TryGetValue(type, out result))
+                {
+                    return result;
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return _defaultMetadata;
         }
 
         /// <summary>
@@ -463,7 +476,7 @@ namespace Perspex
         /// <typeparam name="TValue">The property value type.</typeparam>
         /// <param name="f">The typed function.</param>
         /// <returns>The untyped function.</returns>
-        protected static Func<IPerspexObject, TValue, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
+        protected static Func<IPerspexObject, object, object> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
             where TOwner : IPerspexObject
         {
             if (f == null)
@@ -472,8 +485,29 @@ namespace Perspex
             }
             else
             {
-                return (o, v) => f((TOwner)o, v);
+                return (o, v) => f((TOwner)o, (TValue)v);
             }
+        }
+
+        /// <summary>
+        /// Overrides the metadata for the property on the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="metadata">The metadata.</param>
+        protected void OverrideMetadata(Type type, PropertyMetadata metadata)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.Requires<ArgumentNullException>(metadata != null);
+
+            if (_metadata.ContainsKey(type))
+            {
+                throw new InvalidOperationException(
+                    $"Metadata is already set for {Name} on {type}.");
+            }
+
+            var baseMetadata = GetMetadata(type);
+            metadata.Merge(baseMetadata, this);
+            _metadata.Add(type, metadata);
         }
 
         /// <summary>

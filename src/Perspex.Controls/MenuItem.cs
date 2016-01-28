@@ -21,31 +21,31 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ICommand> CommandProperty =
+        public static readonly StyledProperty<ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> CommandParameterProperty =
+        public static readonly StyledProperty<object> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> IconProperty =
+        public static readonly StyledProperty<object> IconProperty =
             PerspexProperty.Register<MenuItem, object>(nameof(Icon));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsSelectedProperty =
+        public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<MenuItem>();
 
         /// <summary>

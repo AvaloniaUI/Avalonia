@@ -14,8 +14,6 @@ using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
-using Perspex.LogicalTree;
-using Perspex.Rendering;
 using Perspex.Styling;
 
 namespace Perspex.Controls
@@ -508,7 +506,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="o">The object on which the DataContext is changing.</param>
         /// <param name="notifying">Whether the notifcation is beginning or ending.</param>
-        private static void DataContextNotifying(PerspexObject o, bool notifying)
+        private static void DataContextNotifying(IPerspexObject o, bool notifying)
         {
             var control = o as Control;
 

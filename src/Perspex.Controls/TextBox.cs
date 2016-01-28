@@ -20,34 +20,35 @@ namespace Perspex.Controls
 {
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
-        public static readonly PerspexProperty<bool> AcceptsReturnProperty =
+        public static readonly StyledProperty<bool> AcceptsReturnProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsReturn");
 
-        public static readonly PerspexProperty<bool> AcceptsTabProperty =
+        public static readonly StyledProperty<bool> AcceptsTabProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
-        public static readonly PerspexProperty<int> CaretIndexProperty =
+        // TODO: Should CaretIndex, SelectionStart/End and Text be direct properties?
+        public static readonly StyledProperty<int> CaretIndexProperty =
             PerspexProperty.Register<TextBox, int>("CaretIndex", validate: ValidateCaretIndex);
 
-        public static readonly PerspexProperty<int> SelectionStartProperty =
+        public static readonly StyledProperty<int> SelectionStartProperty =
             PerspexProperty.Register<TextBox, int>("SelectionStart", validate: ValidateCaretIndex);
 
-        public static readonly PerspexProperty<int> SelectionEndProperty =
+        public static readonly StyledProperty<int> SelectionEndProperty =
             PerspexProperty.Register<TextBox, int>("SelectionEnd", validate: ValidateCaretIndex);
 
-        public static readonly PerspexProperty<string> TextProperty =
+        public static readonly StyledProperty<string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>();
 
-        public static readonly PerspexProperty<TextAlignment> TextAlignmentProperty =
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
 
-        public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
-        public static readonly PerspexProperty<string> WatermarkProperty =
+        public static readonly StyledProperty<string> WatermarkProperty =
             PerspexProperty.Register<TextBox, string>("Watermark");
 
-        public static readonly PerspexProperty<bool> UseFloatingWatermarkProperty =
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
 
         struct UndoRedoState : IEquatable<UndoRedoState>

@@ -160,7 +160,7 @@ namespace Perspex.Base.UnitTests
 
         private class Class3 : Class1
         {
-            public static readonly PerspexProperty<string> AttachedProperty =
+            public static readonly StyledProperty<string> AttachedProperty =
                 AttachedOwner.AttachedProperty.AddOwner<Class3>();
         }
 
@@ -170,7 +170,7 @@ namespace Perspex.Base.UnitTests
 
         private class AttachedOwner
         {
-            public static readonly PerspexProperty<string> AttachedProperty =
+            public static readonly AttachedProperty<string> AttachedProperty =
                 PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
         }
     }

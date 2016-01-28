@@ -32,49 +32,49 @@ namespace Perspex
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Rect> BoundsProperty =
+        public static readonly DirectProperty<Visual, Rect> BoundsProperty =
             PerspexProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
 
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> ClipToBoundsProperty =
+        public static readonly StyledProperty<bool> ClipToBoundsProperty =
             PerspexProperty.Register<Visual, bool>(nameof(ClipToBounds));
 
         /// <summary>
         /// Defines the <see cref="IsVisibleProperty"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsVisibleProperty =
+        public static readonly StyledProperty<bool> IsVisibleProperty =
             PerspexProperty.Register<Visual, bool>(nameof(IsVisible), true);
 
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> OpacityProperty =
+        public static readonly StyledProperty<double> OpacityProperty =
             PerspexProperty.Register<Visual, double>(nameof(Opacity), 1);
 
         /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Transform> RenderTransformProperty =
+        public static readonly StyledProperty<Transform> RenderTransformProperty =
             PerspexProperty.Register<Visual, Transform>(nameof(RenderTransform));
 
         /// <summary>
         /// Defines the <see cref="TransformOrigin"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativePoint> TransformOriginProperty =
+        public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
             PerspexProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
         /// Defines the <see cref="IVisual.VisualParent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IVisual> VisualParentProperty =
+        public static readonly DirectProperty<Visual, IVisual> VisualParentProperty =
             PerspexProperty.RegisterDirect<Visual, IVisual>("VisualParent", o => o._visualParent);
 
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
         /// </summary>
-        public static readonly PerspexProperty<int> ZIndexProperty =
+        public static readonly StyledProperty<int> ZIndexProperty =
             PerspexProperty.Register<Visual, int>(nameof(ZIndex));
 
         /// <summary>

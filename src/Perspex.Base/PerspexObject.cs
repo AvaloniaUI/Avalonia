@@ -57,21 +57,21 @@ namespace Perspex
                 new PropertyEnricher("Id", GetHashCode()),
             });
 
-            ////foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
-            ////{
-            ////    object value = property.IsDirect ? 
-            ////        ((IDirectPropertyAccessor)property).GetValue(this) : 
-            ////        property.GetDefaultValue(GetType());
+            foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
+            {
+                object value = property.IsDirect ?
+                    ((IDirectPropertyAccessor)property).GetValue(this) :
+                    ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
 
-            ////    var e = new PerspexPropertyChangedEventArgs(
-            ////        this,
-            ////        property,
-            ////        PerspexProperty.UnsetValue,
-            ////        value,
-            ////        BindingPriority.Unset);
+                var e = new PerspexPropertyChangedEventArgs(
+                    this,
+                    property,
+                    PerspexProperty.UnsetValue,
+                    value,
+                    BindingPriority.Unset);
 
-            ////    property.NotifyInitialized(e);
-            ////}
+                property.NotifyInitialized(e);
+            }
         }
 
         /// <summary>
@@ -162,8 +162,10 @@ namespace Perspex
 
             set
             {
+                var metadata = binding.Property.GetMetadata(GetType());
+
                 var mode = (binding.Mode == BindingMode.Default) ?
-                    binding.Property.DefaultBindingMode :
+                    metadata.DefaultBindingMode :
                     binding.Mode;
                 var sourceBinding = value as IndexerDescriptor;
 

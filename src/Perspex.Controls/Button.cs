@@ -35,31 +35,31 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ClickMode> ClickModeProperty =
+        public static readonly StyledProperty<ClickMode> ClickModeProperty =
             PerspexProperty.Register<Button, ClickMode>(nameof(ClickMode));
 
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ICommand> CommandProperty =
+        public static readonly StyledProperty<ICommand> CommandProperty =
             PerspexProperty.Register<Button, ICommand>(nameof(Command));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly PerspexProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<Button>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> CommandParameterProperty =
+        public static readonly StyledProperty<object> CommandParameterProperty =
             PerspexProperty.Register<Button, object>(nameof(CommandParameter));
 
         /// <summary>
         /// Defines the <see cref="IsDefaultProperty"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsDefaultProperty =
+        public static readonly StyledProperty<bool> IsDefaultProperty =
             PerspexProperty.Register<Button, bool>(nameof(IsDefault));
 
         /// <summary>

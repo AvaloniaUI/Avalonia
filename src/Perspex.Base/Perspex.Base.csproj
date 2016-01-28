@@ -58,6 +58,7 @@
     <Compile Include="PerspexLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
+    <Compile Include="PropertyMetadata.cs" />
     <Compile Include="StyledProperty.cs" />
     <Compile Include="StyledPropertyBase.cs" />
     <Compile Include="PerspexPropertyRegistry.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="Reactive\AnonymousSubject`1.cs" />
     <Compile Include="Reactive\AnonymousSubject`2.cs" />
     <Compile Include="Reactive\PerspexObservable.cs" />
+    <Compile Include="StyledPropertyMetadata.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />

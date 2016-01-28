@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using Perspex.Data;
+using Perspex.Utilities;
 
 namespace Perspex
 {
@@ -13,34 +12,21 @@ namespace Perspex
     /// </summary>
     public class StyledPropertyBase<TValue> : PerspexProperty<TValue>, IStyledPropertyAccessor
     {
-        private readonly TValue _defaultValue;
-        private readonly Dictionary<Type, TValue> _defaultValues;
         private bool _inherits;
-        private readonly Dictionary<Type, Func<IPerspexObject, TValue, TValue>> _validation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyBase{T}"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="validate">A validation function.</param>
-        /// <param name="notifying">
-        /// A method that gets called before and after the property starts being notified on an
-        /// object; the bool argument will be true before and false afterwards. This callback is
-        /// intended to support IsDataContextChanging.
-        /// </param>
+        /// <param name="metadata">The property metadata.</param>
         protected StyledPropertyBase(
             string name,
             Type ownerType,
-            TValue defaultValue,
-            bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            Func<IPerspexObject, TValue, TValue> validate = null,
-            Action<IPerspexObject, bool> notifying = null)
-                : base(name, ownerType, defaultBindingMode, notifying)
+            bool inherits,
+            StyledPropertyMetadata metadata)
+                : base(name, ownerType, CheckMetadata(metadata))
         {
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
@@ -50,16 +36,18 @@ namespace Perspex
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _defaultValues = new Dictionary<Type, TValue>();
-            _validation = new Dictionary<Type, Func<IPerspexObject, TValue, TValue>>();
-
-            _defaultValue = defaultValue;
             _inherits = inherits;
+        }
 
-            if (validate != null)
-            {
-                _validation.Add(ownerType, validate);
-            }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StyledPropertyBase{T}"/> class.
+        /// </summary>
+        /// <param name="source">The property to add the owner to.</param>
+        /// <param name="ownerType">The type of the class that registers the property.</param>
+        protected StyledPropertyBase(StyledPropertyBase<TValue> source, Type ownerType)
+            : base(source, ownerType)
+        {
+            _inherits = source.Inherits;
         }
 
         /// <summary>
@@ -79,19 +67,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            while (type != null)
-            {
-                TValue result;
-
-                if (_defaultValues.TryGetValue(type, out result))
-                {
-                    return result;
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-
-            return _defaultValue;
+            return (TValue)(GetMetadata(type) as StyledPropertyMetadata)?.DefaultValue;
         }
 
         /// <summary>
@@ -103,21 +79,22 @@ namespace Perspex
         /// </returns>
         public Func<IPerspexObject, TValue, TValue> GetValidationFunc(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            while (type != null)
-            {
-                Func<IPerspexObject, TValue, TValue> result;
-
-                if (_validation.TryGetValue(type, out result))
-                {
-                    return result;
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-
             return null;
+            ////Contract.Requires<ArgumentNullException>(type != null);
+
+            ////while (type != null)
+            ////{
+            ////    Func<IPerspexObject, TValue, TValue> result;
+
+            ////    if (_validation.TryGetValue(type, out result))
+            ////    {
+            ////        return result;
+            ////    }
+
+            ////    type = type.GetTypeInfo().BaseType;
+            ////}
+
+            ////return null;
         }
 
         /// <summary>
@@ -137,14 +114,7 @@ namespace Perspex
         /// <param name="defaultValue">The default value.</param>
         public void OverrideDefaultValue(Type type, TValue defaultValue)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            if (_defaultValues.ContainsKey(type))
-            {
-                throw new InvalidOperationException("Default value is already set for this property.");
-            }
-
-            _defaultValues.Add(type, defaultValue);
+            OverrideMetadata(type, new StyledPropertyMetadata(defaultValue));
         }
 
         /// <summary>
@@ -155,14 +125,15 @@ namespace Perspex
         public void OverrideValidation<T>(Func<T, TValue, TValue> validation)
             where T : IPerspexObject
         {
-            var type = typeof(T);
+            throw new NotImplementedException();
+            ////var type = typeof(T);
 
-            if (_validation.ContainsKey(type))
-            {
-                throw new InvalidOperationException("Validation is already set for this property.");
-            }
+            ////if (_validation.ContainsKey(type))
+            ////{
+            ////    throw new InvalidOperationException("Validation is already set for this property.");
+            ////}
 
-            _validation.Add(type, Cast(validation));
+            ////_validation.Add(type, Cast(validation));
         }
 
         /// <summary>
@@ -172,14 +143,15 @@ namespace Perspex
         /// <param name="validation">The validation function.</param>
         public void OverrideValidation(Type type, Func<IPerspexObject, TValue, TValue> validation)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            throw new NotImplementedException();
+            //Contract.Requires<ArgumentNullException>(type != null);
 
-            if (_validation.ContainsKey(type))
-            {
-                throw new InvalidOperationException("Validation is already set for this property.");
-            }
+            //if (_validation.ContainsKey(type))
+            //{
+            //    throw new InvalidOperationException("Validation is already set for this property.");
+            //}
 
-            _validation.Add(type, validation);
+            //_validation.Add(type, validation);
         }
 
         /// <summary>
@@ -195,10 +167,45 @@ namespace Perspex
         Func<IPerspexObject, object, object> IStyledPropertyAccessor.GetValidationFunc(Type type)
         {
             var typed = GetValidationFunc(type);
-            return (o, v) => typed(o, (TValue)v);
+
+            if (typed != null)
+            {
+                return (o, v) => typed(o, (TValue)v);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <inheritdoc/>
         object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultValue(type);
+
+        private static PropertyMetadata CheckMetadata(StyledPropertyMetadata metadata)
+        {
+            var valueType = typeof(TValue).GetTypeInfo();
+
+            if (metadata.DefaultValue != null)
+            {
+                var defaultType = metadata.DefaultValue.GetType().GetTypeInfo();
+
+                if (!valueType.IsAssignableFrom(defaultType))
+                {
+                    throw new ArgumentException(
+                        "Invalid default property value. " +
+                        $"Expected {typeof(TValue)} but recieved {metadata.DefaultValue.GetType()}.");
+                }
+            }
+            else
+            {
+                if (!TypeUtilities.AcceptsNull(typeof(TValue)))
+                {
+                    throw new ArgumentException(
+                        $"Invalid default property value. Null is not a valid value for {typeof(TValue)}.");
+                }
+            }
+
+            return metadata;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MinimumProperty =
+        public static readonly DirectProperty<RangeBase, double> MinimumProperty =
             PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Minimum),
                 o => o.Minimum,
@@ -23,7 +23,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MaximumProperty =
+        public static readonly DirectProperty<RangeBase, double> MaximumProperty =
             PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Maximum),
                 o => o.Maximum,
@@ -32,7 +32,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> ValueProperty =
+        public static readonly DirectProperty<RangeBase, double> ValueProperty =
             PerspexProperty.RegisterDirect<RangeBase, double>(
                 nameof(Value),
                 o => o.Value,

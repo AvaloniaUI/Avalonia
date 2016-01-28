@@ -15,7 +15,7 @@ namespace Perspex.Input
         /// The DirectionalNavigation attached property defines how pressing arrow keys causes
         /// focus to be navigated between the children of the container.
         /// </remarks>
-        public static readonly PerspexProperty<KeyboardNavigationMode> DirectionalNavigationProperty =
+        public static readonly AttachedProperty<KeyboardNavigationMode> DirectionalNavigationProperty =
             PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>(
                 "DirectionalNavigation",
                 typeof(KeyboardNavigation),
@@ -28,7 +28,7 @@ namespace Perspex.Input
         /// The TabNavigation attached property defines how pressing the Tab key causes focus to
         /// be navigated between the children of the container.
         /// </remarks>
-        public static readonly PerspexProperty<KeyboardNavigationMode> TabNavigationProperty =
+        public static readonly AttachedProperty<KeyboardNavigationMode> TabNavigationProperty =
             PerspexProperty.RegisterAttached<InputElement, KeyboardNavigationMode>(
                 "TabNavigation",
                 typeof(KeyboardNavigation));
@@ -41,7 +41,7 @@ namespace Perspex.Input
         /// attached property set to <see cref="KeyboardNavigationMode.Once"/>, this property
         /// defines to which child the focus should move.
         /// </remarks>
-        public static readonly PerspexProperty<IInputElement> TabOnceActiveElementProperty =
+        public static readonly AttachedProperty<IInputElement> TabOnceActiveElementProperty =
             PerspexProperty.RegisterAttached<InputElement, IInputElement>(
                 "TabOnceActiveElement",
                 typeof(KeyboardNavigation));

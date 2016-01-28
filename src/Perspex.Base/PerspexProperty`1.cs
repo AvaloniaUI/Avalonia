@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Perspex.Data;
 
 namespace Perspex
 {
@@ -17,23 +16,16 @@ namespace Perspex
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="notifying">
-        /// A method that gets called before and after the property starts being notified on an
-        /// object; the bool argument will be true before and false afterwards. This callback is
-        /// intended to support IsDataContextChanging.
-        /// </param>
+        /// <param name="metadata">The property metadata.</param>
         protected PerspexProperty(
             string name,
             Type ownerType,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            Action<PerspexObject, bool> notifying = null)
+            PropertyMetadata metadata)
             : base(
                 name,
                 typeof(TValue),
                 ownerType,
-                defaultBindingMode,
-                notifying)
+                metadata)
         {
         }
 

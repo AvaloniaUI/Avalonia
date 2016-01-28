@@ -28,7 +28,7 @@ namespace Perspex
             string name,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter = null)
-            : base(name, typeof(TOwner))
+            : base(name, typeof(TOwner), new PropertyMetadata())
         {
             Contract.Requires<ArgumentNullException>(getter != null);
 

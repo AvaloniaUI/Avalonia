@@ -18,13 +18,16 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<Brush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
+
+        // TODO: Define these attached properties elswhere (e.g. on a Text class) and AddOwner
+        // them into TextBlock.
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly PerspexProperty<string> FontFamilyProperty =
+        public static readonly AttachedProperty<string> FontFamilyProperty =
             PerspexProperty.RegisterAttached<TextBlock, Control, string>(
                 nameof(FontFamily),
                 defaultValue: "Courier New",
@@ -33,7 +36,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> FontSizeProperty =
+        public static readonly AttachedProperty<double> FontSizeProperty =
             PerspexProperty.RegisterAttached<TextBlock, Control, double>(
                 nameof(FontSize),
                 defaultValue: 12,
@@ -42,7 +45,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
-        public static readonly PerspexProperty<FontStyle> FontStyleProperty =
+        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
             PerspexProperty.RegisterAttached<TextBlock, Control, FontStyle>(
                 nameof(FontStyle),
                 inherits: true);
@@ -50,7 +53,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
-        public static readonly PerspexProperty<FontWeight> FontWeightProperty =
+        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
             PerspexProperty.RegisterAttached<TextBlock, Control, FontWeight>(
                 nameof(FontWeight),
                 inherits: true,
@@ -59,7 +62,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> ForegroundProperty =
+        public static readonly AttachedProperty<Brush> ForegroundProperty =
             PerspexProperty.RegisterAttached<TextBlock, Control, Brush>(
                 nameof(Foreground),
                 new SolidColorBrush(0xff000000),
@@ -68,19 +71,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly PerspexProperty<string> TextProperty =
+        public static readonly StyledProperty<string> TextProperty =
             PerspexProperty.Register<TextBlock, string>(nameof(Text), defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
-        public static readonly PerspexProperty<TextAlignment> TextAlignmentProperty =
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             PerspexProperty.Register<TextBlock, TextAlignment>(nameof(TextAlignment));
 
         /// <summary>
         /// Defines the <see cref="TextWrapping"/> property.
         /// </summary>
-        public static readonly PerspexProperty<TextWrapping> TextWrappingProperty =
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             PerspexProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
 
         /// <summary>

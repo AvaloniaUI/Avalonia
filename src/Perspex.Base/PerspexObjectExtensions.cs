@@ -184,7 +184,7 @@ namespace Perspex
 
             if (mode == BindingMode.Default)
             {
-                mode = property.DefaultBindingMode;
+                mode = property.GetMetadata(o.GetType()).DefaultBindingMode;
             }
 
             return o.Bind(

@@ -19,13 +19,13 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
+        public static readonly AttachedProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>(nameof(CanScrollHorizontally), true);
 
         /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> ExtentProperty =
+        public static readonly DirectProperty<ScrollViewer, Size> ExtentProperty =
             PerspexProperty.RegisterDirect<ScrollViewer, Size>(nameof(Extent), 
                 o => o.Extent,
                 (o, v) => o.Extent = v);
@@ -33,7 +33,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Vector> OffsetProperty =
+        public static readonly DirectProperty<ScrollViewer, Vector> OffsetProperty =
             PerspexProperty.RegisterDirect<ScrollViewer, Vector>(
                 nameof(Offset),
                 o => o.Offset,
@@ -42,7 +42,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> ViewportProperty =
+        public static readonly DirectProperty<ScrollViewer, Size> ViewportProperty =
             PerspexProperty.RegisterDirect<ScrollViewer, Size>(nameof(Viewport), 
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
@@ -54,7 +54,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> HorizontalScrollBarMaximumProperty =
+        public static readonly StyledProperty<double> HorizontalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarMaximum");
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> HorizontalScrollBarValueProperty =
+        public static readonly StyledProperty<double> HorizontalScrollBarValueProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarValue");
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> HorizontalScrollBarViewportSizeProperty =
+        public static readonly StyledProperty<double> HorizontalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarViewportSize");
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
+        public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
             PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>(
                 nameof(HorizontalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
@@ -96,7 +96,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> VerticalScrollBarMaximumProperty =
+        public static readonly StyledProperty<double> VerticalScrollBarMaximumProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarMaximum");
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> VerticalScrollBarValueProperty =
+        public static readonly StyledProperty<double> VerticalScrollBarValueProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarValue");
 
         /// <summary>
@@ -116,13 +116,13 @@ namespace Perspex.Controls
         /// There is no C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly PerspexProperty<double> VerticalScrollBarViewportSizeProperty =
+        public static readonly StyledProperty<double> VerticalScrollBarViewportSizeProperty =
             PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarViewportSize");
 
         /// <summary>
         /// Defines the <see cref="VerticalScrollBarVisibility"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
+        public static readonly AttachedProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
             PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(VerticalScrollBarVisibility), 
                 ScrollBarVisibility.Auto);

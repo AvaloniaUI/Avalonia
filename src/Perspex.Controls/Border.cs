@@ -13,25 +13,25 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<Brush> BackgroundProperty =
             PerspexProperty.Register<Border, Brush>(nameof(Background));
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+        public static readonly StyledProperty<Brush> BorderBrushProperty =
             PerspexProperty.Register<Border, Brush>(nameof(BorderBrush));
 
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<double> BorderThicknessProperty =
             PerspexProperty.Register<Border, double>(nameof(BorderThickness));
 
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
         /// </summary>
-        public static readonly PerspexProperty<float> CornerRadiusProperty =
+        public static readonly StyledProperty<float> CornerRadiusProperty =
             PerspexProperty.Register<Border, float>(nameof(CornerRadius));
 
         /// <summary>
