@@ -19,9 +19,9 @@ namespace Perspex.Controls.Shapes
         private Point _startPoint;
         private Point _endPoint;
 
-        public Line()
+        static Line()
         {
-            StrokeThickness = 1;
+            StrokeThicknessProperty.OverrideDefaultValue<Line>(1);
         }
 
         public Point StartPoint

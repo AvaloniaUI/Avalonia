@@ -12,9 +12,9 @@ namespace Perspex.Controls.Shapes
         public static readonly PerspexProperty<IList<Point>> PointsProperty =
             PerspexProperty.Register<Polyline, IList<Point>>("Points");
 
-        public Polyline()
+        static Polyline()
         {
-            StrokeThickness = 1; // Default Thickness
+            StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
         }
 
         public IList<Point> Points
