@@ -69,7 +69,6 @@ namespace Perspex.Media
                 return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
             }
         }
-        public override Rect Bounds => PlatformImpl.Bounds;
 
         /// <inheritdoc/>
         public override Geometry Clone()

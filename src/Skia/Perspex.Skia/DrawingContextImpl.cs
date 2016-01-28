@@ -111,7 +111,7 @@ namespace Perspex.Skia
         {
             var brush = CreateBrush(pen.Brush, targetSize);
             brush.Brush->Stroke = true;
-            brush.Brush->StrokeThickness = (float)(pen.Thickness / ((Transform.M11 + Transform.M22) * 0.5));
+            brush.Brush->StrokeThickness = (float)pen.Thickness;
             brush.Brush->StrokeLineCap = pen.StartLineCap;
             brush.Brush->StrokeLineJoin = pen.LineJoin;
             brush.Brush->StrokeMiterLimit = (float)pen.MiterLimit;

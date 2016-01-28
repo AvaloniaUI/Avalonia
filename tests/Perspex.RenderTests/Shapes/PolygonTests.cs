@@ -21,7 +21,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Caused by cairo bug")]
+#else
         [Fact]
+#endif
         public void Polygon_1px_Stroke()
         {
             Decorator target = new Decorator
@@ -43,7 +47,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Caused by cairo bug")]
+#else
         [Fact]
+#endif
         public void Polygon_NonUniformFill()
         {
             Decorator target = new Decorator

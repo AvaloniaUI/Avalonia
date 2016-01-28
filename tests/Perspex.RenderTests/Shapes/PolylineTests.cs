@@ -21,7 +21,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Caused by cairo bug")]
+#else
         [Fact]
+#endif
         public void Polyline_1px_Stroke()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
@@ -45,7 +49,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if PERSPEX_CAIRO
+        [Fact(Skip = "Caused by cairo bug")]
+#else
         [Fact]
+#endif
         public void Polyline_10px_Stroke_PenLineJoin()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
