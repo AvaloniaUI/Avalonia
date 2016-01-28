@@ -26,22 +26,45 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
                 new Point(9, 1), new Point(10, 0), new Point(15, 0) };
-            var offsetPoint = new Point(0, 50);
-            for (int i = 0; i < polylinePoints.Length; i++)
-            {
-                polylinePoints[i] = polylinePoints[i] * 13 + offsetPoint;
-            }
 
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
-                Width = 230,
-                Height = 130,
+                Width = 400,
+                Height = 200,
                 Child = new Polyline
                 {
                     Stroke = Brushes.Brown,
                     Points = polylinePoints,
+                    Stretch = Stretch.Uniform,
                     StrokeThickness = 1
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void Polyline_10px_Stroke_PenLineJoin()
+        {
+            var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
+                new Point(9, 1), new Point(10, 0), new Point(15, 0) };
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 400,
+                Height = 200,
+                Child = new Polyline
+                {
+                    Stroke = Brushes.Brown,
+                    Points = polylinePoints,
+                    Stretch = Stretch.Uniform,
+                    StrokeJoin = PenLineJoin.Round,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    StrokeThickness = 10
                 }
             };
 

@@ -72,12 +72,12 @@
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
     <Compile Include="Media\LineGeometry.cs" />
+    <Compile Include="Media\PenLineJoin.cs" />
     <Compile Include="Media\PolylineGeometry.cs" />
     <Compile Include="Media\RadialGradientBrush.cs" />
     <Compile Include="Media\LinearGradientBrush.cs" />
     <Compile Include="Media\MediaExtensions.cs" />
     <Compile Include="Media\PenLineCap.cs" />
-    <Compile Include="Media\PenLineJoin.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />

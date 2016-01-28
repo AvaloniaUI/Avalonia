@@ -19,10 +19,5 @@ namespace Perspex.Controls.Shapes
         }
 
         public override Geometry DefiningGeometry => new PolylineGeometry(Points, true);
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size(StrokeThickness, StrokeThickness);
-        }
     }
 }

@@ -56,7 +56,6 @@ namespace Perspex.Skia
             var rv = NativeBrushPool.Instance.Get();
             rv.Brush->Opacity = brush.Opacity;
 
-            
             var solid = brush as SolidColorBrush;
             if (solid != null)
             {
@@ -108,8 +107,6 @@ namespace Perspex.Skia
                 rv.Brush->Bitmap = bitmap.Handle;
                 rv.Brush->BitmapTileMode = tileBrush.TileMode;
                 rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
-
-
             }
 
             return rv;
@@ -119,8 +116,9 @@ namespace Perspex.Skia
         {
             var brush = CreateBrush(pen.Brush, targetSize);
             brush.Brush->Stroke = true;
-            brush.Brush->StrokeThickness = (float)pen.Thickness;
+            brush.Brush->StrokeThickness = (float)(pen.Thickness / ((Transform.M11 + Transform.M22) * 0.5));
             brush.Brush->StrokeLineCap = pen.StartLineCap;
+            brush.Brush->StrokeLineJoin = pen.LineJoin;
             brush.Brush->StrokeMiterLimit = (float)pen.MiterLimit;
 
             if (pen.DashStyle?.Dashes != null)

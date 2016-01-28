@@ -24,23 +24,40 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
         [Fact]
         public void Polygon_1px_Stroke()
         {
-            var polygonPoints = new Point[] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) };
-            for (int i = 0; i < polygonPoints.Length; i++)
-            {
-                polygonPoints[i] = polygonPoints[i] * 15;
-            }
-
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
                 Width = 200,
-                Height = 150,
+                Height = 200,
                 Child = new Polygon
                 {
                     Stroke = Brushes.DarkBlue,
+                    Stretch = Stretch.Uniform,
                     Fill = Brushes.Violet,
-                    Points = polygonPoints,
+                    Points = new [] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
                     StrokeThickness = 1
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void Polygon_NonUniformFill()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 400,
+                Height = 200,
+                Child = new Polygon
+                {
+                    Stroke = Brushes.DarkBlue,
+                    Stretch = Stretch.Fill,
+                    Fill = Brushes.Violet,
+                    Points = new[] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
+                    StrokeThickness = 5,
                 }
             };
 

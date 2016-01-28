@@ -50,10 +50,5 @@ namespace Perspex.Controls.Shapes
                 return _geometry;
             }
         }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size(StrokeThickness, StrokeThickness);
-        }
     }
 }
