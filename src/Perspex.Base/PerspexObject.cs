@@ -57,21 +57,21 @@ namespace Perspex
                 new PropertyEnricher("Id", GetHashCode()),
             });
 
-            foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
-            {
-                object value = property.IsDirect ? 
-                    property.Getter(this) : 
-                    property.GetDefaultValue(GetType());
+            ////foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
+            ////{
+            ////    object value = property.IsDirect ? 
+            ////        ((IDirectPropertyAccessor)property).GetValue(this) : 
+            ////        property.GetDefaultValue(GetType());
 
-                var e = new PerspexPropertyChangedEventArgs(
-                    this,
-                    property,
-                    PerspexProperty.UnsetValue,
-                    value,
-                    BindingPriority.Unset);
+            ////    var e = new PerspexPropertyChangedEventArgs(
+            ////        this,
+            ////        property,
+            ////        PerspexProperty.UnsetValue,
+            ////        value,
+            ////        BindingPriority.Unset);
 
-                property.NotifyInitialized(e);
-            }
+            ////    property.NotifyInitialized(e);
+            ////}
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                return GetRegistered(property).Getter(this);
+                return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
             else
             {
@@ -267,7 +267,7 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                return ((PerspexProperty<T>)GetRegistered(property)).Getter(this);
+                return (T)((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
             else
             {
@@ -310,15 +310,9 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                property = GetRegistered(property);
-
-                if (property.Setter == null)
-                {
-                    throw new ArgumentException($"The property {property.Name} is readonly.");
-                }
-
+                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
                 LogPropertySet(property, value, priority);
-                property.Setter(this, UnsetToDefault(value, property));
+                accessor.SetValue(this, UnsetToDefault(value, property));
             }
             else
             {
@@ -368,23 +362,8 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-            VerifyAccess();
-            if (property.IsDirect)
-            {
-                property = (PerspexProperty<T>)GetRegistered(property);
 
-                if (property.Setter == null)
-                {
-                    throw new ArgumentException($"The property {property.Name} is readonly.");
-                }
-
-                LogPropertySet(property, value, priority);
-                property.Setter(this, value);
-            }
-            else
-            {
-                SetValue((PerspexProperty)property, value, priority);
-            }
+            SetValue((PerspexProperty)property, value, priority);
         }
 
         /// <summary>
@@ -406,9 +385,7 @@ namespace Perspex
 
             if (property.IsDirect)
             {
-                property = GetRegistered(property);
-
-                if (property.Setter == null)
+                if (property.IsReadOnly)
                 {
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
@@ -463,22 +440,8 @@ namespace Perspex
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-            VerifyAccess();
-            if (property.IsDirect)
-            {
-                property = (PerspexProperty<T>)GetRegistered(property);
 
-                if (property.Setter == null)
-                {
-                    throw new ArgumentException($"The property {property.Name} is readonly.");
-                }
-
-                return source.Subscribe(x => SetValue(property, x));
-            }
-            else
-            {
-                return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
-            }
+            return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
         }
 
         /// <summary>
@@ -621,7 +584,7 @@ namespace Perspex
         /// <returns>The <see cref="PriorityValue"/>.</returns>
         private PriorityValue CreatePriorityValue(PerspexProperty property)
         {
-            Func<PerspexObject, object, object> validate = property.GetValidationFunc(GetType());
+            var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(GetType());
             Func<object, object> validate2 = null;
 
             if (validate != null)
@@ -673,7 +636,7 @@ namespace Perspex
             }
             else
             {
-                return property.GetDefaultValue(GetType());
+                return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
             }
         }
 

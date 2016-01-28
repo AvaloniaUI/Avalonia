@@ -71,7 +71,7 @@ namespace Perspex.Base.UnitTests
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<int> QuxProperty =
+            public static readonly StyledProperty<int> QuxProperty =
                 PerspexProperty.Register<Class1, int>("Qux", validate: Validate);
 
             public Class1()
@@ -97,7 +97,7 @@ namespace Perspex.Base.UnitTests
 
         private class Class2 : PerspexObject
         {
-            public static readonly PerspexProperty<int> QuxProperty =
+            public static readonly StyledProperty<int> QuxProperty =
                 Class1.QuxProperty.AddOwner<Class2>();
 
             static Class2()

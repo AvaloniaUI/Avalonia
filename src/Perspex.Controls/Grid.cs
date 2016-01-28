@@ -17,7 +17,9 @@ namespace Perspex.Controls
         /// Defines the Column attached property.
         /// </summary>
         public static readonly PerspexProperty<int> ColumnProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("Column");
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "Column",
+                validate: ValidateColumn);
 
         /// <summary>
         /// Defines the ColumnSpan attached property.
@@ -29,7 +31,9 @@ namespace Perspex.Controls
         /// Defines the Row attached property.
         /// </summary>
         public static readonly PerspexProperty<int> RowProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("Row");
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "Row",
+                validate: ValidateRow);
 
         /// <summary>
         /// Defines the RowSpan attached property.
@@ -576,6 +580,26 @@ namespace Perspex.Controls
             {
                 return val;
             }
+        }
+
+        private static int ValidateColumn(PerspexObject o, int value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Column value.");
+            }
+
+            return value;
+        }
+
+        private static int ValidateRow(PerspexObject o, int value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Row value.");
+            }
+
+            return value;
         }
 
         private void CreateMatrices(int rowCount, int colCount)
