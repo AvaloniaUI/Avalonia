@@ -13,8 +13,7 @@ namespace Perspex.Base.UnitTests
             var p1 = new StyledProperty<string>(
                 "p1", 
                 typeof(Class1), 
-                false,
-                new StyledPropertyMetadata(null));
+                new StyledPropertyMetadata<string>());
             var p2 = p1.AddOwner<Class2>();
 
             Assert.Equal(p1, p2);
@@ -28,8 +27,7 @@ namespace Perspex.Base.UnitTests
             var p1 = new StyledProperty<string>(
                 "p1",
                 typeof(Class1),
-                false,
-                new StyledPropertyMetadata(null));
+                new StyledPropertyMetadata<string>());
             var p2 = p1.AddOwner<Class2>();
 
             Assert.Same(p1, p2);

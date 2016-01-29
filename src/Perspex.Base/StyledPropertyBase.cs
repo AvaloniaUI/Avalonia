@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
-using Perspex.Utilities;
+using System.Diagnostics;
 
 namespace Perspex
 {
@@ -19,14 +18,16 @@ namespace Perspex
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="metadata">The property metadata.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="notifying">A <see cref="PerspexProperty.Notifying"/> callback.</param>
         protected StyledPropertyBase(
             string name,
-            Type ownerType,
-            bool inherits,
-            StyledPropertyMetadata metadata)
-                : base(name, ownerType, CheckMetadata(metadata))
+            Type ownerType,            
+            StyledPropertyMetadata<TValue> metadata,
+            bool inherits = false,
+            Action<IPerspexObject, bool> notifying = null)
+                : base(name, ownerType, metadata, notifying)
         {
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
@@ -67,34 +68,19 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            return (TValue)(GetMetadata(type) as StyledPropertyMetadata)?.DefaultValue;
+            return GetMetadata(type).DefaultValue;
         }
 
         /// <summary>
-        /// Gets the validation function for the property on the specified type.
+        /// Gets the property metadata for the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>
-        /// The validation function, or null if no validation function registered for this type.
+        /// The property metadata.
         /// </returns>
-        public Func<IPerspexObject, TValue, TValue> GetValidationFunc(Type type)
+        public new StyledPropertyMetadata<TValue> GetMetadata(Type type)
         {
-            return null;
-            ////Contract.Requires<ArgumentNullException>(type != null);
-
-            ////while (type != null)
-            ////{
-            ////    Func<IPerspexObject, TValue, TValue> result;
-
-            ////    if (_validation.TryGetValue(type, out result))
-            ////    {
-            ////        return result;
-            ////    }
-
-            ////    type = type.GetTypeInfo().BaseType;
-            ////}
-
-            ////return null;
+            return (StyledPropertyMetadata<TValue>)base.GetMetadata(type);
         }
 
         /// <summary>
@@ -114,44 +100,51 @@ namespace Perspex
         /// <param name="defaultValue">The default value.</param>
         public void OverrideDefaultValue(Type type, TValue defaultValue)
         {
-            OverrideMetadata(type, new StyledPropertyMetadata(defaultValue));
+            OverrideMetadata(type, new StyledPropertyMetadata<TValue>(defaultValue));
         }
 
         /// <summary>
-        /// Overrides the validation function for the property on the specified type.
+        /// Overrides the metadata for the property on the specified type.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
-        /// <param name="validation">The validation function.</param>
-        public void OverrideValidation<T>(Func<T, TValue, TValue> validation)
-            where T : IPerspexObject
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : IPerspexObject
         {
-            throw new NotImplementedException();
-            ////var type = typeof(T);
-
-            ////if (_validation.ContainsKey(type))
-            ////{
-            ////    throw new InvalidOperationException("Validation is already set for this property.");
-            ////}
-
-            ////_validation.Add(type, Cast(validation));
+            base.OverrideMetadata(typeof(T), metadata);
         }
 
         /// <summary>
-        /// Overrides the validation function for the property on the specified type.
+        /// Overrides the metadata for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
-        /// <param name="validation">The validation function.</param>
-        public void OverrideValidation(Type type, Func<IPerspexObject, TValue, TValue> validation)
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata(Type type, StyledPropertyMetadata<TValue> metadata)
         {
-            throw new NotImplementedException();
-            //Contract.Requires<ArgumentNullException>(type != null);
+            base.OverrideMetadata(type, metadata);
+        }
 
-            //if (_validation.ContainsKey(type))
-            //{
-            //    throw new InvalidOperationException("Validation is already set for this property.");
-            //}
+        /// <summary>
+        /// Overrides the validation function for the specified type.
+        /// </summary>
+        /// <typeparam name="THost">The type.</typeparam>
+        /// <param name="validate">The validation function.</param>
+        public void OverrideValidation<THost>(Func<THost, TValue, TValue> validate)
+            where THost : IPerspexObject
+        {
+            Func<IPerspexObject, TValue, TValue> f;
 
-            //_validation.Add(type, validation);
+            if (validate != null)
+            {
+                f = Cast(validate);
+            }
+            else
+            {
+                // Passing null to the validation function means that the property metadata merge
+                // will take the base validation function, so instead use an empty validation.
+                f = (o, v) => v;
+            }
+
+            base.OverrideMetadata(typeof(THost), new StyledPropertyMetadata<TValue>(validate: f));
         }
 
         /// <summary>
@@ -166,46 +159,17 @@ namespace Perspex
         /// <inheritdoc/>
         Func<IPerspexObject, object, object> IStyledPropertyAccessor.GetValidationFunc(Type type)
         {
-            var typed = GetValidationFunc(type);
-
-            if (typed != null)
-            {
-                return (o, v) => typed(o, (TValue)v);
-            }
-            else
-            {
-                return null;
-            }
+            Contract.Requires<ArgumentNullException>(type != null);
+            return ((IStyledPropertyMetadata)base.GetMetadata(type)).Validate;
         }
 
         /// <inheritdoc/>
         object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultValue(type);
 
-        private static PropertyMetadata CheckMetadata(StyledPropertyMetadata metadata)
+        [DebuggerHidden]
+        private Func<IPerspexObject, TValue, TValue> Cast<THost>(Func<THost, TValue, TValue> validate)
         {
-            var valueType = typeof(TValue).GetTypeInfo();
-
-            if (metadata.DefaultValue != null)
-            {
-                var defaultType = metadata.DefaultValue.GetType().GetTypeInfo();
-
-                if (!valueType.IsAssignableFrom(defaultType))
-                {
-                    throw new ArgumentException(
-                        "Invalid default property value. " +
-                        $"Expected {typeof(TValue)} but recieved {metadata.DefaultValue.GetType()}.");
-                }
-            }
-            else
-            {
-                if (!TypeUtilities.AcceptsNull(typeof(TValue)))
-                {
-                    throw new ArgumentException(
-                        $"Invalid default property value. Null is not a valid value for {typeof(TValue)}.");
-                }
-            }
-
-            return metadata;
+            return (o, v) => validate((THost)o, v);
         }
     }
 }

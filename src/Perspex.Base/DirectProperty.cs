@@ -85,7 +85,7 @@ namespace Perspex
                 getter,
                 setter);
 
-            PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
+            PerspexPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;
         }
 

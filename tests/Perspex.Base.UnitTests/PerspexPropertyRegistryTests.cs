@@ -91,7 +91,7 @@ namespace Perspex.Base.UnitTests
         {
             var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Attached");
 
-            Assert.Equal(AttachedOwner.AttachedProperty, result);
+            Assert.True(AttachedOwner.AttachedProperty == result);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Perspex.Base.UnitTests
         {
             var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Class3.Attached");
 
-            Assert.Equal(AttachedOwner.AttachedProperty, result);
+            Assert.True(AttachedOwner.AttachedProperty == result);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace Perspex.Base.UnitTests
         {
             var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "AttachedOwner.Attached");
 
-            Assert.Equal(AttachedOwner.AttachedProperty, result);
+            Assert.True(AttachedOwner.AttachedProperty == result);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Perspex.Base.UnitTests
         {
             var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Class1.Attached");
 
-            Assert.Equal(AttachedOwner.AttachedProperty, result);
+            Assert.True(AttachedOwner.AttachedProperty == result);
         }
 
         [Fact]

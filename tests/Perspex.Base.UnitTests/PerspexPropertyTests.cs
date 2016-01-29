@@ -69,14 +69,13 @@ namespace Perspex.Base.UnitTests
         {
             var metadata = new PropertyMetadata(BindingMode.TwoWay);
             var notify = (Action<IPerspexObject, bool>)((a, b) => { });
-            var overridden = new PropertyMetadata(notifyingCallback: notify);
+            var overridden = new PropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
             target.OverrideMetadata<Class2>(overridden);
 
             var result = target.GetMetadata<Class2>();
             Assert.Equal(BindingMode.TwoWay, result.DefaultBindingMode);
-            Assert.Equal(notify, result.NotifyingCallback);
         }
 
         [Fact]

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Reflection;
 using Perspex.Data;
@@ -34,11 +35,13 @@ namespace Perspex
         /// <param name="valueType">The type of the property's value.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
+        /// <param name="notifying">A <see cref="Notifying"/> callback.</param>
         protected PerspexProperty(
             string name,
             Type valueType,
             Type ownerType,
-            PropertyMetadata metadata)
+            PropertyMetadata metadata,
+            Action<IPerspexObject, bool> notifying = null)
         {
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(valueType != null);
@@ -57,6 +60,7 @@ namespace Perspex
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
+            Notifying = notifying;
             _id = s_nextId++;
 
             _metadata.Add(ownerType, metadata);
@@ -75,13 +79,14 @@ namespace Perspex
 
             _initialized = source._initialized;
             _changed = source._changed;
-            _metadata = source._metadata;
+            _metadata = new Dictionary<Type, PropertyMetadata>();
 
             Name = source.Name;
             PropertyType = source.PropertyType;
             OwnerType = ownerType;
-            Notifying = Notifying;
+            Notifying = source.Notifying;
             _id = source._id;
+            _defaultMetadata = source._defaultMetadata;
         }
 
         /// <summary>
@@ -146,14 +151,18 @@ namespace Perspex
         public IObservable<PerspexPropertyChangedEventArgs> Changed => _changed;
 
         /// <summary>
-        /// The notifying callback.
+        /// Gets a method that gets called before and after the property starts being notified on an
+        /// object.
         /// </summary>
         /// <remarks>
-        /// This is a method that gets called before and after the property starts being notified
-        /// on an object; the bool argument will be true before and false afterwards. This 
-        /// callback is intended to support IsDataContextChanging.
+        /// When a property changes, change notifications are sent to all property subscribers; 
+        /// for example via the <see cref="PerspexProperty.Changed"/> observable and and the 
+        /// <see cref="PerspexObject.PropertyChanged"/> event. If this callback is set for a property,
+        /// then it will be called before and after these notifications take place. The bool argument
+        /// will be true before the property change notifications are sent and false afterwards. This 
+        /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<PerspexObject, bool> Notifying { get; }
+        public Action<IPerspexObject, bool> Notifying { get; }
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="PerspexObject"/>
@@ -245,13 +254,17 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var metadata = new StyledPropertyMetadata(
+            var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode,
-                notifyingCallback: notifying);
+                defaultBindingMode: defaultBindingMode);
 
-            var result = new StyledProperty<TValue>(name, typeof(TOwner), inherits, metadata);
+            var result = new StyledProperty<TValue>(
+                name, 
+                typeof(TOwner), 
+                metadata,
+                inherits,
+                notifying);
             PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
@@ -278,12 +291,12 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var metadata = new StyledPropertyMetadata(
+            var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
                 defaultBindingMode: defaultBindingMode);
 
-            var result = new AttachedProperty<TValue>(name, typeof(TOwner), inherits, metadata);
+            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
             PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
             return result;
         }
@@ -311,12 +324,12 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var metadata = new StyledPropertyMetadata(
+            var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
                 defaultBindingMode: defaultBindingMode);
 
-            var result = new AttachedProperty<TValue>(name, ownerType, inherits, metadata);
+            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
             PerspexPropertyRegistry.Instance.Register(typeof(THost), result);
             return result;
         }
@@ -469,27 +482,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Casts a validation function accepting a typed owner to one accepting an
-        /// <see cref="IPerspexObject"/>.
-        /// </summary>
-        /// <typeparam name="TOwner">The owner type.</typeparam>
-        /// <typeparam name="TValue">The property value type.</typeparam>
-        /// <param name="f">The typed function.</param>
-        /// <returns>The untyped function.</returns>
-        protected static Func<IPerspexObject, object, object> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
-            where TOwner : IPerspexObject
-        {
-            if (f == null)
-            {
-                return null;
-            }
-            else
-            {
-                return (o, v) => f((TOwner)o, (TValue)v);
-            }
-        }
-
-        /// <summary>
         /// Overrides the metadata for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -508,6 +500,20 @@ namespace Perspex
             var baseMetadata = GetMetadata(type);
             metadata.Merge(baseMetadata, this);
             _metadata.Add(type, metadata);
+        }
+
+        [DebuggerHidden]
+        private static Func<IPerspexObject, TValue, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
+            where TOwner : IPerspexObject
+        {
+            if (f != null)
+            {
+                return (o, v) => (o is TOwner) ? f((TOwner)o, v) : v;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

@@ -16,14 +16,14 @@ namespace Perspex
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The class that is registering the property.</param>
-        /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="metadata">The property metadata.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
         public AttachedProperty(
             string name,
-            Type ownerType,
-            bool inherits,
-            StyledPropertyMetadata metadata)
-            : base(name, ownerType, inherits, metadata)
+            Type ownerType,            
+            StyledPropertyMetadata<TValue> metadata,
+            bool inherits = false)
+            : base(name, ownerType, metadata, inherits)
         {
         }
 
@@ -35,7 +35,7 @@ namespace Perspex
         /// </summary>
         /// <typeparam name="TOwner">The owner type.</typeparam>
         /// <returns>The property.</returns>
-        public StyledProperty<TValue> AddOwner<TOwner>()
+        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : IPerspexObject
         {
             var result = new StyledProperty<TValue>(this, typeof(TOwner));
             PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);

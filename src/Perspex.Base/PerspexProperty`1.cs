@@ -17,15 +17,13 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
+        /// <param name="notifying">A <see cref="PerspexProperty.Notifying"/> callback.</param>
         protected PerspexProperty(
             string name,
             Type ownerType,
-            PropertyMetadata metadata)
-            : base(
-                name,
-                typeof(TValue),
-                ownerType,
-                metadata)
+            PropertyMetadata metadata,
+            Action<IPerspexObject, bool> notifying = null)
+            : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
         }
 

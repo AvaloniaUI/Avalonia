@@ -15,14 +15,16 @@ namespace Perspex
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
-        /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="metadata">The property metadata.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="notifying">A <see cref="PerspexProperty.Notifying"/> callback.</param>
         public StyledProperty(
             string name,
             Type ownerType,
-            bool inherits,
-            StyledPropertyMetadata metadata)
-                : base(name, ownerType, inherits, metadata)
+            StyledPropertyMetadata<TValue> metadata,
+            bool inherits = false,
+            Action<IPerspexObject, bool> notifying = null)
+            : base(name, ownerType, metadata, inherits, notifying)
         {
         }
 
@@ -41,7 +43,7 @@ namespace Perspex
         /// </summary>
         /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
         /// <returns>The property.</returns>        
-        public StyledProperty<TValue> AddOwner<TOwner>()
+        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : IPerspexObject
         {
             PerspexPropertyRegistry.Instance.Register(typeof(TOwner), this);
             return this;

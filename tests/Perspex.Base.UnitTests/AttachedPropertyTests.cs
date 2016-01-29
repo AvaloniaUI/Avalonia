@@ -13,8 +13,7 @@ namespace Perspex.Base.UnitTests
             var property = new AttachedProperty<string>(
                 "Foo",
                 typeof(Class1),
-                false,
-                new StyledPropertyMetadata(null));
+                new StyledPropertyMetadata<string>());
 
             Assert.True(property.IsAttached);
         }
