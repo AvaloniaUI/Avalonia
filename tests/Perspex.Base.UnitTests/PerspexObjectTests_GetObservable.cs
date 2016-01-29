@@ -69,13 +69,13 @@ namespace Perspex.Base.UnitTests
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo", "foodefault");
         }
 
         private class Class2 : Class1
         {
-            public static readonly PerspexProperty<string> BarProperty =
+            public static readonly StyledProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar", "bardefault");
         }
     }

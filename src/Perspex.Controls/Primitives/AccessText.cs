@@ -4,7 +4,6 @@
 using System;
 using Perspex.Input;
 using Perspex.Media;
-using Perspex.Rendering;
 
 namespace Perspex.Controls.Primitives
 {
@@ -16,7 +15,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="ShowAccessKey"/> attached property.
         /// </summary>
-        public static readonly PerspexProperty<bool> ShowAccessKeyProperty =
+        public static readonly AttachedProperty<bool> ShowAccessKeyProperty =
             PerspexProperty.RegisterAttached<AccessText, Control, bool>("ShowAccessKey", inherits: true);
 
         /// <summary>

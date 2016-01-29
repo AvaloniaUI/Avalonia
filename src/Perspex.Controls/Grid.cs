@@ -16,7 +16,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the Column attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> ColumnProperty =
+        public static readonly AttachedProperty<int> ColumnProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
                 validate: ValidateColumn);
@@ -24,13 +24,13 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the ColumnSpan attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> ColumnSpanProperty =
+        public static readonly AttachedProperty<int> ColumnSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("ColumnSpan", 1);
 
         /// <summary>
         /// Defines the Row attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> RowProperty =
+        public static readonly AttachedProperty<int> RowProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
                 validate: ValidateRow);
@@ -38,7 +38,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the RowSpan attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> RowSpanProperty =
+        public static readonly AttachedProperty<int> RowSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
         private ColumnDefinitions _columnDefinitions;

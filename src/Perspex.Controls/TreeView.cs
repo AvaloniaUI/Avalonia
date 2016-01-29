@@ -21,7 +21,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="AutoScrollToSelectedItem"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> AutoScrollToSelectedItemProperty =
+        public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
             PerspexProperty.Register<TreeView, bool>(
                 nameof(AutoScrollToSelectedItem),
                 defaultValue: true);
@@ -29,7 +29,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> SelectedItemProperty =
+        public static readonly DirectProperty<TreeView, object> SelectedItemProperty =
             SelectingItemsControl.SelectedItemProperty.AddOwner<TreeView>(
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v);

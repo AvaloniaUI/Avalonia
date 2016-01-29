@@ -279,10 +279,10 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
         private class OldDataContextTest : Control
         {
-            public static readonly PerspexProperty<int> FooProperty =
+            public static readonly StyledProperty<int> FooProperty =
                 PerspexProperty.Register<OldDataContextTest, int>("Foo");
 
-            public static readonly PerspexProperty<int> BarProperty =
+            public static readonly StyledProperty<int> BarProperty =
               PerspexProperty.Register<OldDataContextTest, int>("Bar");
 
             public OldDataContextTest()

@@ -22,7 +22,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<Brush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
         private readonly Controls _children = new Controls();

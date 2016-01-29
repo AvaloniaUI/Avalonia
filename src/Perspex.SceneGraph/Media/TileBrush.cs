@@ -42,37 +42,37 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="AlignmentX"/> property.
         /// </summary>
-        public static readonly PerspexProperty<AlignmentX> AlignmentXProperty =
+        public static readonly StyledProperty<AlignmentX> AlignmentXProperty =
             PerspexProperty.Register<TileBrush, AlignmentX>(nameof(AlignmentX), AlignmentX.Center);
 
         /// <summary>
         /// Defines the <see cref="AlignmentY"/> property.
         /// </summary>
-        public static readonly PerspexProperty<AlignmentY> AlignmentYProperty =
+        public static readonly StyledProperty<AlignmentY> AlignmentYProperty =
             PerspexProperty.Register<TileBrush, AlignmentY>(nameof(AlignmentY), AlignmentY.Center);
 
         /// <summary>
         /// Defines the <see cref="DestinationRect"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativeRect> DestinationRectProperty =
+        public static readonly StyledProperty<RelativeRect> DestinationRectProperty =
             PerspexProperty.Register<TileBrush, RelativeRect>(nameof(DestinationRect), RelativeRect.Fill);
 
         /// <summary>
         /// Defines the <see cref="SourceRect"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativeRect> SourceRectProperty =
+        public static readonly StyledProperty<RelativeRect> SourceRectProperty =
             PerspexProperty.Register<TileBrush, RelativeRect>(nameof(SourceRect), RelativeRect.Fill);
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Stretch> StretchProperty =
+        public static readonly StyledProperty<Stretch> StretchProperty =
             PerspexProperty.Register<TileBrush, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
         /// Defines the <see cref="TileMode"/> property.
         /// </summary>
-        public static readonly PerspexProperty<TileMode> TileModeProperty =
+        public static readonly StyledProperty<TileMode> TileModeProperty =
             PerspexProperty.Register<TileBrush, TileMode>(nameof(TileMode));
 
         /// <summary>

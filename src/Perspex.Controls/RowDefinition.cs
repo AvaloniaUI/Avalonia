@@ -11,19 +11,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MaxHeightProperty =
+        public static readonly StyledProperty<double> MaxHeightProperty =
             PerspexProperty.Register<RowDefinition, double>("MaxHeight", double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MinHeightProperty =
+        public static readonly StyledProperty<double> MinHeightProperty =
             PerspexProperty.Register<RowDefinition, double>("MinHeight");
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
-        public static readonly PerspexProperty<GridLength> HeightProperty =
+        public static readonly StyledProperty<GridLength> HeightProperty =
             PerspexProperty.Register<RowDefinition, GridLength>("Height", new GridLength(1, GridUnitType.Star));
 
         /// <summary>

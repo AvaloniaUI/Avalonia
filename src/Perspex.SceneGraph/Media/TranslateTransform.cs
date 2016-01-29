@@ -13,13 +13,13 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="X"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> XProperty =
+        public static readonly StyledProperty<double> XProperty =
             PerspexProperty.Register<TranslateTransform, double>("X");
 
         /// <summary>
         /// Defines the <see cref="Y"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> YProperty =
+        public static readonly StyledProperty<double> YProperty =
             PerspexProperty.Register<TranslateTransform, double>("Y");
 
         /// <summary>

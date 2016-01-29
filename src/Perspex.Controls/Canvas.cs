@@ -20,25 +20,25 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the Left attached property.
         /// </summary>
-        public static readonly PerspexProperty<double> LeftProperty =
+        public static readonly AttachedProperty<double> LeftProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Left");
 
         /// <summary>
         /// Defines the Top attached property.
         /// </summary>
-        public static readonly PerspexProperty<double> TopProperty =
+        public static readonly AttachedProperty<double> TopProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Top");
 
         /// <summary>
         /// Defines the Right attached property.
         /// </summary>
-        public static readonly PerspexProperty<double> RightProperty =
+        public static readonly AttachedProperty<double> RightProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Right");
 
         /// <summary>
         /// Defines the Bottom attached property.
         /// </summary>
-        public static readonly PerspexProperty<double> BottomProperty =
+        public static readonly AttachedProperty<double> BottomProperty =
             PerspexProperty.RegisterAttached<StackPanel, Control, double>("Bottom");
 
         /// <summary>

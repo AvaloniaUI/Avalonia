@@ -43,7 +43,7 @@ namespace Perspex.Markup.UnitTests.Data
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo", defaultValue: "foo");
         }
     }

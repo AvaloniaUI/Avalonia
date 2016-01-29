@@ -11,7 +11,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="SharedSizeGroup"/> property.
         /// </summary>
-        public static readonly PerspexProperty<string> SharedSizeGroupProperty =
+        public static readonly StyledProperty<string> SharedSizeGroupProperty =
             PerspexProperty.Register<DefinitionBase, string>(nameof(SharedSizeGroup), inherits: true);
 
         /// <summary>

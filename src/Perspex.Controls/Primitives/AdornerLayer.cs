@@ -11,10 +11,10 @@ namespace Perspex.Controls.Primitives
     // TODO: Need to track position of adorned elements and move the adorner if they move.
     public class AdornerLayer : Panel
     {
-        public static PerspexProperty<Visual> AdornedElementProperty =
+        public static AttachedProperty<Visual> AdornedElementProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
-        private static readonly PerspexProperty<AdornedElementInfo> s_adornedElementInfoProperty =
+        private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             PerspexProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
         private readonly BoundsTracker _tracker = new BoundsTracker();

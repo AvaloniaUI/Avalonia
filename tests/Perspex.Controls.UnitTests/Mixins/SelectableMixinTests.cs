@@ -55,7 +55,7 @@ namespace Perspex.Controls.UnitTests.Mixins
 
         private class TestControl : Control, ISelectable
         {
-            public static readonly PerspexProperty<bool> IsSelectedProperty =
+            public static readonly StyledProperty<bool> IsSelectedProperty =
                 PerspexProperty.Register<TestControl, bool>(nameof(IsSelected));
 
             static TestControl()

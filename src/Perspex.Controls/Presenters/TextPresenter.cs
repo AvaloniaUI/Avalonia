@@ -15,10 +15,10 @@ namespace Perspex.Controls.Presenters
         public static readonly StyledProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>();
 
-        public static readonly PerspexProperty<int> SelectionStartProperty =
+        public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>();
 
-        public static readonly PerspexProperty<int> SelectionEndProperty =
+        public static readonly StyledProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;

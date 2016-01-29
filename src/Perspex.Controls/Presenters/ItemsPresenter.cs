@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Templates;
 using Perspex.Input;
@@ -21,19 +20,19 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IEnumerable> ItemsProperty =
+        public static readonly DirectProperty<ItemsPresenter, IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsPresenter>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
+        public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
         /// <summary>
         /// Defines the <see cref="MemberSelector"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
             ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenter>();
 
         private IEnumerable _items;

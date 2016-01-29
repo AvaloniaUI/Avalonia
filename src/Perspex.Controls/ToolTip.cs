@@ -24,7 +24,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the ToolTip.Tip attached property.
         /// </summary>
-        public static readonly PerspexProperty<object> TipProperty =
+        public static readonly AttachedProperty<object> TipProperty =
             PerspexProperty.RegisterAttached<ToolTip, Control, object>("Tip");
 
         /// <summary>

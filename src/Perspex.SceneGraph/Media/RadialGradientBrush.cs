@@ -12,7 +12,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Center"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativePoint> CenterProperty =
+        public static readonly StyledProperty<RelativePoint> CenterProperty =
             PerspexProperty.Register<RadialGradientBrush, RelativePoint>(
                 nameof(Center),
                 RelativePoint.Center);
@@ -20,7 +20,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="GradientOrigin"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativePoint> GradientOriginProperty =
+        public static readonly StyledProperty<RelativePoint> GradientOriginProperty =
             PerspexProperty.Register<RadialGradientBrush, RelativePoint>(
                 nameof(GradientOrigin), 
                 RelativePoint.Center);
@@ -28,7 +28,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Radius"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> RadiusProperty =
+        public static readonly StyledProperty<double> RadiusProperty =
             PerspexProperty.Register<RadialGradientBrush, double>(
                 nameof(Radius),
                 0.5);

@@ -11,7 +11,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativePoint> StartPointProperty =
+        public static readonly StyledProperty<RelativePoint> StartPointProperty =
             PerspexProperty.Register<LinearGradientBrush, RelativePoint>(
                 nameof(StartPoint),
                 RelativePoint.TopLeft);
@@ -19,7 +19,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="EndPoint"/> property.
         /// </summary>
-        public static readonly PerspexProperty<RelativePoint> EndPointProperty =
+        public static readonly StyledProperty<RelativePoint> EndPointProperty =
             PerspexProperty.Register<LinearGradientBrush, RelativePoint>(
                 nameof(EndPoint), 
                 RelativePoint.BottomRight);

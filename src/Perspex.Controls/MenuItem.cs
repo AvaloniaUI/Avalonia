@@ -51,7 +51,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsSubMenuOpenProperty =
+        public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
             PerspexProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
 
         /// <summary>

@@ -71,7 +71,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Template"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IControlTemplate> TemplateProperty =
+        public static readonly StyledProperty<IControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");
 
         /// <summary>

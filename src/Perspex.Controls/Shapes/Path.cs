@@ -8,7 +8,7 @@ namespace Perspex.Controls.Shapes
 {
     public class Path : Shape
     {
-        public static readonly PerspexProperty<Geometry> DataProperty =
+        public static readonly StyledProperty<Geometry> DataProperty =
             PerspexProperty.Register<Path, Geometry>("Data");
 
         public Geometry Data

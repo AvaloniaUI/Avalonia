@@ -14,7 +14,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Transform> TransformProperty =
+        public static readonly StyledProperty<Transform> TransformProperty =
             PerspexProperty.Register<Geometry, Transform>("Transform");
 
         /// <summary>

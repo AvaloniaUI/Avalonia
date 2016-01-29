@@ -13,13 +13,13 @@ namespace Perspex.Controls
 
     public class Expander : HeaderedContentControl
     {
-        public static readonly PerspexProperty<bool> IsExpandedProperty =
+        public static readonly StyledProperty<bool> IsExpandedProperty =
             PerspexProperty.Register<Expander, bool>(nameof(IsExpanded), true);
 
-        public static readonly PerspexProperty<ExpandDirection> ExpandDirectionProperty =
+        public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
             PerspexProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
 
-        public static readonly PerspexProperty<IPageTransition> ContentTransitionProperty =
+        public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
             PerspexProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
 
         static Expander()

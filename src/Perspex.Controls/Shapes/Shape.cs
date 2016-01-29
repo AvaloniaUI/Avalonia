@@ -10,19 +10,19 @@ namespace Perspex.Controls.Shapes
 {
     public abstract class Shape : Control
     {
-        public static readonly PerspexProperty<Brush> FillProperty =
+        public static readonly StyledProperty<Brush> FillProperty =
             PerspexProperty.Register<Shape, Brush>("Fill");
 
-        public static readonly PerspexProperty<Stretch> StretchProperty =
+        public static readonly StyledProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Shape, Stretch>("Stretch");
 
-        public static readonly PerspexProperty<Brush> StrokeProperty =
+        public static readonly StyledProperty<Brush> StrokeProperty =
             PerspexProperty.Register<Shape, Brush>("Stroke");
 
-        public static readonly PerspexProperty<PerspexList<double>> StrokeDashArrayProperty =
+        public static readonly StyledProperty<PerspexList<double>> StrokeDashArrayProperty =
             PerspexProperty.Register<Shape, PerspexList<double>>("StrokeDashArray");
 
-        public static readonly PerspexProperty<double> StrokeThicknessProperty =
+        public static readonly StyledProperty<double> StrokeThicknessProperty =
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
         private Matrix _transform = Matrix.Identity;

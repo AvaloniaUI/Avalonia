@@ -16,7 +16,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
+        public static readonly StyledProperty<IPageTransition> TransitionProperty =
             Perspex.Controls.Carousel.TransitionProperty.AddOwner<TabControl>();
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Dock> TabStripPlacementProperty =
+        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
             PerspexProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
 
         /// <summary>

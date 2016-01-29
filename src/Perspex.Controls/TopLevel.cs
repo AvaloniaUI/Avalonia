@@ -29,19 +29,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> ClientSizeProperty =
+        public static readonly DirectProperty<TopLevel, Size> ClientSizeProperty =
             PerspexProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
         /// Defines the <see cref="IsActive"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsActiveProperty =
+        public static readonly DirectProperty<TopLevel, bool> IsActiveProperty =
             PerspexProperty.RegisterDirect<TopLevel, bool>(nameof(IsActive), o => o.IsActive);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IInputElement> PointerOverElementProperty =
+        public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             PerspexProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
         private readonly IRenderQueueManager _renderQueueManager;

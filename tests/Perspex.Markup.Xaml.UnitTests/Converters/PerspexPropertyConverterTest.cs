@@ -74,7 +74,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
 
         private class Class1 : PerspexObject, IStyleable
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo");
 
             public IPerspexReadOnlyList<string> Classes
@@ -102,7 +102,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
 
         private class AttachedOwner
         {
-            public static readonly PerspexProperty<string> AttachedProperty =
+            public static readonly AttachedProperty<string> AttachedProperty =
                 PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
         }
     }

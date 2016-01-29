@@ -19,13 +19,13 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsExpandedProperty =
+        public static readonly StyledProperty<bool> IsExpandedProperty =
             PerspexProperty.Register<TreeViewItem, bool>("IsExpanded");
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsSelectedProperty =
+        public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         private static readonly ITemplate<IPanel> DefaultPanel =

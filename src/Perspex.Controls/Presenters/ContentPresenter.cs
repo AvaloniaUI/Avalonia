@@ -14,7 +14,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IControl> ChildProperty =
+        public static readonly DirectProperty<ContentPresenter, IControl> ChildProperty =
             PerspexProperty.RegisterDirect<ContentPresenter, IControl>(
                 nameof(Child),
                 o => o.Child);
@@ -22,7 +22,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> ContentProperty =
+        public static readonly StyledProperty<object> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         private IControl _child;

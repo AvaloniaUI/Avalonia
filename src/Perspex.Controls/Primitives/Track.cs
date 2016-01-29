@@ -10,22 +10,22 @@ namespace Perspex.Controls.Primitives
 {
     public class Track : Control
     {
-        public static readonly PerspexProperty<double> MinimumProperty =
+        public static readonly DirectProperty<Track, double> MinimumProperty =
             RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o,v) => o.Minimum = v);
 
-        public static readonly PerspexProperty<double> MaximumProperty =
+        public static readonly DirectProperty<Track, double> MaximumProperty =
             RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
 
-        public static readonly PerspexProperty<double> ValueProperty =
+        public static readonly DirectProperty<Track, double> ValueProperty =
             RangeBase.ValueProperty.AddOwner<Track>(o => o.Value, (o, v) => o.Value = v);
 
-        public static readonly PerspexProperty<double> ViewportSizeProperty =
+        public static readonly StyledProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
 
-        public static readonly PerspexProperty<Orientation> OrientationProperty =
+        public static readonly StyledProperty<Orientation> OrientationProperty =
             ScrollBar.OrientationProperty.AddOwner<Track>();
 
-        public static readonly PerspexProperty<Thumb> ThumbProperty =
+        public static readonly StyledProperty<Thumb> ThumbProperty =
             PerspexProperty.Register<Track, Thumb>("Thumb");
 
         private double _minimum;

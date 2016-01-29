@@ -9,7 +9,7 @@ namespace Perspex.Input
 {
     public class KeyBinding : PerspexObject
     {
-        public static readonly PerspexProperty<ICommand> CommandProperty =
+        public static readonly StyledProperty<ICommand> CommandProperty =
             PerspexProperty.Register<KeyBinding, ICommand>("Command");
 
         public ICommand Command
@@ -18,7 +18,7 @@ namespace Perspex.Input
             set { SetValue(CommandProperty, value); }
         }
 
-        public static readonly PerspexProperty<KeyGesture> GestureProperty =
+        public static readonly StyledProperty<KeyGesture> GestureProperty =
             PerspexProperty.Register<KeyBinding, KeyGesture>("Gesture");
 
         public KeyGesture Gesture

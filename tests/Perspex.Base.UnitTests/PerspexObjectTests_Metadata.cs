@@ -49,31 +49,31 @@ namespace Perspex.Base.UnitTests
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo");
 
-            public static readonly PerspexProperty<string> BazProperty =
+            public static readonly StyledProperty<string> BazProperty =
                 PerspexProperty.Register<Class1, string>("Baz");
 
-            public static readonly PerspexProperty<int> QuxProperty =
+            public static readonly StyledProperty<int> QuxProperty =
                 PerspexProperty.Register<Class1, int>("Qux");
         }
 
         private class Class2 : Class1
         {
-            public static readonly PerspexProperty<string> BarProperty =
+            public static readonly StyledProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar");
 
-            public static readonly PerspexProperty<double> FlobProperty =
+            public static readonly StyledProperty<double> FlobProperty =
                 PerspexProperty.Register<Class2, double>("Flob");
 
-            public static readonly PerspexProperty<double?> FredProperty =
+            public static readonly StyledProperty<double?> FredProperty =
                 PerspexProperty.Register<Class2, double?>("Fred");
         }
 
         private class AttachedOwner
         {
-            public static readonly PerspexProperty<string> AttachedProperty =
+            public static readonly AttachedProperty<string> AttachedProperty =
                 PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
         }
     }

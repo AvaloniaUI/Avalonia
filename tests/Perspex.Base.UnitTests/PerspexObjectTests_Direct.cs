@@ -374,7 +374,7 @@ namespace Perspex.Base.UnitTests
 
         private class Class2 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly DirectProperty<Class2, string> FooProperty =
                 Class1.FooProperty.AddOwner<Class2>(o => o.Foo, (o, v) => o.Foo = v);
 
             private string _foo = "initial2";

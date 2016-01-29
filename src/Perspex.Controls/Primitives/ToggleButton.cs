@@ -8,7 +8,7 @@ namespace Perspex.Controls.Primitives
 {
     public class ToggleButton : Button
     {
-        public static readonly PerspexProperty<bool> IsCheckedProperty =
+        public static readonly DirectProperty<ToggleButton, bool> IsCheckedProperty =
             PerspexProperty.RegisterDirect<ToggleButton, bool>(
                 "IsChecked",
                 o => o.IsChecked,
