@@ -69,10 +69,22 @@ namespace Perspex.Base.UnitTests
             source.OnNext(PerspexProperty.UnsetValue);
         }
 
+        [Fact]
+        public void Attached_Property_Should_Be_Validated()
+        {
+            var target = new Class2();
+
+            target.SetValue(Class1.AttachedProperty, 15);
+            Assert.Equal(10, target.GetValue(Class1.AttachedProperty));
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly StyledProperty<int> QuxProperty =
                 PerspexProperty.Register<Class1, int>("Qux", validate: Validate);
+
+            public static readonly AttachedProperty<int> AttachedProperty =
+            PerspexProperty.RegisterAttached<Class1, Class2, int>("Attached", validate: Validate);
 
             public Class1()
             {
@@ -92,6 +104,11 @@ namespace Perspex.Base.UnitTests
                 }
 
                 return Math.Min(Math.Max(value, 0), ((Class1)instance).MaxQux);
+            }
+
+            private static int Validate(Class2 instance, int value)
+            {
+                return Math.Min(value, 10);
             }
         }
 
