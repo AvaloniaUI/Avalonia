@@ -3,7 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Perspex.Controls.Presenters;
 using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
+using Perspex.Markup.Xaml.Templates;
 using Perspex.Media;
 using Xunit;
 
@@ -15,7 +19,7 @@ namespace Perspex.Controls.UnitTests
         public void ConstraintsNotUsedInMeasureOverride()
         {
             Rectangle r = new Rectangle { Width = 50, Height = 50 };
-            TestDecorator c = new TestDecorator
+            MyContentControl c = new MyContentControl
             {
                 Width = 80,
                 Height = 80,
@@ -457,7 +461,7 @@ namespace Perspex.Controls.UnitTests
             Grid.SetRow(c, 0);
             Grid.SetColumn(c, 0);
 
-            g.Children.Add(new TestDecorator { Child = c });
+            g.Children.Add(new MyContentControl { Child = c });
 
             // first test with the child sized larger than the row/column definitions
             c.Width = 400;
@@ -512,7 +516,7 @@ namespace Perspex.Controls.UnitTests
             Grid.SetRow(c, 0);
             Grid.SetColumn(c, 0);
 
-            g.Children.Add(new TestDecorator { Child = c });
+            g.Children.Add(new MyContentControl { Child = c });
 
             // first test with the child sized larger than the row/column definitions
             c.Width = 400;
@@ -566,7 +570,7 @@ namespace Perspex.Controls.UnitTests
             Grid.SetRow(c, 0);
             Grid.SetColumn(c, 0);
 
-            g.Children.Add(new TestDecorator { Child = c });
+            g.Children.Add(new MyContentControl { Child = c });
 
             // first test with the child sized larger than the row/column definitions
             c.Width = 400;
@@ -623,11 +627,11 @@ namespace Perspex.Controls.UnitTests
             g.Margin = new Thickness(5);
 
             Canvas c;
-            TestDecorator mc;
+            MyContentControl mc;
             c = new Canvas();
             c.Width = 400;
             c.Height = 400;
-            mc = new TestDecorator { Child = c };
+            mc = new MyContentControl { Child = c };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
             g.Children.Add(mc);
@@ -635,7 +639,7 @@ namespace Perspex.Controls.UnitTests
             c = new Canvas();
             c.Width = 400;
             c.Height = 400;
-            mc = new TestDecorator { Child = c };
+            mc = new MyContentControl { Child = c };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 1);
             g.Children.Add(mc);
@@ -677,12 +681,12 @@ namespace Perspex.Controls.UnitTests
             g.Margin = new Thickness(5);
 
             Canvas c;
-            TestDecorator mc;
+            MyContentControl mc;
 
             c = new Canvas();
             c.Width = 400;
             c.Height = 400;
-            mc = new TestDecorator { Child = c };
+            mc = new MyContentControl { Child = c };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
             Grid.SetColumnSpan(mc, 2);
@@ -744,13 +748,13 @@ namespace Perspex.Controls.UnitTests
             g.ColumnDefinitions.Add(cdef);
 
             Canvas child1, child2, child3;
-            TestDecorator mc;
+            MyContentControl mc;
 
             // child1
             child1 = new Canvas();
             child1.Width = 200;
             child1.Height = 200;
-            mc = new TestDecorator { Child = child1 };
+            mc = new MyContentControl { Child = child1 };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
             Grid.SetColumnSpan(mc, 2);
@@ -760,7 +764,7 @@ namespace Perspex.Controls.UnitTests
             child2 = new Canvas();
             child2.Width = 150;
             child2.Height = 200;
-            mc = new TestDecorator { Child = child2 };
+            mc = new MyContentControl { Child = child2 };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
             g.Children.Add(mc);
@@ -769,7 +773,7 @@ namespace Perspex.Controls.UnitTests
             child3 = new Canvas();
             child3.Width = 200;
             child3.Height = 200;
-            mc = new TestDecorator { Child = child3 };
+            mc = new MyContentControl { Child = child3 };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
             g.Children.Add(mc);
@@ -859,7 +863,7 @@ namespace Perspex.Controls.UnitTests
             g.Margin = new Thickness(5);
 
             var r = new Border();
-            TestDecorator mc = new TestDecorator { Child = r };
+            MyContentControl mc = new MyContentControl { Child = r };
             Grid.SetRow(mc, 0);
             Grid.SetColumn(mc, 0);
 
@@ -944,8 +948,8 @@ namespace Perspex.Controls.UnitTests
             b2.Background = new SolidColorBrush(Colors.Green);
             b2.Width = b2.Height = 50;
 
-            grid.Children.Add(new TestDecorator { Child = b });
-            grid.Children.Add(new TestDecorator { Child = b2 });
+            grid.Children.Add(new MyContentControl { Child = b });
+            grid.Children.Add(new MyContentControl { Child = b2 });
 
             grid.Measure(Size.Infinity);
             grid.CheckMeasureArgs("#MeasureOverrideArg", Size.Infinity, Size.Infinity);
@@ -1114,7 +1118,7 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        protected class TestDecorator : Decorator
+        protected class MyContentControl : ContentControl
         {
             public bool IsArranged { get; private set; }
             public bool IsMeasured { get; private set; }
@@ -1125,13 +1129,21 @@ namespace Perspex.Controls.UnitTests
             public Size MeasureOverrideResult;
             public Size ArrangeOverrideResult;
 
-            public TestDecorator()
+            public MyContentControl()
             {
+                Template = CreateTemplate();
             }
 
-            public TestDecorator(int width, int height)
+            public MyContentControl(int width, int height)
             {
-                Child = new Rectangle { Width = width, Height = height, Fill = new SolidColorBrush(Colors.Green) };
+                Content = new Rectangle { Width = width, Height = height, Fill = new SolidColorBrush(Colors.Green) };
+                Template = CreateTemplate();
+            }
+
+            public Control Child
+            {
+                get { return (Control)Content;  }
+                set { Content = value; }
             }
 
             protected override Size ArrangeOverride(Size finalSize)
@@ -1139,7 +1151,7 @@ namespace Perspex.Controls.UnitTests
                 IsArranged = true;
                 MyGrid grid = Parent as MyGrid;
                 if (grid != null)
-                    grid.ArrangedElements.Add(new KeyValuePair<TestDecorator, Size>(this, finalSize));
+                    grid.ArrangedElements.Add(new KeyValuePair<MyContentControl, Size>(this, finalSize));
 
                 ArrangeOverrideArg = finalSize;
                 if (ArrangeHook != null)
@@ -1148,17 +1160,19 @@ namespace Perspex.Controls.UnitTests
                 ArrangeOverrideResult = base.ArrangeOverride(finalSize);
 
                 if (grid != null)
-                    grid.ArrangeResultElements.Add(new KeyValuePair<TestDecorator, Size>(this, ArrangeOverrideResult));
+                    grid.ArrangeResultElements.Add(new KeyValuePair<MyContentControl, Size>(this, ArrangeOverrideResult));
 
                 return ArrangeOverrideResult;
             }
 
             protected override Size MeasureOverride(Size availableSize)
             {
+                ((ContentPresenter)this.Presenter).UpdateChild();
+
                 IsMeasured = true;
                 MyGrid grid = Parent as MyGrid;
                 if (grid != null)
-                    grid.MeasuredElements.Add(new KeyValuePair<TestDecorator, Size>(this, availableSize));
+                    grid.MeasuredElements.Add(new KeyValuePair<MyContentControl, Size>(this, availableSize));
 
                 MeasureOverrideArg = availableSize;
                 if (MeasureHook != null)
@@ -1167,18 +1181,30 @@ namespace Perspex.Controls.UnitTests
                 MeasureOverrideResult = base.MeasureOverride(availableSize);
 
                 if (grid != null)
-                    ((MyGrid)Parent).MeasureResultElements.Add(new KeyValuePair<TestDecorator, Size>(this, MeasureOverrideResult));
+                    ((MyGrid)Parent).MeasureResultElements.Add(new KeyValuePair<MyContentControl, Size>(this, MeasureOverrideResult));
 
                 return MeasureOverrideResult;
+            }
+
+            private IControlTemplate CreateTemplate()
+            {
+                return new FuncControlTemplate<MyContentControl>(parent =>
+                {
+                    return new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = parent[!MyContentControl.ContentProperty]
+                    };
+                });
             }
         }
 
         protected class MyGrid : Grid
         {
-            public List<KeyValuePair<TestDecorator, Size>> ArrangedElements = new List<KeyValuePair<TestDecorator, Size>>();
-            public List<KeyValuePair<TestDecorator, Size>> ArrangeResultElements = new List<KeyValuePair<TestDecorator, Size>>();
-            public List<KeyValuePair<TestDecorator, Size>> MeasuredElements = new List<KeyValuePair<TestDecorator, Size>>();
-            public List<KeyValuePair<TestDecorator, Size>> MeasureResultElements = new List<KeyValuePair<TestDecorator, Size>>();
+            public List<KeyValuePair<MyContentControl, Size>> ArrangedElements = new List<KeyValuePair<MyContentControl, Size>>();
+            public List<KeyValuePair<MyContentControl, Size>> ArrangeResultElements = new List<KeyValuePair<MyContentControl, Size>>();
+            public List<KeyValuePair<MyContentControl, Size>> MeasuredElements = new List<KeyValuePair<MyContentControl, Size>>();
+            public List<KeyValuePair<MyContentControl, Size>> MeasureResultElements = new List<KeyValuePair<MyContentControl, Size>>();
 
             public void AddChild(Control element, int row, int column, int rowspan, int columnspan)
             {
@@ -1216,10 +1242,128 @@ namespace Perspex.Controls.UnitTests
                 }
             }
 
+            public void CheckMeasureResult(string message, params Size[] sizes)
+            {
+                for (int i = 0; i < Children.Count; i++)
+                {
+                    var poker = (MyContentControl)Children[i];
+                    var result = poker.MeasureOverrideResult;
+                    if (!result.Equals(sizes[i]))
+                    {
+                        throw new Exception(string.Format(
+                            "{2}.{3} Expected measure result to be {0} but was {1}",
+                            sizes[i],
+                            result,
+                            message,
+                            i));
+
+                    }
+                }
+            }
+
+            public void CheckMeasureOrder(string message, params int[] childIndexes)
+            {
+                var measured = MeasuredElements.Select(d => d.Key).ToArray();
+                for (int i = 0; i < childIndexes.Length; i++)
+                {
+                    Assert.Same(Children[childIndexes[i]], measured[i]);
+                }
+            }
+
+            public void CheckMeasureSizes(string message, params Size[] sizes)
+            {
+                for (int i = 0; i < Children.Count; i++)
+                {
+                    var poker = (MyContentControl)Children[i];
+                    var arg = poker.MeasureOverrideArg;
+                    if (!arg.Equals(sizes[i]))
+                    {
+                        throw new Exception(string.Format(
+                            "{2}.{3} Expected measure argument to be {0} but was {1}",
+                            sizes[i],
+                            arg,
+                            message,
+                            i));
+                    }
+                }
+            }
+
+            public void CheckArrangeArgs(string message, params Size[] sizes)
+            {
+                Assert.Equal(sizes.Length, ArrangedElements.Count);
+
+                for (int i = 0; i < ArrangedElements.Count; i++)
+                {
+                    try
+                    {
+                        IsBetween(sizes[i].Height - 0.55, sizes[i].Height + 0.55, ArrangedElements[i].Value.Height);
+                        IsBetween(sizes[i].Width - 0.55, sizes[i].Width + 0.55, ArrangedElements[i].Value.Width);
+                    }
+                    catch
+                    {
+                        throw new Exception(string.Format(
+                            "{2}.{3} Expected arrange argument to be {0} but was {1}",
+                            sizes[i],
+                            ArrangedElements[i].Value,
+                            message,
+                            i));
+                    }
+                }
+            }
+
+            public void CheckArrangeResult(string message, params Size[] sizes)
+            {
+                Assert.Equal(sizes.Length, ArrangeResultElements.Count);
+
+                for (int i = 0; i < ArrangeResultElements.Count; i++)
+                {
+                    try
+                    {
+                        IsBetween(sizes[i].Height - 0.55, sizes[i].Height + 0.55, ArrangeResultElements[i].Value.Height);
+                        IsBetween(sizes[i].Width - 0.55, sizes[i].Width + 0.55, ArrangeResultElements[i].Value.Width);
+                    }
+                    catch
+                    {
+                        throw new Exception(string.Format(
+                            "{2}.{3} Expected arrange result to be {0} but was {1}",
+                            sizes[i],
+                            ArrangeResultElements[i].Value,
+                            message,
+                            i));
+                    }
+                }
+            }
+
+            public void CheckColWidths(string message, params double[] widths)
+            {
+                for (int i = 0; i < ColumnDefinitions.Count; i++)
+                    IsBetween(widths[i] - 0.55, widths[i] + 0.55, ColumnDefinitions[i].ActualWidth);
+            }
+
             public void CheckRowHeights(string message, params double[] heights)
             {
                 for (int i = 0; i < RowDefinitions.Count; i++)
                     IsBetween(heights[i] - 0.55, heights[i] + 0.55, RowDefinitions[i].ActualHeight);
+            }
+
+            public void ChangeCol(int childIndex, int newRow)
+            {
+                Grid.SetColumn((Control)Children[childIndex], newRow);
+            }
+
+            public void ChangeRow(int childIndex, int newRow)
+            {
+                Grid.SetRow((Control)Children[childIndex], newRow);
+            }
+
+            public void ChangeColSpan(int childIndex, int newRow)
+            {
+                Grid.SetColumnSpan((Control)Children[childIndex], newRow);
+            }
+
+            public void ChangeRowSpan(int childIndex, int newRow)
+            {
+                Grid.SetRowSpan((Control)Children[childIndex], newRow);
             }
 
             public void Reset()

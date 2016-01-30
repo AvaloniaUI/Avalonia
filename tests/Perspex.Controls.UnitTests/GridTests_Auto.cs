@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Perspex.Controls.Shapes;
 using Perspex.Layout;
 using Perspex.Media;
@@ -18,7 +19,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens if there is no explicit ColumnDefinition added
             Grid grid = new Grid();
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -41,7 +42,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens if there is no explicit ColumnDefinition added
             Grid grid = new Grid { Width = 75, Height = 75 };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -68,7 +69,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -97,7 +98,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -120,7 +121,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens when there are two explicit rows and no explicit column
             Grid grid = new Grid();
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -143,7 +144,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens when there are two explicit rows and no explicit column
             Grid grid = new Grid { Width = 75, Height = 75 };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -170,7 +171,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -199,7 +200,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -223,7 +224,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens if there is no explicit ColumnDefinition added
             Grid grid = new Grid();
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -248,7 +249,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens if there is no explicit ColumnDefinition added
             Grid grid = new Grid { Width = 75, Height = 75 };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -277,7 +278,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -308,7 +309,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -333,7 +334,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens when there are two explicit rows and no explicit column
             Grid grid = new Grid();
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -358,7 +359,7 @@ namespace Perspex.Controls.UnitTests
             // Check what happens when there are two explicit rows and no explicit column
             Grid grid = new Grid { Width = 75, Height = 75 };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -387,7 +388,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -418,7 +419,7 @@ namespace Perspex.Controls.UnitTests
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             grid.RowDefinitions = new RowDefinitions("1*,1*");
-            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Children.Add(new MyContentControl(50, 50));
 
             // Initial values
             Assert.Equal(new Size(0, 0), grid.DesiredSize);
@@ -437,1149 +438,423 @@ namespace Perspex.Controls.UnitTests
             CheckRowHeights(grid, "#6", 37.5, 37.5);
         }
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild_InTree()
-        ////        {
-        ////            // Check what happens if there is no explicit ColumnDefinition added
-        ////            Grid grid = new Grid();
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
+        [Fact]
+        public void ExpandInArrange_GridParent()
+        {
+            // Measure with double.PositiveInfinityinity and check results.
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("1*");
+            grid.ColumnDefinitions = new ColumnDefinitions("1*");
+            grid.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
 
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            grid.Reset();
+            grid.Measure(Size.Infinity);
+            grid.Arrange(new Rect(grid.DesiredSize));
+            grid.CheckMeasureArgs("#1", Size.Infinity);
+            grid.CheckMeasureResult("#2", new Size(50, 50));
+            Assert.Equal(new Size(50, 50), grid.DesiredSize);
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    Assert.Equal(50, grid.RowDefinitions[0].ActualHeight);
+            // When we pass in the desired size as the arrange arg,
+            // the rows/cols use that as their height/width
+            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
+            grid.CheckArrangeArgs("#4", grid.DesiredSize);
+            grid.CheckArrangeResult("#5", grid.DesiredSize);
+            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
+            grid.CheckColWidths("#7", grid.DesiredSize.Width);
 
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    Assert.Equal(50, grid.RowDefinitions[0].ActualHeight);
-        ////                }
-        ////            );
-        ////        }
+            // If we pass in twice the desired size, the rows/cols consume that too
+            grid.Reset();
+            grid.Measure(Size.Infinity);
+            grid.Arrange(new Rect(0, 0, 100, 100));
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
+            CheckRowHeights(grid, "#11", 100);
+            grid.CheckColWidths("#12", 100);
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild_ExplicitSize_InTree()
-        ////        {
-        ////            // Check what happens if there is no explicit ColumnDefinition added
-        ////            Grid grid = new Grid { Width = 75, Height = 75 };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            // If we measure with a finite size, the rows/cols still expand
+            // to consume the available space
+            grid.Reset();
+            grid.Measure(new Size(1000, 1000));
+            grid.CheckMeasureArgs("#13", new Size(1000, 1000));
+            grid.CheckMeasureResult("#14", new Size(50, 50));
+            Assert.Equal(new Size(50, 50), grid.DesiredSize);
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    Assert.Equal(75, grid.RowDefinitions[0].ActualHeight);
+            // When we pass in the desired size as the arrange arg,
+            // the rows/cols use that as their height/width
+            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
+            grid.CheckArrangeArgs("#16", grid.DesiredSize);
+            grid.CheckArrangeResult("#17", grid.DesiredSize);
+            CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
+            grid.CheckColWidths("#19", grid.DesiredSize.Width);
 
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    Assert.Equal(75, grid.RowDefinitions[0].ActualHeight);
-        ////                }
-        ////            );
-        ////        }
+            // If we pass in twice the desired size, the rows/cols consume that too
+            grid.Reset();
+            grid.Arrange(new Rect(0, 0, 100, 100));
+            grid.CheckMeasureArgs("#20"); // No remeasures
+            grid.CheckArrangeArgs("#21", new Size(100, 100));
+            grid.CheckArrangeResult("#22", new Size(100, 100));
+            CheckRowHeights(grid, "#23", 100);
+            grid.CheckColWidths("#24", 100);
+        }
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild_NoSpan_InTree()
-        ////        {
-        ////            // Check what happens if there is no explicit ColumnDefinition added
-        ////            Grid grid = new Grid
-        ////            {
-        ////                HorizontalAlignment = HorizontalAlignment.Center,
-        ////                VerticalAlignment = VerticalAlignment.Bottom,
-        ////            };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+        [Fact]
+        public void ExpandStars_UnfixedSize()
+        {
+            // If a width/height is *not* set on the grid, it doesn't expand stars.
+            var canvas = new Canvas { Width = 120, Height = 120 };
+            PanelPoker poker = new PanelPoker();
+            MyGrid grid = new MyGrid { Name = "TEDDY" };
+            grid.RowDefinitions = new RowDefinitions("*,*,*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,*,*");
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
+            canvas.Children.Add(poker);
+            poker.Grid = grid;
+            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
 
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    Assert.Equal(50, grid.RowDefinitions[0].ActualHeight);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                }, () => {
+            canvas.Measure(Size.Infinity);
+            canvas.Arrange(new Rect(canvas.DesiredSize));
 
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    Assert.Equal(50, grid.RowDefinitions[0].ActualHeight);
-        ////                }
-        ////            );
-        ////        }
+            Assert.Equal(Size.Infinity, poker.MeasureArgs[0]);
+            Assert.Equal(new Size(100, 100), poker.MeasureResults[0]);
+            Assert.Equal(new Size(100, 100), poker.ArrangeArgs[0]);
+            Assert.Equal(new Size(100, 100), poker.ArrangeResults[0]);
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild_NoSpan_ExplicitSize_InTree()
-        ////        {
-        ////            // Check what happens if there is no explicit ColumnDefinition added
-        ////            Grid grid = new Grid
-        ////            {
-        ////                Width = 75,
-        ////                Height = 75,
-        ////                HorizontalAlignment = HorizontalAlignment.Center,
-        ////                VerticalAlignment = VerticalAlignment.Bottom,
-        ////            };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            CheckRowHeights(grid, "#5", 0, 100, 0);
+            grid.CheckColWidths("#6", 0, 100, 0);
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    Assert.Equal(75, grid.RowDefinitions[0].ActualHeight);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    Assert.Equal(75, grid.RowDefinitions[0].ActualHeight);
-        ////                }
-        ////            );
-        ////        }
+            grid.CheckMeasureArgs("#7", Size.Infinity);
+            grid.CheckMeasureResult("#8", new Size(100, 100));
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild2_InTree()
-        ////        {
-        ////            // Check what happens when there are two explicit rows and no explicit column
-        ////            Grid grid = new Grid();
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity,
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#2", 50, 0);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#4", 50, 0);
-        ////                }
-        ////            );
-        ////        }
+            // Do not expand if we already consume 100 px
+            grid.Reset();
+            grid.Arrange(new Rect(0, 0, 100, 100));
+            grid.CheckArrangeArgs("#11");
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild2_ExplicitSize_InTree()
-        ////        {
-        ////            // Check what happens when there are two explicit rows and no explicit column
-        ////            Grid grid = new Grid { Width = 75, Height = 75 };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            // If we give extra space, we expand the rows.
+            grid.Measure(Size.Infinity);
+            grid.Arrange(new Rect(0, 0, 500, 500));
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#2", 37.5, 37.5);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#4", 37.5, 37.5);
-        ////                }
-        ////            );
-        ////        }
+            CheckRowHeights(grid, "#12", 166.5, 166.5, 166.5);
+            grid.CheckColWidths("#13", 166.5, 166.5, 166.5);
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild2_NoSpan_InTree()
-        ////        {
-        ////            // Check what happens when there are two explicit rows and no explicit column
-        ////            Grid grid = new Grid
-        ////            {
-        ////                HorizontalAlignment = HorizontalAlignment.Center,
-        ////                VerticalAlignment = VerticalAlignment.Bottom,
-        ////            };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            grid.CheckArrangeArgs("#14", new Size(167, 167));
+            grid.CheckArrangeResult("#15", new Size(167, 167));
+        }
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#2", 50, 0);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#4", 50, 0);
-        ////                }
-        ////            );
-        ////        }
+        [Fact]
+        public void ExpandStars_FixedSize()
+        {
+            // If a width/height is set on the grid, it expands stars.
+            var canvas = new Canvas { Width = 120, Height = 120 };
+            PanelPoker poker = new PanelPoker { Width = 120, Height = 120 };
+            MyGrid grid = new MyGrid { Name = "Griddy" };
+            grid.RowDefinitions = new RowDefinitions("*,*,*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,*,*");
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRowsWithChild2_NoSpan_ExplicitSize_InTree()
-        ////        {
-        ////            // Check what happens when there are two explicit rows and no explicit column
-        ////            Grid grid = new Grid
-        ////            {
-        ////                Width = 75,
-        ////                Height = 75,
-        ////                HorizontalAlignment = HorizontalAlignment.Center,
-        ////                VerticalAlignment = VerticalAlignment.Bottom,
-        ////            };
-        ////            var poker = new SettablePanel
-        ////            {
-        ////                Grid = grid,
-        ////                MeasureArg = Infinity
-        ////            };
-        ////            grid.AddRows(new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
-        ////            grid.Children.Add(new TestDecorator(50, 50));
+            canvas.Children.Add(poker);
+            poker.Grid = grid;
+            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
 
-        ////            CreateAsyncTest(poker,
-        ////                () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#2", 37.5, 37.5);
-        ////                    poker.MeasureArg = new Size(100, 100);
-        ////                    poker.InvalidateSubtree();
-        ////                }, () => {
-        ////                    Assert.Equal(new Size(75, 75), grid.DesiredSize);
-        ////                    CheckRowHeights(grid, "#4", 37.5, 37.5);
-        ////                }
-        ////            );
-        ////        }
+            canvas.Measure(Size.Infinity);
+            canvas.Arrange(new Rect(canvas.DesiredSize));
+
+            Assert.Equal(new Size(120, 120), poker.MeasureArgs[0]);
+            Assert.Equal(new Size(40, 40), poker.MeasureResults[0]);
+            Assert.Equal(new Size(120, 120), poker.ArrangeArgs[0]);
+            Assert.Equal(new Size(120, 120), poker.ArrangeResults[0]);
+
+            CheckRowHeights(grid, "#5", 40, 40, 40);
+            grid.CheckColWidths("#6", 40, 40, 40);
+
+            grid.CheckMeasureArgs("#7", new Size(40, 40));
+            grid.CheckMeasureResult("#8", new Size(40, 40));
+
+            grid.CheckArrangeArgs("#9", new Size(40, 40));
+            grid.CheckArrangeResult("#10", new Size(40, 40));
+        }
+
+        [Fact]
+        public void ExpandStars_NoRowsOrCols()
+        {
+            // If the rows/cols are autogenerated, we still expand them
+            Grid grid = new Grid();
+            grid.Children.Add(new Rectangle { Width = 50, Height = 50 });
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(0, 0, 200, 200));
+
+            Assert.Equal(200, grid.Bounds.Width);
+            Assert.Equal(200, grid.Bounds.Height);
+        }
+
+        [Fact]
+        public void ExpandStars_NoRowsOrCols2()
+        {
+            // We don't expand autogenerated rows/cols if we don't have Alignment.Stretch
+            Grid grid = new Grid { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            grid.Children.Add(new Rectangle { Width = 50, Height = 50 });
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(0, 0, 200, 200));
+
+            Assert.Equal(50, grid.Bounds.Width);
+            Assert.Equal(50, grid.Bounds.Height);
+        }
+
+        [Fact]
+        public void ExpandInArrange2()
+        {
+            // Measure with a finite value and check results.
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*");
+            grid.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
+
+            grid.Measure(new Size(75, 75));
+            grid.CheckMeasureArgs("#1", new Size(75, 75));
+            grid.CheckMeasureResult("#2", new Size(50, 50));
+            Assert.Equal(new Size(50, 50), grid.DesiredSize);
+
+            // Check that everything is as expected when we pass in DesiredSize as the argument to Arrange
+            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
+
+            grid.CheckArrangeArgs("#4", grid.DesiredSize);
+            grid.CheckArrangeResult("#5", grid.DesiredSize);
+            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
+            grid.CheckColWidths("#7", grid.DesiredSize.Width);
+
+            grid.Reset();
+            grid.Measure(Size.Infinity);
+            grid.Arrange(new Rect(0, 0, 100, 100));
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
+            CheckRowHeights(grid, "#11", 100);
+            grid.CheckColWidths("#12", 100);
+        }
+
+        [Fact]
+        public void StarRows3b2()
+        {
+            var canvas = new Canvas { Width = 120, Height = 120 };
+            PanelPoker poker = new PanelPoker();
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("*,*,*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,*,*");
+
+            canvas.Children.Add(poker);
+            poker.Grid = grid;
+            poker.Children.Add(grid);
+            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
+            canvas.Measure(Size.Infinity);
+            canvas.Arrange(new Rect(canvas.DesiredSize));
+
+            Assert.Equal(Size.Infinity, poker.MeasureArgs[0]);
+            Assert.Equal(new Size(100, 100), poker.MeasureResults[0]);
+            Assert.Equal(new Size(100, 100), poker.ArrangeArgs[0]);
+            Assert.Equal(new Size(100, 100), poker.ArrangeResults[0]);
+
+            grid.CheckColWidths("#5", 0, 100, 0);
+            CheckRowHeights(grid, "#6", 0, 100, 0);
+
+            grid.CheckMeasureArgs("#7", Size.Infinity);
+            grid.CheckMeasureResult("#8", new Size(100, 100));
+
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
+        }
+
+        [Fact]
+        public void StarRows3c()
+        {
+            var canvas = new Canvas { Width = 120, Height = 120 };
+            var poker = new MyContentControl();
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("*,*,*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,*,*");
+
+            canvas.Children.Add(poker);
+            poker.Child = grid;
+            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
+            canvas.Measure(Size.Infinity);
+            canvas.Arrange(new Rect(canvas.DesiredSize));
+
+            Assert.Equal(Size.Infinity, poker.MeasureOverrideArg);
+            Assert.Equal(new Size(100, 100), poker.MeasureOverrideResult);
+            Assert.Equal(new Size(100, 100), poker.ArrangeOverrideArg);
+            Assert.Equal(new Size(100, 100), poker.ArrangeOverrideResult);
+
+            grid.CheckColWidths("#5", 0, 100, 0);
+            CheckRowHeights(grid, "#6", 0, 100, 0);
+
+            grid.CheckMeasureArgs("#7", Size.Infinity);
+            grid.CheckMeasureResult("#8", new Size(100, 100));
+
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
+        }
+
+        [Fact]
+        public void StarRows3d()
+        {
+            var poker = new MyContentControl { Width = 120, Height = 120 };
+            MyGrid grid = new MyGrid { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            grid.RowDefinitions = new RowDefinitions("*,*,*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,*,*");
+
+            poker.Child = grid;
+            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
+            poker.Measure(Size.Infinity);
+            poker.Arrange(new Rect(poker.DesiredSize));
+
+            Assert.Equal(new Size(120, 120), poker.MeasureOverrideArg);
+            Assert.Equal(new Size(40, 40), poker.MeasureOverrideResult);
+            Assert.Equal(new Size(40, 40), grid.DesiredSize);
+            Assert.Equal(new Size(120, 120), poker.DesiredSize);
+            Assert.Equal(new Size(120, 120), poker.ArrangeOverrideArg);
+            Assert.Equal(new Size(120, 120), poker.ArrangeOverrideResult);
+
+            grid.CheckColWidths("#5", 0, 40, 0);
+            CheckRowHeights(grid, "#6", 0, 40, 0);
+
+            grid.CheckMeasureArgs("#7", new Size(40, 40));
+            grid.CheckMeasureResult("#8", new Size(40, 40));
+
+            grid.CheckArrangeArgs("#9", new Size(40, 40));
+            grid.CheckArrangeResult("#10", new Size(40, 40));
+        }
+
+        [Fact]
+        public void ExpandInArrange()
+        {
+            // Measure with double.PositiveInfinityinity and check results.
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*");
+            grid.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
+
+            grid.Measure(Size.Infinity);
+            grid.CheckMeasureArgs("#1", Size.Infinity);
+            grid.CheckMeasureResult("#2", new Size(50, 50));
+            Assert.Equal(new Size(50, 50), grid.DesiredSize);
+
+            // Check that everything is as expected when we pass in DesiredSize as the argument to Arrange
+            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
+            grid.CheckArrangeArgs("#4", grid.DesiredSize);
+            grid.CheckArrangeResult("#5", grid.DesiredSize);
+            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
+            grid.CheckColWidths("#7", grid.DesiredSize.Width);
+
+            grid.Reset();
+            grid.Measure(Size.Infinity);
+            grid.Arrange(new Rect(0, 0, 100, 100));
+            grid.CheckArrangeArgs("#9", new Size(100, 100));
+            grid.CheckArrangeResult("#10", new Size(100, 100));
+            CheckRowHeights(grid, "#11", 100);
+            grid.CheckColWidths("#12", 100);
+        }
+
+        [Fact]
+        public void AutoStarInfiniteChildren()
+        {
+            Grid holder = new Grid { Width = 500, Height = 500 };
+            MyGrid g = new MyGrid { Name = "Ted!" };
+            g.RowDefinitions = new RowDefinitions("*,Auto");
+            g.ColumnDefinitions = new ColumnDefinitions("*,Auto");
+
+            g.AddChild(CreateInfiniteChild(), 0, 0, 1, 1);
+            g.AddChild(CreateInfiniteChild(), 0, 1, 1, 1);
+            g.AddChild(CreateInfiniteChild(), 1, 0, 1, 1);
+            g.AddChild(CreateInfiniteChild(), 1, 1, 1, 1);
+
+            // FIXME: I think this fails because the first time the ScrollViewer measures it calculates
+            // the visibility of the Horizontal/Vertical scroll bar incorrectly. It's desired size on the
+            // first measure is (327, 327) whereas it should be (327, 310). A few measure cycles later and
+            // it will be correct, but chews up much more CPU than it should.
+            holder.Children.Add(g);
+
+            holder.Measure(Size.Infinity);
+            holder.Arrange(new Rect(holder.DesiredSize));
+
+            g.CheckMeasureOrder("#1", 3, 1, 2, 1, 0);
+            g.CheckMeasureArgs("#2", Size.Infinity, Size.Infinity, new Size(173, double.PositiveInfinity), new Size(double.PositiveInfinity, 190), new Size(173, 190));
+            g.CheckMeasureResult("#3", new Size(173, 190), new Size(327, 190), new Size(173, 310), new Size(327, 310), new Size(173, 310));
+            g.CheckRowHeights("#4", 190, 310);
+            g.CheckColWidths("#5", 173, 327);
+            Assert.Equal(new Size(500, 500), g.DesiredSize);
+        }
+
+        [Fact]
+        public void ChildInvalidatesGrid()
+        {
+            var child = new MyContentControl(50, 50);
+            Grid grid = new Grid();
+            grid.Children.Add(child);
+            grid.Measure(new Size(100, 100));
+            Assert.Equal(new Size(50, 50), grid.DesiredSize);
+
+            ((Control)child.Content).Height = 60;
+            ((Control)child.Content).Width = 10;
+
+            grid.Measure(new Size(100, 100));
+            Assert.Equal(new Size(10, 60), grid.DesiredSize);
+        }
+
+        [Fact]
+        public void ChildInvalidatesGrid2()
+        {
+            var child = new MyContentControl(50, 50);
+            MyGrid grid = new MyGrid();
+            grid.Children.Add(child);
+
+            grid.Measure(new Size(100, 100));
+            Assert.Equal(1, grid.MeasuredElements.Count);
+
+            child.InvalidateMeasure();
+            grid.Measure(new Size(100, 100));
+            Assert.Equal(2, grid.MeasuredElements.Count);
+        }
 
         ////[Fact]
-        ////public void ExpandInArrange_OutsideTree_NoParent_UnfixedSize()
+        ////public void ExpandStarsInBorder()
         ////{
-        ////    // We always expand star rows if we're not in the live tree
-        ////    // with no parent
+        ////    MyGrid grid = CreateGridWithChildren();
 
-        ////    // Measure with double.PositiveInfinityinity and check results.
-        ////    MyGrid grid = new MyGrid();
-        ////    grid.AddRows(Star);
-        ////    grid.AddColumns(Star);
-        ////    grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
+        ////    var parent = new Border();
+        ////    parent.Child = grid;
 
-        ////    grid.Measure(Size.Infinity);
-        ////    grid.CheckMeasureArgs("#1", Infinity);
-        ////    grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////    Assert.Equal(new Size(50, 50), grid.DesiredSize);
+        ////    TestPanel.Width = 75;
+        ////    TestPanel.Height = 75;
 
-        ////    // When we pass in the desired size as the arrange arg,
-        ////    // the rows/cols use that as their height/width
-        ////    grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////    grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////    grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////    CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////    grid.CheckColWidths("#7", grid.DesiredSize.Width);
+        ////    CreateAsyncTest(parent,
+        ////        () =>
+        ////        {
+        ////            CheckRowHeights(grid, "#1", 12, 25, 38);
 
-        ////    // If we pass in twice the desired size, the rows/cols consume that too
-        ////    grid.Reset();
-        ////    grid.Arrange(new Rect(0, 0, 100, 100));
-        ////    grid.CheckMeasureArgs("#8"); // No remeasures
-        ////    grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////    grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////    CheckRowHeights(grid, "#11", 100);
-        ////    grid.CheckColWidths("#12", 100);
+        ////            grid.HorizontalAlignment = HorizontalAlignment.Left;
+        ////            grid.VerticalAlignment = VerticalAlignment.Center;
+        ////            parent.InvalidateSubtree();
+        ////        }, () =>
+        ////        {
+        ////            CheckRowHeights(grid, "#2", 12, 15, 15);
+        ////            grid.Width = 50;
+        ////            grid.Height = 50;
+        ////            parent.InvalidateSubtree();
+        ////        }, () =>
+        ////        {
+        ////            CheckRowHeights(grid, "#3", 8, 17, 25);
 
-        ////    // If we measure with a finite size, the rows/cols still expand
-        ////    // to consume the available space
-        ////    grid.Reset();
-        ////    grid.Measure(new Size(1000, 1000));
-        ////    grid.CheckMeasureArgs("#13", new Size(1000, 1000));
-        ////    grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////    Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////    // When we pass in the desired size as the arrange arg,
-        ////    // the rows/cols use that as their height/width
-        ////    grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////    grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////    grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////    CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////    grid.CheckColWidths("#19", grid.DesiredSize.Width);
-
-        ////    // If we pass in twice the desired size, the rows/cols consume that too
-        ////    grid.Reset();
-        ////    grid.Arrange(new Rect(0, 0, 100, 100));
-        ////    grid.CheckMeasureArgs("#20"); // No remeasures
-        ////    grid.CheckArrangeArgs("#21", new Size(100, 100));
-        ////    grid.CheckArrangeResult("#22", new Size(100, 100));
-        ////    CheckRowHeights(grid, "#23", 100);
-        ////    grid.CheckColWidths("#24", 100);
+        ////            grid.ClearValue(Grid.HorizontalAlignmentProperty);
+        ////            grid.ClearValue(Grid.VerticalAlignmentProperty);
+        ////            parent.InvalidateSubtree();
+        ////        }, () =>
+        ////        {
+        ////            CheckRowHeights(grid, "#4", 8, 17, 25);
+        ////        }
+        ////    );
         ////}
-
-        ////        [Fact]
-        ////        public void ExpandInArrange_OutsideTree_GridParent_UnfixedSize()
-        ////        {
-        ////            // We always expand star rows if we're not in the live tree
-        ////            // with a parent
-        ////            var parent = new Grid();
-
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            parent.Children.Add(grid);
-
-        ////            parent.Measure(Size.Infinity);
-        ////            grid.CheckMeasureArgs("#1", Infinity);
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#8"); // No remeasures
-        ////            grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#11", 100);
-        ////            grid.CheckColWidths("#12", 100);
-
-        ////            // If we measure with a finite size, the rows/cols still expand
-        ////            // to consume the available space
-        ////            grid.Reset();
-        ////            parent.Measure(new Size(1000, 1000));
-        ////            grid.CheckMeasureArgs("#13", new Size(1000, 1000));
-        ////            grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#19", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#20"); // No remeasures
-        ////            grid.CheckArrangeArgs("#21", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#22", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#23", 100);
-        ////            grid.CheckColWidths("#24", 100);
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandInArrange_OutsideTree_BorderParent_UnfixedSize()
-        ////        {
-        ////            // We always expand star rows if we're not in the live tree
-        ////            // with a parent
-        ////            var parent = new Border();
-
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            parent.Child = grid;
-        ////            parent.InvalidateSubtree();
-
-        ////            parent.Measure(Size.Infinity);
-        ////            grid.CheckMeasureArgs("#1", Infinity);
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#8"); // No remeasures
-        ////            grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#11", 100);
-        ////            grid.CheckColWidths("#12", 100);
-
-        ////            // If we measure with a finite size, the rows/cols still expand
-        ////            // to consume the available space
-        ////            grid.Reset();
-        ////            parent.InvalidateSubtree();
-        ////            parent.Measure(new Size(1000, 1000));
-        ////            grid.CheckMeasureArgs("#13", new Size(1000, 1000));
-        ////            grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#19", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#20"); // No remeasures
-        ////            grid.CheckArrangeArgs("#21", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#22", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#23", 100);
-        ////            grid.CheckColWidths("#24", 100);
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandInArrange_OutsideTree_GridParent_FixedSize()
-        ////        {
-        ////            // We always expand star rows if we're not in the live tree
-        ////            // with a parent
-        ////            var parent = new Grid();
-
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid { Width = 200, Height = 200 };
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            parent.Children.Add(grid);
-
-        ////            parent.Measure(Size.Infinity);
-        ////            grid.CheckMeasureArgs("#1", new Size(200, 200));
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(200, 200), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#8"); // No remeasures
-        ////            grid.CheckArrangeArgs("#9"); // No rearranges
-        ////            grid.CheckArrangeResult("#10");
-        ////            CheckRowHeights(grid, "#11", 200);
-        ////            grid.CheckColWidths("#12", 200);
-
-        ////            // If we measure with a finite size, the rows/cols still expand
-        ////            // to consume the available space
-        ////            grid.Reset();
-        ////            parent.Measure(new Size(150, 150));
-        ////            grid.CheckMeasureArgs("#13"); // No remeasures
-        ////            grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////            Assert.Equal(new Size(150, 150), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#16");
-        ////            grid.CheckArrangeResult("#17");
-        ////            CheckRowHeights(grid, "#18", 200);
-        ////            grid.CheckColWidths("#19", 200);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#20"); // No remeasures
-        ////            grid.CheckArrangeArgs("#21"); // No rearranges
-        ////            CheckRowHeights(grid, "#23", 200);
-        ////            grid.CheckColWidths("#24", 200);
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandInArrange_OutsideTree_BorderParent_FixedSize()
-        ////        {
-        ////            // We always expand star rows if we're not in the live tree
-        ////            var parent = new Border();
-
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid { Width = 200, Height = 200 };
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            parent.Child = grid;
-        ////            parent.InvalidateSubtree();
-
-        ////            parent.Measure(Size.Infinity);
-        ////            grid.CheckMeasureArgs("#1", new Size(200, 200));
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(200, 200), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, 1000, 10000));
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            // If we pass in twice the desired size, the rows/cols consume that too
-        ////            grid.Reset();
-        ////            parent.Arrange(new Rect(0, 0, 5, 5));
-        ////            grid.CheckMeasureArgs("#8"); // No re-measuring
-        ////            grid.CheckArrangeArgs("#9"); // No re-arranging
-        ////            grid.CheckArrangeResult("#10");
-        ////            CheckRowHeights(grid, "#11", 200);
-        ////            grid.CheckColWidths("#12", 200);
-
-        ////            // If we measure with a finite size, the rows/cols still expand
-        ////            // to consume the available space
-        ////            grid.Reset();
-        ////            parent.InvalidateSubtree();
-        ////            parent.Measure(new Size(1000, 1000));
-        ////            grid.CheckMeasureArgs("#13", new Size(200, 200));
-        ////            grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////            Assert.Equal(new Size(200, 200), grid.DesiredSize);
-
-        ////            // When we pass in the desired size as the arrange arg,
-        ////            // the rows/cols use that as their height/width
-        ////            parent.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#19", grid.DesiredSize.Width);
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ExpandInArrange_GridParent()
-        ////        {
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            CreateAsyncTest(grid, () => {
-        ////                grid.Reset();
-        ////                TestPanel.Measure(Size.Infinity);
-        ////                grid.CheckMeasureArgs("#1", Infinity);
-        ////                grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////                Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////                // When we pass in the desired size as the arrange arg,
-        ////                // the rows/cols use that as their height/width
-        ////                grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////                grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////                grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////                CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////                grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////                // If we pass in twice the desired size, the rows/cols consume that too
-        ////                grid.Reset();
-        ////                grid.Arrange(new Rect(0, 0, 100, 100));
-        ////                grid.CheckMeasureArgs("#8"); // No remeasures
-        ////                grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////                grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////                CheckRowHeights(grid, "#11", 100);
-        ////                grid.CheckColWidths("#12", 100);
-
-        ////                // If we measure with a finite size, the rows/cols still expand
-        ////                // to consume the available space
-        ////                grid.Reset();
-        ////                grid.Measure(new Size(1000, 1000));
-        ////                grid.CheckMeasureArgs("#13", new Size(1000, 1000));
-        ////                grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////                Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////                // When we pass in the desired size as the arrange arg,
-        ////                // the rows/cols use that as their height/width
-        ////                grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////                grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////                grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////                CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////                grid.CheckColWidths("#19", grid.DesiredSize.Width);
-
-        ////                // If we pass in twice the desired size, the rows/cols consume that too
-        ////                grid.Reset();
-        ////                grid.Arrange(new Rect(0, 0, 100, 100));
-        ////                grid.CheckMeasureArgs("#20"); // No remeasures
-        ////                grid.CheckArrangeArgs("#21", new Size(100, 100));
-        ////                grid.CheckArrangeResult("#22", new Size(100, 100));
-        ////                CheckRowHeights(grid, "#23", 100);
-        ////                grid.CheckColWidths("#24", 100);
-        ////            });
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ExpandInArrange_CanvasParent()
-        ////        {
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            var parent = new Canvas();
-        ////            parent.Children.Add(grid);
-        ////            CreateAsyncTest(parent, () => {
-        ////                grid.Reset();
-        ////                TestPanel.Measure(Size.Infinity);
-        ////                // Nothing is measured as the grid always uses (Inf, Inf) to measure children.
-        ////                grid.CheckMeasureArgs("#1");
-        ////                Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////                grid.Reset();
-        ////                grid.Arrange(new Rect(0, 0, 100, 100));
-        ////                grid.CheckMeasureArgs("#8"); // No remeasures
-        ////                grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////                grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////                CheckRowHeights(grid, "#11", 100);
-        ////                grid.CheckColWidths("#12", 100);
-
-        ////                // If we measure with a finite size, the rows/cols still expand
-        ////                // to consume the available space
-        ////                grid.Reset();
-        ////                grid.Measure(new Size(1000, 1000));
-        ////                grid.CheckMeasureArgs("#13", new Size(1000, 1000));
-        ////                grid.CheckMeasureResult("#14", new Size(50, 50));
-        ////                Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////                // When we pass in the desired size as the arrange arg,
-        ////                // the rows/cols use that as their height/width
-        ////                grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////                grid.CheckArrangeArgs("#16", grid.DesiredSize);
-        ////                grid.CheckArrangeResult("#17", grid.DesiredSize);
-        ////                CheckRowHeights(grid, "#18", grid.DesiredSize.Height);
-        ////                grid.CheckColWidths("#19", grid.DesiredSize.Width);
-
-        ////                // If we pass in twice the desired size, the rows/cols consume that too
-        ////                grid.Reset();
-        ////                grid.Arrange(new Rect(0, 0, 100, 100));
-        ////                grid.CheckMeasureArgs("#20"); // No remeasures
-        ////                grid.CheckArrangeArgs("#21", new Size(100, 100));
-        ////                grid.CheckArrangeResult("#22", new Size(100, 100));
-        ////                CheckRowHeights(grid, "#23", 100);
-        ////                grid.CheckColWidths("#24", 100);
-        ////            });
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MoonlightBug]
-        ////        public void ExpandStars_UnfixedSize()
-        ////        {
-        ////            // If a width/height is *not* set on the grid, it doesn't expand stars.
-        ////            var canvas = new Canvas { Width = 120, Height = 120 };
-        ////            PanelPoker poker = new PanelPoker();
-        ////            MyGrid grid = new MyGrid { Name = "TEDDY" };
-        ////            grid.AddRows(Star, Star, Star);
-        ////            grid.AddColumns(Star, Star, Star);
-
-        ////            canvas.Children.Add(poker);
-        ////            poker.Grid = grid;
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
-
-        ////            CreateAsyncTest(canvas,
-        ////                () => {
-        ////                    Assert.Equal(Infinity, poker.MeasureArgs[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.MeasureResults[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeArgs[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeResults[0]);
-
-        ////                    CheckRowHeights(grid, "#5", 0, 100, 0);
-        ////                    grid.CheckColWidths("#6", 0, 100, 0);
-
-        ////                    grid.CheckMeasureArgs("#7", Infinity);
-        ////                    grid.CheckMeasureResult("#8", new Size(100, 100));
-
-        ////                    grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////                    grid.CheckArrangeResult("#10", new Size(100, 100));
-
-        ////                    // Do not expand if we already consume 100 px
-        ////                    grid.Reset();
-        ////                    grid.Arrange(new Rect(0, 0, 100, 100));
-        ////                    grid.CheckArrangeArgs("#11");
-
-        ////                    // If we give extra space, we expand the rows.
-        ////                    grid.Arrange(new Rect(0, 0, 500, 500));
-
-        ////                    CheckRowHeights(grid, "#12", 167, 167, 166);
-        ////                    grid.CheckColWidths("#13", 167, 167, 166);
-
-        ////                    grid.CheckArrangeArgs("#14", new Size(167, 167));
-        ////                    grid.CheckArrangeResult("#15", new Size(167, 167));
-        ////                }
-        ////            );
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ExpandStars_FixedSize()
-        ////        {
-        ////            // If a width/height is set on the grid, it expands stars.
-        ////            var canvas = new Canvas { Width = 120, Height = 120 };
-        ////            PanelPoker poker = new PanelPoker { Width = 120, Height = 120 };
-        ////            MyGrid grid = new MyGrid { Name = "Griddy" };
-        ////            grid.AddRows(Star, Star, Star);
-        ////            grid.AddColumns(Star, Star, Star);
-
-        ////            canvas.Children.Add(poker);
-        ////            poker.Grid = grid;
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
-
-        ////            CreateAsyncTest(canvas,
-        ////                () => {
-        ////                    Assert.Equal(new Size(120, 120), poker.MeasureArgs[0]);
-        ////                    Assert.Equal(new Size(40, 40), poker.MeasureResults[0]);
-        ////                    Assert.Equal(new Size(120, 120), poker.ArrangeArgs[0]);
-        ////                    Assert.Equal(new Size(120, 120), poker.ArrangeResults[0]);
-
-        ////                    CheckRowHeights(grid, "#5", 40, 40, 40);
-        ////                    grid.CheckColWidths("#6", 40, 40, 40);
-
-        ////                    grid.CheckMeasureArgs("#7", new Size(40, 40));
-        ////                    grid.CheckMeasureResult("#8", new Size(40, 40));
-
-        ////                    grid.CheckArrangeArgs("#9", new Size(40, 40));
-        ////                    grid.CheckArrangeResult("#10", new Size(40, 40));
-        ////                }
-        ////            );
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandStars_NoRowsOrCols()
-        ////        {
-        ////            // If the rows/cols are autogenerated, we still expand them
-        ////            Grid grid = new Grid();
-        ////            grid.Children.Add(new Rectangle { Width = 50, Height = 50 });
-
-        ////            grid.Measure(new Size(200, 200));
-        ////            grid.Arrange(new Rect(0, 0, 200, 200));
-
-        ////            Assert.Equal(200, grid.ActualWidth);
-        ////            Assert.Equal(200, grid.ActualHeight);
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandStars_NoRowsOrCols2()
-        ////        {
-        ////            // We don't expand autogenerated rows/cols if we don't have Alignment.Stretch
-        ////            Grid grid = new Grid { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-        ////            grid.Children.Add(new Rectangle { Width = 50, Height = 50 });
-
-        ////            grid.Measure(new Size(200, 200));
-        ////            grid.Arrange(new Rect(0, 0, 200, 200));
-
-        ////            Assert.Equal(50, grid.ActualWidth);
-        ////            Assert.Equal(50, grid.ActualHeight);
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MinRuntimeVersion(4)]
-        ////        public void ArrangeOverride_Constraints()
-        ////        {
-        ////            TestDecorator top = new TestDecorator { Width = 100, Height = 100 };
-        ////            TestDecorator child = new TestDecorator();
-        ////            Rectangle content = new Rectangle { Width = 50, Height = 50 };
-
-        ////            top.Content = child;
-        ////            child.Content = content;
-
-        ////            CreateAsyncTest(top, () => {
-        ////                // First check the natural results.
-        ////                Assert.Equal(new Size(100, 100), child.MeasureOverrideArg);
-        ////                Assert.Equal(new Size(50, 50), child.MeasureOverrideResult);
-        ////                Assert.Equal(new Size(50, 50), child.DesiredSize, "desired 1");
-        ////                Assert.Equal(new Size(50, 50), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(50, 50), child.ArrangeOverrideResult);
-        ////                Assert.Equal(new Size(50, 50), child.RenderSize);
-        ////                Assert.Equal(new Size(50, 50), content.DesiredSize, "desired 2");
-
-        ////                // Now give the child more size in Arrange than it requires.
-        ////                child.Arrange(new Rect(0, 0, 100, 100));
-        ////                Assert.Equal(new Size(100, 100), child.RenderSize);
-        ////                Assert.Equal(new Size(100, 100), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(100, 100), child.ArrangeOverrideResult);
-        ////                Assert.Equal(new Size(50, 50), content.RenderSize);
-
-        ////                // Now give the child less size
-        ////                child.Arrange(new Rect(0, 0, 10, 10));
-        ////                Assert.Equal(new Size(50, 50), child.RenderSize);
-        ////                Assert.Equal(new Size(50, 50), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(50, 50), child.ArrangeOverrideResult);
-
-        ////                Assert.Equal(new Size(50, 50), content.RenderSize);
-        ////            });
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ArrangeOverride_Constraints2()
-        ////        {
-        ////            TestDecorator top = new TestDecorator { Width = 25, Height = 25 };
-        ////            TestDecorator child = new TestDecorator();
-        ////            Rectangle content = new Rectangle { Width = 50, Height = 50 };
-
-        ////            top.Content = child;
-        ////            child.Content = content;
-
-        ////            CreateAsyncTest(top, () => {
-        ////                // First check the natural results.
-        ////                Assert.Equal(new Size(25, 25), child.DesiredSize, "desired 1");
-        ////                Assert.Equal(new Size(25, 25), content.DesiredSize, "desired 2");
-
-        ////                Assert.Equal(new Size(25, 25), child.MeasureOverrideArg);
-        ////                Assert.Equal(new Size(25, 25), child.MeasureOverrideResult);
-        ////                Assert.Equal(new Size(25, 25), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(25, 25), child.ArrangeOverrideResult);
-        ////                Assert.Equal(new Size(25, 25), child.RenderSize);
-
-
-        ////                Assert.Equal(new Size(25, 25), new Size(child.ActualWidth, child.ActualHeight), "actual 1");
-        ////                Assert.Equal(new Size(50, 50), new Size(content.ActualWidth, content.ActualHeight), "actual 2");
-
-        ////                // Now give the child more size in Arrange than it requires.
-        ////                child.Arrange(new Rect(0, 0, 100, 100));
-        ////                Assert.Equal(new Size(25, 25), child.DesiredSize, "desired 3");
-        ////                Assert.Equal(new Size(25, 25), content.DesiredSize, "desired 4");
-        ////                Assert.Equal(new Size(100, 100), new Size(child.ActualWidth, child.ActualHeight), "actual 3");
-        ////                Assert.Equal(new Size(50, 50), new Size(content.ActualWidth, content.ActualHeight), "actual 4");
-
-        ////                Assert.Equal(new Size(100, 100), child.RenderSize);
-        ////                Assert.Equal(new Size(100, 100), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(100, 100), child.ArrangeOverrideResult);
-        ////                Assert.Equal(new Size(50, 50), content.RenderSize);
-
-        ////                // Now give the child less size
-        ////                child.Arrange(new Rect(0, 0, 10, 10));
-        ////                Assert.Equal(new Size(25, 25), child.DesiredSize, "desired 5");
-        ////                Assert.Equal(new Size(25, 25), content.DesiredSize, "desired 6");
-        ////                Assert.Equal(new Size(25, 25), new Size(child.ActualWidth, child.ActualHeight), "actual 5");
-        ////                Assert.Equal(new Size(50, 50), new Size(content.ActualWidth, content.ActualHeight), "actual 6");
-
-        ////                Assert.Equal(new Size(25, 25), child.RenderSize);
-        ////                Assert.Equal(new Size(25, 25), child.ArrangeOverrideArg);
-        ////                Assert.Equal(new Size(25, 25), child.ArrangeOverrideResult);
-        ////            });
-        ////        }
-
-        ////        [Fact]
-        ////        public void ExpandInArrange2()
-        ////        {
-        ////            // Measure with a finite value and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            grid.Measure(new Size(75, 75));
-        ////            grid.CheckMeasureArgs("#1", new Size(75, 75));
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // Check that everything is as expected when we pass in DesiredSize as the argument to Arrange
-        ////            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            grid.Reset();
-        ////            grid.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#8"); // No remeasures
-        ////            grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#11", 100);
-        ////            grid.CheckColWidths("#12", 100);
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRows3b2()
-        ////        {
-        ////            var canvas = new Canvas { Width = 120, Height = 120 };
-        ////            PanelPoker poker = new PanelPoker();
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star, Star, Star);
-        ////            grid.AddColumns(Star, Star, Star);
-
-        ////            canvas.Children.Add(poker);
-        ////            poker.Grid = grid;
-        ////            poker.Children.Add(grid);
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
-
-        ////            CreateAsyncTest(canvas,
-        ////                () => { },
-        ////                () => {
-        ////                    Assert.Equal(Infinity, poker.MeasureArgs[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.MeasureResults[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeArgs[0]);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeResults[0]);
-
-        ////                    grid.CheckColWidths("#5", 0, 100, 0);
-        ////                    CheckRowHeights(grid, "#6", 0, 100, 0);
-
-        ////                    grid.CheckMeasureArgs("#7", Infinity);
-        ////                    grid.CheckMeasureResult("#8", new Size(100, 100));
-
-        ////                    grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////                    grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////                }
-        ////            );
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void StarRows3c()
-        ////        {
-        ////            var canvas = new Canvas { Width = 120, Height = 120 };
-        ////            var poker = new TestDecorator();
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star, Star, Star);
-        ////            grid.AddColumns(Star, Star, Star);
-
-        ////            canvas.Children.Add(poker);
-        ////            poker.Content = grid;
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
-
-        ////            CreateAsyncTest(canvas,
-        ////                () => { },
-        ////                () => {
-        ////                    Assert.Equal(Infinity, poker.MeasureOverrideArg);
-        ////                    Assert.Equal(new Size(100, 100), poker.MeasureOverrideResult);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeOverrideArg);
-        ////                    Assert.Equal(new Size(100, 100), poker.ArrangeOverrideResult);
-
-        ////                    grid.CheckColWidths("#5", 0, 100, 0);
-        ////                    CheckRowHeights(grid, "#6", 0, 100, 0);
-
-        ////                    grid.CheckMeasureArgs("#7", Infinity);
-        ////                    grid.CheckMeasureResult("#8", new Size(100, 100));
-
-        ////                    grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////                    grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////                }
-        ////            );
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MinRuntimeVersion(4)]
-        ////        public void StarRows3d()
-        ////        {
-        ////            var poker = new TestDecorator { Width = 120, Height = 120 };
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star, Star, Star);
-        ////            grid.AddColumns(Star, Star, Star);
-
-        ////            poker.Content = grid;
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
-
-        ////            CreateAsyncTest(poker,
-        ////                () => { },
-        ////                () => {
-        ////                    Assert.Equal(new Size(120, 120), poker.MeasureOverrideArg);
-        ////                    Assert.Equal(new Size(40, 40), poker.MeasureOverrideResult);
-        ////                    Assert.Equal(new Size(40, 40), grid.DesiredSize, "#2b");
-        ////                    Assert.Equal(new Size(120, 120), poker.DesiredSize, "#2c");
-        ////                    Assert.Equal(new Size(120, 120), poker.ArrangeOverrideArg);
-        ////                    Assert.Equal(new Size(120, 120), poker.ArrangeOverrideResult);
-
-        ////                    grid.CheckColWidths("#5", 0, 40, 0);
-        ////                    CheckRowHeights(grid, "#6", 0, 40, 0);
-
-        ////                    grid.CheckMeasureArgs("#7", new Size(40, 40));
-        ////                    grid.CheckMeasureResult("#8", new Size(40, 40));
-
-        ////                    grid.CheckArrangeArgs("#9", new Size(40, 40));
-        ////                    grid.CheckArrangeResult("#10", new Size(40, 40));
-        ////                }
-        ////            );
-        ////        }
-
-        ////#endregion When do we expand star rows
-
-        ////        [Fact]
-        ////        public void ExpandInArrange()
-        ////        {
-        ////            // Measure with double.PositiveInfinityinity and check results.
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.AddRows(Star);
-        ////            grid.AddColumns(Star);
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
-
-        ////            grid.Measure(Size.Infinity);
-        ////            grid.CheckMeasureArgs("#1", Infinity);
-        ////            grid.CheckMeasureResult("#2", new Size(50, 50));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            // Check that everything is as expected when we pass in DesiredSize as the argument to Arrange
-        ////            grid.Arrange(new Rect(0, 0, grid.DesiredSize.Width, grid.DesiredSize.Height));
-        ////            grid.CheckArrangeArgs("#4", grid.DesiredSize);
-        ////            grid.CheckArrangeResult("#5", grid.DesiredSize);
-        ////            CheckRowHeights(grid, "#6", grid.DesiredSize.Height);
-        ////            grid.CheckColWidths("#7", grid.DesiredSize.Width);
-
-        ////            grid.Reset();
-        ////            grid.Arrange(new Rect(0, 0, 100, 100));
-        ////            grid.CheckMeasureArgs("#8"); // No remeasures
-        ////            grid.CheckArrangeArgs("#9", new Size(100, 100));
-        ////            grid.CheckArrangeResult("#10", new Size(100, 100));
-        ////            CheckRowHeights(grid, "#11", 100);
-        ////            grid.CheckColWidths("#12", 100);
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void AutoStarInfiniteChildren()
-        ////        {
-        ////            Grid holder = new Grid { Width = 500, Height = 500 };
-        ////            MyGrid g = new MyGrid { Name = "Ted!" };
-        ////            g.AddRows(new GridLength(1, GridUnitType.Star), GridLength.Auto);
-        ////            g.AddColumns(new GridLength(1, GridUnitType.Star), GridLength.Auto);
-
-        ////            g.AddChild(CreateInfiniteChild(), 0, 0, 1, 1);
-        ////            g.AddChild(CreateInfiniteChild(), 0, 1, 1, 1);
-        ////            g.AddChild(CreateInfiniteChild(), 1, 0, 1, 1);
-        ////            g.AddChild(CreateInfiniteChild(), 1, 1, 1, 1);
-
-        ////            // FIXME: I think this fails because the first time the ScrollViewer measures it calculates
-        ////            // the visibility of the Horizontal/Vertical scroll bar incorrectly. It's desired size on the
-        ////            // first measure is (327, 327) whereas it should be (327, 310). A few measure cycles later and
-        ////            // it will be correct, but chews up much more CPU than it should.
-        ////            holder.Children.Add(g);
-        ////            CreateAsyncTest(holder, () => {
-        ////                g.CheckMeasureOrder("#1", 3, 1, 2, 1, 0);
-        ////                g.CheckMeasureArgs("#2", Infinity, Infinity, new Size(173, double.PositiveInfinity), new Size(double.PositiveInfinity, 190), new Size(173, 190));
-        ////                g.CheckMeasureResult("#3", new Size(173, 190), new Size(327, 190), new Size(173, 310), new Size(327, 310), new Size(173, 310));
-        ////                g.CheckRowHeights("#4", 190, 310);
-        ////                g.CheckColWidths("#5", 173, 327);
-        ////                Assert.Equal(new Size(500, 500), g.DesiredSize);
-        ////            });
-        ////        }
-
-        ////        [Fact]
-        ////        [MoonlightBug("ScrollViewerTest.ThumbResizes shows the same issue")]
-        ////        public void ChildInvalidatesGrid()
-        ////        {
-        ////            var child = new TestDecorator(50, 50);
-        ////            Grid grid = new Grid();
-        ////            grid.Children.Add(child);
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(new Size(50, 50), grid.DesiredSize);
-
-        ////            ((FrameworkElement)child.Content).Height = 60;
-        ////            ((FrameworkElement)child.Content).Width = 10;
-
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(new Size(10, 60), grid.DesiredSize);
-        ////        }
-
-        ////        [Fact]
-        ////        [MoonlightBug("ScrollViewerTest.ThumbResizes shows the same issue")]
-        ////        public void ChildInvalidatesGrid2()
-        ////        {
-        ////            var child = new TestDecorator(50, 50);
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.Children.Add(child);
-
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(1, grid.MeasuredElements.Count);
-
-        ////            child.InvalidateMeasure();
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(2, grid.MeasuredElements.Count);
-        ////        }
-
-        ////        [Fact]
-        ////        public void ChildInvalidatesGrid3()
-        ////        {
-        ////            var child = new TestDecorator(50, 50);
-        ////            MyGrid grid = new MyGrid();
-        ////            grid.Children.Add(child);
-
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(1, grid.MeasuredElements.Count);
-
-        ////            // Note that invalidating the measure of the content does
-        ////            // not invalidate the grid.
-        ////            ((FrameworkElement)child.Content).InvalidateMeasure();
-        ////            grid.Measure(new Size(100, 100));
-        ////            Assert.Equal(1, grid.MeasuredElements.Count);
-        ////        }
-
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MoonlightBug]
-        ////        public void ExpandStarsInBorder()
-        ////        {
-        ////            MyGrid grid = CreateGridWithChildren();
-
-        ////            var parent = new Border();
-        ////            parent.Child = grid;
-
-        ////            TestPanel.Width = 75;
-        ////            TestPanel.Height = 75;
-
-        ////            CreateAsyncTest(parent,
-        ////                () => {
-        ////                    CheckRowHeights(grid, "#1", 12, 25, 38);
-
-        ////                    grid.HorizontalAlignment = HorizontalAlignment.Left;
-        ////                    grid.VerticalAlignment = VerticalAlignment.Center;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#2", 12, 15, 15);
-        ////                    grid.Width = 50;
-        ////                    grid.Height = 50;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#3", 8, 17, 25);
-
-        ////                    grid.ClearValue(Grid.HorizontalAlignmentProperty);
-        ////                    grid.ClearValue(Grid.VerticalAlignmentProperty);
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#4", 8, 17, 25);
-        ////                }
-        ////            );
-        ////        }
 
         ////        [Fact]
         ////        [Asynchronous]
@@ -1729,7 +1004,7 @@ namespace Perspex.Controls.UnitTests
         ////                MyGrid g = new MyGrid { Name = "Grid" + i };
         ////                g.AddRows(Star);
         ////                g.AddColumns(Star);
-        ////                g.Children.Add(new TestDecorator
+        ////                g.Children.Add(new MyContentControl
         ////                {
         ////                    Content = new Rectangle
         ////                    {
@@ -1740,7 +1015,7 @@ namespace Perspex.Controls.UnitTests
         ////                        Stroke = new SolidColorBrush(Colors.Black)
         ////                    }
         ////                });
-        ////                g.Children.Add(new TestDecorator
+        ////                g.Children.Add(new MyContentControl
         ////                {
         ////                    Content = new Rectangle
         ////                    {
@@ -1774,191 +1049,187 @@ namespace Perspex.Controls.UnitTests
         ////            });
         ////        }
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void MeasureMaxAndMin()
-        ////        {
-        ////            MyGrid g = new MyGrid();
-        ////            var child = new TestDecorator(50, 50);
-        ////            g.AddColumns(GridLength.Auto);
-        ////            g.AddRows(GridLength.Auto, GridLength.Auto);
-        ////            g.AddChild(child, 0, 0, 1, 1);
+        [Fact]
+        public void MeasureMaxAndMin()
+        {
+            MyGrid g = new MyGrid();
+            var child = new MyContentControl(50, 50);
+            g.RowDefinitions = new RowDefinitions("Auto");
+            g.ColumnDefinitions = new ColumnDefinitions("Auto,Auto");
+            g.AddChild(child, 0, 0, 1, 1);
+            g.Measure(Size.Infinity);
+            g.Arrange(new Rect(g.DesiredSize));
 
-        ////            CreateAsyncTest(g,
-        ////                () => {
-        ////                    g.CheckMeasureArgs("#1", Infinity);
-        ////                    g.CheckRowHeights("#2", 50, 0);
+            g.CheckMeasureArgs("#1", Size.Infinity);
+            g.CheckRowHeights("#2", 50, 0);
 
-        ////                    g.Reset();
-        ////                    g.InvalidateSubtree();
-        ////                    g.RowDefinitions[0].MaxHeight = 20;
-        ////                }, () => {
-        ////                    g.CheckMeasureArgs("#3", Infinity);
-        ////                    g.CheckRowHeights("#4", 50, 0);
-        ////                }
-        ////            );
-        ////        }
+            g.Reset();
+            g.InvalidateMeasure();
+            g.RowDefinitions[0].MaxHeight = 20;
+            g.Measure(Size.Infinity);
+            g.Arrange(new Rect(g.DesiredSize));
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void MeasureMaxAndMin2()
-        ////        {
-        ////            MyGrid g = new MyGrid();
-        ////            var child = new TestDecorator(50, 50);
-        ////            g.AddColumns(new GridLength(50));
-        ////            g.AddRows(new GridLength(50), new GridLength(50));
-        ////            g.AddChild(child, 0, 0, 1, 1);
+            g.CheckMeasureArgs("#3", Size.Infinity);
+            g.CheckRowHeights("#4", 50, 0);
+        }
 
-        ////            CreateAsyncTest(g,
-        ////                () => {
-        ////                    g.CheckMeasureArgs("#1", new Size(50, 50));
-        ////                    g.CheckRowHeights("#2", 50, 50);
+        [Fact]
+        public void MeasureMaxAndMin2()
+        {
+            MyGrid g = new MyGrid();
+            var child = new MyContentControl(50, 50);
+            g.RowDefinitions = new RowDefinitions("50");
+            g.ColumnDefinitions = new ColumnDefinitions("50,50");
+            g.AddChild(child, 0, 0, 1, 1);
+            g.Measure(Size.Infinity);
+            g.Arrange(new Rect(g.DesiredSize));
 
-        ////                    g.Reset();
-        ////                    g.InvalidateSubtree();
-        ////                    g.RowDefinitions[0].MaxHeight = 20;
-        ////                }, () => {
-        ////                    g.CheckMeasureArgs("#3", new Size(50, 20));
-        ////                    g.CheckRowHeights("#4", 20, 50);
-        ////                }
-        ////            );
-        ////        }
+            g.CheckMeasureArgs("#1", new Size(50, 50));
+            g.CheckRowHeights("#2", 50, 50);
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void MeasureMaxAndMin3()
-        ////        {
-        ////            Grid g = new Grid();
-        ////            var child = new TestDecorator(50, 50);
-        ////            g.AddColumns(new GridLength(50));
-        ////            g.AddRows(new GridLength(20), new GridLength(20));
-        ////            g.AddChild(child, 0, 0, 2, 2);
+            g.Reset();
+            g.InvalidateMeasure();
+            g.RowDefinitions[0].MaxHeight = 20;
+            g.Measure(Size.Infinity);
+            g.Arrange(new Rect(g.DesiredSize));
 
-        ////            g.RowDefinitions[0].MaxHeight = 5;
-        ////            g.RowDefinitions[1].MaxHeight = 30;
+            g.CheckMeasureArgs("#3", new Size(50, 20));
+            g.CheckRowHeights("#4", 20, 50);
+        }
 
-        ////            CreateAsyncTest(g,
-        ////                () => {
-        ////                    var arg = child.MeasureOverrideArg;
-        ////                    Assert.Equal(25, arg.Height);
-        ////                    g.RowDefinitions[0].MaxHeight = 10;
-        ////                }, () => {
-        ////                    var arg = child.MeasureOverrideArg;
-        ////                    Assert.Equal(30, arg.Height);
-        ////                    g.RowDefinitions[0].MaxHeight = 20;
-        ////                }, () => {
-        ////                    var arg = child.MeasureOverrideArg;
-        ////                    Assert.Equal(40, arg.Height);
-        ////                }
-        ////            );
-        ////        }
+        [Fact]
+        public void MeasureMaxAndMin3()
+        {
+            MyGrid g = new MyGrid();
+            var child = new MyContentControl(50, 50);
+            g.RowDefinitions = new RowDefinitions("20,20");
+            g.ColumnDefinitions = new ColumnDefinitions("50");
+            g.AddChild(child, 0, 0, 2, 2);
 
-        ////        [Fact]
-        ////        public void MeasureAutoRows()
-        ////        {
-        ////            MyGrid grid = new MyGrid();
+            g.RowDefinitions[0].MaxHeight = 5;
+            g.RowDefinitions[1].MaxHeight = 30;
+            g.Measure(Size.Infinity);
+            g.Arrange(new Rect(g.DesiredSize));
 
-        ////            grid.AddColumns(new GridLength(50), new GridLength(50));
-        ////            grid.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto);
+            var arg = child.MeasureOverrideArg;
+            Assert.Equal(25, arg.Height);
+            g.RowDefinitions[0].MaxHeight = 10;
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 2, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 0, 1, 1, 1);
+            g.Measure(Size.Infinity);
+            arg = child.MeasureOverrideArg;
+            Assert.Equal(30, arg.Height);
+            g.RowDefinitions[0].MaxHeight = 20;
 
-        ////            grid.Measure(new Size(0, 0));
-        ////            grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////            grid.Reset();
-        ////            Assert.Equal(new Size(0, 0), grid.DesiredSize);
+            g.Measure(Size.Infinity);
+            arg = child.MeasureOverrideArg;
+            Assert.Equal(40, arg.Height);
+        }
 
-        ////            grid.Measure(new Size(50, 40));
-        ////            grid.CheckMeasureSizes("#3", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////            grid.Reset();
-        ////            Assert.Equal(new Size(50, 40), grid.DesiredSize);
+        [Fact]
+        public void MeasureAutoRows()
+        {
+            MyGrid grid = new MyGrid();
 
-        ////            grid.Measure(new Size(500, 400));
-        ////            grid.CheckMeasureSizes("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////            grid.Reset();
-        ////            Assert.Equal(new Size(100, 60), grid.DesiredSize);
-        ////        }
+            grid.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
+            grid.ColumnDefinitions = new ColumnDefinitions("50,50");
 
-        ////        [Fact]
-        ////        public void MeasureAutoRows2()
-        ////        {
-        ////            double double.PositiveInfinity = double.PositiveInfinity;
-        ////            MyGrid grid = new MyGrid();
+            grid.AddChild(new MyContentControl(50, 50), 0, 0, 2, 1);
+            grid.AddChild(new MyContentControl(50, 60), 0, 1, 1, 1);
 
-        ////            grid.AddColumns(new GridLength(50), new GridLength(50));
-        ////            grid.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto);
+            grid.Measure(new Size(0, 0));
+            grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+            grid.Reset();
+            Assert.Equal(new Size(0, 0), grid.DesiredSize);
 
-        ////            TestDecorator c = new TestDecorator(50, 50);
-        ////            grid.AddChild(c, 0, 0, 2, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 0, 1, 1, 1);
-        ////            grid.AddChild(new TestDecorator(50, 20), 0, 1, 1, 1);
+            grid.Measure(new Size(50, 40));
+            grid.CheckMeasureSizes("#3", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+            grid.Reset();
+            Assert.Equal(new Size(50, 40), grid.DesiredSize);
 
-        ////            grid.Measure(new Size(500, 400));
-        ////            grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////            grid.CheckMeasureOrder("#2", 0, 1, 2);
-        ////            Assert.Equal(new Size(100, 60), grid.DesiredSize);
+            grid.Measure(new Size(500, 400));
+            grid.CheckMeasureSizes("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+            grid.Reset();
+            Assert.Equal(new Size(100, 60), grid.DesiredSize);
+        }
 
-        ////            grid.ChangeRow(2, 1);
-        ////            grid.Reset();
-        ////            grid.Measure(new Size(500, 400));
-        ////            grid.CheckMeasureArgs("#3", new Size(50, double.PositiveInfinity));
-        ////            grid.CheckMeasureOrder("#4", 2);
-        ////            Assert.Equal(new Size(100, 80), grid.DesiredSize);
+        ////[Fact]
+        ////public void MeasureAutoRows2()
+        ////{
+        ////    MyGrid grid = new MyGrid();
 
-        ////            grid.InvalidateSubtree();
-        ////            ((FrameworkElement)c.Content).Height = 100;
+        ////    grid.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
+        ////    grid.ColumnDefinitions = new ColumnDefinitions("50,50");
 
-        ////            grid.Reset();
-        ////            grid.Measure(new Size(500, 400));
-        ////            grid.CheckMeasureArgs("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////            Assert.Equal(new Size(100, 100), grid.DesiredSize);
+        ////    MyContentControl c = new MyContentControl(50, 50);
+        ////    grid.AddChild(c, 0, 0, 2, 1);
+        ////    grid.AddChild(new MyContentControl(50, 60), 0, 1, 1, 1);
+        ////    grid.AddChild(new MyContentControl(50, 20), 0, 1, 1, 1);
 
-        ////            grid.Reset();
-        ////            grid.ChangeRow(2, 2);
-        ////            grid.Measure(new Size(500, 400));
-        ////            grid.CheckMeasureArgs("#7", new Size(50, double.PositiveInfinity));
-        ////            grid.CheckMeasureOrder("#8", 2);
-        ////            Assert.Equal(new Size(100, 120), grid.DesiredSize);
-        ////        }
+        ////    grid.Measure(new Size(500, 400));
+        ////    grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+        ////    grid.CheckMeasureOrder("#2", 0, 1, 2);
+        ////    Assert.Equal(new Size(100, 60), grid.DesiredSize);
 
-        ////        [Fact]
-        ////        public void ChangingGridPropertiesInvalidates()
-        ////        {
-        ////            // Normally remeasuring with the same width/height does not result in MeasureOverride
-        ////            // being called, but if we change a grid property, it does.
-        ////            MyGrid g = new MyGrid();
-        ////            g.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto);
-        ////            g.AddColumns(GridLength.Auto, GridLength.Auto, GridLength.Auto);
-        ////            g.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
+        ////    grid.ChangeRow(2, 1);
+        ////    grid.Reset();
+        ////    grid.InvalidateMeasure();
+        ////    grid.CheckMeasureArgs("#3", new Size(50, double.PositiveInfinity));
+        ////    grid.CheckMeasureOrder("#4", 2);
+        ////    Assert.Equal(new Size(100, 80), grid.DesiredSize);
 
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#1", new Size(double.PositiveInfinity, double.PositiveInfinity));
+        ////    grid.InvalidateMeasure();
+        ////    ((Control)c.Content).Height = 100;
 
-        ////            g.Reset();
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#2");
+        ////    grid.Reset();
+        ////    grid.Measure(new Size(500, 400));
+        ////    grid.CheckMeasureArgs("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+        ////    Assert.Equal(new Size(100, 100), grid.DesiredSize);
 
-        ////            g.ChangeRowSpan(0, 2);
-        ////            g.Reset();
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#3", new Size(double.PositiveInfinity, double.PositiveInfinity));
+        ////    grid.Reset();
+        ////    grid.ChangeRow(2, 2);
+        ////    grid.Measure(new Size(500, 400));
+        ////    grid.CheckMeasureArgs("#7", new Size(50, double.PositiveInfinity));
+        ////    grid.CheckMeasureOrder("#8", 2);
+        ////    Assert.Equal(new Size(100, 120), grid.DesiredSize);
+        ////}
 
-        ////            g.ChangeColSpan(0, 2);
-        ////            g.Reset();
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#4", new Size(double.PositiveInfinity, double.PositiveInfinity));
+        [Fact]
+        public void ChangingGridPropertiesInvalidates()
+        {
+            // Normally remeasuring with the same width/height does not result in MeasureOverride
+            // being called, but if we change a grid property, it does.
+            MyGrid g = new MyGrid();
+            g.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
+            g.ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto");
+            g.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
 
-        ////            g.ChangeRow(0, 1);
-        ////            g.Reset();
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#5", new Size(double.PositiveInfinity, double.PositiveInfinity));
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#1", new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-        ////            g.ChangeCol(0, 1);
-        ////            g.Reset();
-        ////            g.Measure(new Size(50, 50));
-        ////            g.CheckMeasureArgs("#6", new Size(double.PositiveInfinity, double.PositiveInfinity));
-        ////        }
+            g.Reset();
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#2");
+
+            g.ChangeRowSpan(0, 2);
+            g.Reset();
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#3", new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            g.ChangeColSpan(0, 2);
+            g.Reset();
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#4", new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            g.ChangeRow(0, 1);
+            g.Reset();
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#5", new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            g.ChangeCol(0, 1);
+            g.Reset();
+            g.Measure(new Size(50, 50));
+            g.CheckMeasureArgs("#6", new Size(double.PositiveInfinity, double.PositiveInfinity));
+        }
 
         ////        [Fact]
         ////        [Asynchronous]
@@ -1969,9 +1240,9 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50), new GridLength(50));
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto);
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 1, 2, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 1, 1, 1, 1);
-        ////            grid.AddChild(new TestDecorator(50, 70), 0, 1, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 60), 1, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(50, 70), 0, 1, 3, 1);
 
         ////            CreateAsyncTest(grid, () => {
         ////                CheckRowHeights(grid, "#1", 3.33, 63.33, 3.33);
@@ -1987,19 +1258,19 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50), new GridLength(50));
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto);
 
-        ////            grid.AddChild(new TestDecorator(50, 30), 0, 1, 3, 1);
-        ////            grid.AddChild(new TestDecorator(50, 90), 0, 1, 1, 1);
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 30), 0, 1, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 90), 0, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 1, 2, 1);
 
-        ////            grid.AddChild(new TestDecorator(50, 70), 1, 1, 4, 1);
-        ////            grid.AddChild(new TestDecorator(50, 120), 1, 1, 2, 1);
-        ////            grid.AddChild(new TestDecorator(50, 30), 2, 1, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 70), 1, 1, 4, 1);
+        ////            grid.AddChild(new MyContentControl(50, 120), 1, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 30), 2, 1, 3, 1);
 
-        ////            grid.AddChild(new TestDecorator(50, 10), 3, 1, 1, 1);
-        ////            grid.AddChild(new TestDecorator(50, 50), 3, 1, 2, 1);
-        ////            grid.AddChild(new TestDecorator(50, 80), 3, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 10), 3, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 3, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 80), 3, 1, 2, 1);
 
-        ////            grid.AddChild(new TestDecorator(50, 20), 4, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(50, 20), 4, 1, 1, 1);
 
         ////            CreateAsyncTest(grid, () => {
         ////                CheckRowHeights(grid, "#1", 90, 60, 60, 35, 45);
@@ -2013,7 +1284,7 @@ namespace Perspex.Controls.UnitTests
 
         ////            grid.AddColumns(new GridLength(50), new GridLength(50));
         ////            grid.AddRows(new GridLength(20), new GridLength(20));
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 1, 2, 1);
 
         ////            grid.Measure(Size.Infinity);
         ////            CheckRowHeights(grid, "#1", 20, 20);
@@ -2033,7 +1304,7 @@ namespace Perspex.Controls.UnitTests
         ////            Assert.Equal(new Size(100, 70), grid.DesiredSize);
 
         ////            grid.Children.Clear();
-        ////            grid.AddChild(new TestDecorator(50, 150), 0, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 150), 0, 1, 2, 1);
         ////            grid.Measure(Size.Infinity);
         ////            grid.CheckDesired("#13", new Size(50, 150));
         ////            CheckRowHeights(grid, "#10", double.PositiveInfinity, 30, 20);
@@ -2051,8 +1322,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50));
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, new GridLength(1, GridUnitType.Star), GridLength.Auto, GridLength.Auto);
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 3, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 1, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 60), 1, 0, 3, 1);
 
         ////            grid.Measure(new Size(100, 100));
         ////            CheckRowHeights(grid, "#1", double.PositiveInfinity, double.PositiveInfinity, 100, double.PositiveInfinity, double.PositiveInfinity);
@@ -2091,8 +1362,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            grid.RowDefinitions.Add(new RowDefinition { MaxHeight = 20, Height = Star });
 
-        ////            var child1 = ContentControlWithChild();
-        ////            var child2 = ContentControlWithChild();
+        ////            var child1 = DecoratorWithChild();
+        ////            var child2 = DecoratorWithChild();
         ////            (child1.Content as FrameworkElement).Height = 50;
         ////            (child2.Content as FrameworkElement).Height = 70;
 
@@ -2122,8 +1393,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            grid.RowDefinitions.Add(new RowDefinition { MaxHeight = 20, Height = Star });
 
-        ////            var child1 = ContentControlWithChild();
-        ////            var child2 = ContentControlWithChild();
+        ////            var child1 = DecoratorWithChild();
+        ////            var child2 = DecoratorWithChild();
         ////            (child1.Content as FrameworkElement).Height = 50;
         ////            (child2.Content as FrameworkElement).Height = 70;
         ////            grid.AddChild(child1, 0, 0, 1, 1);
@@ -2139,7 +1410,7 @@ namespace Perspex.Controls.UnitTests
         ////        public void StarStarRows_StarCol_LimitedHeight()
         ////        {
         ////            var g = new Grid();
-        ////            var child = ContentControlWithChild();
+        ////            var child = DecoratorWithChild();
 
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star, MaxHeight = 20 });
@@ -2153,7 +1424,7 @@ namespace Perspex.Controls.UnitTests
         ////        public void StarRow_AutoCol_LimitedHeigth()
         ////        {
         ////            var g = new Grid();
-        ////            var child = ContentControlWithChild();
+        ////            var child = DecoratorWithChild();
 
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star, MaxHeight = 20 });
@@ -2168,7 +1439,7 @@ namespace Perspex.Controls.UnitTests
         ////        public void StarRow_AutoStarCol_LimitedWidth()
         ////        {
         ////            var g = new Grid();
-        ////            var child = ContentControlWithChild();
+        ////            var child = DecoratorWithChild();
 
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            g.ColumnDefinitions.Add(new ColumnDefinition { Width = Auto });
@@ -2183,7 +1454,7 @@ namespace Perspex.Controls.UnitTests
         ////        public void AutoRow_StarCol()
         ////        {
         ////            var g = new Grid();
-        ////            var child = ContentControlWithChild();
+        ////            var child = DecoratorWithChild();
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star });
         ////            g.RowDefinitions.Add(new RowDefinition { Height = Star, MaxHeight = 20 });
 
@@ -2278,8 +1549,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, GridLength.Auto);
         ////            grid.AddColumns(new GridLength(50));
 
-        ////            var child50 = new TestDecorator(50, 50);
-        ////            var child60 = new TestDecorator(50, 60);
+        ////            var child50 = new MyContentControl(50, 50);
+        ////            var child60 = new MyContentControl(50, 60);
 
         ////            grid.AddChild(child50, 0, 0, 1, 1);
         ////            grid.AddChild(child60, 0, 0, 1, 1);
@@ -2334,7 +1605,7 @@ namespace Perspex.Controls.UnitTests
         ////        {
         ////            Grid grid = new Grid();
         ////            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(50), MaxHeight = 40, MinHeight = 60 });
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 0, 0);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 0, 0);
         ////            CreateAsyncTest(grid, () => {
         ////                Assert.Equal(60, grid.RowDefinitions[0].ActualHeight);
         ////            });
@@ -2347,7 +1618,7 @@ namespace Perspex.Controls.UnitTests
         ////            Grid grid = new Grid();
         ////            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(50), MaxHeight = 60, MinHeight = 40 });
         ////            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(50), MaxHeight = 60, MinHeight = 40 });
-        ////            grid.AddChild(new TestDecorator(100, 1000), 0, 0, 0, 0);
+        ////            grid.AddChild(new MyContentControl(100, 1000), 0, 0, 0, 0);
         ////            CreateAsyncTest(grid,
         ////                () => {
         ////                    Assert.Equal(50, grid.RowDefinitions[0].ActualHeight);
@@ -2366,12 +1637,12 @@ namespace Perspex.Controls.UnitTests
         ////            g.AddRows(GridLength.Auto, new GridLength(1, GridUnitType.Star));
         ////            g.AddColumns(GridLength.Auto, new GridLength(1, GridUnitType.Star));
 
-        ////            g.AddChild(ContentControlWithChild(), 0, 1, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 1, 0, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 1, 1, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 0, 1, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 1, 0, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 1, 1, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
 
-        ////            foreach (TestDecorator child in g.Children)
+        ////            foreach (MyContentControl child in g.Children)
         ////            {
         ////                Assert.Equal(0, child.ActualHeight, "height");
         ////                Assert.Equal(0, child.ActualWidth, "height");
@@ -2396,12 +1667,12 @@ namespace Perspex.Controls.UnitTests
         ////            g.AddRows(GridLength.Auto, new GridLength(1, GridUnitType.Star));
         ////            g.AddColumns(GridLength.Auto, new GridLength(1, GridUnitType.Star));
 
-        ////            g.AddChild(ContentControlWithChild(), 0, 1, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 1, 0, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 1, 1, 1, 1);
-        ////            g.AddChild(ContentControlWithChild(), 0, 0, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 0, 1, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 1, 0, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 1, 1, 1, 1);
+        ////            g.AddChild(DecoratorWithChild(), 0, 0, 1, 1);
 
-        ////            foreach (TestDecorator child in g.Children)
+        ////            foreach (MyContentControl child in g.Children)
         ////            {
         ////                Assert.Equal(0, child.ActualHeight, "height");
         ////                Assert.Equal(0, child.ActualWidth, "height");
@@ -2419,8 +1690,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void StarAutoIsNotInfinite()
         {
-            var child1 = new TestDecorator { };
-            var child2 = new TestDecorator { };
+            var child1 = new MyContentControl { };
+            var child2 = new MyContentControl { };
             MyGrid grid = new MyGrid();
             grid.RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*");
             grid.ColumnDefinitions = new ColumnDefinitions("Auto,*");
@@ -2440,7 +1711,7 @@ namespace Perspex.Controls.UnitTests
         ////            GridUnitType star = GridUnitType.Star;
         ////            MyGrid grid = new MyGrid { Name = "TESTER", Width = 100, Height = 210 };
         ////            grid.AddRows(new GridLength(1, star), new GridLength(2, star));
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 0, 0);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 0, 0);
         ////            CreateAsyncTest(grid,
         ////                () => {
         ////                    CheckRowHeights(grid, "#1", 70, 140);
@@ -2453,7 +1724,7 @@ namespace Perspex.Controls.UnitTests
         ////                    grid.Reset();
 
         ////                    // Add a child to the fixed row
-        ////                    grid.AddChild(new TestDecorator(50, 80), 2, 0, 0, 0);
+        ////                    grid.AddChild(new MyContentControl(50, 80), 2, 0, 0, 0);
         ////                }, () => {
         ////                    CheckRowHeights(grid, "#3", 60, 120, 30);
         ////                    grid.CheckMeasureArgs("#3a", new Size(100, 30));
@@ -2484,7 +1755,7 @@ namespace Perspex.Controls.UnitTests
         ////            GridUnitType star = GridUnitType.Star;
         ////            MyGrid grid = new MyGrid { Width = 100, Height = 210 };
         ////            grid.AddRows(new GridLength(1, star), new GridLength(2, star));
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 0, 0);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 0, 0);
         ////            CreateAsyncTest(grid,
         ////                () => {
         ////                    CheckRowHeights(grid, "#1", 70, 140);
@@ -2497,7 +1768,7 @@ namespace Perspex.Controls.UnitTests
         ////                    grid.CheckMeasureArgs("#2b"); // MeasureOverride isn't called
 
         ////                    // Add a child to the fixed row
-        ////                    grid.AddChild(new TestDecorator(50, 80), 2, 0, 0, 0);
+        ////                    grid.AddChild(new MyContentControl(50, 80), 2, 0, 0, 0);
         ////                    grid.Reset();
         ////                }, () => {
         ////                    CheckRowHeights(grid, "#3", 43, 87, 80);
@@ -2567,7 +1838,7 @@ namespace Perspex.Controls.UnitTests
 
         ////            Canvas canvas = new Canvas { Width = 120, Height = 120 };
         ////            canvas.Children.Add(grid);
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
 
         ////            CreateAsyncTest(canvas,
         ////                () => { },
@@ -2596,7 +1867,7 @@ namespace Perspex.Controls.UnitTests
 
         ////            canvas.Children.Add(poker);
         ////            poker.Grid = grid;
-        ////            grid.AddChild(new TestDecorator(100, 100), 1, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(100, 100), 1, 1, 1, 1);
 
         ////            CreateAsyncTest(canvas,
         ////                () => { },
@@ -2627,8 +1898,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddRows(oneStar, oneStar, oneStar);
         ////            grid.AddColumns(oneStar, oneStar, oneStar);
 
-        ////            grid.AddChild(new TestDecorator(240, 240), 0, 0, 3, 3);
-        ////            grid.AddChild(new TestDecorator(150, 150), 0, 0, 1, 1);
+        ////            grid.AddChild(new MyContentControl(240, 240), 0, 0, 3, 3);
+        ////            grid.AddChild(new MyContentControl(150, 150), 0, 0, 1, 1);
 
         ////            TestPanel.Children.Add(grid);
         ////            grid.Measure(new Size(240, 240));
@@ -2830,8 +2101,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50));
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, new GridLength(15), GridLength.Auto, GridLength.Auto);
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 3, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 1, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 60), 1, 0, 3, 1);
 
         ////            // If an element spans multiple rows and one of them is *not* auto, it attempts to put itself
         ////            // entirely inside that row
@@ -2873,10 +2144,10 @@ namespace Perspex.Controls.UnitTests
         ////            MyGrid grid = new MyGrid();
         ////            grid.AddColumns(new GridLength(50), new GridLength(50), new GridLength(50));
         ////            grid.AddRows(new GridLength(30), new GridLength(40), GridLength.Auto, new GridLength(50));
-        ////            grid.AddChild(new TestDecorator(600, 600), 0, 0, 4, 4);
-        ////            grid.AddChild(new TestDecorator(80, 70), 0, 1, 1, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 1, 0, 1, 1);
-        ////            grid.AddChild(new TestDecorator(10, 500), 1, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(600, 600), 0, 0, 4, 4);
+        ////            grid.AddChild(new MyContentControl(80, 70), 0, 1, 1, 1);
+        ////            grid.AddChild(new MyContentControl(50, 60), 1, 0, 1, 1);
+        ////            grid.AddChild(new MyContentControl(10, 500), 1, 1, 1, 1);
 
         ////            CreateAsyncTest(grid, () => {
         ////                CheckRowHeights(grid, "#1", 190, 200, 0, 210);
@@ -2897,7 +2168,7 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50), new GridLength(50));
         ////            grid.AddRows(new GridLength(20), new GridLength(20));
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 1, 2, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 1, 2, 1);
 
         ////            CreateAsyncTest(grid,
         ////                () => {
@@ -2929,8 +2200,8 @@ namespace Perspex.Controls.UnitTests
         ////            grid.AddColumns(new GridLength(50));
         ////            grid.AddRows(GridLength.Auto, GridLength.Auto, new GridLength(1, GridUnitType.Star), GridLength.Auto, GridLength.Auto);
 
-        ////            grid.AddChild(new TestDecorator(50, 50), 0, 0, 3, 1);
-        ////            grid.AddChild(new TestDecorator(50, 60), 1, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 50), 0, 0, 3, 1);
+        ////            grid.AddChild(new MyContentControl(50, 60), 1, 0, 3, 1);
 
         ////            // Elements will put themselves entirely inside a 'star' row if they ca
         ////            CreateAsyncTest(grid,
@@ -2975,7 +2246,7 @@ namespace Perspex.Controls.UnitTests
         ////            var grid = new Grid();
         ////            grid.AddColumns(Auto, Star);
         ////            grid.ColumnDefinitions[0].MaxWidth = 10;
-        ////            grid.AddChild(ContentControlWithChild(), 0, 1, 0, 0);
+        ////            grid.AddChild(DecoratorWithChild(), 0, 1, 0, 0);
 
         ////            CreateAsyncTest(grid, () => {
         ////                grid.UpdateLayout();
@@ -2991,7 +2262,7 @@ namespace Perspex.Controls.UnitTests
         ////            var grid = new Grid();
         ////            grid.AddColumns(Auto, Star);
         ////            grid.ColumnDefinitions[0].MinWidth = 10;
-        ////            grid.AddChild(ContentControlWithChild(), 0, 1, 0, 0);
+        ////            grid.AddChild(DecoratorWithChild(), 0, 1, 0, 0);
 
         ////            CreateAsyncTest(grid, () => {
         ////                grid.UpdateLayout();
@@ -3007,7 +2278,7 @@ namespace Perspex.Controls.UnitTests
         ////            var grid = new Grid();
         ////            grid.AddColumns(Auto, Star);
         ////            grid.ColumnDefinitions[0].MaxWidth = 10;
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 0, 0);
+        ////            grid.AddChild(DecoratorWithChild(), 0, 0, 0, 0);
 
         ////            CreateAsyncTest(grid, () => {
         ////                grid.UpdateLayout();
@@ -3022,7 +2293,7 @@ namespace Perspex.Controls.UnitTests
         ////            var grid = new Grid();
         ////            grid.AddColumns(Auto, Star);
         ////            grid.ColumnDefinitions[0].MinWidth = 10;
-        ////            grid.AddChild(ContentControlWithChild(), 0, 0, 0, 0);
+        ////            grid.AddChild(DecoratorWithChild(), 0, 0, 0, 0);
 
         ////            CreateAsyncTest(grid, () => {
         ////                grid.UpdateLayout();
@@ -3034,6 +2305,97 @@ namespace Perspex.Controls.UnitTests
         {
             for (int i = 0; i < grid.RowDefinitions.Count; i++)
                 IsBetween(heights[i] - 0.55, heights[i] + 0.55, grid.RowDefinitions[i].ActualHeight);
+        }
+
+        MyContentControl DecoratorWithChild()
+        {
+            return DecoratorWithChild(50, 50);
+        }
+
+        MyContentControl DecoratorWithChild(int width, int height)
+        {
+            return new MyContentControl
+            {
+                Child = new Rectangle
+                {
+                    Width = width,
+                    Height = height,
+                    Fill = new SolidColorBrush(Colors.Red)
+                }
+            };
+        }
+
+        Control CreateInfiniteChild()
+        {
+            // Creates a child (ScrollViewer) which will consume as much space as is available to it
+            // and does *not* have an explicit width/height set on it.
+            return new MyContentControl
+            {
+                Child = new ScrollViewer
+                {
+                    Content = new Rectangle
+                    {
+                        Width = 300,
+                        Height = 300,
+                    }
+                }
+            };
+        }
+
+        class PanelPoker : Panel
+        {
+            public List<Size> ArrangeArgs = new List<Size>();
+            public List<Size> ArrangeResults = new List<Size>();
+
+            public List<Size> MeasureArgs = new List<Size>();
+            public List<Size> MeasureResults = new List<Size>();
+
+            public MyGrid Grid { get; set; }
+
+            public PanelPoker()
+            {
+            }
+
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                ArrangeArgs.Add(finalSize);
+                Grid.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+                ArrangeResults.Add(Grid.Bounds.Size);
+                return ArrangeResults.Last();
+            }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureArgs.Add(availableSize);
+                Grid.Measure(availableSize);
+                MeasureResults.Add(Grid.DesiredSize);
+                return MeasureResults.Last();
+            }
+        }
+
+        class SettablePanel : Panel
+        {
+            public Size? ArrangeArg { get; set; }
+            public Size? MeasureArg { get; set; }
+            public Grid Grid { get; set; }
+
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                if (ArrangeArg.HasValue)
+                    Grid.Arrange(new Rect(0, 0, ArrangeArg.Value.Width, ArrangeArg.Value.Height));
+                else
+                    Grid.Arrange(new Rect(0, 0, Grid.DesiredSize.Width, Grid.DesiredSize.Height));
+                return Grid.DesiredSize;
+            }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                if (MeasureArg.HasValue)
+                    Grid.Measure(MeasureArg.Value);
+                else
+                    Grid.Measure(availableSize);
+                return Grid.DesiredSize;
+            }
         }
     }
 }
