@@ -114,7 +114,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <returns>The control's column.</returns>
-        public static int GetColumn(PerspexObject element)
+        public static int GetColumn(Control element)
         {
             return element.GetValue(ColumnProperty);
         }
@@ -124,7 +124,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <returns>The control's column span.</returns>
-        public static int GetColumnSpan(PerspexObject element)
+        public static int GetColumnSpan(Control element)
         {
             return element.GetValue(ColumnSpanProperty);
         }
@@ -134,7 +134,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <returns>The control's row.</returns>
-        public static int GetRow(PerspexObject element)
+        public static int GetRow(Control element)
         {
             return element.GetValue(RowProperty);
         }
@@ -144,7 +144,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <returns>The control's row span.</returns>
-        public static int GetRowSpan(PerspexObject element)
+        public static int GetRowSpan(Control element)
         {
             return element.GetValue(RowSpanProperty);
         }
@@ -154,7 +154,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <param name="value">The column value.</param>
-        public static void SetColumn(PerspexObject element, int value)
+        public static void SetColumn(Control element, int value)
         {
             element.SetValue(ColumnProperty, value);
         }
@@ -164,7 +164,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <param name="value">The column span value.</param>
-        public static void SetColumnSpan(PerspexObject element, int value)
+        public static void SetColumnSpan(Control element, int value)
         {
             element.SetValue(ColumnSpanProperty, value);
         }
@@ -174,7 +174,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <param name="value">The row value.</param>
-        public static void SetRow(PerspexObject element, int value)
+        public static void SetRow(Control element, int value)
         {
             element.SetValue(RowProperty, value);
         }
@@ -184,7 +184,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="element">The control.</param>
         /// <param name="value">The row span value.</param>
-        public static void SetRowSpan(PerspexObject element, int value)
+        public static void SetRowSpan(Control element, int value)
         {
             element.SetValue(RowSpanProperty, value);
         }
