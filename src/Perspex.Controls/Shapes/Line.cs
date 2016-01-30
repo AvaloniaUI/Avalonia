@@ -9,10 +9,10 @@ namespace Perspex.Controls.Shapes
 {
     public class Line : Shape
     {
-        public static readonly PerspexProperty<Point> StartPointProperty =
+        public static readonly StyledProperty<Point> StartPointProperty =
             PerspexProperty.Register<Line, Point>("StartPoint");
 
-        public static readonly PerspexProperty<Point> EndPointProperty =
+        public static readonly StyledProperty<Point> EndPointProperty =
             PerspexProperty.Register<Line, Point>("EndPoint");
 
         private LineGeometry _geometry;

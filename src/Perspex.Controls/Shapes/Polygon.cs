@@ -9,7 +9,7 @@ namespace Perspex.Controls.Shapes
 {
     public class Polygon : Shape
     {
-        public static readonly PerspexProperty<IList<Point>> PointsProperty =
+        public static readonly StyledProperty<IList<Point>> PointsProperty =
             PerspexProperty.Register<Polygon, IList<Point>>("Points");
 
         public IList<Point> Points

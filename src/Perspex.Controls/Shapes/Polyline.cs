@@ -9,7 +9,7 @@ namespace Perspex.Controls.Shapes
 {
     public class Polyline: Shape
     {
-        public static readonly PerspexProperty<IList<Point>> PointsProperty =
+        public static readonly StyledProperty<IList<Point>> PointsProperty =
             PerspexProperty.Register<Polyline, IList<Point>>("Points");
 
         static Polyline()
