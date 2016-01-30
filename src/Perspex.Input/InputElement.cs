@@ -18,43 +18,43 @@ namespace Perspex.Input
         /// <summary>
         /// Defines the <see cref="Focusable"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> FocusableProperty =
+        public static readonly StyledProperty<bool> FocusableProperty =
             PerspexProperty.Register<InputElement, bool>(nameof(Focusable));
 
         /// <summary>
         /// Defines the <see cref="IsEnabled"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsEnabledProperty =
+        public static readonly StyledProperty<bool> IsEnabledProperty =
             PerspexProperty.Register<InputElement, bool>(nameof(IsEnabled), true);
 
         /// <summary>
         /// Defines the <see cref="IsEnabledCore"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsEnabledCoreProperty =
+        public static readonly StyledProperty<bool> IsEnabledCoreProperty =
             PerspexProperty.Register<InputElement, bool>("IsEnabledCore", true);
 
         /// <summary>
         /// Gets or sets associated mouse cursor.
         /// </summary>
-        public static readonly PerspexProperty<Cursor> CursorProperty =
+        public static readonly StyledProperty<Cursor> CursorProperty =
             PerspexProperty.Register<InputElement, Cursor>("Cursor", null, true);
 
         /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsFocusedProperty =
+        public static readonly DirectProperty<InputElement, bool> IsFocusedProperty =
             PerspexProperty.RegisterDirect<InputElement, bool>("IsFocused", o => o.IsFocused);
 
         /// <summary>
         /// Defines the <see cref="IsHitTestVisible"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsHitTestVisibleProperty =
+        public static readonly StyledProperty<bool> IsHitTestVisibleProperty =
             PerspexProperty.Register<InputElement, bool>("IsHitTestVisible", true);
 
         /// <summary>
         /// Defines the <see cref="IsPointerOver"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsPointerOverProperty =
+        public static readonly DirectProperty<InputElement, bool> IsPointerOverProperty =
             PerspexProperty.RegisterDirect<InputElement, bool>("IsPointerOver", o => o.IsPointerOver);
 
         /// <summary>

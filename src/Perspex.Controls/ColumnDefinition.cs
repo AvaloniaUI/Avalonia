@@ -11,19 +11,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MaxWidthProperty =
+        public static readonly StyledProperty<double> MaxWidthProperty =
             PerspexProperty.Register<ColumnDefinition, double>("MaxWidth", double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MinWidthProperty =
+        public static readonly StyledProperty<double> MinWidthProperty =
             PerspexProperty.Register<ColumnDefinition, double>("MinWidth");
 
         /// <summary>
         /// Defines the <see cref="Width"/> property.
         /// </summary>
-        public static readonly PerspexProperty<GridLength> WidthProperty =
+        public static readonly StyledProperty<GridLength> WidthProperty =
             PerspexProperty.Register<ColumnDefinition, GridLength>("Width", new GridLength(1, GridUnitType.Star));
 
         /// <summary>

@@ -34,7 +34,7 @@ namespace Perspex.Direct2D1.Media
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds => _path.GetBounds().ToPerspex();
+        public override Rect Bounds => _path.GetWidenedBounds(0).ToPerspex();
 
         /// <inheritdoc/>
         public override D2DGeometry DefiningGeometry => _path;

@@ -13,7 +13,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Angle"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> AngleProperty =
+        public static readonly StyledProperty<double> AngleProperty =
             PerspexProperty.Register<RotateTransform, double>("Angle");
 
         /// <summary>

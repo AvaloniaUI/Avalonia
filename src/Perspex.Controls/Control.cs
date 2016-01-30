@@ -14,8 +14,6 @@ using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
-using Perspex.LogicalTree;
-using Perspex.Rendering;
 using Perspex.Styling;
 
 namespace Perspex.Controls
@@ -37,7 +35,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> DataContextProperty =
+        public static readonly StyledProperty<object> DataContextProperty =
             PerspexProperty.Register<Control, object>(
                 nameof(DataContext), 
                 inherits: true,
@@ -46,25 +44,25 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ITemplate<IControl>> FocusAdornerProperty =
+        public static readonly StyledProperty<ITemplate<IControl>> FocusAdornerProperty =
             PerspexProperty.Register<Control, ITemplate<IControl>>(nameof(FocusAdorner));
 
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IControl> ParentProperty =
+        public static readonly DirectProperty<Control, IControl> ParentProperty =
             PerspexProperty.RegisterDirect<Control, IControl>(nameof(Parent), o => o.Parent);
 
         /// <summary>
         /// Defines the <see cref="Tag"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> TagProperty =
+        public static readonly StyledProperty<object> TagProperty =
             PerspexProperty.Register<Control, object>(nameof(Tag));
 
         /// <summary>
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ITemplatedControl> TemplatedParentProperty =
+        public static readonly StyledProperty<ITemplatedControl> TemplatedParentProperty =
             PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
 
         /// <summary>
@@ -508,7 +506,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="o">The object on which the DataContext is changing.</param>
         /// <param name="notifying">Whether the notifcation is beginning or ending.</param>
-        private static void DataContextNotifying(PerspexObject o, bool notifying)
+        private static void DataContextNotifying(IPerspexObject o, bool notifying)
         {
             var control = o as Control;
 

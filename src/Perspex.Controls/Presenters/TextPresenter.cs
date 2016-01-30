@@ -12,13 +12,13 @@ namespace Perspex.Controls.Presenters
 {
     public class TextPresenter : TextBlock
     {
-        public static readonly PerspexProperty<int> CaretIndexProperty =
+        public static readonly StyledProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>();
 
-        public static readonly PerspexProperty<int> SelectionStartProperty =
+        public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>();
 
-        public static readonly PerspexProperty<int> SelectionEndProperty =
+        public static readonly StyledProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
@@ -26,6 +26,11 @@ namespace Perspex.Controls.Presenters
         private bool _caretBlink;
 
         private IObservable<bool> _canScrollHorizontally;
+
+        static TextPresenter()
+        {
+            CaretIndexProperty.OverrideValidation<TextPresenter>((o, v) => v);
+        }
 
         public TextPresenter()
         {

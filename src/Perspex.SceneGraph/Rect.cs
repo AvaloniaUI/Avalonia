@@ -255,7 +255,7 @@ namespace Perspex
         /// <returns>The inflated rectangle.</returns>
         public Rect Inflate(double thickness)
         {
-            return Inflate(thickness);
+            return Inflate(new Thickness(thickness));
         }
 
         /// <summary>

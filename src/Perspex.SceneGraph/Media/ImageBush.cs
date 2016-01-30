@@ -13,7 +13,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IBitmap> SourceProperty =
+        public static readonly StyledProperty<IBitmap> SourceProperty =
             PerspexProperty.Register<ImageBrush, IBitmap>("Source");
 
         /// <summary>

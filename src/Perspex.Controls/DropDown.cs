@@ -21,7 +21,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsDropDownOpenProperty =
+        public static readonly DirectProperty<DropDown, bool> IsDropDownOpenProperty =
             PerspexProperty.RegisterDirect<DropDown, bool>(
                 nameof(IsDropDownOpen),
                 o => o.IsDropDownOpen,
@@ -30,7 +30,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> SelectionBoxItemProperty =
+        public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
             PerspexProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
 
         private bool _isDropDownOpen;

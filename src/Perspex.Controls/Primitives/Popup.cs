@@ -18,13 +18,13 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Control> ChildProperty =
+        public static readonly StyledProperty<Control> ChildProperty =
             PerspexProperty.Register<Popup, Control>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsOpenProperty =
+        public static readonly DirectProperty<Popup, bool> IsOpenProperty =
             PerspexProperty.RegisterDirect<Popup, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen,
@@ -33,19 +33,19 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        public static readonly PerspexProperty<PlacementMode> PlacementModeProperty =
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             PerspexProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Control> PlacementTargetProperty =
+        public static readonly StyledProperty<Control> PlacementTargetProperty =
             PerspexProperty.Register<Popup, Control>(nameof(PlacementTarget));
 
         /// <summary>
         /// Defines the <see cref="StaysOpen"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> StaysOpenProperty =
+        public static readonly StyledProperty<bool> StaysOpenProperty =
             PerspexProperty.Register<Popup, bool>(nameof(StaysOpen), true);
 
         private bool _isOpen;

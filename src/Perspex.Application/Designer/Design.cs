@@ -11,7 +11,7 @@ namespace Perspex
     {
         public static bool IsDesignMode { get; internal set; }
 
-        public static readonly PerspexProperty<double> HeightProperty = PerspexProperty
+        public static readonly AttachedProperty<double> HeightProperty = PerspexProperty
             .RegisterAttached<Control, double>("Height", typeof (Design));
 
         public static void SetHeight(Control control, double value)
@@ -24,8 +24,8 @@ namespace Perspex
             return control.GetValue(HeightProperty);
         }
 
-        public static readonly PerspexProperty<double> WidthProperty = PerspexProperty
-    .RegisterAttached<Control, double>("Width", typeof(Design));
+        public static readonly AttachedProperty<double> WidthProperty = PerspexProperty
+            .RegisterAttached<Control, double>("Width", typeof(Design));
 
         public static void SetWidth(Control control, double value)
         {
@@ -37,7 +37,7 @@ namespace Perspex
             return control.GetValue(WidthProperty);
         }
 
-        public static readonly PerspexProperty<object> DataContextProperty = PerspexProperty
+        public static readonly AttachedProperty<object> DataContextProperty = PerspexProperty
             .RegisterAttached<Control, object>("DataContext", typeof (Design));
 
         public static void SetDataContext(Control control, object value)

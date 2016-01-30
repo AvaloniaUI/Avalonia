@@ -1,36 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Perspex.Media;
 
 namespace Perspex.Controls.Shapes
 {
     public class Line : Shape
     {
-        private Geometry _geometry;
+        public static readonly StyledProperty<Point> StartPointProperty =
+            PerspexProperty.Register<Line, Point>("StartPoint");
 
-        private Size _geometrySize;
+        public static readonly StyledProperty<Point> EndPointProperty =
+            PerspexProperty.Register<Line, Point>("EndPoint");
 
-        public override Geometry DefiningGeometry
+        static Line()
         {
-            get
-            {
-                if (_geometry == null || _geometrySize != Bounds.Size)
-                {
-                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
-                    _geometry = new LineGeometry(rect.TopLeft, rect.BottomRight);
-                    _geometrySize = Bounds.Size;
-                }
-
-                return _geometry;
-            }
+            StrokeThicknessProperty.OverrideDefaultValue<Line>(1);
+            AffectsGeometry(StartPointProperty);
+            AffectsGeometry(EndPointProperty);
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        public Point StartPoint
         {
-            return new Size(StrokeThickness, StrokeThickness);
+            get { return GetValue(StartPointProperty); }
+            set { SetValue(StartPointProperty, value); }
+        }
+
+        public Point EndPoint
+        {
+            get { return GetValue(EndPointProperty); }
+            set { SetValue(EndPointProperty, value); }
+        }
+
+        protected override Geometry CreateDefiningGeometry()
+        {
+            return new LineGeometry(StartPoint, EndPoint);
         }
     }
 }

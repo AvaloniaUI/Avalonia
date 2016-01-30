@@ -112,7 +112,7 @@ namespace Perspex.Styling
 
             if (mode == BindingMode.Default)
             {
-                mode = property.DefaultBindingMode;
+                mode = property.GetMetadata(control.GetType()).DefaultBindingMode;
             }
 
             control.Bind(

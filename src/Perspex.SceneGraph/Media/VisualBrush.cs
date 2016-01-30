@@ -11,7 +11,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IVisual> VisualProperty =
+        public static readonly StyledProperty<IVisual> VisualProperty =
             PerspexProperty.Register<VisualBrush, IVisual>("Visual");
 
         /// <summary>

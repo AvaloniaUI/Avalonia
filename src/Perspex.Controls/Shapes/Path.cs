@@ -8,8 +8,13 @@ namespace Perspex.Controls.Shapes
 {
     public class Path : Shape
     {
-        public static readonly PerspexProperty<Geometry> DataProperty =
+        public static readonly StyledProperty<Geometry> DataProperty =
             PerspexProperty.Register<Path, Geometry>("Data");
+
+        static Path()
+        {
+            AffectsGeometry(DataProperty);
+        }
 
         public Geometry Data
         {
@@ -17,6 +22,6 @@ namespace Perspex.Controls.Shapes
             set { SetValue(DataProperty, value); }
         }
 
-        public override Geometry DefiningGeometry => Data;
+        protected override Geometry CreateDefiningGeometry() => Data;
     }
 }

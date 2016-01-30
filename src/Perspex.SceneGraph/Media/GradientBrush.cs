@@ -8,10 +8,10 @@ namespace Perspex.Media
 {
     public abstract class GradientBrush : Brush
     {
-        public static readonly PerspexProperty<GradientSpreadMethod> SpreadMethodProperty =
+        public static readonly StyledProperty<GradientSpreadMethod> SpreadMethodProperty =
             PerspexProperty.Register<GradientBrush, GradientSpreadMethod>(nameof(SpreadMethod));
 
-        public static readonly PerspexProperty<List<GradientStop>> GradientStopsProperty =
+        public static readonly StyledProperty<List<GradientStop>> GradientStopsProperty =
             PerspexProperty.Register<GradientBrush, List<GradientStop>>(nameof(Opacity));
 
         public GradientBrush()

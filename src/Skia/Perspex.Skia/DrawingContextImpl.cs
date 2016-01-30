@@ -37,18 +37,13 @@ namespace Perspex.Skia
         public void DrawGeometry(Brush brush, Pen pen, Geometry geometry)
         {
             var impl = ((StreamGeometryImpl) geometry.PlatformImpl);
-            var oldTransform = Transform;
-            if (!impl.Transform.IsIdentity)
-                Transform = impl.Transform*Transform;
-            
             var size = geometry.Bounds.Size;
             using(var fill = brush!=null?CreateBrush(brush, size):null)
             using (var stroke = pen?.Brush != null ? CreateBrush(pen, size) : null)
             {
-                MethodTable.Instance.DrawGeometry(Handle, impl.Path.Handle, fill != null ? fill.Brush : null,
+                MethodTable.Instance.DrawGeometry(Handle, impl.EffectivePath, fill != null ? fill.Brush : null,
                     stroke != null ? stroke.Brush : null, impl.FillRule == FillRule.EvenOdd);
             }
-            Transform = oldTransform;
         }
 
         unsafe NativeBrushContainer CreateBrush(Brush brush, Size targetSize)
@@ -56,7 +51,6 @@ namespace Perspex.Skia
             var rv = NativeBrushPool.Instance.Get();
             rv.Brush->Opacity = brush.Opacity;
 
-            
             var solid = brush as SolidColorBrush;
             if (solid != null)
             {
@@ -108,8 +102,6 @@ namespace Perspex.Skia
                 rv.Brush->Bitmap = bitmap.Handle;
                 rv.Brush->BitmapTileMode = tileBrush.TileMode;
                 rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
-
-
             }
 
             return rv;
@@ -121,6 +113,7 @@ namespace Perspex.Skia
             brush.Brush->Stroke = true;
             brush.Brush->StrokeThickness = (float)pen.Thickness;
             brush.Brush->StrokeLineCap = pen.StartLineCap;
+            brush.Brush->StrokeLineJoin = pen.LineJoin;
             brush.Brush->StrokeMiterLimit = (float)pen.MiterLimit;
 
             if (pen.DashStyle?.Dashes != null)
@@ -196,14 +189,7 @@ namespace Perspex.Skia
                 if(_currentTransform == value)
                     return;
                 _currentTransform = value;
-                _fmatrix[0] = (float)value.M11;
-                _fmatrix[1] = (float)value.M21;
-                _fmatrix[2] = (float)value.M31;
-
-                _fmatrix[3] = (float)value.M12;
-                _fmatrix[4] = (float)value.M22;
-                _fmatrix[5] = (float)value.M32;
-                MethodTable.Instance.SetTransform(Handle, _fmatrix);
+                MethodTable.Instance.SetTransform(Handle, value);
             } 
         }
     }

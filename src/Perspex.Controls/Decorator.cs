@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Perspex.Collections;
 using Perspex.Metadata;
 
 namespace Perspex.Controls
@@ -14,13 +13,13 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Control> ChildProperty =
+        public static readonly StyledProperty<Control> ChildProperty =
             PerspexProperty.Register<Decorator, Control>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Thickness> PaddingProperty =
+        public static readonly StyledProperty<Thickness> PaddingProperty =
             PerspexProperty.Register<Decorator, Thickness>(nameof(Padding));
 
         /// <summary>

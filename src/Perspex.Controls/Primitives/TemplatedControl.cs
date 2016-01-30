@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
-using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Interactivity;
@@ -24,55 +23,55 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<Brush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+        public static readonly StyledProperty<Brush> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<double> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly PerspexProperty<string> FontFamilyProperty =
+        public static readonly StyledProperty<string> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> FontSizeProperty =
+        public static readonly StyledProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
-        public static readonly PerspexProperty<FontStyle> FontStyleProperty =
+        public static readonly StyledProperty<FontStyle> FontStyleProperty =
             TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> ForegroundProperty =
+        public static readonly StyledProperty<Brush> ForegroundProperty =
             TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Thickness> PaddingProperty =
+        public static readonly StyledProperty<Thickness> PaddingProperty =
             Decorator.PaddingProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Template"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IControlTemplate> TemplateProperty =
+        public static readonly StyledProperty<IControlTemplate> TemplateProperty =
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");
 
         /// <summary>

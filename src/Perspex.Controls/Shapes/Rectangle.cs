@@ -7,23 +7,16 @@ namespace Perspex.Controls.Shapes
 {
     public class Rectangle : Shape
     {
-        private Geometry _geometry;
-
-        private Size _geometrySize;
-
-        public override Geometry DefiningGeometry
+        static Rectangle()
         {
-            get
-            {
-                if (_geometry == null || _geometrySize != Bounds.Size)
-                {
-                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
-                    _geometry = new RectangleGeometry(rect);
-                    _geometrySize = Bounds.Size;
-                }
+            AffectsGeometry(BoundsProperty);
+            AffectsGeometry(StrokeThicknessProperty);
+        }
 
-                return _geometry;
-            }
+        protected override Geometry CreateDefiningGeometry()
+        {
+            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
+            return new RectangleGeometry(rect);
         }
 
         protected override Size MeasureOverride(Size availableSize)

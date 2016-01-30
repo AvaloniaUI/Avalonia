@@ -16,25 +16,29 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the Column attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> ColumnProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("Column");
+        public static readonly AttachedProperty<int> ColumnProperty =
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "Column",
+                validate: ValidateColumn);
 
         /// <summary>
         /// Defines the ColumnSpan attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> ColumnSpanProperty =
+        public static readonly AttachedProperty<int> ColumnSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("ColumnSpan", 1);
 
         /// <summary>
         /// Defines the Row attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> RowProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("Row");
+        public static readonly AttachedProperty<int> RowProperty =
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "Row",
+                validate: ValidateRow);
 
         /// <summary>
         /// Defines the RowSpan attached property.
         /// </summary>
-        public static readonly PerspexProperty<int> RowSpanProperty =
+        public static readonly AttachedProperty<int> RowSpanProperty =
             PerspexProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
         private ColumnDefinitions _columnDefinitions;
@@ -576,6 +580,26 @@ namespace Perspex.Controls
             {
                 return val;
             }
+        }
+
+        private static int ValidateColumn(PerspexObject o, int value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Column value.");
+            }
+
+            return value;
+        }
+
+        private static int ValidateRow(PerspexObject o, int value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Row value.");
+            }
+
+            return value;
         }
 
         private void CreateMatrices(int rowCount, int colCount)

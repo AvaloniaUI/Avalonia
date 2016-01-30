@@ -81,6 +81,7 @@
     <Compile Include="Collections\PerspexDictionaryTests.cs" />
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="Collections\PropertyChangedTracker.cs" />
+    <Compile Include="AttachedPropertyTests.cs" />
     <Compile Include="PerspexObjectTests_Direct.cs" />
     <Compile Include="PerspexObjectTests_GetSubject.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
@@ -91,6 +92,8 @@
     <Compile Include="PerspexObjectTests_SetValue.cs" />
     <Compile Include="PerspexObjectTests_GetValue.cs" />
     <Compile Include="PerspexObjectTests_Metadata.cs" />
+    <Compile Include="DirectPropertyTests.cs" />
+    <Compile Include="StyledPropertyTests.cs" />
     <Compile Include="PerspexPropertyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PriorityValueTests.cs" />

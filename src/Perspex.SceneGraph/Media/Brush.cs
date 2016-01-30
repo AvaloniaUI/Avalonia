@@ -15,7 +15,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> OpacityProperty =
+        public static readonly StyledProperty<double> OpacityProperty =
             PerspexProperty.Register<Brush, double>(nameof(Opacity), 1.0);
 
         /// <summary>

@@ -1,9 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Linq;
-using System.Reactive.Linq;
 using Perspex.Controls.Mixins;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
@@ -21,19 +18,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> ContentProperty =
+        public static readonly StyledProperty<object> ContentProperty =
             PerspexProperty.Register<ContentControl, object>(nameof(Content));
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
         /// </summary>
-        public static readonly PerspexProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, HorizontalAlignment>(nameof(HorizontalContentAlignment));
 
         /// <summary>
         /// Defines the <see cref="VerticalContentAlignment"/> property.
         /// </summary>
-        public static readonly PerspexProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             PerspexProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
         /// <summary>

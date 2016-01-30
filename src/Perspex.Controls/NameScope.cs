@@ -14,7 +14,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the NameScope attached property.
         /// </summary>
-        public static readonly PerspexProperty<INameScope> NameScopeProperty =
+        public static readonly AttachedProperty<INameScope> NameScopeProperty =
             PerspexProperty.RegisterAttached<NameScope, Control, INameScope>("NameScope");
 
         private readonly Dictionary<string, object> _inner = new Dictionary<string, object>();

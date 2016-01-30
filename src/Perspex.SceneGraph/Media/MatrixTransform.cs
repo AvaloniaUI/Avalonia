@@ -13,7 +13,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Matrix"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Matrix> MatrixProperty =
+        public static readonly StyledProperty<Matrix> MatrixProperty =
             PerspexProperty.Register<MatrixTransform, Matrix>("Matrix", Matrix.Identity);
 
         /// <summary>

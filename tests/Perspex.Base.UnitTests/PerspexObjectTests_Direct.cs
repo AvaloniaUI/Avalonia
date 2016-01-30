@@ -341,13 +341,13 @@ namespace Perspex.Base.UnitTests
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly DirectProperty<Class1, string> FooProperty =
                 PerspexProperty.RegisterDirect<Class1, string>("Foo", o => o.Foo, (o, v) => o.Foo = v);
 
-            public static readonly PerspexProperty<string> BarProperty =
+            public static readonly DirectProperty<Class1, string> BarProperty =
                 PerspexProperty.RegisterDirect<Class1, string>("Bar", o => o.Bar);
 
-            public static readonly PerspexProperty<int> BazProperty =
+            public static readonly DirectProperty<Class1, int> BazProperty =
                 PerspexProperty.RegisterDirect<Class1, int>("Bar", o => o.Baz, (o,v) => o.Baz = v);
 
             private string _foo = "initial";
@@ -374,7 +374,7 @@ namespace Perspex.Base.UnitTests
 
         private class Class2 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly DirectProperty<Class2, string> FooProperty =
                 Class1.FooProperty.AddOwner<Class2>(o => o.Foo, (o, v) => o.Foo = v);
 
             private string _foo = "initial2";

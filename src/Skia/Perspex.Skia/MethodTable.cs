@@ -47,9 +47,9 @@ namespace Perspex.Skia
         public _PopClip PopClip;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void _SetTransform(IntPtr ctx, float[] matrix6);
+        public delegate void _SetTransform(IntPtr ctx, void* matrix6);
 
-        public _SetTransform SetTransform;
+        public _SetTransform SetTransformNative;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void _DrawLine(IntPtr ctx, void* brush, float x1, float y1, float x2, float y2);
@@ -65,6 +65,11 @@ namespace Perspex.Skia
         public delegate void _DisposePath(IntPtr handle);
 
         public _DisposePath DisposePath;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate IntPtr _TransformPath(IntPtr path, void* matrix6);
+
+        public _TransformPath TransformPathNative;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void _DrawGeometry(IntPtr ctx, IntPtr path, void* fill, void* stroke, bool useEvenOdd);
@@ -185,10 +190,34 @@ namespace Perspex.Skia
             typeof (_RebuildFormattedText),
             typeof (_DestroyFormattedText),
             typeof (_DrawFormattedText),
-            typeof (_SetOption)
+            typeof (_SetOption),
+            typeof (_TransformPath)
         };
 
+        void ConvertMatrix(Matrix value, float* target)
+        {
+            target[0] = (float)value.M11;
+            target[1] = (float)value.M21;
+            target[2] = (float)value.M31;
 
+            target[3] = (float)value.M12;
+            target[4] = (float)value.M22;
+            target[5] = (float)value.M32;
+        }
+
+        public unsafe IntPtr TransformPath(IntPtr path, Matrix matrix)
+        {
+            var tmp = stackalloc float[6];
+            ConvertMatrix(matrix, tmp);
+            return TransformPathNative(path, tmp);
+        }
+
+        public unsafe void SetTransform(IntPtr ctx, Matrix matrix)
+        {
+            var tmp = stackalloc float[6];
+            ConvertMatrix(matrix, tmp);
+            SetTransformNative(ctx, tmp);
+        }
 
         protected MethodTable(IntPtr methodTable)
         {

@@ -23,7 +23,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Orientation> OrientationProperty =
+        public static readonly StyledProperty<Orientation> OrientationProperty =
             PerspexProperty.Register<GridSplitter, Orientation>(nameof(Orientation));
 
         protected Grid _grid;

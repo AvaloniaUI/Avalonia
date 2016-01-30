@@ -13,7 +13,7 @@ namespace Perspex.Diagnostics.Views
 {
     internal class ControlDetailsView : UserControl
     {
-        private static readonly PerspexProperty<ControlDetailsViewModel> ViewModelProperty =
+        private static readonly StyledProperty<ControlDetailsViewModel> ViewModelProperty =
             PerspexProperty.Register<ControlDetailsView, ControlDetailsViewModel>("ViewModel");
 
         public ControlDetailsView()

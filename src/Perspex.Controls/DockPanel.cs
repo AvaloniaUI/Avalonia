@@ -21,13 +21,13 @@
         /// <summary>
         /// Defines the Dock attached property.
         /// </summary>
-        public static readonly PerspexProperty<Dock> DockProperty =
+        public static readonly AttachedProperty<Dock> DockProperty =
             PerspexProperty.RegisterAttached<DockPanel, Control, Dock>("Dock");
 
         /// <summary>
         /// Defines the <see cref="LastChildFill"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> LastChildFillProperty =
+        public static readonly StyledProperty<bool> LastChildFillProperty =
             PerspexProperty.Register<DockPanel, bool>(
                 nameof(LastChildFillProperty),
                 defaultValue: true);

@@ -14,7 +14,7 @@ namespace Perspex.Media
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Transform> TransformProperty =
+        public static readonly StyledProperty<Transform> TransformProperty =
             PerspexProperty.Register<Geometry, Transform>("Transform");
 
         /// <summary>
@@ -31,10 +31,7 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
-        public abstract Rect Bounds
-        {
-            get;
-        }
+        public Rect Bounds => PlatformImpl.Bounds;
 
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.

@@ -27,7 +27,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> IsOpenProperty =
+        public static readonly DirectProperty<Menu, bool> IsOpenProperty =
             PerspexProperty.RegisterDirect<Menu, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen);

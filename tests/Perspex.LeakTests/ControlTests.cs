@@ -299,7 +299,7 @@ namespace Perspex.LeakTests
 
         private class TestTemplatedControl : TemplatedControl
         {
-            public static readonly PerspexProperty<int> IsCanvasVisibleProperty =
+            public static readonly StyledProperty<int> IsCanvasVisibleProperty =
                 PerspexProperty.Register<TestTemplatedControl, int>("IsCanvasVisible");
 
             public TestTemplatedControl()

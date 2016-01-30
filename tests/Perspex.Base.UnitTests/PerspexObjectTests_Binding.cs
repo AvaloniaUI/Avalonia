@@ -259,19 +259,19 @@ namespace Perspex.Base.UnitTests
 
         private class Class1 : PerspexObject
         {
-            public static readonly PerspexProperty<string> FooProperty =
+            public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo", "foodefault");
 
-            public static readonly PerspexProperty<string> BazProperty =
+            public static readonly StyledProperty<string> BazProperty =
                 PerspexProperty.Register<Class1, string>("Baz", "bazdefault", true);
 
-            public static readonly PerspexProperty<double> QuxProperty =
+            public static readonly StyledProperty<double> QuxProperty =
                 PerspexProperty.Register<Class1, double>("Qux", 5.6);
         }
 
         private class Class2 : Class1
         {
-            public static readonly PerspexProperty<string> BarProperty =
+            public static readonly StyledProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar", "bardefault");
         }
     }

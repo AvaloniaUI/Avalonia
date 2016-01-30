@@ -12,8 +12,8 @@ namespace Perspex.Controls
 {
     public class HotKeyManager
     {
-        public static readonly PerspexProperty<KeyGesture> HotKeyProperty
-            = PerspexProperty.RegisterAttached<Control, KeyGesture>("HotKey", typeof (HotKeyManager));
+        public static readonly AttachedProperty<KeyGesture> HotKeyProperty
+            = PerspexProperty.RegisterAttached<Control, KeyGesture>("HotKey", typeof(HotKeyManager));
 
         class HotkeyCommandWrapper : ICommand
         {

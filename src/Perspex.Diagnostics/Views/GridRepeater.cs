@@ -10,10 +10,10 @@ namespace Perspex.Diagnostics.Views
 {
     internal static class GridRepeater
     {
-        public static readonly PerspexProperty<IEnumerable> ItemsProperty =
+        public static readonly AttachedProperty<IEnumerable> ItemsProperty =
             PerspexProperty.RegisterAttached<Grid, IEnumerable>("Items", typeof(GridRepeater));
 
-        public static readonly PerspexProperty<Func<object, IEnumerable<Control>>> TemplateProperty =
+        public static readonly AttachedProperty<Func<object, IEnumerable<Control>>> TemplateProperty =
             PerspexProperty.RegisterAttached<Grid, Func<object, IEnumerable<Control>>>("Template", typeof(GridRepeater));
 
         static GridRepeater()

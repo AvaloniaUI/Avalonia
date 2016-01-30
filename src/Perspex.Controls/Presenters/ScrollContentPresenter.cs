@@ -20,7 +20,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> ExtentProperty =
+        public static readonly DirectProperty<ScrollContentPresenter, Size> ExtentProperty =
             ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>(
                 o => o.Extent,
                 (o, v) => o.Extent = v);
@@ -28,7 +28,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Vector> OffsetProperty =
+        public static readonly DirectProperty<ScrollContentPresenter, Vector> OffsetProperty =
             ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>(
                 o => o.Offset,
                 (o, v) => o.Offset = v);
@@ -36,7 +36,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> ViewportProperty =
+        public static readonly DirectProperty<ScrollContentPresenter, Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>(
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
@@ -44,7 +44,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> CanScrollHorizontallyProperty =
+        public static readonly StyledProperty<bool> CanScrollHorizontallyProperty =
             PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
 
         private Size _extent;
@@ -59,7 +59,6 @@ namespace Perspex.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
-            OffsetProperty.OverrideValidation<ScrollContentPresenter>(ValidateOffset);
             AffectsArrange(OffsetProperty);
         }
 

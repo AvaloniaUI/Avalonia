@@ -46,19 +46,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
-        public static readonly PerspexProperty<SizeToContent> SizeToContentProperty =
+        public static readonly StyledProperty<SizeToContent> SizeToContentProperty =
             PerspexProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
         /// Enables of disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        public static readonly PerspexProperty<bool> HasSystemDecorationsProperty =
+        public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             PerspexProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
-        public static readonly PerspexProperty<string> TitleProperty =
+        public static readonly StyledProperty<string> TitleProperty =
             PerspexProperty.Register<Window, string>(nameof(Title), "Window");
 
         private readonly NameScope _nameScope = new NameScope();

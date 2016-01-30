@@ -90,7 +90,7 @@ namespace Perspex.Markup.Xaml.Data
         internal void Bind(IPerspexObject target, PerspexProperty property, ISubject<object> subject)
         {
             var mode = Mode == BindingMode.Default ?
-                property.DefaultBindingMode : Mode;
+                property.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
             switch (mode)
             {

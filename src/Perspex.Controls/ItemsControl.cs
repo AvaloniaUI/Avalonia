@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -14,7 +13,6 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Controls.Utils;
 using Perspex.Metadata;
-using Perspex.Styling;
 
 namespace Perspex.Controls
 {
@@ -33,19 +31,19 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IEnumerable> ItemsProperty =
+        public static readonly DirectProperty<ItemsControl, IEnumerable> ItemsProperty =
             PerspexProperty.RegisterDirect<ItemsControl, IEnumerable>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly PerspexProperty<ITemplate<IPanel>> ItemsPanelProperty =
+        public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
             PerspexProperty.Register<ItemsControl, ITemplate<IPanel>>(nameof(ItemsPanel), DefaultPanel);
 
         /// <summary>
         /// Defines the <see cref="MemberSelector"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IMemberSelector> MemberSelectorProperty =
+        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
             PerspexProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
 
         private IEnumerable _items = new PerspexList<object>();

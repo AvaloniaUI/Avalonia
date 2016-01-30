@@ -7,10 +7,10 @@ namespace Perspex.Markup.Xaml.UnitTests
 {
     internal class SamplePerspexObject : PerspexObject
     {
-        public static readonly PerspexProperty<string> StringProperty =
+        public static readonly StyledProperty<string> StringProperty =
             PerspexProperty.Register<PerspexObject, string>("StrProp", string.Empty);
 
-        public static readonly PerspexProperty<int> IntProperty =
+        public static readonly StyledProperty<int> IntProperty =
             PerspexProperty.Register<PerspexObject, int>("IntProp");
 
         public int Int

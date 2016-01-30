@@ -69,67 +69,67 @@ namespace Perspex.Layout
         /// <summary>
         /// Defines the <see cref="DesiredSize"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Size> DesiredSizeProperty =
+        public static readonly DirectProperty<Layoutable, Size> DesiredSizeProperty =
             PerspexProperty.RegisterDirect<Layoutable, Size>(nameof(DesiredSize), o => o.DesiredSize);
 
         /// <summary>
         /// Defines the <see cref="Width"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> WidthProperty =
+        public static readonly StyledProperty<double> WidthProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(Width), double.NaN);
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> HeightProperty =
+        public static readonly StyledProperty<double> HeightProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(Height), double.NaN);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MinWidthProperty =
+        public static readonly StyledProperty<double> MinWidthProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(MinWidth));
 
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MaxWidthProperty =
+        public static readonly StyledProperty<double> MaxWidthProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MinHeightProperty =
+        public static readonly StyledProperty<double> MinHeightProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(MinHeight));
 
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> MaxHeightProperty =
+        public static readonly StyledProperty<double> MaxHeightProperty =
             PerspexProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="Margin"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Thickness> MarginProperty =
+        public static readonly StyledProperty<Thickness> MarginProperty =
             PerspexProperty.Register<Layoutable, Thickness>(nameof(Margin));
 
         /// <summary>
         /// Defines the <see cref="HorizontalAlignment"/> property.
         /// </summary>
-        public static readonly PerspexProperty<HorizontalAlignment> HorizontalAlignmentProperty =
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalAlignmentProperty =
             PerspexProperty.Register<Layoutable, HorizontalAlignment>(nameof(HorizontalAlignment));
 
         /// <summary>
         /// Defines the <see cref="VerticalAlignment"/> property.
         /// </summary>
-        public static readonly PerspexProperty<VerticalAlignment> VerticalAlignmentProperty =
+        public static readonly StyledProperty<VerticalAlignment> VerticalAlignmentProperty =
             PerspexProperty.Register<Layoutable, VerticalAlignment>(nameof(VerticalAlignment));
 
         /// <summary>
         /// Defines the <see cref="UseLayoutRoundingProperty"/> property.
         /// </summary>
-        public static readonly PerspexProperty<bool> UseLayoutRoundingProperty =
+        public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
         private Size? _previousMeasure;

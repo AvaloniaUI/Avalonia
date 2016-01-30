@@ -11,7 +11,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> HeaderProperty =
+        public static readonly StyledProperty<object> HeaderProperty =
             PerspexProperty.Register<ContentControl, object>("Header");
 
         /// <summary>

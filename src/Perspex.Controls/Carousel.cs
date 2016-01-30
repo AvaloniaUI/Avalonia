@@ -17,11 +17,12 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
-        public static readonly PerspexProperty<IPageTransition> TransitionProperty =
+        public static readonly StyledProperty<IPageTransition> TransitionProperty =
             PerspexProperty.Register<Carousel, IPageTransition>("Transition");
 
         /// <summary>
-        /// The default value of <see cref="IReparentingControl"/> for <see cref="Carousel"/>.
+        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
+        /// <see cref="Carousel"/>.
         /// </summary>
         private static readonly ITemplate<IPanel> PanelTemplate =
             new FuncTemplate<IPanel>(() => new Panel());

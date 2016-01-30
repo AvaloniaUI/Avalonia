@@ -40,7 +40,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
-        public static readonly PerspexProperty<int> SelectedIndexProperty =
+        public static readonly DirectProperty<SelectingItemsControl, int> SelectedIndexProperty =
             PerspexProperty.RegisterDirect<SelectingItemsControl, int>(
                 nameof(SelectedIndex),
                 o => o.SelectedIndex,
@@ -49,7 +49,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
-        public static readonly PerspexProperty<object> SelectedItemProperty =
+        public static readonly DirectProperty<SelectingItemsControl, object> SelectedItemProperty =
             PerspexProperty.RegisterDirect<SelectingItemsControl, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
@@ -58,7 +58,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        protected static readonly PerspexProperty<IList> SelectedItemsProperty =
+        protected static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             PerspexProperty.RegisterDirect<SelectingItemsControl, IList>(
                 nameof(SelectedItems),
                 o => o.SelectedItems,
@@ -67,7 +67,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        protected static readonly PerspexProperty<SelectionMode> SelectionModeProperty =
+        protected static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             PerspexProperty.Register<SelectingItemsControl, SelectionMode>(
                 nameof(SelectionMode));
 

@@ -30,13 +30,13 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Gap"/> property.
         /// </summary>
-        public static readonly PerspexProperty<double> GapProperty =
+        public static readonly StyledProperty<double> GapProperty =
             PerspexProperty.Register<StackPanel, double>(nameof(Gap));
 
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Orientation> OrientationProperty =
+        public static readonly StyledProperty<Orientation> OrientationProperty =
             PerspexProperty.Register<StackPanel, Orientation>(nameof(Orientation));
 
         /// <summary>
