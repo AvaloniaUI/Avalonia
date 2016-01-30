@@ -147,6 +147,16 @@ namespace Perspex.Media
                                 _context.CubicBezierTo(point1, point2, point);
                                 break;
                             }
+
+                        case Command.CubicBezierCurveRelative:
+                            {
+                                Point point1 = ReadRelativePoint(reader, point);
+                                Point point2 = ReadRelativePoint(reader, point);
+                                _context.CubicBezierTo(point, point1, point2);
+                                point = point2;
+                                break;
+                            }
+
                         case Command.Arc:
                             {
                                 //example: A10,10 0 0,0 10,20
@@ -216,8 +226,10 @@ namespace Perspex.Media
             }
         }
 
-        private static double ReadDouble(TextReader reader)
+        private static double ReadDouble(StringReader reader)
         {
+            ReadWhitespace(reader);
+
             // TODO: Handle Infinity, NaN and scientific notation.
             StringBuilder b = new StringBuilder();
             bool readSign = false;

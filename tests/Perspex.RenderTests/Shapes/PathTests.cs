@@ -46,11 +46,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if PERSPEX_SKIA
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public void Path_Tick_Scaled()
         {
             Decorator target = new Decorator
@@ -73,11 +69,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if PERSPEX_SKIA
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public void Path_Tick_Scaled_Stroke_8px()
         {
             Decorator target = new Decorator
@@ -100,11 +92,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if PERSPEX_SKIA
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public void Path_Expander_With_Border()
         {
             Decorator target = new Decorator

@@ -41,6 +41,7 @@
     <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />
     <Compile Include="Converters\PerspexListTypeConverter.cs" />
+    <Compile Include="Converters\PointsListTypeConverter.cs" />
     <Compile Include="Converters\RelativeRectTypeConverter.cs" />
     <Compile Include="Data\MultiBinding.cs" />
     <Compile Include="Data\RelativeSource.cs" />

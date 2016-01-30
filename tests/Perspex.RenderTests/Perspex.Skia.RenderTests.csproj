@@ -70,6 +70,8 @@
     <Compile Include="Shapes\EllipseTests.cs" />
     <Compile Include="Shapes\LineTests.cs" />
     <Compile Include="Shapes\PathTests.cs" />
+    <Compile Include="Shapes\PolygonTests.cs" />
+    <Compile Include="Shapes\PolylineTests.cs" />
     <Compile Include="Shapes\RectangleTests.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>

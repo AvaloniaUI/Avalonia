@@ -9,28 +9,46 @@ namespace Perspex.Controls.Shapes
 {
     public class Line : Shape
     {
-        private Geometry _geometry;
+        public static readonly PerspexProperty<Point> StartPointProperty =
+            PerspexProperty.Register<Line, Point>("StartPoint");
 
-        private Size _geometrySize;
+        public static readonly PerspexProperty<Point> EndPointProperty =
+            PerspexProperty.Register<Line, Point>("EndPoint");
+
+        private LineGeometry _geometry;
+        private Point _startPoint;
+        private Point _endPoint;
+
+        static Line()
+        {
+            StrokeThicknessProperty.OverrideDefaultValue<Line>(1);
+        }
+
+        public Point StartPoint
+        {
+            get { return GetValue(StartPointProperty); }
+            set { SetValue(StartPointProperty, value); }
+        }
+
+        public Point EndPoint
+        {
+            get { return GetValue(EndPointProperty); }
+            set { SetValue(EndPointProperty, value); }
+        }
 
         public override Geometry DefiningGeometry
         {
             get
             {
-                if (_geometry == null || _geometrySize != Bounds.Size)
+                if (_geometry == null || StartPoint != _startPoint || EndPoint != _endPoint)
                 {
-                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
-                    _geometry = new LineGeometry(rect.TopLeft, rect.BottomRight);
-                    _geometrySize = Bounds.Size;
+                    _startPoint = StartPoint;
+                    _endPoint = EndPoint;
+                    _geometry = new LineGeometry(_startPoint, _endPoint);
                 }
 
                 return _geometry;
             }
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size(StrokeThickness, StrokeThickness);
         }
     }
 }

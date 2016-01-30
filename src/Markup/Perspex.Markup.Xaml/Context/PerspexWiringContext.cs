@@ -21,6 +21,7 @@ using Perspex.Media.Imaging;
 using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
+using System.Collections.Generic;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -101,6 +102,7 @@ namespace Perspex.Markup.Xaml.Context
                 new TypeConverterRegistration(typeof(PerspexList<double>), new PerspexListTypeConverter<double>()),
                 new TypeConverterRegistration(typeof(IMemberSelector), new MemberSelectorTypeConverter()),
                 new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
+                new TypeConverterRegistration(typeof(IList<Point>), new PointsListTypeConverter()),
                 new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
                 new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
                 new TypeConverterRegistration(typeof(RelativeRect), new RelativeRectTypeConverter()),

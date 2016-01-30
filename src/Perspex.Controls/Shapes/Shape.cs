@@ -96,6 +96,8 @@ namespace Perspex.Controls.Shapes
 
         public PenLineCap StrokeEndLineCap { get; set; } = PenLineCap.Flat;
 
+        public PenLineJoin StrokeJoin { get; set; } = PenLineJoin.Miter;
+
         public override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
@@ -103,7 +105,7 @@ namespace Perspex.Controls.Shapes
             if (geometry != null)
             {
                 var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray), 
-                    StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap);
+                    StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap, StrokeJoin);
                 context.DrawGeometry(Fill, pen, geometry);
             }
         }
