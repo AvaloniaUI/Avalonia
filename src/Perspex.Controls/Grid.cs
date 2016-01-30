@@ -25,7 +25,10 @@ namespace Perspex.Controls
         /// Defines the ColumnSpan attached property.
         /// </summary>
         public static readonly AttachedProperty<int> ColumnSpanProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("ColumnSpan", 1);
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "ColumnSpan", 
+                1,
+                validate: ValidateColumnSpan);
 
         /// <summary>
         /// Defines the Row attached property.
@@ -39,7 +42,10 @@ namespace Perspex.Controls
         /// Defines the RowSpan attached property.
         /// </summary>
         public static readonly AttachedProperty<int> RowSpanProperty =
-            PerspexProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
+            PerspexProperty.RegisterAttached<Grid, Control, int>(
+                "RowSpan", 
+                1,
+                validate: ValidateRowSpan);
 
         private ColumnDefinitions _columnDefinitions;
 
@@ -592,11 +598,31 @@ namespace Perspex.Controls
             return value;
         }
 
+        private static int ValidateColumnSpan(PerspexObject o, int value)
+        {
+            if (value < 1)
+            {
+                throw new ArgumentException("Invalid Grid.Column value.");
+            }
+
+            return value;
+        }
+
         private static int ValidateRow(PerspexObject o, int value)
         {
             if (value < 0)
             {
                 throw new ArgumentException("Invalid Grid.Row value.");
+            }
+
+            return value;
+        }
+
+        private static int ValidateRowSpan(PerspexObject o, int value)
+        {
+            if (value < 1)
+            {
+                throw new ArgumentException("Invalid Grid.Column value.");
             }
 
             return value;
