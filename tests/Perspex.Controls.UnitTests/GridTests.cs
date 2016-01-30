@@ -1092,7 +1092,7 @@ namespace Perspex.Controls.UnitTests
                 throw new Exception(string.Format("Actual value '{0}' is not between '{1}' and '{2}'). ", actual, min, max));
         }
 
-        class LayoutPoker : Panel
+        protected class LayoutPoker : Panel
         {
             public Size MeasureResult = new Size(0, 0);
             public Size MeasureArg = new Size(0, 0);
@@ -1288,6 +1288,13 @@ namespace Perspex.Controls.UnitTests
                 }
             }
 
+            public void CheckFinalMeasureArg(string message, params Size[] sizes)
+            {
+                Assert.Equal(sizes.Length, Children.Count);
+                for (int i = 0; i < sizes.Length; i++)
+                    Assert.Equal(sizes[i], ((MyContentControl)Children[i]).MeasureOverrideArg);
+            }
+
             public void CheckArrangeArgs(string message, params Size[] sizes)
             {
                 Assert.Equal(sizes.Length, ArrangedElements.Count);
@@ -1344,6 +1351,21 @@ namespace Perspex.Controls.UnitTests
             {
                 for (int i = 0; i < RowDefinitions.Count; i++)
                     IsBetween(heights[i] - 0.55, heights[i] + 0.55, RowDefinitions[i].ActualHeight);
+            }
+
+            public void CheckDesired(string message, params Size[] sizes)
+            {
+                for (int i = 0; i < Children.Count; i++)
+                {
+                    var poker = (MyContentControl)Children[i];
+                    if (!poker.DesiredSize.Equals(sizes[i]))
+                        throw new Exception(string.Format(
+                            "{2}.{3} Expected measure result to be {0} but was {1}",
+                            sizes[i],
+                            poker.DesiredSize,
+                            message,
+                            i));
+                }
             }
 
             public void ChangeCol(int childIndex, int newRow)
