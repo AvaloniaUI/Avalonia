@@ -31,10 +31,7 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
-        public abstract Rect Bounds
-        {
-            get;
-        }
+        public Rect Bounds => PlatformImpl.Bounds;
 
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.

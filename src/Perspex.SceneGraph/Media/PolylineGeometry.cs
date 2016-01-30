@@ -42,38 +42,6 @@ namespace Perspex.Media
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds
-        {
-            get
-            {
-                double xMin = double.MaxValue, yMin = double.MaxValue;
-                double xMax = double.MinValue, yMax = double.MinValue;
-                foreach (var point in _points)
-                {
-                    if (point.X < xMin)
-                    {
-                        xMin = point.X;
-                    }
-                    else if (point.X > xMax)
-                    {
-                        xMax = point.X;
-                    }
-
-                    if (point.Y < yMin)
-                    {
-                        yMin = point.Y;
-                    }
-                    else if (point.Y > yMax)
-                    {
-                        yMax = point.Y;
-                    }
-                }
-
-                return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
-            }
-        }
-
-        /// <inheritdoc/>
         public override Geometry Clone()
         {
             return new PolylineGeometry(new List<Point>(_points), _isFilled);

@@ -32,9 +32,6 @@ namespace Perspex.Media
         }
 
         /// <inheritdoc/>
-        public override Rect Bounds => PlatformImpl.Bounds;
-
-        /// <inheritdoc/>
         public override Geometry Clone()
         {
             return new RectangleGeometry(Bounds);

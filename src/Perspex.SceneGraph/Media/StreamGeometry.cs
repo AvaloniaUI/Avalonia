@@ -28,9 +28,6 @@ namespace Perspex.Media
             PlatformImpl = impl;
         }
 
-        /// <inheritdoc/>
-        public override Rect Bounds => PlatformImpl.Bounds;
-
         /// <summary>
         /// Creates a <see cref="StreamGeometry"/> from a string.
         /// </summary>
