@@ -817,237 +817,239 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(2, grid.MeasuredElements.Count);
         }
 
-        ////[Fact]
-        ////public void ExpandStarsInBorder()
-        ////{
-        ////    MyGrid grid = CreateGridWithChildren();
+        [Fact]
+        public void ExpandStarsInBorder()
+        {
+            MyGrid grid = CreateGridWithChildren();
 
-        ////    var parent = new Border();
-        ////    parent.Child = grid;
+            var parent = new Border();
+            parent.Child = grid;
 
-        ////    TestPanel.Width = 75;
-        ////    TestPanel.Height = 75;
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////    CreateAsyncTest(parent,
-        ////        () =>
-        ////        {
-        ////            CheckRowHeights(grid, "#1", 12, 25, 38);
+            CheckRowHeights(grid, "#1", 12, 25, 38);
 
-        ////            grid.HorizontalAlignment = HorizontalAlignment.Left;
-        ////            grid.VerticalAlignment = VerticalAlignment.Center;
-        ////            parent.InvalidateSubtree();
-        ////        }, () =>
-        ////        {
-        ////            CheckRowHeights(grid, "#2", 12, 15, 15);
-        ////            grid.Width = 50;
-        ////            grid.Height = 50;
-        ////            parent.InvalidateSubtree();
-        ////        }, () =>
-        ////        {
-        ////            CheckRowHeights(grid, "#3", 8, 17, 25);
+            grid.HorizontalAlignment = HorizontalAlignment.Left;
+            grid.VerticalAlignment = VerticalAlignment.Center;
 
-        ////            grid.ClearValue(Grid.HorizontalAlignmentProperty);
-        ////            grid.ClearValue(Grid.VerticalAlignmentProperty);
-        ////            parent.InvalidateSubtree();
-        ////        }, () =>
-        ////        {
-        ////            CheckRowHeights(grid, "#4", 8, 17, 25);
-        ////        }
-        ////    );
-        ////}
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ExpandStarsInCanvas()
-        ////        {
-        ////            Grid grid = CreateGridWithChildren();
+            CheckRowHeights(grid, "#2", 12, 15, 15);
+            grid.Width = 50;
+            grid.Height = 50;
 
-        ////            var parent = new Canvas();
-        ////            parent.Children.Add(grid);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////            TestPanel.Width = 75;
-        ////            TestPanel.Height = 75;
+            CheckRowHeights(grid, "#3", 8, 17, 25);
 
-        ////            CreateAsyncTest(parent,
-        ////                () => {
-        ////                    CheckRowHeights(grid, "#1", 15, 15, 15);
+            grid.ClearValue(Grid.HorizontalAlignmentProperty);
+            grid.ClearValue(Grid.VerticalAlignmentProperty);
 
-        ////                    grid.HorizontalAlignment = HorizontalAlignment.Left;
-        ////                    grid.VerticalAlignment = VerticalAlignment.Center;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#2", 15, 15, 15);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////                    grid.Width = 50;
-        ////                    grid.Height = 50;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#3", 8, 17, 25);
+            CheckRowHeights(grid, "#4", 8, 17, 25);
+        }
 
-        ////                    grid.ClearValue(Grid.HorizontalAlignmentProperty);
-        ////                    grid.ClearValue(Grid.VerticalAlignmentProperty);
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#4", 8, 17, 25);
-        ////                }
-        ////            );
-        ////        }
+        [Fact]
+        public void ExpandStarsInCanvas()
+        {
+            Grid grid = CreateGridWithChildren();
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MoonlightBug]
-        ////        public void ExpandStarsInGrid()
-        ////        {
-        ////            MyGrid grid = CreateGridWithChildren();
+            var parent = new Canvas();
+            parent.Children.Add(grid);
 
-        ////            var parent = new Grid();
-        ////            parent.AddRows(new GridLength(75));
-        ////            parent.AddColumns(new GridLength(75));
-        ////            parent.AddChild(grid, 0, 0, 1, 1);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////            TestPanel.Width = 75;
-        ////            TestPanel.Height = 75;
+            CheckRowHeights(grid, "#1", 15, 15, 15);
 
-        ////            CreateAsyncTest(parent,
-        ////                () => {
-        ////                    grid.CheckMeasureArgs("#1a", new Size(12, 12), new Size(25, 12), new Size(38, 12),
-        ////                                                  new Size(12, 25), new Size(25, 25), new Size(38, 25),
-        ////                                                  new Size(12, 38), new Size(25, 38), new Size(38, 38));
-        ////                    CheckRowHeights(grid, "#1", 12, 25, 38);
+            grid.HorizontalAlignment = HorizontalAlignment.Left;
+            grid.VerticalAlignment = VerticalAlignment.Center;
 
-        ////                    grid.HorizontalAlignment = HorizontalAlignment.Left;
-        ////                    grid.VerticalAlignment = VerticalAlignment.Center;
-        ////                    parent.InvalidateSubtree();
-        ////                    grid.Reset();
-        ////                }, () => {
-        ////                    grid.CheckMeasureArgs("#2a", new Size(12, 12), new Size(25, 12), new Size(38, 12),
-        ////                                                  new Size(12, 25), new Size(25, 25), new Size(38, 25),
-        ////                                                  new Size(12, 38), new Size(25, 38), new Size(38, 38));
-        ////                    CheckRowHeights(grid, "#2", 12, 15, 15);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////                    grid.Width = 50;
-        ////                    grid.Height = 50;
-        ////                    parent.InvalidateSubtree();
-        ////                    grid.Reset();
-        ////                }, () => {
-        ////                    grid.CheckMeasureArgs("#3a", new Size(8, 8), new Size(17, 8), new Size(25, 8),
-        ////                                                  new Size(8, 17), new Size(17, 17), new Size(25, 17),
-        ////                                                  new Size(8, 25), new Size(17, 25), new Size(25, 25));
-        ////                    CheckRowHeights(grid, "#3", 8, 17, 25);
+            CheckRowHeights(grid, "#2", 15, 15, 15);
 
-        ////                    grid.ClearValue(Grid.HorizontalAlignmentProperty);
-        ////                    grid.ClearValue(Grid.VerticalAlignmentProperty);
-        ////                    parent.InvalidateSubtree();
-        ////                    grid.Reset();
-        ////                }, () => {
-        ////                    grid.CheckMeasureArgs("#4a", new Size(8, 8), new Size(17, 8), new Size(25, 8),
-        ////                                                  new Size(8, 17), new Size(17, 17), new Size(25, 17),
-        ////                                                  new Size(8, 25), new Size(17, 25), new Size(25, 25));
-        ////                    CheckRowHeights(grid, "#4", 8, 17, 25);
-        ////                }
-        ////            );
-        ////        }
+            grid.Width = 50;
+            grid.Height = 50;
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        [MoonlightBug]
-        ////        public void ExpandStarsInStackPanel()
-        ////        {
-        ////            MyGrid grid = CreateGridWithChildren();
-        ////            var parent = new StackPanel();
-        ////            parent.Children.Add(grid);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////            TestPanel.Width = 75;
-        ////            TestPanel.Height = 75;
+            CheckRowHeights(grid, "#3", 8, 17, 25);
 
-        ////            CreateAsyncTest(parent,
-        ////                () => {
-        ////                    CheckRowHeights(grid, "#1", 15, 15, 15);
-        ////                    grid.CheckColWidths("#2", 12, 25, 38);
+            grid.ClearValue(Grid.HorizontalAlignmentProperty);
+            grid.ClearValue(Grid.VerticalAlignmentProperty);
 
-        ////                    grid.HorizontalAlignment = HorizontalAlignment.Left;
-        ////                    grid.VerticalAlignment = VerticalAlignment.Center;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#3", 15, 15, 15);
-        ////                    grid.CheckColWidths("#4", 12, 15, 15);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////                    grid.Width = 50;
-        ////                    grid.Height = 50;
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#5", 8, 17, 25);
-        ////                    grid.CheckColWidths("#6", 8, 17, 25);
+            CheckRowHeights(grid, "#4", 8, 17, 25);
+        }
 
-        ////                    grid.ClearValue(Grid.HorizontalAlignmentProperty);
-        ////                    grid.ClearValue(Grid.VerticalAlignmentProperty);
-        ////                    parent.InvalidateSubtree();
-        ////                }, () => {
-        ////                    CheckRowHeights(grid, "#7", 8, 17, 25);
-        ////                    grid.CheckColWidths("#8", 8, 17, 25);
-        ////                }
-        ////            );
-        ////        }
+        [Fact]
+        public void ExpandStarsInGrid()
+        {
+            MyGrid grid = CreateGridWithChildren();
 
-        ////        [Fact]
-        ////        [Asynchronous]
-        ////        public void ExpandStarsInStackPanel2()
-        ////        {
-        ////            Grid grid = new Grid();
-        ////            grid.AddRows(Auto);
-        ////            grid.AddColumns(Auto);
+            var parent = new MyGrid();
+            parent.RowDefinitions = new RowDefinitions("75");
+            parent.ColumnDefinitions = new ColumnDefinitions("75");
 
-        ////            var parent = new StackPanel();
+            parent.AddChild(grid, 0, 0, 1, 1);
 
-        ////            for (int i = 0; i < 4; i++)
-        ////            {
-        ////                MyGrid g = new MyGrid { Name = "Grid" + i };
-        ////                g.AddRows(Star);
-        ////                g.AddColumns(Star);
-        ////                g.Children.Add(new MyContentControl
-        ////                {
-        ////                    Content = new Rectangle
-        ////                    {
-        ////                        RadiusX = 4,
-        ////                        RadiusY = 4,
-        ////                        StrokeThickness = 2,
-        ////                        Fill = new SolidColorBrush(Colors.Red),
-        ////                        Stroke = new SolidColorBrush(Colors.Black)
-        ////                    }
-        ////                });
-        ////                g.Children.Add(new MyContentControl
-        ////                {
-        ////                    Content = new Rectangle
-        ////                    {
-        ////                        Fill = new SolidColorBrush(Colors.Blue),
-        ////                        HorizontalAlignment = HorizontalAlignment.Center,
-        ////                        VerticalAlignment = VerticalAlignment.Center,
-        ////                        Height = 17,
-        ////                        Width = 20 + i * 20
-        ////                    }
-        ////                });
-        ////                parent.Children.Add(g);
-        ////            }
-        ////            grid.Children.Add(parent);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////            CreateAsyncTest(grid, () => {
-        ////                for (int i = 0; i < parent.Children.Count; i++)
-        ////                {
-        ////                    MyGrid g = (MyGrid)parent.Children[i];
-        ////                    Assert.Equal(new Size(20 + i * 20, 17), g.DesiredSize, "#1." + i);
-        ////                    Assert.Equal(new Size(80, 17), g.RenderSize, "#2." + i);
+            grid.CheckMeasureArgs("#1a", new Size(12, 12), new Size(25, 12), new Size(38, 12),
+                              new Size(12, 25), new Size(25, 25), new Size(38, 25),
+                              new Size(12, 38), new Size(25, 38), new Size(38, 38));
+            CheckRowHeights(grid, "#1", 12, 25, 38);
 
-        ////                    g.CheckMeasureArgs("#3", Infinity, Infinity);
-        ////                    g.CheckMeasureResult("#4", new Size(0, 0), new Size(20 + i * 20, 17));
+            grid.HorizontalAlignment = HorizontalAlignment.Left;
+            grid.VerticalAlignment = VerticalAlignment.Center;
+            grid.Reset();
 
-        ////                    g.CheckRowHeights("#5", 17);
-        ////                    g.CheckColWidths("#6", 80);
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
 
-        ////                    g.CheckArrangeArgs("#7", new Size(80, 17), new Size(80, 17));
-        ////                    g.CheckArrangeResult("#8", new Size(80, 17), new Size(80, 17));
-        ////                }
-        ////            });
-        ////        }
+            grid.CheckMeasureArgs("#2a", new Size(12, 12), new Size(25, 12), new Size(38, 12),
+                              new Size(12, 25), new Size(25, 25), new Size(38, 25),
+                              new Size(12, 38), new Size(25, 38), new Size(38, 38));
+            CheckRowHeights(grid, "#2", 12, 15, 15);
+
+            grid.Width = 50;
+            grid.Height = 50;
+            grid.Reset();
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            grid.CheckMeasureArgs("#3a", new Size(8, 8), new Size(17, 8), new Size(25, 8),
+                              new Size(8, 17), new Size(17, 17), new Size(25, 17),
+                              new Size(8, 25), new Size(17, 25), new Size(25, 25));
+            CheckRowHeights(grid, "#3", 8, 17, 25);
+
+            grid.ClearValue(Grid.HorizontalAlignmentProperty);
+            grid.ClearValue(Grid.VerticalAlignmentProperty);
+            grid.Reset();
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            grid.CheckMeasureArgs("#4a", new Size(8, 8), new Size(17, 8), new Size(25, 8),
+                              new Size(8, 17), new Size(17, 17), new Size(25, 17),
+                              new Size(8, 25), new Size(17, 25), new Size(25, 25));
+            CheckRowHeights(grid, "#4", 8, 17, 25);
+        }
+
+        [Fact]
+        public void ExpandStarsInStackPanel()
+        {
+            MyGrid grid = CreateGridWithChildren();
+            var parent = new StackPanel();
+            parent.Children.Add(grid);
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            CheckRowHeights(grid, "#1", 15, 15, 15);
+            grid.CheckColWidths("#2", 12, 25, 38);
+
+            grid.HorizontalAlignment = HorizontalAlignment.Left;
+            grid.VerticalAlignment = VerticalAlignment.Center;
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            CheckRowHeights(grid, "#3", 15, 15, 15);
+            grid.CheckColWidths("#4", 12, 15, 15);
+
+            grid.Width = 50;
+            grid.Height = 50;
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            CheckRowHeights(grid, "#5", 8, 17, 25);
+            grid.CheckColWidths("#6", 8, 17, 25);
+
+            grid.ClearValue(Grid.HorizontalAlignmentProperty);
+            grid.ClearValue(Grid.VerticalAlignmentProperty);
+
+            parent.Measure(new Size(75, 75));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            CheckRowHeights(grid, "#7", 8, 17, 25);
+            grid.CheckColWidths("#8", 8, 17, 25);
+        }
+
+        [Fact]
+        public void ExpandStarsInStackPanel2()
+        {
+            MyGrid grid = new MyGrid();
+            grid.RowDefinitions = new RowDefinitions("Auto");
+            grid.ColumnDefinitions = new ColumnDefinitions("Auto");
+
+            var parent = new StackPanel();
+
+            for (int i = 0; i < 4; i++)
+            {
+                MyGrid g = new MyGrid { Name = "Grid" + i };
+
+                g.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
+                g.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+
+                g.Children.Add(new MyContentControl
+                {
+                    Content = new Rectangle
+                    {
+                        //RadiusX = 4,
+                        //RadiusY = 4,
+                        StrokeThickness = 2,
+                        Fill = new SolidColorBrush(Colors.Red),
+                        Stroke = new SolidColorBrush(Colors.Black)
+                    }
+                });
+                g.Children.Add(new MyContentControl
+                {
+                    Content = new Rectangle
+                    {
+                        Fill = new SolidColorBrush(Colors.Blue),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Height = 17,
+                        Width = 20 + i * 20
+                    }
+                });
+                parent.Children.Add(g);
+            }
+            grid.Children.Add(parent);
+
+            parent.Measure(Size.Infinity);
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            for (int i = 0; i < parent.Children.Count; i++)
+            {
+                MyGrid g = (MyGrid)parent.Children[i];
+                Assert.Equal(new Size(20 + i * 20, 17), g.DesiredSize);
+                Assert.Equal(new Size(80, 17), g.Bounds.Size);
+
+                g.CheckMeasureArgs("#3", Size.Infinity, Size.Infinity);
+                g.CheckMeasureResult("#4", new Size(0, 0), new Size(20 + i * 20, 17));
+
+                g.CheckRowHeights("#5", 17);
+                g.CheckColWidths("#6", 80);
+
+                g.CheckArrangeArgs("#7", new Size(80, 17), new Size(80, 17));
+                g.CheckArrangeResult("#8", new Size(80, 17), new Size(80, 17));
+            }
+        }
 
         [Fact]
         public void MeasureMaxAndMin()
@@ -1152,46 +1154,46 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new Size(100, 60), grid.DesiredSize);
         }
 
-        ////[Fact]
-        ////public void MeasureAutoRows2()
-        ////{
-        ////    MyGrid grid = new MyGrid();
+        [Fact]
+        public void MeasureAutoRows2()
+        {
+            MyGrid grid = new MyGrid();
 
-        ////    grid.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
-        ////    grid.ColumnDefinitions = new ColumnDefinitions("50,50");
+            grid.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
+            grid.ColumnDefinitions = new ColumnDefinitions("50,50");
 
-        ////    MyContentControl c = new MyContentControl(50, 50);
-        ////    grid.AddChild(c, 0, 0, 2, 1);
-        ////    grid.AddChild(new MyContentControl(50, 60), 0, 1, 1, 1);
-        ////    grid.AddChild(new MyContentControl(50, 20), 0, 1, 1, 1);
+            MyContentControl c = new MyContentControl(50, 50);
+            grid.AddChild(c, 0, 0, 2, 1);
+            grid.AddChild(new MyContentControl(50, 60), 0, 1, 1, 1);
+            grid.AddChild(new MyContentControl(50, 20), 0, 1, 1, 1);
 
-        ////    grid.Measure(new Size(500, 400));
-        ////    grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////    grid.CheckMeasureOrder("#2", 0, 1, 2);
-        ////    Assert.Equal(new Size(100, 60), grid.DesiredSize);
+            grid.Measure(new Size(500, 400));
+            grid.CheckMeasureArgs("#1", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+            grid.CheckMeasureOrder("#2", 0, 1, 2);
+            Assert.Equal(new Size(100, 60), grid.DesiredSize);
 
-        ////    grid.ChangeRow(2, 1);
-        ////    grid.Reset();
-        ////    grid.InvalidateMeasure();
-        ////    grid.CheckMeasureArgs("#3", new Size(50, double.PositiveInfinity));
-        ////    grid.CheckMeasureOrder("#4", 2);
-        ////    Assert.Equal(new Size(100, 80), grid.DesiredSize);
+            grid.ChangeRow(2, 1);
+            grid.Reset();
+            grid.InvalidateMeasure();
+            grid.CheckMeasureArgs("#3", new Size(50, double.PositiveInfinity));
+            grid.CheckMeasureOrder("#4", 2);
+            Assert.Equal(new Size(100, 80), grid.DesiredSize);
 
-        ////    grid.InvalidateMeasure();
-        ////    ((Control)c.Content).Height = 100;
+            grid.InvalidateMeasure();
+            ((Control)c.Content).Height = 100;
 
-        ////    grid.Reset();
-        ////    grid.Measure(new Size(500, 400));
-        ////    grid.CheckMeasureArgs("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
-        ////    Assert.Equal(new Size(100, 100), grid.DesiredSize);
+            grid.Reset();
+            grid.Measure(new Size(500, 400));
+            grid.CheckMeasureArgs("#5", new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity), new Size(50, double.PositiveInfinity));
+            Assert.Equal(new Size(100, 100), grid.DesiredSize);
 
-        ////    grid.Reset();
-        ////    grid.ChangeRow(2, 2);
-        ////    grid.Measure(new Size(500, 400));
-        ////    grid.CheckMeasureArgs("#7", new Size(50, double.PositiveInfinity));
-        ////    grid.CheckMeasureOrder("#8", 2);
-        ////    Assert.Equal(new Size(100, 120), grid.DesiredSize);
-        ////}
+            grid.Reset();
+            grid.ChangeRow(2, 2);
+            grid.Measure(new Size(500, 400));
+            grid.CheckMeasureArgs("#7", new Size(50, double.PositiveInfinity));
+            grid.CheckMeasureOrder("#8", 2);
+            Assert.Equal(new Size(100, 120), grid.DesiredSize);
+        }
 
         [Fact]
         public void ChangingGridPropertiesInvalidates()
@@ -2323,6 +2325,18 @@ namespace Perspex.Controls.UnitTests
         {
             for (int i = 0; i < grid.RowDefinitions.Count; i++)
                 IsBetween(heights[i] - 0.55, heights[i] + 0.55, grid.RowDefinitions[i].ActualHeight);
+        }
+
+        private static MyGrid CreateGridWithChildren()
+        {
+            MyGrid grid = new MyGrid { Name = "GridUnderTest" };
+            grid.RowDefinitions = new RowDefinitions("*,2*,3*");
+            grid.ColumnDefinitions = new ColumnDefinitions("*,2*,3*");
+
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    grid.AddChild(new MyContentControl { Content = new Rectangle { Fill = new SolidColorBrush(Colors.Red), MinWidth = 15, MinHeight = 15 } }, i, j, 1, 1);
+            return grid;
         }
 
         MyContentControl DecoratorWithChild()
