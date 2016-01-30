@@ -55,6 +55,14 @@ namespace Perspex.Controls
 
         private Segment[,] _colMatrix;
 
+        static Grid()
+        {
+            AffectsMeasure(ColumnProperty);
+            AffectsMeasure(ColumnSpanProperty);
+            AffectsMeasure(RowProperty);
+            AffectsMeasure(RowSpanProperty);
+        }
+
         /// <summary>
         /// Gets or sets the columns definitions for the grid.
         /// </summary>
