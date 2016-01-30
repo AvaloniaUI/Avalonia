@@ -11,25 +11,10 @@ namespace Perspex.Controls.Shapes
         public static readonly StyledProperty<IList<Point>> PointsProperty =
             PerspexProperty.Register<Polyline, IList<Point>>("Points");
 
-        private Geometry _geometry;
-
         static Polyline()
         {
             StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
-            PointsProperty.Changed.AddClassHandler<Polyline>(x => x.PointsChanged);
-        }
-
-        public override Geometry DefiningGeometry
-        {
-            get
-            {
-                if (_geometry == null)
-                {
-                    _geometry = new PolylineGeometry(Points, false);
-                }
-
-                return _geometry;
-            }
+            AffectsGeometry(PointsProperty);
         }
 
         public IList<Point> Points
@@ -38,10 +23,9 @@ namespace Perspex.Controls.Shapes
             set { SetValue(PointsProperty, value); }
         }
 
-        private void PointsChanged(PerspexPropertyChangedEventArgs e)
+        protected override Geometry CreateDefiningGeometry()
         {
-            _geometry = null;
-            InvalidateMeasure();
+            return new PolylineGeometry(Points, false);
         }
     }
 }

@@ -7,23 +7,16 @@ namespace Perspex.Controls.Shapes
 {
     public class Ellipse : Shape
     {
-        private Geometry _geometry;
-
-        private Size _geometrySize;
-
-        public override Geometry DefiningGeometry
+        static Ellipse()
         {
-            get
-            {
-                if (_geometry == null || _geometrySize != Bounds.Size)
-                {
-                    var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
-                    _geometry = new EllipseGeometry(rect);
-                    _geometrySize = Bounds.Size;
-                }
+            AffectsGeometry(BoundsProperty);
+            AffectsGeometry(StrokeThicknessProperty);
+        }
 
-                return _geometry;
-            }
+        protected override Geometry CreateDefiningGeometry()
+        {
+            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
+            return new EllipseGeometry(rect);
         }
 
         protected override Size MeasureOverride(Size availableSize)

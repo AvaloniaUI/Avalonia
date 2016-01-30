@@ -11,12 +11,17 @@ namespace Perspex.Controls.Shapes
         public static readonly StyledProperty<Geometry> DataProperty =
             PerspexProperty.Register<Path, Geometry>("Data");
 
+        static Path()
+        {
+            AffectsGeometry(DataProperty);
+        }
+
         public Geometry Data
         {
             get { return GetValue(DataProperty); }
             set { SetValue(DataProperty, value); }
         }
 
-        public override Geometry DefiningGeometry => Data;
+        protected override Geometry CreateDefiningGeometry() => Data;
     }
 }

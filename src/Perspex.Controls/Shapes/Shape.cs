@@ -26,7 +26,7 @@ namespace Perspex.Controls.Shapes
             PerspexProperty.Register<Shape, double>("StrokeThickness");
 
         private Matrix _transform = Matrix.Identity;
-
+        private Geometry _definingGeometry;
         private Geometry _renderedGeometry;
 
         static Shape()
@@ -38,9 +38,17 @@ namespace Perspex.Controls.Shapes
             AffectsMeasure(StrokeThicknessProperty);
         }
 
-        public abstract Geometry DefiningGeometry
+        public Geometry DefiningGeometry
         {
-            get;
+            get
+            {
+                if (_definingGeometry == null)
+                {
+                    _definingGeometry = CreateDefiningGeometry();
+                }
+
+                return _definingGeometry;
+            }
         }
 
         public Brush Fill
@@ -108,6 +116,28 @@ namespace Perspex.Controls.Shapes
                     StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap, StrokeJoin);
                 context.DrawGeometry(Fill, pen, geometry);
             }
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the shape's geometry.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateGeometry"/> to be called on the element.
+        /// </remarks>
+        protected static void AffectsGeometry(PerspexProperty property)
+        {
+            property.Changed.Subscribe(AffectsGeometryInvalidate);
+        }
+
+        protected abstract Geometry CreateDefiningGeometry();
+
+        protected void InvalidateGeometry()
+        {
+            this._renderedGeometry = null;
+            this._definingGeometry = null;
+            InvalidateMeasure();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -194,6 +224,29 @@ namespace Perspex.Controls.Shapes
             }
 
             return new Size(shapeSize.Width * sx, shapeSize.Height * sy);
+        }
+
+        private static void AffectsGeometryInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            var control = e.Sender as Shape;
+
+            if (control != null)
+            {
+                // If the geometry is invalidated when Bounds changes, only invalidate when the Size
+                // portion changes.
+                if (e.Property == BoundsProperty)
+                {
+                    var oldBounds = (Rect)e.OldValue;
+                    var newBounds = (Rect)e.NewValue;
+
+                    if (oldBounds.Size == newBounds.Size)
+                    {
+                        return;
+                    }
+                }
+
+                control.InvalidateGeometry();
+            }
         }
     }
 }

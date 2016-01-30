@@ -1,11 +1,6 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Perspex.Media;
 
 namespace Perspex.Controls.Shapes
@@ -18,13 +13,11 @@ namespace Perspex.Controls.Shapes
         public static readonly StyledProperty<Point> EndPointProperty =
             PerspexProperty.Register<Line, Point>("EndPoint");
 
-        private LineGeometry _geometry;
-        private Point _startPoint;
-        private Point _endPoint;
-
         static Line()
         {
             StrokeThicknessProperty.OverrideDefaultValue<Line>(1);
+            AffectsGeometry(StartPointProperty);
+            AffectsGeometry(EndPointProperty);
         }
 
         public Point StartPoint
@@ -39,19 +32,9 @@ namespace Perspex.Controls.Shapes
             set { SetValue(EndPointProperty, value); }
         }
 
-        public override Geometry DefiningGeometry
+        protected override Geometry CreateDefiningGeometry()
         {
-            get
-            {
-                if (_geometry == null || StartPoint != _startPoint || EndPoint != _endPoint)
-                {
-                    _startPoint = StartPoint;
-                    _endPoint = EndPoint;
-                    _geometry = new LineGeometry(_startPoint, _endPoint);
-                }
-
-                return _geometry;
-            }
+            return new LineGeometry(StartPoint, EndPoint);
         }
     }
 }
