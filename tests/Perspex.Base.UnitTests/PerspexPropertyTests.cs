@@ -108,18 +108,6 @@ namespace Perspex.Base.UnitTests
             Assert.Equal("newvalue", value);
         }
 
-        ////[Fact]
-        ////public void IsDirect_Property_Set_On_Direct_PerspexProperty()
-        ////{
-        ////    PerspexProperty<string> target = new PerspexProperty<string>(
-        ////        "test",
-        ////        typeof(Class1),
-        ////        o => null,
-        ////        (o, v) => { });
-
-        ////    Assert.True(target.IsDirect);
-        ////}
-
         [Fact]
         public void Property_Equals_Should_Handle_Null()
         {
@@ -133,81 +121,13 @@ namespace Perspex.Base.UnitTests
             Assert.True((PerspexProperty)null == (PerspexProperty)null);
         }
 
-        ////[Fact]
-        ////public void AddOwnered_Property_Should_Equal_Original()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("p1", typeof(Class1));
-        ////    var p2 = p1.AddOwner<Class3>();
+        [Fact]
+        public void PropertyMetadata_BindingMode_Default_Returns_OneWay()
+        {
+            var data = new PropertyMetadata(defaultBindingMode: BindingMode.Default);
 
-        ////    Assert.Equal(p1, p2);
-        ////    Assert.Equal(p1.GetHashCode(), p2.GetHashCode());
-        ////    Assert.True(p1 == p2);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwnered_Property_Should_Have_OwnerType_Set()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("p1", typeof(Class1));
-        ////    var p2 = p1.AddOwner<Class3>();
-
-        ////    Assert.Equal(typeof(Class3), p2.OwnerType);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwnered_Properties_Should_Share_Observables()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("p1", typeof(Class1));
-        ////    var p2 = p1.AddOwner<Class3>();
-
-        ////    Assert.Same(p1.Changed, p2.Changed);
-        ////    Assert.Same(p1.Initialized, p2.Initialized);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwnered_Direct_Property_Should_Equal_Original()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o,v) => { });
-        ////    var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
-
-        ////    Assert.Equal(p1, p2);
-        ////    Assert.Equal(p1.GetHashCode(), p2.GetHashCode());
-        ////    Assert.True(p1 == p2);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwnered_Direct_Property_Should_Have_OwnerType_Set()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o, v) => { });
-        ////    var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
-
-        ////    Assert.Equal(typeof(Class3), p2.OwnerType);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwnered_Direct_Properties_Should_Share_Observables()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("d1", typeof(Class1), o => null, (o, v) => { });
-        ////    var p2 = p1.AddOwner<Class3>(o => null, (o, v) => { });
-
-        ////    Assert.Same(p1.Changed, p2.Changed);
-        ////    Assert.Same(p1.Initialized, p2.Initialized);
-        ////}
-
-        ////[Fact]
-        ////public void AddOwner_With_Getter_And_Setter_On_Standard_Property_Should_Throw()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("p1", typeof(Class1));
-
-        ////    Assert.Throws<InvalidOperationException>(() => p1.AddOwner<Class3>(o => null, (o, v) => { }));
-        ////}
-
-        ////[Fact]
-        ////public void AddOwner_On_Direct_Property_Without_Getter_Or_Setter_Should_Throw()
-        ////{
-        ////    var p1 = new PerspexProperty<string>("e1", typeof(Class1), o => null, (o, v) => { });
-
-        ////    Assert.Throws<InvalidOperationException>(() => p1.AddOwner<Class3>());
-        ////}
+            Assert.Equal(BindingMode.OneWay, data.DefaultBindingMode);
+        }
 
         private class TestProperty<TValue> : PerspexProperty<TValue>
         {
