@@ -11,19 +11,28 @@ namespace Perspex
     /// </summary>
     public class PropertyMetadata
     {
+        private BindingMode _defaultBindingMode;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyMetadata"/> class.
         /// </summary>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         public PropertyMetadata(BindingMode defaultBindingMode = BindingMode.Default)
         {
-            DefaultBindingMode = defaultBindingMode;
+            _defaultBindingMode = defaultBindingMode;
         }
 
         /// <summary>
         /// Gets the default binding mode for the property.
         /// </summary>
-        public BindingMode DefaultBindingMode { get; private set; }
+        public BindingMode DefaultBindingMode
+        {
+            get
+            {
+                return _defaultBindingMode == BindingMode.Default ?
+                    BindingMode.OneWay : _defaultBindingMode;
+            }
+        }
 
         /// <summary>
         /// Merges the metadata with the base metadata.
@@ -34,9 +43,9 @@ namespace Perspex
             PropertyMetadata baseMetadata, 
             PerspexProperty property)
         {
-            if (DefaultBindingMode == BindingMode.Default)
+            if (_defaultBindingMode == BindingMode.Default)
             {
-                DefaultBindingMode = baseMetadata.DefaultBindingMode;
+                _defaultBindingMode = baseMetadata.DefaultBindingMode;
             }
         }
     }

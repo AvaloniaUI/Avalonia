@@ -71,6 +71,7 @@ namespace Perspex.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            TextProperty.OverrideMetadata<TextBox>(new StyledPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
         }
 
         public TextBox()

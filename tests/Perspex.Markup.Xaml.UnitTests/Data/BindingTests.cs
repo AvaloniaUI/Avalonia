@@ -96,20 +96,19 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         [Fact]
         public void Default_BindingMode_Should_Be_Used()
         {
-            // Default for TextBox.Text is two-way.
             var source = new Source { Foo = "foo" };
-            var target = new TextBlock { DataContext = source };
+            var target = new TwoWayBindingTest { DataContext = source };
             var binding = new Binding
             {
                 Path = "Foo",
             };
 
-            target.Bind(TextBox.TextProperty, binding);
+            target.Bind(TwoWayBindingTest.TwoWayProperty, binding);
 
-            Assert.Equal("foo", target.Text);
+            Assert.Equal("foo", target.TwoWay);
             source.Foo = "bar";
-            Assert.Equal("bar", target.Text);
-            target.Text = "baz";
+            Assert.Equal("bar", target.TwoWay);
+            target.TwoWay = "baz";
             Assert.Equal("baz", source.Foo);
         }
 
@@ -258,6 +257,20 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             // the VM and so vm.Bar was set to 0 erroneously.
             Assert.Equal(1, vm.Foo);
             Assert.Equal(2, vm.Bar);
+        }
+
+        private class TwoWayBindingTest : Control
+        {
+            public static readonly StyledProperty<string> TwoWayProperty =
+                PerspexProperty.Register<TwoWayBindingTest, string>(
+                    "TwoWay", 
+                    defaultBindingMode: BindingMode.TwoWay);
+
+            public string TwoWay
+            {
+                get { return GetValue(TwoWayProperty); }
+                set { SetValue(TwoWayProperty, value); }
+            }
         }
 
         public class Source : ReactiveObject

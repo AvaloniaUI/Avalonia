@@ -72,7 +72,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly StyledProperty<string> TextProperty =
-            PerspexProperty.Register<TextBlock, string>(nameof(Text), defaultBindingMode: BindingMode.TwoWay);
+            PerspexProperty.Register<TextBlock, string>(nameof(Text));
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
