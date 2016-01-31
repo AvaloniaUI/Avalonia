@@ -7,7 +7,7 @@ namespace Perspex.Media
     /// Paints an area with a radial gradient. A focal point defines the beginning of the gradient, 
     /// and a circle defines the end point of the gradient.
     /// </summary>
-    public sealed class RadialGradientBrush : GradientBrush
+    public class RadialGradientBrush : GradientBrush
     {
         /// <summary>
         /// Defines the <see cref="Center"/> property.
