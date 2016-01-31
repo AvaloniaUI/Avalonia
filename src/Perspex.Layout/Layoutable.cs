@@ -396,7 +396,7 @@ namespace Perspex.Layout
                 IsArrangeValid = false;
 
                 var root = GetLayoutRoot();
-                root?.Item1.LayoutManager?.InvalidateMeasure(this, root.Item2);
+                root?.LayoutManager?.InvalidateMeasure(this);
             }
         }
 
@@ -412,7 +412,7 @@ namespace Perspex.Layout
                 IsArrangeValid = false;
 
                 var root = GetLayoutRoot();
-                root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
+                root?.LayoutManager?.InvalidateArrange(this);
             }
         }
 
@@ -675,23 +675,13 @@ namespace Perspex.Layout
         }
 
         /// <summary>
-        /// Gets the layout root, together with its distance.
+        /// Gets the layout root.
         /// </summary>
-        /// <returns>
-        /// A tuple containing the layout root and the root's distance from this control.
-        /// </returns>
-        private Tuple<ILayoutRoot, int> GetLayoutRoot()
+        private ILayoutRoot GetLayoutRoot()
         {
-            var control = (IVisual)this;
-            var distance = 0;
-
-            while (control != null && !(control is ILayoutRoot))
-            {
-                control = control.GetVisualParent();
-                ++distance;
-            }
-
-            return control != null ? Tuple.Create((ILayoutRoot)control, distance) : null;
+            return this.GetSelfAndVisualAncestors()
+                .OfType<ILayoutRoot>()
+                .FirstOrDefault();
         }
     }
 }

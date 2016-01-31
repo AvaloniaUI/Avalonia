@@ -53,14 +53,12 @@ namespace Perspex.Layout
         /// Notifies the layout manager that a control requires a measure.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="distance">The control's distance from the layout root.</param>
-        void InvalidateMeasure(ILayoutable control, int distance);
+        void InvalidateMeasure(ILayoutable control);
 
         /// <summary>
         /// Notifies the layout manager that a control requires an arrange.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="distance">The control's distance from the layout root.</param>
-        void InvalidateArrange(ILayoutable control, int distance);
+        void InvalidateArrange(ILayoutable control);
     }
 }

@@ -77,8 +77,7 @@ namespace Perspex.Layout
         /// Notifies the layout manager that a control requires a measure.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="distance">The control's distance from the layout root.</param>
-        public void InvalidateMeasure(ILayoutable control, int distance)
+        public void InvalidateMeasure(ILayoutable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
@@ -92,8 +91,7 @@ namespace Perspex.Layout
         /// Notifies the layout manager that a control requires an arrange.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="distance">The control's distance from the layout root.</param>
-        public void InvalidateArrange(ILayoutable control, int distance)
+        public void InvalidateArrange(ILayoutable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
