@@ -1436,9 +1436,17 @@ namespace Perspex.Controls.UnitTests.Moonlight
 				Assert.AreEqual (new Size (100, 100), child.MeasureOverrideArg, "#1");
 				Assert.AreEqual (new Size (50, 50), child.MeasureOverrideResult, "#2");
 				Assert.AreEqual (new Size (50, 50), child.DesiredSize, "desired 1");
-				Assert.AreEqual (new Size (50, 50), child.ArrangeOverrideArg, "#4");
-				Assert.AreEqual (new Size (50, 50), child.ArrangeOverrideResult, "#5");
-				Assert.AreEqual (new Size (50, 50), child.RenderSize, "#3");
+
+                // The moonlight test had the following checks below:
+                //     Assert.AreEqual (new Size (50, 50), child.ArrangeOverrideArg, "#4");
+                //     Assert.AreEqual (new Size (50, 50), child.ArrangeOverrideResult, "#5");
+                //     Assert.AreEqual(new Size(50, 50), child.RenderSize, "#3");
+                // But running this test in WPF gives us the same results as we get here, so
+                // assuming that the test is wrong.
+                Assert.AreEqual (new Size (100, 100), child.ArrangeOverrideArg, "#4");
+				Assert.AreEqual (new Size (100, 100), child.ArrangeOverrideResult, "#5");
+				Assert.AreEqual (new Size (100, 100), child.RenderSize, "#3");
+
 				Assert.AreEqual (new Size (50, 50), content.DesiredSize, "desired 2");
 
 				// Now give the child more size in Arrange than it requires.
@@ -1448,7 +1456,7 @@ namespace Perspex.Controls.UnitTests.Moonlight
 				Assert.AreEqual (new Size (100, 100), child.ArrangeOverrideResult, "#10");
 				Assert.AreEqual (new Size (50, 50), content.RenderSize, "#16");
 
-				// Now give the child less size
+                // Now give the child less size
 				child.Arrange (new Rect (0, 0, 10, 10));
 				Assert.AreEqual (new Size (50, 50), child.RenderSize, "#13");
 				Assert.AreEqual (new Size (50, 50), child.ArrangeOverrideArg, "#14");

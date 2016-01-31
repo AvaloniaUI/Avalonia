@@ -766,7 +766,7 @@ namespace Perspex.Controls.UnitTests.Moonlight
                     // The moonlight test had the following check below:
                     //     g.CheckColWidths ("#ColWidths", 200, 290);
                     // But running this test in WPF gives us the same results as we get here, so
-                    // assuming that the test is wrong/
+                    // assuming that the test is wrong.
                     g.CheckColWidths("#ColWidths", 200, 200);
 
                     TestPanel.Width = 100;
