@@ -87,11 +87,7 @@ namespace Perspex.Layout
         /// Carries out a measure of the control.
         /// </summary>
         /// <param name="availableSize">The available size for the control.</param>
-        /// <param name="force">
-        /// If true, the control will be measured even if <paramref name="availableSize"/> has not
-        /// changed from the last measure.
-        /// </param>
-        void Measure(Size availableSize, bool force = false);
+        void Measure(Size availableSize);
 
         /// <summary>
         /// Arranges the control and its children.

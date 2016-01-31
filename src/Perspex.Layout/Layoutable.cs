@@ -306,18 +306,14 @@ namespace Perspex.Layout
         /// Carries out a measure of the control.
         /// </summary>
         /// <param name="availableSize">The available size for the control.</param>
-        /// <param name="force">
-        /// If true, the control will be measured even if <paramref name="availableSize"/> has not
-        /// changed from the last measure.
-        /// </param>
-        public void Measure(Size availableSize, bool force = false)
+        public void Measure(Size availableSize)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
             {
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            if (force || !IsMeasureValid || _previousMeasure != availableSize)
+            if (!IsMeasureValid || _previousMeasure != availableSize)
             {
                 var previousDesiredSize = DesiredSize;
                 var desiredSize = default(Size);
