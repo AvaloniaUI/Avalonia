@@ -40,13 +40,13 @@ namespace Perspex.SceneGraph.UnitTests.VisualTree
             var results = new List<TransformedBounds>();
             track.Subscribe(results.Add);
 
-            Assert.Equal(new Rect(42, 42, 15, 15), results.Last().Bounds);
+            Assert.Equal(new Rect(42, 42, 15, 15), results[0].Bounds);
 
             tree.Padding = new Thickness(15);
             tree.Measure(Size.Infinity);
             tree.Arrange(new Rect(0, 0, 100, 100), true);
 
-            Assert.Equal(new Rect(42, 42, 15, 15), results.Last().Bounds);
+            Assert.Equal(new Rect(47, 47, 15, 15), results[1].Bounds);
         }
     }
 }

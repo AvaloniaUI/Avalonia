@@ -132,11 +132,10 @@ namespace Perspex.Layout
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
-        private Size? _previousMeasure;
-
-        private Rect? _previousArrange;
-
         private readonly ILogger _layoutLog;
+        private bool _measuring;
+        private Size? _previousMeasure;
+        private Rect? _previousArrange;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -320,9 +319,20 @@ namespace Perspex.Layout
 
             if (force || !IsMeasureValid || _previousMeasure != availableSize)
             {
+                var previousDesiredSize = DesiredSize;
+                var desiredSize = default(Size);
+
                 IsMeasureValid = true;
 
-                var desiredSize = MeasureCore(availableSize).Constrain(availableSize);
+                try
+                {
+                    _measuring = true;
+                    desiredSize = MeasureCore(availableSize).Constrain(availableSize);
+                }
+                finally
+                {
+                    _measuring = false;
+                }
 
                 if (IsInvalidSize(desiredSize))
                 {
@@ -333,6 +343,11 @@ namespace Perspex.Layout
                 _previousMeasure = availableSize;
 
                 _layoutLog.Verbose("Measure requested {DesiredSize}", DesiredSize);
+
+                if (DesiredSize != previousDesiredSize)
+                {
+                    this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+                }
             }
         }
 
@@ -373,24 +388,13 @@ namespace Perspex.Layout
         /// </summary>
         public void InvalidateMeasure()
         {
-            var parent = this.GetVisualParent<ILayoutable>();
-
             if (IsMeasureValid)
             {
                 _layoutLog.Verbose("Invalidated measure");
-            }
 
-            IsMeasureValid = false;
-            IsArrangeValid = false;
-            _previousMeasure = null;
-            _previousArrange = null;
+                IsMeasureValid = false;
+                IsArrangeValid = false;
 
-            if (parent != null && IsResizable(parent))
-            {
-                parent.InvalidateMeasure();
-            }
-            else
-            {
                 var root = GetLayoutRoot();
                 root?.Item1.LayoutManager?.InvalidateMeasure(this, root.Item2);
             }
@@ -401,16 +405,24 @@ namespace Perspex.Layout
         /// </summary>
         public void InvalidateArrange()
         {
-            var root = GetLayoutRoot();
-
             if (IsArrangeValid)
             {
                 _layoutLog.Verbose("Arrange measure");
-            }
 
-            IsArrangeValid = false;
-            _previousArrange = null;
-            root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
+                IsArrangeValid = false;
+
+                var root = GetLayoutRoot();
+                root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
+            }
+        }
+
+        /// <inheritdoc/>
+        void ILayoutable.ChildDesiredSizeChanged(ILayoutable control)
+        {
+            if (!_measuring)
+            {
+                InvalidateMeasure();
+            }
         }
 
         /// <summary>
@@ -622,16 +634,6 @@ namespace Perspex.Layout
         {
             ILayoutable control = e.Sender as ILayoutable;
             control?.InvalidateArrange();
-        }
-
-        /// <summary>
-        /// Tests whether a control's size can be changed by a layout pass.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>True if the control's size can change; otherwise false.</returns>
-        private static bool IsResizable(ILayoutable control)
-        {
-            return double.IsNaN(control.Width) || double.IsNaN(control.Height);
         }
 
         /// <summary>

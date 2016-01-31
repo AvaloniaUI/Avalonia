@@ -112,5 +112,11 @@ namespace Perspex.Layout
         /// Invalidates the arrangement of the control and queues a new layout pass.
         /// </summary>
         void InvalidateArrange();
+
+        /// <summary>
+        /// Called when a child control's desired size changes.
+        /// </summary>
+        /// <param name="control">The child control.</param>
+        void ChildDesiredSizeChanged(ILayoutable control);
     }
 }
