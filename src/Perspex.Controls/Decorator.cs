@@ -27,6 +27,7 @@ namespace Perspex.Controls
         /// </summary>
         static Decorator()
         {
+            AffectsMeasure(ChildProperty, PaddingProperty);
             ChildProperty.Changed.AddClassHandler<Decorator>(x => x.ChildChanged);
         }
 

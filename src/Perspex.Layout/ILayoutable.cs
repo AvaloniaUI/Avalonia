@@ -93,11 +93,7 @@ namespace Perspex.Layout
         /// Arranges the control and its children.
         /// </summary>
         /// <param name="rect">The control's new bounds.</param>
-        /// <param name="force">
-        /// If true, the control will be arranged even if <paramref name="rect"/> has not changed
-        /// from the last arrange.
-        /// </param>
-        void Arrange(Rect rect, bool force = false);
+        void Arrange(Rect rect);
 
         /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.

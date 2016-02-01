@@ -352,11 +352,7 @@ namespace Perspex.Layout
         /// Arranges the control and its children.
         /// </summary>
         /// <param name="rect">The control's new bounds.</param>
-        /// <param name="force">
-        /// If true, the control will be arranged even if <paramref name="rect"/> has not changed
-        /// from the last arrange.
-        /// </param>
-        public void Arrange(Rect rect, bool force = false)
+        public void Arrange(Rect rect)
         {
             if (IsInvalidRect(rect))
             {
@@ -367,10 +363,10 @@ namespace Perspex.Layout
             // be re-run.
             if (!IsMeasureValid)
             {
-                return;
+                Measure(rect.Size);
             }
 
-            if (force || !IsArrangeValid || _previousArrange != rect)
+            if (!IsArrangeValid || _previousArrange != rect)
             {
                 _layoutLog.Verbose("Arrange to {Rect} ", rect);
 

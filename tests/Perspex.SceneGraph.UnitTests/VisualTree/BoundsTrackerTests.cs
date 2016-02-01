@@ -44,9 +44,9 @@ namespace Perspex.SceneGraph.UnitTests.VisualTree
 
             tree.Padding = new Thickness(15);
             tree.Measure(Size.Infinity);
-            tree.Arrange(new Rect(0, 0, 100, 100), true);
+            tree.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(47, 47, 15, 15), results[1].Bounds);
+            Assert.Equal(new Rect(37, 37, 15, 15), results[1].Bounds);
         }
     }
 }

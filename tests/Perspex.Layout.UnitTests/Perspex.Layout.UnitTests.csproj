@@ -87,6 +87,7 @@
   <ItemGroup>
     <Compile Include="FullLayoutTests.cs" />
     <Compile Include="LayoutManagerTests.cs" />
+    <Compile Include="ArrangeTests.cs" />
     <Compile Include="MeasureTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestLayoutRoot.cs" />
