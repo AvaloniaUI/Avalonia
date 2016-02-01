@@ -60,7 +60,9 @@ namespace Perspex.Controls.UnitTests.Moonlight
 
 			RectangleGeometry geom = (RectangleGeometry) LayoutInformation.GetLayoutClip (poker);
 			Assert.AreEqual (new Rect (0, 0, 100, 100), geom.Rect, "#6");
-			Assert.AreEqual (new Rect (0, 0, 100, 100), LayoutInformation.GetLayoutSlot (poker), "#7");
+
+            // Not currently an equivalent of "Layout Slot" in perspex.
+			// Assert.AreEqual (new Rect (0, 0, 100, 100), LayoutInformation.GetLayoutSlot (poker), "#7");
 		}
 
 		[TestMethod]
@@ -87,7 +89,9 @@ namespace Perspex.Controls.UnitTests.Moonlight
 
 			RectangleGeometry geom = (RectangleGeometry) LayoutInformation.GetLayoutClip (poker);
 			Assert.AreEqual (new Rect (0, 0, 150, 150), geom.Rect, "#6");
-			Assert.AreEqual (new Rect (0, 0, 150, 150), LayoutInformation.GetLayoutSlot (poker), "#7");
+
+            // Not currently an equivalent of "Layout Slot" in perspex.
+            //Assert.AreEqual (new Rect (0, 0, 150, 150), LayoutInformation.GetLayoutSlot (poker), "#7");
 		}
 
 		[TestMethod]
@@ -114,7 +118,9 @@ namespace Perspex.Controls.UnitTests.Moonlight
 
 			RectangleGeometry geom = (RectangleGeometry) LayoutInformation.GetLayoutClip (poker);
 			Assert.AreEqual (new Rect (0, 0, 175, 175), geom.Rect, "#6");
-			Assert.AreEqual (new Rect (0, 0, 175, 175), LayoutInformation.GetLayoutSlot (poker), "#7");
+
+            // Not currently an equivalent of "Layout Slot" in perspex.
+            //Assert.AreEqual (new Rect (0, 0, 175, 175), LayoutInformation.GetLayoutSlot (poker), "#7");
 		}
 
 		[TestMethod]

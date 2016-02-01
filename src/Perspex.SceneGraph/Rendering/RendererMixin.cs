@@ -109,6 +109,8 @@ namespace Perspex.Rendering
 
                 m = renderTransform * m;
 
+                // TODO: Handle ILayoutable.LayoutClip too.
+
                 if (clipToBounds)
                 {
                     clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));

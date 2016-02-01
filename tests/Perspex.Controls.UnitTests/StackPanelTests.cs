@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Controls;
+using Perspex.Layout;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -117,7 +118,8 @@ namespace Perspex.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(120, 60), target.Bounds.Size);
+            Assert.Equal(new Size(120, 100), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 120, 60), ((ILayoutable)target).LayoutClip);
             Assert.Equal(new Rect(0, 0, 120, 20), target.Children[0].Bounds);
             Assert.Equal(new Rect(0, 20, 120, 30), target.Children[1].Bounds);
             Assert.Equal(new Rect(0, 50, 120, 50), target.Children[2].Bounds);
@@ -141,7 +143,8 @@ namespace Perspex.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(60, 120), target.Bounds.Size);
+            Assert.Equal(new Size(100, 120), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 60, 120), ((ILayoutable)target).LayoutClip);
             Assert.Equal(new Rect(0, 0, 20, 120), target.Children[0].Bounds);
             Assert.Equal(new Rect(20, 0, 30, 120), target.Children[1].Bounds);
             Assert.Equal(new Rect(50, 0, 50, 120), target.Children[2].Bounds);

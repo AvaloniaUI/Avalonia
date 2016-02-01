@@ -136,6 +136,7 @@ namespace Perspex.Layout
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
+        private Rect? _layoutClip;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -285,6 +286,11 @@ namespace Perspex.Layout
             get { return GetValue(UseLayoutRoundingProperty); }
             set { SetValue(UseLayoutRoundingProperty, value); }
         }
+
+        /// <summary>
+        /// Gets the clip rectange applied during layout, if any.
+        /// </summary>
+        Rect? ILayoutable.LayoutClip => _layoutClip;
 
         /// <summary>
         /// Gets the available size passed in the previous layout pass, if any.
@@ -536,40 +542,41 @@ namespace Perspex.Layout
                 var sizeMinusMargins = new Size(
                     Math.Max(0, finalRect.Width - Margin.Left - Margin.Right),
                     Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom));
-                var size = sizeMinusMargins;
+                var available = sizeMinusMargins;
 
                 if (HorizontalAlignment != HorizontalAlignment.Stretch)
                 {
-                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
+                    available = available.WithWidth(Math.Min(available.Width, DesiredSize.Width));
                 }
 
                 if (VerticalAlignment != VerticalAlignment.Stretch)
                 {
-                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
+                    available = available.WithHeight(Math.Min(available.Height, DesiredSize.Height));
                 }
 
-                size = LayoutHelper.ApplyLayoutConstraints(this, size);
+                available = LayoutHelper.ApplyLayoutConstraints(this, available);
 
                 if (UseLayoutRounding)
                 {
-                    size = new Size(
-                        Math.Ceiling(size.Width), 
-                        Math.Ceiling(size.Height));
+                    available = new Size(
+                        Math.Ceiling(available.Width), 
+                        Math.Ceiling(available.Height));
                     sizeMinusMargins = new Size(
                         Math.Ceiling(sizeMinusMargins.Width), 
                         Math.Ceiling(sizeMinusMargins.Height));
                 }
 
-                size = ArrangeOverride(size).Constrain(size);
+                var returned = ArrangeOverride(available);
+                var actual = returned.Constrain(available);
 
                 switch (HorizontalAlignment)
                 {
                     case HorizontalAlignment.Center:
                     case HorizontalAlignment.Stretch:
-                        originX += (sizeMinusMargins.Width - size.Width) / 2;
+                        originX += (sizeMinusMargins.Width - actual.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
-                        originX += sizeMinusMargins.Width - size.Width;
+                        originX += sizeMinusMargins.Width - actual.Width;
                         break;
                 }
 
@@ -577,10 +584,10 @@ namespace Perspex.Layout
                 {
                     case VerticalAlignment.Center:
                     case VerticalAlignment.Stretch:
-                        originY += (sizeMinusMargins.Height - size.Height) / 2;
+                        originY += (sizeMinusMargins.Height - actual.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:
-                        originY += sizeMinusMargins.Height - size.Height;
+                        originY += sizeMinusMargins.Height - actual.Height;
                         break;
                 }
 
@@ -590,7 +597,16 @@ namespace Perspex.Layout
                     originY = Math.Floor(originY);
                 }
 
-                Bounds = new Rect(originX, originY, size.Width, size.Height);
+                Bounds = new Rect(originX, originY, returned.Width, returned.Height);
+
+                if (returned.Width > actual.Width || returned.Width > actual.Height)
+                {
+                    _layoutClip = new Rect(actual);
+                }
+                else
+                {
+                    _layoutClip = null;
+                }
             }
         }
 

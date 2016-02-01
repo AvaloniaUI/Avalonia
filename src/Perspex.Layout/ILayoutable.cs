@@ -14,6 +14,11 @@ namespace Perspex.Layout
         Size DesiredSize { get; }
 
         /// <summary>
+        /// Gets the clip rectange applied during layout, if any.
+        /// </summary>
+        Rect? LayoutClip { get; }
+
+        /// <summary>
         /// Gets the width of the element.
         /// </summary>
         double Width { get; }

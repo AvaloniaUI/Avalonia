@@ -1,6 +1,7 @@
 ﻿using System;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Layout;
 using Perspex.Media;
 using Perspex.VisualTree;
 using Xunit;
@@ -207,9 +208,16 @@ namespace Perspex.Controls.UnitTests.Moonlight
             return control.Bounds;
         }
 
-        public static RectangleGeometry GetLayoutClip(IControl control)
+        public static RectangleGeometry GetLayoutClip(ILayoutable control)
         {
-            return new RectangleGeometry(control.Bounds);
+            if (control.LayoutClip.HasValue)
+            {
+                return new RectangleGeometry(control.LayoutClip.Value);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
