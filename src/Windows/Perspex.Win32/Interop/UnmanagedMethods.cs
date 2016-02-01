@@ -718,7 +718,6 @@ namespace Perspex.Win32.Interop
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
 
-
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern bool GlobalUnlock(IntPtr handle);
 
@@ -736,6 +735,35 @@ namespace Perspex.Win32.Interop
 
         [DllImport("comdlg32.dll")]
         public static extern int CommDlgExtendedError();
+
+        [DllImport("shcore.dll")]
+        public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
+
+        [DllImport("shcore.dll")]
+        public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        [DllImport("shcore.dll")]
+        public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        public const uint MONITOR_DEFAULTTONULL = 0x00000000;
+        public const uint MONITOR_DEFAULTTOPRIMARY = 0x00000001;
+        public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+        public enum PROCESS_DPI_AWARENESS {
+            PROCESS_DPI_UNAWARE = 0,
+            PROCESS_SYSTEM_DPI_AWARE = 1,
+            PROCESS_PER_MONITOR_DPI_AWARE = 2
+        }
+
+        public enum MONITOR_DPI_TYPE {
+            MDT_EFFECTIVE_DPI = 0,
+            MDT_ANGULAR_DPI = 1,
+            MDT_RAW_DPI = 2,
+            MDT_DEFAULT = MDT_EFFECTIVE_DPI
+        } 
 
         public enum ClipboardFormat
         {
