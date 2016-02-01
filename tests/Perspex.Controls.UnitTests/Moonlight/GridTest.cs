@@ -1,5 +1,6 @@
 using System;
 using Perspex.Controls.Shapes;
+using Perspex.Layout;
 using Perspex.Media;
 
 namespace Perspex.Controls.UnitTests.Moonlight
@@ -474,56 +475,67 @@ namespace Perspex.Controls.UnitTests.Moonlight
 		[TestMethod]
 		public void ChildMargin_constWidth_constHeight_singleCell ()
 		{
-			MyGrid g = new MyGrid ();
+            var layoutManager = new LayoutManager();
 
-			RowDefinition rdef;
-			ColumnDefinition cdef;
+            using (PerspexLocator.EnterScope())
+            {
+                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
 
-			rdef = new RowDefinition ();
-			rdef.Height = new GridLength (200);
-			g.RowDefinitions.Add (rdef);
+                MyGrid g = new MyGrid();
 
-			cdef = new ColumnDefinition ();
-			cdef.Width = new GridLength (200);
-			g.ColumnDefinitions.Add (cdef);
+                RowDefinition rdef;
+                ColumnDefinition cdef;
 
-			g.Margin = new Thickness (5);
+                rdef = new RowDefinition();
+                rdef.Height = new GridLength(200);
+                g.RowDefinitions.Add(rdef);
 
-			Canvas c = new Canvas ();
+                cdef = new ColumnDefinition();
+                cdef.Width = new GridLength(200);
+                g.ColumnDefinitions.Add(cdef);
 
-			Grid.SetRow (c, 0);
-			Grid.SetColumn (c, 0);
+                g.Margin = new Thickness(5);
 
-			g.Children.Add (new MyContentControl { Content = c });
+                Canvas c = new Canvas();
 
-			// first test with the child sized larger than the row/column definitions
-			c.Width = 400;
-			c.Height = 400;
+                Grid.SetRow(c, 0);
+                Grid.SetColumn(c, 0);
 
-			g.Measure (new Size (Double.PositiveInfinity, Double.PositiveInfinity));
-			g.CheckMeasureArgs ("#MeasureOverrideArgs", new Size (200, 200));
-			g.Reset ();
-			Assert.AreEqual (new Size (200, 200), c.DesiredSize, "DesiredSize0");
-			Assert.AreEqual (new Size (210, 210), g.DesiredSize, "DesiredSize1");
+                g.Children.Add(new MyContentControl { Content = c });
 
-			g.Measure (new Size (100, 100));
-			g.CheckMeasureArgs ("#MeasureOverrideArgs 2"); // MeasureOverride shouldn't be called.
-			g.Reset ();
-			Assert.AreEqual (new Size (100, 100), g.DesiredSize, "DesiredSize2");
+                // first test with the child sized larger than the row/column definitions
+                c.Width = 400;
+                c.Height = 400;
 
-			// now test with the child sized smaller than the row/column definitions
-			c.Width = 100;
-			c.Height = 100;
+                g.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+                g.CheckMeasureArgs("#MeasureOverrideArgs", new Size(200, 200));
+                g.Reset();
+                Assert.AreEqual(new Size(200, 200), c.DesiredSize, "DesiredSize0");
+                Assert.AreEqual(new Size(210, 210), g.DesiredSize, "DesiredSize1");
 
-			g.Measure (new Size (Double.PositiveInfinity, Double.PositiveInfinity));
-			g.CheckMeasureArgs ("#MeasureOverrideArgs 3", new Size (200, 200));
-			g.Reset ();
-			Assert.AreEqual (new Size (210, 210), g.DesiredSize, "DesiredSize3");
+                g.Measure(new Size(100, 100));
+                g.CheckMeasureArgs("#MeasureOverrideArgs 2"); // MeasureOverride shouldn't be called.
+                g.Reset();
+                Assert.AreEqual(new Size(100, 100), g.DesiredSize, "DesiredSize2");
 
-			g.Measure (new Size (100, 100));
-			g.CheckMeasureArgs ("#MeasureOverrideArgs 4"); // MeasureOverride won't be called.
-			g.Reset ();
-			Assert.AreEqual (new Size (100, 100), g.DesiredSize, "DesiredSize4");
+                // now test with the child sized smaller than the row/column definitions
+                c.Width = 100;
+                c.Height = 100;
+
+                // Moonlight tests just did a measure here:
+                //     g.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+                // However in Perspex (and WPF for that matter) we need to do a full layout.
+                layoutManager.ExecuteLayoutPass();
+
+                g.CheckMeasureArgs("#MeasureOverrideArgs 3", new Size(200, 200));
+                g.Reset();
+                Assert.AreEqual(new Size(210, 210), g.DesiredSize, "DesiredSize3");
+
+                g.Measure(new Size(100, 100));
+                g.CheckMeasureArgs("#MeasureOverrideArgs 4"); // MeasureOverride won't be called.
+                g.Reset();
+                Assert.AreEqual(new Size(100, 100), g.DesiredSize, "DesiredSize4");
+            }
 		}
 
 		[TestMethod]
@@ -583,56 +595,67 @@ namespace Perspex.Controls.UnitTests.Moonlight
 		[TestMethod]
 		public void ChildMargin_autoWidth_autoHeight_singleCell ()
 		{
-			MyGrid g = new MyGrid ();
+            var layoutManager = new LayoutManager();
 
-			RowDefinition rdef;
-			ColumnDefinition cdef;
+            using (PerspexLocator.EnterScope())
+            {
+                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
 
-			rdef = new RowDefinition ();
-			rdef.Height = GridLength.Auto;
-			g.RowDefinitions.Add (rdef);
+                MyGrid g = new MyGrid();
 
-			cdef = new ColumnDefinition ();
-			cdef.Width = GridLength.Auto;
-			g.ColumnDefinitions.Add (cdef);
+                RowDefinition rdef;
+                ColumnDefinition cdef;
 
-			g.Margin = new Thickness (5);
+                rdef = new RowDefinition();
+                rdef.Height = GridLength.Auto;
+                g.RowDefinitions.Add(rdef);
 
-			Canvas c = new Canvas ();
+                cdef = new ColumnDefinition();
+                cdef.Width = GridLength.Auto;
+                g.ColumnDefinitions.Add(cdef);
 
-			Grid.SetRow (c, 0);
-			Grid.SetColumn (c, 0);
+                g.Margin = new Thickness(5);
 
-			g.Children.Add (new MyContentControl { Content = c });
+                Canvas c = new Canvas();
 
-			// first test with the child sized larger than the row/column definitions
-			c.Width = 400;
-			c.Height = 400;
+                Grid.SetRow(c, 0);
+                Grid.SetColumn(c, 0);
 
-			g.Measure (new Size (Double.PositiveInfinity, Double.PositiveInfinity));
-			g.CheckMeasureArgs ("#MeasureOverrideArg", new Size (inf, inf));
-			g.Reset ();
-			Assert.AreEqual (new Size (410, 410), g.DesiredSize, "DesiredSize");
+                g.Children.Add(new MyContentControl { Content = c });
 
-			g.Measure (new Size (100, 100));
-			g.CheckMeasureArgs ("#MeasureOverrideArg 2"); // MeasureOverride is not called
-			g.Reset ();
-			Assert.AreEqual (new Size (100, 100), g.DesiredSize, "DesiredSize");
+                // first test with the child sized larger than the row/column definitions
+                c.Width = 400;
+                c.Height = 400;
 
-			// now test with the child sized smaller than the row/column definitions
-			c.Width = 100;
-			c.Height = 100;
+                g.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+                g.CheckMeasureArgs("#MeasureOverrideArg", new Size(inf, inf));
+                g.Reset();
+                Assert.AreEqual(new Size(410, 410), g.DesiredSize, "DesiredSize");
 
-			g.Measure (new Size (Double.PositiveInfinity, Double.PositiveInfinity));
-			g.CheckMeasureArgs ("#MeasureOverrideArg 3", new Size (inf, inf));
-			g.Reset ();
-			Assert.AreEqual (new Size (110, 110), g.DesiredSize, "DesiredSize");
+                g.Measure(new Size(100, 100));
+                g.CheckMeasureArgs("#MeasureOverrideArg 2"); // MeasureOverride is not called
+                g.Reset();
+                Assert.AreEqual(new Size(100, 100), g.DesiredSize, "DesiredSize");
 
-			g.Measure (new Size (100, 100));
-			g.CheckMeasureArgs ("#MeasureOverrideArg 4"); // MeasureOverride is not called
-			g.Reset ();
-			Assert.AreEqual (new Size (100, 100), g.DesiredSize, "DesiredSize");
-		}
+                // now test with the child sized smaller than the row/column definitions
+                c.Width = 100;
+                c.Height = 100;
+
+                // Moonlight tests just did a measure here:
+                //     g.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+                // However in Perspex (and WPF for that matter) we need to do a full layout.
+                layoutManager.ExecuteLayoutPass();
+
+                g.CheckMeasureArgs("#MeasureOverrideArg 3", new Size(inf, inf));
+                g.Reset();
+                Assert.AreEqual(new Size(110, 110), g.DesiredSize, "DesiredSize");
+
+                g.Measure(new Size(100, 100));
+                g.CheckMeasureArgs("#MeasureOverrideArg 4"); // MeasureOverride is not called
+                g.Reset();
+                Assert.AreEqual(new Size(100, 100), g.DesiredSize, "DesiredSize");
+            }
+        }
 
 		// two children, two columns, one row.  the children
 		// are both explicitly sized, but the column
