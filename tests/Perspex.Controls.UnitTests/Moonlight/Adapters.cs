@@ -84,17 +84,6 @@ namespace Perspex.Controls.UnitTests.Moonlight
         public Size RenderSize => Bounds.Size;
         public bool ShowGridLines { get; set; }
 
-        public void Arrange(Rect rect)
-        {
-            // Moonlight forces a measure if !IsMeasureValue: src/frameworkelement.cpp:731
-            if (!IsMeasureValid)
-            {
-                Measure(rect.Size);
-            }
-
-            base.Arrange(rect);
-        }
-
         public void UpdateLayout()
         {
         }
