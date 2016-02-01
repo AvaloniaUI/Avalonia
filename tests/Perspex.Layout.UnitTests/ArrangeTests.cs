@@ -19,6 +19,19 @@ namespace Perspex.Layout.UnitTests
             Assert.Equal(new Size(120, 120), target.MeasureConstraint);
         }
 
+        [Fact]
+        public void Arrange_With_IsMeasureValid_False_Calls_Measure_With_Previous_Size_If_Available()
+        {
+            var target = new TestControl();
+
+            Assert.False(target.IsMeasureValid);
+            target.Arrange(new Rect(0, 0, 120, 120));
+            target.InvalidateMeasure();
+            target.Arrange(new Rect(0, 0, 100, 100));
+            Assert.True(target.IsMeasureValid);
+            Assert.Equal(new Size(120, 120), target.MeasureConstraint);
+        }
+
         private class TestControl : Border
         {
             public Size MeasureConstraint { get; private set; }
