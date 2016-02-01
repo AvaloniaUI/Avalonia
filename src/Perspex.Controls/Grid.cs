@@ -57,10 +57,7 @@ namespace Perspex.Controls
 
         static Grid()
         {
-            AffectsMeasure(ColumnProperty);
-            AffectsMeasure(ColumnSpanProperty);
-            AffectsMeasure(RowProperty);
-            AffectsMeasure(RowSpanProperty);
+            AffectsGridMeasure(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
         /// <summary>
@@ -593,6 +590,25 @@ namespace Perspex.Controls
             else
             {
                 return val;
+            }
+        }
+
+        private static void AffectsGridMeasure(params PerspexProperty[] properties)
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsGridMeasureInvalidate);
+            }
+        }
+
+        private static void AffectsGridMeasureInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            IControl control = e.Sender as IControl;
+
+            if (control != null)
+            {
+                control.InvalidateMeasure();
+                (control.Parent as Grid)?.InvalidateMeasure();
             }
         }
 
