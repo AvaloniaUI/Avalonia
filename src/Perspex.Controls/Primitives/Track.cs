@@ -34,10 +34,7 @@ namespace Perspex.Controls.Primitives
 
         static Track()
         {
-            AffectsArrange(MinimumProperty);
-            AffectsArrange(MaximumProperty);
-            AffectsArrange(ValueProperty);
-            AffectsMeasure(OrientationProperty);
+            AffectsArrange(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
         public Track()

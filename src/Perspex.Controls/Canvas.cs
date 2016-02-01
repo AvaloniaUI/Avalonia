@@ -46,10 +46,7 @@ namespace Perspex.Controls
         /// </summary>
         static Canvas()
         {
-            AffectsArrange(LeftProperty);
-            AffectsArrange(TopProperty);
-            AffectsArrange(RightProperty);
-            AffectsArrange(BottomProperty);
+            AffectsArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
         }
 
         /// <summary>

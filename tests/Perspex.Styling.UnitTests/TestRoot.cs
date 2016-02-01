@@ -14,7 +14,7 @@ namespace Perspex.Styling.UnitTests
     {
         public Size ClientSize => new Size(100, 100);
 
-        public ILayoutManager LayoutManager => new Mock<ILayoutManager>().Object;
+        public Size MaxClientSize => Size.Infinity;
 
         public IRenderTarget RenderTarget
         {

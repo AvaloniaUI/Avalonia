@@ -9,6 +9,27 @@ namespace Perspex.Layout.UnitTests
     public class MeasureTests
     {
         [Fact]
+        public void Invalidating_Child_Should_Not_Invalidate_Parent()
+        {
+            var panel = new StackPanel();
+            var child = new Border();
+            panel.Children.Add(child);
+
+            panel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(new Size(0, 0), panel.DesiredSize);
+
+            child.Width = 100;
+            child.Height = 100;
+
+            Assert.True(panel.IsMeasureValid);
+            Assert.False(child.IsMeasureValid);
+
+            panel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Assert.Equal(new Size(0, 0), panel.DesiredSize);
+        }
+
+        [Fact]
         public void Negative_Margin_Larger_Than_Constraint_Should_Request_Width_0()
         {
             Control target;

@@ -12,7 +12,6 @@ using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
-using Perspex.Threading;
 
 namespace Perspex.Controls
 {
@@ -91,7 +90,6 @@ namespace Perspex.Controls
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            LayoutManager = TryGetService<ILayoutManager>(dependencyResolver);
             _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
             (TryGetService<ITopLevelRenderer>(dependencyResolver) ?? new DefaultTopLevelRenderer()).Attach(this);
 
@@ -102,19 +100,11 @@ namespace Perspex.Controls
             PlatformImpl.Input = HandleInput;
             PlatformImpl.Resized = HandleResized;
 
-            var clientSize = ClientSize = PlatformImpl.ClientSize;
-
-            if (LayoutManager != null)
-            {
-                LayoutManager.Root = this;
-                LayoutManager.LayoutNeeded.Subscribe(_ => HandleLayoutNeeded());
-                LayoutManager.LayoutCompleted.Subscribe(_ => HandleLayoutCompleted());
-            }
-
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
+            ClientSize = PlatformImpl.ClientSize;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.ClientSize = x);
             this.GetObservable(PointerOverElementProperty)
                 .Select(
@@ -156,11 +146,12 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Gets the layout manager for the window.
+        /// Gets or sets the window position in screen coordinates.
         /// </summary>
-        public ILayoutManager LayoutManager
+        public Point Position
         {
-            get;
+            get { return PlatformImpl.Position; }
+            set { PlatformImpl.Position = value; }
         }
 
         /// <summary>
@@ -203,6 +194,9 @@ namespace Perspex.Controls
             get { return GetValue(AccessText.ShowAccessKeyProperty); }
             set { SetValue(AccessText.ShowAccessKeyProperty, value); }
         }
+
+        /// <inheritdoc/>
+        Size ILayoutRoot.MaxClientSize => Size.Infinity;
 
         IStyleHost IStyleHost.StylingParent
         {
@@ -279,7 +273,7 @@ namespace Perspex.Controls
             }
 
             ClientSize = clientSize;
-            LayoutManager.ExecuteLayoutPass();
+            LayoutManager.Instance.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
 
@@ -355,22 +349,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Handles a layout request from <see cref="LayoutManager.LayoutNeeded"/>.
-        /// </summary>
-        private void HandleLayoutNeeded()
-        {
-            Dispatcher.UIThread.InvokeAsync(LayoutManager.ExecuteLayoutPass, DispatcherPriority.Render);
-        }
-
-        /// <summary>
-        /// Handles a layout completion request from <see cref="LayoutManager.LayoutCompleted"/>.
-        /// </summary>
-        private void HandleLayoutCompleted()
-        {
-            _renderQueueManager?.InvalidateRender(this);
-        }
-
-        /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
         public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
@@ -380,11 +358,5 @@ namespace Perspex.Controls
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
-
-        public Point Position
-        {
-            get { return PlatformImpl.Position; }
-            set { PlatformImpl.Position = value; }
-        }
     }
 }

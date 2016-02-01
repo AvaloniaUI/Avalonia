@@ -39,8 +39,7 @@ namespace Perspex.Controls
         /// </summary>
         static Border()
         {
-            AffectsRender(BackgroundProperty);
-            AffectsRender(BorderBrushProperty);
+            AffectsRender(BackgroundProperty, BorderBrushProperty);
         }
 
         /// <summary>

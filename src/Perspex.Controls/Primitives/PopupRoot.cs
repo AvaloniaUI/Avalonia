@@ -5,6 +5,7 @@ using System;
 using Perspex.Controls.Platform;
 using Perspex.Controls.Presenters;
 using Perspex.Interactivity;
+using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.VisualTree;
@@ -78,7 +79,7 @@ namespace Perspex.Controls.Primitives
         public void Show()
         {
             PlatformImpl.Show();
-            LayoutManager?.ExecuteLayoutPass();
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
             IsVisible = true;
         }
 

@@ -275,18 +275,17 @@ namespace Perspex.Controls
         {
             var button = e.Sender as Button;
             var isDefault = (bool)e.NewValue;
-            var root = button.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-            var inputElement = root as IInputElement;
+            var inputRoot = button.VisualRoot as IInputElement;
 
-            if (inputElement != null)
+            if (inputRoot != null)
             {
                 if (isDefault)
                 {
-                    button.ListenForDefault(inputElement);
+                    button.ListenForDefault(inputRoot);
                 }
                 else
                 {
-                    button.StopListeningForDefault(inputElement);
+                    button.StopListeningForDefault(inputRoot);
                 }
             }
         }

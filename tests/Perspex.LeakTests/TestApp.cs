@@ -3,6 +3,7 @@
 
 using Moq;
 using Perspex.Controls.UnitTests;
+using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Themes.Default;
@@ -25,6 +26,7 @@ namespace Perspex.LeakTests
 
             PerspexLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader())
+                .Bind<ILayoutManager>().ToConstant(new LayoutManager())
                 .Bind<IPclPlatformWrapper>().ToConstant(new PclPlatformWrapper())
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threadingInterface)

@@ -132,27 +132,27 @@ namespace Perspex.Layout
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
-        private Size? _previousMeasure;
-
-        private Rect? _previousArrange;
-
         private readonly ILogger _layoutLog;
+        private bool _measuring;
+        private Size? _previousMeasure;
+        private Rect? _previousArrange;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
         /// </summary>
         static Layoutable()
         {
-            AffectsMeasure(IsVisibleProperty);
-            AffectsMeasure(WidthProperty);
-            AffectsMeasure(HeightProperty);
-            AffectsMeasure(MinWidthProperty);
-            AffectsMeasure(MaxWidthProperty);
-            AffectsMeasure(MinHeightProperty);
-            AffectsMeasure(MaxHeightProperty);
-            AffectsMeasure(MarginProperty);
-            AffectsMeasure(HorizontalAlignmentProperty);
-            AffectsMeasure(VerticalAlignmentProperty);
+            AffectsMeasure(
+                IsVisibleProperty,
+                WidthProperty,
+                HeightProperty,
+                MinWidthProperty,
+                MaxWidthProperty,
+                MinHeightProperty,
+                MaxHeightProperty,
+                MarginProperty,
+                HorizontalAlignmentProperty,
+                VerticalAlignmentProperty);
         }
 
         /// <summary>
@@ -307,22 +307,29 @@ namespace Perspex.Layout
         /// Carries out a measure of the control.
         /// </summary>
         /// <param name="availableSize">The available size for the control.</param>
-        /// <param name="force">
-        /// If true, the control will be measured even if <paramref name="availableSize"/> has not
-        /// changed from the last measure.
-        /// </param>
-        public void Measure(Size availableSize, bool force = false)
+        public void Measure(Size availableSize)
         {
             if (double.IsNaN(availableSize.Width) || double.IsNaN(availableSize.Height))
             {
                 throw new InvalidOperationException("Cannot call Measure using a size with NaN values.");
             }
 
-            if (force || !IsMeasureValid || _previousMeasure != availableSize)
+            if (!IsMeasureValid || _previousMeasure != availableSize)
             {
+                var previousDesiredSize = DesiredSize;
+                var desiredSize = default(Size);
+
                 IsMeasureValid = true;
 
-                var desiredSize = MeasureCore(availableSize).Constrain(availableSize);
+                try
+                {
+                    _measuring = true;
+                    desiredSize = MeasureCore(availableSize).Constrain(availableSize);
+                }
+                finally
+                {
+                    _measuring = false;
+                }
 
                 if (IsInvalidSize(desiredSize))
                 {
@@ -333,6 +340,11 @@ namespace Perspex.Layout
                 _previousMeasure = availableSize;
 
                 _layoutLog.Verbose("Measure requested {DesiredSize}", DesiredSize);
+
+                if (DesiredSize != previousDesiredSize)
+                {
+                    this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+                }
             }
         }
 
@@ -373,26 +385,13 @@ namespace Perspex.Layout
         /// </summary>
         public void InvalidateMeasure()
         {
-            var parent = this.GetVisualParent<ILayoutable>();
-
             if (IsMeasureValid)
             {
                 _layoutLog.Verbose("Invalidated measure");
-            }
 
-            IsMeasureValid = false;
-            IsArrangeValid = false;
-            _previousMeasure = null;
-            _previousArrange = null;
-
-            if (parent != null && IsResizable(parent))
-            {
-                parent.InvalidateMeasure();
-            }
-            else
-            {
-                var root = GetLayoutRoot();
-                root?.Item1.LayoutManager?.InvalidateMeasure(this, root.Item2);
+                IsMeasureValid = false;
+                IsArrangeValid = false;
+                LayoutManager.Instance?.InvalidateMeasure(this);
             }
         }
 
@@ -401,42 +400,54 @@ namespace Perspex.Layout
         /// </summary>
         public void InvalidateArrange()
         {
-            var root = GetLayoutRoot();
-
             if (IsArrangeValid)
             {
                 _layoutLog.Verbose("Arrange measure");
-            }
 
-            IsArrangeValid = false;
-            _previousArrange = null;
-            root?.Item1.LayoutManager?.InvalidateArrange(this, root.Item2);
+                IsArrangeValid = false;
+                LayoutManager.Instance?.InvalidateArrange(this);
+            }
+        }
+
+        /// <inheritdoc/>
+        void ILayoutable.ChildDesiredSizeChanged(ILayoutable control)
+        {
+            if (!_measuring)
+            {
+                InvalidateMeasure();
+            }
         }
 
         /// <summary>
         /// Marks a property as affecting the control's measurement.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsMeasure(PerspexProperty property)
+        protected static void AffectsMeasure(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsMeasureInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsMeasureInvalidate);
+            }
         }
 
         /// <summary>
         /// Marks a property as affecting the control's arrangement.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsArrange(PerspexProperty property)
+        protected static void AffectsArrange(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsArrangeInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsArrangeInvalidate);
+            }
         }
 
         /// <summary>
@@ -625,16 +636,6 @@ namespace Perspex.Layout
         }
 
         /// <summary>
-        /// Tests whether a control's size can be changed by a layout pass.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>True if the control's size can change; otherwise false.</returns>
-        private static bool IsResizable(ILayoutable control)
-        {
-            return double.IsNaN(control.Width) || double.IsNaN(control.Height);
-        }
-
-        /// <summary>
         /// Tests whether any of a <see cref="Rect"/>'s properties incude nagative values,
         /// a NaN or Infinity.
         /// </summary>
@@ -670,26 +671,6 @@ namespace Perspex.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
-        }
-
-        /// <summary>
-        /// Gets the layout root, together with its distance.
-        /// </summary>
-        /// <returns>
-        /// A tuple containing the layout root and the root's distance from this control.
-        /// </returns>
-        private Tuple<ILayoutRoot, int> GetLayoutRoot()
-        {
-            var control = (IVisual)this;
-            var distance = 0;
-
-            while (control != null && !(control is ILayoutRoot))
-            {
-                control = control.GetVisualParent();
-                ++distance;
-            }
-
-            return control != null ? Tuple.Create((ILayoutRoot)control, distance) : null;
         }
     }
 }

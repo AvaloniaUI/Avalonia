@@ -80,7 +80,7 @@ namespace Perspex.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
 
                 // The layout pass should be scheduled by the derived class.
-                var layoutManagerMock = Mock.Get(target.LayoutManager);
+                var layoutManagerMock = Mock.Get(LayoutManager.Instance);
                 layoutManagerMock.Verify(x => x.ExecuteLayoutPass(), Times.Never);
             }
         }
@@ -107,7 +107,7 @@ namespace Perspex.Controls.UnitTests
                     }
                 };
 
-                target.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(target);
 
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
@@ -133,7 +133,7 @@ namespace Perspex.Controls.UnitTests
                     }
                 };
 
-                target.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(target);
 
                 impl.VerifySet(x => x.ClientSize = new Size(321, 432));
             }
@@ -150,31 +150,10 @@ namespace Perspex.Controls.UnitTests
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
-                target.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
 
                 Assert.Equal(double.NaN, target.Width);
                 Assert.Equal(double.NaN, target.Height);
-            }
-        }
-
-        [Fact]
-        public void Render_Should_Be_Scheduled_After_Layout_Pass()
-        {
-            using (PerspexLocator.EnterScope())
-            {
-                RegisterServices();
-                var completed = new Subject<Unit>();
-                var layoutManagerMock = Mock.Get(PerspexLocator.Current.GetService<ILayoutManager>());
-                layoutManagerMock.Setup(x => x.LayoutCompleted).Returns(completed);
-
-                var impl = new Mock<ITopLevelImpl>();
-                impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
-
-                var target = new TestTopLevel(impl.Object);
-                completed.OnNext(Unit.Default);
-
-                var renderManagerMock = Mock.Get(PerspexLocator.Current.GetService<IRenderQueueManager>());
-                renderManagerMock.Verify(x => x.InvalidateRender(target));
             }
         }
 

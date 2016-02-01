@@ -86,8 +86,10 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FullLayoutTests.cs" />
+    <Compile Include="LayoutManagerTests.cs" />
     <Compile Include="MeasureTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestLayoutRoot.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">

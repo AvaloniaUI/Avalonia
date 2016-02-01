@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Perspex.Controls.Platform;
 using Perspex.Input;
+using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Styling;
@@ -41,7 +42,7 @@ namespace Perspex.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : TopLevel, IStyleable, IFocusScope, INameScope
+    public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -133,6 +134,9 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
+        Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
+
+        /// <inheritdoc/>
         Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
@@ -174,7 +178,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Show()
         {
-            LayoutManager.ExecuteLayoutPass();
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
@@ -204,7 +208,7 @@ namespace Perspex.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
-            LayoutManager.ExecuteLayoutPass();
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
