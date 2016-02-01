@@ -31,7 +31,8 @@ namespace Perspex.Media
         /// </summary>
         public Color Color
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Returns a string representation of the brush.
