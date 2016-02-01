@@ -9,8 +9,7 @@ namespace Perspex.Controls.Shapes
     {
         static Rectangle()
         {
-            AffectsGeometry(BoundsProperty);
-            AffectsGeometry(StrokeThicknessProperty);
+            AffectsGeometry(BoundsProperty, StrokeThicknessProperty);
         }
 
         protected override Geometry CreateDefiningGeometry()

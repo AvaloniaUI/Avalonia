@@ -22,7 +22,7 @@ namespace Perspex.Rendering
         public IObservable<Unit> RenderNeeded => _renderNeeded;
 
         /// <summary>
-        /// Gets a valuue indicating whether a render is queued.
+        /// Gets a value indicating whether a render is queued.
         /// </summary>
         public bool RenderQueued => _renderQueued;
 

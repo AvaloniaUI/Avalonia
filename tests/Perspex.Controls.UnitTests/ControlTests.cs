@@ -154,6 +154,11 @@ namespace Perspex.Controls.UnitTests
                 get { throw new NotImplementedException(); }
             }
 
+            public Size MaxClientSize
+            {
+                get { throw new NotImplementedException(); }
+            }
+
             public ILayoutManager LayoutManager
             {
                 get { throw new NotImplementedException(); }

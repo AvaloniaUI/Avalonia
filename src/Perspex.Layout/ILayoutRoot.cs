@@ -9,13 +9,13 @@ namespace Perspex.Layout
     public interface ILayoutRoot : ILayoutable
     {
         /// <summary>
-        /// The size available to layout the controls.
+        /// The size available to lay out the controls.
         /// </summary>
         Size ClientSize { get; }
 
         /// <summary>
-        /// The layout manager to use for laying out the tree.
+        /// The maximum client size available.
         /// </summary>
-        ILayoutManager LayoutManager { get; }
+        Size MaxClientSize { get; }
     }
 }

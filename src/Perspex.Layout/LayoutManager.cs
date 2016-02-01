@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Subjects;
 using Perspex.Threading;
 using Serilog;
 using Serilog.Core.Enrichers;
@@ -19,10 +16,8 @@ namespace Perspex.Layout
     {
         private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
         private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
-        private readonly Subject<Unit> _layoutNeeded = new Subject<Unit>();
-        private readonly Subject<Unit> _layoutCompleted = new Subject<Unit>();
         private readonly ILogger _log;
-        private bool _first = true;
+        private bool _queued;
         private bool _running;
 
         /// <summary>
@@ -39,44 +34,11 @@ namespace Perspex.Layout
         }
 
         /// <summary>
-        /// Gets or sets the root element that the manager is attached to.
+        /// Gets the layout manager.
         /// </summary>
-        /// <remarks>
-        /// This must be set before the layout manager can be used.
-        /// </remarks>
-        public ILayoutRoot Root
-        {
-            get;
-            set;
-        }
+        public static ILayoutManager Instance => PerspexLocator.Current.GetService<ILayoutManager>();
 
-        /// <summary>
-        /// Gets an observable that is fired when a layout pass is needed.
-        /// </summary>
-        public IObservable<Unit> LayoutNeeded => _layoutNeeded;
-
-        /// <summary>
-        /// Gets an observable that is fired when a layout pass is completed.
-        /// </summary>
-        public IObservable<Unit> LayoutCompleted => _layoutCompleted;
-
-        /// <summary>
-        /// Gets a value indicating whether a layout is queued.
-        /// </summary>
-        /// <remarks>
-        /// Returns true when <see cref="LayoutNeeded"/> has been fired, but
-        /// <see cref="ExecuteLayoutPass"/> has not yet been called.
-        /// </remarks>
-        public bool LayoutQueued
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Notifies the layout manager that a control requires a measure.
-        /// </summary>
-        /// <param name="control">The control.</param>
+        /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
@@ -84,35 +46,25 @@ namespace Perspex.Layout
 
             _toMeasure.Enqueue(control);
             _toArrange.Enqueue(control);
-            FireLayoutNeeded();
+            QueueLayoutPass();
         }
 
-        /// <summary>
-        /// Notifies the layout manager that a control requires an arrange.
-        /// </summary>
-        /// <param name="control">The control.</param>
+        /// <inheritdoc/>
         public void InvalidateArrange(ILayoutable control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
             _toArrange.Enqueue(control);
-            FireLayoutNeeded();
+            QueueLayoutPass();
         }
 
-        /// <summary>
-        /// Executes a layout pass.
-        /// </summary>
+        /// <inheritdoc/>
         public void ExecuteLayoutPass()
         {
             const int MaxPasses = 3;
 
             Dispatcher.UIThread.VerifyAccess();
-
-            if (Root == null)
-            {
-                throw new InvalidOperationException("Root must be set before executing layout pass.");
-            }
 
             if (!_running)
             {
@@ -128,13 +80,6 @@ namespace Perspex.Layout
 
                 try
                 {
-                    if (_first)
-                    {
-                        Measure(Root);
-                        Arrange(Root);
-                        _first = false;
-                    }
-
                     for (var pass = 0; pass < MaxPasses; ++pass)
                     {
                         ExecuteMeasurePass();
@@ -149,14 +94,24 @@ namespace Perspex.Layout
                 finally
                 {
                     _running = false;
-                    LayoutQueued = false;
                 }
 
                 stopwatch.Stop();
                 _log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
-
-                _layoutCompleted.OnNext(Unit.Default);
             }
+        }
+
+        /// <inheritdoc/>
+        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        {
+            Measure(root);
+            Arrange(root);
+
+            // Running the initial layout pass may have caused some control to be invalidated
+            // so run a full layout pass now (this usually due to scrollbars; its not known 
+            // whether they will need to be shown until the layout pass has run and if the
+            // first guess was incorrect the layout will need to be updated).
+            ExecuteLayoutPass();
         }
 
         private void ExecuteMeasurePass()
@@ -183,7 +138,7 @@ namespace Perspex.Layout
 
             if (root != null)
             {
-                root.Measure(Size.Infinity);
+                root.Measure(root.MaxClientSize);
             }
             else if (control.PreviousMeasure.HasValue)
             {
@@ -205,12 +160,12 @@ namespace Perspex.Layout
             }
         }
 
-        private void FireLayoutNeeded()
+        private void QueueLayoutPass()
         {
-            if (!LayoutQueued)
+            if (!_queued)
             {
-                _layoutNeeded.OnNext(Unit.Default);
-                LayoutQueued = true;
+                Dispatcher.UIThread.InvokeAsync(ExecuteLayoutPass, DispatcherPriority.Render);
+                _queued = true;
             }
         }
     }

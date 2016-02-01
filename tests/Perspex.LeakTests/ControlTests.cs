@@ -8,6 +8,7 @@ using JetBrains.dotMemoryUnit;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Layout;
 using Perspex.VisualTree;
 using Xunit;
 using Xunit.Abstractions;
@@ -34,12 +35,12 @@ namespace Perspex.LeakTests
                 };
 
                 // Do a layout and make sure that Canvas gets added to visual tree.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<Canvas>(window.Presenter.Child);
 
                 // Clear the content and ensure the Canvas is removed.
                 window.Content = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;
@@ -65,13 +66,13 @@ namespace Perspex.LeakTests
                 };
 
                 // Do a layout and make sure that Canvas gets added to visual tree.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<Canvas>(window.Find<Canvas>("foo"));
                 Assert.IsType<Canvas>(window.Presenter.Child);
 
                 // Clear the content and ensure the Canvas is removed.
                 window.Content = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;
@@ -95,13 +96,13 @@ namespace Perspex.LeakTests
 
                 // Do a layout and make sure that the control gets added to visual tree and its
                 // template applied.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<TestTemplatedControl>(window.Presenter.Child);
                 Assert.IsType<Canvas>(window.Presenter.Child.GetVisualChildren().SingleOrDefault());
 
                 // Clear the template and ensure the control template gets removed
                 ((TestTemplatedControl)window.Content).Template = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
 
                 return window;
@@ -128,13 +129,13 @@ namespace Perspex.LeakTests
 
                 // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
                 // template applied.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<ScrollViewer>(window.Presenter.Child);
                 Assert.IsType<Canvas>(((ScrollViewer)window.Presenter.Child).Presenter.Child);
 
                 // Clear the content and ensure the ScrollViewer is removed.
                 window.Content = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;
@@ -160,13 +161,13 @@ namespace Perspex.LeakTests
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<TextBox>(window.Presenter.Child);
                 Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;
@@ -199,14 +200,14 @@ namespace Perspex.LeakTests
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // Text property set.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<TextBox>(window.Presenter.Child);
                 Assert.Equal("foo", ((TextBox)window.Presenter.Child).Text);
 
                 // Clear the content and DataContext and ensure the TextBox is removed.
                 window.Content = null;
                 window.DataContext = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;
@@ -232,13 +233,13 @@ namespace Perspex.LeakTests
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.IsType<TextBox>(window.Presenter.Child);
                 Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
 
                 // Clear the template and ensure the TextBox template gets removed
                 ((TextBox)window.Content).Template = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
 
                 return window;
@@ -280,12 +281,12 @@ namespace Perspex.LeakTests
                 };
 
                 // Do a layout and make sure that TreeViewItems get realized.
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                 Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
 
                 // Clear the content and ensure the TreeView is removed.
                 window.Content = null;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 return window;

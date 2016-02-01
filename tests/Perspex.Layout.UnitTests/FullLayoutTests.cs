@@ -55,11 +55,11 @@ namespace Perspex.Layout.UnitTests
                     }
                 };
 
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
 
                 Assert.Equal(new Size(400, 400), border.Bounds.Size);
                 textBlock.Width = 200;
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteLayoutPass();
 
                 Assert.Equal(new Size(200, 400), border.Bounds.Size);
             }
@@ -96,7 +96,7 @@ namespace Perspex.Layout.UnitTests
                     }
                 };
 
-                window.LayoutManager.ExecuteLayoutPass();
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
 
                 Assert.Equal(new Size(800, 600), window.Bounds.Size);
                 Assert.Equal(new Size(200, 200), scrollViewer.Bounds.Size);

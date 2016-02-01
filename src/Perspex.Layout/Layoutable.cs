@@ -142,16 +142,17 @@ namespace Perspex.Layout
         /// </summary>
         static Layoutable()
         {
-            AffectsMeasure(IsVisibleProperty);
-            AffectsMeasure(WidthProperty);
-            AffectsMeasure(HeightProperty);
-            AffectsMeasure(MinWidthProperty);
-            AffectsMeasure(MaxWidthProperty);
-            AffectsMeasure(MinHeightProperty);
-            AffectsMeasure(MaxHeightProperty);
-            AffectsMeasure(MarginProperty);
-            AffectsMeasure(HorizontalAlignmentProperty);
-            AffectsMeasure(VerticalAlignmentProperty);
+            AffectsMeasure(
+                IsVisibleProperty,
+                WidthProperty,
+                HeightProperty,
+                MinWidthProperty,
+                MaxWidthProperty,
+                MinHeightProperty,
+                MaxHeightProperty,
+                MarginProperty,
+                HorizontalAlignmentProperty,
+                VerticalAlignmentProperty);
         }
 
         /// <summary>
@@ -390,9 +391,7 @@ namespace Perspex.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-
-                var root = GetLayoutRoot();
-                root?.LayoutManager?.InvalidateMeasure(this);
+                LayoutManager.Instance?.InvalidateMeasure(this);
             }
         }
 
@@ -406,9 +405,7 @@ namespace Perspex.Layout
                 _layoutLog.Verbose("Arrange measure");
 
                 IsArrangeValid = false;
-
-                var root = GetLayoutRoot();
-                root?.LayoutManager?.InvalidateArrange(this);
+                LayoutManager.Instance?.InvalidateArrange(this);
             }
         }
 
@@ -424,27 +421,33 @@ namespace Perspex.Layout
         /// <summary>
         /// Marks a property as affecting the control's measurement.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsMeasure(PerspexProperty property)
+        protected static void AffectsMeasure(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsMeasureInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsMeasureInvalidate);
+            }
         }
 
         /// <summary>
         /// Marks a property as affecting the control's arrangement.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsArrange(PerspexProperty property)
+        protected static void AffectsArrange(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsArrangeInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsArrangeInvalidate);
+            }
         }
 
         /// <summary>
@@ -668,16 +671,6 @@ namespace Perspex.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
-        }
-
-        /// <summary>
-        /// Gets the layout root.
-        /// </summary>
-        private ILayoutRoot GetLayoutRoot()
-        {
-            return this.GetSelfAndVisualAncestors()
-                .OfType<ILayoutRoot>()
-                .FirstOrDefault();
         }
     }
 }

@@ -31,11 +31,8 @@ namespace Perspex.Controls.Shapes
 
         static Shape()
         {
-            AffectsRender(FillProperty);
-            AffectsMeasure(StretchProperty);
-            AffectsRender(StrokeProperty);
-            AffectsRender(StrokeDashArrayProperty);
-            AffectsMeasure(StrokeThicknessProperty);
+            AffectsMeasure(StretchProperty, StrokeThicknessProperty);
+            AffectsRender(FillProperty, StrokeProperty, StrokeDashArrayProperty);
         }
 
         public Geometry DefiningGeometry
@@ -121,14 +118,17 @@ namespace Perspex.Controls.Shapes
         /// <summary>
         /// Marks a property as affecting the shape's geometry.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateGeometry"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsGeometry(PerspexProperty property)
+        protected static void AffectsGeometry(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsGeometryInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsGeometryInvalidate);
+            }
         }
 
         protected abstract Geometry CreateDefiningGeometry();

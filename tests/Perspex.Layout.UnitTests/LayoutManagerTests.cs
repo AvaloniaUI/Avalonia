@@ -11,28 +11,35 @@ namespace Perspex.Layout.UnitTests
         [Fact]
         public void Invalidating_Child_Should_Remeasure_Parent()
         {
-            Border border;
-            StackPanel panel;
+            var layoutManager = new LayoutManager();
 
-            var root = new TestLayoutRoot
+            using (PerspexLocator.EnterScope())
             {
-                Child = panel = new StackPanel
+                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
+
+                Border border;
+                StackPanel panel;
+
+                var root = new TestLayoutRoot
                 {
-                    Children = new Controls.Controls
+                    Child = panel = new StackPanel
+                    {
+                        Children = new Controls.Controls
                     {
                         (border = new Border())
                     }
-                }
-            };
+                    }
+                };
 
-            root.LayoutManager.ExecuteLayoutPass();
-            Assert.Equal(new Size(0, 0), root.DesiredSize);
+                layoutManager.ExecuteInitialLayoutPass(root);
+                Assert.Equal(new Size(0, 0), root.DesiredSize);
 
-            border.Width = 100;
-            border.Height = 100;
+                border.Width = 100;
+                border.Height = 100;
 
-            root.LayoutManager.ExecuteLayoutPass();
-            Assert.Equal(new Size(100, 100), panel.DesiredSize);
+                layoutManager.ExecuteLayoutPass();
+                Assert.Equal(new Size(100, 100), panel.DesiredSize);
+            }                
         }
     }
 }

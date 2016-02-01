@@ -93,11 +93,6 @@ namespace Perspex
         private IVisual _visualParent;
 
         /// <summary>
-        /// Whether the element is attached to the visual tree.
-        /// </summary>
-        private bool _isAttachedToVisualTree;
-
-        /// <summary>
         /// The logger for visual-level events.
         /// </summary>
         private readonly ILogger _visualLogger;
@@ -107,8 +102,7 @@ namespace Perspex
         /// </summary>
         static Visual()
         {
-            AffectsRender(IsVisibleProperty);
-            AffectsRender(OpacityProperty);
+            AffectsRender(BoundsProperty, IsVisibleProperty, OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
         }
 
@@ -197,7 +191,7 @@ namespace Perspex
                     throw new InvalidOperationException("Cannot set Name to empty string.");
                 }
 
-                if (_isAttachedToVisualTree)
+                if (VisualRoot != null)
                 {
                     throw new InvalidOperationException("Cannot set Name : control already added to tree.");
                 }
@@ -257,9 +251,18 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets the root of the visual tree, if the control is attached to a visual tree.
+        /// </summary>
+        protected IRenderRoot VisualRoot
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
-        bool IVisual.IsAttachedToVisualTree => _isAttachedToVisualTree;
+        bool IVisual.IsAttachedToVisualTree => VisualRoot != null;
 
         /// <summary>
         /// Gets the scene graph node's child nodes.
@@ -276,10 +279,7 @@ namespace Perspex
         /// </summary>
         public void InvalidateVisual()
         {
-            IRenderRoot root = this.GetSelfAndVisualAncestors()
-                .OfType<IRenderRoot>()
-                .FirstOrDefault();
-            root?.RenderQueueManager?.InvalidateRender(this);
+            VisualRoot?.RenderQueueManager?.InvalidateRender(this);
         }
 
         /// <summary>
@@ -329,15 +329,18 @@ namespace Perspex
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
         /// called.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="properties">The properties.</param>
         /// <remarks>
-        /// This method should be called in a control's static constructor for each property
+        /// This method should be called in a control's static constructor with each property
         /// on the control which when changed should cause a redraw. This is similar to WPF's
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
-        protected static void AffectsRender(PerspexProperty property)
+        protected static void AffectsRender(params PerspexProperty[] properties)
         {
-            property.Changed.Subscribe(AffectsRenderInvalidate);
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsRenderInvalidate);
+            }
         }
 
         /// <summary>
@@ -440,7 +443,7 @@ namespace Perspex
         {
             var sender = e.Sender as Visual;
 
-            if (sender?._isAttachedToVisualTree == true)
+            if (sender?.VisualRoot != null)
             {
                 var oldValue = e.OldValue as Transform;
                 var newValue = e.NewValue as Transform;
@@ -496,11 +499,9 @@ namespace Perspex
             var old = _visualParent;
             _visualParent = value;
 
-            if (_isAttachedToVisualTree)
+            if (VisualRoot != null)
             {
-                var root = (this as IRenderRoot) ?? 
-                    old.GetSelfAndVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-                var e = new VisualTreeAttachmentEventArgs(root);
+                var e = new VisualTreeAttachmentEventArgs(VisualRoot);
                 NotifyDetachedFromVisualTree(e);
             }
 
@@ -550,7 +551,7 @@ namespace Perspex
         {
             _visualLogger.Verbose("Attached to visual tree");
 
-            _isAttachedToVisualTree = true;
+            VisualRoot = e.Root;
 
             OnAttachedToVisualTree(e);
 
@@ -572,7 +573,7 @@ namespace Perspex
         {
             _visualLogger.Verbose("Detached from visual tree");
 
-            _isAttachedToVisualTree = false;
+            VisualRoot = null;
             OnDetachedFromVisualTree(e);
 
             if (VisualChildren != null)

@@ -10,7 +10,6 @@ namespace Perspex.Layout.UnitTests
         public TestLayoutRoot()
         {
             ClientSize = new Size(500, 500);
-            LayoutManager = new LayoutManager { Root = this };
         }
 
         public Size ClientSize
@@ -19,9 +18,6 @@ namespace Perspex.Layout.UnitTests
             set;
         }
 
-        public ILayoutManager LayoutManager
-        {
-            get;
-        }
+        public Size MaxClientSize => Size.Infinity;
     }
 }
