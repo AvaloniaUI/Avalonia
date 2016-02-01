@@ -26,29 +26,13 @@ namespace Perspex.Win32
         private UnmanagedMethods.WndProc _wndProcDelegate;
 
         private IntPtr _hwnd;
-        private double scale = 1.0;
+        private double _scale = 1.0;
         private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
-            HandleDPI();
+            HandleDpi();
             CreateMessageWindow();
-        }
-
-        private void HandleDPI() {
-            // Declare that this process is aware of per monitor DPI 
-            UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
-
-            // Get the DPI for the main monitor, and set the scaling factor
-            UnmanagedMethods.POINT pt = new UnmanagedMethods.POINT() { X = 1, Y = 1 };
-            var hMonitor = UnmanagedMethods.MonitorFromPoint(pt, UnmanagedMethods.MONITOR_DEFAULTTONEAREST);
-
-            // TODO: Check for failure
-            uint dpix, dpiy;
-            UnmanagedMethods.GetDpiForMonitor(hMonitor, UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpix, out dpiy);
-
-            // Set scale based on x DPI
-            scale = dpix / 100.0;
         }
 
         public Size DoubleClickSize => new Size(
@@ -56,8 +40,8 @@ namespace Perspex.Win32
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
-        public double RenderScalingFactor { get { return scale; } }
-        public double LayoutScalingFactor { get { return scale; } }
+        public double RenderScalingFactor => _scale;
+        public double LayoutScalingFactor => _scale;
 
         public static void Initialize()
         {
@@ -188,6 +172,23 @@ namespace Perspex.Win32
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
+        }
+
+        private void HandleDpi()
+        {
+            // Declare that this process is aware of per monitor DPI 
+            UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+
+            // Get the DPI for the main monitor, and set the scaling factor
+            UnmanagedMethods.POINT pt = new UnmanagedMethods.POINT() { X = 1, Y = 1 };
+            var hMonitor = UnmanagedMethods.MonitorFromPoint(pt, UnmanagedMethods.MONITOR_DEFAULTTONEAREST);
+
+            // TODO: Check for failure
+            uint dpix, dpiy;
+            UnmanagedMethods.GetDpiForMonitor(hMonitor, UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpix, out dpiy);
+
+            // Set scale based on x DPI
+            _scale = dpix / 100.0;
         }
     }
 }
