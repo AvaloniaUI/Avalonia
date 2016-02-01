@@ -82,11 +82,11 @@ namespace Perspex.Controls
             {
                 if (_columnDefinitions != null)
                 {
-                    throw new NotSupportedException("Reassigning ColumnDefinitions not yet implemented.");
+                    _columnDefinitions.Changed -= RowColumnsChanged;
                 }
 
                 _columnDefinitions = value;
-                _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _columnDefinitions.Changed += RowColumnsChanged;
             }
         }
 
@@ -109,11 +109,11 @@ namespace Perspex.Controls
             {
                 if (_rowDefinitions != null)
                 {
-                    throw new NotSupportedException("Reassigning RowDefinitions not yet implemented.");
+                    _rowDefinitions.Changed -= RowColumnsChanged;
                 }
 
                 _rowDefinitions = value;
-                _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _rowDefinitions.Changed += RowColumnsChanged;
             }
         }
 
@@ -888,6 +888,11 @@ namespace Perspex.Controls
                     _colMatrix[i, j].OfferedSize = _colMatrix[i, j].OriginalSize;
                 }
             }
+        }
+
+        private void RowColumnsChanged(object sender, EventArgs e)
+        {
+            InvalidateMeasure();
         }
 
         private struct Segment
