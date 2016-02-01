@@ -23,10 +23,7 @@ namespace Perspex.Controls.UnitTests
             get { throw new NotImplementedException(); }
         }
 
-        public IRenderQueueManager RenderQueueManager
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public IRenderQueueManager RenderQueueManager => null;
 
         public Point TranslatePointToScreen(Point p)
         {
