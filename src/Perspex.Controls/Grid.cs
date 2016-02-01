@@ -961,8 +961,8 @@ namespace Perspex.Controls
         {
             public GridWalker(Grid grid, Segment[,] rowMatrix, Segment[,] colMatrix)
             {
-                int rowMatrixDim = rowMatrix.GetLength(0);
-                int colMatrixDim = colMatrix.GetLength(0);
+                int rowMatrixLength = rowMatrix.GetLength(0);
+                int colMatrixLength = colMatrix.GetLength(0);
 
                 foreach (Control child in grid.Children)
                 {
@@ -971,10 +971,10 @@ namespace Perspex.Controls
                     bool autoCol = false;
                     bool autoRow = false;
 
-                    int col = Math.Min(GetColumn(child), colMatrixDim - 1);
-                    int row = Math.Min(GetRow(child), rowMatrixDim - 1);
-                    int colspan = Math.Min(GetColumnSpan(child), colMatrixDim - 1);
-                    int rowspan = Math.Min(GetRowSpan(child), rowMatrixDim - 1);
+                    int col = Math.Min(GetColumn(child), colMatrixLength - 1);
+                    int row = Math.Min(GetRow(child), rowMatrixLength - 1);
+                    int colspan = Math.Min(GetColumnSpan(child), colMatrixLength - col);
+                    int rowspan = Math.Min(GetRowSpan(child), rowMatrixLength - row);
 
                     for (int r = row; r < row + rowspan; r++)
                     {
