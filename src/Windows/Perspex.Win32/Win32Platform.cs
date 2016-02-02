@@ -188,7 +188,7 @@ namespace Perspex.Win32
             UnmanagedMethods.GetDpiForMonitor(hMonitor, UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpix, out dpiy);
 
             // Set scale based on x DPI
-            _scale = dpix / 100.0;
+            _scale = dpix / 96.0;
         }
     }
 }

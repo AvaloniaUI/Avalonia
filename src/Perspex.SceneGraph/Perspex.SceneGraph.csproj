@@ -106,6 +106,7 @@
     <Compile Include="Media\TileBrush.cs" />
     <Compile Include="Media\ImageBush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
+    <Compile Include="Platform\IPlatformSettings.cs" />
     <Compile Include="RelativePoint.cs" />
     <Compile Include="Platform\IFormattedTextImpl.cs" />
     <Compile Include="Platform\IBitmapImpl.cs" />
