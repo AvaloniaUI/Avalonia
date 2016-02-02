@@ -26,18 +26,13 @@ namespace Perspex.Win32
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
-
         private string _className;
-
         private IntPtr _hwnd;
-
         private IInputRoot _owner;
-
         private bool _trackingMouse;
-
         private bool _isActive;
-
         private bool _decorated = true;
+        private double _scaling = 1;
 
         public WindowImpl()
         {
@@ -103,7 +98,7 @@ namespace Perspex.Win32
             }
         }
 
-        public double Scaling => 1;
+        public double Scaling => _scaling;
 
         public IPlatformHandle Handle
         {
@@ -562,6 +557,20 @@ namespace Perspex.Win32
             }
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+
+            var monitor = UnmanagedMethods.MonitorFromWindow(
+                _hwnd, 
+                UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            uint dpix, dpiy;
+            if (UnmanagedMethods.GetDpiForMonitor(
+                    monitor, 
+                    UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, 
+                    out dpix, 
+                    out dpiy) == 0)
+            {
+                _scaling = dpix / 96.0;
+            }
         }
 
         private Point PointFromLParam(IntPtr lParam)

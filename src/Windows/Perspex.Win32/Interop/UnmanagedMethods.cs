@@ -746,19 +746,27 @@ namespace Perspex.Win32.Interop
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+        public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
-        public const uint MONITOR_DEFAULTTONULL = 0x00000000;
-        public const uint MONITOR_DEFAULTTOPRIMARY = 0x00000001;
-        public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
 
-        public enum PROCESS_DPI_AWARENESS {
+        public enum MONITOR
+        {
+            MONITOR_DEFAULTTONULL = 0x00000000,
+            MONITOR_DEFAULTTOPRIMARY = 0x00000001,
+            MONITOR_DEFAULTTONEAREST = 0x00000002,
+        }
+
+        public enum PROCESS_DPI_AWARENESS
+        {
             PROCESS_DPI_UNAWARE = 0,
             PROCESS_SYSTEM_DPI_AWARE = 1,
             PROCESS_PER_MONITOR_DPI_AWARE = 2
         }
 
-        public enum MONITOR_DPI_TYPE {
+        public enum MONITOR_DPI_TYPE
+        {
             MDT_EFFECTIVE_DPI = 0,
             MDT_ANGULAR_DPI = 1,
             MDT_RAW_DPI = 2,
