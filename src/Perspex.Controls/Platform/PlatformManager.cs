@@ -131,8 +131,6 @@ namespace Perspex.Controls.Platform
             public Action<Rect> Paint { get; set; }
             public Action<Size> Resized { get; set; }
 
-
-
             public Action Activated
             {
                 get { return _tl.Activated; }
@@ -149,6 +147,12 @@ namespace Perspex.Controls.Platform
             {
                 get { return _tl.Deactivated; }
                 set { _tl.Deactivated = value; }
+            }
+
+            public Action<double> ScalingChanged
+            {
+                get { return _tl.ScalingChanged; }
+                set { _tl.ScalingChanged = value; }
             }
 
             public void Dispose() => _tl.Dispose();

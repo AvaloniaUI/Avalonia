@@ -63,6 +63,11 @@ namespace Perspex.Platform
         Action<Size> Resized { get; set; }
 
         /// <summary>
+        /// Gets or sets a method called when the window's scaling changes.
+        /// </summary>
+        Action<double> ScalingChanged { get; set; }
+
+        /// <summary>
         /// Activates the window.
         /// </summary>
         void Activate();

@@ -52,6 +52,8 @@ namespace Perspex.Win32
 
         public Action<Size> Resized { get; set; }
 
+        public Action<double> ScalingChanged { get; set; }
+
         public Thickness BorderThickness
         {
             get
@@ -358,6 +360,12 @@ namespace Perspex.Win32
                     }
 
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
+                    var dpi = (int)wParam & 0xffff;
+                    _scaling = dpi / 96.0;
+                    ScalingChanged?.Invoke(_scaling);
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:

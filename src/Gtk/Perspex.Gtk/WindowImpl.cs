@@ -129,6 +129,8 @@ namespace Perspex.Gtk
 
         public Action<Size> Resized { get; set; }
 
+        public Action<double> ScalingChanged { get; set; }
+
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();

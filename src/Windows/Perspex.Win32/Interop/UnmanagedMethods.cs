@@ -489,6 +489,7 @@ namespace Perspex.Win32.Interop
             WM_WTSSESSION_CHANGE = 0x02B1,
             WM_TABLET_FIRST = 0x02c0,
             WM_TABLET_LAST = 0x02df,
+            WM_DPICHANGED = 0x02E0,
             WM_CUT = 0x0300,
             WM_COPY = 0x0301,
             WM_PASTE = 0x0302,
