@@ -103,6 +103,8 @@ namespace Perspex.Win32
             }
         }
 
+        public double Scaling => 1;
+
         public IPlatformHandle Handle
         {
             get;

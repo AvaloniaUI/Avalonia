@@ -75,6 +75,8 @@ namespace Perspex.Gtk
             }
         }
 
+        public double Scaling => 1;
+
         IPlatformHandle ITopLevelImpl.Handle => this;
 
         [DllImport("libgdk-win32-2.0-0.dll", CallingConvention = CallingConvention.Cdecl)]

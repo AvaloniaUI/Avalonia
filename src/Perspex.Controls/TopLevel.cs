@@ -198,6 +198,9 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => Size.Infinity;
 
+        /// <inheritdoc/>
+        double ILayoutRoot.LayoutScaling => PlatformImpl.Scaling;
+
         IStyleHost IStyleHost.StylingParent
         {
             get { return PerspexLocator.Current.GetService<IGlobalStyles>(); }

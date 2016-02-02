@@ -19,5 +19,6 @@ namespace Perspex.Layout.UnitTests
         }
 
         public Size MaxClientSize => Size.Infinity;
+        public double LayoutScaling => 1;
     }
 }

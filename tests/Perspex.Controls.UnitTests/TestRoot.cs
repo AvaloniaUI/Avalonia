@@ -23,6 +23,8 @@ namespace Perspex.Controls.UnitTests
             get { throw new NotImplementedException(); }
         }
 
+        public double LayoutScaling => 1;
+
         public IRenderQueueManager RenderQueueManager => null;
 
         public Point TranslatePointToScreen(Point p)

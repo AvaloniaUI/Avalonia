@@ -26,6 +26,8 @@ namespace Perspex.Styling.UnitTests
             get { throw new NotImplementedException(); }
         }
 
+        public double LayoutScaling => 1;
+
         public Point TranslatePointToScreen(Point p)
         {
             return new Point();

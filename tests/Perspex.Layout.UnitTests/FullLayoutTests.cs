@@ -141,6 +141,7 @@ namespace Perspex.Layout.UnitTests
 
             windowImpl.SetupProperty(x => x.ClientSize);
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1024, 1024));
+            windowImpl.SetupGet(x => x.Scaling).Returns(1);
 
             PerspexLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader())

@@ -174,6 +174,8 @@ namespace Perspex.Controls.UnitTests
                 get { throw new NotImplementedException(); }
             }
 
+            public double LayoutScaling => 1;
+
             public Point TranslatePointToScreen(Point p)
             {
                 throw new NotImplementedException();

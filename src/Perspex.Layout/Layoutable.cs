@@ -671,9 +671,9 @@ namespace Perspex.Layout
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
         }
 
-        private static double GetLayoutScale()
+        private double GetLayoutScale()
         {
-            return PerspexLocator.Current.GetService<IPlatformSettings>()?.LayoutScalingFactor ?? 1.0;
+            return (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
         }
     }
 }

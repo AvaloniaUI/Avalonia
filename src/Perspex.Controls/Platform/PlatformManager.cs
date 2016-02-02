@@ -39,9 +39,6 @@ namespace Perspex.Controls.Platform
             _designerScalingFactor = factor;
         }
 
-        static double RenderScalingFactor => (GetSettings()?.RenderScalingFactor ?? 1)*_designerScalingFactor;
-        static double LayoutScalingFactor => (GetSettings()?.LayoutScalingFactor ?? 1) * _designerScalingFactor;
-
         class RenderTargetDecorator : IRenderTarget
         {
             private readonly IRenderTarget _target;
@@ -62,7 +59,7 @@ namespace Perspex.Controls.Platform
             {
                 var cs = _window.ClientSize;
                 var ctx = _target.CreateDrawingContext();
-                var factor = RenderScalingFactor;
+                var factor = _window.Scaling;
                 if (factor != 1)
                 {
                     ctx.PushPostTransform(Matrix.CreateScale(factor, factor));
@@ -79,7 +76,6 @@ namespace Perspex.Controls.Platform
             private readonly IPopupImpl _popup;
 
             public ITopLevelImpl TopLevel => _tl;
-            double ScalingFactor => LayoutScalingFactor;
 
             public WindowDecorator(ITopLevelImpl tl)
             {
@@ -93,12 +89,12 @@ namespace Perspex.Controls.Platform
 
             private void OnResized(Size size)
             {
-                Resized?.Invoke(size/ScalingFactor);
+                Resized?.Invoke(size/Scaling);
             }
 
             private void OnPaint(Rect rc)
             {
-                var f = ScalingFactor;
+                var f = Scaling;
                 Paint?.Invoke(new Rect(rc.X/f, rc.Y/f, rc.Width/f, rc.Height/f));
             }
 
@@ -106,31 +102,31 @@ namespace Perspex.Controls.Platform
             {
                 var mouseEvent = obj as RawMouseEventArgs;
                 if (mouseEvent != null)
-                    mouseEvent.Position /= ScalingFactor;
+                    mouseEvent.Position /= Scaling;
                 //TODO: Transform event coordinates
                 Input?.Invoke(obj);
             }
 
             public Point PointToScreen(Point point)
             {
-                return _tl.PointToScreen(point*ScalingFactor)/ScalingFactor;
+                return _tl.PointToScreen(point*Scaling)/Scaling;
             }
 
 
             public void Invalidate(Rect rc)
             {
-                var f = ScalingFactor;
+                var f = Scaling;
                 _tl.Invalidate(new Rect(rc.X*f, rc.Y*f, (rc.Width + 1)*f, (rc.Height + 1)*f));
             } 
 
             public Size ClientSize
             {
-                get { return _tl.ClientSize/ScalingFactor; }
-                set { _tl.ClientSize = value*ScalingFactor; }
+                get { return _tl.ClientSize/Scaling; }
+                set { _tl.ClientSize = value*Scaling; }
             }
 
-            public Size MaxClientSize => _window.MaxClientSize/ScalingFactor;
-
+            public Size MaxClientSize => _window.MaxClientSize/Scaling;
+            public double Scaling => _tl.Scaling;
             public Action<RawInputEventArgs> Input { get; set; }
             public Action<Rect> Paint { get; set; }
             public Action<Size> Resized { get; set; }

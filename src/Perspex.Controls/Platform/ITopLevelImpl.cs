@@ -23,6 +23,11 @@ namespace Perspex.Platform
         Size ClientSize { get; set; }
 
         /// <summary>
+        /// Gets the scaling factor for the window.
+        /// </summary>
+        double Scaling { get; }
+
+        /// <summary>
         /// Gets the platform window handle.
         /// </summary>
         IPlatformHandle Handle { get; }

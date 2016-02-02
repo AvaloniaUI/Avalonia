@@ -19,7 +19,7 @@ namespace Perspex.LeakTests
             RegisterServices();
 
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var windowImpl = new Mock<IWindowImpl>();
+            var windowImpl = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
             var threadingInterface = Mock.Of<IPlatformThreadingInterface>(x =>
                 x.CurrentThreadIsLoopThread == true);
@@ -31,7 +31,7 @@ namespace Perspex.LeakTests
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threadingInterface)
                 .Bind<IStandardCursorFactory>().ToConstant(new Mock<IStandardCursorFactory>().Object)
-                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock(() => windowImpl.Object));
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock(() => windowImpl));
 
             Styles = new DefaultTheme();
         }
