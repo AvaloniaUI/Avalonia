@@ -40,5 +40,17 @@ namespace Perspex.Media
 
             return new Vector(scaleX, scaleY);
         }
+
+        /// <summary>
+        /// Calculates a scaled size based on a <see cref="Stretch"/> value.
+        /// </summary>
+        /// <param name="stretch">The stretch mode.</param>
+        /// <param name="destinationSize">The size of the destination viewport.</param>
+        /// <param name="sourceSize">The size of the source.</param>
+        /// <returns>The size of the stretched source.</returns>
+        public static Size CalculateSize(this Stretch stretch, Size destinationSize, Size sourceSize)
+        {
+            return sourceSize * stretch.CalculateScaling(destinationSize, sourceSize);
+        }
     }
 }

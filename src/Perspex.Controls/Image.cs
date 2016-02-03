@@ -15,8 +15,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<Bitmap> SourceProperty =
-            PerspexProperty.Register<Image, Bitmap>(nameof(Source));
+        public static readonly StyledProperty<IBitmap> SourceProperty =
+            PerspexProperty.Register<Image, IBitmap>(nameof(Source));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -73,9 +73,20 @@ namespace Perspex.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (Source != null)
+            var source = Source;
+
+            if (source != null)
             {
-                return new Size(Source.PixelWidth, Source.PixelHeight);
+                Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
+
+                if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
+                {
+                    return sourceSize;
+                }
+                else
+                {
+                    return Stretch.CalculateSize(availableSize, sourceSize);
+                }
             }
             else
             {

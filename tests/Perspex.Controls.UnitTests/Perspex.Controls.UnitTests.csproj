@@ -91,6 +91,7 @@
     <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
+    <Compile Include="ImageTests.cs" />
     <Compile Include="Presenters\ContentPresenterTests.cs" />
     <Compile Include="BorderTests.cs" />
     <Compile Include="ListBoxTests_Single.cs" />
