@@ -37,6 +37,11 @@ namespace Perspex.Markup.Xaml.Data
         public BindingMode Mode { get; set; }
 
         /// <summary>
+        /// Gets or sets the binding path.
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding priority.
         /// </summary>
         public BindingPriority Priority { get; set; }
@@ -47,9 +52,9 @@ namespace Perspex.Markup.Xaml.Data
         public RelativeSource RelativeSource { get; set; }
 
         /// <summary>
-        /// Gets or sets the binding path.
+        /// Gets or sets the source for the binding.
         /// </summary>
-        public string Path { get; set; }
+        public object Source { get; set; }
 
         /// <summary>
         /// Creates a subject that can be used to get and set the value of the binding.
@@ -67,7 +72,6 @@ namespace Perspex.Markup.Xaml.Data
             ValidateState(pathInfo);
 
             ExpressionObserver observer;
-            var targetIsDataContext = targetProperty == Control.DataContextProperty;
 
             if (pathInfo.ElementName != null || ElementName != null)
             {
@@ -76,18 +80,20 @@ namespace Perspex.Markup.Xaml.Data
                     pathInfo.ElementName ?? ElementName, 
                     pathInfo.Path);
             }
+            else if (Source != null)
+            {
+                observer = CreateSourceObserver(Source, pathInfo.Path);
+            }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContexObserver(
                     target, 
                     pathInfo.Path,
-                    targetIsDataContext);
+                    targetProperty == Control.DataContextProperty);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentObserver(
-                    target,
-                    pathInfo.Path);
+                observer = CreateTemplatedParentObserver(target, pathInfo.Path);
             }
             else
             {
@@ -178,6 +184,23 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
+        private ExpressionObserver CreateElementObserver(IControl target, string elementName, string path)
+        {
+            Contract.Requires<ArgumentNullException>(target != null);
+
+            var result = new ExpressionObserver(
+                ControlLocator.Track(target, elementName),
+                path);
+            return result;
+        }
+
+        private ExpressionObserver CreateSourceObserver(object source, string path)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            return new ExpressionObserver(source, path);
+        }
+
         private ExpressionObserver CreateTemplatedParentObserver(
             IPerspexObject target,
             string path)
@@ -193,19 +216,6 @@ namespace Perspex.Markup.Xaml.Data
                 path,
                 update);
 
-            return result;
-        }
-
-        private ExpressionObserver CreateElementObserver(
-            IControl target,
-            string elementName,
-            string path)
-        {
-            Contract.Requires<ArgumentNullException>(target != null);
-
-            var result = new ExpressionObserver(
-                ControlLocator.Track(target, elementName), 
-                path);
             return result;
         }
 
