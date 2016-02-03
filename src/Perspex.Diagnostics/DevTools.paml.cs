@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 using Perspex.Controls;
+using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Diagnostics.ViewModels;
 using Perspex.Input;
+using Perspex.Input.Raw;
 using Perspex.Interactivity;
 using Perspex.Markup.Xaml;
+using Perspex.VisualTree;
 using ReactiveUI;
 
 namespace Perspex.Diagnostics
@@ -13,13 +18,17 @@ namespace Perspex.Diagnostics
     public class DevTools : UserControl
     {
         private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
+        private IDisposable _keySubscription;
 
         public DevTools(IControl root)
         {
             InitializeComponent();
             Root = root;
             DataContext = new DevToolsViewModel(root);
-            Root.PointerMoved += RootPointerMoved;
+
+            _keySubscription = InputManager.Instance.RawEventReceived
+                .OfType<RawKeyEventArgs>()
+                .Subscribe(RawKeyDown);
         }
 
         public IControl Root { get; }
@@ -45,31 +54,34 @@ namespace Perspex.Diagnostics
                 }
                 else
                 {
+                    var devTools = new DevTools(window);
+
                     devToolsWindow = new Window
                     {
                         Width = 1024,
                         Height = 512,
-                        Content = new DevTools(window),
+                        Content = devTools,
                         DataTemplates = new DataTemplates
                         {
                             new ViewLocator<ReactiveObject>(),
                         }
                     };
 
-                    devToolsWindow.Closed += DevToolsClosed;
+                    devToolsWindow.Closed += devTools.DevToolsClosed;
                     s_open.Add((Window)sender, devToolsWindow);
                     devToolsWindow.Show();
                 }
             }
         }
 
-        private static void DevToolsClosed(object sender, EventArgs e)
+        private void DevToolsClosed(object sender, EventArgs e)
         {
             var devToolsWindow = (Window)sender;
             var devTools = (DevTools)devToolsWindow.Content;
             var window = (Window)devTools.Root;
 
             s_open.Remove(window);
+            _keySubscription.Dispose();
             devToolsWindow.Closed -= DevToolsClosed;
         }
 
@@ -78,14 +90,20 @@ namespace Perspex.Diagnostics
             PerspexXamlLoader.Load(this);
         }
 
-        private void RootPointerMoved(object sender, PointerEventArgs e)
+        private void RawKeyDown(RawKeyEventArgs e)
         {
-            var modifiers = InputModifiers.Control | InputModifiers.Shift;
+            const InputModifiers modifiers = InputModifiers.Control | InputModifiers.Shift;
 
-            if ((e.InputModifiers & modifiers) == modifiers)
+            if ((e.Modifiers) == modifiers)
             {
-                var vm = (DevToolsViewModel)DataContext;
-                vm.SelectControl((IControl)e.Source);
+                var point = MouseDevice.Instance.GetPosition(Root);
+                var control = Root.GetVisualsAt(point).FirstOrDefault(x => !(x is AdornerLayer));
+
+                if (control != null)
+                {
+                    var vm = (DevToolsViewModel)DataContext;
+                    vm.SelectControl((IControl)control);
+                }
             }
         }
     }
