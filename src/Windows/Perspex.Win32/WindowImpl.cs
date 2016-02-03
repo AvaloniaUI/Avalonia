@@ -366,6 +366,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
+                            _owner,
                             timestamp,
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
@@ -375,6 +376,7 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYUP:
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
+                            _owner,
                             timestamp,
                             RawKeyEventType.KeyUp,
                             KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
@@ -383,7 +385,7 @@ namespace Perspex.Win32
                     // Ignore control chars
                     if (wParam.ToInt32() >= 32)
                     {
-                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
+                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, _owner, timestamp,
                             new string((char)wParam.ToInt32(), 1));
                     }
 
@@ -408,8 +410,8 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
-                        timestamp,
                         _owner,
+                        timestamp,
                         msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN
                             ? RawMouseEventType.LeftButtonDown
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
@@ -423,8 +425,8 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
-                        timestamp,
                         _owner,
+                        timestamp,
                         msg == (int) UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
                             ? RawMouseEventType.LeftButtonUp
                             : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
@@ -449,8 +451,8 @@ namespace Perspex.Win32
 
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
-                        timestamp,
                         _owner,
+                        timestamp,
                         RawMouseEventType.Move,
                         PointFromLParam(lParam), GetMouseModifiers(wParam));
 
@@ -459,8 +461,8 @@ namespace Perspex.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEWHEEL:
                     e = new RawMouseWheelEventArgs(
                         WindowsMouseDevice.Instance,
-                        timestamp,
                         _owner,
+                        timestamp,
                         ScreenToClient(PointFromLParam(lParam)),
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
@@ -469,8 +471,8 @@ namespace Perspex.Win32
                     _trackingMouse = false;
                     e = new RawMouseEventArgs(
                         WindowsMouseDevice.Instance,
-                        timestamp,
                         _owner,
+                        timestamp,
                         RawMouseEventType.LeaveWindow,
                         new Point(), WindowsKeyboardDevice.Instance.Modifiers);
                     break;

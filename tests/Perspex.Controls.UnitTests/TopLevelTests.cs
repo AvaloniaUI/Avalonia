@@ -266,6 +266,7 @@ namespace Perspex.Controls.UnitTests
 
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
+                    new Mock<IInputRoot>().Object,
                     0,
                     RawKeyEventType.KeyDown,
                     Key.A, InputModifiers.None);

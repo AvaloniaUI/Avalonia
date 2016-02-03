@@ -7,16 +7,23 @@ namespace Perspex.Input.Raw
 {
     public class RawInputEventArgs : EventArgs
     {
-        public RawInputEventArgs(IInputDevice device, uint timestamp)
+        public RawInputEventArgs(
+            IInputDevice device,
+            IInputRoot root,
+            uint timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
 
             Device = device;
+            Root = root;
             Timestamp = timestamp;
         }
 
-        public IInputDevice Device { get; private set; }
+        public IInputDevice Device { get; }
 
-        public uint Timestamp { get; private set; }
+        public IInputRoot Root { get; }
+
+        public uint Timestamp { get; }
     }
 }
