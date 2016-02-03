@@ -32,6 +32,11 @@ namespace Perspex.Markup.Xaml.Data
         public string ElementName { get; set; }
 
         /// <summary>
+        /// Gets or sets the value to use when the binding is unable to produce a value.
+        /// </summary>
+        public object FallbackValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; }
@@ -104,7 +109,8 @@ namespace Perspex.Markup.Xaml.Data
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
                 Converter ?? DefaultValueConverter.Instance,
-                ConverterParameter);
+                ConverterParameter,
+                FallbackValue);
         }
 
         private static PathInfo ParsePath(string path)

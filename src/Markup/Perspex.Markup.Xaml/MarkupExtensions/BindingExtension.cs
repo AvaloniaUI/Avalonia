@@ -34,6 +34,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
         public IValueConverter Converter { get; set; }
         public object ConverterParameter { get; set; }
         public string ElementName { get; set; }
+        public object FallbackValue { get; set; }
         public BindingMode Mode { get; set; }
         public string Path { get; set; }
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;

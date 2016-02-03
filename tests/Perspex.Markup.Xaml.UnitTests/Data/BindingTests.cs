@@ -206,6 +206,40 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
         }
 
+        [Fact]
+        public void Should_Return_FallbackValue_When_Path_Not_Resolved()
+        {
+            var target = new TextBlock();
+            var source = new Source();
+            var binding = new Binding
+            {
+                Source = source,
+                Path = "BadPath",
+                FallbackValue = "foofallback",
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("foofallback", target.Text);
+        }
+
+        [Fact]
+        public void Should_Return_FallbackValue_When_Invalid_Source_Type()
+        {
+            var target = new ProgressBar();
+            var source = new Source { Foo = "foo" };
+            var binding = new Binding
+            {
+                Source = source,
+                Path = "Foo",
+                FallbackValue = 42,
+            };
+
+            target.Bind(ProgressBar.ValueProperty, binding);
+
+            Assert.Equal(42, target.Value);
+        }
+
         /// <summary>
         /// Tests a problem discovered with ListBox with selection.
         /// </summary>
