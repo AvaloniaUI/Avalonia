@@ -148,19 +148,19 @@ Global
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{2f59f3d0-748d-4652-b01e-e0d954756308}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{db070a10-bf39-4752-8456-86e9d5928478}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{78345174-5b52-4a14-b9fd-d5f2428137f0}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{ff69b927-c545-49ae-8e16-3d14d621aa12}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{8c923867-8a8f-4f6b-8b80-47d9e8436166}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e1aa3dbf-9056-4530-9376-18119a7a3ffe}*SharedItemsImports = 4
 	EndGlobalSection
