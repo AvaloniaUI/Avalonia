@@ -60,7 +60,7 @@ namespace Perspex.Controls.Templates
         {
             foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IControl>())
             {
-                foreach (IDataTemplate dt in i.DataTemplates.Reverse())
+                foreach (IDataTemplate dt in i.DataTemplates)
                 {
                     if (dt.Match(data))
                     {
@@ -73,7 +73,7 @@ namespace Perspex.Controls.Templates
 
             if (global != null)
             {
-                foreach (IDataTemplate dt in global.DataTemplates.Reverse())
+                foreach (IDataTemplate dt in global.DataTemplates)
                 {
                     if (dt.Match(data))
                     {
