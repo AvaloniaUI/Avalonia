@@ -61,6 +61,11 @@ namespace Perspex.Android.Platform.SkiaPlatform
                 _keyboardHelper.HandleEvents = _handleEvents;
             }
         }
+        public WindowState WindowState
+        {
+            get { return WindowState.Normal; }
+            set { }
+        }
 
         public virtual Point GetPerspexPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
 
