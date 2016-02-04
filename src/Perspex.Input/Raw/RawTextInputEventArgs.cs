@@ -5,16 +5,11 @@ namespace Perspex.Input.Raw
 {
     public class RawTextInputEventArgs : RawInputEventArgs
     {
-        public RawTextInputEventArgs(
-            IKeyboardDevice device,
-            IInputRoot root,
-            uint timestamp, 
-            string text) 
-            : base(device, root, timestamp)
+        public string Text { get; set; }
+
+        public RawTextInputEventArgs(IKeyboardDevice device, uint timestamp, string text) : base(device, timestamp)
         {
             Text = text;
         }
-
-        public string Text { get; set; }
     }
 }
