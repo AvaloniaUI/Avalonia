@@ -163,6 +163,7 @@
     <Compile Include="Primitives\PopupRoot.cs" />
     <Compile Include="Utils\UndoRedoHelper.cs" />
     <Compile Include="LogicalTreeAttachmentEventArgs.cs" />
+    <Compile Include="WindowState.cs" />
     <Compile Include="Window.cs" />
     <Compile Include="RowDefinition.cs" />
     <Compile Include="RowDefinitions.cs" />

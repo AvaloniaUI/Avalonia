@@ -75,6 +75,39 @@ namespace Perspex.Gtk
             }
         }
 
+        public Perspex.Controls.WindowState WindowState
+        {
+            get
+            {
+                switch (GdkWindow.State)
+                {
+                    case Gdk.WindowState.Iconified:
+                        return Controls.WindowState.Minimized;
+                    case Gdk.WindowState.Maximized:
+                        return Controls.WindowState.Maximized;
+                    default:
+                        return Controls.WindowState.Normal;
+                }
+            }
+
+            set
+            {
+                switch (value)
+                {
+                    case Controls.WindowState.Minimized:
+                        GdkWindow.Iconify();
+                        break;
+                    case Controls.WindowState.Maximized:
+                        GdkWindow.Maximize();
+                        break;
+                    case Controls.WindowState.Normal:
+                        GdkWindow.Deiconify();
+                        GdkWindow.Unmaximize();
+                        break;
+                }
+            }
+        }
+
         IPlatformHandle ITopLevelImpl.Handle => this;
 
         [DllImport("libgdk-win32-2.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
