@@ -61,10 +61,7 @@
         /// </summary>
         public void Hide()
         {
-            foreach (MenuItem i in this.GetLogicalChildren())
-            {
-                i.IsSubMenuOpen = false;
-            }
+            
 
             if (_popup != null && _popup.IsVisible)
             {
@@ -91,6 +88,8 @@
                         PlacementTarget = control,
                         StaysOpen = false                                         
                     };
+
+                    _popup.Closed += PopupClosed;
                 }
                  
                 ((ISetLogicalParent)_popup).SetParent(control);
@@ -102,6 +101,20 @@
             }
         }
 
+        private static void PopupClosed(object sender, EventArgs e)
+        {
+            var contextMenu = (sender as Popup)?.Child as ContextMenu;
+
+            if (contextMenu != null)
+            {
+                foreach (MenuItem i in contextMenu.GetLogicalChildren())
+                {
+                    i.IsSubMenuOpen = false;
+                }
+
+                contextMenu._isOpen = false;
+            }
+        }
 
         private void PopupOpened(object sender, EventArgs e)
         {

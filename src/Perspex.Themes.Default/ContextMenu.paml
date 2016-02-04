@@ -2,6 +2,8 @@
     <Setter Property="BorderBrush" Value="Gray"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
