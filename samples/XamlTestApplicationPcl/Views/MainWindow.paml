@@ -38,7 +38,9 @@
           </TabItem>
           <TabItem Header="Text">
               <StackPanel Margin="10" Gap="4">
-                  <TextBlock Text="TextBlock" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                  <TextBlock Text="TextBlock" FontWeight="Medium" FontSize="20" Foreground="#212121">
+                    <ContextMenu.Menu></ContextMenu.Menu>
+                  </TextBlock>
                   <TextBlock Text="A control for displaying text."
                               FontSize="13"
                               Foreground="#727272"
