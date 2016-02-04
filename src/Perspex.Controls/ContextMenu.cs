@@ -14,7 +14,7 @@
         /// <summary>
         /// The popup window used to display the active context menu.
         /// </summary>
-        private static PopupRoot s_popup;
+        private static Popup _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContextMenu"/> class.
@@ -23,7 +23,7 @@
         {
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
 
-            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick);
+            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick);            
         }
 
         /// <summary>
@@ -66,9 +66,9 @@
                 i.IsSubMenuOpen = false;
             }
 
-            if (s_popup != null && s_popup.IsVisible)
+            if (_popup != null && _popup.IsVisible)
             {
-                s_popup.Hide();
+                _popup.Close();
             }
 
             SelectedIndex = -1;
@@ -84,24 +84,32 @@
         {
             if (control != null)
             {
-                if (s_popup == null)
+                if(_popup == null)
                 {
-                    s_popup = new PopupRoot
+                    _popup = new Popup()
                     {
-                        Content = new ContentControl(),
+                        [Popup.PlacementTargetProperty] = control,
+                        Child = new ContentControl(),
                     };
-
-                    ((ISetLogicalParent)s_popup).SetParent(control);
                 }
-
-                var cp = MouseDevice.Instance?.GetPosition(control);
-                var position = control.PointToScreen(cp ?? new Point(0, 0));
-
-                ((ContentControl)s_popup.Content).Content = control.ContextMenu;
-                s_popup.Position = position;
-                s_popup.Show();
+                 
+                ((ISetLogicalParent)_popup).SetParent(control);
+                
+                _popup.Open();
 
                 control.ContextMenu._isOpen = true;
+            }
+        }
+
+
+        private void PopupOpened(object sender, EventArgs e)
+        {
+            var selectedIndex = SelectedIndex;
+
+            if (selectedIndex != -1)
+            {
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                container?.Focus();
             }
         }
 
@@ -111,7 +119,7 @@
 
             if (e.MouseButton == MouseButton.Right)
             {
-                if(control.ContextMenu._isOpen)
+                if (control.ContextMenu._isOpen)
                 {
                     control.ContextMenu.Hide();
                 }
