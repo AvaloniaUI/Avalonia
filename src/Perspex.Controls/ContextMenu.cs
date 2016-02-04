@@ -88,7 +88,7 @@
                 {
                     _popup = new Popup()
                     {
-                        [Popup.PlacementTargetProperty] = control,
+                        PlacementTarget = control,
                         Child = new ContentControl(),
                     };
                 }
